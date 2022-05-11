@@ -305,7 +305,6 @@ export class DrawerContent extends Component {
 							<LogOutButton/>
 						</HStack>
 						<UseColorMode/>
-						<Button size="xs" colorScheme="tertiary" onPress={() => this.handleRefreshProfile(library.baseUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
 					</VStack>
 				</VStack>
 			</DrawerContentScrollView>
@@ -324,7 +323,7 @@ function LogOutButton() {
 const ReloadProfileButton = (props) => {
 
 	return(
-		<Button size="xs" colorScheme="tertiary" onPress={() => reloadProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
+		<Button size="xs" colorScheme="tertiary" onPress={() => props.handleRefreshProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
 	)
 }
 

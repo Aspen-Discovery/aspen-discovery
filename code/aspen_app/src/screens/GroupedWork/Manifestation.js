@@ -36,6 +36,14 @@ const Manifestation = (props) => {
 	}
 
 	return match.map((item, index) => {
+
+		let volumes = [];
+		let majorityOfItemsHaveVolumes = false;
+		if(discoveryVersion >= "22.06.00") {
+			volumes = item.volumes;
+			majorityOfItemsHaveVolumes = item.majorityOfItemsHaveVolumes;
+		}
+
 		return (
 			<Record
 				available = {item.available}
@@ -60,8 +68,8 @@ const Manifestation = (props) => {
 				linkedAccounts = {linkedAccounts}
 				openCheckouts = {openCheckouts}
 				openHolds = {openHolds}
-				majorityOfItemsHaveVolumes = {item.majorityOfItemsHaveVolumes}
-				volumes = {item.volumes}
+				majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
+				volumes = {volumes}
 				discoveryVersion = {discoveryVersion}
 				updateProfile = {updateProfile}
 			/>

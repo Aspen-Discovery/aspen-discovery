@@ -130,7 +130,7 @@ export default class Holds extends Component {
 
 		this.setState({
 			isLoading: true,
-			discoveryVersion: version[0],
+			discoveryVersion: discoveryVersion,
 		})
 
 		await this._fetchHolds();
