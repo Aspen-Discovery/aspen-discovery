@@ -1,11 +1,11 @@
-import React from "react";
+import React, {Component} from "react";
 import {Button, Center, HStack, Text, VStack, Badge } from "native-base";
 import {
 	checkoutItem,
 	getItemDetails,
 	openCheckouts,
 	openSideLoad,
-	overDriveSample,
+	overDriveSample, PlaceHold,
 	placeHold
 } from "../../util/recordActions";
 import SelectPickupLocation from "./SelectPickupLocation";
@@ -13,6 +13,138 @@ import ShowItemDetails from "./CopyDetails";
 import _ from "lodash";
 import SelectLinkedAccount from "./SelectLinkedAccount";
 import SelectVolumeHold from "./SelectVolumeHold";
+import {getProfile, reloadProfile} from "../../util/loadPatron";
+import {userContext} from "../../context/user";
+
+export class Record extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			loading: true,
+		}
+	}
+
+	componentDidMount = async () => {
+
+	}
+
+	static contextType = userContext;
+
+	render() {
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
+		const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = this.props;
+		let actionCount = 1;
+		if(typeof actions !== 'undefined') {
+			actionCount = _.size(actions);
+		}
+
+		let copyCount = 1;
+		if(typeof itemDetails !== 'undefined') {
+			copyCount = _.size(itemDetails);
+		}
+
+		let linkedAccountsCount = 0;
+		if(discoveryVersion >= "22.05.00") {
+			if(typeof linkedAccounts !== 'undefined') {
+				linkedAccountsCount = _.size(linkedAccounts);
+			}
+		}
+
+		let statusColor;
+		if(available === true) {
+			statusColor = "success";
+		} else if(availableOnline === true) {
+			statusColor = "success";
+		} else {
+			statusColor = "danger";
+		}
+
+		let libraryUrl = library.baseUrl;
+		return (
+			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
+				{publisher ? (<Text fontSize={10} bold pb={3}>{edition} {publisher}, {publicationDate}</Text>) : null}
+				<HStack justifyContent="space-around" alignItems="center" space={2} flex={1}>
+					<VStack space={1} alignItems="center" maxW="40%" flex={1}>
+						<Badge colorScheme={statusColor} rounded="4px" _text={{fontSize: 14}} mb={.5}>{status}</Badge>
+						{copiesMessage ? (<Text fontSize={8} textAlign="center" italic={1} maxW="75%">{copiesMessage}</Text>) : null}
+						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl}/> : null}
+					</VStack>
+					<Button.Group maxW="50%" direction={actionCount > 1 ? "column" : "row"} alignItems="stretch">
+						{actions.map((thisAction) => {
+							if (thisAction.type === "overdrive_sample") {
+								return (
+									<OverDriveSample
+										id = {id}
+										actionType = {thisAction.type}
+										actionLabel = {thisAction.title}
+										patronId = {user.id}
+										formatId = {thisAction.formatId}
+										sampleNumber = {thisAction.sampleNumber}
+										libraryUrl = {libraryUrl}
+									/>
+								)
+							} else if (thisAction.type === "ils_hold") {
+								return (
+									<ILS
+										id = {id}
+										actionLabel = {thisAction.title}
+										actionType = {thisAction.type}
+										patronId = {user.id}
+										formatId = {thisAction.formatId}
+										sampleNumber = {thisAction.sampleNumber}
+										pickupLocation = {user.pickupLocationId}
+										rememberPickupLocation = {user.rememberHoldPickupLocation}
+										locationCount = {locationCount}
+										locations = {locations}
+										showAlert = {showAlert}
+										libraryUrl = {libraryUrl}
+										user = {user}
+										linkedAccounts = {linkedAccounts}
+										linkedAccountsCount = {linkedAccountsCount}
+										updateProfile = {updateProfile}
+									/>
+								)
+							} else if (thisAction.title === "Access Online") {
+								return (
+									<SideLoad
+										actionUrl = {thisAction.url}
+										actionLabel = {thisAction.title}
+										libraryUrl = {libraryUrl}
+									/>
+								)
+							} else if (thisAction.url === "/MyAccount/CheckedOut") {
+								return (
+									<CheckedOutToYou title={thisAction.title} openCheckouts={openCheckouts} />
+								)
+							} else if (thisAction.url === "/MyAccount/Holds") {
+								return (
+									<OnHoldForYou title={thisAction.title} openHolds={openHolds} />
+								)
+							} else {
+								return (
+									<CheckOutEContent
+										action = {completeAction}
+										title = {thisAction.title}
+										actionType = {thisAction.type}
+										id = {id}
+										libraryUrl = {libraryUrl}
+										user = {user}
+										showAlert = {showAlert}
+										linkedAccounts = {linkedAccounts}
+										linkedAccountsCount = {linkedAccountsCount}
+										updateProfile = {updateProfile}
+									/>
+								);
+							}
+						})}
+					</Button.Group>
+				</HStack>
+			</Center>
+		)
+	}
+}
 
 const DisplayRecord = (props) => {
 
@@ -30,8 +162,10 @@ const DisplayRecord = (props) => {
 	}
 
 	let linkedAccountsCount = 0;
-	if(typeof linkedAccounts !== 'undefined') {
-		linkedAccountsCount = _.size(linkedAccounts);
+	if(discoveryVersion >= "22.05.00") {
+		if(typeof linkedAccounts !== 'undefined') {
+			linkedAccountsCount = _.size(linkedAccounts);
+		}
 	}
 
 	let statusColor;
@@ -85,7 +219,7 @@ const DisplayRecord = (props) => {
 									locations = {locations}
 									showAlert = {showAlert}
 									libraryUrl = {libraryUrl}
-									user = {user}
+									user = {this.context.user}
 									linkedAccounts = {linkedAccounts}
 									linkedAccountsCount = {linkedAccountsCount}
 									majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
@@ -109,19 +243,28 @@ const DisplayRecord = (props) => {
 								<OnHoldForYou title={thisAction.title} openHolds={openHolds} />
 							)
 						} else {
-							return (
-								<CheckOutEContent
-									action = {completeAction}
-									title = {thisAction.title}
-									actionType = {thisAction.type}
-									id = {id}
-									libraryUrl = {libraryUrl}
-									user = {user}
-									showAlert = {showAlert}
-									linkedAccounts = {linkedAccounts}
-									linkedAccountsCount = {linkedAccountsCount}
-								/>
-							);
+							if(linkedAccountsCount > 0) {
+								return (
+									<SelectLinkedAccount action={thisAction.type} id={id} user={user} linkedAccounts={linkedAccounts} title={title} libraryUrl={libraryUrl} showAlert={showAlert} />
+								)
+							} else {
+								return (
+									<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
+									        _text={{padding: 0, textAlign: "center"}}
+									        isLoading={loading}
+									        isLoadingText="Checking out title..."
+									        style={{flex: 1, flexWrap: 'wrap'}} onPress={async () => {
+										setLoading(true);
+										completeAction(id, thisAction.type, user.id, null, null, null, libraryUrl, user).then(response => {
+											showAlert(response);
+											setLoading(false);
+											reloadProfile(libraryUrl).then(response => {
+												this.context.user = response;
+											})
+										})
+									}}>{thisAction.title}</Button>
+								)
+							}
 						}
 					})}
 				</Button.Group>
@@ -134,7 +277,7 @@ const CheckOutEContent = (props) => {
 	const [loading, setLoading] = React.useState(false);
 	if(props.linkedAccountsCount > 0) {
 		return (
-			<SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} />
+			<SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} updateProfile={props.updateProfile} />
 		)
 	} else {
 		return (
@@ -144,7 +287,8 @@ const CheckOutEContent = (props) => {
 			        isLoadingText="Checking out title..."
 			        style={{flex: 1, flexWrap: 'wrap'}} onPress={async () => {
 				setLoading(true);
-				completeAction(props.id, props.actionType, props.user.id, null, null, null, props.libraryUrl).then(response => {
+				completeAction(props.id, props.actionType, props.user.id, null, null, null, props.libraryUrl, props.user).then(response => {
+					props.updateProfile();
 					props.showAlert(response);
 					setLoading(false);
 				})
@@ -226,7 +370,7 @@ const OverDriveSample = (props) => {
             isLoadingText="Opening..."
 	        onPress={() => {
 		        setLoading(true);
-		        completeAction(props.id, props.actionType, props.patronId, props.formatId, props.sampleNumber, null, props.libraryUrl).then(r => {
+		        completeAction(props.id, props.actionType, props.patronId, props.formatId, props.sampleNumber, null, props.libraryUrl, props.user).then(r => {
 			        setLoading(false);
 		        })
 	        }}
@@ -305,7 +449,7 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
 			getPromptForOverdriveEmail['promptForOverdriveEmail'] = global.promptForOverdriveEmail;
 			return getPromptForOverdriveEmail;
 		} else {
-			return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch);
+			return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch, userProfile);
 		}
 
 	} else if (actionType.includes("sample")) {

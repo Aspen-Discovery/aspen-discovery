@@ -15,20 +15,12 @@ import {saveLanguage} from "../../util/accountActions";
 import {userContext} from "../../context/user";
 
 export class DrawerContent extends Component {
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			displayLanguage: "",
-			user: {
-				displayName: "",
-				cat_username: "",
-				numCheckedOut: 0,
-				numOverdue: 0,
-				numHolds: 0,
-				numHoldsAvailable: 0,
-				interfaceLanguage: "en"
-			},
+			user: this.context.user,
 			location: {
 				name: "",
 			},
@@ -138,6 +130,12 @@ export class DrawerContent extends Component {
 		clearInterval(this.interval);
 	}
 
+	componentDidUpdate(prevProps, prevState) {
+		if (prevState.user !== this.state.user) {
+			this.context.user(this.state.user);
+		}
+	}
+
 	handleNavigation = (stack, screen, libraryUrl) => {
 		this.props.navigation.navigate(stack, {screen: screen, params: {libraryUrl: libraryUrl}});
 	};
@@ -185,8 +183,6 @@ export class DrawerContent extends Component {
 		} else {
 			icon = library.favicon;
 		}
-
-		//console.log(this.context.library);
 
 		return (
 			<DrawerContentScrollView>

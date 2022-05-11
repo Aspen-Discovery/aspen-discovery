@@ -116,7 +116,7 @@ export default class Results extends Component {
 	    )
 	};
 
-	renderItem = (item, library) => {
+	renderItem = (item, library, user) => {
 		return (
 			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library)}>
 				<HStack space={3}>
@@ -130,7 +130,7 @@ export default class Results extends Component {
 							})}
 						</Stack>
 					</VStack>
-					<AddToList item={item.key} libraryUrl={library.baseUrl}/>
+					<AddToList item={item.key} libraryUrl={library.baseUrl} lastListUsed={user.lastListUsed}/>
 				</HStack>
 			</Pressable>
 		)
@@ -198,7 +198,7 @@ export default class Results extends Component {
 				<FlatList
 					data={this.state.data}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({ item }) => this.renderItem(item, library)}
+					renderItem={({ item }) => this.renderItem(item, library, user)}
 					keyExtractor={(item) => item.key}
 					ListFooterComponent={this._renderFooter}
 					onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set

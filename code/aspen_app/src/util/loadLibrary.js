@@ -134,7 +134,7 @@ export async function getPickupLocations(libraryUrl) {
 
 		await AsyncStorage.setItem('@pickupLocations', JSON.stringify(locations));
 		//console.log("Pickup locations saved")
-		console.log(locations);
+		//console.log(locations);
 		return locations;
 	} else {
 		console.log(response);
@@ -144,7 +144,7 @@ export async function getPickupLocations(libraryUrl) {
 /**
  * Fetch active browse categories for the branch/location
  **/
-export async function getBrowseCategories(libraryUrl) {
+export async function getBrowseCategories(libraryUrl, discoveryVersion) {
 	if(libraryUrl) {
 		const postBody = await postData();
 		const api = create({
@@ -153,6 +153,21 @@ export async function getBrowseCategories(libraryUrl) {
 			headers: getHeaders(true),
 			auth: createAuthTokens()
 		});
+		const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
+		const hiddenCategories = [];
+		if(responseHiddenCategories.ok) {
+			if(typeof responseHiddenCategories.data.result !== "undefined") {
+				const categories = responseHiddenCategories.data.result.categories;
+				if (_.isArray(categories) === true) {
+					if (categories.length > 0) {
+						categories.map(function (category, index, array) {
+							hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
+						});
+					}
+				}
+			}
+		}
+		//console.log(hiddenCategories);
 		const response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
 		if (response.status === 403) {
 			await removeData().then(res => {
@@ -160,38 +175,62 @@ export async function getBrowseCategories(libraryUrl) {
 			});
 		}
 		if (response.ok) {
-			console.log(response);
 			const items = response.data.result;
 			let allCategories = [];
 			if(typeof items !== "undefined") {
 				items.map(function (category, index, array) {
 					const subCategories = category['subCategories'];
 
-					if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
-						subCategories.forEach(item => allCategories.push({
-							'key': item.key,
-							'title': item.title,
-							'records': item.records,
-						}))
-					} else {
-						allCategories.push({'key': category.key, 'title': category.title});
+					if(discoveryVersion >= "22.05.00") {
+						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
+							subCategories.forEach(item => allCategories.push({
+								'key': item.key,
+								'title': item.title,
+								'records': item.records,
+							}))
+						} else {
+							allCategories.push({'key': category.key, 'title': category.title});
 
-						if (typeof subCategories != "undefined") {
-							if (subCategories.length !== 0) {
-								subCategories.forEach(item => allCategories.push({
-									'key': item.key,
-									'title': item.title,
-									'records': item.records,
-								}))
-							} else {
-								allCategories.push({'key': category.key, 'title': category.title, 'records': category.records});
+							if (typeof subCategories != "undefined") {
+								if (subCategories.length !== 0) {
+									subCategories.forEach(item => allCategories.push({
+										'key': item.key,
+										'title': item.title,
+										'records': item.records,
+									}))
+								} else {
+									allCategories.push({'key': category.key, 'title': category.title, 'records': category.records});
+								}
+
 							}
+						}
+					} else {
+						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
+							subCategories.forEach(item => allCategories.push({
+								'key': item.key,
+								'title': item.title,
+							}))
+						} else {
+							allCategories.push({'key': category.key, 'title': category.title});
 
+							if (typeof subCategories != "undefined") {
+								if (subCategories.length !== 0) {
+									subCategories.forEach(item => allCategories.push({
+										'key': item.key,
+										'title': item.title,
+									}))
+								} else {
+									allCategories.push({'key': category.key, 'title': category.title});
+								}
+
+							}
 						}
 					}
 				});
 			}
-			console.log(allCategories);
+
+			allCategories = _.pullAllBy(allCategories, hiddenCategories, 'key');
+
 			return allCategories;
 		} else {
 			console.log(response);
