@@ -2,14 +2,19 @@ import React, {useState} from "react";
 import {Button, FormControl, Modal, Select, CheckIcon} from "native-base";
 import {translate} from "../../translations/translations";
 import {completeAction} from "./Record";
+import _ from "lodash";
+import {getProfile} from "../../util/loadPatron";
 
 const SelectPickupLocation = (props) => {
-
 	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState(null);
-	let [location, setLocation] = React.useState("");
+
+	let pickupLocation = _.findIndex(locations, function(o) { return o.locationId == user.pickupLocationId; });
+	pickupLocation = _.nth(locations, pickupLocation);
+	pickupLocation = _.get(pickupLocation, 'code', '');
+	let [location, setLocation] = React.useState(pickupLocation);
 	let [activeAccount, setActiveAccount] = React.useState(user.id);
 
 	const availableAccounts = Object.values(linkedAccounts);
@@ -98,6 +103,7 @@ const SelectPickupLocation = (props) => {
 								onPress={async () => {
 									setLoading(true);
 									await completeAction(record, action, activeAccount, "", "", location, libraryUrl, volume).then(response => {
+										updateProfile();
 										setLoading(false);
 										setShowModal(false);
 										showAlert(response);
