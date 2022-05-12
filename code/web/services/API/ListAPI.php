@@ -1214,6 +1214,10 @@ class ListAPI extends Action
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->numSkipped++;
 				}
+				if($nytList->deleted == 1) {
+					$nytList->deleted = 0;
+					$nytList->update();
+				}
 				//Nothing has changed, no need to update
 				return array(
 					'success' => true,
@@ -1225,6 +1229,9 @@ class ListAPI extends Action
 			}
 			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
 			$nytList->nytListModified = $lastModifiedDay;
+			if($nytList->deleted == 1) {
+				$nytList->deleted = 0;
+			}
 			$nytList->update();
 			$results = array(
 				'success' => true,
