@@ -100,13 +100,17 @@ class Location extends DataObject
 	private $_sideLoadScopes;
 	private $_combinedResultSections;
 	private $_cloudLibraryScopes;
+	/**
+	 * @var array|LocationHours[]|mixed|null
+	 */
+	public $ebscohostSettingId;
 
 	function getNumericColumnNames() : array
 	{
 		return ['scope', 'isMainBranch', 'showInLocationsAndHoursList', 'validHoldPickupBranch', 'useScope', 'restrictSearchByLocation', 'showHoldButton',
 			'repeatInOnlineCollection', 'repeatInProspector', 'repeatInWorldCat', 'showEmailThis', 'showShareOnExternalSites', 'showFavorites',
 			'includeAllLibraryBranchesInFacets', 'includeAllRecordsInShelvingFacets', 'includeAllRecordsInDateAddedFacets', 'includeLibraryRecordsToInclude',
-			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings'];
+			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings', 'ebscohostSettingId'];
 	}
 
 	static function getObjectStructure() : array
@@ -225,6 +229,16 @@ class Location extends DataObject
 		$overDriveScopes[-1] = 'Use Library Setting';
 		while ($overDriveScope->fetch()){
 			$overDriveScopes[$overDriveScope->id] = $overDriveScope->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
+		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting->orderBy('name');
+		$ebscohostSettings = [];
+		$ebscohostSetting->find();
+		$ebscohostSettings[-2] = 'None';
+		while ($ebscohostSetting->fetch()) {
+			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
 		$releaseChannels = [0 => 'Beta (Testing)', 1 => 'Production (Public)'];
@@ -366,6 +380,10 @@ class Location extends DataObject
 
 			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+			)),
+
+			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
+				'ebscohostSettingId' => array('property' => 'ebscohostSettingId', 'type' => 'enum', 'values' => $ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description' => 'The EBSCOhost Settings to use for connection', 'hideInLists' => true, 'default' => -2),
 			)),
 
 			'hours' =>	array(

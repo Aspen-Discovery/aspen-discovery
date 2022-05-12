@@ -284,11 +284,15 @@ class Library extends DataObject
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
+	/**
+	 * @var array|int|LibraryCloudLibraryScope[]|mixed|null
+	 */
+	public $ebscohostSettingId;
 
 
 	public function getNumericColumnNames() : array {
 		return [
-			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId'
+			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId', 'ebscohostSettingId'
 		];
 	}
 
@@ -459,6 +463,17 @@ class Library extends DataObject
 		$edsSettings[-1] = 'none';
 		while ($edsSetting->fetch()){
 			$edsSettings[$edsSetting->id] = $edsSetting->name;
+		}
+
+
+		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
+		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting->orderBy('name');
+		$ebscohostSettings = [];
+		$ebscohostSetting->find();
+		$ebscohostSettings[-1] = 'none';
+		while ($ebscohostSetting->fetch()){
+			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
 		$overDriveScopes = [];
@@ -897,8 +912,9 @@ class Library extends DataObject
 				'enableWebBuilder' => array('property' => 'enableWebBuilder', 'type' => 'checkbox', 'label' => 'Allow searching locally created web content', 'description' => 'Whether or not information from indexed local web content is shown.', 'hideInLists' => true, 'default' => 0),
 			)),
 
-			'edsSection' => array('property' => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library EDS Options'], 'properties' => array(
+			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library EDS Options'], 'properties' => array(
 				'edsSettingsId' => array('property' => 'edsSettingsId', 'type'=>'enum', 'values'=>$edsSettings, 'label' => 'EDS Settings', 'description'=>'The EDS Settings to use for connection', 'hideInLists' => true, 'default' => -1),
+				'ebscohostSettingId' => array('property' => 'ebscohostSettingId', 'type'=>'enum', 'values'=>$ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description'=>'The EBSCOhost Settings to use for connection', 'hideInLists' => true, 'default' => -1),
 			)),
 
 			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection'], 'properties' => array(
