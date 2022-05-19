@@ -93,7 +93,7 @@ export async function placeHold(libraryUrl, itemId, source, patronId, pickupBran
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {itemId: itemId, itemSource: source, userId: patronId, pickupBranch: pickupBranch, volume: volumeId}
+		params: {itemId: itemId, itemSource: source, userId: patronId, pickupBranch: pickupBranch, volumeId: volumeId}
 	});
 	const response = await api.post('/UserAPI?method=placeHold', postBody);
 	console.log(response);

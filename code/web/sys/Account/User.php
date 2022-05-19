@@ -2502,9 +2502,14 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$sections['ebsco'] = new AdminSection('EBSCO');
+			$sections['ebsco'] = new AdminSection('EBSCO EDS');
 			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between EBSCO EDS and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
 			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCO EDS integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('EBSCOhost', $enabledModules)) {
+			$sections['ebscohost'] = new AdminSection('EBSCOhost');
+			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCO EDS');
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {

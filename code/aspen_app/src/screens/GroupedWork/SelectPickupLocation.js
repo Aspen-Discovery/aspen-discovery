@@ -6,7 +6,7 @@ import _ from "lodash";
 import {getProfile} from "../../util/loadPatron";
 
 const SelectPickupLocation = (props) => {
-	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes} = props;
+	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes, updateProfile} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState(null);

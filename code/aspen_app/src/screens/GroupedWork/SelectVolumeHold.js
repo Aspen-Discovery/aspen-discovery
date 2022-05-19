@@ -5,7 +5,7 @@ import {completeAction} from "./Record";
 
 const SelectVolumeHold = (props) => {
 
-	const {label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, volumes} = props;
+	const {label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, volumes, updateProfile} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState("");
@@ -79,6 +79,7 @@ const SelectVolumeHold = (props) => {
 								onPress={async () => {
 									setLoading(true);
 									await completeAction(record, action, activeAccount, "", "", "", libraryUrl, volume).then(response => {
+										updateProfile();
 										setLoading(false);
 										setShowModal(false);
 										showAlert(response);

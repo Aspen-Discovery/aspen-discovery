@@ -56,7 +56,7 @@ export default function TabNavigator() {
 				component={BrowseStackNavigator}
 				options={{
 					tabBarLabel: translate('navigation.home'),
-					unmountOnBlur: true,
+					unmountOnBlur: false,
 				}}
 				screenOptions={{
 					headerShown: false,
