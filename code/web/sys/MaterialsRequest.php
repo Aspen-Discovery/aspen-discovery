@@ -332,13 +332,13 @@ class MaterialsRequest extends DataObject
 		$user = new User();
 		$user->id = $this->createdBy;
 		if ($user->find(true)){
-			$links['createdBy'] = $user->username;
+			$links['createdBy'] = $user->cat_username;
 		}
 		//assigned to
 		$user = new User();
 		$user->id = $this->assignedTo;
 		if ($user->find(true)){
-			$links['assignedTo'] = $user->username;
+			$links['assignedTo'] = $user->cat_username;
 		}
 		//Status
 		$materialsRequestStatus = new MaterialsRequestStatus();
@@ -371,7 +371,7 @@ class MaterialsRequest extends DataObject
 		if (isset($jsonData['createdBy'])){
 			$username = $jsonData['createdBy'];
 			$user = new User();
-			$user->username = $username;
+			$user->cat_username = $username;
 			if ($user->find(true)){
 				$this->createdBy = $user->id;
 			}
@@ -379,7 +379,7 @@ class MaterialsRequest extends DataObject
 		if (isset($jsonData['assignedTo'])){
 			$username = $jsonData['assignedTo'];
 			$user = new User();
-			$user->username = $username;
+			$user->cat_username = $username;
 			if ($user->find(true)){
 				$this->assignedTo = $user->id;
 			}
