@@ -35,5 +35,13 @@ function getUpdates22_06_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer EBSCOhost Settings'))"
 			]
 		], //createPermissionsforEBSCOhost
+		'indexAndSearchVersionVariables' => [
+			'title' => 'Index and Search Version Variables',
+			'description' => 'Add variables to determine what version should be ',
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN indexVersion INT DEFAULT 2",
+				"ALTER TABLE system_variables ADD COLUMN searchVersion INT DEFAULT 1",
+			]
+		], //indexAndSearchVersionVariables
 	];
 }

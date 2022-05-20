@@ -137,7 +137,7 @@ class CollectionSpotlightList extends BaseBrowsable
 	 */
 	public function getSearchObject()
 	{
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($this->source);
 		if (!empty($this->defaultFilter)) {
 			$defaultFilterInfo = $this->defaultFilter;

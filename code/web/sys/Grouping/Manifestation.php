@@ -155,11 +155,9 @@ class Grouping_Manifestation
 			}
 		}
 		if (!empty($selectedFormatCategory) && !in_array($this->formatCategory, $selectedFormatCategory)) {
-			/** @noinspection PhpStatementHasEmptyBodyInspection */
 			if (($this->format == 'eAudiobook') && (in_array('eBook', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
 				//This is a special case where the format is in 2 categories
-			} else /** @noinspection PhpStatementHasEmptyBodyInspection */
-				if (($this->format == 'VOX Books') && (in_array('Books', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
+			} else  if (($this->format == 'VOX Books') && (in_array('Books', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
 				//This is another special case where the format is in 2 categories
 			} else {
 				$this->_hideByDefault = true;

@@ -142,6 +142,8 @@ public class GroupedWorkIndexer {
 	private boolean treatUnknownAudienceAsGeneral = false;
 	private boolean treatUnknownAudienceAsAdult = false;
 	private String treatUnknownLanguageAs = "English";
+	private int indexVersion;
+	private int searchVersion;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
@@ -170,11 +172,13 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion  from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
+				this.indexVersion = systemVariablesRS.getInt("indexVersion");
+				this.searchVersion = systemVariablesRS.getInt("searchVersion");
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -258,7 +262,12 @@ public class GroupedWorkIndexer {
 		//Initialize the updateServer and solr server
 		logEntry.addNote("Setting up update server and solr server");
 
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		ConcurrentUpdateSolrClient.Builder solrBuilder;
+		if (indexVersion == 1) {
+			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		}else{
+			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+		}
 		solrBuilder.withThreadCount(1);
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
@@ -599,6 +608,15 @@ public class GroupedWorkIndexer {
 			} catch (Exception e) {
 				logEntry.incErrors("Error calling final commit", e);
 			}
+			if (indexVersion == 2 && searchVersion == 1){
+				//Update the search version to version 2
+				try {
+					logEntry.addNote("Updating search version to version 2");
+					dbConn.prepareStatement("ALTER TABLE system_variables set searchVersion = 2").executeUpdate();
+				} catch (Exception e) {
+					logEntry.incErrors("Error updating search version", e);
+				}
+			}
 		}else {
 			try {
 				logEntry.addNote("Doing a soft commit to make sure changes are saved");
@@ -725,7 +743,12 @@ public class GroupedWorkIndexer {
 
 	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
 		//Create a solr record for the grouped work
-		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
+		AbstractGroupedWorkSolr groupedWork;
+		if (indexVersion == 2) {
+			groupedWork = new GroupedWorkSolr2(this, logger);
+		}else{
+			groupedWork = new GroupedWorkSolr(this, logger);
+		}
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
@@ -737,7 +760,7 @@ public class GroupedWorkIndexer {
 			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
 
 			//Make a copy of the grouped work so we can revert if we don't add any records
-			GroupedWorkSolr originalWork;
+			AbstractGroupedWorkSolr originalWork;
 			try {
 				originalWork = groupedWork.clone();
 			}catch (CloneNotSupportedException cne){
@@ -836,7 +859,7 @@ public class GroupedWorkIndexer {
 
 	}
 
-	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
+	private void loadLexileDataForWork(AbstractGroupedWorkSolr groupedWork) {
 		for(String isbn : groupedWork.getIsbns()){
 			if (lexileInformation.containsKey(isbn)){
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
@@ -854,7 +877,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
+	private void loadAcceleratedDataForWork(AbstractGroupedWorkSolr groupedWork){
 		try {
 			for (String isbn : groupedWork.getIsbns()){
 				getArBookIdForIsbnStmt.setString(1, isbn);
@@ -881,7 +904,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadLocalEnrichment(GroupedWorkSolr groupedWork) {
+	private void loadLocalEnrichment(AbstractGroupedWorkSolr groupedWork) {
 		//Load rating
 		try{
 			getRatingStmt.setString(1, groupedWork.getId());
@@ -898,7 +921,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadUserLinkages(GroupedWorkSolr groupedWork) {
+	private void loadUserLinkages(AbstractGroupedWorkSolr groupedWork) {
 		try {
 			loadReadingHistoryLinksForUsers(groupedWork);
 			loadRatingLinksForUsers(groupedWork);
@@ -908,7 +931,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadNotInterestedLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
+	private void loadNotInterestedLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who are not interested in the title
 		getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
@@ -918,7 +941,7 @@ public class GroupedWorkIndexer {
 		userNotInterestedRS.close();
 	}
 
-	private void loadRatingLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
+	private void loadRatingLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who rated the title
 		getUserRatingLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
@@ -928,7 +951,7 @@ public class GroupedWorkIndexer {
 		userRatingRS.close();
 	}
 
-	private void loadReadingHistoryLinksForUsers (GroupedWorkSolr groupedWork) throws SQLException {
+	private void loadReadingHistoryLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users with the work in their reading history
 		getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
@@ -938,7 +961,7 @@ public class GroupedWorkIndexer {
 		userReadingHistoryRS.close();
 	}
 
-	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
+	private void loadNovelistInfo(AbstractGroupedWorkSolr groupedWork){
 		try{
 			getNovelistStmt.setString(1, groupedWork.getId());
 			ResultSet novelistRS = getNovelistStmt.executeQuery();
@@ -961,7 +984,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadDisplayInfo(GroupedWorkSolr groupedWork) {
+	private void loadDisplayInfo(AbstractGroupedWorkSolr groupedWork) {
 		try {
 			getDisplayInfoStmt.setString(1, groupedWork.getId());
 			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
@@ -991,7 +1014,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier)  {
+	private void updateGroupedWorkForPrimaryIdentifier(AbstractGroupedWorkSolr groupedWork, String type, String identifier)  {
 		groupedWork.addAlternateId(identifier);
 		type = type.toLowerCase();
 		switch (type) {

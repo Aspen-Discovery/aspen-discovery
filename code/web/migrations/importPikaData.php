@@ -922,7 +922,7 @@ function importListWidgets($startTime, $exportPath, $existingUsers, $missingUser
 					continue;
 				}
 			}elseif ($type == 'search'){
-				/** @var SearchObject_GroupedWorkSearcher $searcher */
+				/** @var SearchObject_AbstractGroupedWorkSearcher $searcher */
 				$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
 				$savedSearch = $searcher->restoreSavedSearch($identifier, false, true);
 				if ($savedSearch !== false) {

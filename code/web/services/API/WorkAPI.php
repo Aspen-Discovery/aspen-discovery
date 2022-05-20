@@ -101,7 +101,14 @@ class WorkAPI extends Action{
 
 		global $configArray;
 		$url = $configArray['Index']['url'];
-		$db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$db = new GroupedWorksSolrConnector2($url);
+		}
 
 		disableErrorHandler();
 		$record = $db->getRecord($permanentId, 'isbn');

@@ -175,8 +175,15 @@ class GroupedWork_AJAX extends JSON_Action
 		if ($recordDriver->isValid()){
 			//Load Similar titles (from Solr)
 			$url = $configArray['Index']['url'];
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$db = new GroupedWorksSolrConnector($url);
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->searchVersion == 1){
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+				$db = new GroupedWorksSolrConnector($url);
+			}else{
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+				$db = new GroupedWorksSolrConnector2($url);
+			}
+
 			$db->disableScoping();
 			$similar = $db->getMoreLikeThis($id);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
@@ -239,7 +246,7 @@ class GroupedWork_AJAX extends JSON_Action
 			//Load Similar titles (from Solr)
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			/** @var SearchObject_GroupedWorkSearcher $db */
+			/** @var SearchObject_AbstractGroupedWorkSearcher $db */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			$searchObject->disableScoping();
@@ -791,7 +798,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -1178,7 +1185,7 @@ class GroupedWork_AJAX extends JSON_Action
 				$interface->assign('groupedWork', $groupedWork);
 
 				$searchId = $_REQUEST['searchId'];
-				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject();
 				$searchObject->init();
 				$searchObject = $searchObject->restoreSavedSearch($searchId, false);

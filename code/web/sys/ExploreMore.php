@@ -408,7 +408,7 @@ class ExploreMore {
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['catalog'] = [];
-				/** @var SearchObject_GroupedWorkSearcher $searchObjectSolr */
+				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObjectSolr */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
                 $searchObjectSolr->disableSpelling();
@@ -573,7 +573,7 @@ class ExploreMore {
 				$searchTerm .= " AND NOT id:($recordsToAvoid)";
 			}*/
 
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
             $searchObject->disableSpelling();

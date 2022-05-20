@@ -8,7 +8,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public $isValid = true;
 
-	/** @var SearchObject_GroupedWorkSearcher */
+	/** @var SearchObject_AbstractGroupedWorkSearcher */
 	private static $recordLookupSearcher = null;
 	public function __construct($indexFields)
 	{
@@ -2884,7 +2884,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		//Load Similar titles (from Solr)
 		global $configArray;
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		/** @var SearchObject_GroupedWorkSearcher $db */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $db */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$searchObject->disableScoping();

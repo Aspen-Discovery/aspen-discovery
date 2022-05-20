@@ -156,7 +156,7 @@ class Search_Results extends ResultsAction {
 
 		// Cannot use the current search globals since we may change the search term above
 		// Display of query is not right when reusing the global search object
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);
@@ -343,7 +343,7 @@ class Search_Results extends ResultsAction {
 					if ($spellingSuggestions['correctlySpelled'] == false && $library->allowAutomaticSearchReplacements && count($spellingSuggestions['suggestions']) > 0) {
 						$firstSuggestion = reset($spellingSuggestions['suggestions']);
 						//first check to see if we will get results
-						/** @var SearchObject_GroupedWorkSearcher $replacementSearchObject */
+						/** @var SearchObject_AbstractGroupedWorkSearcher $replacementSearchObject */
 						$replacementSearchObject = SearchObjectFactory::initSearchObject();
 						$replacementSearchObject->init($searchSource, $firstSuggestion['phrase']);
 						$replacementSearchObject->setPrimarySearch(false);
@@ -469,15 +469,15 @@ class Search_Results extends ResultsAction {
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$sidebar = ($searchObject->getResultTotal() > 0 || $hasAppliedFacets) ? 'Search/results-sidebar.tpl' : '';
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	} // End launch()
 
 	/**
-	 * @param SearchObject_GroupedWorkSearcher $searchObject
+	 * @param SearchObject_AbstractGroupedWorkSearcher $searchObject
 	 * @param UInterface $interface
 	 */
-	private function getKeywordSearchResults(SearchObject_GroupedWorkSearcher $searchObject, UInterface $interface): void
+	private function getKeywordSearchResults(SearchObject_AbstractGroupedWorkSearcher $searchObject, UInterface $interface): void
 	{
 		//Check to see if we are not using a Keyword search and the Keyword search would provide results
 		if (!$searchObject->isAdvanced()) {

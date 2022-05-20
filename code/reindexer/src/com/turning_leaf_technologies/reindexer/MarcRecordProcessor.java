@@ -64,7 +64,7 @@ abstract class MarcRecordProcessor {
 	 * @param identifier the identifier to load information for
 	 * @param logEntry the log entry to store any errors
 	 */
-	public synchronized void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+	public synchronized void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
 		//Check to be sure the record is not suppressed
 		boolean isSuppressed = false;
 		try {
@@ -130,7 +130,7 @@ abstract class MarcRecordProcessor {
 		return basePath + "/" + shortId + ".mrc";
 	}
 
-	protected void loadSubjects(GroupedWorkSolr groupedWork, Record record){
+	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
 		List<DataField> subjectFields = MarcUtil.getDataFields(record, new String[]{"600", "610", "611", "630", "648", "650", "651", "655", "690"});
 
 		HashSet<String> subjects = new HashSet<>();
@@ -382,7 +382,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory) {
 		loadTitles(groupedWork, record, format, formatCategory);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
@@ -443,7 +443,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
-	private void loadLexileScore(GroupedWorkSolr groupedWork, Record record) {
+	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, Record record) {
 		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
 		for (DataField targetAudience : targetAudiences){
 			Subfield subfieldA = targetAudience.getSubfield('a');
@@ -470,7 +470,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record) {
+	private void loadFountasPinnell(AbstractGroupedWorkSolr groupedWork, Record record) {
 		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
 		for (String targetAudience : targetAudiences){
 			if (targetAudience.startsWith("Guided reading level: ")){
@@ -482,7 +482,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private void loadAwards(GroupedWorkSolr groupedWork, Record record){
+	private void loadAwards(AbstractGroupedWorkSolr groupedWork, Record record){
 		Set<String> awardFields = MarcUtil.getFieldList(record, "586a");
 		HashSet<String> awards = new HashSet<>();
 		for (String award : awardFields){
@@ -509,9 +509,9 @@ abstract class MarcRecordProcessor {
 	}
 
 
-	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier);
+	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier);
 
-	void loadEditions(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
+	void loadEditions(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
 		if (editions.size() > 0) {
 			String edition = editions.iterator().next();
@@ -522,7 +522,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addEditions(editions);
 	}
 
-	void loadPhysicalDescription(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
+	void loadPhysicalDescription(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
 		if (physicalDescriptions.size() > 0){
 			String physicalDescription = physicalDescriptions.iterator().next();
@@ -584,11 +584,11 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -651,7 +651,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
 	}
 
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
 		//Now get literary forms from the subjects, these don't need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
@@ -848,7 +848,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadPublicationDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
+	void loadPublicationDetails(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		//Load publishers
 		Set<String> publishers = this.getPublishers(record);
 		groupedWork.addPublishers(publishers);
@@ -919,7 +919,7 @@ abstract class MarcRecordProcessor {
 
 	String languageFields = "008[35-37]";
 
-	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
+	void loadLanguageDetails(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		Set <String> languages = MarcUtil.getFieldList(record, languageFields);
 		HashSet<String> translatedLanguages = new HashSet<>();
 		boolean isFirstLanguage = true;
@@ -976,7 +976,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setTranslations(translatedLanguages);
 	}
 
-	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
 		//author = a, first
@@ -1020,7 +1020,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String formatCategory) {
+	private void loadTitles(AbstractGroupedWorkSolr groupedWork, Record record, String format, String formatCategory) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
@@ -1047,7 +1047,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addNewTitles(MarcUtil.getFieldList(record, "785ast"));
 	}
 
-	private void loadBibCallNumbers(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private void loadBibCallNumbers(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		groupedWork.setCallNumberA(MarcUtil.getFirstFieldVal(record, "099a:090a:050a"));
 		String firstCallNumber = MarcUtil.getFirstFieldVal(record, "099a[0]:090a[0]:050a[0]");
 		if (firstCallNumber != null){

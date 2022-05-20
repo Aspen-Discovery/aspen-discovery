@@ -609,7 +609,7 @@ class ListAPI extends Action
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
 	{
 		//return a random selection of 30 titles from the list.
-		/** @var SearchObject_GroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
+		/** @var SearchObject_AbstractGroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
 		$searchObj = SearchObjectFactory::initSearchObject();
 		$searchObj->init();
 		$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
@@ -1030,7 +1030,7 @@ class ListAPI extends Action
 		$listTitles = $memCache->get('system_list_titles_' . $listName);
 		if ($listTitles == false || isset($_REQUEST['reload'])) {
 			//return a random selection of 30 titles from the list.
-			/** @var SearchObject_GroupedWorkSearcher $searchObj */
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj->setBasicQuery("*:*");
@@ -1258,7 +1258,7 @@ class ListAPI extends Action
 					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
 					if ($isbn) {
 						//look the title up by ISBN
-						/** @var SearchObject_GroupedWorkSearcher $searchObject */
+						/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 						$searchObject = SearchObjectFactory::initSearchObject(); // QUESTION: Does this need to be done within the Loop??
 						$searchObject->init();
 						$searchObject->clearFacets();

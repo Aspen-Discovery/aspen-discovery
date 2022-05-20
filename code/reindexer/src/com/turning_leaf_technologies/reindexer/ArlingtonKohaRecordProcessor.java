@@ -18,7 +18,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	}
 
 	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//For Arlington we can load the literary forms based off of the location code:
 		// ??f?? = Fiction
 		// ??n?? = Non-Fiction
@@ -53,7 +53,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
@@ -127,7 +127,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	/**
 	 * For Arlington do not load Bisac Subjects and load full stings with subfields for topics
 	 */
-	protected void loadSubjects(GroupedWorkSolr groupedWork, Record record){
+	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
 		HashSet<String> validSubjects = new HashSet<>();
 		getSubjectValues(MarcUtil.getDataFields(record, "600"), validSubjects);
 		getSubjectValues(MarcUtil.getDataFields(record, "610"), validSubjects);

@@ -118,7 +118,7 @@ class Browse_AJAX extends Action {
 			if (isset($_REQUEST['searchId']) && strlen($_REQUEST['searchId']) > 0){
 				$searchId = $_REQUEST['searchId'];
 
-				/** @var SearchObject_GroupedWorkSearcher $searchObj */
+				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObj */
 				$searchObj = SearchObjectFactory::initSearchObject();
 				$searchObj->init();
 				$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
@@ -218,7 +218,7 @@ class Browse_AJAX extends Action {
 			if (isset($_REQUEST['searchId']) && strlen($_REQUEST['searchId']) > 0){
 				$searchId = $_REQUEST['searchId'];
 
-				/** @var SearchObject_GroupedWorkSearcher $searchObj */
+				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObj */
 				$searchObj = SearchObjectFactory::initSearchObject();
 				$searchObj->init();
 				$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);

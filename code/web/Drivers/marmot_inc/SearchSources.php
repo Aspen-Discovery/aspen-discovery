@@ -35,7 +35,7 @@ class SearchSources{
 				break;
 			case 'catalog':
 			default:
-				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject();
 		}
 		$searchObject->init();

@@ -13,6 +13,7 @@ class SideFacets implements RecommendationInterface
 	private $searchObject;
 	private $facetSettings;
 	private $mainFacets;
+	private $facets = [];
 
 	/* Constructor
 	 *
@@ -35,6 +36,7 @@ class SideFacets implements RecommendationInterface
 		foreach ($this->facetSettings as $facetName => $facet){
 			if (!$facet->showAboveResults) {
 				$this->mainFacets[$facetName] = $facet->displayName;
+				$this->facets[$facet->facetName] = $facet;
 			}
 		}
 	}
@@ -89,7 +91,7 @@ class SideFacets implements RecommendationInterface
 		$lockedFacets = isset($lockedFacets[$lockSection]) ? $lockedFacets[$lockSection] : [];
 
 		//Do additional processing of facets
-		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
+		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
 			foreach ($sideFacets as $facetKey => $facet) {
 				/** @var FacetSetting $facetSetting */
 				$facetSetting = $this->facetSettings[$facetKey];
