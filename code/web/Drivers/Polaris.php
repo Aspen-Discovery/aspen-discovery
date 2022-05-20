@@ -233,7 +233,11 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->checkoutDate = $this->parsePolarisDate($itemOut->CheckOutDate);
 
 					$curCheckout->renewCount = $itemOut->RenewalCount;
-					$curCheckout->canRenew = $itemOut->RenewalCount < $itemOut->RenewalLimit;
+					if (isset($itemOut->CanItemBeRenewed)) {
+						$curCheckout->canRenew = $itemOut->CanItemBeRenewed;
+					}else{
+						$curCheckout->canRenew = $itemOut->RenewalCount < $itemOut->RenewalLimit;
+					}
 					$curCheckout->maxRenewals = $itemOut->RenewalLimit;
 					$curCheckout->renewalId = $itemOut->ItemID;
 					$curCheckout->renewIndicator = $itemOut->ItemID;
