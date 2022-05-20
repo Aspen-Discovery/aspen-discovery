@@ -312,7 +312,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 								if ($localItemComparisonResult == 0) {
 									//7) All else being equal, sort by hold ratio
 									if ($a->getHoldRatio() == $b->getHoldRatio()) {
-										//Hold Ratio is the same, last thing to check is the number of copies
+										//8) Hold Ratio is the same, last thing to check is the number of copies
 										if ($a->getCopies() == $b->getCopies()) {
 											return 0;
 										} elseif ($a->getCopies() > $b->getCopies()) {
