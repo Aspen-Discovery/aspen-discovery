@@ -1241,30 +1241,30 @@ abstract class Solr
 		$timer->logTime("build facet options");
 
 		//Check to see if there are filters we want to show all values for
-		global $solrScope;
-		if (isset($filters) && is_array($filters)) {
-			foreach ($filters as $key => $value) {
-				if (is_numeric($key)) {
-					$facetName = substr($value, 0, strpos($value, ':'));
-				} else {
-					$facetName = $key;
-				}
-				$fullFacetName = $facetName;
-				$facetName = str_replace("_$solrScope", "", $facetName);
-
-				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
-					$filters[$key] = '{!tag=avail}' . $value;
-				}elseif (isset($facet['field'][$facetName])) {
-					$facetSetting = $facet['field'][$facetName];
-					if ($facetSetting instanceof FacetSetting) {
-						if ($facetSetting->multiSelect) {
-							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
-							$filters[$key] = "{!tag={$facetKey}}" . $value;
-						}
-					}
-				}
-			}
-		}
+//		global $solrScope;
+//		if (isset($filters) && is_array($filters)) {
+//			foreach ($filters as $key => $value) {
+//				if (is_numeric($key)) {
+//					$facetName = substr($value, 0, strpos($value, ':'));
+//				} else {
+//					$facetName = $key;
+//				}
+//				$fullFacetName = $facetName;
+//				$facetName = str_replace("_$solrScope", "", $facetName);
+//
+//				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
+//					$filters[$key] = '{!tag=avail}' . $value;
+//				}elseif (isset($facet['field'][$facetName])) {
+//					$facetSetting = $facet['field'][$facetName];
+//					if ($facetSetting instanceof FacetSetting) {
+//						if ($facetSetting->multiSelect) {
+//							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
+//							$filters[$key] = "{!tag={$facetKey}}" . $value;
+//						}
+//					}
+//				}
+//			}
+//		}
 
 		// Build Filter Query
 		if (is_array($filters) && count($filters)) {

@@ -160,6 +160,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$selectedFormatValues = [];
 		$selectedFormatCategoryValues = [];
 		$facetConfig = $this->getFacetConfig();
+		$availabilityToggleId = null;
 		foreach ($this->filterList as $field => $filter) {
 			$fieldPrefix = "";
 			$multiSelect = false;
@@ -176,6 +177,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			foreach ($filter as $value) {
 				if ($facetInfo->facetName == 'availability_toggle' || $facetInfo->facetName == "availability_toggle_$solrScope"){
 					$selectedAvailabilityToggleValue = $value;
+					$availabilityToggleId = $facetInfo->id;
 				}elseif ($facetInfo->facetName == 'available_at' || $facetInfo->facetName == "available_at_$solrScope"){
 					$selectedAvailableAtValues[] = $value;
 				}elseif ($facetInfo->facetName == 'format_category' || $facetInfo->facetName == "format_category_$solrScope"){
@@ -231,7 +233,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$availabilityToggleValue = $groupedWorkDisplaySettings->defaultAvailabilityToggle;
 			$selectedAvailabilityToggleValue = $availabilityToggleValue;
 
-			$filterQuery['availability_toggle_'. $solrScope] = "availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
+			$filterQuery[] = "{!tag=$availabilityToggleId}availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
 		}
 
 		$facetSet = array();
