@@ -612,7 +612,7 @@ public class GroupedWorkIndexer {
 				//Update the search version to version 2
 				try {
 					logEntry.addNote("Updating search version to version 2");
-					dbConn.prepareStatement("ALTER TABLE system_variables set searchVersion = 2").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error updating search version", e);
 				}
