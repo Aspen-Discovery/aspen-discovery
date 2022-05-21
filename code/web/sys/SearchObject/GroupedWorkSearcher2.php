@@ -233,6 +233,14 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$availabilityToggleValue = $groupedWorkDisplaySettings->defaultAvailabilityToggle;
 			$selectedAvailabilityToggleValue = $availabilityToggleValue;
 
+			if ($availabilityToggleId == -1){
+				foreach ($facetConfig as $facetInfo){
+					if ($facetInfo->facetName == 'availability_toggle' || $facetInfo->facetName == "availability_toggle_$solrScope"){
+						$availabilityToggleId = $facetInfo->id;
+					}
+				}
+			}
+
 			$filterQuery[] = "{!tag=$availabilityToggleId}availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
 		}
 
