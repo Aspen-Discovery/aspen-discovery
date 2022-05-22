@@ -86,18 +86,9 @@ class TopFacets implements RecommendationInterface
 		$facetList = $this->searchObject->getFacetList($this->facets);
 		foreach ($facetList as $facetSetkey => $facetSet){
 			if (strpos($facetSetkey, 'format_category') === 0){
-				$validCategories = array(
-						'Books',
-						'eBook',
-						'Audio Books',
-						'eAudio',
-						'Music',
-						'Movies',
-				);
-
 				//add an image name for display in the template
 				foreach ($facetSet['list'] as $facetKey => $facet){
-					if (in_array($facetKey,$validCategories)){
+					if (strlen($facetKey) > 0 && array_key_exists($facetKey,TopFacets::$formatCategorySortOrder)){
 						$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
 						$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 						$facetSet['list'][$facetKey] = $facet;
@@ -204,19 +195,19 @@ class TopFacets implements RecommendationInterface
 	{
 		return 'Search/Recommend/TopFacets.tpl';
 	}
-}
 
-function format_category_comparator($a, $b){
-	$formatCategorySortOrder = array(
+	public static $formatCategorySortOrder = [
 		'Books' => 1,
 		'eBook' => 2,
 		'Audio Books' => 3,
 		'eAudio' => 4,
 		'Music' => 5,
 		'Movies' => 6,
-	);
+	];
+}
 
-	$a = $formatCategorySortOrder[$a];
-	$b = $formatCategorySortOrder[$b];
+function format_category_comparator($a, $b){
+	$a = TopFacets::$formatCategorySortOrder[$a];
+	$b = TopFacets::$formatCategorySortOrder[$b];
 	if ($a==$b){return 0;}else{return ($a > $b ? 1 : -1);}
 };
