@@ -14,6 +14,7 @@ public class BaseIndexingSettings {
 	boolean createFolderFromLeadingCharacters;
 	String groupingClass;
 	String recordNumberTag;
+	int recordNumberTagInt;
 	char recordNumberSubfield;
 	String recordNumberPrefix;
 	String filenamesToInclude;
@@ -77,6 +78,10 @@ public class BaseIndexingSettings {
 
 	public String getRecordNumberTag() {
 		return recordNumberTag;
+	}
+
+	public int getRecordNumberTagInt() {
+		return recordNumberTagInt;
 	}
 
 	public String getMarcPath() {

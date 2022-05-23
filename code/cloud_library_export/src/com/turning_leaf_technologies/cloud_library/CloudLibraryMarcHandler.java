@@ -160,7 +160,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		checksumCalculator.reset();
 		checksumCalculator.update(marcAsString.getBytes());
 		long itemChecksum = checksumCalculator.getValue();
-		String cloudLibraryId = ((ControlField) marcRecord.getVariableField("001")).getData();
+		String cloudLibraryId = ((ControlField) marcRecord.getVariableField(1)).getData();
 		logger.debug("processing " + cloudLibraryId);
 
 		CloudLibraryTitle existingTitle = existingRecords.get(cloudLibraryId);

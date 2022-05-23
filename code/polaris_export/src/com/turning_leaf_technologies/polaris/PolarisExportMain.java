@@ -1203,7 +1203,7 @@ public class PolarisExportMain {
 	private static synchronized void updateVolumeInfoForIdentifier(Record marcRecord, String bibliographicRecordId) {
 		String fullIdentifier = indexingProfile.getName() + ":" + bibliographicRecordId;
 		TreeMap<String, VolumeInfo> volumesForRecord = new TreeMap<>();
-		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTag());
+		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
 		for (DataField curItem : itemFields){
 			Subfield volumeSubfield = curItem.getSubfield(indexingProfile.getVolume());
 			if (volumeSubfield != null) {

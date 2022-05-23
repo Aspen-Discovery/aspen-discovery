@@ -2074,7 +2074,7 @@ public class GroupedWorkIndexer {
 		if (recordNumber != null) {
 			Record mergedRecord = loadMarcRecordFromDatabase(indexingSettings.getName(), recordNumber, logEntry);
 
-			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTag());
+			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTagInt());
 			for (DataField additionalItem : additionalItems) {
 				mergedRecord.addVariableField(additionalItem);
 			}

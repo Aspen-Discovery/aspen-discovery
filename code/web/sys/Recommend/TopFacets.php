@@ -23,6 +23,8 @@ class TopFacets implements RecommendationInterface
 		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
 
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
 		// Load the desired facet information:
 		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
 			$searchLibrary = Library::getActiveLibrary();
@@ -37,11 +39,11 @@ class TopFacets implements RecommendationInterface
 			foreach ($facets as &$facet) {
 				if ($facet->showAboveResults == 1) {
 					if ($solrScope) {
-						if ($facet->facetName == 'availability_toggle') {
+						if ($facet->facetName == 'availability_toggle' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'availability_toggle_' . $solrScope;
-						} else if ($facet->facetName == 'format_category') {
+						} else if ($facet->facetName == 'format_category' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'format_category_' . $solrScope;
-						} else if ($facet->facetName == 'format') {
+						} else if ($facet->facetName == 'format' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'format_' . $solrScope;
 						}
 					}

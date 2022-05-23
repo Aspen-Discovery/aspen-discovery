@@ -25,7 +25,6 @@ class RecommendationFactory {
         global $configArray;
         $path = "{$configArray['Site']['local']}/sys/Recommend/{$module}.php";
         if (is_readable($path)) {
-            /** @noinspection PhpIncludeInspection */
             require_once $path;
             if (class_exists($module)) {
                 $recommend = new $module($searchObj, $params);

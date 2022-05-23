@@ -103,52 +103,52 @@ class SideFacets implements RecommendationInterface
 				} elseif ($facetKey == 'rating_facet') {
 					$userRatingFacet       = $this->updateUserRatingsFacet($facet);
 					$sideFacets[$facetKey] = $userRatingFacet;
-				} elseif ($facetKey == 'available_at') {
-					//Mangle the availability facets
-					$oldFacetValues = $sideFacets['available_at']['list'];
-					ksort($oldFacetValues);
-
-					$filters = $this->searchObject->getFilterList();
-					//print_r($filters);
-					$appliedAvailability = array();
-					foreach ($filters as $appliedFilters) {
-						foreach ($appliedFilters as $filter) {
-							if ($filter['field'] == 'available_at') {
-								$appliedAvailability[$filter['value']] = $filter['removalUrl'];
-							}
-						}
-					}
-
-					$availableAtFacets = array();
-					foreach ($oldFacetValues as $facetKey2 => $facetInfo) {
-						if (strlen($facetKey2) > 1) {
-							$sortIndicator = substr($facetKey2, 0, 1);
-							if ($sortIndicator >= '1' && $sortIndicator <= '4') {
-								$availableAtFacets[$facetKey2] = $facetInfo;
-							}
-						}
-					}
-
-					$includeAnyLocationFacet = $this->searchObject->getFacetSetting("Availability", "includeAnyLocationFacet");
-					$includeAnyLocationFacet = ($includeAnyLocationFacet == '' || $includeAnyLocationFacet == 'true');
-					if ($searchLibrary) {
-						$includeAnyLocationFacet = $searchLibrary->showAvailableAtAnyLocation;
-					}
-					//print_r ("includeAnyLocationFacet = $includeAnyLocationFacet");
-					if ($includeAnyLocationFacet) {
-						$anyLocationLabel = $this->searchObject->getFacetSetting("Availability", "anyLocationLabel");
-						//print_r ("anyLocationLabel = $anyLocationLabel");
-						$availableAtFacets['*'] = array(
-							'value' => '*',
-							'display' => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
-							'count' => $this->searchObject->getResultTotal() - (isset($oldFacetValues['']['count']) ? $oldFacetValues['']['count'] : 0),
-							'url' => $this->searchObject->renderLinkWithFilter('available_at', '*'),
-							'isApplied' => array_key_exists('*', $appliedAvailability),
-							'removalUrl' => array_key_exists('*', $appliedAvailability) ? $appliedAvailability['*'] : null
-						);
-					}
-
-					$sideFacets['available_at']['list'] = $availableAtFacets;
+//				} elseif ($facetKey == 'available_at') {
+//					//Mangle the availability facets
+//					$oldFacetValues = $sideFacets['available_at']['list'];
+//					ksort($oldFacetValues);
+//
+//					$filters = $this->searchObject->getFilterList();
+//					//print_r($filters);
+//					$appliedAvailability = array();
+//					foreach ($filters as $appliedFilters) {
+//						foreach ($appliedFilters as $filter) {
+//							if ($filter['field'] == 'available_at') {
+//								$appliedAvailability[$filter['value']] = $filter['removalUrl'];
+//							}
+//						}
+//					}
+//
+//					$availableAtFacets = array();
+//					foreach ($oldFacetValues as $facetKey2 => $facetInfo) {
+//						if (strlen($facetKey2) > 1) {
+//							$sortIndicator = substr($facetKey2, 0, 1);
+//							if ($sortIndicator >= '1' && $sortIndicator <= '4') {
+//								$availableAtFacets[$facetKey2] = $facetInfo;
+//							}
+//						}
+//					}
+//
+//					$includeAnyLocationFacet = $this->searchObject->getFacetSetting("Availability", "includeAnyLocationFacet");
+//					$includeAnyLocationFacet = ($includeAnyLocationFacet == '' || $includeAnyLocationFacet == 'true');
+//					if ($searchLibrary) {
+//						$includeAnyLocationFacet = $searchLibrary->showAvailableAtAnyLocation;
+//					}
+//					//print_r ("includeAnyLocationFacet = $includeAnyLocationFacet");
+//					if ($includeAnyLocationFacet) {
+//						$anyLocationLabel = $this->searchObject->getFacetSetting("Availability", "anyLocationLabel");
+//						//print_r ("anyLocationLabel = $anyLocationLabel");
+//						$availableAtFacets['*'] = array(
+//							'value' => '*',
+//							'display' => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
+//							'count' => $this->searchObject->getResultTotal() - (isset($oldFacetValues['']['count']) ? $oldFacetValues['']['count'] : 0),
+//							'url' => $this->searchObject->renderLinkWithFilter('available_at', '*'),
+//							'isApplied' => array_key_exists('*', $appliedAvailability),
+//							'removalUrl' => array_key_exists('*', $appliedAvailability) ? $appliedAvailability['*'] : null
+//						);
+//					}
+//
+//					$sideFacets['available_at']['list'] = $availableAtFacets;
 				} else {
 					$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
 				}

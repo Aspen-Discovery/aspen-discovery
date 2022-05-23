@@ -215,7 +215,7 @@ public class HorizonExportMain {
 	}
 
 	private static String getRecordIdFromMarcRecord(Record marcRecord) {
-		List<DataField> recordIdField = getDataFields(marcRecord, indexingProfile.getRecordNumberTag());
+		List<DataField> recordIdField = getDataFields(marcRecord, indexingProfile.getRecordNumberTagInt());
 		//Make sure we only get one ils identifier
 		for (DataField curRecordField : recordIdField) {
 			Subfield subfieldA = curRecordField.getSubfield('a');
@@ -227,6 +227,17 @@ public class HorizonExportMain {
 	}
 
 	private static List<DataField> getDataFields(Record marcRecord, String tag) {
+		List variableFields = marcRecord.getVariableFields(tag);
+		List<DataField> variableFieldsReturn = new ArrayList<>();
+		for (Object variableField : variableFields){
+			if (variableField instanceof DataField){
+				variableFieldsReturn.add((DataField)variableField);
+			}
+		}
+		return variableFieldsReturn;
+	}
+
+	private static List<DataField> getDataFields(Record marcRecord, int tag) {
 		List variableFields = marcRecord.getVariableFields(tag);
 		List<DataField> variableFieldsReturn = new ArrayList<>();
 		for (Object variableField : variableFields){

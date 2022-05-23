@@ -427,7 +427,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected void loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField)){
 				//Check to see if the item has an eContent indicator
@@ -446,7 +446,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
 		for (DataField itemField : itemRecords){
@@ -515,7 +515,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				sourceType = "OverDrive";
 			}
 		}else{
-			List<DataField> urlFields = record.getDataFields("856");
+			List<DataField> urlFields = record.getDataFields(856);
 			for (DataField urlDataField : urlFields) {
 				Subfield subfieldU = urlDataField.getSubfield('u');
 				if (subfieldU != null) {
@@ -561,8 +561,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 			//If the source type is still null, try the location of the item
 			if (sourceType == null){
-				DataField field037 = record.getDataField("037");
-				DataField field949 = record.getDataField("949");
+				DataField field037 = record.getDataField(37);
+				DataField field949 = record.getDataField(949);
 				if (field037 != null && field037.getSubfield('b') != null) {
 					sourceType = field037.getSubfield('b').getData();
 				}else if (field949 != null && field949.getSubfield('a') != null){
@@ -647,7 +647,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected boolean isBibSuppressed(Record record) {
-		DataField field942 = record.getDataField("942");
+		DataField field942 = record.getDataField(942);
 		if (field942 != null){
 			Subfield subfieldN = field942.getSubfield('n');
 			if (subfieldN != null && subfieldN.getData().equals("1")){

@@ -56,7 +56,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington, eContent will always have no items on the bib record.
-		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
+		List<DataField> items = MarcUtil.getDataFields(record, itemTagInt);
 		if (items.size() > 0){
 			return unsuppressedEcontentRecords;
 		}else{
@@ -129,13 +129,13 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	 */
 	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
 		HashSet<String> validSubjects = new HashSet<>();
-		getSubjectValues(MarcUtil.getDataFields(record, "600"), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, "610"), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, "611"), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, "630"), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, "650"), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, "651"), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, "690"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 600), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 610), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 611), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 630), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 650), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 651), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, 690), validSubjects);
 
 		groupedWork.addSubjects(validSubjects);
 		//Add lc subjects

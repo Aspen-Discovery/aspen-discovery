@@ -23,6 +23,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private String recordNumberTag;
 	String itemTag;
+	int itemTagInt;
 	char formatSubfield;
 	boolean checkRecordForLargePrint;
 	char barcodeSubfield;
@@ -111,6 +112,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			suppressItemlessBibs = indexingProfileRS.getBoolean("suppressItemlessBibs");
 
 			itemTag = indexingProfileRS.getString("itemTag");
+			itemTagInt = indexingProfileRS.getInt("itemTag");
 			itemRecordNumberSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemRecordNumber");
 
 			callNumberPrestampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
@@ -499,6 +501,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+		if (orderTag.length() == 0){
+			return;
+		}
 		List<DataField> orderFields = MarcUtil.getDataFields(record, orderTag);
 		for (DataField curOrderField : orderFields){
 			//Check here to make sure the order item is valid before doing further processing.
@@ -674,7 +679,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected void loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField)){
@@ -753,7 +758,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.seteContentUrl(urlSubfield.getData().trim());
 		}else{
 			//Check the 856 tag to see if there is a link there
-			List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
+			List<DataField> urlFields = MarcUtil.getDataFields(record, 856);
 			for (DataField urlField : urlFields){
 				//load url into the item
 				if (urlField.getSubfield('u') != null){
@@ -1183,7 +1188,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (!hasCallNumber){
 			StringBuilder callNumber = null;
 			if (use099forBibLevelCallNumbers()) {
-				DataField localCallNumberField = record.getDataField("099");
+				DataField localCallNumberField = record.getDataField(99);
 				if (localCallNumberField != null) {
 					callNumber = new StringBuilder();
 					for (Subfield curSubfield : localCallNumberField.getSubfields()) {
@@ -1193,7 +1198,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 			//MDN #ARL-217 do not use 099 as a call number
 			if (callNumber == null) {
-				DataField deweyCallNumberField = record.getDataField("092");
+				DataField deweyCallNumberField = record.getDataField(92);
 				if (deweyCallNumberField != null) {
 					callNumber = new StringBuilder();
 					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {

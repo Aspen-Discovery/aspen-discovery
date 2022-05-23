@@ -278,30 +278,32 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 		HashSet<String> editionInfo = new HashSet<>();
 
-		doc.setField("scope_has_related_records", relatedScopes.keySet());
+		HashSet<String> formats = new HashSet<>();
+		HashSet<String> formatCategories = new HashSet<>();
+		HashSet<String> owningLibraries = new HashSet<>();
+		HashSet<String> owningLocations = new HashSet<>();
+		HashSet<String> collections = new HashSet<>();
+		HashSet<String> detailedLocations = new HashSet<>();
+		HashSet<String> shelfLocations = new HashSet<>();
+		HashSet<String> iTypes = new HashSet<>();
+		HashSet<String> eContentSources = new HashSet<>();
+		HashSet<String> availableAt = new HashSet<>();
+		HashSet<String> availabilityToggleValues = new HashSet<>();
 		for (String scopeName : relatedScopes.keySet()){
 			try{
 				HashSet<String> scopingDetailsForScope = new HashSet<>();
-				HashSet<String> formatsForScope = new HashSet<>();
-				HashSet<String> formatCategoriesForScope = new HashSet<>();
-				HashSet<String> collectionsForScope = new HashSet<>();
-				HashSet<String> detailedLocationsForScope = new HashSet<>();
-				HashSet<String> shelfLocationsForScope = new HashSet<>();
-				HashSet<String> iTypesForScope = new HashSet<>();
-				HashSet<String> eContentSourcesForScope = new HashSet<>();
+
 				HashSet<String> localCallNumbersForScope = new HashSet<>();
-				HashSet<String> owningLibrariesForScope = new HashSet<>();
-				HashSet<String> owningLocationsForScope = new HashSet<>();
+
 				AvailabilityToggleInfo availabilityToggleForScope = new AvailabilityToggleInfo();
-				//HashMap<String, AvailabilityToggleInfo> availabilityToggleByFormatForScope = new HashMap<>();
-				HashSet<String> availableAtForScope = new HashSet<>();
-				//HashMap<String, HashSet<String>> availableAtByFormatForScope = new HashMap<>();
+
 
 				String sortableCallNumberForScope = null;
 				Long daysSinceAddedForScope = null;
 				long libBoost = 1;
 
 				ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
+				String scopePrefix = scopeName.concat("#");
 				for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
 					Scope curScope = scopingInfo.getScope();
 
@@ -315,195 +317,213 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					AvailabilityToggleInfo availabilityToggleForItem = new AvailabilityToggleInfo();
 
 					ItemInfo curItem = scopingInfo.getItem();
-					if (curItem.getFormat() != null) {
-						formatsForScope.add(curItem.getFormat());
-						formatsForItem.add(curItem.getFormat());
-					} else {
-						formatsForItem.addAll(curItem.getRecordInfo().getFormats());
-						for (String format : curItem.getRecordInfo().getFormats()){
-							formatsForScope.add(format);
+					try {
+						if (curItem.getFormat() != null) {
+							formats.add(scopePrefix.concat(curItem.getFormat()));
+							formatsForItem.add(curItem.getFormat());
+						} else {
+							formatsForItem.addAll(curItem.getRecordInfo().getFormats());
+							for (String format : curItem.getRecordInfo().getFormats()) {
+								formats.add(scopePrefix.concat(format));
+							}
 						}
-					}
-					if (curItem.getFormatCategory() != null) {
-						formatCategoriesForScope.add(curItem.getFormatCategory());
-						formatsCategoriesForItem.add(curItem.getFormatCategory());
-					} else {
-						formatCategoriesForScope.addAll(curItem.getRecordInfo().getFormatCategories());
-						formatsCategoriesForItem.addAll(curItem.getRecordInfo().getFormatCategories());
-					}
+						if (curItem.getFormatCategory() != null) {
+							formatCategories.add(scopePrefix.concat(curItem.getFormatCategory()));
+							formatsCategoriesForItem.add(curItem.getFormatCategory());
+						} else {
+							for (String formatCategory : curItem.getRecordInfo().getFormatCategories()) {
+								formatCategories.add(scopePrefix.concat(formatCategory));
+							}
+							formatsCategoriesForItem.addAll(curItem.getRecordInfo().getFormatCategories());
+						}
 
-					Long daysSinceAdded;
-					if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon")))) {
-						daysSinceAdded = -1L;
-					} else {
-						//Date Added To Catalog needs to be the earliest date added for the catalog.
-						Date dateAdded = curItem.getDateAdded();
-						//See if we need to override based on publication date if not provided.
-						//Should be set by individual driver though.
-						if (dateAdded == null) {
-							if (earliestPublicationDate != null) {
-								//Return number of days since the given year
-								Calendar publicationDate = GregorianCalendar.getInstance();
-								//We don't know when in the year it is published, so assume January 1st which could be wrong
-								publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
+						Long daysSinceAdded;
+						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon")))) {
+							daysSinceAdded = -1L;
+						} else {
+							//Date Added To Catalog needs to be the earliest date added for the catalog.
+							Date dateAdded = curItem.getDateAdded();
+							//See if we need to override based on publication date if not provided.
+							//Should be set by individual driver though.
+							if (dateAdded == null) {
+								if (earliestPublicationDate != null) {
+									//Return number of days since the given year
+									Calendar publicationDate = GregorianCalendar.getInstance();
+									//We don't know when in the year it is published, so assume January 1st which could be wrong
+									publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
 
-								daysSinceAdded = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
+									daysSinceAdded = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
+								} else {
+									daysSinceAdded = Long.MAX_VALUE;
+								}
 							} else {
-								daysSinceAdded = Long.MAX_VALUE;
+								daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
 							}
-						} else {
-							daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
 						}
-					}
 
-					if (curItem.isEContent()){
-						addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && curItem.isAvailable(), curItem.isAvailable(), availabilityToggleForItem);
-						owningLibrariesForScope.add(curItem.getTrimmedEContentSource());
-						if (curItem.isAvailable()){
-							addAvailableAt(curItem.getTrimmedEContentSource(), availableAtForItem);
-						}
-					}else{ //physical materials
-						if (scopingInfo.isLocallyOwned()) {
-							addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curItem.isAvailable(), false, availabilityToggleForItem);
-							if (curItem.isAvailable()){
-								addAvailableAt(curScope.getFacetLabel(), availableAtForItem);
+						boolean addAllOwningLocations = false;
+						boolean addAllOwningLocationsToAvailableAt = false;
+						if (curItem.isEContent()) {
+							addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && curItem.isAvailable(), curItem.isAvailable(), availabilityToggleForItem);
+							owningLibraries.add(scopePrefix.concat(curItem.getTrimmedEContentSource()));
+							if (curItem.isAvailable()) {
+								availableAtForItem.add(curItem.getTrimmedEContentSource());
 							}
-							//For physical materials, only locally owned means it is a location/branch scope and that branch owns it
-							owningLocationsForScope.add(curScope.getFacetLabel());
-							//This can be a library scope if it is both a library and location scope
-							owningLibrariesForScope.add(curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel());
+						} else { //physical materials
+							if (scopingInfo.isLocallyOwned()) {
+								addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								if (curItem.isAvailable()) {
+									availableAtForItem.add(curScope.getFacetLabel());
+								}
+								//For physical materials, only locally owned means it is a location/branch scope and that branch owns it
+								owningLocations.add(scopePrefix.concat(curScope.getFacetLabel()));
+								//This can be a library scope if it is both a library and location scope
+								owningLibraries.add(scopePrefix.concat(curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel()));
 
-							if (curScope.isIncludeAllLibraryBranchesInFacets()){
-								//Include other branches of this library that own the title within the owning locations
-								//isIncludeAllLibraryBranchesInFacets is only a setting at the location level
-								owningLocationsForScope.addAll(curItem.getLocationOwnedNames());
-							}
-						}
-						if (scopingInfo.isLibraryOwned()){
-							addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curItem.isAvailable(), false, availabilityToggleForItem);
-							if (curItem.isAvailable()){
-								for (String owningName : curItem.getLocationOwnedNames()) {
-									addAvailableAt(owningName, availableAtForItem);
+								if (curScope.isIncludeAllLibraryBranchesInFacets()) {
+									//Include other branches of this library that own the title within the owning locations
+									//isIncludeAllLibraryBranchesInFacets is only a setting at the location level
+									addAllOwningLocations = true;
 								}
 							}
-							owningLibrariesForScope.add(curScope.getFacetLabel());
-							//For owning locations, add all locations within the library that own it
-							owningLocationsForScope.addAll(curItem.getLocationOwnedNames());
+							if (scopingInfo.isLibraryOwned()) {
+								addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								if (curItem.isAvailable()) {
+									addAllOwningLocationsToAvailableAt = true;
+								}
+								owningLibraries.add(scopePrefix.concat(curScope.getFacetLabel()));
+								//For owning locations, add all locations within the library that own it
+								addAllOwningLocations = true;
+							}
+							//If it is not library or location owned, we might still add to the availability toggles
+							if (!scopingInfo.isLocallyOwned() && !scopingInfo.isLibraryOwned() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+								addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								if (curItem.isAvailable()) {
+									addAllOwningLocationsToAvailableAt = true;
+								}
+							}
+							if (curItem.isAvailable() && curScope.getAdditionalLocationsToShowAvailabilityForPattern() != null && curItem.getLocationCode() != null) {
+								//We might include the item in the owning and availability facets if it matched the available locations
+								if (curScope.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curItem.getLocationCode()).matches()) {
+									addAllOwningLocationsToAvailableAt = true;
+								}
+							}
+
+							if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()) {
+								for (String libraryOwnedName : curItem.getLibraryOwnedNames()) {
+									owningLocations.add(scopePrefix.concat(libraryOwnedName));
+								}
+								addAllOwningLocations = true;
+							}
 						}
-						//If it is not library or location owned, we might still add to the availability toggles
-						if (!scopingInfo.isLocallyOwned() && !scopingInfo.isLibraryOwned() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()){
-							addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
-							if (curItem.isAvailable()){
-								for (String owningName : curItem.getLocationOwnedNames()) {
-									addAvailableAt(owningName, availableAtForItem);
+
+						if (addAllOwningLocations){
+							for (String locationOwnedName : curItem.getLocationOwnedNames()) {
+								owningLocations.add(scopePrefix.concat(locationOwnedName));
+							}
+						}
+						if (addAllOwningLocationsToAvailableAt){
+							availableAtForItem.addAll(curItem.getLocationOwnedNames());
+						}
+
+						for (String availableAtLocation : availableAtForItem) {
+							availableAt.add(scopePrefix.concat(availableAtLocation));
+						}
+
+						availabilityToggleForScope.local = availabilityToggleForScope.local || availabilityToggleForItem.local;
+						availabilityToggleForScope.available = availabilityToggleForScope.available || availabilityToggleForItem.available;
+						availabilityToggleForScope.availableOnline = availabilityToggleForScope.availableOnline || availabilityToggleForItem.availableOnline;
+
+						for (String formatCategory : formatsCategoriesForItem) {
+							for (String format : formatsForItem) {
+								for (String availabilityToggle : availabilityToggleForItem.getValues()) {
+									String baseEditionStmt = scopePrefix.concat(formatCategory).concat("#").concat(format).concat("#").concat(availabilityToggle);
+									for (String availableAtLocation : availableAtForItem) {
+										String editionStmt = baseEditionStmt.concat("#").concat(availableAtLocation).concat("#");
+										editionStmt = editionStmt.replace(' ', '_');
+										editionInfo.add(editionStmt);
+									}
+									if (availableAtForItem.size() == 0) {
+										String editionStmt = baseEditionStmt.concat("#none#");
+										editionStmt = editionStmt.replace(' ', '_');
+										editionInfo.add(editionStmt);
+									}
 								}
 							}
 						}
-						if (curItem.isAvailable() && curScope.getAdditionalLocationsToShowAvailabilityForPattern() != null && curItem.getLocationCode() != null){
-							//We might include the item in the owning and availability facets if it matched the available locations
-							if (curScope.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curItem.getLocationCode()).matches()){
-								for (String owningName : curItem.getLocationOwnedNames()) {
-									addAvailableAt(owningName, availableAtForItem);
+
+
+						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
+							if (curItem.getCollection() != null) {
+								collections.add(scopePrefix.concat(curItem.getCollection()));
+							}
+							if (curItem.getDetailedLocation() != null) {
+								detailedLocations.add(scopePrefix.concat(curItem.getDetailedLocation()));
+							}
+							if (curItem.getShelfLocation() != null) {
+								shelfLocations.add(scopePrefix.concat(curItem.getShelfLocation()));
+							}
+						}
+						if (curItem.isEContent() || scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
+							if (daysSinceAddedForScope == null || daysSinceAdded > daysSinceAddedForScope) {
+								daysSinceAddedForScope = daysSinceAdded;
+							}
+						}
+
+						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned()) {
+							if (curItem.isAvailable()) {
+								if (libBoost < GroupedWorkIndexer.availableAtBoostValue) {
+									libBoost = GroupedWorkIndexer.availableAtBoostValue;
+								}
+							} else {
+								if (libBoost < GroupedWorkIndexer.ownedByBoostValue) {
+									libBoost = GroupedWorkIndexer.ownedByBoostValue;
 								}
 							}
 						}
 
-						if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()){
-							owningLibrariesForScope.addAll(curItem.getLibraryOwnedNames());
-							owningLocationsForScope.addAll(curItem.getLocationOwnedNames());
+						if (curItem.getTrimmedIType() != null) {
+							iTypes.add(scopePrefix.concat(curItem.getTrimmedIType()));
 						}
-					}
 
-					availableAtForScope.addAll(availableAtForItem);
-					availabilityToggleForScope.local = availabilityToggleForScope.local || availabilityToggleForItem.local;
-					availabilityToggleForScope.available = availabilityToggleForScope.available || availabilityToggleForItem.available;
-					availabilityToggleForScope.availableOnline = availabilityToggleForScope.availableOnline || availabilityToggleForItem.availableOnline;
-
-					for (String formatCategory : formatsCategoriesForItem){
-						for (String format : formatsForItem){
-							for (String availabilityToggle : availabilityToggleForItem.getValues()) {
-								for (String availableAt : availableAtForItem) {
-									String editionStmt = curScope.getScopeName().concat("#").concat(formatCategory).concat("#").concat(format).concat("#").concat(availabilityToggle).concat("#").concat(availableAt).concat("#");
-									editionStmt = editionStmt.replace(' ', '_');
-									editionInfo.add(editionStmt);
-								}
-								if (availableAtForItem.size() == 0){
-									String editionStmt = curScope.getScopeName().concat("#").concat(formatCategory).concat("#").concat(format).concat("#").concat(availabilityToggle).concat("#none#");
-									editionStmt = editionStmt.replace(' ', '_');
-									editionInfo.add(editionStmt);
-								}
+						if (curItem.isEContent()) {
+							eContentSources.add(scopePrefix.concat(curItem.getTrimmedEContentSource()));
+						}
+						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
+							localCallNumbersForScope.add(curItem.getCallNumber());
+							if (sortableCallNumberForScope == null) {
+								sortableCallNumberForScope = curItem.getSortableCallNumber();
 							}
 						}
-					}
-
-
-					if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
-						collectionsForScope.add(curItem.getCollection());
-						detailedLocationsForScope.add(curItem.getDetailedLocation());
-						shelfLocationsForScope.add(curItem.getShelfLocation());
-					}
-					if (curItem.isEContent() || scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
-						if (daysSinceAddedForScope == null || daysSinceAdded > daysSinceAddedForScope){
-							daysSinceAddedForScope = daysSinceAdded;
-						}
-					}
-
-					if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned()) {
-						if (curItem.isAvailable()) {
-							if (libBoost < GroupedWorkIndexer.availableAtBoostValue){
-								libBoost = GroupedWorkIndexer.availableAtBoostValue;
-							}
-						} else {
-							if (libBoost < GroupedWorkIndexer.ownedByBoostValue){
-								libBoost = GroupedWorkIndexer.ownedByBoostValue;
-							}
-						}
-					}
-
-					iTypesForScope.add(curItem.getTrimmedIType());
-
-					if (curItem.isEContent()) {
-						eContentSourcesForScope.add(curItem.getTrimmedEContentSource());
-					}
-					if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
-						localCallNumbersForScope.add(curItem.getCallNumber());
-						if (sortableCallNumberForScope == null) {
-							sortableCallNumberForScope = curItem.getSortableCallNumber();
-						}
+					}catch (Exception e){
+						logEntry.incErrors("Error setting up scope information for " + id + " scope " + scopeName + " item " + curItem.getItemIdentifier(), e);
 					}
 				}
 
 				//eAudiobooks are considered both Audiobooks and eBooks by some people
-				if (formatsForScope.contains("eAudiobook")) {
-					formatCategoriesForScope.add("eBook");
+				if (formats.contains(scopeName.concat("#eAudiobook"))) {
+					formatCategories.add(scopeName.concat("#eBook"));
 				}
-				if (formatsForScope.contains("CD + Book")) {
-					formatCategoriesForScope.add("Books");
-					formatCategoriesForScope.add("Audio Books");
+				if (formats.contains(scopeName.concat("#CD + Book"))) {
+					formatCategories.add(scopeName.concat("#Books"));
+					formatCategories.add(scopeName.concat("#Audio Books"));
 				}
-				if (formatsForScope.contains("VOX Books")) {
-					formatCategoriesForScope.add("Books");
-					formatCategoriesForScope.add("Audio Books");
+				if (formats.contains(scopeName.concat("#VOX Books"))) {
+					formatCategories.add(scopeName.concat("#Books"));
+					formatCategories.add(scopeName.concat("#Audio Books"));
 				}
 				doc.addField("scoping_details_".concat(scopeName), scopingDetailsForScope);
-				doc.addField("format_".concat(scopeName), formatsForScope);
-				doc.addField("format_category_".concat(scopeName), formatCategoriesForScope);
-				doc.addField("collection_".concat(scopeName), collectionsForScope);
-				doc.addField("detailed_location_".concat(scopeName), detailedLocationsForScope);
-				doc.addField("shelf_location_".concat(scopeName), shelfLocationsForScope);
+
 				if (daysSinceAddedForScope != null){
 					doc.addField("local_days_since_added_".concat(scopeName), daysSinceAddedForScope);
 				}
 				doc.addField("lib_boost_".concat(scopeName), libBoost);
-				doc.addField("itype_".concat(scopeName), iTypesForScope);
 				doc.addField("local_callnumber_".concat(scopeName), localCallNumbersForScope);
 				doc.addField("callnumber_sort_".concat(scopeName), sortableCallNumberForScope);
-				doc.addField("econtent_source_".concat(scopeName), eContentSourcesForScope);
 
-				doc.addField("owning_library_".concat(scopeName), owningLibrariesForScope);
-				doc.addField("owning_location_".concat(scopeName), owningLocationsForScope);
-				doc.addField("availability_toggle_".concat(scopeName), availabilityToggleForScope.getValues());
-				doc.addField("available_at_".concat(scopeName), availableAtForScope);
+				for (String availabilityToggleValue : availabilityToggleForScope.getValues()){
+					availabilityToggleValues.add(scopePrefix.concat(availabilityToggleValue));
+				}
 
 				SolrInputField field = doc.getField("local_days_since_added_".concat(scopeName));
 				if (field != null) {
@@ -511,10 +531,21 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					doc.addField("local_time_since_added_".concat(scopeName), DateUtils.getTimeSinceAdded(daysSinceAdded));
 				}
 			} catch (Exception e){
-				logEntry.incErrors("Error setting up scope information for " + id + " scope " + scopeName);
+				logEntry.incErrors("Error setting up scope information for " + id + " scope " + scopeName, e);
 			}
 		}
 		doc.addField("edition_info", editionInfo);
+		doc.addField("format", formats);
+		doc.addField("format_category", formatCategories);
+		doc.addField("owning_library", owningLibraries);
+		doc.addField("owning_location", owningLocations);
+		doc.addField("collection", collections);
+		doc.addField("detailed_location", detailedLocations);
+		doc.addField("shelf_location", shelfLocations);
+		doc.addField("itype", iTypes);
+		doc.addField("econtent_source", eContentSources);
+		doc.addField("availability_toggle", availabilityToggleValues);
+		doc.addField("available_at", availableAt);
 
 		logger.info("Work " + id + " processed " + relatedScopes.size() + " scopes");
 	}

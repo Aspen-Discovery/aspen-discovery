@@ -243,7 +243,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 
 	protected boolean isBibSuppressed(Record record) {
 		if (exportFieldMapping != null){
-			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationField());
+			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
 			if (sierraFixedField != null){
 				Subfield bCode3Subfield = sierraFixedField.getSubfield(exportFieldMapping.getBcode3DestinationSubfield());
 				if (bCode3Subfield != null){

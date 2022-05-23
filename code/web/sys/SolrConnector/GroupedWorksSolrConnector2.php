@@ -177,7 +177,7 @@ class GroupedWorksSolrConnector2 extends Solr
 		}
 		if ($availableOnly){
 			global $solrScope;
-			$options['fq'][] = "availability_toggle_{$solrScope}:available OR availability_toggle_{$solrScope}:available_online";
+			$options['fq'][] = "availability_toggle:$solrScope#available OR availability_toggle:$solrScope#available_online";
 		}
 
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);

@@ -230,7 +230,6 @@
 		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
 
 		<!-- Information about related records, TODO: Try storing most of this in the database for faster access and smaller solr index -->
-		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 		<field name="record_details" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
 		<field name="item_details" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
 		<dynamicField name="scoping_details_*" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
@@ -240,23 +239,20 @@
 
 		<!-- Format information -->
 		<field name="grouping_category" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-		<dynamicField name="format_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="format" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="format_boost" type="integer" indexed="true" stored="false"/>
-		<dynamicField name="format_category_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="format_category" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Fields to determine ownership and location based on location codes -->
-		<dynamicField name="owning_library_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="owning_location_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="collection_group" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="collection_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="detailed_location_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="shelf_location_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="owning_library" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="owning_location" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="collection" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="detailed_location" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="shelf_location" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Fields to determine availability -->
-		<dynamicField name="available_at_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="availability_toggle_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<!-- Link availability and format for better FRBR display -->
-		<dynamicField name="availability_by_format_*" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true"/>
+		<field name="available_at" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="availability_toggle" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Language Related Fields -->
 		<field name="language" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
@@ -274,7 +270,7 @@
 		<field name="physical" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="edition" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="dateSpan" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<dynamicField name="econtent_source_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="econtent_source" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="subject" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
@@ -300,18 +296,18 @@
 		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
 		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
-		<dynamicField name="itype_*" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="itype" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 
-        <!-- awards and ratings -->
-        <field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-        <field name="awards_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
-        <field name="lexile_score" type="integer" indexed="true" stored="true" multiValued="false" default="-1" docValues="true"/>
-        <field name="lexile_code" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
-        <field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
-        <field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
-        <field name="accelerated_reader_reading_level" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
-        <field name="accelerated_reader_point_value" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
+		<!-- awards and ratings -->
+		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="awards_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="lexile_score" type="integer" indexed="true" stored="true" multiValued="false" default="-1" docValues="true"/>
+		<field name="lexile_code" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+		<field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
+		<field name="accelerated_reader_point_value" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
 
 		<!-- Identifiers -->
 		<field name="lccn" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
@@ -361,7 +357,7 @@
 		<field name="user_reading_history_link" type="integer" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- Edition -->
-		<field name="edition_info" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="false"/>
+		<field name="edition_info" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="false"/>
 
 		<!-- Boosts -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="false"/>

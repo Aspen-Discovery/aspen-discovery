@@ -131,7 +131,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
-		List<DataField> subjectFields = MarcUtil.getDataFields(record, new String[]{"600", "610", "611", "630", "648", "650", "651", "655", "690"});
+		List<DataField> subjectFields = MarcUtil.getDataFields(record, new int[]{600, 610, 611, 630, 648, 650, 651, 655, 690});
 
 		HashSet<String> subjects = new HashSet<>();
 		for (DataField curSubjectField : subjectFields){
@@ -387,7 +387,7 @@ abstract class MarcRecordProcessor {
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
-		List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
+		List<DataField> seriesFields = MarcUtil.getDataFields(record, 830);
 		for (DataField seriesField : seriesFields){
 			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
 			//Remove anything in parenthesis since it's normally just the format
@@ -401,7 +401,7 @@ abstract class MarcRecordProcessor {
 			}
 			groupedWork.addSeriesWithVolume(series, volume);
 		}
-		seriesFields = MarcUtil.getDataFields(record, "800");
+		seriesFields = MarcUtil.getDataFields(record, 800);
 		for (DataField seriesField : seriesFields){
 			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","")).toString();
 			//Remove anything in parenthesis since it's normally just the format
@@ -425,7 +425,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
 		groupedWork.addOclcNumbers(MarcUtil.getFieldList(record, "035a"));
 		groupedWork.addIsbns(MarcUtil.getFieldList(record, "020a"), format);
-		List<DataField> upcFields = MarcUtil.getDataFields(record, "024");
+		List<DataField> upcFields = MarcUtil.getDataFields(record, 24);
 		for (DataField upcField : upcFields){
 			if (upcField.getIndicator1() == '1' && upcField.getSubfield('a') != null){
 				groupedWork.addUpc(upcField.getSubfield('a').getData());
@@ -444,7 +444,7 @@ abstract class MarcRecordProcessor {
 
 	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
 	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, Record record) {
-		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
+		List<DataField> targetAudiences = MarcUtil.getDataFields(record, 521);
 		for (DataField targetAudience : targetAudiences){
 			Subfield subfieldA = targetAudience.getSubfield('a');
 			Subfield subfieldB = targetAudience.getSubfield('b');
@@ -593,8 +593,8 @@ abstract class MarcRecordProcessor {
 		try {
 			String leader = record.getLeader().toString();
 
-			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
-			ControlField ohOhSixField = (ControlField) record.getVariableField("006");
+			ControlField ohOhEightField = (ControlField) record.getVariableField(8);
+			ControlField ohOhSixField = (ControlField) record.getVariableField(6);
 
 			// check the Leader at position 6 to determine the type of field
 			char recordType = Character.toUpperCase(leader.charAt(6));
@@ -660,8 +660,8 @@ abstract class MarcRecordProcessor {
 		try {
 			String leader = record.getLeader().toString();
 
-			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
-			ControlField ohOhSixField = (ControlField) record.getVariableField("006");
+			ControlField ohOhEightField = (ControlField) record.getVariableField(8);
+			ControlField ohOhSixField = (ControlField) record.getVariableField(6);
 
 			// check the Leader at position 6 to determine the type of field
 			char recordType = Character.toUpperCase(leader.charAt(6));
@@ -872,7 +872,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	private Set<String> getPublicationDates(Record record) {
-		List<DataField> rdaFields = record.getDataFields("264");
+		List<DataField> rdaFields = record.getDataFields(264);
 		HashSet<String> publicationDates = new HashSet<>();
 		String date;
 		//Try to get from RDA data
@@ -902,7 +902,7 @@ abstract class MarcRecordProcessor {
 	private Set<String> getPublishers(Record record){
 		Set<String> publisher = new LinkedHashSet<>();
 		//First check for 264 fields
-		List<DataField> rdaFields = MarcUtil.getDataFields(record, "264");
+		List<DataField> rdaFields = MarcUtil.getDataFields(record, 264);
 		if (rdaFields.size() > 0){
 			for (DataField curField : rdaFields){
 				if (curField.getIndicator2() == '1'){
@@ -992,7 +992,7 @@ abstract class MarcRecordProcessor {
 		//author_additional = 505r:245c
 		groupedWork.addAuthorAdditional(MarcUtil.getFieldList(record, "505r:245c"));
 		//Load contributors with role
-		List<DataField> contributorFields = MarcUtil.getDataFields(record, new String[]{"700","710"});
+		List<DataField> contributorFields = MarcUtil.getDataFields(record, new int[]{700,710});
 		HashSet<String> contributors = new HashSet<>();
 		for (DataField contributorField : contributorFields){
 			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcd", "");
@@ -1024,10 +1024,14 @@ abstract class MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		String subTitle = MarcUtil.getFirstFieldVal(record, "245bfgnp");
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abfgnp"), this.getSortableTitle(record), format, formatCategory);
-		//title full
-		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
+		DataField titleField = record.getDataField(245);
+		String authorInTitleField = null;
+		if (titleField != null) {
+			String subTitle = titleField.getSubfieldsAsString("bfgnp");
+			groupedWork.setTitle(titleField.getSubfieldsAsString("a"), subTitle, titleField.getSubfieldsAsString("abfgnp"), this.getSortableTitle(record), format, formatCategory);
+			//title full
+			authorInTitleField = titleField.getSubfieldsAsString("c");
+		}
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
 		if ((authorInTitleField != null && authorInTitleField.length() > 0) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
 			groupedWork.addFullTitles(MarcUtil.getAllSubfields(record, "245", " "));
@@ -1060,7 +1064,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	void loadEContentUrl(Record record, ItemInfo itemInfo) {
-		List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
+		List<DataField> urlFields = MarcUtil.getDataFields(record, 856);
 		for (DataField urlField : urlFields){
 			//load url into the item
 			if (urlField.getSubfield('u') != null){
@@ -1085,13 +1089,13 @@ abstract class MarcRecordProcessor {
 	 *         be found.
 	 */
 	private String getSortableTitle(Record record) {
-		DataField titleField = record.getDataField("245");
+		DataField titleField = record.getDataField(245);
 		if (titleField == null || titleField.getSubfield('a') == null)
 			return "";
 
 		int nonFilingInt = getInd2AsInt(titleField);
 
-		String title = MarcUtil.getFirstFieldVal(record, "245abfgnp");
+		String title = titleField.getSubfieldsAsString("abfgnp");
 		if (title == null){
 			return "";
 		}
@@ -1126,7 +1130,7 @@ abstract class MarcRecordProcessor {
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String leader = record.getLeader().toString();
 		char leaderBit = ' ';
-		ControlField fixedField = (ControlField) record.getVariableField("008");
+		ControlField fixedField = (ControlField) record.getVariableField(8);
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
@@ -1448,7 +1452,7 @@ abstract class MarcRecordProcessor {
 
 	private void getFormatFromPublicationInfo(Record record, Set<String> result) {
 		// check for playaway in 260|b
-		List<DataField> publicationFields = record.getDataFields(new String[]{"260", "264"});
+		List<DataField> publicationFields = record.getDataFields(new int[]{260, 264});
 		for (DataField publicationInfo : publicationFields) {
 			for (Subfield publisherSubField : publicationInfo.getSubfields('b')){
 				String sysDetailsValue = publisherSubField.getData().toLowerCase();
@@ -1462,7 +1466,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	private void getFormatFromEdition(Record record, Set<String> result) {
-		DataField edition = record.getDataField("250");
+		DataField edition = record.getDataField(250);
 		if (edition != null) {
 			if (edition.getSubfield('a') != null) {
 				String editionData = edition.getSubfield('a').getData().toLowerCase();
@@ -1487,7 +1491,7 @@ abstract class MarcRecordProcessor {
 	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$");
 	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
-		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, "300");
+		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, 300);
 		for (DataField field : physicalDescriptions) {
 			List<Subfield> subFields = field.getSubfields();
 			for (Subfield subfield : subFields) {
@@ -1545,7 +1549,7 @@ abstract class MarcRecordProcessor {
 	private final Pattern voxPattern = Pattern.compile(".*(vox books|vox reader|vox audio).*");
 	private void getFormatFromNotes(Record record, Set<String> result) {
 		// Check for formats in the 538 field
-		List<DataField> sysDetailsNotes2 = record.getDataFields("538");
+		List<DataField> sysDetailsNotes2 = record.getDataFields(538);
 		for (DataField sysDetailsNote2 : sysDetailsNotes2) {
 			if (sysDetailsNote2.getSubfield('a') != null) {
 				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
@@ -1569,7 +1573,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		// Check for formats in the 500 tag
-		List<DataField> noteFields = record.getDataFields("500");
+		List<DataField> noteFields = record.getDataFields(500);
 		for (DataField noteField : noteFields) {
 			if (noteField != null) {
 				if (noteField.getSubfield('a') != null) {
@@ -1589,7 +1593,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		// Check for formats in the 502 tag
-		DataField dissertationNoteField = record.getDataField("502");
+		DataField dissertationNoteField = record.getDataField(502);
 		if (dissertationNoteField != null) {
 			if (dissertationNoteField.getSubfield('a') != null) {
 				String noteValue = dissertationNoteField.getSubfield('a').getData().toLowerCase();
@@ -1600,7 +1604,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		// Check for formats in the 590 tag
-		DataField localNoteField = record.getDataField("590");
+		DataField localNoteField = record.getDataField(590);
 		if (localNoteField != null) {
 			if (localNoteField.getSubfield('a') != null) {
 				String noteValue = localNoteField.getSubfield('a').getData().toLowerCase();
@@ -1659,7 +1663,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	private void getFormatFromSubjects(Record record, Set<String> result) {
-		List<DataField> topicalTerm = MarcUtil.getDataFields(record, "650");
+		List<DataField> topicalTerm = MarcUtil.getDataFields(record, 650);
 		if (topicalTerm != null) {
 			Iterator<DataField> fieldIterator = topicalTerm.iterator();
 			DataField field;
@@ -1694,7 +1698,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		List<DataField> genreFormTerm = MarcUtil.getDataFields(record, "655");
+		List<DataField> genreFormTerm = MarcUtil.getDataFields(record, 655);
 		if (genreFormTerm != null) {
 			Iterator<DataField> fieldIterator = genreFormTerm.iterator();
 			DataField field;
@@ -1731,7 +1735,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		List<DataField> localTopicalTerm = MarcUtil.getDataFields(record, "690");
+		List<DataField> localTopicalTerm = MarcUtil.getDataFields(record, 690);
 		if (localTopicalTerm != null) {
 			Iterator<DataField> fieldsIterator = localTopicalTerm.iterator();
 			DataField field;
@@ -1746,7 +1750,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		List<DataField> addedEntryFields = MarcUtil.getDataFields(record, "710");
+		List<DataField> addedEntryFields = MarcUtil.getDataFields(record, 710);
 		if (localTopicalTerm != null) {
 			Iterator<DataField> addedEntryFieldIterator = addedEntryFields.iterator();
 			DataField field;
@@ -1768,7 +1772,7 @@ abstract class MarcRecordProcessor {
 	private void getFormatFrom007(Record record, Set<String> result) {
 		Set<String> resultsFrom007 = new HashSet<>();
 		char formatCode;// check the 007 - this is a repeating field
-		List<ControlField> formatFields = record.getControlFields("007");
+		List<ControlField> formatFields = record.getControlFields(7);
 		for (ControlField formatField : formatFields) {
 			if (formatField != null) {
 				if (formatField.getData() == null || formatField.getData().length() < 2) {

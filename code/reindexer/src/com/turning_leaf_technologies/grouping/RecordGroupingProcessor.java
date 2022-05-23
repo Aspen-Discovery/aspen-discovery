@@ -237,6 +237,10 @@ public class RecordGroupingProcessor {
 		return marcRecord.getDataFields(tag);
 	}
 
+	List<DataField> getDataFields(Record marcRecord, int tag) {
+		return marcRecord.getDataFields(tag);
+	}
+
 	/**
 	 * Add a work to the database
 	 *

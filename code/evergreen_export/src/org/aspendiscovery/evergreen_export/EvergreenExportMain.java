@@ -862,7 +862,7 @@ public class EvergreenExportMain {
 						boolean updateWithAPI = true;
 						if (currentMarcRecord != null) {
 							//Find the proper item record for this
-							List<DataField> itemFields = MarcUtil.getDataFields(currentMarcRecord, indexingProfile.getItemTag());
+							List<DataField> itemFields = MarcUtil.getDataFields(currentMarcRecord, indexingProfile.getItemTagInt());
 							for (DataField itemField : itemFields) {
 								Subfield itemBarcode = itemField.getSubfield(indexingProfile.getBarcodeSubfield());
 								if (itemBarcode != null) {

@@ -23,6 +23,7 @@ public class SideLoadSettings extends BaseIndexingSettings {
 		this.numCharsToCreateFolderFrom = settings.getInt("numCharsToCreateFolderFrom");
 		this.createFolderFromLeadingCharacters = settings.getBoolean("createFolderFromLeadingCharacters");
 		this.recordNumberTag = settings.getString("recordNumberTag");
+		this.recordNumberTagInt = settings.getInt("recordNumberTag");
 		this.recordNumberPrefix = settings.getString("recordNumberPrefix");
 		this.recordNumberSubfield = getCharFromRecordSet(settings, "recordNumberSubfield");
 		this.formatSource = settings.getString("formatSource");

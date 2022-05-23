@@ -943,7 +943,8 @@ class Sierra extends Millennium{
 			//No validate the barcode and pin
 			$params = [
 				'barcode' => $username,
-				'pin' => $password
+				'pin' => $password,
+				'caseSensitivity' => false,
 			];
 
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;

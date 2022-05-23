@@ -284,6 +284,8 @@ class UserListIndexer {
 					logEntry.incDeleted();
 				}
 			}catch (Exception e){
+				updateServer.deleteByQuery("id:" + listId);
+				logEntry.incDeleted();
 				logEntry.addNote("Could not decrypt user information for " + listId + " - " + e);
 				logEntry.incSkipped();
 			}

@@ -5,10 +5,7 @@ require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWorkSearcher
 {
 	// Field List
-	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed,lc_subject,bisac_subject';
-
-	// Optional, used on author screen for example
-	private $searchSubType = '';
+	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed,lc_subject,bisac_subject,format,format_category';
 
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
@@ -97,7 +94,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		global $solrScope;
 
 		if ($this->searchSource == 'econtent') {
-			$this->addHiddenFilter("econtent_source_{$solrScope}", '*');
+			$this->addHiddenFilter("econtent_source", "$solrScope#*");
 		}
 
 		// Our search has already been processed in init()
@@ -168,10 +165,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
 				$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
-				if ($facetInfo->multiSelect) {
-					$fieldPrefix = "{!tag=$facetKey}";
-					$multiSelect = true;
-				}
+				$multiSelect = $facetInfo->multiSelect || $facetInfo->facetName == 'availability_toggle';
+				$fieldPrefix = "{!tag=$facetKey}";
 			}
 			$fieldValue = "";
 			foreach ($filter as $value) {
@@ -180,10 +175,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					$availabilityToggleId = $facetInfo->id;
 				}elseif ($facetInfo->facetName == 'available_at' || $facetInfo->facetName == "available_at_$solrScope"){
 					$selectedAvailableAtValues[] = $value;
-				}elseif ($facetInfo->facetName == 'format_category' || $facetInfo->facetName == "format_category_$solrScope"){
+				}elseif ($facetInfo->facetName == 'format_category'){
 					$selectedFormatCategoryValues[] = $value;
-				}elseif ($facetInfo->facetName == 'format' || $facetInfo->facetName == "format_$solrScope"){
+				}elseif ($facetInfo->facetName == 'format'){
 					$selectedFormatValues[] = $value;
+				}
+				if ($this->isScopedField($facetInfo->facetName)){
+					$value = "$solrScope#$value";
 				}
 
 				// Special case -- allow trailing wildcards:
@@ -241,7 +239,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				}
 			}
 
-			$filterQuery[] = "{!tag=$availabilityToggleId}availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
+			$filterQuery[] = "{!tag=$availabilityToggleId}availability_toggle:\"$solrScope#$availabilityToggleValue\"";
 		}
 
 		$facetSet = array();
@@ -289,10 +287,10 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						$additionalTags = 'edition_info';
 					}elseif ($facetInfo->facetName == 'available_at' || $facetInfo->facetName == "available_at_$solrScope"){
 						$additionalTags = 'edition_info';
-					}elseif ($facetInfo->facetName == 'format_category' || $facetInfo->facetName == "format_category_$solrScope"){
+					}elseif ($facetInfo->facetName == 'format_category'){
 						$isMultiSelect = true;
 						$additionalTags = 'edition_info';
-					}elseif ($facetInfo->facetName == 'format' || $facetInfo->facetName == "format_$solrScope"){
+					}elseif ($facetInfo->facetName == 'format'){
 						$additionalTags = 'edition_info';
 					}
 					if ($isMultiSelect && !empty($additionalTags)) {
@@ -331,12 +329,15 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$this->facetOptions["f.lexile_code.facet.method"] = 'enum';
 			$this->facetOptions["f.mpaa_rating.facet.method"] = 'enum';
 			$this->facetOptions["f.rating_facet.facet.method"] = 'enum';
-			$this->facetOptions["f.format_category_$solrScope.facet.method"] = 'enum';
-			$this->facetOptions["f.format_$solrScope.facet.method"] = 'enum';
-			$this->facetOptions["f.availability_toggle_$solrScope.facet.method"] = 'enum';
+			$this->facetOptions["f.format_category.facet.method"] = 'enum';
+			$this->facetOptions["f.format.facet.method"] = 'enum';
+			$this->facetOptions["f.availability_toggle.facet.method"] = 'enum';
 			$this->facetOptions["f.local_time_since_added_$solrScope.facet.method"] = 'enum';
-			$this->facetOptions["f.owning_library_$solrScope.facet.method"] = 'enum';
-			$this->facetOptions["f.owning_location_$solrScope.facet.method"] = 'enum';
+			$this->facetOptions["f.owning_library.facet.method"] = 'enum';
+			$this->facetOptions["f.owning_location.facet.method"] = 'enum';
+			foreach (SearchObject_GroupedWorkSearcher2::$scopedFields as $facetName){
+				$this->facetOptions["f.$facetName.facet.prefix"] = "$solrScope#";
+			}
 		}
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;
@@ -491,37 +492,312 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher2::$fields_to_return;
 			global $solrScope;
 			if ($solrScope != false) {
-				//$fieldsToReturn .= ',related_record_ids_' . $solrScope;
-				//$fieldsToReturn .= ',related_items_' . $solrScope;
-				$fieldsToReturn .= ',format_' . $solrScope;
-				$fieldsToReturn .= ',format_category_' . $solrScope;
 				$fieldsToReturn .= ',collection_' . $solrScope;
 				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
-				$fieldsToReturn .= ',detailed_location_' . $solrScope;
 				$fieldsToReturn .= ',scoping_details_' . $solrScope;
-				$fieldsToReturn .= ',owning_location_' . $solrScope;
-				$fieldsToReturn .= ',owning_library_' . $solrScope;
-				$fieldsToReturn .= ',available_at_' . $solrScope;
-				$fieldsToReturn .= ',itype_' . $solrScope;
-
 			} else {
-				//$fieldsToReturn .= ',related_record_ids';
-				//$fieldsToReturn .= ',related_record_items';
-				//$fieldsToReturn .= ',related_items_related_record_ids';
-				$fieldsToReturn .= ',format';
-				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
 				$fieldsToReturn .= ',local_callnumber';
-				$fieldsToReturn .= ',detailed_location';
-				$fieldsToReturn .= ',owning_location';
-				$fieldsToReturn .= ',owning_library';
-				$fieldsToReturn .= ',available_at';
-				$fieldsToReturn .= ',itype';
 			}
+			$fieldsToReturn .= ',detailed_location';
+			$fieldsToReturn .= ',owning_location';
+			$fieldsToReturn .= ',owning_library';
+			$fieldsToReturn .= ',available_at';
+			$fieldsToReturn .= ',itype';
 			$fieldsToReturn .= ',score';
 		}
 		return $fieldsToReturn;
+	}
+
+	/**
+	 * @param string $scopedFieldName
+	 * @return string
+	 */
+	protected function getUnscopedFieldName(string $scopedFieldName): string
+	{
+		if (strpos($scopedFieldName, 'availability_toggle_') === 0) {
+			$scopedFieldName = 'availability_toggle';
+		} elseif (strpos($scopedFieldName, 'available_at') === 0) {
+			$scopedFieldName = 'available_at';
+		} elseif (strpos($scopedFieldName, 'local_time_since_added') === 0) {
+			$scopedFieldName = 'local_time_since_added';
+		}
+		return $scopedFieldName;
+	}
+
+	/**
+	 * @param $field
+	 * @return string
+	 */
+	protected function getScopedFieldName($field): string
+	{
+		global $solrScope;
+		if ($solrScope) {
+			if ($field === 'time_since_added') {
+				$field = 'local_time_since_added_' . $solrScope;
+			}
+		}
+		return $field;
+	}
+
+	/**
+	 * Process facets from the results object
+	 *
+	 * @access  public
+	 * @param array $filter Array of field => on-screen description
+	 *                                  listing all of the desired facet fields;
+	 *                                  set to null to get all configured values.
+	 * @return  array   Facets data arrays
+	 */
+	public function getFacetList($filter = null)
+	{
+		global $solrScope;
+		global $timer;
+		// If there is no filter, we'll use all facets as the filter:
+		if (is_null($filter)) {
+			$filter = $this->getFacetConfig();
+		}
+
+		// Start building the facet list:
+		$list = array();
+
+		// If we have no facets to process, give up now
+		if (!isset($this->indexResult['facet_counts'])) {
+			return $list;
+		} elseif (!is_array($this->indexResult['facet_counts']['facet_fields'])) {
+			return $list;
+		}
+
+		// Loop through every field returned by the result set
+		$validFields = array_keys($filter);
+
+		global $locationSingleton;
+		/** @var Library $currentLibrary */
+		$currentLibrary = Library::getActiveLibrary();
+		$activeLocationFacet = null;
+		$activeLocation = $locationSingleton->getActiveLocation();
+		if (!is_null($activeLocation)) {
+			if (empty($activeLocation->facetLabel)){
+				$activeLocationFacet = $activeLocation->displayName;
+			}else{
+				$activeLocationFacet = $activeLocation->facetLabel;
+			}
+		}
+		$relatedLocationFacets = null;
+		$relatedHomeLocationFacets = null;
+		$additionalAvailableAtLocations = null;
+		if (!is_null($currentLibrary)) {
+			if ($currentLibrary->facetLabel == '') {
+				$currentLibrary->facetLabel = $currentLibrary->displayName;
+			}
+			$relatedLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($currentLibrary->libraryId);
+			if (strlen($currentLibrary->additionalLocationsToShowAvailabilityFor) > 0) {
+				$locationsToLookfor = explode('|', $currentLibrary->additionalLocationsToShowAvailabilityFor);
+				$location = new Location();
+				$location->whereAddIn('code', $locationsToLookfor, true);
+				$location->find();
+				$additionalAvailableAtLocations = array();
+				while ($location->fetch()) {
+					$additionalAvailableAtLocations[] = $location->facetLabel;
+				}
+			}
+		}
+		$homeLibrary = Library::getPatronHomeLibrary();
+		if (!is_null($homeLibrary)) {
+			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
+		}
+
+		$allFacets = $this->indexResult['facet_counts']['facet_fields'];
+		/** @var FacetSetting $facetConfig */
+		$facetConfig = $this->getFacetConfig();
+		foreach ($allFacets as $field => $data) {
+			// Skip filtered fields and empty arrays:
+			if (!in_array($field, $validFields) || count($data) < 1) {
+				$isValid = false;
+				if (!$isValid) {
+					continue;
+				}
+			}
+			// Initialize the settings for the current field
+			$list[$field] = array();
+			$list[$field]['field_name'] = $field;
+			// Add the on-screen label
+			$list[$field]['label'] = $filter[$field];
+			// Build our array of values for this field
+			$list[$field]['list'] = array();
+			$list[$field]['hasApplied'] = false;
+			$foundInstitution = false;
+			$doInstitutionProcessing = false;
+			$foundBranch = false;
+			$doBranchProcessing = false;
+
+			//Marmot specific processing to do custom resorting of facets.
+			if (strpos($field, 'owning_library') === 0 && isset($currentLibrary) && !is_null($currentLibrary)) {
+				$doInstitutionProcessing = true;
+			}
+			if (strpos($field, 'owning_location') === 0 && (!is_null($relatedLocationFacets) || !is_null($activeLocationFacet))) {
+				$doBranchProcessing = true;
+			} elseif (strpos($field, 'available_at') === 0) {
+				$doBranchProcessing = true;
+			}
+			// Should we translate values for the current facet?
+			$translate = $facetConfig[$field]->translate;
+			$numValidRelatedLocations = 0;
+			$numValidLibraries = 0;
+			// Loop through values:
+			$isScopedField = $this->isScopedField($field);
+			foreach ($data as $facet) {
+				// Initialize the array of data about the current facet:
+				$currentSettings = array();
+				$facetValue = $facet[0];
+				if ($isScopedField && strpos($facetValue, '#') !== false){
+					$facetValue = substr($facetValue, strpos($facetValue, '#') +1);
+				}
+				$currentSettings['value'] = $facetValue;
+				$currentSettings['display'] = $translate ? translate(['text'=>$facetValue,'isPublicFacing'=>true]) : $facetValue;
+				$currentSettings['count'] = $facet[1];
+				$currentSettings['isApplied'] = false;
+				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facetValue);
+
+				// Is this field a current filter?
+				if (in_array($field, array_keys($this->filterList))) {
+					// and is this value a selected filter?
+					if (in_array($facetValue, $this->filterList[$field])) {
+						$currentSettings['isApplied'] = true;
+						$list[$field]['hasApplied'] = true;
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facetValue}");
+					}
+				}
+
+				//Setup the key to allow sorting alphabetically if needed.
+				$valueKey = $facetValue;
+				$okToAdd = true;
+				//Don't include empty settings since they don't work properly with Solr
+				if (strlen(trim($facetValue)) == 0){
+					$okToAdd = false;
+				}
+				if ($doInstitutionProcessing) {
+					if ($facetValue == $currentLibrary->facetLabel) {
+						$valueKey = '1' . $valueKey;
+						$numValidLibraries++;
+						$foundInstitution = true;
+					} elseif ($facetValue == $currentLibrary->facetLabel . ' Online') {
+						$valueKey = '1' . $valueKey;
+						$foundInstitution = true;
+						$numValidLibraries++;
+					} elseif ($facetValue == $currentLibrary->facetLabel . ' On Order' || $facetValue == $currentLibrary->facetLabel . ' Under Consideration') {
+						$valueKey = '1' . $valueKey;
+						$foundInstitution = true;
+						$numValidLibraries++;
+					} elseif ($facetValue == 'Digital Collection') {
+						$valueKey = '2' . $valueKey;
+						$foundInstitution = true;
+						$numValidLibraries++;
+					}
+				} else if ($doBranchProcessing) {
+					if (strlen($facetValue) > 0) {
+						if ($activeLocationFacet != null && $facetValue == $activeLocationFacet) {
+							$valueKey = '1' . $valueKey;
+							$foundBranch = true;
+							$numValidRelatedLocations++;
+						} elseif (isset($currentLibrary) && $facetValue == $currentLibrary->facetLabel . ' Online') {
+							$valueKey = '1' . $valueKey;
+							$numValidRelatedLocations++;
+						} elseif (isset($currentLibrary) && ($facetValue == $currentLibrary->facetLabel . ' On Order' || $facetValue == $currentLibrary->facetLabel . ' Under Consideration')) {
+							$valueKey = '1' . $valueKey;
+							$numValidRelatedLocations++;
+						} else if (!is_null($relatedLocationFacets) && in_array($facetValue, $relatedLocationFacets)) {
+							$valueKey = '2' . $valueKey;
+							$numValidRelatedLocations++;
+						} else if (!is_null($relatedLocationFacets) && in_array($facetValue, $relatedLocationFacets)) {
+							$valueKey = '2' . $valueKey;
+							$numValidRelatedLocations++;
+						} else if (!is_null($relatedHomeLocationFacets) && in_array($facetValue, $relatedHomeLocationFacets)) {
+							$valueKey = '2' . $valueKey;
+							$numValidRelatedLocations++;
+						} elseif (!is_null($currentLibrary) && $facetValue == $currentLibrary->facetLabel . ' Online') {
+							$valueKey = '3' . $valueKey;
+							$numValidRelatedLocations++;
+						} else {
+							$valueKey = '4' . $valueKey;
+							$numValidRelatedLocations++;
+						}
+					}
+				}
+
+
+				// Store the collected values:
+				if ($okToAdd) {
+					$list[$field]['list'][$valueKey] = $currentSettings;
+				}
+			}
+
+			if (!$foundInstitution && $doInstitutionProcessing) {
+				$list[$field]['list']['1' . $currentLibrary->facetLabel] =
+					array(
+						'value' => $currentLibrary->facetLabel,
+						'display' => $currentLibrary->facetLabel,
+						'count' => 0,
+						'isApplied' => false,
+						'url' => null,
+					);
+			}
+			if (!$foundBranch && $doBranchProcessing && !empty($activeLocationFacet)) {
+				$list[$field]['list']['1' . $activeLocationFacet] =
+					array(
+						'value' => $activeLocationFacet,
+						'display' => $activeLocationFacet,
+						'count' => 0,
+						'isApplied' => false,
+						'url' => null,
+					);
+				$numValidRelatedLocations++;
+			}
+
+			//How many facets should be shown by default
+			//Only show one system unless we are in the global scope
+			if ($field == 'owning_library_' . $solrScope && isset($currentLibrary)) {
+				$list[$field]['valuesToShow'] = $numValidLibraries;
+			} else if ($field == 'owning_location_' . $solrScope && isset($relatedLocationFacets) && $numValidRelatedLocations > 0) {
+				$list[$field]['valuesToShow'] = $numValidRelatedLocations;
+			} else if ($field == 'available_at_' . $solrScope) {
+				$list[$field]['valuesToShow'] = count($list[$field]['list']);
+			} else {
+				$list[$field]['valuesToShow'] = 5;
+			}
+
+			//Sort the facet alphabetically?
+			//Sort the system and location alphabetically unless we are in the global scope
+			global $solrScope;
+			if (in_array($field, array('owning_library_' . $solrScope, 'owning_location_' . $solrScope, 'available_at_' . $solrScope)) && isset($currentLibrary)) {
+				$list[$field]['showAlphabetically'] = true;
+			} else {
+				$list[$field]['showAlphabetically'] = false;
+			}
+			if ($list[$field]['showAlphabetically']) {
+				ksort($list[$field]['list']);
+			}
+			$timer->logTime("Processed facet $field Translated? $translate Num values: " . count($data));
+		}
+		return $list;
+	}
+
+	private static $scopedFields = [
+		'format_category',
+		'format',
+		'collection',
+		'detailed_location',
+		'shelf_location',
+		'itype',
+		'econtent_source',
+		'available_at',
+		'availability_toggle',
+		'owning_location',
+		'owning_library'
+	];
+	public function isScopedField($fieldName){
+		return in_array($fieldName, SearchObject_GroupedWorkSearcher2::$scopedFields);
 	}
 }
