@@ -551,7 +551,15 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 		//Author
 		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, field245, groupingFormat);
+
+		//Language
+		setLanguageBasedOnMarcRecord(marcRecord, workForTitle);
+
 		return workForTitle;
+	}
+
+	private void setLanguageBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
+
 	}
 
 	public void removeExistingRecord(String identifier) {
