@@ -167,6 +167,19 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
 				$multiSelect = $facetInfo->multiSelect || $facetInfo->facetName == 'availability_toggle';
 				$fieldPrefix = "{!tag=$facetKey}";
+			}else{
+				//This is likely a field we need to convert from the old schema to new schema
+				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
+				if (isset($facetConfig[$tmpFieldName])) {
+					$facetInfo = $facetConfig[$tmpFieldName];
+					$field = $tmpFieldName;
+					$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+					$multiSelect = $facetInfo->multiSelect || $facetInfo->facetName == 'availability_toggle';
+					$fieldPrefix = "{!tag=$facetKey}";
+				}else{
+					//Unknown field
+					continue;
+				}
 			}
 			$fieldValue = "";
 			foreach ($filter as $value) {
@@ -480,6 +493,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 
 		// Return the result set
 		return $this->indexResult;
+	}
+
+	/**
+	 * @param String $fields - a list of comma separated fields to return
+	 */
+	function setFieldsToReturn($fields){
+		$this->fieldsToReturn = $fields;
 	}
 
 	protected function getFieldsToReturn()

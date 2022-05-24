@@ -367,12 +367,14 @@ class BrowseCategory extends BaseBrowsable
 	}
 
 	function isDismissed($user) {
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-		$browseCategoryDismissal = new BrowseCategoryDismissal();
-		$browseCategoryDismissal->browseCategoryId = $this->textId;
-		$browseCategoryDismissal->userId = $user->id;
-		if($browseCategoryDismissal->find(true)){
-			return true;
+		if (!empty($user)) {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissal = new BrowseCategoryDismissal();
+			$browseCategoryDismissal->browseCategoryId = $this->textId;
+			$browseCategoryDismissal->userId = $user->id;
+			if ($browseCategoryDismissal->find(true)) {
+				return true;
+			}
 		}
 		return false;
 	}

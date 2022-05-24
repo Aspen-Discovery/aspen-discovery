@@ -303,7 +303,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				long libBoost = 1;
 
 				ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
-				String scopePrefix = scopeName.concat("#");
+				String scopePrefix = scopeName + "#";
 				for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
 					Scope curScope = scopingInfo.getScope();
 
@@ -319,20 +319,20 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					ItemInfo curItem = scopingInfo.getItem();
 					try {
 						if (curItem.getFormat() != null) {
-							formats.add(scopePrefix.concat(curItem.getFormat()));
+							formats.add(scopePrefix+ curItem.getFormat());
 							formatsForItem.add(curItem.getFormat());
 						} else {
 							formatsForItem.addAll(curItem.getRecordInfo().getFormats());
 							for (String format : curItem.getRecordInfo().getFormats()) {
-								formats.add(scopePrefix.concat(format));
+								formats.add(scopePrefix + format);
 							}
 						}
 						if (curItem.getFormatCategory() != null) {
-							formatCategories.add(scopePrefix.concat(curItem.getFormatCategory()));
+							formatCategories.add(scopePrefix + curItem.getFormatCategory());
 							formatsCategoriesForItem.add(curItem.getFormatCategory());
 						} else {
 							for (String formatCategory : curItem.getRecordInfo().getFormatCategories()) {
-								formatCategories.add(scopePrefix.concat(formatCategory));
+								formatCategories.add(scopePrefix + formatCategory);
 							}
 							formatsCategoriesForItem.addAll(curItem.getRecordInfo().getFormatCategories());
 						}
@@ -365,7 +365,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						boolean addAllOwningLocationsToAvailableAt = false;
 						if (curItem.isEContent()) {
 							addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && curItem.isAvailable(), curItem.isAvailable(), availabilityToggleForItem);
-							owningLibraries.add(scopePrefix.concat(curItem.getTrimmedEContentSource()));
+							owningLibraries.add(scopePrefix + curItem.getTrimmedEContentSource());
 							if (curItem.isAvailable()) {
 								availableAtForItem.add(curItem.getTrimmedEContentSource());
 							}
@@ -376,9 +376,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 									availableAtForItem.add(curScope.getFacetLabel());
 								}
 								//For physical materials, only locally owned means it is a location/branch scope and that branch owns it
-								owningLocations.add(scopePrefix.concat(curScope.getFacetLabel()));
+								owningLocations.add(scopePrefix + curScope.getFacetLabel());
 								//This can be a library scope if it is both a library and location scope
-								owningLibraries.add(scopePrefix.concat(curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel()));
+								owningLibraries.add(scopePrefix  + (curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel()));
 
 								if (curScope.isIncludeAllLibraryBranchesInFacets()) {
 									//Include other branches of this library that own the title within the owning locations
@@ -391,7 +391,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								if (curItem.isAvailable()) {
 									addAllOwningLocationsToAvailableAt = true;
 								}
-								owningLibraries.add(scopePrefix.concat(curScope.getFacetLabel()));
+								owningLibraries.add(scopePrefix + curScope.getFacetLabel());
 								//For owning locations, add all locations within the library that own it
 								addAllOwningLocations = true;
 							}
@@ -411,7 +411,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 							if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()) {
 								for (String libraryOwnedName : curItem.getLibraryOwnedNames()) {
-									owningLocations.add(scopePrefix.concat(libraryOwnedName));
+									owningLocations.add(scopePrefix + libraryOwnedName);
 								}
 								addAllOwningLocations = true;
 							}
@@ -419,7 +419,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 						if (addAllOwningLocations){
 							for (String locationOwnedName : curItem.getLocationOwnedNames()) {
-								owningLocations.add(scopePrefix.concat(locationOwnedName));
+								owningLocations.add(scopePrefix + locationOwnedName);
 							}
 						}
 						if (addAllOwningLocationsToAvailableAt){
@@ -427,7 +427,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						}
 
 						for (String availableAtLocation : availableAtForItem) {
-							availableAt.add(scopePrefix.concat(availableAtLocation));
+							availableAt.add(scopePrefix + availableAtLocation);
 						}
 
 						availabilityToggleForScope.local = availabilityToggleForScope.local || availabilityToggleForItem.local;
@@ -437,14 +437,14 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						for (String formatCategory : formatsCategoriesForItem) {
 							for (String format : formatsForItem) {
 								for (String availabilityToggle : availabilityToggleForItem.getValues()) {
-									String baseEditionStmt = scopePrefix.concat(formatCategory).concat("#").concat(format).concat("#").concat(availabilityToggle);
+									String baseEditionStmt = scopePrefix + formatCategory + "#" + format + "#" + availabilityToggle;
 									for (String availableAtLocation : availableAtForItem) {
-										String editionStmt = baseEditionStmt.concat("#").concat(availableAtLocation).concat("#");
+										String editionStmt = baseEditionStmt + "#" + availableAtLocation + "#";
 										editionStmt = editionStmt.replace(' ', '_');
 										editionInfo.add(editionStmt);
 									}
 									if (availableAtForItem.size() == 0) {
-										String editionStmt = baseEditionStmt.concat("#none#");
+										String editionStmt = baseEditionStmt + "#none#";
 										editionStmt = editionStmt.replace(' ', '_');
 										editionInfo.add(editionStmt);
 									}
@@ -455,13 +455,13 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
 							if (curItem.getCollection() != null) {
-								collections.add(scopePrefix.concat(curItem.getCollection()));
+								collections.add(scopePrefix + curItem.getCollection());
 							}
 							if (curItem.getDetailedLocation() != null) {
-								detailedLocations.add(scopePrefix.concat(curItem.getDetailedLocation()));
+								detailedLocations.add(scopePrefix + curItem.getDetailedLocation());
 							}
 							if (curItem.getShelfLocation() != null) {
-								shelfLocations.add(scopePrefix.concat(curItem.getShelfLocation()));
+								shelfLocations.add(scopePrefix + curItem.getShelfLocation());
 							}
 						}
 						if (curItem.isEContent() || scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
@@ -483,11 +483,11 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						}
 
 						if (curItem.getTrimmedIType() != null) {
-							iTypes.add(scopePrefix.concat(curItem.getTrimmedIType()));
+							iTypes.add(scopePrefix + curItem.getTrimmedIType());
 						}
 
 						if (curItem.isEContent()) {
-							eContentSources.add(scopePrefix.concat(curItem.getTrimmedEContentSource()));
+							eContentSources.add(scopePrefix + curItem.getTrimmedEContentSource());
 						}
 						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
 							localCallNumbersForScope.add(curItem.getCallNumber());
@@ -501,34 +501,34 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				}
 
 				//eAudiobooks are considered both Audiobooks and eBooks by some people
-				if (formats.contains(scopeName.concat("#eAudiobook"))) {
-					formatCategories.add(scopeName.concat("#eBook"));
+				if (formats.contains(scopeName + "#eAudiobook")) {
+					formatCategories.add(scopeName + "#eBook");
 				}
-				if (formats.contains(scopeName.concat("#CD + Book"))) {
-					formatCategories.add(scopeName.concat("#Books"));
-					formatCategories.add(scopeName.concat("#Audio Books"));
+				if (formats.contains(scopeName + "#CD + Book")) {
+					formatCategories.add(scopeName + "#Books");
+					formatCategories.add(scopeName + "#Audio Books");
 				}
-				if (formats.contains(scopeName.concat("#VOX Books"))) {
-					formatCategories.add(scopeName.concat("#Books"));
-					formatCategories.add(scopeName.concat("#Audio Books"));
+				if (formats.contains(scopeName + "#VOX Books")) {
+					formatCategories.add(scopeName + "#Books");
+					formatCategories.add(scopeName + "#Audio Books");
 				}
-				doc.addField("scoping_details_".concat(scopeName), scopingDetailsForScope);
+				doc.addField("scoping_details_" + scopeName, scopingDetailsForScope);
 
 				if (daysSinceAddedForScope != null){
-					doc.addField("local_days_since_added_".concat(scopeName), daysSinceAddedForScope);
+					doc.addField("local_days_since_added_" + scopeName, daysSinceAddedForScope);
 				}
-				doc.addField("lib_boost_".concat(scopeName), libBoost);
-				doc.addField("local_callnumber_".concat(scopeName), localCallNumbersForScope);
-				doc.addField("callnumber_sort_".concat(scopeName), sortableCallNumberForScope);
+				doc.addField("lib_boost_" + scopeName, libBoost);
+				doc.addField("local_callnumber_" + scopeName, localCallNumbersForScope);
+				doc.addField("callnumber_sort_" + scopeName, sortableCallNumberForScope);
 
 				for (String availabilityToggleValue : availabilityToggleForScope.getValues()){
-					availabilityToggleValues.add(scopePrefix.concat(availabilityToggleValue));
+					availabilityToggleValues.add(scopePrefix + availabilityToggleValue);
 				}
 
-				SolrInputField field = doc.getField("local_days_since_added_".concat(scopeName));
+				SolrInputField field = doc.getField("local_days_since_added_" + scopeName);
 				if (field != null) {
 					Long daysSinceAdded = (Long) field.getFirstValue();
-					doc.addField("local_time_since_added_".concat(scopeName), DateUtils.getTimeSinceAdded(daysSinceAdded));
+					doc.addField("local_time_since_added_" + scopeName, DateUtils.getTimeSinceAdded(daysSinceAdded));
 				}
 			} catch (Exception e){
 				logEntry.incErrors("Error setting up scope information for " + id + " scope " + scopeName, e);

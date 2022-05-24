@@ -537,6 +537,13 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		return $this->indexResult;
 	}
 
+	/**
+	 * @param String $fields - a list of comma separated fields to return
+	 */
+	function setFieldsToReturn($fields){
+		$this->fieldsToReturn = $fields;
+	}
+
 	protected function getFieldsToReturn()
 	{
 		if (isset($_REQUEST['allFields'])) {

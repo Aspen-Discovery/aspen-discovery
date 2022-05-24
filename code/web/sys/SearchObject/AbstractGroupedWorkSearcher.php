@@ -686,13 +686,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
 	}
 
-	/**
-	 * @param String $fields - a list of comma separated fields to return
-	 */
-	function setFieldsToReturn($fields){
-		$this->fieldsToReturn = $fields;
-	}
-
 	public function setPrimarySearch($flag)
 	{
 		parent::setPrimarySearch($flag);
