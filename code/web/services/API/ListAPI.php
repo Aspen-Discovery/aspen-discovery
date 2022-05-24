@@ -367,7 +367,7 @@ class ListAPI extends Action
 					'title' => $title['title'],
 					'author' => $title['author'],
 					'shortId' => $title['shortId'],
-					'recordType' => $title['recordType'],
+					'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
 					'titleURL' => $title['titleURL'],
 					'description' => $title['description'],
 					'length' => $title['length'],
@@ -1352,7 +1352,7 @@ class ListAPI extends Action
 	function checkIfLiDA() {
 		foreach (getallheaders() as $name => $value) {
 			if($name == 'User-Agent' || $name == 'user-agent') {
-				if(strpos($value->browseCategoryId, "Aspen LiDA") !== false) {
+				if(strpos($value, "Aspen LiDA") !== false) {
 					return true;
 				}
 			}
