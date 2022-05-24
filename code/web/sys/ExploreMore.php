@@ -194,8 +194,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Web pages ($numCatalogResults)",
-							'description' => "Web pages ($numCatalogResults)",
+							'label' => translate(['text'=>"Web pages (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Web pages related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							//TODO: provide a better icon
 							'image' => '/images/webpage.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -249,8 +249,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Events ($numCatalogResults)",
-							'description' => "Events ($numCatalogResults)",
+							'label' => translate(['text'=>"Events (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Events related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							'image' => '/interface/themes/responsive/images/events.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
@@ -304,8 +304,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Lists ($numCatalogResults)",
-							'description' => "Lists ($numCatalogResults)",
+							'label' => translate(['text'=>"Lists (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Lists related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							//TODO: provide a better icon
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -365,8 +365,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Archive Results ($numCatalogResults)",
-							'description' => "Archive Results ($numCatalogResults)",
+							'label' => translate(['text'=>"Archive Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Archives related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							//TODO: Provide a better title
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -456,8 +456,8 @@ class ExploreMore {
 						if ($numCatalogResultsAdded == $this->numEntriesToAdd && $numCatalogResults > ($this->numEntriesToAdd + 1)) {
 							//Add a link to remaining catalog results
 							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => "Catalog Results ($numCatalogResults)",
-								'description' => "Catalog Results ($numCatalogResults)",
+								'label' => translate(['text'=>"Catalog Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+								'description' => translate(['text'=>"All Results in Catalog related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 								'image' => '/interface/themes/responsive/images/library_symbol.png',
 								'link' => $searchObjectSolr->renderSearchUrl(),
 								'usageCount' => 1,
@@ -633,8 +633,9 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Genealogy Results ($numCatalogResults)",
-							'description' => "Genealogy Results ($numCatalogResults)",
+							'label' => translate(['text'=>"Genealogy Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Genealogy related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+
 							'image' => '/interface/themes/responsive/images/person.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
