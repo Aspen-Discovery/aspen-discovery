@@ -181,6 +181,8 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		String subtitle = MarcUtil.getFirstFieldVal(marcRecord, "245b");
 		String author = MarcUtil.getFirstFieldVal(marcRecord, "100a");
 
+		String primaryLanguage = recordGroupingProcessor.getLanguageBasedOnMarcRecord(marcRecord);
+
 		//Get availability for the title
 		CloudLibraryAvailability availability = exporter.loadAvailabilityForRecord(cloudLibraryId);
 		if (availability == null) {
@@ -279,7 +281,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 		String groupedWorkId = null;
 		if (metadataChanged || doFullReload) {
-			groupedWorkId = groupCloudLibraryRecord(title, subtitle, author, format, cloudLibraryId);
+			groupedWorkId = groupCloudLibraryRecord(title, subtitle, author, format, primaryLanguage, cloudLibraryId);
 		}
 		if (metadataChanged || availabilityChanged || doFullReload) {
 			logEntry.incUpdated();
@@ -291,11 +293,11 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	}
 
 	Pattern wordsInParensPattern = Pattern.compile("\\(.*?\\)", Pattern.CASE_INSENSITIVE);
-	private String groupCloudLibraryRecord(String title, String subtitle, String author, String format, String cloudLibraryId) {
+	private String groupCloudLibraryRecord(String title, String subtitle, String author, String format, String primaryLanguage, String cloudLibraryId) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
 		//cloudLibrary puts awards within parentheses, we need to remove all of those.
 		title = wordsInParensPattern.matcher(title).replaceAll("");
-		return recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, format, true);
+		return recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, format, primaryLanguage, true);
 	}
 
 	int getNumDocuments() {

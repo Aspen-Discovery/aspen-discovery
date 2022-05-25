@@ -351,4 +351,12 @@ class GroupedWork implements Cloneable {
 		return groupingCategory;
 	}
 
+	public void setLanguage(String language){
+		this.language = language;
+	}
+
+	public String getLanguage(){
+		return this.language;
+	}
+
 }

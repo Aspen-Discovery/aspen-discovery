@@ -16,12 +16,15 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private final String recordNumberTag;
+	private final int recordNumberTagInt;
 	private final char recordNumberSubfield;
 	private final String recordNumberPrefix;
 	private final BaseIndexingSettings baseSettings;
+	private final String treatUnknownLanguageAs;
 
 	private final Connection dbConn;
 
@@ -34,8 +37,10 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		super(dbConn, serverName, logEntry, logger);
 		this.dbConn = dbConn;
 		recordNumberTag = settings.getRecordNumberTag();
+		recordNumberTagInt = Integer.parseInt(recordNumberTag);
 		recordNumberSubfield = settings.getRecordNumberSubfield();
 		recordNumberPrefix = settings.getRecordNumberPrefix();
+		treatUnknownLanguageAs = settings.getTreatUnknownLanguageAs();
 
 		baseSettings = settings;
 	}
@@ -44,7 +49,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
-		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTag);
+		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTagInt);
 		//Make sure we only get one ils identifier
 		if (recordNumberField != null) {
 			if (recordNumberField instanceof DataField) {
@@ -558,8 +563,31 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return workForTitle;
 	}
 
+	String languageFields = "008[35-37]";
 	private void setLanguageBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
-
+		String activeLanguage = null;
+		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
+		for (String language : languages){
+			if (activeLanguage == null){
+				activeLanguage = language;
+			}else{
+				if (!activeLanguage.equals(language)){
+					activeLanguage = "mul";
+					break;
+				}
+			}
+		}
+		if (activeLanguage == null){
+			if (treatUnknownLanguageAs.length() > 0){
+				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
+				if (activeLanguage.length() != 3){
+					activeLanguage = "unk";
+				}
+			}else {
+				activeLanguage = "unk";
+			}
+		}
+		workForTitle.setLanguage(activeLanguage);
 	}
 
 	public void removeExistingRecord(String identifier) {

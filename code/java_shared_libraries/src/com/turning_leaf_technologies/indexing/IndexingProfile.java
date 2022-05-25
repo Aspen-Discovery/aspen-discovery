@@ -138,6 +138,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 		this.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
+
+		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
