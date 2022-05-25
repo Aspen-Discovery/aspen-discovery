@@ -79,7 +79,7 @@ if (!$nytSettings->find(true)) {
 			$nytUpdateLog->lastUpdate = time();
 			$nytUpdateLog->update();
 			//Make sure we don't hit our quota.  Wait between updates
-			sleep(6);
+			sleep(7);
 		}
 	}
 }
