@@ -67,7 +67,7 @@ function getUpdates22_06_00() : array
 				"ALTER TABLE grouped_work_alternate_titles CHANGE COLUMN permanent_id permanent_id CHAR(40) NOT NULL",
 				"ALTER TABLE grouped_work_display_info CHANGE COLUMN permanent_id permanent_id CHAR(40) NOT NULL UNIQUE",
 				"ALTER TABLE novelist_data CHANGE COLUMN groupedRecordPermanentId groupedRecordPermanentId CHAR(40) NOT NULL",
-				"ALTER TABLE syndetics_data CHANGE COLUMN groupedRecordPermanentId groupedRecordPermanentId CHAR(40) NOT NULL UNIQUE",
+				"ALTER TABLE syndetics_data CHANGE COLUMN groupedRecordPermanentId groupedRecordPermanentId CHAR(40) NOT NULL",
 				"ALTER TABLE user_checkout CHANGE COLUMN groupedWorkId groupedWorkId CHAR(40)",
 				"ALTER TABLE user_hold CHANGE COLUMN groupedWorkId groupedWorkId CHAR(40)",
 				"ALTER TABLE user_list_entry CHANGE COLUMN sourceId sourceId VARCHAR(40) NOT NULL",
