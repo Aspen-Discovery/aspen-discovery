@@ -809,12 +809,12 @@ public class GroupedWorkIndexer {
 				}else if (type.equals("overdrive")){
 					newId = overDriveRecordGrouper.processOverDriveRecord(identifier);
 				}else if (type.equals("axis360")){
-					newId = recordGroupingProcessor.groupAxis360Record(identifier);
+					newId = getRecordGroupingProcessor().groupAxis360Record(identifier);
 				}else if (type.equals("cloud_library")){
 					Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
-					newId = recordGroupingProcessor.groupCloudLibraryRecord(identifier, cloudLibraryRecord);
+					newId = getRecordGroupingProcessor().groupCloudLibraryRecord(identifier, cloudLibraryRecord);
 				}else if (type.equals("hoopla")){
-					newId = recordGroupingProcessor.groupHooplaRecord(identifier);
+					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				}
 				if (!newId.equals(permanentId)){
 					//The work will be marked as updated and therefore reindexed at the end?
