@@ -1,9 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
-import com.turning_leaf_technologies.grouping.OverDriveRecordGrouper;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
-import com.turning_leaf_technologies.grouping.SideLoadedRecordGrouper;
+import com.turning_leaf_technologies.grouping.*;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
@@ -801,18 +798,48 @@ public class GroupedWorkIndexer {
 				if (ilsRecordGroupers.containsKey(type)){
 					MarcRecordGrouper ilsGrouper = ilsRecordGroupers.get(type);
 					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
-					newId = ilsGrouper.processMarcRecord(record, false, permanentId);
+					if (record == null) {
+						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(type, identifier);
+						if (result.reindexWork){
+							processGroupedWork(result.permanentId);
+						}else if (result.deleteWork){
+							//Delete the work from solr and the database
+							deleteRecord(result.permanentId);
+						}
+					}else{
+						newId = ilsGrouper.processMarcRecord(record, false, permanentId);
+					}
 				}else if (sideLoadRecordGroupers.containsKey(type)){
 					SideLoadedRecordGrouper sideLoadGrouper = sideLoadRecordGroupers.get(type);
 					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
-					newId = sideLoadGrouper.processMarcRecord(record, false, permanentId);
+					if (record == null) {
+						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(type, identifier);
+						if (result.reindexWork){
+							processGroupedWork(result.permanentId);
+						}else if (result.deleteWork){
+							//Delete the work from solr and the database
+							deleteRecord(result.permanentId);
+						}
+					}else {
+						newId = sideLoadGrouper.processMarcRecord(record, false, permanentId);
+					}
 				}else if (type.equals("overdrive")){
 					newId = overDriveRecordGrouper.processOverDriveRecord(identifier);
 				}else if (type.equals("axis360")){
 					newId = getRecordGroupingProcessor().groupAxis360Record(identifier);
 				}else if (type.equals("cloud_library")){
 					Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
-					newId = getRecordGroupingProcessor().groupCloudLibraryRecord(identifier, cloudLibraryRecord);
+					if (cloudLibraryRecord == null) {
+						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(type, identifier);
+						if (result.reindexWork){
+							processGroupedWork(result.permanentId);
+						}else if (result.deleteWork){
+							//Delete the work from solr and the database
+							deleteRecord(result.permanentId);
+						}
+					}else {
+						newId = getRecordGroupingProcessor().groupCloudLibraryRecord(identifier, cloudLibraryRecord);
+					}
 				}else if (type.equals("hoopla")){
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				}
