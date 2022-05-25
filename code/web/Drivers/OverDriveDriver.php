@@ -1038,10 +1038,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 			if ($response == false){
 				//Give more information about why it might have failed, ie expired card or too many fines
-				$result['message'] .= ' ' . translate(['text' => 'Sorry, we could not checkout this title to you. Could not connect to OverDrive.', 'isPublicFacing'=>true]);
+				$result['message'] = translate(['text' => 'Sorry, we could not checkout this title to you. Could not connect to OverDrive.', 'isPublicFacing'=>true]);
 
 				// Result for API or app use
-				$result['api']['message'] .= ' ' . translate(['text' => 'Sorry, we could not checkout this title to you. Could not connect to OverDrive.', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text' => 'Sorry, we could not checkout this title to you. Could not connect to OverDrive.', 'isPublicFacing'=>true]);
 			}else if ( (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit' || $response->errorCode == 'NoCopiesAvailable_AvailableInCpcForFastLaneMembersOnly'))) {
 				$result['noCopies'] = true;
 				$result['message'] .= "\r\n\r\n" . translate(['text' => 'Would you like to place a hold instead?', 'isPublicFacing'=>true]);
