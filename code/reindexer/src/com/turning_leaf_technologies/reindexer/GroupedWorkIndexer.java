@@ -799,7 +799,7 @@ public class GroupedWorkIndexer {
 					MarcRecordGrouper ilsGrouper = ilsRecordGroupers.get(type);
 					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
 					if (record == null) {
-						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(type, identifier);
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork){
 							processGroupedWork(result.permanentId);
 						}else if (result.deleteWork){
@@ -813,7 +813,7 @@ public class GroupedWorkIndexer {
 					SideLoadedRecordGrouper sideLoadGrouper = sideLoadRecordGroupers.get(type);
 					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
 					if (record == null) {
-						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(type, identifier);
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork){
 							processGroupedWork(result.permanentId);
 						}else if (result.deleteWork){
@@ -830,7 +830,7 @@ public class GroupedWorkIndexer {
 				}else if (type.equals("cloud_library")){
 					Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
 					if (cloudLibraryRecord == null) {
-						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(type, identifier);
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
 						if (result.reindexWork){
 							processGroupedWork(result.permanentId);
 						}else if (result.deleteWork){
