@@ -1683,7 +1683,10 @@ class SearchAPI extends Action
 
 				$relatedRecords = $groupedWork->getRelatedRecords();
 
+				$language = "";
+
 				foreach ($relatedRecords as $relatedRecord) {
+					$language = $relatedRecord->language;
 					if (!isset($itemList)) {
 						$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
 					} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
@@ -1692,7 +1695,7 @@ class SearchAPI extends Action
 				}
 
 				if (!empty($itemList)) {
-					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary, 'language' => $language);
 				}
 			}
 		}
