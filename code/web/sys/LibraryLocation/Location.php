@@ -826,38 +826,27 @@ class Location extends DataObject
 			return $this->_ipLocation;
 		}
 		global $timer;
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $configArray;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = IPAddress::getActiveIp();
-		$this->_ipLocation = $memCache->get('location_for_ip_' . $activeIp);
-		$_ipId = $memCache->get('ipId_for_ip_' . $activeIp);
-		if ($_ipId == -1) {
-			$this->_ipLocation = false;
-		}
 
-		if ($this->_ipLocation == false || $_ipId == false) {
-			$timer->logTime('Starting getIPLocation');
-			//echo("Active IP is $activeIp");
-			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
-			$this->_ipLocation = null;
-			$_ipId = -1;
-			$subnet = IPAddress::getIPAddressForIP($activeIp);
-			if ($subnet != false){
-				$matchedLocation = new Location();
-				$matchedLocation->locationId = $subnet->locationid;
-				if ($matchedLocation->find(true)) {
-					//Only use the physical location regardless of where we are
-					$this->_ipLocation = clone($matchedLocation);
-					$_ipId = $subnet->id;
-				}
+		$timer->logTime('Starting getIPLocation');
+		//echo("Active IP is $activeIp");
+		require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+		$this->_ipLocation = null;
+		$_ipId = -1;
+		$subnet = IPAddress::getIPAddressForIP($activeIp);
+		if ($subnet != false){
+			$matchedLocation = new Location();
+			$matchedLocation->locationId = $subnet->locationid;
+			if ($matchedLocation->find(true)) {
+				//Only use the physical location regardless of where we are
+				$this->_ipLocation = clone($matchedLocation);
+				$_ipId = $subnet->id;
 			}
-
-			$memCache->set('ipId_for_ip_' . $activeIp, $_ipId, $configArray['Caching']['ipId_for_ip']);
-			$memCache->set('location_for_ip_' . $activeIp, $this->_ipLocation, $configArray['Caching']['location_for_ip']);
-			$timer->logTime('Finished getIPLocation');
 		}
+
+		$timer->logTime('Finished getIPLocation');
 
 		return $this->_ipLocation;
 	}

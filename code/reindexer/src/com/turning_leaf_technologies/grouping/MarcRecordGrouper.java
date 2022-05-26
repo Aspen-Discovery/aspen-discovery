@@ -31,6 +31,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private final int itemTagInt;
 	private final boolean useEContentSubfield;
 	private final char eContentDescriptor;
+
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *

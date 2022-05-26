@@ -30,6 +30,8 @@ class GroupedWork implements Cloneable {
 	String originalAuthorName = "";
 	protected String author = "";             //Up to 50  chars
 	String groupingCategory = "";   //Up to 25  chars
+	String language = "und"; //Default to undetermined
+
 	private String uniqueIdentifier = null;
 	private final RecordGroupingProcessor processor;
 
@@ -80,7 +82,7 @@ class GroupedWork implements Cloneable {
 					permanentId.insert(0, "0");
 				}
 				//Insert -'s for formatting
-				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20);
+				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20) + "-" + language;
 			} catch (NoSuchAlgorithmException e) {
 				System.out.println("Error generating permanent id" + e.toString());
 			}
@@ -347,6 +349,14 @@ class GroupedWork implements Cloneable {
 
 	public String getGroupingCategory(){
 		return groupingCategory;
+	}
+
+	public void setLanguage(String language){
+		this.language = language;
+	}
+
+	public String getLanguage(){
+		return this.language;
 	}
 
 }

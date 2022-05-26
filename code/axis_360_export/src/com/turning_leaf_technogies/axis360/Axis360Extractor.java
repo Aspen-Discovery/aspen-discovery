@@ -368,7 +368,7 @@ public class Axis360Extractor {
 
 					String groupedWorkId = null;
 					if (metadataChanged || setting.doFullReload()) {
-						groupedWorkId = groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
+						groupedWorkId = getRecordGroupingProcessor().groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
 					}
 					if (metadataChanged || availabilityChanged || setting.doFullReload()) {
 						logEntry.incUpdated();
@@ -497,17 +497,6 @@ public class Axis360Extractor {
 		return groupedWorkIndexer;
 	}
 
-	private String groupAxis360Record(JSONObject itemDetails, String axis360Id, String primaryAuthor) throws JSONException {
-		//Perform record grouping on the record
-		String title = getFieldValue(itemDetails, "title");
-		String formatType = itemDetails.getString("formatType");
-
-		RecordIdentifier primaryIdentifier = new RecordIdentifier("axis360", axis360Id);
-
-		String subtitle = getFieldValue(itemDetails, "subtitle");
-		return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subtitle, primaryAuthor, formatType, true);
-	}
-
 	private RecordGroupingProcessor getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
 			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logEntry, logger);
@@ -552,7 +541,7 @@ public class Axis360Extractor {
 					try {
 						JSONObject itemDetails = new JSONObject(rawResponse);
 						String primaryAuthor = getItemDetailsForRecordRS.getString("primaryAuthor");
-						String groupedWorkId = groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
+						String groupedWorkId = getRecordGroupingProcessor().groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 

@@ -46,8 +46,8 @@ class ExploreMore {
 				$exactEntityMatches = $this->loadExactEntityMatches(array(), $curSubject);
 				if (count($exactEntityMatches) > 0){
 					$exploreMoreSectionsToShow['exactEntityMatches'] = array(
-							'format' => 'list',
-							'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
+						'format' => 'list',
+						'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
 					);
 				}
 			}
@@ -64,10 +64,10 @@ class ExploreMore {
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedCatalogContent);
 			if ($relatedWorks['numFound'] > 0){
 				$exploreMoreSectionsToShow['relatedCatalog'] = array(
-						'format' => 'scrollerWithLink',
-						'values' => $relatedWorks['values'],
-						'link' => $relatedWorks['link'],
-						'numFound' => $relatedWorks['numFound'],
+					'format' => 'scrollerWithLink',
+					'values' => $relatedWorks['values'],
+					'link' => $relatedWorks['link'],
+					'numFound' => $relatedWorks['numFound'],
 				);
 			}
 		}
@@ -89,8 +89,8 @@ class ExploreMore {
 						if (strpos($filter, ':') !== false){
 							$filterVals = explode(':', $filter, 2);
 							if ($filterVals[0] != 'mods_genre_s' &&
-									$filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' &&
-									$filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full'
+								$filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' &&
+								$filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full'
 							) {
 								$searchTerm = str_replace('"', '', $filterVals[1]);
 								break;
@@ -194,8 +194,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Web pages ($numCatalogResults)",
-							'description' => "Web pages ($numCatalogResults)",
+							'label' => translate(['text'=>"Web pages (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Web pages related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							//TODO: provide a better icon
 							'image' => '/images/webpage.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -249,8 +249,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Events ($numCatalogResults)",
-							'description' => "Events ($numCatalogResults)",
+							'label' => translate(['text'=>"Events (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Events related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							'image' => '/interface/themes/responsive/images/events.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
@@ -304,8 +304,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Lists ($numCatalogResults)",
-							'description' => "Lists ($numCatalogResults)",
+							'label' => translate(['text'=>"Lists (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Lists related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							//TODO: provide a better icon
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -365,8 +365,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Archive Results ($numCatalogResults)",
-							'description' => "Archive Results ($numCatalogResults)",
+							'label' => translate(['text'=>"Archive Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Archives related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 							//TODO: Provide a better title
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -411,10 +411,10 @@ class ExploreMore {
 				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObjectSolr */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
-                $searchObjectSolr->disableSpelling();
+				$searchObjectSolr->disableSpelling();
 				$searchObjectSolr->setSearchTerms(array(
-						'lookfor' => $searchTerm,
-						'index' => 'Keyword'
+					'lookfor' => $searchTerm,
+					'index' => 'Keyword'
 				));
 				$searchObjectSolr->clearHiddenFilters();
 				$searchObjectSolr->clearFilters();
@@ -456,8 +456,8 @@ class ExploreMore {
 						if ($numCatalogResultsAdded == $this->numEntriesToAdd && $numCatalogResults > ($this->numEntriesToAdd + 1)) {
 							//Add a link to remaining catalog results
 							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => "Catalog Results ($numCatalogResults)",
-								'description' => "Catalog Results ($numCatalogResults)",
+								'label' => translate(['text'=>"Catalog Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+								'description' => translate(['text'=>"All Results in Catalog related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 								'image' => '/interface/themes/responsive/images/library_symbol.png',
 								'link' => $searchObjectSolr->renderSearchUrl(),
 								'usageCount' => 1,
@@ -576,10 +576,10 @@ class ExploreMore {
 			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
-            $searchObject->disableSpelling();
+			$searchObject->disableSpelling();
 			$searchObject->setSearchTerms(array(
-					'lookfor' => $searchTerm,
-					'index' => 'Keyword'
+				'lookfor' => $searchTerm,
+				'index' => 'Keyword'
 			));
 			$searchObject->addFilter('literary_form_full:Non Fiction');
 			$searchObject->addFilter('target_audience:(Adult OR Unknown)');
@@ -633,8 +633,9 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => "Genealogy Results ($numCatalogResults)",
-							'description' => "Genealogy Results ($numCatalogResults)",
+							'label' => translate(['text'=>"Genealogy Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
+							'description' => translate(['text'=>"All Results in Genealogy related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+
 							'image' => '/interface/themes/responsive/images/person.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,

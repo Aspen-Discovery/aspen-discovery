@@ -635,7 +635,7 @@ class OverDriveProcessor {
 			for (int i = 0; i < languagesFromMetadata.length(); i++) {
 				JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
 				String language = curLanguageObj.getString("name");
-				//OverDrive no adds multiple languages separated by commas
+				//OverDrive now adds multiple languages separated by commas
 				String[] splitLanguages = language.split(";");
 				for (String curLanguage : splitLanguages) {
 					curLanguage = curLanguage.trim();

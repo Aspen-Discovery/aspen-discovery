@@ -3,13 +3,19 @@ package com.turning_leaf_technologies.grouping;
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.marc4j.marc.*;
 
 import javax.xml.transform.Result;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -46,6 +52,11 @@ public class RecordGroupingProcessor {
 	private PreparedStatement markWorkAsNeedingReindexStmt;
 
 	private PreparedStatement getWorkByAlternateTitleAuthorStmt;
+
+	private PreparedStatement getAxis360DetailsForRecordStmt;
+	private PreparedStatement getCloudLibraryDetailsForRecordStmt;
+	private PreparedStatement getHooplaRecordStmt;
+
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
@@ -103,6 +114,10 @@ public class RecordGroupingProcessor {
 			markWorkAsNeedingReindexStmt.close();
 
 			getWorkByAlternateTitleAuthorStmt.close();
+
+			getAxis360DetailsForRecordStmt.close();
+			getCloudLibraryDetailsForRecordStmt.close();
+			getHooplaRecordStmt.close();
 
 		} catch (Exception e) {
 			logEntry.incErrors("Error closing prepared statements in record grouping processor", e);
@@ -214,6 +229,10 @@ public class RecordGroupingProcessor {
 			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
+
+			getAxis360DetailsForRecordStmt = dbConnection.prepareStatement("SELECT title, subtitle, primaryAuthor, formatType, rawResponse from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getCloudLibraryDetailsForRecordStmt =  dbConnection.prepareStatement("SELECT title, subTitle, author, format from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
@@ -496,7 +515,7 @@ public class RecordGroupingProcessor {
 	 * @param primaryDataChanged Whether or not the primary data has been changed
 	 * @return The permanent id of the grouped work
 	 */
-	public String processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, boolean primaryDataChanged) {
+	public String processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, String language, boolean primaryDataChanged) {
 		GroupedWork groupedWork = new GroupedWork(this);
 
 		//Replace & with and for better matching
@@ -517,6 +536,8 @@ public class RecordGroupingProcessor {
 				formatsWarned.add(format);
 			}
 		}
+
+		groupedWork.setLanguage(language);
 
 		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged, null);
 		return groupedWork.getPermanentId();
@@ -686,7 +707,7 @@ public class RecordGroupingProcessor {
 
 	private final HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
-	String translateValue(@SuppressWarnings("SameParameterValue") String mapName, String value) {
+	public String translateValue(@SuppressWarnings("SameParameterValue") String mapName, String value) {
 		value = value.toLowerCase();
 		HashMap<String, String> translationMap = translationMaps.get(mapName);
 		String translatedValue;
@@ -857,5 +878,177 @@ public class RecordGroupingProcessor {
 
 	BaseLogEntry getLogEntry(){
 		return this.logEntry;
+	}
+
+	String languageFields = "008[35-37]";
+	public String getLanguageBasedOnMarcRecord(Record marcRecord) {
+		String activeLanguage = null;
+		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
+		for (String language : languages){
+			if (activeLanguage == null){
+				activeLanguage = language;
+			}else{
+				if (!activeLanguage.equals(language)){
+					activeLanguage = "mul";
+					break;
+				}
+			}
+		}
+		if (activeLanguage == null){
+			activeLanguage = "unk";
+		}
+		return activeLanguage;
+	}
+
+	public String groupAxis360Record(String axis360Id) throws JSONException {
+		try {
+			getAxis360DetailsForRecordStmt.setString(1, axis360Id);
+			ResultSet getItemDetailsForRecordRS = getAxis360DetailsForRecordStmt.executeQuery();
+			if (getItemDetailsForRecordRS.next()){
+				String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
+				try {
+					JSONObject itemDetails = new JSONObject(rawResponse);
+					String primaryAuthor = getItemDetailsForRecordRS.getString("primaryAuthor");
+					return groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
+				}catch (JSONException e){
+					logEntry.incErrors("Could not parse item details for record to reload " + axis360Id);
+				}
+			}else{
+				logEntry.incErrors("Could not get details for record to reload " + axis360Id);
+			}
+			getItemDetailsForRecordRS.close();
+		}catch (SQLException e){
+			logEntry.incErrors("Error Grouping Axis 360 Record", e);
+		}
+		return null;
+	}
+
+	public String groupAxis360Record(JSONObject itemDetails, String axis360Id, String primaryAuthor) throws JSONException {
+		//Perform record grouping on the record
+		String title = getAxis360FieldValue(itemDetails, "title");
+		String formatType = itemDetails.getString("formatType");
+		String language = getAxis360FieldValue(itemDetails, "language");
+
+		RecordIdentifier primaryIdentifier = new RecordIdentifier("axis360", axis360Id);
+
+		String subtitle = getAxis360FieldValue(itemDetails, "subtitle");
+		return processRecord(primaryIdentifier, title, subtitle, primaryAuthor, formatType, language, true);
+	}
+
+	public String groupCloudLibraryRecord(String cloudLibraryId, Record cloudLibraryRecord){
+		try{
+			getCloudLibraryDetailsForRecordStmt.setString(1, cloudLibraryId);
+			ResultSet getItemDetailsForRecordRS = getCloudLibraryDetailsForRecordStmt.executeQuery();
+			if (getItemDetailsForRecordRS.next()){
+				String title = getItemDetailsForRecordRS.getString("title");
+				String subTitle = getItemDetailsForRecordRS.getString("subTitle");
+				String author = getItemDetailsForRecordRS.getString("author");
+				String format = getItemDetailsForRecordRS.getString("format");
+				RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
+
+				String primaryLanguage = getLanguageBasedOnMarcRecord(cloudLibraryRecord);
+
+				return processRecord(primaryIdentifier, title, subTitle, author, format, primaryLanguage, true);
+			}else{
+				logEntry.incErrors("Could not get details for record to reload " + cloudLibraryId);
+			}
+			getItemDetailsForRecordRS.close();
+		}catch(SQLException e){
+			logEntry.incErrors("Error Grouping Cloud Library Record", e);
+		}
+		return null;
+	}
+
+	private String getAxis360FieldValue(JSONObject itemDetails, String fieldName) {
+		JSONArray fields = itemDetails.getJSONArray("fields");
+		for (int i = 0; i < fields.length(); i++){
+			JSONObject field = fields.getJSONObject(i);
+			if (field.getString("name").equals(fieldName)){
+				JSONArray fieldValues = field.getJSONArray("values");
+				if (fieldValues.length() == 0) {
+					return "";
+				}else if (fieldValues.length() == 1) {
+					return fieldValues.getString(0).trim();
+				}else{
+					ArrayList<String> values = new ArrayList<>();
+					for (int j = 0; j < fieldValues.length(); j++){
+						values.add(fieldValues.getString(j));
+					}
+					return values.get(0).trim();
+				}
+			}
+		}
+		return "";
+	}
+
+	public String groupHooplaRecord(String hooplaId) throws JSONException {
+		try {
+			getHooplaRecordStmt.setString(1, hooplaId);
+			ResultSet getHooplaRecordRS = getHooplaRecordStmt.executeQuery();
+			if (getHooplaRecordRS.next()){
+				String rawResponseString = new String(getHooplaRecordRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
+				JSONObject rawResponse = new JSONObject(rawResponseString);
+				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+				return groupHooplaRecord(rawResponse, Long.parseLong(hooplaId));
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error grouping hoopla record " + hooplaId, e);
+		}
+		return null;
+	}
+
+	public String groupHooplaRecord(JSONObject itemDetails, long hooplaId) throws JSONException {
+		//Perform record grouping on the record
+		String title;
+		String subTitle;
+		if (itemDetails.has("titleTitle")){
+			title = itemDetails.getString("titleTitle");
+			subTitle = itemDetails.getString("title");
+		}else {
+			title = itemDetails.getString("title");
+			if (itemDetails.has("subtitle")){
+				subTitle = itemDetails.getString("subtitle");
+			}else{
+				subTitle = "";
+			}
+		}
+		String mediaType = itemDetails.getString("kind");
+		String primaryFormat;
+		switch (mediaType) {
+			case "MOVIE":
+			case "TELEVISION":
+				primaryFormat = "eVideo";
+				break;
+			case "AUDIOBOOK":
+				primaryFormat = "eAudiobook";
+				break;
+			case "EBOOK":
+				primaryFormat = "eBook";
+				break;
+			case "COMIC":
+				primaryFormat = "eComic";
+				break;
+			case "MUSIC":
+				primaryFormat = "eMusic";
+				break;
+			default:
+				logger.error("Unhandled hoopla mediaType " + mediaType);
+				primaryFormat = mediaType;
+				break;
+		}
+		String author = "";
+		if (itemDetails.has("artist")) {
+			author = itemDetails.getString("artist");
+			author = StringUtils.swapFirstLastNames(author);
+		} else if (itemDetails.has("publisher")) {
+			author = itemDetails.getString("publisher");
+		}
+
+		RecordIdentifier primaryIdentifier = new RecordIdentifier("hoopla", Long.toString(hooplaId));
+
+		String language = itemDetails.getString("language");
+		String languageCode = translateValue("language_to_three_letter_code", language);
+
+		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
 	}
 }
