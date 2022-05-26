@@ -183,14 +183,17 @@ export default class Login extends Component {
     // When a library is picked it stores information from the Greenhouse API response used to validate login
 	 **/
 	showLibraries = () => {
-		let uniqueLibraries;
+		let uniqueLibraries = [];
 		let showSelectLibrary = true;
 		if(Constants.manifest.slug === "aspen-lida") {
 			uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.librarySystem, v.name].join());
 		} else {
-			uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.libraryId, v.name].join());
+			uniqueLibraries = _.values(this.state.libraryData);
+			uniqueLibraries = _.uniqBy(uniqueLibraries, v => [v.libraryId, v.name].join());
 			if(this.state.locationNum <= 1) {
 				showSelectLibrary = false;
+				//console.log("showLibraries:");
+				//console.log(uniqueLibraries[0]);
 				this.setLibraryBranch(uniqueLibraries[0]);
 			}
 		}
@@ -314,11 +317,13 @@ export default class Login extends Component {
 		let isCommunity = true;
 		if(Constants.manifest.slug !== "aspen-lida") { isCommunity = false; }
 
+		//console.log(this.state);
+
 		// TODO: Get library logo, fallback on LiDA
 		return (
 			<Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
 				<Image source={{ uri: logo }} rounded={25} size={{base: "xl", lg: "2xl"}}
-				       alt={translate('app.name')}/>
+				       alt={translate('app.name')} />
 
 				{this.showLibraries()}
 
