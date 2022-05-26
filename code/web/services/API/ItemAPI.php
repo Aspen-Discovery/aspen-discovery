@@ -737,6 +737,7 @@ class ItemAPI extends Action {
 							'volumes' => $recordVolumes,
 						);
 						$records[] = $record;
+						$itemData['language'] = $relatedRecord->language;
 
 					}
 					$variationCategoryInfo[$relatedManifestation->format] = $records;
