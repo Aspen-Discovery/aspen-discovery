@@ -184,6 +184,18 @@ class MaterialsRequest extends DataObject
 		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
 	}
 
+	/** @noinspection PhpUnused */
+	function updateUsageTable(){
+		$materialsRequestStatus = new MaterialsRequestStatus();
+		$materialsRequestStatus->id = $this->status;
+		if($materialsRequestStatus->find(true)) {
+			if($materialsRequestStatus->isPurchased == 1) {
+				require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+				MaterialsRequestUsage::incrementStat($this->status, $this->libraryId);
+			}
+		}
+	}
+
 	function sendStatusChangeEmail(){
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->id = $this->status;

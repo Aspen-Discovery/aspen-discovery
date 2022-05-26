@@ -113,6 +113,9 @@ class MaterialsRequest_Update extends Action {
 					$interface->assign('success', true);
 					$interface->assign('materialsRequest', $materialsRequest);
 					if ($statusChanged){
+						//Update usage table
+						$materialsRequest->updateUsageTable();
+
 						//Send an email as needed
 						$materialsRequest->sendStatusChangeEmail();
 					}
