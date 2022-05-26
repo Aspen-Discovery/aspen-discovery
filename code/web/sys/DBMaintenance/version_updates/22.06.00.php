@@ -77,5 +77,20 @@ function getUpdates22_06_00() : array
 
 			]
 		], //increase_grouped_work_length_for_language
+		'createMaterialRequestStats' => [
+			'title' => 'Create Material Request stats table',
+			'description' => 'Track usage of material requests',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE materials_request_usage (
+    				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    				locationId INT(4),
+    				year INT(4) NOT NULL,
+    				month INT(4) NOT NULL,
+    				statusId INT(4) NOT NULL,
+    				numUsed INT(11) NOT NULL DEFAULT 0
+			) ENGINE = InnoDB'
+			]
+		],//createMaterialRequestStats
 	];
 }
