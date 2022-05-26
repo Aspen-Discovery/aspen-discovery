@@ -843,7 +843,10 @@ public class GroupedWorkIndexer {
 				}else if (type.equals("hoopla")){
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				}
-				if (!newId.equals(permanentId)){
+				if (newId == null){
+					//The record is not valid, skip it. 
+					continue;
+				}else if (!newId.equals(permanentId)){
 					//The work will be marked as updated and therefore reindexed at the end?
 					//Or just index it now?
 					processGroupedWork(newId, false);
