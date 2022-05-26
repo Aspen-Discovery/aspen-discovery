@@ -51,6 +51,9 @@ class MaterialsRequest_AJAX extends Action{
 				$materialsRequest->dateUpdated = time();
 				$materialsRequest->status = $cancelledStatus->id;
 				if ($materialsRequest->update()){
+					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
+
 					return array('success' => true);
 				}else{
 					return array('success' => false, 'error' => 'Could not cancel the request, error during update.');
