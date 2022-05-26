@@ -151,6 +151,10 @@ class MaterialsRequest_Submit extends Action
 									// Update Request Counts on success
 									$interface->assign('requestsThisYear', ++$requestsThisYear);
 									$interface->assign('openRequests', ++$openRequests);
+
+									require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+									MaterialsRequestUsage::incrementStat($materialsRequest->status, $homeLibrary->libraryId);
+
 									$materialsRequest->sendStatusChangeEmail();
 								} else {
 									$interface->assign('success', false);
