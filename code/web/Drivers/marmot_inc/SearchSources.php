@@ -82,7 +82,8 @@ class SearchSources{
 
 		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
-		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
+		$searchEbscoEDS = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
+		$searchEbscohost = array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSettingId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 		$searchCourseReserves = $library->enableCourseReserves == 2;
 
@@ -179,11 +180,20 @@ class SearchSources{
 			);
 		}
 
-		if ($searchEbsco){
+		if ($searchEbscoEDS){
 			$searchOptions['ebsco_eds'] = array(
 				'name' => 'Articles & Databases',
 				'description' => 'EBSCO EDS - Articles and Database',
 				'catalogType' => 'ebsco_eds',
+				'hasAdvancedSearch' => false
+			);
+		}
+
+		if ($searchEbscohost){
+			$searchOptions['ebscohost'] = array(
+				'name' => 'Articles & Databases',
+				'description' => 'EBSCOhost - Articles and Database',
+				'catalogType' => 'ebscohost',
 				'hasAdvancedSearch' => false
 			);
 		}

@@ -77,6 +77,10 @@ class BookCoverProcessor{
 			if ($this->getEbscoEdsCover($this->id)) {
 				return true;
 			}
+		} elseif ($this->type == 'ebscohost') {
+			if ($this->getEbscohostCover($this->id)) {
+				return true;
+			}
 		} else {
 			global $sideLoadSettings;
 			if ($this->type == 'overdrive') {
@@ -1561,6 +1565,26 @@ class BookCoverProcessor{
 			];
 			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_ebsco', $this->cacheFile, false);
+		} else {
+			return false;
+		}
+	}
+
+	private function getEbscohostCover($id)
+	{
+		//Build a cover based on the title of the page
+		require_once ROOT_DIR . '/sys/Covers/EbscoCoverBuilder.php';
+		$coverBuilder = new EbscoCoverBuilder();
+		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+
+		$ebscohostRecordDriver = new EbscohostRecordDriver($id);
+		if ($ebscohostRecordDriver->isValid()) {
+			$title = $ebscohostRecordDriver->getTitle();
+			$props = [
+				'format' => $ebscohostRecordDriver->getFormats()
+			];
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
+			return $this->processImageURL('default_ebscohost', $this->cacheFile, false);
 		} else {
 			return false;
 		}
