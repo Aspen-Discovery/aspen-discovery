@@ -2,10 +2,8 @@ import React, {Component} from "react";
 import {Button, Center, HStack, Text, VStack, Badge } from "native-base";
 import {
 	checkoutItem,
-	getItemDetails,
-	openCheckouts,
 	openSideLoad,
-	overDriveSample, PlaceHold,
+	overDriveSample,
 	placeHold
 } from "../../util/recordActions";
 import SelectPickupLocation from "./SelectPickupLocation";
@@ -13,7 +11,6 @@ import ShowItemDetails from "./CopyDetails";
 import _ from "lodash";
 import SelectLinkedAccount from "./SelectLinkedAccount";
 import SelectVolumeHold from "./SelectVolumeHold";
-import {getProfile, reloadProfile} from "../../util/loadPatron";
 import {userContext} from "../../context/user";
 
 export class Record extends Component {
