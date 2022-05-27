@@ -330,9 +330,9 @@ export default class GroupedWork extends Component {
 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
 					{this.state.formats ?
 						<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
-					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
-					      mb={1}>{translate('grouped_work.language')}</Text>
-					{this.state.languages ?
+					{discoveryVersion <= "22.05.00" ? 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
+					                                                          mb={1}>{translate('grouped_work.language')}</Text> : null}
+					{this.state.languages && discoveryVersion <= "22.05.00" ?
 						<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
 
 					{this.state.variations ? <Manifestation data={this.state.variations} format={this.state.format}
