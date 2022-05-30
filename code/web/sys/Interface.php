@@ -326,7 +326,7 @@ class UInterface extends Smarty
 		return $this->appliedTheme;
 	}
 
-	function loadDisplayOptions(){
+	function loadDisplayOptions($fromBookCoverProcessing = false){
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -646,92 +646,94 @@ class UInterface extends Smarty
 			$this->assign('librarySystemName', $location->displayName);
 		}
 
-		//Determine whether or not materials request functionality should be enabled
-		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-			$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
-			$materialRequestType = $library->enableMaterialsRequest;
-			$this->assign('materialRequestType', $materialRequestType);
-		}else{
-			$this->assign('enableAspenMaterialsRequest', false);
-		}
-
-		//Determine whether or not to display materials request to patrons
-		$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic || UserAccount::isStaff());
-
-		//Determine whether or not donations functionality should be enabled
-		$enableDonationsModule = false;
-		try {
-			require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
-			$donationSettings = new DonationsSetting();
-			$donationSettings->id = $library->donationSettingId;
-			if ($donationSettings->find(true)) {
-				$enableDonationsModule = true;
-				$allowDonationsToBranch = $donationSettings->allowDonationsToBranch;
-				$this->assign('allowDonationsToBranch', $allowDonationsToBranch);
-				$allowDonationEarmark = $donationSettings->allowDonationEarmark;
-				$this->assign('allowDonationEarmark', $allowDonationEarmark);
-				$allowDonationDedication = $donationSettings->allowDonationDedication;
-				$this->assign('allowDonationDedication', $allowDonationDedication);
-				$donationsContent = $donationSettings->donationsContent;
-				$this->assign('donationsContent', $donationsContent);
-				$donationEmailTemplate = $donationSettings->donationEmailTemplate;
-				$this->assign('donationEmailTemplate', $donationEmailTemplate);
-			}
-		}catch (Exception $e){
-			//Donations are not setup yet.
-		}
-
-		$this->assign('enableDonations', $enableDonationsModule);
-
-		//Determine whether or not Rosen LevelUP functionality should be enabled
-		try {
-			require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
-			$rosenLevelUPSetting = new RosenLevelUPSetting();
-			if ($rosenLevelUPSetting->find(true)) {
-				$this->assign('enableRosenLevelUP', true);
-			} else {
-				$this->assign('enableRosenLevelUP', false);
-			}
-		} catch (PDOException $e) {
-			global $logger;
-			$logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
-		}
-
-		//Load library links
-		$links = $library->libraryLinks;
-		$libraryLinks = [];
-		$expandedLinkCategories = [];
-		/** @var LibraryLink $libraryLink */
-		foreach ($links as $libraryLink){
-			if (!$libraryLink->isValidForDisplay()){
-				continue;
+		if (!$fromBookCoverProcessing) {
+			//Determine whether or not materials request functionality should be enabled
+			if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
+				require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+				$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
+				$materialRequestType = $library->enableMaterialsRequest;
+				$this->assign('materialRequestType', $materialRequestType);
+			}else{
+				$this->assign('enableAspenMaterialsRequest', false);
 			}
 
-			if (empty($libraryLink->category)){
-				$libraryLink->category = 'none-' . $libraryLink->id;
-			}
-			if (!array_key_exists($libraryLink->category, $libraryLinks)){
-				$libraryLinks[$libraryLink->category] = array();
-			}
-			$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
-			if ($libraryLink->showExpanded){
-				$expandedLinkCategories[$libraryLink->category] = 1;
-			}
-		}
-		$this->assign('libraryLinks', $libraryLinks);
-		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+			//Determine whether or not to display materials request to patrons
+			$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic || UserAccount::isStaff());
 
-		try {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables != false) {
-				$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
-			} else {
-				$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+			//Determine whether or not donations functionality should be enabled
+			$enableDonationsModule = false;
+			try {
+				require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
+				$donationSettings = new DonationsSetting();
+				$donationSettings->id = $library->donationSettingId;
+				if ($donationSettings->find(true)) {
+					$enableDonationsModule = true;
+					$allowDonationsToBranch = $donationSettings->allowDonationsToBranch;
+					$this->assign('allowDonationsToBranch', $allowDonationsToBranch);
+					$allowDonationEarmark = $donationSettings->allowDonationEarmark;
+					$this->assign('allowDonationEarmark', $allowDonationEarmark);
+					$allowDonationDedication = $donationSettings->allowDonationDedication;
+					$this->assign('allowDonationDedication', $allowDonationDedication);
+					$donationsContent = $donationSettings->donationsContent;
+					$this->assign('donationsContent', $donationsContent);
+					$donationEmailTemplate = $donationSettings->donationEmailTemplate;
+					$this->assign('donationEmailTemplate', $donationEmailTemplate);
+				}
+			}catch (Exception $e){
+				//Donations are not setup yet.
 			}
-		}catch (Exception $e){
-			//This happens prior to the table being created
+
+			$this->assign('enableDonations', $enableDonationsModule);
+
+			//Determine whether or not Rosen LevelUP functionality should be enabled
+			try {
+				require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
+				$rosenLevelUPSetting = new RosenLevelUPSetting();
+				if ($rosenLevelUPSetting->find(true)) {
+					$this->assign('enableRosenLevelUP', true);
+				} else {
+					$this->assign('enableRosenLevelUP', false);
+				}
+			} catch (PDOException $e) {
+				global $logger;
+				$logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
+			}
+
+			//Load library links
+			$links = $library->libraryLinks;
+			$libraryLinks = [];
+			$expandedLinkCategories = [];
+			/** @var LibraryLink $libraryLink */
+			foreach ($links as $libraryLink) {
+				if (!$libraryLink->isValidForDisplay()) {
+					continue;
+				}
+
+				if (empty($libraryLink->category)) {
+					$libraryLink->category = 'none-' . $libraryLink->id;
+				}
+				if (!array_key_exists($libraryLink->category, $libraryLinks)) {
+					$libraryLinks[$libraryLink->category] = array();
+				}
+				$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+				if ($libraryLink->showExpanded) {
+					$expandedLinkCategories[$libraryLink->category] = 1;
+				}
+			}
+			$this->assign('libraryLinks', $libraryLinks);
+			$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables != false) {
+					$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
+				} else {
+					$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+				}
+			} catch (Exception $e) {
+				//This happens prior to the table being created
+			}
 		}
 	}
 

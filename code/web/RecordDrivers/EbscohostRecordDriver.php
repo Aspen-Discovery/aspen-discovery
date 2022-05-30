@@ -30,11 +30,33 @@ class EbscohostRecordDriver extends RecordInterface
 
 	public function isValid()
 	{
-		return true;
+		return is_object($this->recordData);
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false)
 	{
+		global $configArray;
+
+		$recordCover = $this->getRecordCoverUrl();
+		if (!empty($recordCover)) {
+			$imageHeaders = get_headers($recordCover);
+
+			if ($imageHeaders && substr($imageHeaders[0], 9, 3) == 200) {
+				return $recordCover;
+			}
+		}
+		if ($absolutePath) {
+			$bookCoverUrl = $configArray['Site']['url'];
+		} else {
+			$bookCoverUrl = '';
+		}
+		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=ebscohost";
+		return $bookCoverUrl;
+	}
+
+
+
+	public function getRecordCoverUrl(){
 		$header = $this->getChildByTagName($this->recordData, 'header');
 		if ($header != null){
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
@@ -45,15 +67,7 @@ class EbscohostRecordDriver extends RecordInterface
 				}
 			}
 		}
-		global $configArray;
-
-		if ($absolutePath) {
-			$bookCoverUrl = $configArray['Site']['url'];
-		} else {
-			$bookCoverUrl = '';
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=ebscohost";
-		return $bookCoverUrl;
+		return null;
 	}
 
 	/**
@@ -306,7 +320,7 @@ class EbscohostRecordDriver extends RecordInterface
 	{
 		$header = $this->getChildByTagName($this->recordData, 'header');
 		if ($header != null){
-			return $header->attributes()['uiTerm'];
+			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTerm'];
 		}
 		return "";
 	}

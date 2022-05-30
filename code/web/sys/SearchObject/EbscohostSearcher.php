@@ -430,21 +430,16 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	public function retrieveRecord($dbId, $an) {
 		$curlConnection = $this->getCurlConnection();
 		curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
-		curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
-			'Content-Type: application/json',
-			'Accept: application/json',
-			'x-authenticationToken: ' . SearchObject_EbscohostSearcher::$authenticationToken,
-			'x-sessionToken: ' . SearchObject_EbscohostSearcher::$sessionId,
-		));
-		$infoUrl = $this->ebscohostBaseUrl . "/Retrieve?an=$an&dbid=$dbId";
+		$infoUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=full";
+		$infoUrl .= "&query=$an&db=$dbId";
 		curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
 		$recordInfoStr = curl_exec($curlConnection);
 		if ($recordInfoStr == false){
 			return null;
 		}else{
-			$recordData = json_decode($recordInfoStr);
-			if (isset($recordData->Record)) {
-				return $recordData->Record;
+			$recordData = simplexml_load_string($recordInfoStr);
+			if ($recordData->Hits > 0) {
+				return reset($recordData->SearchResults->records);
 			}else{
 				return null;
 			}
