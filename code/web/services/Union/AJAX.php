@@ -38,6 +38,8 @@ class Union_AJAX extends JSON_Action {
 			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
 		}elseif ($source == 'ebsco_eds') {
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
+		}elseif ($source == 'ebscohost') {
+			$results = $this->getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink);
 		}elseif ($source == 'events') {
 			$results = $this->getResultsFromSolrSearcher('Events', $searchTerm, $numberOfResults, $fullResultsLink);
 		}elseif ($source == 'genealogy') {
@@ -96,6 +98,38 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
+	private function getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink){
+		global $interface;
+		$interface->assign('viewingCombinedResults', true);
+		if ($searchTerm == ''){
+			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
+		}else {
+			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
+			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+			$ebscohostSearcher->init();
+			$ebscohostSearcher->setSearchTerms(array(
+				'index' => $ebscohostSearcher->getDefaultIndex(),
+				'lookfor' => $searchTerm
+			));
+			$ebscohostSearcher->processSearch(true, false);
+			$summary = $ebscohostSearcher->getResultSummary();
+			$records = $ebscohostSearcher->getCombinedResultHTML();
+			if ($summary['resultTotal'] == 0) {
+				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+			} else {
+				$formattedNumResults = number_format($summary['resultTotal']);
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+
+				$records = array_slice($records, 0, $numberOfResults);
+				global $interface;
+				$interface->assign('recordSet', $records);
+				$interface->assign('showExploreMoreBar', false);
+				$results .= $interface->fetch('Search/list-list.tpl');
+			}
+		}
+
+		return $results;
+	}
 
 	/**
 	 * @param string $searchTerm

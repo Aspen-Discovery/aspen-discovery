@@ -187,7 +187,6 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
-		$interface->assign('summHasFullText', $this->hasFullText());
 
 		$interface->assign('summDescription', $this->getDescription());
 
@@ -375,7 +374,25 @@ class EbscohostRecordDriver extends RecordInterface
 
 	public function getFormats()
 	{
-		return "TBD";
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
+				if ($artInfo != null){
+					$tig = $this->getChildByTagName($artInfo, 'aug');
+					if ($tig != null){
+						$atl = $this->getChildByTagName($tig, 'au');
+						return (string)$atl;
+					}
+				}
+				$illusInfo = $this->getChildByTagName($controlInfo, 'illusinfo');
+				if ($illusInfo != null){
+					return $illusInfo->attributes()['type'];
+				}
+			}
+		}
+		return "Unknown";
 	}
 
 	public function getCleanISSN()
@@ -405,10 +422,9 @@ class EbscohostRecordDriver extends RecordInterface
 			if ($controlInfo != null){
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
 				if ($artInfo != null){
-					$tig = $this->getChildByTagName($artInfo, 'aug');
-					if ($tig != null){
-						$atl = $this->getChildByTagName($tig, 'au');
-						return (string)$atl;
+					$ougenre = $this->getChildByTagName($artInfo, 'ougenre');
+					if ($ougenre != null){
+						return (string)$ougenre;
 					}
 				}
 			}

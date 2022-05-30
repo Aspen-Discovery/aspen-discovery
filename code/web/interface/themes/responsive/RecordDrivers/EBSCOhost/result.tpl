@@ -109,13 +109,11 @@
 			</div>
 		{/if}
 
-		{if empty($viewingCombinedResults)}
-			<div class="row">
-				<div class="col-xs-12">
-					{include file='EBSCO/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
-				</div>
+		<div class="row">
+			<div class="col-xs-12">
+				{include file='EBSCO/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
 			</div>
-		{/if}
+		</div>
 	</div>
 </div>
 {/strip}

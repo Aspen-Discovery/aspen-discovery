@@ -35,11 +35,6 @@
 			</div>
 		{/if}
 
-		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}Full text available{else}Full text not available{/if}</div>
-		</div>
-
 		{if $summDescription}
 			{* Standard Description *}
 			<div class="row visible-xs">
