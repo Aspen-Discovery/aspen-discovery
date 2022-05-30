@@ -509,6 +509,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		}
 
 		$searchUrl .= '&sort=' . $this->sort;
+		$searchUrl .= '&clusters=true';
 
 		$curlConnection = $this->getCurlConnection();
 		curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
