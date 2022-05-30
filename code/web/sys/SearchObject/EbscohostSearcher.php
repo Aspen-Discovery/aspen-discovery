@@ -23,7 +23,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	protected $limit = 20;
 
 	// Sorting
-	protected $sort = null;
+	protected $sort = 'relevance';
 	protected $defaultSort = 'relevance';
 
 	// STATS
@@ -175,7 +175,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 		$summary['page']        = $this->page;
 		$summary['perPage']     = $this->limit;
-		$summary['resultTotal'] = (int)$this->resultsTotal;
+		$summary['resultTotal'] = $this->resultsTotal;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
 		// Last record needs more care
@@ -191,6 +191,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		}
 
 		return $summary;
+	}
+
+	public function getNumResults() : int{
+		return $this->resultsTotal;
 	}
 
 	/**
@@ -283,7 +287,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	public function getSearchOptions() : ?SimpleXMLElement{
 		if (SearchObject_EbscohostSearcher::$searchOptions == null){
 			$curlConnection = $this->getCurlConnection();
-			$infoUrl = $this->ebscohostBaseUrl . "/Info?prof={$this->ebscohostSettings->profileId}&pwd={$this->ebscohostSettings->profilePwd}";
+			$infoUrl = $this->ebscohostBaseUrl . "/Info?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}";
 			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
 			$searchOptionsStr = curl_exec($curlConnection);
 
@@ -327,9 +331,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		if ($sortOptions != null){
 			foreach ($sortOptions as $sort => $label){
 				$list[$sort] = array(
-						'sortUrl' => $this->renderLinkWithSort($sort),
-						'desc' => $label,
-						'selected' => ($sort == $this->sort)
+					'sortUrl' => $this->renderLinkWithSort($sort),
+					'desc' => $label,
+					'selected' => ($sort == $this->sort)
 				);
 
 			}
@@ -462,7 +466,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	{
 		$this->startQueryTimer();
 		$hasSearchTerm = false;
-		$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->ebscohostSettings->profileId}&pwd={$this->ebscohostSettings->profilePwd}&format=brief";
+		$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=full";
 		if (is_array($this->searchTerms)){
 			$searchUrl .= '&query=';
 			$termIndex = 1;
@@ -491,7 +495,6 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			$this->page = 1;
 		}
 		$searchUrl .= '&numrec=' . $this->limit;
-		$searchUrl .= '&format=full';
 
 		$limitList = $this->getLimitList();
 		$hasAppliedLimiters = false;
@@ -581,6 +584,12 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	function loadDynamicFields()
 	{
 		// TODO: Implement loadDynamicFields() method.
+	}
+
+	public function getRecordDriverForResult($current) : EbscohostRecordDriver
+	{
+		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+		return new EbscohostRecordDriver($current);
 	}
 
 	function getBrowseRecordHTML(){
