@@ -573,6 +573,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				//$fieldsToReturn .= ',related_record_ids';
 				//$fieldsToReturn .= ',related_record_items';
 				//$fieldsToReturn .= ',related_items_related_record_ids';
+				$fieldsToReturn .= ',collection_group';
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
@@ -616,6 +617,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			$scopedFieldName = 'local_time_since_added';
 		} elseif (strpos($scopedFieldName, 'itype') === 0) {
 			$scopedFieldName = 'itype';
+		} elseif (strpos($scopedFieldName, 'collection') === 0) {
+			$scopedFieldName = 'collection_group';
 		}
 		return $scopedFieldName;
 	}
@@ -654,6 +657,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				$field = 'shelf_location_' . $solrScope;
 			} elseif ($field === 'detailed_location') {
 				$field = 'detailed_location_' . $solrScope;
+			} elseif ($field === 'collection_group' || $field === 'collection') {
+				$field = 'collection_' . $solrScope;
 			}
 		}
 		return $field;
