@@ -309,13 +309,14 @@ AspenDiscovery.WebBuilder = function () {
 							if(data.openInNewTab) {
 								newTab.location.href = data.url
 							} else {
+								newTab.close();
 								location.assign(data.url);
 							}
 						})
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
-							return AspenDiscovery.Account.getWebResource(id);
-						}, false);
+							return AspenDiscovery.WebBuilder.getWebResource(id);
+						}, true);
 					}
 				} else {
 					var params = {
@@ -327,6 +328,7 @@ AspenDiscovery.WebBuilder = function () {
 						if(data.openInNewTab) {
 							newTab.location.href = data.url
 						} else {
+							newTab.close();
 							location.assign(data.url);
 						}
 					})
