@@ -342,6 +342,43 @@ if ($isLoggedIn) {
 				}
 				header("Location: " . $followupUrl);
 				exit();
+			}elseif($_REQUEST['followupModule'] == 'WebBuilder') {
+				echo("Redirecting to followup location");
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if (!empty($_REQUEST['pageId'])) {
+					if($_REQUEST['followupAction'] == "BasicPage") {
+						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+						$basicPage = new BasicPage();
+						$basicPage->id = $_REQUEST['pageId'];
+						if($basicPage->find(true)) {
+							if($basicPage->urlAlias) {
+								$followupUrl = $basicPage->urlAlias;
+							} else {
+								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+							}
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} elseif($_REQUEST['followupAction'] == "PortalPage") {
+						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+						$portalPage = new PortalPage();
+						$portalPage->id = $_REQUEST['pageId'];
+						if($portalPage->find(true)) {
+							if($portalPage->urlAlias) {
+								$followupUrl = $portalPage->urlAlias;
+							} else {
+								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+							}
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+					}
+				}
+				header("Location: " . $followupUrl);
+				exit();
 			}else{
 				echo("Redirecting to followup location");
 				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);

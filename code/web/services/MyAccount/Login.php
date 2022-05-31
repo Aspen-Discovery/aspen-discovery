@@ -12,24 +12,28 @@ class MyAccount_Login extends Action
 		global $library;
 		global $locationSingleton;
 
-		// We should never access this module directly -- this is called by other
-		// actions as a support function.  If accessed directly, just redirect to
-		// the MyAccount home page.
-		if ($module == 'MyAccount' && $action == 'Login') {
-			header('Location: /MyAccount/Home');
-			die();
-		}
-
 		// Assign the followup task to come back to after they login -- note that
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
+
 		$followupAction = isset($_REQUEST['followupAction']) ?  strip_tags($_REQUEST['followupAction']) : $action;
 		$followupModule = isset($_REQUEST['followupModule']) ?  strip_tags($_REQUEST['followupModule']) : $module;
+
+		// We should never access this module directly -- this is called by other
+		// actions as a support function.  If accessed directly, just redirect to
+		// the MyAccount home page.
+		if (!isset($_REQUEST['followupModule']) && $module == 'MyAccount' && $action == 'Login') {
+			header('Location: /MyAccount/Home');
+			die();
+		}
 
 		// Don't go to the trouble if we're just logging in to the Home action
 		if (!($followupAction == 'Home' && $followupModule == 'MyAccount')) {
 			$interface->assign('followupModule', $followupModule);
 			$interface->assign('followupAction', $followupAction);
+
+			$pageId = isset($_REQUEST['pageId']) ? strip_tags($_REQUEST['pageId']) : '';
+			$interface->assign('pageId', $pageId);
 
 			$recordId = isset($_REQUEST['id']) ? strip_tags($_REQUEST['id']) : '';
 			$interface->assign('recordId', $recordId);
