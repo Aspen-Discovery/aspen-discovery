@@ -351,10 +351,11 @@ export default class GroupedWork extends Component {
 					                                          openHolds={this.openHolds}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 
+					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} />
+
 					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
 						{this.state.data.description}
 					</Text>
-					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} />
 				</Box>
 				<Center>
 					<AlertDialog

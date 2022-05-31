@@ -2298,10 +2298,10 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			// Define sorting options
-			$sortOptions = array('title' => 'Title',
-				'author' => 'Author',
-				'checkedOut' => 'Last Used',
-				'format' => 'Format',
+			$sortOptions = array('title' => translate(['text' => 'Title', 'isPublicFacing' => true]),
+				'author' => translate(['text' => 'Author', 'isPublicFacing' => true]),
+				'checkedOut' => translate(['text' => 'Last Used', 'isPublicFacing' => true]),
+				'format' => translate(['text' => 'Format', 'isPublicFacing' => true]),
 			);
 			$selectedSortOption = $this->setSort('sort', 'readingHistory');
 			if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
