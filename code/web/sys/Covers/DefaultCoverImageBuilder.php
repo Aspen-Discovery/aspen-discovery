@@ -21,7 +21,7 @@ class DefaultCoverImageBuilder
 			//Need to initialize the interface to get access to the themes
 			//This is needed because we try to minimize what loads for book covers for performance
 			$interface = new UInterface();
-			$interface->loadDisplayOptions();
+			$interface->loadDisplayOptions(true);
 		}
 
 		$appliedTheme = $interface->getAppliedTheme();

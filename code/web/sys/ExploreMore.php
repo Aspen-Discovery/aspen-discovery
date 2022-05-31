@@ -55,7 +55,7 @@ class ExploreMore {
 		}
 
 		//Always load ebsco even if we are already in that section
-		$ebscoMatches = $this->loadEbscoOptions('', array(), $searchTerm);
+		$ebscoMatches = $this->loadEbscoEDSOptions('', array(), $searchTerm);
 		if (count($ebscoMatches) > 0){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
@@ -121,7 +121,11 @@ class ExploreMore {
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
+
+		if (array_key_exists('EBSCOhost', $enabledModules)) {
+			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
 		if (array_key_exists('Events', $enabledModules)) {
@@ -483,13 +487,61 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
+	public function loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+		global $library;
+		global $enabledModules;
+		if (!empty($searchTerm) && array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSettingId != -1 && $activeSection != 'ebscohost') {
+			//Load EDS options
+			/** @var SearchObject_EbscohostSearcher $edsSearcher */
+			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+			//Find related titles
+			$ebscohostSearcher->setSearchTerms(array(
+				'lookfor' => $searchTerm,
+				'index' => 'TX'
+			));
+			$ebscohostSearcher->setLimit($this->numEntriesToAdd + 1);
+			$ebscohostResults = $ebscohostSearcher->processSearch(true, false);
+
+			$exploreMoreOptions['sampleRecords']['ebscohost'] = [];
+			$numMatches = $ebscohostSearcher->getNumResults();
+			if ($numMatches > 0) {
+				if ($numMatches > 1) {
+					$exploreMoreOptions['searchLinks'][] = array(
+						'label' => translate(['text'=>"All EBSCOhost Results (%1%)", 1=>$numMatches, 'isPublicFacing'=>true]),
+						'description' => translate(['text'=>"All Results in EBSCOhost related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						'image' => '/interface/themes/responsive/images/ebscohost.png',
+						'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm),
+						'openInNewWindow' => false
+					);
+				}
+				$numResultsAdded = 0;
+				foreach ($ebscohostResults->rec as $result){
+					/** @var EbscohostRecordDriver $driver */
+					$driver = $ebscohostSearcher->getRecordDriverForResult($result);
+					if ($numResultsAdded < $this->numEntriesToAdd) {
+						//Add a link to the actual title
+						$exploreMoreOptions['sampleRecords']['ebscohost'][] = array(
+							'label' => $driver->getTitle(),
+							'description' => $driver->getTitle(),
+							'image' => $driver->getBookcoverUrl('medium'),
+							'link' => $driver->getLinkUrl(),
+							'usageCount' => 1,
+							'openInNewWindow' => false
+						);
+					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
+
 	/**
 	 * @param $activeSection
 	 * @param $searchTerm
 	 * @param $exploreMoreOptions
 	 * @return array
 	 */
-	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	public function loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
 		global $enabledModules;
 		if (!empty($searchTerm) && array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {

@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -352,7 +353,7 @@ class GroupedWork implements Cloneable {
 	}
 
 	public void setLanguage(String language){
-		this.language = language;
+		this.language = language.toLowerCase(Locale.ROOT);
 	}
 
 	public String getLanguage(){

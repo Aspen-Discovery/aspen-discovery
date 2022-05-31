@@ -631,7 +631,7 @@ public class GroupedWorkIndexer {
 			if (regroupAllRecords){
 				try {
 					logEntry.addNote("Turning off regroupAllRecords");
-					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecords = 0").executeUpdate();
+					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0").executeUpdate();
 				} catch (Exception e) {
 					logEntry.incErrors("Error turning off regroupAllRecords", e);
 				}
@@ -844,7 +844,7 @@ public class GroupedWorkIndexer {
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
 				}
 				if (newId == null){
-					//The record is not valid, skip it. 
+					//The record is not valid, skip it.
 					continue;
 				}else if (!newId.equals(permanentId)){
 					//The work will be marked as updated and therefore reindexed at the end?

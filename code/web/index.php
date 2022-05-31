@@ -235,6 +235,11 @@ if (isset($_REQUEST['lookfor'])) {
 				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
+			$cleanedSearchTerm = strip_tags($searchTerm);
+			if ($cleanedSearchTerm != $searchTerm){
+				$_REQUEST['lookfor'][$i] = $cleanedSearchTerm;
+				$_GET['lookfor'][$i] = $cleanedSearchTerm;
+			}
 			if (strlen($searchTerm) >= 256) {
 				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
 				$interface->setTemplate('../queryTooLong.tpl');
@@ -249,6 +254,10 @@ if (isset($_REQUEST['lookfor'])) {
 		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
 			$searchTerm = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+		}
+		$cleanedSearchTerm = strip_tags($searchTerm);
+		if ($cleanedSearchTerm != $searchTerm){
+			$searchTerm = $cleanedSearchTerm;
 		}
 		if (strlen($searchTerm) >= 256) {
 			$interface->setTemplate('../queryTooLong.tpl');

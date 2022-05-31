@@ -254,6 +254,7 @@ class Library extends DataObject
 
 	//EBSCO Settings
 	public $edsSettingsId;
+	public $ebscohostSettingId;
 
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
@@ -284,11 +285,6 @@ class Library extends DataObject
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
-	/**
-	 * @var array|int|LibraryCloudLibraryScope[]|mixed|null
-	 */
-	public $ebscohostSettingId;
-
 
 	public function getNumericColumnNames() : array {
 		return [
