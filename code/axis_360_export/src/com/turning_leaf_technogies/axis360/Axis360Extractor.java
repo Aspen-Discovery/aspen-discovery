@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.zip.CRC32;
 
 public class Axis360Extractor {
@@ -46,6 +47,7 @@ public class Axis360Extractor {
 	private PreparedStatement getAspenIdByAxis360IdStmt;
 	private PreparedStatement updateAxis360AvailabilityStmt;
 	private PreparedStatement getExistingAxis360AvailabilityStmt;
+	private PreparedStatement getExistingSettingsForAxis360TitleStmt;
 	private PreparedStatement getRecordsToReloadStmt;
 	private PreparedStatement markRecordToReloadAsProcessedStmt;
 	private PreparedStatement getItemDetailsForRecordStmt;
@@ -78,6 +80,7 @@ public class Axis360Extractor {
 			getAspenIdByAxis360IdStmt = aspenConn.prepareStatement("SELECT * from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			deleteAxis360AvailabilityStmt = aspenConn.prepareStatement("DELETE FROM axis360_title_availability where titleId = ? and settingId = ?");
 			deleteAxis360ItemStmt = aspenConn.prepareStatement("UPDATE axis360_title SET deleted = 1 where id = ?");
+			getExistingSettingsForAxis360TitleStmt = aspenConn.prepareStatement("SELECT count(*) as numSettings from axis360_title_availability WHERE titleId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getExistingAxis360AvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from axis360_title_availability WHERE titleId = ? and settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			updateAxis360AvailabilityStmt = aspenConn.prepareStatement(
 					"INSERT INTO axis360_title_availability " +
@@ -132,6 +135,7 @@ public class Axis360Extractor {
 						allRecordsRS.getLong("rawChecksum"),
 						allRecordsRS.getBoolean("deleted")
 				);
+
 				existingRecords.put(axis360Id, newTitle);
 			}
 		} catch (SQLException e) {
@@ -203,8 +207,10 @@ public class Axis360Extractor {
 				JSONObject responseJSON = response.getJSONResponse();
 				JSONObject itemDetailsResponseStatus = responseJSON.getJSONObject("status");
 				if (itemDetailsResponseStatus.getString("Code").equals("0000")){
-					JSONArray titleDetails = responseJSON.getJSONArray("titles");
-					numChanges += processAxis360Titles(setting, existingRecords, titleDetails);
+					if (responseJSON.has("titles") && !responseJSON.isNull("titles")) {
+						JSONArray titleDetails = responseJSON.getJSONArray("titles");
+						numChanges += processAxis360Titles(setting, existingRecords, titleDetails);
+					}
 				}else{
 					logEntry.incErrors("Did not get a good status while calling getItemDetails " + itemDetailsResponseStatus.getString("Code") + " " + itemDetailsResponseStatus.getString("Message"));
 				}
@@ -289,8 +295,13 @@ public class Axis360Extractor {
 							availabilityChanged = true;
 						}
 					} else {
-						//Let's assume this is not available for now
-						logEntry.incSkipped();
+						//The title is no longer available
+						if (existingTitle != null) {
+							HashMap<String, Axis360Title> titleToDelete = new HashMap<>();
+							existingTitle.setProcessed(false);
+							titleToDelete.put(axis360Id, existingTitle);
+							deleteItems(setting, titleToDelete);
+						}
 						continue;
 					}
 
@@ -396,9 +407,13 @@ public class Axis360Extractor {
 					deleteAxis360AvailabilityStmt.setString(1, axis360Title.getAxis360Id());
 					deleteAxis360AvailabilityStmt.setLong(2, setting.getId());
 
-					axis360Title.removeSetting(setting.getId());
-
-					if (axis360Title.getNumSettings() == 0) {
+					getExistingSettingsForAxis360TitleStmt.setLong(1, axis360Title.getId());
+					ResultSet getExistingSettingsForAxis360TitleRS = getExistingSettingsForAxis360TitleStmt.executeQuery();
+					int numSettings = 0;
+					if (getExistingSettingsForAxis360TitleRS.next()){
+						numSettings = getExistingSettingsForAxis360TitleRS.getInt("numSettings");
+					}
+					if (numSettings == 0) {
 						deleteAxis360ItemStmt.setLong(1, axis360Title.getId());
 						deleteAxis360ItemStmt.executeUpdate();
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("axis360", axis360Title.getAxis360Id());
@@ -470,12 +485,15 @@ public class Axis360Extractor {
 			try {
 				JSONObject responseJSON = response.getJSONResponse();
 				JSONObject availabilityResponseStatus = responseJSON.getJSONObject("status");
-				if (availabilityResponseStatus.getString("Code").equals("0000")){
+				if (availabilityResponseStatus.getString("Code").equals("0000")) {
 					if (responseJSON.has("titles")) {
 						return responseJSON.getJSONArray("titles").getJSONObject(0);
-					}else{
+					} else {
 						logEntry.incErrors("Did not get titles while getting availability");
 					}
+				}else if (availabilityResponseStatus.getString("Code").equals("3103")){
+					//Invalid title, just delete availability for this title.
+					return null;
 				}else{
 					logEntry.incErrors("Did not get a good status while calling titleInfo " + availabilityResponseStatus.getString("Code") + " " + availabilityResponseStatus.getString("Message"));
 				}

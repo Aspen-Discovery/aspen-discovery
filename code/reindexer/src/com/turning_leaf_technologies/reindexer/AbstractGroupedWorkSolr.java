@@ -389,7 +389,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	public void setId(String id) {
-		this.id = id;
+		this.id = id.toLowerCase(Locale.ROOT);
 	}
 
 	private final static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
