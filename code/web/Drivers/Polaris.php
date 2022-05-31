@@ -529,6 +529,79 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 
+		//Get ILL holds
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/illrequests/all";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+		ExternalRequestLogEntry::logRequest('polaris.illRequests', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			$illRequestList = $jsonResponse->PatronILLRequestsGetRows;
+			foreach ($illRequestList as $index => $illRequestInfo){
+				$curHold = new Hold();
+				$curHold->userId = $patron->id;
+				$curHold->type = 'ils';
+				$curHold->source = $this->getIndexingProfile()->name;
+				$curHold->sourceId = $illRequestInfo->ILLRequestID;
+				$curHold->recordId = $illRequestInfo->BibRecordID;
+				$curHold->cancelId = $illRequestInfo->ILLRequestID;
+				$curHold->frozen = false;
+				$curHold->locationUpdateable = false;
+				$curHold->cancelable = $illRequestInfo->ILLStatusID == 1 || $illRequestInfo->ILLStatusID == 2 || $illRequestInfo->ILLStatusID == 3;
+				$isAvailable = false;
+				$curHold->status = $illRequestInfo->Status;
+				switch ($illRequestInfo->ILLStatusID){
+					case 1: //Inactive
+						$curHold->status = $illRequestInfo->Status;
+						$curHold->frozen = true;
+						break;
+					case 2: //Active?
+					case 3: //Active
+						$curHold->status = $illRequestInfo->Status;
+						break;
+					case 5: //Shipped
+						$curHold->status = $illRequestInfo->Status;
+						break;
+					case 10: //Received-Held
+						$curHold->status = $illRequestInfo->Status;
+						$isAvailable = true;
+						$curHold->expirationDate = $this->parsePolarisDate($illRequestInfo->PickupByDate);
+						break;
+					case 11: //Received-Transferred
+					case 12: //Received-Satisfied
+					case 13: //Received-Used
+					case 14: //Received-Unused
+					case 15: //Returned
+					case 16: //Cancelled
+						//Don't show these
+						$curHold->status = $illRequestInfo->Status;
+						continue 2;
+				}
+				$curHold->canFreeze = false;
+				$curHold->title = $illRequestInfo->Title;
+				$curHold->author = $illRequestInfo->Author;
+				$curHold->callNumber = $illRequestInfo->CallNumber;
+				$curPickupBranch = new Location();
+				$curPickupBranch->code = $illRequestInfo->PickupBranchID;
+				if ($curPickupBranch->find(true)) {
+					$curPickupBranch->fetch();
+					$curHold->pickupLocationId = $curPickupBranch->locationId;
+					$curHold->pickupLocationName = $curPickupBranch->displayName;
+				}else{
+					$curHold->pickupLocationName = $illRequestInfo->PickupBranch;
+				}
+				$curHold->expirationDate = $this->parsePolarisDate($illRequestInfo->PickupByDate);
+				$curHold->volume = $illRequestInfo->VolumeAndIssue;
+				$curHold->format = $illRequestInfo->Format;
+
+				$curHold->available = $isAvailable;
+				if ($curHold->available) {
+					$holds['available'][] = $curHold;
+				} else {
+					$holds['unavailable'][] = $curHold;
+				}
+			}
+		}
+
 		return $holds;
 	}
 
