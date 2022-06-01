@@ -280,8 +280,8 @@ public class RecordGroupingProcessor {
 					alternateGroupedWorkPermanentId = alternateGroupedWorkPermanentId.substring(0, 36);
 				}
 				alternateGroupedWorkPermanentId += groupedWork.getLanguage();
+				groupedWorkPermanentId = alternateGroupedWorkPermanentId;
 			}
-			groupedWorkPermanentId = alternateGroupedWorkPermanentId;
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
