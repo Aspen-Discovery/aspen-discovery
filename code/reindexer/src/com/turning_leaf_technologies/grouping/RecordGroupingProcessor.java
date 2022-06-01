@@ -274,7 +274,7 @@ public class RecordGroupingProcessor {
 			groupedWork.makeUnique(primaryIdentifierString);
 			groupedWorkPermanentId = groupedWork.getPermanentId();
 		}else{
-			groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
+			groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId) + "-" + groupedWork.getLanguage();
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
