@@ -348,7 +348,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$settings = $this->getSettings($patron);

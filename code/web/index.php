@@ -35,7 +35,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 18);
+$interface->assign('cssJsCacheCounter', 19);
 
 // Setup Translator
 global $language;

@@ -221,11 +221,12 @@ class MyAccount_AJAX extends JSON_Action
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
 		$cancelId = $_REQUEST['cancelId'];
+		$isIll = $_REQUEST['isIll'];
 		$cancelButtonLabel = translate(['text'=>'Confirm Cancel Hold','isPublicFacing'=>true]);
 		return array(
 			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
 			'body' => translate(['text'=>"Are you sure you want to cancel this hold?",'isPublicFacing'=>true]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\", \"$isIll\")'>$cancelButtonLabel</span>",
 		);
 	}
 
@@ -253,7 +254,8 @@ class MyAccount_AJAX extends JSON_Action
 				} else {
 					$cancelId = $_REQUEST['cancelId'];
 					$recordId = $_REQUEST['recordId'];
-					$result = $patronOwningHold->cancelHold($recordId, $cancelId);
+					$isIll = $_REQUEST['isIll'] ?? false;
+					$result = $patronOwningHold->cancelHold($recordId, $cancelId, $isIll);
 				}
 			}
 		}
@@ -306,7 +308,7 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 						if ($holdType == 'ils') {
-							$tmpResult = $user->cancelHold($recordId, $cancelId);
+							$tmpResult = $user->cancelHold($recordId, $cancelId, $key->isIll);
 							if($tmpResult['success']){$success++;}
 						} else if ($holdType == 'axis360') {
 							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -355,8 +357,9 @@ class MyAccount_AJAX extends JSON_Action
 				$recordId = $hold->sourceId;
 				$cancelId = $hold->cancelId;
 				$holdType = $hold->source;
+				$isIll = $hold->isIll;
 				if ($holdType == 'ils') {
-					$tmpResult = $user->cancelHold($recordId, $cancelId);
+					$tmpResult = $user->cancelHold($recordId, $cancelId, $isIll);
 					if($tmpResult['success']){$success++;}
 				} else if ($holdType == 'axis360') {
 					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';

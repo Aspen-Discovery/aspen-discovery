@@ -1122,7 +1122,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		$result = [];
 		$sessionToken = $this->getSessionToken($patron);

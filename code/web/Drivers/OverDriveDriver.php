@@ -942,7 +942,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param string $overDriveId
 	 * @return array
 	 */
-	function cancelHold($patron, $overDriveId, $cancelId = null){
+	function cancelHold($patron, $overDriveId, $cancelId = null, $isIll = false){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($patron, $url, "cancelHold");
 

@@ -536,6 +536,11 @@ class Polaris extends AbstractIlsDriver
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			$illRequestList = $jsonResponse->PatronILLRequestsGetRows;
+			$illCancelAvailable = true;
+			if (!empty($this->accountProfile->apiVersion)){
+				$apiVersionFloat = floatval($this->accountProfile->apiVersion);
+				$illCancelAvailable = $apiVersionFloat >= 7;
+			}
 			foreach ($illRequestList as $index => $illRequestInfo){
 				$curHold = new Hold();
 				$curHold->userId = $patron->id;
@@ -546,33 +551,29 @@ class Polaris extends AbstractIlsDriver
 				$curHold->cancelId = $illRequestInfo->ILLRequestID;
 				$curHold->frozen = false;
 				$curHold->locationUpdateable = false;
-				$curHold->cancelable = $illRequestInfo->ILLStatusID == 1 || $illRequestInfo->ILLStatusID == 2 || $illRequestInfo->ILLStatusID == 3;
+
+				$curHold->cancelable = $illCancelAvailable && ($illRequestInfo->ILLStatusID == 1 || $illRequestInfo->ILLStatusID == 2 || $illRequestInfo->ILLStatusID == 3 || $illRequestInfo->ILLStatusID == 5);
 				$isAvailable = false;
 				$curHold->status = $illRequestInfo->Status;
 				switch ($illRequestInfo->ILLStatusID){
 					case 1: //Inactive
-						$curHold->status = $illRequestInfo->Status;
-						$curHold->frozen = true;
-						break;
 					case 2: //Active?
 					case 3: //Active
-						$curHold->status = $illRequestInfo->Status;
-						break;
 					case 5: //Shipped
+					case 11: //Received-Transferred
 						$curHold->status = $illRequestInfo->Status;
 						break;
+
 					case 10: //Received-Held
 						$curHold->status = $illRequestInfo->Status;
 						$isAvailable = true;
 						$curHold->expirationDate = $this->parsePolarisDate($illRequestInfo->PickupByDate);
 						break;
-					case 11: //Received-Transferred
 					case 12: //Received-Satisfied
 					case 13: //Received-Used
 					case 14: //Received-Unused
 					case 15: //Returned
 					case 16: //Cancelled
-						//Don't show these
 						$curHold->status = $illRequestInfo->Status;
 						continue 2;
 				}
@@ -592,6 +593,7 @@ class Polaris extends AbstractIlsDriver
 				$curHold->expirationDate = $this->parsePolarisDate($illRequestInfo->PickupByDate);
 				$curHold->volume = $illRequestInfo->VolumeAndIssue;
 				$curHold->format = $illRequestInfo->Format;
+				$curHold->isIll = true;
 
 				$curHold->available = $isAvailable;
 				if ($curHold->available) {
@@ -767,50 +769,56 @@ class Polaris extends AbstractIlsDriver
 		return $result;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
-		$staffInfo = $this->getStaffUserInfo();
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
-		ExternalRequestLogEntry::logRequest('polaris.cancelHold', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
+		if (!$isIll) {
+			$staffInfo = $this->getStaffUserInfo();
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+			ExternalRequestLogEntry::logRequest('polaris.cancelHold', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
+		}else{
+			$staffInfo = $this->getStaffUserInfo();
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/illrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+			ExternalRequestLogEntry::logRequest('polaris.cancelIllHold', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
+		}
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 				$result['success'] = true;
-				$result['message'] = translate(['text'=>'The hold has been cancelled.', 'isPublicFacing'=>true]);;
+				$result['message'] = translate(['text' => 'The hold has been cancelled.', 'isPublicFacing' => true]);;
 
 				// Result for API or app use
-				$result['api']['title'] = translate(['text'=>'Hold cancelled', 'isPublicFacing'=>true]);
-				$result['api']['message'] = translate(['text'=>'Your hold has been cancelled.', 'isPublicFacing'=>true]);
+				$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing' => true]);
+				$result['api']['message'] = translate(['text' => 'Your hold has been cancelled.', 'isPublicFacing' => true]);
 
 				return $result;
-			}else{
+			} else {
 				$message = "The hold could not be cancelled. {$jsonResponse->ErrorMessage}";
 				$result['success'] = false;
 				$result['message'] = $message;
 
 				// Result for API or app use
-				$result['api']['title'] = translate(['text'=>'Unable to cancel hold', 'isPublicFacing'=>true]);
+				$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing' => true]);
 				$result['api']['message'] = $jsonResponse->ErrorMessage;
 
 				return $result;
 			}
-		}else{
+		} else {
 			$message = "The hold could not be cancelled.";
-			if (IPAddress::showDebuggingInformation()){
+			if (IPAddress::showDebuggingInformation()) {
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
 			$result['success'] = false;
 			$result['message'] = $message;
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Hold not cancelled', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate(['text' => 'Hold not cancelled', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate(['text' => 'The hold could not be cancelled.', 'isPublicFacing' => true]);
 
 			return $result;
-
 		}
 	}
 

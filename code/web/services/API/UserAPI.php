@@ -2206,11 +2206,13 @@ class UserAPI extends Action
 		$cancelId = $_REQUEST['cancelId'] ?? null;
 
 		$source = $_REQUEST['itemSource'] ?? null;
+		$isIll = $_REQUEST['isIll'] ?? false;
+
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
-				$result = $user->cancelHold($recordId, $cancelId);
+				$result = $user->cancelHold($recordId, $cancelId, $isIll);
 				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 			} else if ($source == 'overdrive') {
 				return $this->cancelOverDriveHold();

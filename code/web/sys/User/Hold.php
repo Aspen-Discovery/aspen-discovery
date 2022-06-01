@@ -26,13 +26,14 @@ class Hold extends CircEntry
 	public $canFreeze;
 	public $reactivateDate;
 	public $format;
+	public $isIll;
 
 	//Try to get rid of
 	public $_freezeError;
 
 	public function getNumericColumnNames() : array
 	{
-		return ['userId', 'available', 'cancelable', 'locationUpdateable', 'position', 'holdQueueLength', 'createDate', 'availableDate', 'expirationDate', 'automaticCancellationDate', 'frozen', 'canFreeze', 'reactivateDate'];
+		return ['userId', 'available', 'cancelable', 'locationUpdateable', 'position', 'holdQueueLength', 'createDate', 'availableDate', 'expirationDate', 'automaticCancellationDate', 'frozen', 'canFreeze', 'reactivateDate', 'isIll'];
 	}
 
 	/** @noinspection PhpUnused */
@@ -104,6 +105,7 @@ class Hold extends CircEntry
 			$hold['upc'] = $recordDriver->getUPC();
 			$hold['format_category'] = $recordDriver->getFormatCategory();
 		}
+		$hold['isIll'] = (boolean)$this->isIll;
 		return $hold;
 	}
 

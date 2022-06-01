@@ -1568,11 +1568,12 @@ class User extends DataObject
 	 *
 	 * @param $recordId string  The Id of the record being cancelled
 	 * @param $cancelId string  The Id of the hold to be cancelled.  Structure varies by ILS
+	 * @param $isIll boolean    If the hold is from the ILL system
 	 *
 	 * @return array            Information about the result of the cancellation process
 	 */
-	function cancelHold($recordId, $cancelId){
-		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId);
+	function cancelHold($recordId, $cancelId, $isIll){
+		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
 		$this->clearCache();
 		return $result;
 	}

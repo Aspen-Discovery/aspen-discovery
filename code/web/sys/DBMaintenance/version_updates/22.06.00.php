@@ -92,5 +92,12 @@ function getUpdates22_06_00() : array
 			) ENGINE = InnoDB'
 			]
 		],//createMaterialRequestStats
+		'holdIsILL' => [
+			'title' => 'Hold - Is ILL',
+			'description' => 'Add a property to determine if a hold is ILL',
+			'sql' => [
+				'ALTER TABLE user_hold ADD COLUMN isIll TINYINT(1) DEFAULT 0'
+			]
+		], //holdIsILL
 	];
 }

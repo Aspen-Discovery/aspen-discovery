@@ -1951,7 +1951,7 @@ class Koha extends AbstractIlsDriver
 		return $this->basicAuthToken;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}

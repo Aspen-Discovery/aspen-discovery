@@ -522,7 +522,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null) {
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) {
 		return $this->placeHoldViaSIP($patron, $cancelId, null, null, 'cancel');
 
 	}
