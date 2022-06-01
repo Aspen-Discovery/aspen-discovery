@@ -274,7 +274,14 @@ public class RecordGroupingProcessor {
 			groupedWork.makeUnique(primaryIdentifierString);
 			groupedWorkPermanentId = groupedWork.getPermanentId();
 		}else{
-			groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId) + "-" + groupedWork.getLanguage();
+			String alternateGroupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
+			if (alternateGroupedWorkPermanentId != null) {
+				if (alternateGroupedWorkPermanentId.length() == 40) {
+					alternateGroupedWorkPermanentId = alternateGroupedWorkPermanentId.substring(0, 36);
+				}
+				alternateGroupedWorkPermanentId += groupedWork.getLanguage();
+			}
+			groupedWorkPermanentId = alternateGroupedWorkPermanentId;
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
@@ -384,7 +391,7 @@ public class RecordGroupingProcessor {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
 		}
-		return groupedWorkPermanentId;
+		return null;
 	}
 
 	private void moveGroupedWorkEnrichment(String oldPermanentId, String newPermanentId) {
