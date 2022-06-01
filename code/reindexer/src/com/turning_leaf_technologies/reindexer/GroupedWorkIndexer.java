@@ -73,6 +73,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getGroupedWorkInfoStmt;
 	private PreparedStatement getArBookIdForIsbnStmt;
 	private PreparedStatement getArBookInfoStmt;
+	private PreparedStatement getNumScheduledWorksStmt;
 	private PreparedStatement getScheduledWorksStmt;
 	private PreparedStatement getScheduledWorkStmt;
 	private PreparedStatement markScheduledWorkProcessedStmt;
@@ -201,9 +202,10 @@ public class GroupedWorkIndexer {
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getScheduledWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getNumScheduledWorksStmt = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numScheduledWorks FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorksStmt = dbConn.prepareStatement("SELECT DISTINCT permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
+			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where permanent_id = ? and indexAfter <= ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
 			markIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
@@ -585,7 +587,17 @@ public class GroupedWorkIndexer {
 
 		try {
 			int numWorksProcessed = 0;
-			getScheduledWorksStmt.setLong(1, new Date().getTime() / 1000);
+			long startTime = new Date().getTime() / 1000;
+
+			getNumScheduledWorksStmt.setLong(1, startTime);
+			ResultSet numScheduledWorksRS = getNumScheduledWorksStmt.executeQuery();
+			if (numScheduledWorksRS.next()) {
+				int numScheduledWorks = numScheduledWorksRS.getInt("numScheduledWorks");
+				logEntry.addNote("Processing " + numScheduledWorks + " scheduled works");
+				logEntry.saveResults();
+			}
+
+			getScheduledWorksStmt.setLong(1, startTime);
 			ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
 			while (scheduledWorksRS.next()) {
 				long scheduleId = scheduledWorksRS.getLong("id");
@@ -595,6 +607,7 @@ public class GroupedWorkIndexer {
 				this.processGroupedWork(workToProcess);
 
 				markScheduledWorkProcessedStmt.setLong(1, scheduleId);
+				markScheduledWorkProcessedStmt.setLong(2, startTime);
 				markScheduledWorkProcessedStmt.executeUpdate();
 				numWorksProcessed++;
 			}
