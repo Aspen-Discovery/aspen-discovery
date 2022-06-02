@@ -99,5 +99,35 @@ function getUpdates22_06_00() : array
 				'ALTER TABLE user_hold ADD COLUMN isIll TINYINT(1) DEFAULT 0'
 			]
 		], //holdIsILL
+		'updateGroupedWorkFacetReadling' => [
+			'title' => 'Fix spelling in Reading Levels',
+			'description' => 'Fix spelling in displayNamePlural of Reading Levels',
+			'sql' => [
+				'UPDATE grouped_work_facet SET displayNamePlural="Reading Levels" WHERE displayNamePlural="Readling Levels"'
+			]
+		], //updateGroupedWorkFacetReadling
+		'updateGroupedWorkFacetReadingtoAudience' => [
+			'title' => 'Update Reading Level/s to Audience/s',
+			'description' => 'Update Reading Level/s to Audience/s',
+			'sql' => [
+				'UPDATE grouped_work_facet SET displayNamePlural="Audiences" WHERE displayNamePlural="Reading Levels"',
+				'UPDATE grouped_work_facet SET displayName="Audience" WHERE displayName="Reading Level"'
+			]
+		], //updateGroupedWorkFacetReadingtoAudience
+		'updateDefaultConfiguration' => [
+			'title' => 'Update default configuration',
+			'description' => 'Update default configuration options',
+			'sql' => [
+				"ALTER TABLE library ALTER allowFreezeHolds SET DEFAULT '1'",
+				"ALTER TABLE library ALTER maxDaysToFreeze SET DEFAULT '365'",
+				"ALTER TABLE library ALTER allowMasqueradeMode SET DEFAULT '1'",
+				"ALTER TABLE library ALTER enableMaterialsRequest SET DEFAULT '0'",
+				"ALTER TABLE indexing_profiles ALTER treatUnknownAudienceAs SET DEFAULT 'General'",
+				"ALTER TABLE indexing_profiles ALTER hideUnknownLiteraryForm SET DEFAULT '1'",
+				"ALTER TABLE indexing_profiles ALTER hideNotCodedLiteraryForm SET DEFAULT '1'",
+				"ALTER TABLE indexing_profiles ALTER checkRecordForLargePrint SET DEFAULT '1'",
+				"ALTER TABLE overdrive_settings ALTER useFulfillmentInterface SET DEFAULT '1'",
+			]
+		], //updateDefaultConfiguration
 	];
 }
