@@ -114,5 +114,20 @@ function getUpdates22_06_00() : array
 				'UPDATE grouped_work_facet SET displayName="Audience" WHERE displayName="Reading Level"'
 			]
 		], //updateGroupedWorkFacetReadingtoAudience
+		'updateDefaultConfiguration' => [
+			'title' => 'Update default configuration',
+			'description' => 'Update default configuration options',
+			'sql' => [
+				"ALTER TABLE library ALTER allowFreezeHolds SET DEFAULT '1'",
+				"ALTER TABLE library ALTER maxDaysToFreeze SET DEFAULT '365'",
+				"ALTER TABLE library ALTER allowMasqueradeMode SET DEFAULT '1'",
+				"ALTER TABLE library ALTER enableMaterialsRequest SET DEFAULT '0'",
+				"ALTER TABLE indexing_profiles ALTER treatUnknownAudienceAs SET DEFAULT 'General'",
+				"ALTER TABLE indexing_profiles ALTER hideUnknownLiteraryForm SET DEFAULT '1'",
+				"ALTER TABLE indexing_profiles ALTER hideNotCodedLiteraryForm SET DEFAULT '1'",
+				"ALTER TABLE indexing_profiles ALTER checkRecordForLargePrint SET DEFAULT '1'",
+				"ALTER TABLE overdrive_settings ALTER useFulfillmentInterface SET DEFAULT '1'",
+			]
+		], //updateDefaultConfiguration
 	];
 }
