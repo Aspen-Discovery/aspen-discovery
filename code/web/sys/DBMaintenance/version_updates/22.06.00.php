@@ -99,5 +99,20 @@ function getUpdates22_06_00() : array
 				'ALTER TABLE user_hold ADD COLUMN isIll TINYINT(1) DEFAULT 0'
 			]
 		], //holdIsILL
+		'updateGroupedWorkFacetReadling' => [
+			'title' => 'Fix spelling in Reading Levels',
+			'description' => 'Fix spelling in displayNamePlural of Reading Levels',
+			'sql' => [
+				'UPDATE grouped_work_facet SET displayNamePlural="Reading Levels" WHERE displayNamePlural="Readling Levels"'
+			]
+		], //updateGroupedWorkFacetReadling
+		'updateGroupedWorkFacetReadingtoAudience' => [
+			'title' => 'Update Reading Level/s to Audience/s',
+			'description' => 'Update Reading Level/s to Audience/s',
+			'sql' => [
+				'UPDATE grouped_work_facet SET displayNamePlural="Audiences" WHERE displayNamePlural="Reading Levels"',
+				'UPDATE grouped_work_facet SET displayName="Audience" WHERE displayName="Reading Level"'
+			]
+		], //updateGroupedWorkFacetReadingtoAudience
 	];
 }
