@@ -1,14 +1,13 @@
 {strip}
+	{assign var="vSummAuthor" value=""}
+	{if $summAuthor != ''} 
+		{assign var="vSummAuthor" value="by $summAuthor"}
+	{/if}
 	{if $browseMode == '1'}
 		<div class="browse-list grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
-			   {if $summAuthor eq ''}
-					<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle}" title="{$summTitle|escape}">
-					<div><strong>{$summTitle}</strong><br> by {$summAuthor}</div>
-				{else}
-					<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle|escape} by {$summAuthor}">
-					<div><strong>{$summTitle}</strong><br> by {$summAuthor}</div>
-				{/if}
+				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
+				<div><strong>{$summTitle}</strong><br>{$vSummAuthor}</br></div>
 			</a>
 		</div>
 
@@ -16,11 +15,7 @@
 		<div class="browse-thumbnail grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
 				<div>
-					{if $summAuthor eq ""}
-							<img src="{$bookCoverUrlMedium}" alt="{$summTitle}" title="{$summTitle|escape}">
-					{else}
-							<img src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle|escape} by {$summAuthor}">
-					{/if}
+					<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
 				</div>
 			</a>
 			{if $showRatings && $browseCategoryRatingsMode != 0}
@@ -46,5 +41,4 @@
 		</div>
 	{/if}
 {/strip}
-
 
