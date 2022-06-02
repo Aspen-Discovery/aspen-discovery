@@ -10,10 +10,17 @@
 	</div>
 	{/if}
 
-	{if !empty($searchError) && !empty($searchError.error.msg)}
+	{if !empty($searchError) && !empty($searchError->message)}
 		<h2>{translate text="Error description" isPublicFacing=true}</h2>
 		<div>
-			{$searchError.error.msg}
+			{$searchError->message}
 		</div>
+		{if $debug}
+			<div id="debug">
+				<h4>{translate text="Debug Information" isAdminFacing=true}</h4>
+				<p>{translate text="Backtrace" isAdminFacing=true}</p>
+				{$searchError->backtrace}
+			</div>
+		{/if}
 	{/if}
 </div>
