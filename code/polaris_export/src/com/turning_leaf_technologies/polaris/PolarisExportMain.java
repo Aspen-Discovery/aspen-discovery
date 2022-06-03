@@ -1159,17 +1159,10 @@ public class PolarisExportMain {
 					boolean gotItems = getItemsForBibFromPolaris(marcFactory, bibliographicRecordId, marcRecord);
 					if (gotItems){
 						GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId, marcRecord);
-						if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
-							logEntry.incUpdated();
-						}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+						if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 							logEntry.incAdded();
-						}else{
-							//No change has been made, we could skip this
-							if (!indexingProfile.isRunFullUpdate() && singleWorkId == null){
-								logEntry.incSkipped();
-							}else{
-								logEntry.incUpdated();
-							}
+						}else {
+							logEntry.incUpdated();
 						}
 
 						updateVolumeInfoForIdentifier(marcRecord, bibliographicRecordId);

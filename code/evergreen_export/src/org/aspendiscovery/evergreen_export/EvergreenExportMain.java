@@ -917,18 +917,10 @@ public class EvergreenExportMain {
 						}else{
 							//mark the item for reindexing
 							GroupedWorkIndexer.MarcStatus saveMarcResult = indexer.saveMarcRecordToDatabase(indexingProfile, bibNumber, currentMarcRecord);
-							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
-								logEntry.incUpdated();
-							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
-							} else {
-								//No change has been made, we could skip this
-								if (!indexingProfile.isRunFullUpdate()) {
-									//TODO: Actually skip re-processing the record?
-									rowData = reader.readNext();
-									logEntry.incSkipped();
-									continue;
-								}
+							}else {
+								logEntry.incUpdated();
 							}
 
 							//Regroup the record
@@ -1398,16 +1390,10 @@ public class EvergreenExportMain {
 						if (bibliographicRecordId != null) {
 
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
-							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
-								logEntry.incUpdated();
-							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
-							} else {
-								//No change has been made, we could skip this
-								if (!indexingProfile.isRunFullUpdate()) {
-									//TODO: Actually skip re-processing the record?
-									logEntry.incSkipped();
-								}
+							}else {
+								logEntry.incUpdated();
 							}
 
 							//Regroup the record

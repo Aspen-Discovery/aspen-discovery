@@ -1296,19 +1296,10 @@ public class KohaExportMain {
 					}
 
 					GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, curBibId, marcRecord);
-					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
-						logEntry.incUpdated();
-					}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 						logEntry.incAdded();
-					}else{
-						//No change has been made, we could skip this
-						if (!indexingProfile.isRunFullUpdate() && !extractSingleWork){
-							logEntry.incSkipped();
-							return;
-						}else{
-							//Make sure we mark that it is updated if we are running a full update
-							logEntry.incUpdated();
-						}
+					}else {
+						logEntry.incUpdated();
 					}
 
 					//Regroup the record
