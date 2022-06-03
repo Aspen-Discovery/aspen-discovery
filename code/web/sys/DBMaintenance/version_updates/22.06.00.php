@@ -145,5 +145,12 @@ function getUpdates22_06_00() : array
 				"INSERT INTO browse_category (textId, label, source) VALUES ('system_recommended_for_you', 'Recommended For You', 'GroupedWork')",
 			]
 		], //addRecommendedForYou
+		'addWeightToDonationValue' => [
+			'title' => 'Add weight column to donations_value',
+			'description' => 'Add weight column to donations_value to allow sorting',
+			'sql' => [
+				'ALTER TABLE donations_value ADD COLUMN weight INT DEFAULT 0'
+			]
+		], //addWeightToDonationValue
 	];
 }
