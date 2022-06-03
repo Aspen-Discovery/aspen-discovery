@@ -129,5 +129,21 @@ function getUpdates22_06_00() : array
 				"ALTER TABLE overdrive_settings ALTER useFulfillmentInterface SET DEFAULT '1'",
 			]
 		], //updateDefaultConfiguration
+		'updateDefaultConfiguration2' => [
+			'title' => 'Update default configuration part 2',
+			'description' => 'Update default configuration options',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE system_variables ALTER useHtmlEditorRatherThanMarkdown SET DEFAULT '1'",
+			]
+		], //updateDefaultConfiguration2
+		'addRecommendedForYou' => [
+			'title' => 'Add Recommended For You Browse Category',
+			'description' => 'Adds system Recommended For You browse category if one has not been created yet',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO browse_category (textId, label, source) VALUES ('system_recommended_for_you', 'Recommended For You', 'GroupedWork')",
+			]
+		], //addRecommendedForYou
 	];
 }
