@@ -60,7 +60,11 @@ export default class GroupedWork extends Component {
 	}
 
 	authorSearch = (author, libraryUrl) => {
-		this.props.navigation.push("SearchResults", {searchTerm: author, libraryUrl: libraryUrl});
+		const { navigation } = this.props;
+		this.props.navigation.navigate("SearchByAuthor", {
+			searchTerm: author,
+			libraryUrl: libraryUrl,
+		})
 	};
 
 	openCheckouts = () => {
@@ -330,10 +334,13 @@ export default class GroupedWork extends Component {
 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
 					{this.state.formats ?
 						<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
-					{discoveryVersion <= "22.05.00" ? 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
-					                                                          mb={1}>{translate('grouped_work.language')}</Text> : null}
+					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
+					                                                          mb={1}>{translate('grouped_work.language')}</Text>
 					{this.state.languages && discoveryVersion <= "22.05.00" ?
 						<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
+
+					{discoveryVersion >= "22.06.00" && this.state.data.language ? 					<Text fontSize={{base: "xs", lg: "md"}} mt={3}
+					                                                           mb={1}>{this.state.data.language}</Text> : null}
 
 					{this.state.variations ? <Manifestation data={this.state.variations} format={this.state.format}
 					                                          language={this.state.language}
