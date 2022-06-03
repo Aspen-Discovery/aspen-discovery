@@ -775,8 +775,8 @@ public class EvergreenExportMain {
 			}
 			//Check the existing records to see what hasn't been deleted already
 			for (String existingRecord : existingRecords.keySet()){
-				if (existingRecords.get(id) == Boolean.FALSE){
-					deletedIds.add(id);
+				if (existingRecords.get(existingRecord) == Boolean.FALSE){
+					deletedIds.add(existingRecord);
 				}
 			}
 			logEntry.addNote("There are " + newIds.size() + " new and " + restoredIds.size() + " restored ids and " + deletedIds.size() + " deleted ids");
