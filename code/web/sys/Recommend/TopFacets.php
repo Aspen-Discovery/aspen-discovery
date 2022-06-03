@@ -90,7 +90,7 @@ class TopFacets implements RecommendationInterface
 			if (strpos($facetSetkey, 'format_category') === 0){
 				//add an image name for display in the template
 				foreach ($facetSet['list'] as $facetKey => $facet){
-					if (strlen($facetKey) > 0 && array_key_exists($facetKey,TopFacets::$formatCategorySortOrder)){
+					if (!empty($facetKey) && array_key_exists($facetKey,TopFacets::$formatCategorySortOrder)){
 						$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
 						$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 						$facetSet['list'][$facetKey] = $facet;

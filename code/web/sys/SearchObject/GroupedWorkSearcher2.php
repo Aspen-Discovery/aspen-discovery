@@ -442,7 +442,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 
 		$this->indexResult = $this->indexEngine->search(
 			$this->query,      // Query string
-			$this->index,      // DisMax Handler
+			$handler,      // DisMax Handler
 			$filterQuery,      // Filter query
 			$recordStart,      // Starting record
 			$this->limit,      // Records per page
