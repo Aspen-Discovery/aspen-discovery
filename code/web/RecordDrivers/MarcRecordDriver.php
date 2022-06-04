@@ -212,6 +212,17 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
+		require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+		$nonGroupedRecord = new NonGroupedRecord();
+		$nonGroupedRecord->source = $this->getRecordType();
+		$nonGroupedRecord->recordId = $this->getId();
+		if ($nonGroupedRecord->find(true)){
+			$interface->assign('isUngrouped', true);
+			$interface->assign('ungroupingId', $nonGroupedRecord->id);
+		}else{
+			$interface->assign('isUngrouped', false);
+		}
+
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
 		$marcRecord = $this->getMarcRecord();

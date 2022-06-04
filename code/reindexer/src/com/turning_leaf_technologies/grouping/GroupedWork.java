@@ -85,10 +85,9 @@ class GroupedWork implements Cloneable {
 				//Insert -'s for formatting
 				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20) + "-" + language;
 			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Error generating permanent id" + e.toString());
+				System.out.println("Error generating permanent id" + e);
 			}
 		}
-		//System.out.println("Permanent Id is " + this.permanentId);
 		return this.permanentId;
 	}
 

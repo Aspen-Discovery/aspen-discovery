@@ -279,7 +279,7 @@ public class RecordGroupingProcessor {
 				if (alternateGroupedWorkPermanentId.length() == 40) {
 					alternateGroupedWorkPermanentId = alternateGroupedWorkPermanentId.substring(0, 36);
 				}
-				alternateGroupedWorkPermanentId += groupedWork.getLanguage();
+				alternateGroupedWorkPermanentId += "-" + groupedWork.getLanguage();
 				groupedWorkPermanentId = alternateGroupedWorkPermanentId;
 			}
 		}
@@ -386,7 +386,7 @@ public class RecordGroupingProcessor {
 			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthor());
 			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
 			if (getWorkByAlternateTitleAuthorRS.next()){
-				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
+				return getWorkByAlternateTitleAuthorRS.getString("permanent_id");
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
