@@ -266,7 +266,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					logEntry.incChangedAfterGrouping();
 					//process records to regroup after every 1000 changes so we keep up with the changes.
 					if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
-						indexer.processScheduledWorks(logEntry, false);
+						indexer.processScheduledWorks(logEntry, false, -1);
 					}
 				}
 			}
@@ -274,7 +274,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		//Finish reindexing anything that just changed
 		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry, false);
+			indexer.processScheduledWorks(logEntry, false, -1);
 		}
 
 		indexingProfile.clearRegroupAllRecords(dbConn, logEntry);

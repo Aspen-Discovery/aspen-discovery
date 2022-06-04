@@ -315,12 +315,12 @@ public class RecordGroupingProcessor {
 
 				//For realtime indexing we will want to trigger a reindex of the old record as well
 				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkId);
-				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 2);
+				markWorkAsNeedingReindexStmt.setLong(2, new Date().getTime() / 1000);
 				markWorkAsNeedingReindexStmt.executeUpdate();
 
 				//Also trigger a reindex of the new record.
 				markWorkAsNeedingReindexStmt.setString(1, groupedWorkPermanentId);
-				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 2);
+				markWorkAsNeedingReindexStmt.setLong(2, new Date().getTime() / 1000);
 				markWorkAsNeedingReindexStmt.executeUpdate();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error marking record for reindexing", e);
