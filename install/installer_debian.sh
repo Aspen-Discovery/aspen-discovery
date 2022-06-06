@@ -3,19 +3,20 @@
 #This will need to be copied to the server manually to do the setup.
 #Expects to be installed on Debian 10 Buster
 #Run as sudo ./installer.sh
-apt-get update
-apt-get install -y wget
-apt-get install -y apache2
-apt-get -y install apt-transport-https lsb-release ca-certificates curl
+apt update
+apt install -y wget
+apt install -y apache2
+apt -y install apt-transport-https lsb-release ca-certificates curl
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
-apt-get update
-apt-get install -y php7.3 php7.3-mcrypt php7.3-gd php7.3-curl php7.3-mysql php7.3-zip
-apt-get install -y php7.3-xml
-apt-get install -y bind9 bind9utils
-apt-get install -y php7.3-intl
-apt-get install -y php7.3-mbstring
-apt-get install -y php7.3-pgsql
+apt update
+apt install -y php7.3 php7.3-mcrypt php7.3-gd php7.3-curl php7.3-mysql php7.3-zip
+apt install -y php7.3-xml
+apt install -y bind9 bind9utils
+apt install -y php7.3-intl
+apt install -y php7.3-mbstring
+apt install -y php7.3-pgsql
+apt install -y php-ssh2
 service apache2 start
 systemctl enable apache2
 # New PHP ini file
@@ -25,15 +26,15 @@ systemctl enable apache2
 mv /etc/php/7.3/apache2/php.ini /etc/php/7.3/apache2/php.ini.old
 cp php.ini /etc/php/7.3/apache2/php.ini
 a2enmod rewrite
-apt-get install -y mariadb-server
+apt install -y mariadb-server
 mv /etc/mysql/mariadb.cnf /etc/mysql/mariadb.cnf.old
 cp mariadb.cnf /etc/mysql/mariadb.cnf
 systemctl start mariadb
 systemctl enable mariadb
-apt-get install -y software-properties-common
-apt-get install -y default-jdk
-apt-get install -y openjdk-11-jdk
-apt-get install -y unzip
+apt install -y software-properties-common
+apt install -y default-jdk
+apt install -y openjdk-11-jdk
+apt install -y unzip
 
 #Create temp smarty directories
 cd /usr/local/aspen-discovery
@@ -42,14 +43,14 @@ chown -R www-data:www-data tmp
 chmod -R 755 tmp
 
 #Increase entropy
-apt-get install -y -q rng-tools
+apt install -y -q rng-tools
 cp install/limits.conf /etc/security/limits.conf
 cp install/rngd.service /usr/lib/systemd/system/rngd.service
 
 systemctl daemon-reload
 systemctl start rngd
 
-apt-get install -y python-certbot-apache
+apt install -y python-certbot-apache
 
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
 mysql_secure_installation

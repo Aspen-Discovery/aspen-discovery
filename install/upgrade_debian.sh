@@ -18,7 +18,7 @@ git pull origin $2
 
 cd /usr/local/aspen-discovery/install
 if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
-  /usr/local/aspen-discovery/install/upgrade_$2.sh
+  /usr/local/aspen-discovery/install/upgrade_debian_$2.sh
 fi
 
 echo "Run database maintenance, and then press return when done"
