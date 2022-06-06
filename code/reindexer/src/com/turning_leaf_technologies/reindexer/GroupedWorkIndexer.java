@@ -830,6 +830,7 @@ public class GroupedWorkIndexer {
 		groupedWorkPrimaryIdentifiersRS.close();
 		int numPrimaryIdentifiers = 0;
 		HashSet<String> regroupedIdsToProcess = new HashSet<>();
+		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
 
 		if (regroupAllRecords && allowRegrouping){
 			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
@@ -849,6 +850,7 @@ public class GroupedWorkIndexer {
 							//Delete the work from solr and the database
 							deleteRecord(result.permanentId);
 						}
+						regroupedIdentifiers.add(recordIdentifier);
 					} else {
 						newId = ilsGrouper.processMarcRecord(record, false, permanentId);
 					}
@@ -863,6 +865,7 @@ public class GroupedWorkIndexer {
 							//Delete the work from solr and the database
 							deleteRecord(result.permanentId);
 						}
+						regroupedIdentifiers.add(recordIdentifier);
 					} else {
 						newId = sideLoadGrouper.processMarcRecord(record, false, permanentId);
 					}
@@ -895,13 +898,17 @@ public class GroupedWorkIndexer {
 						//Delete the work from solr and the database
 						deleteRecord(result.permanentId);
 					}
+					regroupedIdentifiers.add(recordIdentifier);
 				} else if (!newId.equals(permanentId)) {
 					//The work will be marked as updated and therefore reindexed at the end
 					//Or just index it now?
 					regroupedIdsToProcess.add(newId);
+					regroupedIdentifiers.add(recordIdentifier);
 				}
 			}
 		}
+
+		recordIdentifiers.removeAll(regroupedIdentifiers);
 
 		for (RecordIdentifier recordIdentifier : recordIdentifiers){
 			String type = recordIdentifier.getType();

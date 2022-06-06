@@ -1965,12 +1965,25 @@ class GroupedWorkDriver extends IndexRecordDriver
 		if (UserAccount::userHasPermission('Set Grouped Work Display Information')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
-			$alternateTitle->permanent_id = $this->getPermanentId();
+			$permanentId = $this->getPermanentId();
+			$alternateTitle->permanent_id = $permanentId;
 			$alternateTitle->find();
 			$alternateTitles = [];
 			while ($alternateTitle->fetch()){
 				$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
 			}
+
+			//Also look for any grouped works that do not have the language attached
+			if (strlen($permanentId) == 40){
+				$permanentId = substr($permanentId, 0, 36);
+				$alternateTitle->permanent_id = $permanentId;
+				$alternateTitle->find();
+				$alternateTitles = [];
+				while ($alternateTitle->fetch()){
+					$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+				}
+			}
+
 			return $alternateTitles;
 		}
 		return null;
