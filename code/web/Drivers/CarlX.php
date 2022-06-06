@@ -219,7 +219,7 @@ class CarlX extends AbstractIlsDriver{
 
 				if (preg_match("/^66/", $msg_result)) {
 					$result = $mySip->parseRenewAllResponse($msg_result);
-					$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
+					//$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
 
 					$renew_result['success'] = ($result['fixed']['Ok'] == 1);
 					$renew_result['Renewed'] = ltrim($result['fixed']['Renewed'], '0');
