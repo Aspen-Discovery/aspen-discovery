@@ -154,8 +154,23 @@ class GroupedWorksSolrConnector2 extends Solr
 					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
 				}
 			}
-			if (isset($originalResult['language']) && count($originalResult['language']) == 1) {
-				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
+			if (isset($originalResult['language'])) {
+				if (is_array($originalResult['language'])) {
+					$filter = '';
+					foreach ($originalResult['language'] as $literaryForm) {
+						if ($literaryForm != 'Unknown') {
+							if (strlen($filter) > 0) {
+								$filter .= ' OR ';
+							}
+							$filter .= 'language:"' . $literaryForm . '"';
+						}
+					}
+					if (strlen($filter) > 0) {
+						$options['fq'][] = "($filter)";
+					}
+				} else {
+					$options['fq'][] = 'language:"' . $originalResult['language'] . '"';
+				}
 			}
 			//Don't include results from the same series unless the library does not have NoveList
 			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';;

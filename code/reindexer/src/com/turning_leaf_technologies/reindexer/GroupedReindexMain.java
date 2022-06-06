@@ -120,7 +120,9 @@ public class GroupedReindexMain {
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
 						if (infoAboutWork.next()) {
+							groupedWorkIndexer.setRegroupAllRecords(true);
 							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"));
+							groupedWorkIndexer.setRegroupAllRecords(regroupAllRecords);
 						} else {
 							logger.error("Could not find a work with id " + individualWorkToProcess);
 						}

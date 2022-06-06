@@ -928,8 +928,9 @@
   <!-- A request handler for loading more like this -->
   <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
     <lst name="defaults">
-      <str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,era,authorStr</str>
+      <str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,era,authorStr,language</str>
       <str name="mlt.qf">
+        language^1000
         subject_facet^800
         topic_facet^600
         awards_facet^100

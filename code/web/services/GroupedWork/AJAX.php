@@ -1254,7 +1254,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => translate(['text'=>'Unknown error deleting alternate title', 'isAdminFacing'=>true])
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
 			$id = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
@@ -1267,6 +1267,37 @@ class GroupedWork_AJAX extends JSON_Action
 				];
 			}else{
 				$result['message'] = translate(['text'=>"Could not find the alternate title to delete", 'isAdminFacing'=>true]);
+			}
+		}else{
+			$result['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
+		}
+		return $result;
+	}
+
+	function deleteUngrouping(){
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown error deleting ungrouping', 'isAdminFacing'=>true])
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
+			$id = $_REQUEST['ungroupingId'];
+			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+			$nonGroupedRecord = new NonGroupedRecord();
+			$nonGroupedRecord->id = $id;
+			if ($nonGroupedRecord->find(true)){
+				$nonGroupedRecord->delete();
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$groupedRecord = new GroupedWork();
+				$groupedRecord->permanent_id = $_REQUEST['id'];
+				if ($groupedRecord->find(true)){
+					$groupedRecord->forceReindex(true);
+				}
+				$result = [
+					'success' => true,
+					'message' => translate(['text'=>"This title can group with other records again", 'isAdminFacing'=>true])
+				];
+			}else{
+				$result['message'] = translate(['text'=>"Could not find the ungrouping entry to delete", 'isAdminFacing'=>true]);
 			}
 		}else{
 			$result['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
