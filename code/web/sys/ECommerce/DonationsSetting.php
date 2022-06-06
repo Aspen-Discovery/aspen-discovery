@@ -55,7 +55,7 @@ class DonationsSetting extends DataObject
 				'keyOther'      => 'donationSettingId',
 				'subObjectType' => 'DonationValue',
 				'structure'     => $donationsValuesStructure,
-				'sortable'      => false,
+				'sortable'      => true,
 				'storeDb'       => true,
 				'allowEdit'     => false,
 				'canEdit'       => false,
@@ -246,7 +246,7 @@ class DonationsSetting extends DataObject
 
 			$donationValues = new DonationValue();
 			$donationValues->donationSettingId = $this->id;
-			$donationValues->orderBy('value');
+			$donationValues->orderBy('weight');
 			if ($donationValues->find()) {
 				while ($donationValues->fetch()) {
 					$this->_donationValues[$donationValues->id] = clone $donationValues;

@@ -7,7 +7,7 @@
 
 	{if $showFavorites == 1}
 		<div class="btn-group btn-group-sm">
-			<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Lists', '{$summShortId|escape}');" class="btn btn-sm ">{translate text="Add to list" isPublicFacing=true}</button>
+			<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Lists', '{$summShortId|escape}');" class="btn btn-sm addToListBtn">{translate text="Add to list" isPublicFacing=true}</button>
 		</div>
 	{/if}
 

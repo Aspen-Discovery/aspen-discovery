@@ -227,3 +227,11 @@
 		{/if}
 	</div>
 {/strip}
+
+<script type="text/javascript">
+{literal}
+document.getElementById('profileLanguage').addEventListener('change', function() {
+  return AspenDiscovery.setLanguage(this.value)
+});
+{/literal}
+</script>
