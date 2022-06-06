@@ -718,8 +718,8 @@ public class GroupedWorkIndexer {
 			PreparedStatement getNumWorksToIndex;
 			PreparedStatement setLastUpdatedTime = dbConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
 			if (fullReindex){
-				getAllGroupedWorks = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, grouping_category, date_updated, count(grouped_work_records.id) as numRecords FROM grouped_work left join grouped_work_records on grouped_work.id = groupedWorkId group by permanent_id having numRecords > 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getNumWorksToIndex = dbConn.prepareStatement("select count(*) from (SELECT permanent_id, count(grouped_work_records.id) as numRecords FROM grouped_work left join grouped_work_records on grouped_work.id = groupedWorkId group by permanent_id having numRecords > 0) as numWorksWithRecords;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getAllGroupedWorks = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getNumWorksToIndex = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numWorksWithRecords FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			}else{
 				//Load all grouped works that have changed since the last time the index ran
 				getAllGroupedWorks = dbConn.prepareStatement("SELECT * FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
