@@ -159,22 +159,23 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$facetConfig = $this->getFacetConfig();
 		$availabilityToggleId = null;
 		foreach ($this->filterList as $field => $filter) {
-			$fieldPrefix = "";
 			$multiSelect = false;
 			if (isset($facetConfig[$field])) {
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
-				$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
-				$multiSelect = $facetInfo->multiSelect || $facetInfo->facetName == 'availability_toggle';
+				$facetName = $facetInfo->getFacetName(2);
+				$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
+				$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 				$fieldPrefix = "{!tag=$facetKey}";
 			}else{
 				//This is likely a field we need to convert from the old schema to new schema
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
 				if (isset($facetConfig[$tmpFieldName])) {
 					$facetInfo = $facetConfig[$tmpFieldName];
+					$facetName = $facetInfo->getFacetName(2);
 					$field = $tmpFieldName;
-					$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
-					$multiSelect = $facetInfo->multiSelect || $facetInfo->facetName == 'availability_toggle';
+					$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
+					$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 					$fieldPrefix = "{!tag=$facetKey}";
 				}else{
 					//Unknown field
@@ -183,17 +184,17 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			}
 			$fieldValue = "";
 			foreach ($filter as $value) {
-				if ($facetInfo->facetName == 'availability_toggle' || $facetInfo->facetName == "availability_toggle_$solrScope"){
+				if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope"){
 					$selectedAvailabilityToggleValue = $value;
 					$availabilityToggleId = $facetInfo->id;
-				}elseif ($facetInfo->facetName == 'available_at' || $facetInfo->facetName == "available_at_$solrScope"){
+				}elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope"){
 					$selectedAvailableAtValues[] = $value;
-				}elseif ($facetInfo->facetName == 'format_category'){
+				}elseif ($facetName == 'format_category'){
 					$selectedFormatCategoryValues[] = $value;
-				}elseif ($facetInfo->facetName == 'format'){
+				}elseif ($facetName == 'format'){
 					$selectedFormatValues[] = $value;
 				}
-				if ($this->isScopedField($facetInfo->facetName)){
+				if ($this->isScopedField($facetName)){
 					$value = "$solrScope#$value";
 				}
 
@@ -246,7 +247,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 
 			if ($availabilityToggleId == null){
 				foreach ($facetConfig as $facetInfo){
-					if ($facetInfo->facetName == 'availability_toggle' || $facetInfo->facetName == "availability_toggle_$solrScope"){
+					$facetName = $facetInfo->getFacetName(2);
+					if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope"){
 						$availabilityToggleId = $facetInfo->id;
 					}
 				}
@@ -294,23 +296,24 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				if ($facetInfo instanceof FacetSetting) {
 					$isMultiSelect = $facetInfo->multiSelect;
 					$additionalTags = '';
-					if ($facetInfo->facetName == 'availability_toggle' || $facetInfo->facetName == "availability_toggle_$solrScope"){
+					$facetName = $facetInfo->getFacetName(2);
+					if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope"){
 						//$isEditionField = true;
 						$isMultiSelect = true;
 						$additionalTags = 'edition_info';
-					}elseif ($facetInfo->facetName == 'available_at' || $facetInfo->facetName == "available_at_$solrScope"){
+					}elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope"){
 						$additionalTags = 'edition_info';
-					}elseif ($facetInfo->facetName == 'format_category'){
+					}elseif ($facetName == 'format_category'){
 						$isMultiSelect = true;
 						$additionalTags = 'edition_info';
-					}elseif ($facetInfo->facetName == 'format'){
+					}elseif ($facetName == 'format'){
 						$additionalTags = 'edition_info';
 					}
 					if ($isMultiSelect && !empty($additionalTags)) {
-						$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 						$facetSet['field'][$facetField] = "{!ex=$facetKey,$additionalTags}" . $facetField;
 					} elseif ($isMultiSelect) {
-						$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;
 						$facetSet['field'][$facetField] = "{!ex=$facetKey}" . $facetField;
 					} else if (!empty($additionalTags)) {
 						$facetSet['field'][$facetField] = "{!ex=$additionalTags}" . $facetField;
@@ -512,7 +515,6 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher2::$fields_to_return;
 			global $solrScope;
 			if ($solrScope != false) {
-				$fieldsToReturn .= ',collection_' . $solrScope;
 				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
@@ -521,6 +523,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$fieldsToReturn .= ',days_since_added';
 				$fieldsToReturn .= ',local_callnumber';
 			}
+			$fieldsToReturn .= ',collection';
 			$fieldsToReturn .= ',detailed_location';
 			$fieldsToReturn .= ',owning_location';
 			$fieldsToReturn .= ',owning_library';
