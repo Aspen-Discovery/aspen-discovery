@@ -21,7 +21,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	public function __construct()
 	{
 		// Call base class constructor
-		parent::__construct();
+		parent::__construct(1);
 
 		global $configArray;
 		global $timer;

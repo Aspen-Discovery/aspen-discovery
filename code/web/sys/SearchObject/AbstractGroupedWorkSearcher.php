@@ -5,6 +5,14 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_SolrSearcher
 {
 	protected $searchSubType;
+	protected $searchVersion;
+
+	public function __construct($searchVersion)
+	{
+		parent::__construct();
+		$this->searchVersion = $searchVersion;
+	}
+
 	public function disableScoping()
 	{
 		$this->indexEngine->disableScoping();
@@ -760,7 +768,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			}
 			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
-				$facet->facetName = $this->getScopedFieldName($facet->facetName);
+				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
 
 				global $action;
 				if ($action == 'Advanced') {
