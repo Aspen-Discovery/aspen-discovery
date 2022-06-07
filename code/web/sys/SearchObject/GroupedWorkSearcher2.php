@@ -272,15 +272,49 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$selectedFormatValues[] = '*';
 		}
 		$allEditionFilters = [];
+		$editionFiltersFormat = [];
+		$editionFiltersFormatCategory = [];
+		$editionFiltersFormatAvailability = [];
+		$editionFiltersFormatAvailableAt = [];
 		foreach ($selectedAvailableAtValues as $selectedAvailableAtValue){
 			foreach ($selectedFormatCategoryValues as $selectedFormatCategoryValue){
 				foreach ($selectedFormatValues as $selectedFormatValue){
+//					if ($selectedFormatValue != '*'){
+//						$editionFiltersFormat[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#*#$selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
+//					}
+//					if ($selectedFormatCategoryValue != '*'){
+//						$editionFiltersFormatCategory[] = str_replace(' ', '_', "edition_info:$solrScope#*#$selectedFormatValue#$selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
+//					}
+//					if ($selectedAvailabilityToggleValue != 'global'){
+//						$editionFiltersFormatAvailability[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#*#$selectedAvailableAtValue#");
+//					}
+//					if ($selectedAvailableAtValue != '*'){
+//						$editionFiltersFormatAvailableAt[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#$selectedAvailabilityToggleValue#*#");
+//					}
 					$allEditionFilters[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#$selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
 				}
 			}
 		}
-		$allEditions = '(' . implode(' OR ', $allEditionFilters) . ')';
-		$filterQuery[] = "{!tag=edition_info}$allEditions";
+		if (count($allEditionFilters) > 0) {
+			$allEditions = '(' . implode(' OR ', $allEditionFilters) . ')';
+			$filterQuery[] = "{!tag=edition_info}$allEditions";
+		}
+//		if (count($editionFiltersFormat) > 0) {
+//			$allFormatEditions = '(' . implode(' OR ', $editionFiltersFormat) . ')';
+//			$filterQuery[] = "{!tag=edition_info_format}$allFormatEditions";
+//		}
+//		if (count($editionFiltersFormatCategory) > 0) {
+//			$allFormatCategoryEditions = '(' . implode(' OR ', $editionFiltersFormatCategory) . ')';
+//			$filterQuery[] = "{!tag=edition_info_format_category}$allFormatCategoryEditions";
+//		}
+//		if (count($editionFiltersFormatAvailability) > 0) {
+//			$allAvailabilityEditions = '(' . implode(' OR ', $editionFiltersFormatAvailability) . ')';
+//			$filterQuery[] = "{!tag=edition_info_availability}$allAvailabilityEditions";
+//		}
+//		if (count($editionFiltersFormatAvailableAt) > 0) {
+//			$allAvailableAtEditions = '(' . implode(' OR ', $editionFiltersFormatAvailableAt) . ')';
+//			$filterQuery[] = "{!tag=edition_info_available_at}$allAvailableAtEditions";
+//		}
 		
 		// If we are only searching one field use the DisMax handler
 		//    for that field. If left at null let solr take care of it
@@ -300,14 +334,14 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope"){
 						//$isEditionField = true;
 						$isMultiSelect = true;
-						$additionalTags = 'edition_info';
+						$additionalTags = 'edition_info,edition_info_available_at,edition_info_format_category,edition_info_format';
 					}elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope"){
-						$additionalTags = 'edition_info';
+						$additionalTags = 'edition_info,edition_info_availability,edition_info_format_category,edition_info_format';
 					}elseif ($facetName == 'format_category'){
 						$isMultiSelect = true;
-						$additionalTags = 'edition_info';
+						$additionalTags = 'edition_info,edition_info_availability,edition_info_available_at,edition_info_format';
 					}elseif ($facetName == 'format'){
-						$additionalTags = 'edition_info';
+						$additionalTags = 'edition_info,edition_info_availability,edition_info_available_at,edition_info_format_category';
 					}
 					if ($isMultiSelect && !empty($additionalTags)) {
 						$facetKey = empty($facetInfo->id) ? $facetName : $facetInfo->id;

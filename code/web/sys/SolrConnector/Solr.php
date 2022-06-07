@@ -1992,7 +1992,7 @@ abstract class Solr
 				/** @noinspection PhpUndefinedFieldInspection */
 				foreach ($schema->fields->field as $field) {
 					//print_r($field);
-					if ($field['stored'] == 'true') {
+					if ($field['stored'] == 'true' || $field['indexed'] == 'true') {
 						$fields[] = (string)$field['name'];
 					}
 				}
