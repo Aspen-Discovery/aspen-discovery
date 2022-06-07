@@ -65,8 +65,24 @@ class UserListIndexer {
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
 		updateServer.setRequestWriter(new BinaryRequestWriter());
-		HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-		groupedWorkServer = groupedWorkHttpBuilder.build();
+		//Get the search version from system variables
+		int searchVersion = 1;
+		try {
+			PreparedStatement searchVersionStmt = dbConn.prepareStatement("SELECT searchVersion from system_variables");
+			ResultSet searchVersionRS = searchVersionStmt.executeQuery();
+			if (searchVersionRS.next()){
+				searchVersion = searchVersionRS.getInt("searchVersion");
+			}
+		}catch (Exception e){
+			logger.error("Error loading search version", e);
+		}
+		if (searchVersion == 1) {
+			HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			groupedWorkServer = groupedWorkHttpBuilder.build();
+		}else{
+			HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+			groupedWorkServer = groupedWorkHttpBuilder.build();
+		}
 		HttpSolrClient.Builder openArchivesHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
 		openArchivesServer = openArchivesHttpBuilder.build();
 
