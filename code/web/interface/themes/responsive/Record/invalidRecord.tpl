@@ -24,3 +24,10 @@
 		{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="{$externalMaterialsRequestUrl}" class="btn btn-sm btn-info">{translate text='Submit Request' isPublicFacing=true}</a>
 	</p>
 {/if}
+{if $showStaffView}
+	<h2>{translate text="Staff View" isPublicFacing=true}</h2>
+	<div id="staffViewPlaceHolder">{translate text="Loading Staff View." isPublicFacing=true}</div>
+	<script type="text/javascript">
+		AspenDiscovery.Record.getStaffView('{$module}', '{$id}')
+	</script>
+{/if}

@@ -96,6 +96,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private PreparedStatement loadHoldsStmt;
 	private PreparedStatement addTranslationMapValueStmt;
+	private PreparedStatement updateRecordSuppressionReasonStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, logger);
@@ -263,6 +264,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+			updateRecordSuppressionReasonStmt = dbConn.prepareStatement("UPDATE ils_records set suppressed=?, suppressionNotes=? where source=? and ilsId=?");
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
@@ -361,32 +363,35 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		try{
 			//If the entire bib is suppressed, update stats and bail out now.
-			if (isBibSuppressed(record)){
-				logger.debug("Bib record " + identifier + " is suppressed skipping");
+			if (isBibSuppressed(record, identifier)){
 				return;
 			}
 
 			// Let's first look for the print/order record
 			RecordInfo recordInfo = groupedWork.addRelatedRecord(profileType, identifier);
 			logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
-			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
+			StringBuilder suppressionNotes = new StringBuilder();
+			suppressionNotes = loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record, suppressionNotes);
 			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
 			//If we don't get anything remove the record we just added
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
 				groupedWork.removeRelatedRecord(recordInfo);
 				logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
+				suppressionNotes.append("Record had no items<br/>");
+				updateRecordSuppression(true, suppressionNotes, identifier);
 			}else{
 				allRelatedRecords.add(recordInfo);
+				updateRecordSuppression(false, suppressionNotes, identifier);
 			}
 
 			//Since print formats are loaded at the record level, do it after we have loaded items
 			loadPrintFormatInformation(recordInfo, record);
 
 			//Now look for any eContent that is defined within the ils
-			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record);
+			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes);
 			allRelatedRecords.addAll(econtentRecords);
 
-			//Do updates based on the overall bib (shared regardless of scoping)
+			//Updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
 			String primaryFormatCategory = null;
 			for (RecordInfo ilsRecord : allRelatedRecords) {
@@ -474,17 +479,36 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	//static Pattern eContentUrlPattern = Pattern.compile("overdrive\\.com|contentreserve\\.com|hoopla|yourcloudlibrary|axis360\\.baker-taylor\\.com", Pattern.CASE_INSENSITIVE);
 	//Suppress all marc records for eContent that can be loaded via API
-	protected boolean isBibSuppressed(Record record) {
+	protected boolean isBibSuppressed(Record record, String identifier) {
 		if (suppressRecordsWithUrlsMatching != null) {
 			Set<String> urls = MarcUtil.getFieldList(record, "856u");
 			for (String url : urls) {
 				//Suppress if the url is an overdrive or hoopla url
 				if (suppressRecordsWithUrlsMatching.matcher(url).find()) {
+					updateRecordSuppression(true, new StringBuilder().append("Suppressed due to 856u"), identifier);
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	protected void updateRecordSuppression(boolean suppressed, StringBuilder suppressionNotes, String identifier){
+		try{
+			String notes;
+			if (suppressionNotes.length() > 65000){
+				notes = suppressionNotes.substring(0, 65000);
+			}else{
+				notes = suppressionNotes.toString();
+			}
+			updateRecordSuppressionReasonStmt.setInt(1, suppressed ? 1 : 0);
+			updateRecordSuppressionReasonStmt.setString(2, notes);
+			updateRecordSuppressionReasonStmt.setString(3, profileType);
+			updateRecordSuppressionReasonStmt.setString(4, identifier);
+			int numUpdated = updateRecordSuppressionReasonStmt.executeUpdate();
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error updating record suppression", e);
+		}
 	}
 
 	protected String getSubfieldData(DataField dataField, char subfield){
@@ -678,18 +702,23 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected void loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
+	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record, StringBuilder suppressionNotes){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
-				createPrintIlsItem(groupedWork, recordInfo, record, itemField);
+			String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
+			suppressionNotes = isSuppressed.notes;
+			if (!isSuppressed.result){
+				ItemInfoWithNotes itemInfoWithNotes = createPrintIlsItem(groupedWork, recordInfo, record, itemField, suppressionNotes);
+				suppressionNotes = itemInfoWithNotes.notes;
 				//Can return null if the record does not have status and location
 				//This happens with secondary call numbers sometimes.
 			}else{
 				logger.debug("item was suppressed");
 			}
 		}
+		return suppressionNotes;
 	}
 
 	RecordInfo getEContentIlsRecord(AbstractGroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
@@ -826,7 +855,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private SimpleDateFormat dateAddedFormatter2 = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
 	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
-	ItemInfo createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
+	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, StringBuilder suppressionNotes) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 		}
@@ -840,7 +869,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
 		if (statusesToSuppress.contains(itemStatus)){
-			return null;
+			suppressionNotes.append(itemInfo.getItemIdentifier()).append(" status matched suppression table<br/>");
+			return new ItemInfoWithNotes(null, suppressionNotes);
 		}
 
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -925,7 +955,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		recordInfo.addItem(itemInfo);
 
-		return itemInfo;
+		return new ItemInfoWithNotes(itemInfo, suppressionNotes);
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
@@ -1386,7 +1416,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes){
 		return new ArrayList<>();
 	}
 
@@ -1414,38 +1444,45 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return numHolds;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			if (statusSubfield == null) {
-				return true;
+				suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
+				return new ResultWithNotes(true, suppressionNotes);
 			} else {
 				String statusValue = statusSubfield.getData();
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusValue).matches()) {
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" - matched status suppression pattern<br>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}else if (statusesToSuppress.contains(statusValue)){
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" - status suppressed in Indexing Profile<br>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 
 			}
 		}
 		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
 		if (locationSubfield == null){
-			return true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" no location<br/>");
+			return new ResultWithNotes(true, suppressionNotes);
 		}else{
 			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
-				return true;
+				suppressionNotes.append("Item ").append(itemIdentifier).append(" location matched suppression pattern<br/>");
+				return new ResultWithNotes(true, suppressionNotes);
 			}
 		}
 		if (collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
 			if (collectionSubfieldValue == null){
 				if (this.suppressRecordsWithNoCollection) {
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" no collection<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}else{
 				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" collection matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
@@ -1454,7 +1491,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (formatSubfieldValue != null){
 				String formatValue = formatSubfieldValue.getData();
 				if (formatsToSuppress.contains(formatValue.toUpperCase())){
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" format suppressed in formats table<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
@@ -1462,14 +1500,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Subfield iTypeSubfieldValue = curItem.getSubfield(iTypeSubfield);
 			if (iTypeSubfieldValue != null){
 				String iTypeValue = iTypeSubfieldValue.getData();
-				//noinspection RedundantIfStatement
 				if (iTypesToSuppress != null && iTypesToSuppress.matcher(iTypeValue).matches()){
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" iType matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
 
-		return false;
+		return new ResultWithNotes(false, suppressionNotes);
 	}
 
 	/**

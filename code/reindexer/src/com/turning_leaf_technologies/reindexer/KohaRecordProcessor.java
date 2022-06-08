@@ -426,10 +426,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return null;
 	}
 
-	protected void loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
+	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record, StringBuilder suppressionNotes){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
+			String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
+			suppressionNotes = isSuppressed.notes;
+			if (!isSuppressed.result){
 				//Check to see if the item has an eContent indicator
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
@@ -439,18 +442,23 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 				}
 				if (!isEContent){
-					createPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					ItemInfoWithNotes itemInfoWithNotes = createPrintIlsItem(groupedWork, recordInfo, record, itemField, suppressionNotes);
+					suppressionNotes = itemInfoWithNotes.notes;
 				}
 			}
 		}
+		return suppressionNotes;
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
+			String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
+			suppressionNotes = isSuppressed.notes;
+			if (!isSuppressed.result){
 				//Check to see if the item has an eContent indicator
 				boolean isEContent = false;
 				boolean isOverDrive = false;
@@ -578,23 +586,27 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return sourceType;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
 		boolean suppressed = false;
 		if (curItem.getSubfield('i') != null) {
 			suppressed = curItem.getSubfield('i').getData().equals("1");
+			if (suppressed) suppressionNotes.append("Item ").append(itemIdentifier).append(" subfield i set to 1<br/>");
 		}
 		if (!suppressed && curItem.getSubfield(iTypeSubfield) != null) {
 			suppressed = curItem.getSubfield(iTypeSubfield).getData().equalsIgnoreCase("ill");
+			if (suppressed) suppressionNotes.append("Item ").append(itemIdentifier).append(" iType is ILL<br/>");
 		}
 		if (curItem.getSubfield('0') != null) {
 			if (curItem.getSubfield('0').getData().equals("1")) {
 				suppressed = true;
+				suppressionNotes.append("Item ").append(itemIdentifier).append(" subfield 0 (withdrawn) set to 1<br/>");
 			}
 		}
 		if (curItem.getSubfield('1') != null) {
 			String fieldData = curItem.getSubfield('1').getData().toLowerCase();
 			if (fieldData.equals("lost") || fieldData.equals("missing") || fieldData.equals("longoverdue") || fieldData.equals("trace")) {
 				suppressed = true;
+				suppressionNotes.append("Item ").append(itemIdentifier).append(" subfield 1 (itemlost) set to ").append(fieldData).append("<br/>");
 			}
 		}
 		//Suppression based on format
@@ -604,17 +616,21 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String itemType = getSubfieldData(curItem, iTypeSubfield);
 		if (shelfLocationCode != null && formatsToSuppress.contains(shelfLocationCode.toUpperCase())){
 			suppressed = true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" shelf location suppressed in formats table<br/>");
 		}else if (subLocation != null && formatsToSuppress.contains(subLocation.toUpperCase())){
 			suppressed = true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" sub location suppressed in formats table<br/>");
 		}else if (collectionCode != null && formatsToSuppress.contains(collectionCode.toUpperCase())){
 			suppressed = true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" collection code suppressed in formats table<br/>");
 		}else if (itemType != null && formatsToSuppress.contains(itemType.toUpperCase())){
 			suppressed = true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" item type suppressed in formats table<br/>");
 		}
 		if (suppressed){
-			return true;
+			return new ResultWithNotes(true, suppressionNotes);
 		}else{
-			return super.isItemSuppressed(curItem);
+			return super.isItemSuppressed(curItem, itemIdentifier, suppressionNotes);
 		}
 	}
 
@@ -646,16 +662,17 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return location;
 	}
 
-	protected boolean isBibSuppressed(Record record) {
+	protected boolean isBibSuppressed(Record record, String identifier) {
 		DataField field942 = record.getDataField(942);
 		if (field942 != null){
 			Subfield subfieldN = field942.getSubfield('n');
 			if (subfieldN != null && subfieldN.getData().equals("1")){
+				updateRecordSuppression(true, new StringBuilder().append("942n is set to 1"), identifier);
 				return true;
 			}
 		}
 
-		return super.isBibSuppressed(record);
+		return super.isBibSuppressed(record, identifier);
 	}
 
 	protected boolean isItemHoldableUnscoped(ItemInfo itemInfo){

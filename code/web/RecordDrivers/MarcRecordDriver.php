@@ -210,17 +210,32 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/eg/opac/record/' . $this->id);
 		}
 
-		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null && $groupedWorkDriver->isValid()){
+			$interface->assign('hasValidGroupedWork', true);
+			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
-		require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-		$nonGroupedRecord = new NonGroupedRecord();
-		$nonGroupedRecord->source = $this->getRecordType();
-		$nonGroupedRecord->recordId = $this->getId();
-		if ($nonGroupedRecord->find(true)){
-			$interface->assign('isUngrouped', true);
-			$interface->assign('ungroupingId', $nonGroupedRecord->id);
+			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+			$nonGroupedRecord = new NonGroupedRecord();
+			$nonGroupedRecord->source = $this->getRecordType();
+			$nonGroupedRecord->recordId = $this->getId();
+			if ($nonGroupedRecord->find(true)){
+				$interface->assign('isUngrouped', true);
+				$interface->assign('ungroupingId', $nonGroupedRecord->id);
+			}else{
+				$interface->assign('isUngrouped', false);
+			}
 		}else{
-			$interface->assign('isUngrouped', false);
+			$interface->assign('hasValidGroupedWork', false);
+		}
+
+		//Look for an IlsRecord for this MARC
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		$ilsRecord = new IlsRecord();
+		$ilsRecord->source = $this->getRecordType();
+		$ilsRecord->ilsId = $this->getId();
+		if ($ilsRecord->find(true)){
+			$interface->assign('ilsRecord', $ilsRecord);
 		}
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());

@@ -15,31 +15,38 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			//For Symphony, the status is blank if the item is on shelf
 			if (statusSubfield != null) {
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" status matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
 		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
 		if (locationSubfield == null){
-			return true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" no location provided<br/>");
+			return new ResultWithNotes(true, suppressionNotes);
 		}else{
 			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
-				return true;
+				suppressionNotes.append("Item ").append(itemIdentifier).append(" location matched suppression pattern<br/>");
+				return new ResultWithNotes(true, suppressionNotes);
 			}
 		}
 		if (collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
 			if (collectionSubfieldValue != null){
-				return collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches();
+				boolean suppress = collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches();
+				if (suppress){
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" collection matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
+				}
 			}
 		}
-		return false;
+		return new ResultWithNotes(false, suppressionNotes);
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
