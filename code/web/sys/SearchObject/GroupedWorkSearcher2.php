@@ -617,6 +617,24 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$filter = $this->getFacetConfig();
 		}
 
+		$selectedAvailabilityToggleValue = 'global';
+		$selectedAvailableAtValues = [];
+		$selectedFormatValues = [];
+		$selectedFormatCategoryValues = [];
+		foreach ($this->filterList as $field => $selectedValues) {
+			foreach ($selectedValues as $value) {
+				if ($field == 'availability_toggle') {
+					$selectedAvailabilityToggleValue = $value;
+				} elseif ($field == 'available_at') {
+					$selectedAvailableAtValues[] = $value;
+				} elseif ($field == 'format_category') {
+					$selectedFormatCategoryValues[] = $value;
+				} elseif ($field == 'format') {
+					$selectedFormatValues[] = $value;
+				}
+			}
+		}
+
 		// Start building the facet list:
 		$list = array();
 
@@ -726,6 +744,16 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						$list[$field]['hasApplied'] = true;
 						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facetValue}");
 					}
+				}
+
+				if ($field == 'availability_toggle') {
+					$currentSettings['countIsApproximate'] = (count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0) && $facetValue != 'global';
+				} elseif ($field == 'available_at') {
+					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0;
+				} elseif ($field == 'format_category') {
+					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatValues) > 0;
+				} elseif ($field == 'format') {
+					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0;
 				}
 
 				//Setup the key to allow sorting alphabetically if needed.

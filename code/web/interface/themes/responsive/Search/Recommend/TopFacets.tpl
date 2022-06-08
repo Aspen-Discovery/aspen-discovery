@@ -29,7 +29,7 @@
 											<img src="{img filename=$thisFacet.imageName}" alt="{translate text='Filter Format by %1%', 1=$thisFacet.value translateParameters=true isPublicFacing=true inAttribute=true}">
 										</div>
 										<div class="col-xs-6 formatCategoryLabel">
-											{translate text=$thisFacet.display|escape isPublicFacing=true}<br>({$thisFacet.count|number_format:0:".":","})
+											{translate text=$thisFacet.display|escape isPublicFacing=true}<br>({if !empty($thisFacet.countIsApproximate)}~{/if}{$thisFacet.count|number_format:0:".":","})
 										</div>
 									</div>
 								</a>
@@ -45,9 +45,9 @@
 					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio" style="display: flex;align-items: center;justify-content: center;">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 							{if $thisFacet.isApplied}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary btn-wrap" name="availabilityControls">{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary btn-wrap" name="availabilityControls">{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({if !empty($thisFacet.countIsApproximate)}~{/if}{$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{else}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default btn-wrap" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default btn-wrap" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({if !empty($thisFacet.countIsApproximate)}~{/if}{$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{/if}
 						{/foreach}
 					</div>
