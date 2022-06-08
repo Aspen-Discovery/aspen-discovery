@@ -88,7 +88,9 @@
 												<a href="{$siteStatus.baseUrl}/UserLists/NYTUpdatesLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
 											{elseif $checkType == 'interface_errors'}
 												<a href="{$siteStatus.baseUrl}/Admin/ErrorReport" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{else}
+                                            {elseif $checkType == 'open_archives'}
+												<a href="{$siteStatus.baseUrl}/OpenArchives/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
+                                            {else}
 												{translate text=$check.status isAdminFacing=true}
 											{/if}
 										{else}
