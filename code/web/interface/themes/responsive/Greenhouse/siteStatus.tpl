@@ -68,7 +68,7 @@
 										{if $check.status != 'okay'}
 											{if $checkType == 'overdrive'}
 												<a href="{$siteStatus.baseUrl}/OverDrive/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'koha' || $checkType == 'carl.x' || $checkType == 'symphony' || $checkType == 'sierra' || $checkType == 'polaris'}
+											{elseif $checkType == 'koha' || $checkType == 'carl.x' || $checkType == 'symphony' || $checkType == 'sierra' || $checkType == 'polaris' || $checkType == 'evergreen'}
 												<a href="{$siteStatus.baseUrl}/ILS/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
 											{elseif $checkType == 'axis_360'}
 												<a href="{$siteStatus.baseUrl}/Axis360/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
