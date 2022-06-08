@@ -46,27 +46,29 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 				ResultSet metadataRS = getProductMetadataStmt.executeQuery();
 				if (metadataRS.next()) {
 					byte[] rawDataBytes = metadataRS.getBytes("rawData");
-					String metadata = new String(rawDataBytes, StandardCharsets.UTF_8);
-					JSONObject productMetadata = null;
-					try {
-						productMetadata = new JSONObject(metadata);
-						if (productMetadata.has("languages")) {
-							JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
-							if (languagesFromMetadata.length() > 1){
-								primaryLanguage = "mul";
-							}else{
-								for (int i = 0; i < languagesFromMetadata.length(); i++) {
-									JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
-									String languageCode = curLanguageObj.getString("code");
-									String threeLetterCode = translateValue("two_to_three_character_language_codes", languageCode.toLowerCase());
-									if (threeLetterCode != null){
-										primaryLanguage = threeLetterCode;
+					if (rawDataBytes != null) {
+						String metadata = new String(rawDataBytes, StandardCharsets.UTF_8);
+						JSONObject productMetadata = null;
+						try {
+							productMetadata = new JSONObject(metadata);
+							if (productMetadata.has("languages")) {
+								JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
+								if (languagesFromMetadata.length() > 1) {
+									primaryLanguage = "mul";
+								} else {
+									for (int i = 0; i < languagesFromMetadata.length(); i++) {
+										JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
+										String languageCode = curLanguageObj.getString("code");
+										String threeLetterCode = translateValue("two_to_three_character_language_codes", languageCode.toLowerCase());
+										if (threeLetterCode != null) {
+											primaryLanguage = threeLetterCode;
+										}
 									}
 								}
 							}
+						} catch (JSONException e) {
+							logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + overdriveId, e);
 						}
-					} catch (JSONException e) {
-						logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + overdriveId, e);
 					}
 				}
 				overDriveRecordRS.close();
