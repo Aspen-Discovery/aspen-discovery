@@ -455,10 +455,26 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			uasort($availableFacets['db']['list'], $sorter);
 
 			if (!empty($this->lastSearchResults->Facets)) {
-				foreach ($this->lastSearchResults->Statistics->Facets->Clusters as $facetCluster) {
-					$limitList[(string)$statistic->Database]['count'] = (int)$statistic->Hits;
-					if ($statistic->Hits == 0) {
-						unset($limitList[(string)$statistic->Database]);
+				if (!empty($this->lastSearchResults->Facets->Clusters)) {
+					foreach ($this->lastSearchResults->Facets->Clusters->ClusterCategory as $facetCluster) {
+						$id = (string)$facetCluster->attributes()['ID'];
+						$tag = (string)$facetCluster->attributes()['Tag'];
+						$availableFacets[$tag] = [
+							'multiSelect' => false,
+							'label' => $id,
+							'list' => []
+						];
+						foreach ($facetCluster->Cluster as $clusterData){
+							$isApplied = false;
+							$facetValue = (string)$clusterData;
+							$availableFacets[$tag]['list'][$facetValue] = array(
+								'type' => $tag,
+								'value' => $facetValue,
+								'display' => $facetValue,
+								'url' => $this->renderLinkWithFilter($tag, $facetValue),
+								'isApplied' => $isApplied,
+							);
+						}
 					}
 				}
 			}
@@ -529,7 +545,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	{
 		$this->startQueryTimer();
 		$hasSearchTerm = false;
-		$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=full";
+		$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=detailed";
 		if (is_array($this->searchTerms)){
 			$searchUrl .= '&query=';
 			$termIndex = 1;
@@ -566,10 +582,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			}
 			if (is_array($filter)) {
 				foreach($filter as $fieldIndex => $fieldValue) {
-					$searchUrl .= "&$field=$fieldValue";
+					$searchUrl .= "&$field=" . urlencode($fieldValue);
 				}
 			}else{
-				$searchUrl .= "&$field=$filter";
+				$searchUrl .= "&$field=" . urlencode($filter);
 			}
 		}
 
