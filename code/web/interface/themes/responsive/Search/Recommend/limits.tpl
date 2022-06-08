@@ -5,7 +5,7 @@
 			<div class="facetValue">
 				<label for="limit_{$limit.value|escapeCSS}">
 					<input type="checkbox" {if $limit.isApplied}checked{/if} name="limit[{$limit.value|escapeCSS}]" id="limit_{$limit.value|escapeCSS}" onclick="document.location = '{if $limit.isApplied}{$limit.removalUrl|escape}{else}{$limit.url|escape}{/if}';">
-					{$limit.display}
+					{$limit.display} {if !empty($limit.count)}({$limit.count}){/if}
 				</label>
 			</div>
 		{/foreach}

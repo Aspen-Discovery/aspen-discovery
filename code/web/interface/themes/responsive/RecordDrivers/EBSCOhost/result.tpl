@@ -60,11 +60,6 @@
 			</div>
 		{/if}
 
-		<div class="row hidden-phone">
-			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}{translate text="Yes" isPublicFacing=true}{else}{translate text="No" isPublicFacing=true}{/if}</div>
-		</div>
-
 		{if count($appearsOnLists) > 0}
 			<div class="row">
 				<div class="result-label col-tn-3">

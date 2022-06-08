@@ -128,7 +128,6 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
-		$interface->assign('summHasFullText', $this->hasFullText());
 
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
@@ -328,28 +327,6 @@ class EbscohostRecordDriver extends RecordInterface
 	public function getId()
 	{
 		return $this->getUniqueID();
-	}
-
-	/**
-	 * Does this record have searchable full text in the index?
-	 *
-	 * Note: As of this writing, searchable full text is not a VuFind feature,
-	 *       but this method will be useful if/when it is eventually added.
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasFullText()
-	{
-		return false;
-	}
-
-	public function getFullText()
-	{
-		$fullText = (string)$this->recordData->FullText->Text->Value;
-		$fullText = html_entity_decode($fullText);
-		$fullText = preg_replace('/<anid>.*?<\/anid>/', '', $fullText);
-		return $fullText;
 	}
 
 	/**

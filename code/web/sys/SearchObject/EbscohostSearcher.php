@@ -384,47 +384,115 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	}
 
 	public function getFacetSet() {
-		return [];
-	}
+		$searchOptions = $this->getSearchOptions();
 
-	public function getLimitList(){
-		global $memCache;
-		$limitOptions = $memCache->get('ebscohost_limit_options_' . $this->getSettings()->profileId);
-		if ($limitOptions === false) {
-			$searchOptions = $this->getSearchOptions();
-
-			$limitOptions = array();
-			if ($searchOptions != null) {
-				//The only facet/limiter currently available is the database
-				foreach ($searchOptions->dbInfo->db as $dbInfo) {
-					$shortName = (string)$dbInfo->attributes()['shortName'];
-					$longName = (string)$dbInfo->attributes()['longName'];
-					$limitOptions[$shortName] = array(
-						'type' => 'db',
-						'value' => $shortName,
-						'display' => $longName,
-						'defaultOn' => false
-					);
+		$selectedDatabase = '';
+		foreach ($this->filterList as $field=>$value){
+			if ($field == 'db'){
+				if (is_array($value)){
+					$selectedDatabase = reset($value);
+				}else{
+					$selectedDatabase = $value;
 				}
 			}
 		}
-		$limitList = [];
-		foreach ($limitOptions as $limit => $limitOption){
-			if (array_key_exists($limit, $this->limiters)){
-				$limitIsApplied = ($this->limiters[$limit]) == 'y' ? 1 : 0;
-			}else{
-				$limitIsApplied = $limitOption['defaultOn'];
+		$availableFacets = array();
+		$availableFacets['db'] = [
+			'multiSelect' => false,
+			'showAsDropDown' => true,
+			'label' => 'Source',
+			'defaultValue' => translate(['text'=>'All Databases', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'hasSelectedOption' => $selectedDatabase != '',
+			'list' => []
+		];
+		if ($searchOptions != null) {
+			//The only facet/limiter currently available is the database
+			if ($selectedDatabase != '') {
+				$this->removeFilter("db:$selectedDatabase");
 			}
-			$limitList[$limit] = [
-				'url' => $this->renderLinkWithLimiter($limit),
-				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
-				'display' => $limitOption['display'],
-				'value' => $limit,
-				'isApplied' => $limitIsApplied,
-			];
+			foreach ($searchOptions->dbInfo->db as $dbInfo) {
+				$shortName = (string)$dbInfo->attributes()['shortName'];
+				$longName = (string)$dbInfo->attributes()['longName'];
+				$isApplied = $shortName == $selectedDatabase;
+				$availableFacets['db']['list'][$shortName] = array(
+					'type' => 'db',
+					'value' => $shortName,
+					'display' => $longName,
+					'url' => $this->renderLinkWithFilter('db', $shortName),
+					'isApplied' => $isApplied,
+				);
+			}
+			if ($selectedDatabase != '') {
+				$this->addFilter("db:$selectedDatabase");
+			}
+			if (!empty($this->lastSearchResults->Statistics)) {
+				foreach ($this->lastSearchResults->Statistics->Statistic as $statistic) {
+					$availableFacets['db']['list'][(string)$statistic->Database]['count'] = (int)$statistic->Hits;
+					if ($statistic->Hits == 0) {
+						unset($availableFacets['db']['list'][(string)$statistic->Database]);
+					}
+				}
+			}
+			$sorter = function($a, $b) {
+				if (isset($a['count']) && isset($b['count'])) {
+					$countA = $a['count'];
+					$countB = $b['count'];
+					if ($countA > $countB) {
+						return -1;
+					} elseif ($countA < $countB) {
+						return 1;
+					} else {
+						return strcasecmp($a['display'], $b['display']);
+					}
+				}elseif (isset($a['count'])) {
+					return -1;
+				}elseif (isset($b['count'])) {
+					return 1;
+				}else{
+					return strcasecmp($a['display'], $b['display']);
+				}
+			};
+			uasort($availableFacets['db']['list'], $sorter);
+
+			if (!empty($this->lastSearchResults->Facets)) {
+				foreach ($this->lastSearchResults->Statistics->Facets->Clusters as $facetCluster) {
+					$limitList[(string)$statistic->Database]['count'] = (int)$statistic->Hits;
+					if ($statistic->Hits == 0) {
+						unset($limitList[(string)$statistic->Database]);
+					}
+				}
+			}
 		}
 
-		return $limitList;
+//		$limitList = [];
+//		foreach ($availableFacets['db']['list'] as $limit => $limitOption){
+//			$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+//
+//			$limitList[$limit] = [
+//				'url' => $this->renderLinkWithLimiter($limit),
+//				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
+//				'display' => $limitOption['display'],
+//				'value' => $limit,
+//				'isApplied' => $limitIsApplied,
+//			];
+//		}
+//
+//		if (!empty($this->lastSearchResults)){
+//			if (!empty($this->lastSearchResults->Statistics)) {
+//				foreach ($this->lastSearchResults->Statistics->Statistic as $statistic) {
+//					$limitList[(string)$statistic->Database]['count'] = (int)$statistic->Hits;
+//					if ($statistic->Hits == 0) {
+//						unset($limitList[(string)$statistic->Database]);
+//					}
+//				}
+//			}
+//		}
+
+		return $availableFacets;
+	}
+
+	public function getLimitList(){
+		return [];
 	}
 
 	public function retrieveRecord($dbId, $an) {
@@ -491,15 +559,21 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		}
 		$searchUrl .= '&numrec=' . $this->limit;
 
-		$limitList = $this->getLimitList();
-		$hasAppliedLimiters = false;
-		foreach ($limitList as $limiter => $limiterOptions) {
-			if ($limiterOptions['isApplied']){
-				$searchUrl .= "&db=$limiter";
-				$hasAppliedLimiters = true;
+		$hasAppliedDatabase = false;
+		foreach ($this->filterList as $field => $filter) {
+			if ($field == 'db'){
+				$hasAppliedDatabase = true;
+			}
+			if (is_array($filter)) {
+				foreach($filter as $fieldIndex => $fieldValue) {
+					$searchUrl .= "&$field=$fieldValue";
+				}
+			}else{
+				$searchUrl .= "&$field=$filter";
 			}
 		}
-		if (!$hasAppliedLimiters){
+
+		if (!$hasAppliedDatabase){
 			//Apply all databases to the search (by default)
 			$searchOptions = $this->getSearchOptions();
 			/** @var SimpleXMLElement $dbInfo */
