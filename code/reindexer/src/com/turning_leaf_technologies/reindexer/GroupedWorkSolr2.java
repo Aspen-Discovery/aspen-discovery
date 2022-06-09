@@ -434,6 +434,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						availabilityToggleForScope.available = availabilityToggleForScope.available || availabilityToggleForItem.available;
 						availabilityToggleForScope.availableOnline = availabilityToggleForScope.availableOnline || availabilityToggleForItem.availableOnline;
 
+						if (formatsCategoriesForItem.size() == 0){
+							formatsCategoriesForItem.add("");
+						}
 						for (String formatCategory : formatsCategoriesForItem) {
 							for (String format : formatsForItem) {
 								for (String availabilityToggle : availabilityToggleForItem.getValues()) {
