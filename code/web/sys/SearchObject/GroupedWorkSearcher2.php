@@ -887,7 +887,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	}
 	public function getResultRecordSet(){
 		global $solrScope;
-		$solrScopeLength = strlen($solrScope);
+		$solrScopeWithSeparator = $solrScope . '#';
+		$solrScopeLength = strlen($solrScopeWithSeparator);
 		$recordSet = parent::getResultRecordSet();
 		foreach ($recordSet as &$record){
 			foreach ($record as $fieldName => &$fieldData){
@@ -896,15 +897,15 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					if (is_array($fieldData)) {
 						$scopedFieldValues = [];
 						foreach ($fieldData as $valueIndex => $fieldValue) {
-							if (strpos($fieldValue, $solrScope) === 0) {
-								$scopedFieldValues[] = substr($fieldValue, $solrScopeLength + 1);
+							if (strpos($fieldValue, $solrScopeWithSeparator) === 0) {
+								$scopedFieldValues[] = substr($fieldValue, $solrScopeLength);
 							} else {
 								unset($fieldData[$valueIndex]);
 							}
 						}
 						$record[$scopedField] = $scopedFieldValues;
 					}else{
-						$record[$scopedField] = substr($fieldData, $solrScopeLength + 1);
+						$record[$scopedField] = substr($fieldData, $solrScopeLength);
 					}
 				}
 			}
