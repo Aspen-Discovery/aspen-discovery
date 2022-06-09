@@ -255,7 +255,7 @@ class Search_Results extends ResultsAction {
 					if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mailer = new Mailer();
-						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\nIP Address: IPAddress::getActiveIp()\n" . $result['error']['msg'];
 						$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing catalog search", $emailErrorDetails);
 					}
 				}catch (Exception $e){
