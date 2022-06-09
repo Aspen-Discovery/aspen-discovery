@@ -901,7 +901,7 @@ public class RecordGroupingProcessor {
 				}
 			}
 		}
-		if (activeLanguage == null){
+		if (activeLanguage == null || activeLanguage.equals("|||")){
 			activeLanguage = "unk";
 		}
 		return activeLanguage;

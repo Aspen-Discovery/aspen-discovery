@@ -1905,9 +1905,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 	{
 		global $interface;
 
-		$fields = $this->fields;
-		ksort($fields);
-		$interface->assign('details', $fields);
+		if (!empty($this->fields)) {
+			$fields = $this->fields;
+			ksort($fields);
+			$interface->assign('details', $fields);
+		}
 
 		if (IPAddress::showDebuggingInformation()) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
