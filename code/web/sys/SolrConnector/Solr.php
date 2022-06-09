@@ -574,7 +574,7 @@ abstract class Solr
 							}
 						}
 					} elseif ($field == 'id') {
-						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"?$/i', $fieldValue)) {
+						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})(-\w{3})?"?$/i', $fieldValue)) {
 							continue;
 						}
 					} elseif ($field == 'alternate_ids') {

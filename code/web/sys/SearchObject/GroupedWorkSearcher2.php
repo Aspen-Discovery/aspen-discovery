@@ -885,4 +885,31 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	public function isScopedField($fieldName){
 		return in_array($fieldName, SearchObject_GroupedWorkSearcher2::$scopedFields);
 	}
+	public function getResultRecordSet(){
+		global $solrScope;
+		$solrScopeLength = strlen($solrScope);
+		$recordSet = parent::getResultRecordSet();
+		foreach ($recordSet as &$record){
+			foreach ($record as $fieldName => &$fieldData){
+				if (in_array($fieldName, SearchObject_GroupedWorkSearcher2::$scopedFields)){
+					$scopedField = $fieldName . '_' . $solrScope;
+					if (is_array($fieldData)) {
+						$scopedFieldValues = [];
+						foreach ($fieldData as $valueIndex => $fieldValue) {
+							if (strpos($fieldValue, $solrScope) === 0) {
+								$scopedFieldValues[] = substr($fieldValue, $solrScopeLength + 1);
+							} else {
+								unset($fieldData[$valueIndex]);
+							}
+						}
+						$record[$scopedField] = $scopedFieldValues;
+					}else{
+						$record[$scopedField] = substr($fieldData, $solrScopeLength + 1);
+					}
+				}
+			}
+		}
+		return $recordSet;
+	}
+
 }
