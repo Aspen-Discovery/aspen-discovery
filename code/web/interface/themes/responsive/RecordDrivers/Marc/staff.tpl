@@ -31,19 +31,19 @@
 			{if $classicUrl && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}
 				<a href="{$classicUrl}" class="btn btn-sm btn-info" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="View in Native OPAC" isAdminFacing=true}</a>
 			{/if}
-			{if $groupedWorkValid}
+			{if !empty($permanentId)}
 				{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
 				{/if}
+			{/if}
+			{if $groupedWorkValid}
 				{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info" isAdminFacing=true}</button>
 				{/if}
-			{/if}
-			{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
-				{if $groupedWorkValid}
+				{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work" isAdminFacing=true}</button>
+					<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup" isAdminFacing=true}</button>
 				{/if}
-				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup" isAdminFacing=true}</button>
 			{/if}
 			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
 				<a href="/{$recordDriver->getModule()}/{$recordDriver->getId()|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc" isAdminFacing=true}</a>
