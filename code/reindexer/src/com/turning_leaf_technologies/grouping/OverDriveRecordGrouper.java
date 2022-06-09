@@ -71,6 +71,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 						}
 					}
 				}
+				metadataRS.close();
 				overDriveRecordRS.close();
 				return processOverDriveRecord(overdriveId, title, subtitle, series, author, mediaType, primaryLanguage);
 			}

@@ -91,6 +91,10 @@ class GroupedWork implements Cloneable {
 		return this.permanentId;
 	}
 
+	public void overridePermanentId(String newId){
+		this.permanentId = newId;
+	}
+
 	private String authoritativeTitle;
 	String getAuthoritativeTitle() {
 		if (authoritativeTitle == null) {

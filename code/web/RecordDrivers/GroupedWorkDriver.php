@@ -6,6 +6,7 @@ require_once ROOT_DIR . '/sys/File/MARC.php';
 class GroupedWorkDriver extends IndexRecordDriver
 {
 
+	private $permanentId = null;
 	public $isValid = true;
 
 	/** @var SearchObject_AbstractGroupedWorkSearcher */
@@ -16,6 +17,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			//We were just given the id of a record to load
 			$id = $indexFields;
 			$id = str_replace('groupedWork:', '', $id);
+			$this->permanentId = $id;
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
 			if (GroupedWorkDriver::$recordLookupSearcher == null){
@@ -43,6 +45,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$this->isValid = false;
 			} else {
 				parent::__construct($indexFields);
+				$this->permanentId = $indexFields['id'];
 			}
 		}
 	}
@@ -1382,7 +1385,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getPermanentId()
 	{
-		return $this->fields['id'];
+		return $this->permanentId;
 	}
 
 	public function getPrimaryAuthor($useHighlighting = false)
@@ -1966,24 +1969,25 @@ class GroupedWorkDriver extends IndexRecordDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$permanentId = $this->getPermanentId();
-			$alternateTitle->permanent_id = $permanentId;
-			$alternateTitle->find();
-			$alternateTitles = [];
-			while ($alternateTitle->fetch()){
-				$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
-			}
-
-			//Also look for any grouped works that do not have the language attached
-			if (strlen($permanentId) == 40){
-				$permanentId = substr($permanentId, 0, 36);
+			if (!empty($permanentId)) {
 				$alternateTitle->permanent_id = $permanentId;
 				$alternateTitle->find();
 				$alternateTitles = [];
-				while ($alternateTitle->fetch()){
+				while ($alternateTitle->fetch()) {
 					$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
 				}
-			}
 
+				//Also look for any grouped works that do not have the language attached
+				if (strlen($permanentId) == 40) {
+					$permanentId = substr($permanentId, 0, 36);
+					$alternateTitle->permanent_id = $permanentId;
+					$alternateTitle->find();
+					$alternateTitles = [];
+					while ($alternateTitle->fetch()) {
+						$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+					}
+				}
+			}
 			return $alternateTitles;
 		}
 		return null;

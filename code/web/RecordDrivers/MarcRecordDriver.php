@@ -211,8 +211,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
-		if ($groupedWorkDriver != null && $groupedWorkDriver->isValid()){
-			$interface->assign('hasValidGroupedWork', true);
+		if ($groupedWorkDriver != null) {
+			if ( $groupedWorkDriver->isValid()){
+				$interface->assign('hasValidGroupedWork', true);
+			}else{
+				$interface->assign('hasValidGroupedWork', false);
+			}
 			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
