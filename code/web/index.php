@@ -226,14 +226,21 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);
 
-//Look for spammy searches and kill them
 if (isset($_REQUEST['lookfor'])) {
 	// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
+			if ( isSpammySearchTerm($searchTerm)){
+				global $interface;
+				$interface->assign('module','Error');
+				$interface->assign('action','Handle404');
+				$module = 'Error';
+				$action = 'Handle404';
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+			}
 			if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
 				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
-				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+				$_GET['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			$cleanedSearchTerm = strip_tags($searchTerm);
 			if ($cleanedSearchTerm != $searchTerm){
@@ -249,6 +256,14 @@ if (isset($_REQUEST['lookfor'])) {
 			}
 		}
 	} else {
+		if ( isSpammySearchTerm($_REQUEST['lookfor'])){
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			$module = 'Error';
+			$action = 'Handle404';
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		}
 		// Basic Search
 		$searchTerm = trim($_REQUEST['lookfor']);
 		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
@@ -1124,4 +1139,25 @@ function initializeSession(){
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}
 	$timer->logTime('Session initialization ' . $session_type);
+}
+
+//Look for spammy searches and kill them
+function isSpammySearchTerm($lookfor)
+{
+	if (strpos($lookfor, 'DBMS_PIPE.RECEIVE_MESSAGE') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'PG_SLEEP') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'SELECT') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'SLEEP') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'ORDER BY') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'WAITFOR') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'nvOpzp') !== false) {
+		return true;
+	}
+	return false;
 }

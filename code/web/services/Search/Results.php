@@ -244,6 +244,9 @@ class Search_Results extends ResultsAction {
 					} elseif (strpos($term['lookfor'], 'WAITFOR') !== false) {
 						$logSearchError = false;
 						break;
+					} elseif (strpos($term['lookfor'], 'nvOpzp') !== false) {
+						$logSearchError = false;
+						break;
 					}
 				}
 			}
