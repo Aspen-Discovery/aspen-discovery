@@ -105,7 +105,7 @@ class EBSCOhost_Results extends ResultsAction {
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
 		$interface->assign('subpage', $displayTemplate);
 		$interface->assign('sectionLabel', 'EBSCOhost Databases');
-		$sidebar = $searchObject->getResultTotal() > 0 ? 'EBSCO/results-sidebar.tpl' : '';
+		$sidebar = ($searchObject->getResultTotal() > 0 || $searchObject->hasAppliedFacets()) ? 'EBSCOhost/results-sidebar.tpl' : '';
 		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	}
 

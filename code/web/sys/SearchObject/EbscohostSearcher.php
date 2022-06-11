@@ -23,8 +23,8 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	protected $limit = 20;
 
 	// Sorting
-	protected $sort = 'relevance';
-	protected $defaultSort = 'relevance';
+	protected $sort = 'date';
+	protected $defaultSort = 'date';
 
 	// STATS
 	protected $resultsTotal = 0;
@@ -71,9 +71,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		// Initialize standard search parameters
 		$this->initView();
 		$this->initPage();
-		$this->initSort();
 		$this->initFilters();
 		$this->initLimiters();
+		//Sorting needs to be initialized after filters since they depend on the selected database
+		$this->initSort();
 
 		//********************
 		// Basic Search logic
@@ -343,20 +344,49 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	}
 
 	public function getSortOptions() {
-		global $memCache;
-		$sortOptions = $memCache->get('ebscohost_sort_options_' . $this->getSettings()->profileId);
-		if ($sortOptions === false) {
-			$searchOptions = $this->getSearchOptions();
-			$sortOptions = array();
-//			if ($searchOptions != null) {
-//				foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts as $sortOption) {
-//					$sort = $sortOption->Id;
-//					$desc = $sortOption->Label;
-//					$sortOptions[$sort] = $desc;
-//				}
-//			}
-			global $configArray;
-			$memCache->set('ebsco_eds_sort_options_' . $this->getSettings()->profileId, $sortOptions, $configArray['Caching']['ebsco_options']);
+		$appliedDatabase = $this->getAppliedDatabase();
+		$searchOptions = $this->getSearchOptions();
+		$sortOptions = array();
+		if ($appliedDatabase == null){
+			$isFirstDb = true;
+			//Get the sort options that apply to all databases
+			foreach ($searchOptions->dbInfo->db as $db){
+				if ($isFirstDb) {
+					//For the first DB add all options.
+					foreach ($db->sortOptions->sort as $sortOption){
+						$id = (string)$sortOption->attributes()['id'];
+						$name = (string)$sortOption->attributes()['name'];
+						$sortOptions[$id] = $name;
+					}
+					$isFirstDb = false;
+				}else{
+					//For the rest, remove any sort options that are not found.
+					$sortOptionsForThisDB = [];
+					foreach ($db->sortOptions->sort as $sortOption) {
+						$id = (string)$sortOption->attributes()['id'];
+						$sortOptionsForThisDB[$id] = $id;
+					}
+					foreach ($sortOptions as $id => $name){
+						if (!in_array($id, $sortOptionsForThisDB)){
+							unset($sortOptions[$id]);
+						}
+					}
+				}
+			}
+			if (count($sortOptions) == 0){
+				$sortOptions['date'] = 'Date';
+				$sortOptions['relevance'] = 'Relevancy';
+			}
+		}else{
+			foreach ($searchOptions->dbInfo->db as $db){
+				if ($db->attributes()['shortName'] == $appliedDatabase){
+					foreach ($db->sortOptions->sort as $sortOption){
+						$id = (string)$sortOption->attributes()['id'];
+						$name = (string)$sortOption->attributes()['name'];
+						$sortOptions[$id] = $name;
+					}
+				}
+			}
 		}
 
 		return $sortOptions;
@@ -406,10 +436,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			'list' => []
 		];
 		if ($searchOptions != null) {
-			//The only facet/limiter currently available is the database
-			if ($selectedDatabase != '') {
-				$this->removeFilter("db:$selectedDatabase");
-			}
+			//When we change database, we need to clear all other filters.
+			$appliedFilters = $this->filterList;
+			$this->filterList = [];
 			foreach ($searchOptions->dbInfo->db as $dbInfo) {
 				$shortName = (string)$dbInfo->attributes()['shortName'];
 				$longName = (string)$dbInfo->attributes()['longName'];
@@ -422,9 +451,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					'isApplied' => $isApplied,
 				);
 			}
-			if ($selectedDatabase != '') {
-				$this->addFilter("db:$selectedDatabase");
-			}
+			$this->filterList = $appliedFilters;
 			if (!empty($this->lastSearchResults->Statistics)) {
 				foreach ($this->lastSearchResults->Statistics->Statistic as $statistic) {
 					$availableFacets['db']['list'][(string)$statistic->Database]['count'] = (int)$statistic->Hits;
@@ -461,12 +488,14 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 						$tag = (string)$facetCluster->attributes()['Tag'];
 						$availableFacets[$tag] = [
 							'multiSelect' => false,
+							'valuesToShow' => 5,
+							'collapseByDefault' => false,
 							'label' => $id,
 							'list' => []
 						];
 						foreach ($facetCluster->Cluster as $clusterData){
-							$isApplied = false;
 							$facetValue = (string)$clusterData;
+							$isApplied = array_key_exists($tag, $this->filterList) && in_array($facetValue, $this->filterList[$tag]);
 							$availableFacets[$tag]['list'][$facetValue] = array(
 								'type' => $tag,
 								'value' => $facetValue,
@@ -768,4 +797,16 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $records;
 	}
 
+	public function getAppliedDatabase(){
+		$appliedDatabase = null;
+		if (isset($this->filterList['db'])) {
+			$filter = $this->filterList['db'];
+			if (is_array($filter)) {
+				$appliedDatabase = reset($filter);
+			}else{
+				$appliedDatabase = $filter;
+			}
+		}
+		return $appliedDatabase;
+	}
 }

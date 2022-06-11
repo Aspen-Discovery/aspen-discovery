@@ -8,7 +8,7 @@
 		</div>
 	{/if}
 
-	{if $recordCount || $sideRecommendations}
+	{if $sideFacetSet}
 		<div id="refineSearch">
 			{* Narrow Results *}
 			<div class="row">
