@@ -6,7 +6,7 @@ $solrBaseUrl = $configArray['Index']['url'];
 
 $opts = array('http' =>
 	array(
-		'timeout' => 600
+		'timeout' => 1200
 	)
 );
 $context  = stream_context_create($opts);

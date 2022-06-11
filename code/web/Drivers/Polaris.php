@@ -444,6 +444,7 @@ class Polaris extends AbstractIlsDriver
 					case 1:
 						//Frozen
 						$curHold->status = $holdInfo->StatusDescription;
+						$curHold->reactivateDate = $this->parsePolarisDate($holdInfo->ActivationDate);
 						$curHold->frozen = true;
 						break;
 					case 3:

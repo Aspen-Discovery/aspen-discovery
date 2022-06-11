@@ -330,6 +330,11 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $this->groupedWorkDriver;
 	}
 
+	public function hasValidGroupedWorkDriver(){
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		return $groupedWorkDriver != null && $groupedWorkDriver->isValid();
+	}
+
 	/**
 	 * Get an array of all ISBNs associated with the record (may be empty).
 	 *

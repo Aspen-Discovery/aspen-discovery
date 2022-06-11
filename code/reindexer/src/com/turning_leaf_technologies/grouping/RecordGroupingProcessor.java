@@ -281,7 +281,8 @@ public class RecordGroupingProcessor {
 				}
 				alternateGroupedWorkPermanentId += "-" + groupedWork.getLanguage();
 				groupedWorkPermanentId = alternateGroupedWorkPermanentId;
-			}
+				groupedWork.overridePermanentId(groupedWorkPermanentId);
+ 			}
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
@@ -900,7 +901,7 @@ public class RecordGroupingProcessor {
 				}
 			}
 		}
-		if (activeLanguage == null){
+		if (activeLanguage == null || activeLanguage.equals("|||")){
 			activeLanguage = "unk";
 		}
 		return activeLanguage;

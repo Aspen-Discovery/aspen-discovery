@@ -1235,16 +1235,12 @@ class GroupedWork_AJAX extends JSON_Action
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
-		if ($recordDriver->isValid()){
-			global $interface;
-			$interface->assign('recordDriver', $recordDriver);
-			$result = [
-				'success' => true,
-				'staffView' => $interface->fetch($recordDriver->getStaffView())
-			];
-		}else{
-			$result['message'] = translate(['text'=>'Could not find that record', 'isPublicFacing'=>true]);
-		}
+		global $interface;
+		$interface->assign('recordDriver', $recordDriver);
+		$result = [
+			'success' => true,
+			'staffView' => $interface->fetch($recordDriver->getStaffView())
+		];
 		return $result;
 	}
 

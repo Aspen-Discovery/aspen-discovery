@@ -832,7 +832,7 @@ public class GroupedWorkIndexer {
 		HashSet<String> regroupedIdsToProcess = new HashSet<>();
 		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
 
-		if (regroupAllRecords && allowRegrouping){
+		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||")){
 			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
 				String type = recordIdentifier.getType();
 				String identifier = recordIdentifier.getIdentifier();

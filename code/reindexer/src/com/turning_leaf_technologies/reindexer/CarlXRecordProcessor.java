@@ -206,14 +206,14 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
 	}
 
-	ItemInfo createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
-		ItemInfo item = super.createPrintIlsItem(groupedWork, recordInfo, record, itemField);
-		if (item != null){
+	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, StringBuilder suppressionNotes) {
+		ItemInfoWithNotes item = super.createPrintIlsItem(groupedWork, recordInfo, record, itemField, suppressionNotes);
+		if (item.itemInfo != null){
 			Subfield shelfLocationField = itemField.getSubfield(shelvingLocationSubfield);
 			if (shelfLocationField != null) {
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
 				if (shelfLocation.equals("xord")) {
-					item.setIsOrderItem();
+					item.itemInfo.setIsOrderItem();
 				}
 			}
 		}

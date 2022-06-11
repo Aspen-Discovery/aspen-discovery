@@ -568,7 +568,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		String activeLanguage = null;
 		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
 		for (String language : languages){
-			if (language.trim().length() != 0) {
+			if (language.trim().length() != 0 && !language.equals("|||")) {
 				if (activeLanguage == null) {
 					activeLanguage = language;
 				} else {

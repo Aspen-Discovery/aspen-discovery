@@ -228,20 +228,21 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		return available;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
 		if (iCode2Subfield != ' '){
 			Subfield iCode2SubfieldValue = curItem.getSubfield(iCode2Subfield);
 			if (iCode2SubfieldValue != null){
 				String iCode2Value = iCode2SubfieldValue.getData();
 				if (iCode2sToSuppress != null && iCode2sToSuppress.matcher(iCode2Value).matches()){
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" icode2 matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
-		return super.isItemSuppressed(curItem);
+		return super.isItemSuppressed(curItem, itemIdentifier, suppressionNotes);
 	}
 
-	protected boolean isBibSuppressed(Record record) {
+	protected boolean isBibSuppressed(Record record, String identifier) {
 		if (exportFieldMapping != null){
 			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
 			if (sierraFixedField != null){
@@ -252,11 +253,12 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 						if (logger.isDebugEnabled()) {
 							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
 						}
+						updateRecordSuppression(true, new StringBuilder().append("Bib record is suppressed due to BCode3 ").append(bCode3), identifier);
 						return true;
 					}
 				}
 			}
 		}
-		return super.isBibSuppressed(record);
+		return super.isBibSuppressed(record, identifier);
 	}
 }

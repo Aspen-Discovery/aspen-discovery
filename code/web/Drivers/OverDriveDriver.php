@@ -240,10 +240,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$this->apiCurlWrapper->setOption(CURLOPT_SSL_VERIFYPEER, false);
 				$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION,1);
 				$encodedAuthValue = base64_encode($this->clientKey . ":" . $this->clientSecret);
+				global $interface;
 				$this->apiCurlWrapper->addCustomHeaders([
 					"Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
 					"Authorization: Basic " . $encodedAuthValue,
-					"User-Agent: Aspen Discovery",
+					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 				], true);
 
 				if ($patronPin == null){
@@ -292,9 +293,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->apiCurlWrapper->setOption(CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER,true);
 			$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION,1);
+			global $interface;
 			$this->apiCurlWrapper->addCustomHeaders([
 				"Authorization: {$tokenData->token_type} {$tokenData->access_token}",
-				"User-Agent: Aspen Discovery",
+				"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 			], true);
 
 			$content = $this->apiCurlWrapper->curlGetPage($url);
@@ -366,9 +368,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->initCurlWrapper();
 			if (isset($tokenData->token_type) && isset($tokenData->access_token)){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
+				global $interface;
 				$this->apiCurlWrapper->addCustomHeaders([
 					"Authorization: $authorizationData",
-					"User-Agent: Aspen Discovery",
+					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 					"Host: $patronApiHost"
 				], true);
 			}else{
@@ -457,17 +460,18 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER,true);
 			$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION,1);
 
+			global $interface;
 			if($tokenData){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$patronApiHost = $this->getPatronApiHost();
 				$this->apiCurlWrapper->addCustomHeaders([
 					"Authorization: $authorizationData",
-					"User-Agent: Aspen Discovery",
+					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 					"Host: $patronApiHost",
 				], true);
 			}else{
 				$this->apiCurlWrapper->addCustomHeaders([
-					"User-Agent: Aspen Discovery",
+					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 					"Host: {$this->getOverDriveApiHost()}",
 				], true);
 			}
