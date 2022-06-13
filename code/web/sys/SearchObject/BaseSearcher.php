@@ -166,7 +166,11 @@ abstract class SearchObject_BaseSearcher
 
 	public function clearFilters()
 	{
-		$this->filterList = array();
+		$this->filterList = [];
+	}
+
+	public function setAppliedFilters($filterList){
+		$this->filterList = $filterList;
 	}
 
 
@@ -1518,7 +1522,7 @@ abstract class SearchObject_BaseSearcher
 		$this->searchType = $this->basicSearchType;
 		$this->searchId = null;
 		$this->resultsTotal = null;
-		$this->filterList = null;
+		$this->filterList = [];
 		$this->initTime = null;
 		$this->queryTime = null;
 		// An array so we don't have to initialise
@@ -1558,7 +1562,7 @@ abstract class SearchObject_BaseSearcher
 		$this->initTime = $minified->i;
 		$this->queryTime = $minified->s;
 		$this->resultsTotal = $minified->r;
-		$this->filterList = $minified->f;
+		$this->setAppliedFilters($minified->f);
 		$this->searchType = $minified->ty;
 		$this->searchSource = $minified->ss;
 		$this->sort = $minified->sr;

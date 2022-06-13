@@ -318,7 +318,7 @@ class GroupedWorkDisplaySetting extends DataObject
 		return $ret;
 	}
 
-	private $_facetGroup;
+	private $_facetGroup = false;
 	/** @return GroupedWorkFacet[] */
 	public function getFacets()
 	{
@@ -332,7 +332,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	public function getFacetGroup() : ?GroupedWorkFacetGroup
 	{
 		try {
-			if ($this->_facetGroup == null) {
+			if ($this->_facetGroup === false) {
 				$this->_facetGroup = new GroupedWorkFacetGroup();
 				$this->_facetGroup->id = $this->facetGroupId;
 				if (!$this->_facetGroup->find(true)) {
