@@ -319,14 +319,7 @@ class Search_Results extends ResultsAction {
 
         //Look for suggestions for the search (but not if facets are applied)
 		$facetSet = $searchObject->getFacetList();
-		$hasAppliedFacets = false;
-		if (isset($facetSet)){
-			foreach ($facetSet as $facet){
-				if ($facet['hasApplied']){
-					$hasAppliedFacets = true;
-				}
-			}
-		}
+		$hasAppliedFacets = $searchObject->hasAppliedFacets();
 		if (!$hasAppliedFacets && $searchObject->getResultTotal() <= 5) {
 			require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
