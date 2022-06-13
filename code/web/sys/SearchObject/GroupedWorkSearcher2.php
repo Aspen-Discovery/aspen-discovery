@@ -754,6 +754,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatValues) > 0;
 				} elseif ($field == 'format') {
 					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0;
+				}else{
+					$currentSettings['countIsApproximate'] = false;
 				}
 
 				//Setup the key to allow sorting alphabetically if needed.

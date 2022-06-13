@@ -40,6 +40,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	//Faceting
 	public $includeAllRecordsInShelvingFacets;
 	public $includeAllRecordsInDateAddedFacets;
+	public $facetCountsToShow;
 	public $facetGroupId;
 
 	//Enrichment
@@ -141,6 +142,7 @@ class GroupedWorkDisplaySetting extends DataObject
 						'includeOnlineMaterialsInAvailableToggle'  => array('property' => 'includeOnlineMaterialsInAvailableToggle',  'type'=>'checkbox', 'label'=>'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false, 'forcesReindex' => true),
 						'includeAllRecordsInShelvingFacets'        => array('property' => 'includeAllRecordsInShelvingFacets',        'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets',                   'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false, 'forcesReindex' => true),
 						'includeAllRecordsInDateAddedFacets'       => array('property' => 'includeAllRecordsInDateAddedFacets',       'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets',                 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false, 'forcesReindex' => true),
+						'facetCountsToShow' => array('property' => 'facetCountsToShow', 'type' => 'enum', 'values'=>['1'=>'Show all counts (exact and approximate)', '2'=>'Show exact counts only', '3'=>'Show no counts'], 'label' => 'Facet Counts To Show', 'description' => 'The counts to show for facets'),
 						'facetGroupId' => ['property' => 'facetGroupId', 'type'=>'enum', 'values' => $facetGroups, 'label' => 'Facet Group'],
 					)),
 				]
@@ -321,6 +323,15 @@ class GroupedWorkDisplaySetting extends DataObject
 	public function getFacets()
 	{
 		try {
+			return $this->getFacetGroup()->getFacets();
+		}catch (Exception $e){
+			return [];
+		}
+	}
+
+	public function getFacetGroup() : ?GroupedWorkFacetGroup
+	{
+		try {
 			if ($this->_facetGroup == null) {
 				$this->_facetGroup = new GroupedWorkFacetGroup();
 				$this->_facetGroup->id = $this->facetGroupId;
@@ -328,9 +339,9 @@ class GroupedWorkDisplaySetting extends DataObject
 					$this->_facetGroup = null;
 				}
 			}
-			return $this->_facetGroup->getFacets();
+			return $this->_facetGroup;
 		}catch (Exception $e){
-			return [];
+			return null;
 		}
 	}
 

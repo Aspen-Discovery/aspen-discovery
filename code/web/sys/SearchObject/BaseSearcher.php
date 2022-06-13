@@ -333,7 +333,8 @@ abstract class SearchObject_BaseSearcher
 					'value' => $value,     // raw value for use with Solr
 					'display' => $display,   // version to display to user
 					'field' => $field,
-					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value"),
+					'countIsApproximate' => false
 				);
 			}
 		}

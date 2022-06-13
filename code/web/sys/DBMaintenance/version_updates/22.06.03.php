@@ -11,6 +11,13 @@ function getUpdates22_06_03() : array
 				''
 			]
 		], //sample*/
+		'add_default_system_variables' =>[
+			'title' => 'Add default System Variables',
+			'description' => 'Add default System Variables if ',
+			'sql' => [
+				"addDefaultSystemVariables",
+			]
+		], //fix_list_entries_for_grouped_works_with_language
 		'fix_list_entries_for_grouped_works_with_language' =>[
 			'title' => 'Fix List Entries for Grouped Works With Language',
 			'description' => 'Fix List Entries for Grouped Works With Language',
@@ -25,7 +32,32 @@ function getUpdates22_06_03() : array
 				"removeV1GroupedWorkCore",
 			]
 		], //force_reindex_of_records_with_pipe_language
+		'facet_counts_to_show' => [
+			'title' => 'Facet Counts to show',
+			'description' => 'Allow configuration of which facets are shown to users',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings add COLUMN facetCountsToShow TINYINT DEFAULT 1",
+			]
+		]
 	];
+}
+
+function addDefaultSystemVariables(&$update) {
+	$systemVariables = SystemVariables::getSystemVariables();
+	if ($systemVariables == false){
+		$systemVariables = new SystemVariables();
+		$systemVariables->searchVersion = 2;
+		if ($systemVariables->insert()){
+			$update['status'] = '<strong>Added System Variables</strong><br/>';
+			$update['success'] = true;
+		}else{
+			$update['status'] = '<strong>System Variables could not be created</strong><br/>';
+			$update['success'] = true;
+		}
+	}else{
+		$update['status'] = '<strong>System Variables already exist</strong><br/>';
+		$update['success'] = true;
+	}
 }
 
 function removeV1GroupedWorkCore(&$update){

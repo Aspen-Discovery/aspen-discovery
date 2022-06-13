@@ -66,6 +66,7 @@ class SideFacets implements RecommendationInterface
 	 */
 	public function process() {
 		global $interface;
+		global $library;
 
 		//Get applied facets
 		$filterList = $this->searchObject->getFilterList();
@@ -79,7 +80,6 @@ class SideFacets implements RecommendationInterface
 		//Process the side facet set to handle the Added In Last facet which we only want to be
 		//visible if there is not a value selected for the facet (makes it single select
 		$sideFacets = $this->searchObject->getFacetList($this->mainFacets);
-		$searchLibrary = Library::getSearchLibrary();
 
 		$lockSection = $this->searchObject->getSearchName();
 		if (UserAccount::isLoggedIn()){
@@ -89,6 +89,10 @@ class SideFacets implements RecommendationInterface
 			$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
 		}
 		$lockedFacets = isset($lockedFacets[$lockSection]) ? $lockedFacets[$lockSection] : [];
+
+		//Figure out which counts to show.
+		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
+		$interface->assign('facetCountsToShow', $facetCountsToShow);
 
 		//Do additional processing of facets
 		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
