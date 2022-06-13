@@ -436,7 +436,7 @@ abstract class DataObject
 		}
 		if ($response === false){
 			$errorInfo = $aspen_db->errorInfo();
-			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $errorInfo . "<br/>");
+			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . implode('<br/>', $errorInfo) . "<br/>");
 		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
