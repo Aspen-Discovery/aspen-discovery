@@ -925,31 +925,112 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		return in_array($fieldName, SearchObject_GroupedWorkSearcher2::$scopedFields);
 	}
 	public function getResultRecordSet(){
-		global $solrScope;
-		$solrScopeWithSeparator = $solrScope . '#';
-		$solrScopeLength = strlen($solrScopeWithSeparator);
 		$recordSet = parent::getResultRecordSet();
-		foreach ($recordSet as &$record){
-			foreach ($record as $fieldName => &$fieldData){
-				if (in_array($fieldName, SearchObject_GroupedWorkSearcher2::$scopedFields)){
-					$scopedField = $fieldName . '_' . $solrScope;
-					if (is_array($fieldData)) {
-						$scopedFieldValues = [];
-						foreach ($fieldData as $valueIndex => $fieldValue) {
-							if (strpos($fieldValue, $solrScopeWithSeparator) === 0) {
-								$scopedFieldValues[] = substr($fieldValue, $solrScopeLength);
-							} else {
-								unset($fieldData[$valueIndex]);
-							}
-						}
-						$record[$scopedField] = $scopedFieldValues;
-					}else{
-						$record[$scopedField] = substr($fieldData, $solrScopeLength);
-					}
-				}
-			}
+		foreach ($recordSet as $index => $record){
+			$recordSet[$index] = $this->cleanScopedFieldsForRecord($record);
 		}
 		return $recordSet;
 	}
 
+	private function cleanScopedFieldsForRecord(array $record) : array {
+		global $solrScope;
+		$solrScopeWithSeparator = $solrScope . '#';
+		$solrScopeLength = strlen($solrScopeWithSeparator);
+		foreach ($record as $fieldName => &$fieldData){
+			if (in_array($fieldName, SearchObject_GroupedWorkSearcher2::$scopedFields)){
+				$scopedField = $fieldName . '_' . $solrScope;
+				if (is_array($fieldData)) {
+					$unscopedFieldValues = [];
+					foreach ($fieldData as $valueIndex => $fieldValue) {
+						if (strpos($fieldValue, $solrScopeWithSeparator) === 0) {
+							$unscopedFieldValues[] = substr($fieldValue, $solrScopeLength);
+						} else {
+							unset($fieldData[$valueIndex]);
+						}
+					}
+					$record[$scopedField] = $unscopedFieldValues;
+					$record[$fieldName] = $unscopedFieldValues;
+				}else{
+					$record[$scopedField] = substr($fieldData, $solrScopeLength);
+					$record[$fieldName] = substr($fieldData, $solrScopeLength);
+				}
+			}
+		}
+		return $record;
+	}
+
+	/**
+	 * Retrieves a document specified by the item barcode.
+	 *
+	 * @param string $barcode A barcode of an item in the document to retrieve from Solr
+	 * @access  public
+	 * @return  string              The requested resource
+	 * @throws  AspenError
+	 */
+	function getRecordByBarcode($barcode)
+	{
+		$recordData = $this->indexEngine->getRecordByBarcode($barcode);
+		if ($recordData != null){
+			$recordData = $this->cleanScopedFieldsForRecord($recordData);
+		}
+		return $recordData;
+	}
+
+	/**
+	 * Retrieves a document specified by an isbn.
+	 *
+	 * @param string[] $isbn An array of isbns to check
+	 * @access  public
+	 * @return  string              The requested resource
+	 * @throws  AspenError
+	 */
+	function getRecordByIsbn($isbn)
+	{
+		$recordData = $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
+		if ($recordData != null){
+			$recordData = $this->cleanScopedFieldsForRecord($recordData);
+		}
+		return $recordData;
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param string $id The document to retrieve from Solr
+	 * @access  public
+	 * @return  array              The requested resource
+	 * @throws  AspenError
+	 */
+	function getRecord($id)
+	{
+		$recordData = $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
+		if ($recordData != null){
+			$recordData = $this->cleanScopedFieldsForRecord($recordData);
+		}
+		return $recordData;
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param string[] $ids An array of documents to retrieve from Solr
+	 * @access  public
+	 * @return  array              The requested resources
+	 * @throws  AspenError
+	 */
+	function getRecords($ids)
+	{
+		$recordsRaw = $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
+		foreach ($recordsRaw as $index => $recordRaw) {
+			$recordsRaw[$index] = $this->getRecordDriverForResult($recordRaw);
+		}
+		return $recordsRaw;
+	}
+
+	public function getRecordDriverForResult($record)
+	{
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$record = $this->cleanScopedFieldsForRecord($record);
+		return new GroupedWorkDriver($record);
+	}
 }

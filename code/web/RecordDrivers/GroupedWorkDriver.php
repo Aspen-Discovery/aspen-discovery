@@ -907,11 +907,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 	public function getFormatCategory()
 	{
 		global $solrScope;
-		if (isset($this->fields['format_category_' . $solrScope])) {
-			if (is_array($this->fields['format_category_' . $solrScope])) {
-				return reset($this->fields['format_category_' . $solrScope]);
-			} else {
-				return $this->fields['format_category_' . $solrScope];
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1) {
+			if (isset($this->fields['format_category_' . $solrScope])) {
+				if (is_array($this->fields['format_category_' . $solrScope])) {
+					return reset($this->fields['format_category_' . $solrScope]);
+				} else {
+					return $this->fields['format_category_' . $solrScope];
+				}
+			}
+		}else{
+			if (isset($this->fields['format_category'])) {
+				if (is_array($this->fields['format_category'])) {
+					return reset($this->fields['format_category']);
+				} else {
+					return $this->fields['format_category'];
+				}
 			}
 		}
 		return "";

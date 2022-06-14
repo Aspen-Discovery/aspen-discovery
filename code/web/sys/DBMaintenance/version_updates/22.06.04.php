@@ -25,5 +25,12 @@ function getUpdates22_06_04() : array
 				"UPDATE sideloads set runFullUpdate = 1",
 			]
 		], //reprocess_all_sideloads_22_06_04
+		'clear_default_covers_22_06_04' => [
+			'title' => 'Clear Default Covers',
+			'description' => 'Clear Default Covers',
+			'sql' => [
+				"DELETE FROM bookcover_info where imageSource = 'default'",
+			]
+		], //clear_default_covers_22_06_04
 	];
 }
