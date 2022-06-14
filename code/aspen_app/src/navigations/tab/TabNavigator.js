@@ -24,6 +24,7 @@ export default function TabNavigator() {
 			initialRouteName="HomeTab"
 			screenOptions={({ route }) => ({
 				headerShown: false,
+				backBehavior: "none",
 				tabBarHideOnKeyboard: true,
 				tabBarIcon: ({ focused, color, size }) => {
 					let iconName;
