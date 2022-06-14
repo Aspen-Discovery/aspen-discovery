@@ -89,7 +89,7 @@ function removeV1GroupedWorkCore(&$update){
 			return;
 		}else{
 			global $serverName;
-			$update['status'] = "<strong>grouped_works core has been unloaded, delete the data using:</strong><br/>sudo rm /data/aspen-discovery/$serverName/solr7/grouped_works/data";
+			$update['status'] = "<strong>grouped_works core has been unloaded, delete the data using:</strong><br/>sudo rm -rf /data/aspen-discovery/$serverName/solr7/grouped_works/data";
 			$update['success'] = false;
 		}
 	}else{
