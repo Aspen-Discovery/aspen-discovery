@@ -32,5 +32,12 @@ function getUpdates22_06_04() : array
 				"DELETE FROM bookcover_info where imageSource = 'default'",
 			]
 		], //clear_default_covers_22_06_04
+		'process_empty_grouped_works' => [
+			'title' => 'Process Empty Grouped Works',
+			'description' => 'Add an option to process empty grouped works',
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN processEmptyGroupedWorks TINYINT DEFAULT 1",
+			]
+		], //clear_default_covers_22_06_04
 	];
 }
