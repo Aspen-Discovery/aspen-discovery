@@ -411,19 +411,17 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 							if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()) {
 								for (String libraryOwnedName : curItem.getLibraryOwnedNames()) {
-									owningLocations.add(scopePrefix + libraryOwnedName);
+									owningLibraries.add(scopePrefix + libraryOwnedName);
 								}
 								addAllOwningLocations = true;
 							}
 						}
 
 						if (addAllOwningLocations){
-							for (String locationOwnedName : curItem.getLocationOwnedNames()) {
-								owningLocations.add(scopePrefix + locationOwnedName);
-							}
+							addAllWithPrefix(owningLocations, scopePrefix, curItem.getLocationOwnedNames());
 						}
 						if (addAllOwningLocationsToAvailableAt){
-							availableAtForItem.addAll(curItem.getLocationOwnedNames());
+							addAllWithPrefix(availableAtForItem, scopePrefix, curItem.getLocationOwnedNames());
 						}
 
 						for (String availableAtLocation : availableAtForItem) {
@@ -551,6 +549,12 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		doc.addField("available_at", availableAt);
 
 		logger.info("Work " + id + " processed " + relatedScopes.size() + " scopes");
+	}
+
+	private void addAllWithPrefix(HashSet<String> fieldValues, String scopePrefix, HashSet<String> valuesToAdd) {
+		for (String valueToAdd : valuesToAdd){
+			fieldValues.add(scopePrefix + valueToAdd);
+		}
 	}
 
 	protected void addAvailabilityToggle(boolean local, boolean available, boolean availableOnline, AvailabilityToggleInfo availabilityToggleForItem){
