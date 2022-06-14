@@ -194,7 +194,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('classicId', $classicId);
 			$millenniumScope = $interface->getVariable('millenniumScope');
 			if(isset($configArray['Catalog']['linking_url'])){
-				$interface->assign('classicUrl', $configArray['Catalog']['linking_url'] . "/record=$classicId&amp;searchscope={$millenniumScope}");
+				$linkingUrl = $configArray['Catalog']['linking_url'];
+				if (substr($linkingUrl, -1, 1) == '/'){
+					$linkingUrl = substr($linkingUrl, 0, -1);
+				}
+				$interface->assign('classicUrl', $linkingUrl . "/record=$classicId&amp;searchscope={$millenniumScope}");
 			}
 
 		}elseif ($configArray['Catalog']['ils'] == 'Koha'){
@@ -206,8 +210,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$shortId = ltrim($shortId, '0');
 			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
 		}elseif ($configArray['Catalog']['ils'] == 'Evergreen'){
+			$baseUrl = $configArray['Catalog']['url'];
+			if (substr($baseUrl, -1, 1) == '/'){
+				$baseUrl = substr($baseUrl, 0, -1);
+			}
 			$interface->assign('classicId', $this->id);
-			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/eg/opac/record/' . $this->id);
+			$interface->assign('classicUrl', $baseUrl . '/eg/opac/record/' . $this->id);
 		}
 
 		$groupedWorkDriver = $this->getGroupedWorkDriver();

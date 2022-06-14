@@ -472,20 +472,6 @@ require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
 $searchSources = new SearchSources();
 list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
 
-$interface->assign('curFormatCategory', 'Everything');
-if (isset($_REQUEST['filter'])){
-	foreach ($_REQUEST['filter'] as $curFilter){
-		if (!is_array($curFilter)){
-			$filterInfo = explode(":", $curFilter);
-			if ($filterInfo[0] == 'format_category'){
-				$curFormatCategory = str_replace('"', '', $filterInfo[1]);
-				$interface->assign('curFormatCategory', $curFormatCategory);
-				break;
-			}
-		}
-	}
-}
-
 $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 //Load repeat search options
