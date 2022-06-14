@@ -80,8 +80,6 @@ function removeV1GroupedWorkCore(&$update){
 		if (!file_get_contents($solrBaseUrl . '/grouped_works_v2/suggest?suggest.build=true', false, $context)) {
 			echo("Could not update suggesters for grouped_works_v2");
 			$update['status'] = '<strong>Could not update suggesters for grouped_works_v2</strong><br/>';
-			$update['success'] = false;
-			return;
 		}
 
 		//Unload the core
