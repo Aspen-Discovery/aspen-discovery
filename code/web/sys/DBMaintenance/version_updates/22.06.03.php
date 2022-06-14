@@ -124,22 +124,22 @@ function fixListEntriesForGroupedWorksWithLanguage(&$update){
 			$newId = null;
 			if ($groupedWork->getNumResults() == 0) {
 				//This grouped work is deleted
-				$oldGroupedWork = new GroupedWork();
-				$oldGroupedWork->permanent_id = $oldId;
-				if ($oldGroupedWork->find(true)) {
-					$newGroupedWork = new GroupedWork();
-					$newGroupedWork->full_title = $oldGroupedWork->full_title;
-					$newGroupedWork->author = $oldGroupedWork->author;
-					$newGroupedWork->grouping_category = $oldGroupedWork->grouping_category;
-					$newGroupedWork->find();
-					while ($newGroupedWork->fetch()) {
-						if (strlen($newGroupedWork->permanent_id) == 40) {
-							$newId = $newGroupedWork->permanent_id;
-						}
-					}
-				} else {
+//				$oldGroupedWork = new GroupedWork();
+//				$oldGroupedWork->permanent_id = $oldId;
+//				if ($oldGroupedWork->find(true)) {
+//					$newGroupedWork = new GroupedWork();
+//					$newGroupedWork->full_title = $oldGroupedWork->full_title;
+//					$newGroupedWork->author = $oldGroupedWork->author;
+//					$newGroupedWork->grouping_category = $oldGroupedWork->grouping_category;
+//					$newGroupedWork->find();
+//					while ($newGroupedWork->fetch()) {
+//						if (strlen($newGroupedWork->permanent_id) == 40) {
+//							$newId = $newGroupedWork->permanent_id;
+//						}
+//					}
+//				} else {
 					continue;
-				}
+//				}
 			} else if ($groupedWork->getNumResults() == 1) {
 				$groupedWork->fetch();
 				$newId = $groupedWork->permanent_id;
