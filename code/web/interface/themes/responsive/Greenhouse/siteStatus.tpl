@@ -35,6 +35,7 @@
 					<th>{translate text="Name" isAdminFacing=true}</th>
 					<th>{translate text="DB Maintenance" isAdminFacing=true}</th>
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
+					<th>{translate text="Timezone" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
 					{foreach from=$allChecks item=checkName key=checkType}
 						{if !$showErrorsOnly || array_key_exists($checkType,$checksWithErrors)}
@@ -57,6 +58,9 @@
 							{translate text=$siteStatus.implementationStatus isAdminFacing=true}
 						</td>
 						<td>
+                            {translate text=$siteStatus.timezone isAdminFacing=true}
+						</td>
+						<td>
 							{$siteStatus.version}
 						</td>
 						{foreach from=$allChecks item=checkName key=checkType}
@@ -65,35 +69,7 @@
 									{assign var="checks" value=$siteStatus.checks}
 									{assign var="check" value=$checks.$checkType}
 									<td {if $check.status == 'okay'}style="background-color: lightgreen;text-align: center"{elseif $check.status == 'warning'}style="background-color: lightpink;text-align: center"{else}style="background-color: #D50000;color:white;font-weight: bold;text-align: center"{/if} {if !empty($check.note)}title="{$check.note|escape:css}" {/if}>
-										{if $check.status != 'okay'}
-											{if $checkType == 'overdrive'}
-												<a href="{$siteStatus.baseUrl}/OverDrive/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'koha' || $checkType == 'carl.x' || $checkType == 'symphony' || $checkType == 'sierra' || $checkType == 'polaris'}
-												<a href="{$siteStatus.baseUrl}/ILS/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'axis_360'}
-												<a href="{$siteStatus.baseUrl}/Axis360/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'hoopla'}
-												<a href="{$siteStatus.baseUrl}/Hoopla/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'cloud_library'}
-												<a href="{$siteStatus.baseUrl}/CloudLibrary/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'web_indexer' || $checkType == 'web_builder'}
-												<a href="{$siteStatus.baseUrl}/Websites/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'cron'}
-												<a href="{$siteStatus.baseUrl}/Admin/CronLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'nightly_index'}
-												<a href="{$siteStatus.baseUrl}/Admin/ReindexLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'side_loads'}
-												<a href="{$siteStatus.baseUrl}/SideLoads/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'nyt_lists'}
-												<a href="{$siteStatus.baseUrl}/UserLists/NYTUpdatesLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{elseif $checkType == 'interface_errors'}
-												<a href="{$siteStatus.baseUrl}/Admin/ErrorReport" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-											{else}
-												{translate text=$check.status isAdminFacing=true}
-											{/if}
-										{else}
-											{translate text=$check.status isAdminFacing=true}
-										{/if}
+										{if !empty($check.url)}<a href="{$check.url}" target="_blank">{/if}{translate text=$check.status isAdminFacing=true}{if !empty($check.url)}</a>{/if}
 									</td>
 								{else}
 									<td>

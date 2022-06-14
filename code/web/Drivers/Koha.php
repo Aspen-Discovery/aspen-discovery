@@ -1255,6 +1255,7 @@ class Koha extends AbstractIlsDriver
 				// Result for API or app use
 				$hold_result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
 				$hold_result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+				$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
@@ -1363,6 +1364,7 @@ class Koha extends AbstractIlsDriver
 				// Result for API or app use
 				$result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing'=> true]);
 				$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing'=> true]);
+				$result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
@@ -1949,7 +1951,7 @@ class Koha extends AbstractIlsDriver
 		return $this->basicAuthToken;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
@@ -3866,7 +3868,7 @@ class Koha extends AbstractIlsDriver
 				} else {
 					/** @noinspection SpellCheckingInspection */
 					if ($key == 'SMSnumber') {
-						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/\\D/', '', $value));
+						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-z]/', '', $value));
 					}else{
 						$getParams[] = urlencode($key) . '=' . urlencode($value);
 					}

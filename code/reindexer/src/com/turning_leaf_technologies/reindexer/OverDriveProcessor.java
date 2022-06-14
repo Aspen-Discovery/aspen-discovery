@@ -51,7 +51,7 @@ class OverDriveProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
+	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -523,7 +523,7 @@ class OverDriveProcessor {
 		return null;
 	}
 
-	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, JSONObject productMetadata, String primaryFormat) throws JSONException {
+	private void loadOverDriveIdentifiers(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata, String primaryFormat) throws JSONException {
 		if (productMetadata.has("formats")) {
 			JSONArray formats = productMetadata.getJSONArray("formats");
 			for (int i = 0; i < formats.length(); i++) {
@@ -557,7 +557,7 @@ class OverDriveProcessor {
 	 * @return The target audience for use later in scoping
 	 * @throws JSONException Exception if something goes horribly wrong
 	 */
-	private String loadOverDriveSubjects(GroupedWorkSolr groupedWork, JSONObject productMetadata) throws JSONException {
+	private String loadOverDriveSubjects(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata) throws JSONException {
 		//Load subject data
 
 		HashSet<String> topics = new HashSet<>();
@@ -625,7 +625,7 @@ class OverDriveProcessor {
 		return targetAudience;
 	}
 
-	private String loadOverDriveLanguages(GroupedWorkSolr groupedWork, JSONObject productMetadata, String identifier) throws JSONException {
+	private String loadOverDriveLanguages(AbstractGroupedWorkSolr groupedWork, JSONObject productMetadata, String identifier) throws JSONException {
 		String primaryLanguage = null;
 		if (productMetadata.has("languages")) {
 			JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
@@ -635,7 +635,7 @@ class OverDriveProcessor {
 			for (int i = 0; i < languagesFromMetadata.length(); i++) {
 				JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
 				String language = curLanguageObj.getString("name");
-				//OverDrive no adds multiple languages separated by commas
+				//OverDrive now adds multiple languages separated by commas
 				String[] splitLanguages = language.split(";");
 				for (String curLanguage : splitLanguages) {
 					curLanguage = curLanguage.trim();
@@ -691,7 +691,7 @@ class OverDriveProcessor {
 		return formats;
 	}
 
-	private HashMap<String, String> loadOverDriveMetadata(GroupedWorkSolr groupedWork, long productId, String format, String formatCategory, BaseLogEntry logEntry) throws SQLException {
+	private HashMap<String, String> loadOverDriveMetadata(AbstractGroupedWorkSolr groupedWork, long productId, String format, String formatCategory, BaseLogEntry logEntry) throws SQLException {
 		HashMap<String, String> returnMetadata = new HashMap<>();
 		//Load metadata
 		getProductMetadataStmt.setLong(1, productId);

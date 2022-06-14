@@ -20,7 +20,7 @@ class PayPalSetting extends DataObject
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
-			'sandboxMode' => array('property'=>'sandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not to use PayPal in Sandbox mode', 'hideInLists' => false,),
+			'sandboxMode' => array('property'=>'sandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not to use PayPal in Sandbox mode', 'hideInLists' => false,'note'=>'This is for testing only! No funds will be recieved by the library.'),
 			'showPayLater' => array('property'=>'showPayLater', 'type'=>'checkbox', 'label'=>'Show Pay Later', 'description'=>'Whether or not to allow users to use the Pay Later Option', 'hideInLists' => false, 'default'=>false),
 			'clientId' => array('property'=>'clientId', 'type'=>'text', 'label'=>'ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
 			'clientSecret' => array('property'=>'clientSecret', 'type'=>'storedPassword', 'label'=>'Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),

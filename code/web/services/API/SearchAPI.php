@@ -70,7 +70,7 @@ class SearchAPI extends Action
 		$systemApi = new SystemAPI();
 
 		//Check if solr is running by pinging it
-		/** @var SearchObject_GroupedWorkSearcher $solrSearcher */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $solrSearcher */
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
 		if (!$solrSearcher->ping()) {
 			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
@@ -746,7 +746,7 @@ class SearchAPI extends Action
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -788,7 +788,7 @@ class SearchAPI extends Action
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -1683,7 +1683,10 @@ class SearchAPI extends Action
 
 				$relatedRecords = $groupedWork->getRelatedRecords();
 
+				$language = "";
+
 				foreach ($relatedRecords as $relatedRecord) {
+					$language = $relatedRecord->language;
 					if (!isset($itemList)) {
 						$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
 					} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
@@ -1692,7 +1695,7 @@ class SearchAPI extends Action
 				}
 
 				if (!empty($itemList)) {
-					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary, 'language' => $language);
 				}
 			}
 		}

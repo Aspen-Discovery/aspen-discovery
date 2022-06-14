@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +31,8 @@ class GroupedWork implements Cloneable {
 	String originalAuthorName = "";
 	protected String author = "";             //Up to 50  chars
 	String groupingCategory = "";   //Up to 25  chars
+	String language = "und"; //Default to undetermined
+
 	private String uniqueIdentifier = null;
 	private final RecordGroupingProcessor processor;
 
@@ -80,13 +83,16 @@ class GroupedWork implements Cloneable {
 					permanentId.insert(0, "0");
 				}
 				//Insert -'s for formatting
-				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20);
+				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20) + "-" + language;
 			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Error generating permanent id" + e.toString());
+				System.out.println("Error generating permanent id" + e);
 			}
 		}
-		//System.out.println("Permanent Id is " + this.permanentId);
 		return this.permanentId;
+	}
+
+	public void overridePermanentId(String newId){
+		this.permanentId = newId;
 	}
 
 	private String authoritativeTitle;
@@ -347,6 +353,14 @@ class GroupedWork implements Cloneable {
 
 	public String getGroupingCategory(){
 		return groupingCategory;
+	}
+
+	public void setLanguage(String language){
+		this.language = language.toLowerCase(Locale.ROOT);
+	}
+
+	public String getLanguage(){
+		return this.language;
 	}
 
 }

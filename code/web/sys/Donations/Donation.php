@@ -173,7 +173,7 @@ class Donation extends DataObject
 			}
 
 		} else {
-			$values->orderBy('value');
+			$values->orderBy('weight');
 			$availableValues = $values->fetchAll('value', 'value');
 		}
 

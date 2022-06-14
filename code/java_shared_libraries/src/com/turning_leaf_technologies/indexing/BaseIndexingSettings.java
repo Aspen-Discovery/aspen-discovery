@@ -14,6 +14,7 @@ public class BaseIndexingSettings {
 	boolean createFolderFromLeadingCharacters;
 	String groupingClass;
 	String recordNumberTag;
+	int recordNumberTagInt;
 	char recordNumberSubfield;
 	String recordNumberPrefix;
 	String filenamesToInclude;
@@ -23,6 +24,7 @@ public class BaseIndexingSettings {
 	long lastUpdateOfAllRecords;
 	boolean runFullUpdate;
 	boolean regroupAllRecords;
+	String treatUnknownLanguageAs;
 
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
 		char result = ' ';
@@ -79,6 +81,10 @@ public class BaseIndexingSettings {
 		return recordNumberTag;
 	}
 
+	public int getRecordNumberTagInt() {
+		return recordNumberTagInt;
+	}
+
 	public String getMarcPath() {
 		return marcPath;
 	}
@@ -119,5 +125,9 @@ public class BaseIndexingSettings {
 
 	public String getGroupingClass() {
 		return groupingClass;
+	}
+
+	public String getTreatUnknownLanguageAs() {
+		return treatUnknownLanguageAs;
 	}
 }

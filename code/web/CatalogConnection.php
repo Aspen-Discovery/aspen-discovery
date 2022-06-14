@@ -808,9 +808,9 @@ class CatalogConnection
 		$patron->update();
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
-		return $this->driver->cancelHold($patron, $recordId, $cancelId);
+		return $this->driver->cancelHold($patron, $recordId, $cancelId, $isIll);
 	}
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)

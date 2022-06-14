@@ -96,7 +96,22 @@ public class GroupedReindexMain {
 
 		//Process grouped works
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, logEntry, logger);
+			boolean regroupAllRecords = false;
+			if (fullReindex){
+				//Check to see if we should regroup all records
+				try {
+					PreparedStatement getRegroupAllRecordsStmt = dbConn.prepareStatement("SELECT regroupAllRecordsDuringNightlyIndex from system_variables");
+					ResultSet regroupAllRecordsRS = getRegroupAllRecordsStmt.executeQuery();
+					if (regroupAllRecordsRS.next()) {
+						regroupAllRecords = regroupAllRecordsRS.getBoolean("regroupAllRecordsDuringNightlyIndex");
+					}
+					getRegroupAllRecordsStmt.close();
+				} catch (Exception e) {
+					logger.error("Unable to determine if we should regroup all records", e);
+				}
+			}
+
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, regroupAllRecords, logEntry, logger);
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
@@ -105,7 +120,9 @@ public class GroupedReindexMain {
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
 						if (infoAboutWork.next()) {
+							groupedWorkIndexer.setRegroupAllRecords(true);
 							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"));
+							groupedWorkIndexer.setRegroupAllRecords(regroupAllRecords);
 						} else {
 							logger.error("Could not find a work with id " + individualWorkToProcess);
 						}

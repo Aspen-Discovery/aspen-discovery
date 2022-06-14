@@ -28,8 +28,10 @@ import java.util.regex.Pattern;
 public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private final IndexingProfile profile;
 	private final String itemTag;
+	private final int itemTagInt;
 	private final boolean useEContentSubfield;
 	private final char eContentDescriptor;
+
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -42,6 +44,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		this.profile = profile;
 
 		itemTag = profile.getItemTag();
+		itemTagInt = profile.getItemTagInt();
 		eContentDescriptor = profile.getEContentDescriptor();
 		useEContentSubfield = profile.getEContentDescriptor() != ' ';
 
@@ -99,7 +102,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
 
 	private String getFormatFromItems(Record record, char formatSubfield) {
-		List<DataField> itemFields = getDataFields(record, itemTag);
+		List<DataField> itemFields = getDataFields(record, itemTagInt);
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
 				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
@@ -161,7 +164,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			if (useEContentSubfield) {
 				boolean allItemsSuppressed = true;
 
-				List<DataField> itemFields = getDataFields(marcRecord, itemTag);
+				List<DataField> itemFields = getDataFields(marcRecord, itemTagInt);
 				int numItems = itemFields.size();
 				for (DataField itemField : itemFields) {
 					if (itemField.getSubfield(eContentDescriptor) != null) {
@@ -190,7 +193,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			} else {
 				//Check the 856 for an overdrive url
 				if (identifier != null) {
-					List<DataField> linkFields = getDataFields(marcRecord, "856");
+					List<DataField> linkFields = getDataFields(marcRecord, 856);
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
 							//Check the url to see if it is from OverDrive
@@ -263,7 +266,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					logEntry.incChangedAfterGrouping();
 					//process records to regroup after every 1000 changes so we keep up with the changes.
 					if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
-						indexer.processScheduledWorks(logEntry, false);
+						indexer.processScheduledWorks(logEntry, false, -1);
 					}
 				}
 			}
@@ -271,7 +274,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		//Finish reindexing anything that just changed
 		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry, false);
+			indexer.processScheduledWorks(logEntry, false, -1);
 		}
 
 		indexingProfile.clearRegroupAllRecords(dbConn, logEntry);

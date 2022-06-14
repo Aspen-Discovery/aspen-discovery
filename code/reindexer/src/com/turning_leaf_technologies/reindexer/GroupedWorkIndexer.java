@@ -1,9 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.IndexingUtils;
-import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.grouping.*;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -35,9 +33,13 @@ public class GroupedWorkIndexer {
 	private final Long indexStartTime;
 	private int totalRecordsHandled = 0;
 	private ConcurrentUpdateSolrClient updateServer;
+	private RecordGroupingProcessor recordGroupingProcessor;
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private final HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
+	private final HashMap<String, MarcRecordGrouper> ilsRecordGroupers = new HashMap<>();
+	private final HashMap<String, SideLoadedRecordGrouper> sideLoadRecordGroupers = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
+	private OverDriveRecordGrouper overDriveRecordGrouper;
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
@@ -59,6 +61,7 @@ public class GroupedWorkIndexer {
 
 	private final boolean fullReindex;
 	private final boolean clearIndex;
+	private boolean regroupAllRecords;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
@@ -70,6 +73,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getGroupedWorkInfoStmt;
 	private PreparedStatement getArBookIdForIsbnStmt;
 	private PreparedStatement getArBookInfoStmt;
+	private PreparedStatement getNumScheduledWorksStmt;
 	private PreparedStatement getScheduledWorksStmt;
 	private PreparedStatement getScheduledWorkStmt;
 	private PreparedStatement markScheduledWorkProcessedStmt;
@@ -139,11 +143,15 @@ public class GroupedWorkIndexer {
 
 	private String treatUnknownAudienceAs = "Unknown";
 	private boolean treatUnknownAudienceAsUnknown = false;
-	private boolean treatUnknownAudienceAsGeneral = false;
-	private boolean treatUnknownAudienceAsAdult = false;
 	private String treatUnknownLanguageAs = "English";
+	private int indexVersion;
+	private int searchVersion;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
+		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
+	}
+
+	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean regroupAllRecords, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
 		this.logEntry = logEntry;
@@ -151,6 +159,7 @@ public class GroupedWorkIndexer {
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
 		this.clearIndex = clearIndex;
+		this.regroupAllRecords = regroupAllRecords;
 
 		String solrPort = configIni.get("Reindex", "solrPort");
 
@@ -170,11 +179,13 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
+				this.indexVersion = systemVariablesRS.getInt("indexVersion");
+				this.searchVersion = systemVariablesRS.getInt("searchVersion");
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -189,9 +200,10 @@ public class GroupedWorkIndexer {
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getScheduledWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getNumScheduledWorksStmt = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numScheduledWorks FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorksStmt = dbConn.prepareStatement("SELECT id, permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ? ORDER BY indexAfter ASC LIMIT 0, 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
+			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where permanent_id = ? and indexAfter <= ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
 			markIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
@@ -258,7 +270,12 @@ public class GroupedWorkIndexer {
 		//Initialize the updateServer and solr server
 		logEntry.addNote("Setting up update server and solr server");
 
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		ConcurrentUpdateSolrClient.Builder solrBuilder;
+		if (indexVersion == 1) {
+			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		}else{
+			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+		}
 		solrBuilder.withThreadCount(1);
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
@@ -312,6 +329,7 @@ public class GroupedWorkIndexer {
 				ResultSet indexingProfileRS = getIndexingProfile.executeQuery();
 				if (indexingProfileRS.next()){
 					String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
+					IndexingProfile indexingProfile = new IndexingProfile(indexingProfileRS);
 					switch (ilsIndexingClassString) {
 						case "ArlingtonKoha":
 							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
@@ -342,16 +360,13 @@ public class GroupedWorkIndexer {
 							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
-							break;
+							continue;
 					}
+					ilsRecordGroupers.put(curType, new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger));
 					if (ilsRecordProcessors.containsKey(curType)){
 						this.treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
-						if (this.treatUnknownAudienceAs.equals("Unknown")){
+						if ("Unknown".equals(this.treatUnknownAudienceAs)) {
 							treatUnknownAudienceAsUnknown = true;
-						}else if (this.treatUnknownAudienceAs.equals("Adult")){
-							treatUnknownAudienceAsAdult = true;
-						}else if (this.treatUnknownAudienceAs.equals("General")){
-							treatUnknownAudienceAsGeneral = true;
 						}
 						this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 					}
@@ -385,6 +400,7 @@ public class GroupedWorkIndexer {
 			logEntry.incErrors("Error loading record processors for ILS records", e);
 		}
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
+		overDriveRecordGrouper = new OverDriveRecordGrouper(dbConn, serverName, logEntry, logger);
 
 		cloudLibraryProcessor = new CloudLibraryProcessor(this, "cloud_library", dbConn, logger);
 
@@ -538,7 +554,7 @@ public class GroupedWorkIndexer {
 
 	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
-			processScheduledWorks(logEntry, true);
+			processScheduledWorks(logEntry, true, 100);
 
 			updateServer.commit(false, false, true);
 			logEntry.addNote("Shutting down the update server");
@@ -557,7 +573,16 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging) {
+	/**
+	 * This is called from all the indexers so we would like to prevent scheduled works from being processed multiple times.
+	 * Rather than getting a list of all the scheduled works, we will process up to max works to process by getting the oldest record
+	 * continually, marking it as processed and then processing another.  The exception to this is during the full index
+	 * when we will process everything to ensure that records that have been regrouped will get processed during the full index.
+	 *
+	 * @param logEntry
+	 * @param doLogging
+	 */
+	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging, int maxWorksToProcess) {
 		//Check to see what records still need to be indexed based on a timed index
 		if (doLogging) {
 			logEntry.addNote("Checking for additional works that need to be indexed");
@@ -565,25 +590,59 @@ public class GroupedWorkIndexer {
 
 		try {
 			int numWorksProcessed = 0;
-			getScheduledWorksStmt.setLong(1, new Date().getTime() / 1000);
-			ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
-			while (scheduledWorksRS.next()) {
-				long scheduleId = scheduledWorksRS.getLong("id");
-				String workToProcess = scheduledWorksRS.getString("permanent_id");
+			long startTime = new Date().getTime() / 1000;
 
-				//reindex the actual work
-				this.processGroupedWork(workToProcess);
-
-				markScheduledWorkProcessedStmt.setLong(1, scheduleId);
-				markScheduledWorkProcessedStmt.executeUpdate();
-				numWorksProcessed++;
+			getNumScheduledWorksStmt.setLong(1, startTime);
+			ResultSet numScheduledWorksRS = getNumScheduledWorksStmt.executeQuery();
+			int numScheduledWorks = 0;
+			if (numScheduledWorksRS.next()) {
+				numScheduledWorks = numScheduledWorksRS.getInt("numScheduledWorks");
+				if (numScheduledWorks > 0) {
+					logEntry.addNote("There are " + numScheduledWorks + " scheduled works to be indexed");
+					logEntry.saveResults();
+				}else{
+					return;
+				}
 			}
-			scheduledWorksRS.close();
+
+			if (maxWorksToProcess == -1){
+				maxWorksToProcess = numScheduledWorks;
+			}else{
+				maxWorksToProcess = Math.min(numScheduledWorks, maxWorksToProcess);
+			}
+
+			while (numWorksProcessed < maxWorksToProcess) {
+				getScheduledWorksStmt.setLong(1, startTime);
+				ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
+				if (scheduledWorksRS.next()) {
+					String workToProcess = scheduledWorksRS.getString("permanent_id");
+
+					markScheduledWorkProcessedStmt.setString(1, workToProcess);
+					markScheduledWorkProcessedStmt.setLong(2, new Date().getTime() / 1000);
+					markScheduledWorkProcessedStmt.executeUpdate();
+
+					//reindex the actual work
+					try {
+						this.processGroupedWork(workToProcess, true);
+					}catch (Exception e){
+						logEntry.incErrors("Error processing scheduled work " + workToProcess, e);
+					}
+
+					numWorksProcessed++;
+					scheduledWorksRS.close();
+				}else{
+					scheduledWorksRS.close();
+					break;
+				}
+				if (numWorksProcessed % 10000 == 0) {
+					this.commitChanges();
+				}
+			}
 			if (numWorksProcessed > 0){
 				if (doLogging) {
 					logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
 				}
-				updateServer.commit(false, false, true);
+				this.commitChanges();
 			}
 		}catch (Exception e){
 			logEntry.addNote("Error updating scheduled works " + e);
@@ -591,6 +650,7 @@ public class GroupedWorkIndexer {
 	}
 
 	void finishIndexing(){
+		this.processScheduledWorks(logEntry, true, -1);
 		logEntry.addNote("Finishing indexing");
 		if (fullReindex) {
 			try {
@@ -599,6 +659,25 @@ public class GroupedWorkIndexer {
 			} catch (Exception e) {
 				logEntry.incErrors("Error calling final commit", e);
 			}
+			if (indexVersion == 2 && searchVersion == 1){
+				//Update the search version to version 2
+				try {
+					logEntry.addNote("Updating search version to version 2");
+					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2").executeUpdate();
+				} catch (Exception e) {
+					logEntry.incErrors("Error updating search version", e);
+				}
+			}
+			if (regroupAllRecords){
+				try {
+					logEntry.addNote("Turning off regroupAllRecords");
+					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0").executeUpdate();
+				} catch (Exception e) {
+					logEntry.incErrors("Error turning off regroupAllRecords", e);
+				}
+			}
+
+			updateLastReindexTime();
 		}else {
 			try {
 				logEntry.addNote("Doing a soft commit to make sure changes are saved");
@@ -610,8 +689,6 @@ public class GroupedWorkIndexer {
 				logEntry.incErrors("Error shutting down update server", e);
 			}
 		}
-
-		updateLastReindexTime();
 	}
 
 	private void updateLastReindexTime() {
@@ -641,8 +718,8 @@ public class GroupedWorkIndexer {
 			PreparedStatement getNumWorksToIndex;
 			PreparedStatement setLastUpdatedTime = dbConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
 			if (fullReindex){
-				getAllGroupedWorks = dbConn.prepareStatement("SELECT * FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getNumWorksToIndex = dbConn.prepareStatement("SELECT count(id) FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getAllGroupedWorks = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getNumWorksToIndex = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numWorksWithRecords FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			}else{
 				//Load all grouped works that have changed since the last time the index ran
 				getAllGroupedWorks = dbConn.prepareStatement("SELECT * FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -704,13 +781,17 @@ public class GroupedWorkIndexer {
 	}
 
 	public synchronized void processGroupedWork(String permanentId) {
+		processGroupedWork(permanentId, true);
+	}
+
+	public synchronized void processGroupedWork(String permanentId, boolean allowRegrouping) {
 		try{
 			getGroupedWorkInfoStmt.setString(1, permanentId);
 			ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery();
 			if (getGroupedWorkInfoRS.next()) {
 				long id = getGroupedWorkInfoRS.getLong("id");
 				String grouping_category = getGroupedWorkInfoRS.getString("grouping_category");
-				processGroupedWork(id, permanentId, grouping_category);
+				processGroupedWork(id, permanentId, grouping_category, allowRegrouping);
 			}
 			getGroupedWorkInfoRS.close();
 			totalRecordsHandled++;
@@ -724,20 +805,117 @@ public class GroupedWorkIndexer {
 	}
 
 	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
+		processGroupedWork(id, permanentId, grouping_category, true);
+	}
+
+	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category, boolean allowRegrouping) throws SQLException {
 		//Create a solr record for the grouped work
-		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
+		AbstractGroupedWorkSolr groupedWork;
+		if (indexVersion == 2) {
+			groupedWork = new GroupedWorkSolr2(this, logger);
+		}else{
+			groupedWork = new GroupedWorkSolr(this, logger);
+		}
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
-		ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery();
+		ResultSet groupedWorkPrimaryIdentifiersRS = getGroupedWorkPrimaryIdentifiers.executeQuery();
+		ArrayList<RecordIdentifier> recordIdentifiers = new ArrayList<>();
+		while (groupedWorkPrimaryIdentifiersRS.next()){
+			String type = groupedWorkPrimaryIdentifiersRS.getString("type");
+			String identifier = groupedWorkPrimaryIdentifiersRS.getString("identifier");
+			recordIdentifiers.add(new RecordIdentifier(type, identifier));
+		}
+		groupedWorkPrimaryIdentifiersRS.close();
 		int numPrimaryIdentifiers = 0;
-		while (groupedWorkPrimaryIdentifiers.next()){
-			String type = groupedWorkPrimaryIdentifiers.getString("type");
-			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
+		HashSet<String> regroupedIdsToProcess = new HashSet<>();
+		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
+
+		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||")){
+			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
+				String type = recordIdentifier.getType();
+				String identifier = recordIdentifier.getIdentifier();
+
+				//Get the proper record grouper
+				String newId = permanentId;
+				if (ilsRecordGroupers.containsKey(type)) {
+					MarcRecordGrouper ilsGrouper = ilsRecordGroupers.get(type);
+					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
+					if (record == null) {
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
+						if (result.reindexWork) {
+							regroupedIdsToProcess.add(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							deleteRecord(result.permanentId);
+						}
+						regroupedIdentifiers.add(recordIdentifier);
+					} else {
+						newId = ilsGrouper.processMarcRecord(record, false, permanentId);
+					}
+				} else if (sideLoadRecordGroupers.containsKey(type)) {
+					SideLoadedRecordGrouper sideLoadGrouper = sideLoadRecordGroupers.get(type);
+					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
+					if (record == null) {
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
+						if (result.reindexWork) {
+							regroupedIdsToProcess.add(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							deleteRecord(result.permanentId);
+						}
+						regroupedIdentifiers.add(recordIdentifier);
+					} else {
+						newId = sideLoadGrouper.processMarcRecord(record, false, permanentId);
+					}
+				} else if (type.equals("overdrive")) {
+					newId = overDriveRecordGrouper.processOverDriveRecord(identifier);
+				} else if (type.equals("axis360")) {
+					newId = getRecordGroupingProcessor().groupAxis360Record(identifier);
+				} else if (type.equals("cloud_library")) {
+					Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
+					if (cloudLibraryRecord == null) {
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
+						if (result.reindexWork) {
+							regroupedIdsToProcess.add(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							deleteRecord(result.permanentId);
+						}
+					} else {
+						newId = getRecordGroupingProcessor().groupCloudLibraryRecord(identifier, cloudLibraryRecord);
+					}
+				} else if (type.equals("hoopla")) {
+					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
+				}
+				if (newId == null) {
+					//The record is not valid, skip it.
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
+					if (result.reindexWork) {
+						regroupedIdsToProcess.add(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						deleteRecord(result.permanentId);
+					}
+					regroupedIdentifiers.add(recordIdentifier);
+				} else if (!newId.equals(permanentId)) {
+					//The work will be marked as updated and therefore reindexed at the end
+					//Or just index it now?
+					regroupedIdsToProcess.add(newId);
+					regroupedIdentifiers.add(recordIdentifier);
+				}
+			}
+		}
+
+		recordIdentifiers.removeAll(regroupedIdentifiers);
+
+		for (RecordIdentifier recordIdentifier : recordIdentifiers){
+			String type = recordIdentifier.getType();
+			String identifier = recordIdentifier.getIdentifier();
 
 			//Make a copy of the grouped work so we can revert if we don't add any records
-			GroupedWorkSolr originalWork;
+			AbstractGroupedWorkSolr originalWork;
 			try {
 				originalWork = groupedWork.clone();
 			}catch (CloneNotSupportedException cne){
@@ -761,7 +939,6 @@ public class GroupedWorkIndexer {
 				numPrimaryIdentifiers++;
 			}
 		}
-		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
 			//Strip out any hoopla records that have the same format as another econtent record with apis
@@ -796,8 +973,9 @@ public class GroupedWorkIndexer {
 					}else if (response.getException() != null) {
 						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
 					}
-					//logger.debug("Updated solr \r\n" + inputDocument.toString());
+
 					//Check to see if we need to automatically reindex this record in the future.
+					//Reindexing in the future is done if the time to reshelve is set to ensure that we reindex when that time expires.
 					try {
 						HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
 						if (autoReindexTimes.size() > 0) {
@@ -831,12 +1009,25 @@ public class GroupedWorkIndexer {
 			if (!this.clearIndex){
 				this.deleteRecord(permanentId);
 			}
-
 		}
 
+		try {
+			//mark that the work has been processed so we don't reprocess it later
+			markScheduledWorkProcessedStmt.setString(1, permanentId);
+			markScheduledWorkProcessedStmt.setLong(2, new Date().getTime() / 1000);
+			markScheduledWorkProcessedStmt.executeUpdate();
+		}catch (SQLException e){
+			logEntry.incErrors("Error marking that the record has been processed.", e);
+		}
+
+		for (String regroupedId : regroupedIdsToProcess){
+			if (!regroupedId.equals(permanentId)){
+				processGroupedWork(regroupedId, false);
+			}
+		}
 	}
 
-	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
+	private void loadLexileDataForWork(AbstractGroupedWorkSolr groupedWork) {
 		for(String isbn : groupedWork.getIsbns()){
 			if (lexileInformation.containsKey(isbn)){
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
@@ -854,7 +1045,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
+	private void loadAcceleratedDataForWork(AbstractGroupedWorkSolr groupedWork){
 		try {
 			for (String isbn : groupedWork.getIsbns()){
 				getArBookIdForIsbnStmt.setString(1, isbn);
@@ -881,7 +1072,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadLocalEnrichment(GroupedWorkSolr groupedWork) {
+	private void loadLocalEnrichment(AbstractGroupedWorkSolr groupedWork) {
 		//Load rating
 		try{
 			getRatingStmt.setString(1, groupedWork.getId());
@@ -898,7 +1089,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadUserLinkages(GroupedWorkSolr groupedWork) {
+	private void loadUserLinkages(AbstractGroupedWorkSolr groupedWork) {
 		try {
 			loadReadingHistoryLinksForUsers(groupedWork);
 			loadRatingLinksForUsers(groupedWork);
@@ -908,7 +1099,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadNotInterestedLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
+	private void loadNotInterestedLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who are not interested in the title
 		getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
@@ -918,7 +1109,7 @@ public class GroupedWorkIndexer {
 		userNotInterestedRS.close();
 	}
 
-	private void loadRatingLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
+	private void loadRatingLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who rated the title
 		getUserRatingLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
@@ -928,7 +1119,7 @@ public class GroupedWorkIndexer {
 		userRatingRS.close();
 	}
 
-	private void loadReadingHistoryLinksForUsers (GroupedWorkSolr groupedWork) throws SQLException {
+	private void loadReadingHistoryLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
 		//Add users with the work in their reading history
 		getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
@@ -938,7 +1129,7 @@ public class GroupedWorkIndexer {
 		userReadingHistoryRS.close();
 	}
 
-	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
+	private void loadNovelistInfo(AbstractGroupedWorkSolr groupedWork){
 		try{
 			getNovelistStmt.setString(1, groupedWork.getId());
 			ResultSet novelistRS = getNovelistStmt.executeQuery();
@@ -961,7 +1152,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadDisplayInfo(GroupedWorkSolr groupedWork) {
+	private void loadDisplayInfo(AbstractGroupedWorkSolr groupedWork) {
 		try {
 			getDisplayInfoStmt.setString(1, groupedWork.getId());
 			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
@@ -991,7 +1182,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier)  {
+	private void updateGroupedWorkForPrimaryIdentifier(AbstractGroupedWorkSolr groupedWork, String type, String identifier)  {
 		groupedWork.addAlternateId(identifier);
 		type = type.toLowerCase();
 		switch (type) {
@@ -2033,12 +2224,8 @@ public class GroupedWorkIndexer {
 		return treatUnknownAudienceAsUnknown;
 	}
 
-	public boolean isTreatUnknownAudienceAsGeneral() {
-		return treatUnknownAudienceAsGeneral;
-	}
-
-	public boolean isTreatUnknownAudienceAsAdult() {
-		return treatUnknownAudienceAsAdult;
+	public void setRegroupAllRecords(boolean regroupAllRecords) {
+		this.regroupAllRecords = regroupAllRecords;
 	}
 
 	public enum MarcStatus {
@@ -2051,7 +2238,7 @@ public class GroupedWorkIndexer {
 		if (recordNumber != null) {
 			Record mergedRecord = loadMarcRecordFromDatabase(indexingSettings.getName(), recordNumber, logEntry);
 
-			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTag());
+			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTagInt());
 			for (DataField additionalItem : additionalItems) {
 				mergedRecord.addVariableField(additionalItem);
 			}
@@ -2156,5 +2343,12 @@ public class GroupedWorkIndexer {
 		}
 		return marcRecord;
 
+	}
+
+	private RecordGroupingProcessor getRecordGroupingProcessor() {
+		if (recordGroupingProcessor == null) {
+			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logEntry, logger);
+		}
+		return recordGroupingProcessor;
 	}
 }

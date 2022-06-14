@@ -473,7 +473,7 @@ class Novelist3{
 				//Finally check solr by isbn
 				if ($titleList[$index] == null){
 					//Now check solr
-					/** @var SearchObject_GroupedWorkSearcher $searchObject */
+					/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 					$searchObject = SearchObjectFactory::initSearchObject();
 					$searchObject->clearFacets();
 					$searchObject->disableSpelling();

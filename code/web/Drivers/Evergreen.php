@@ -238,7 +238,7 @@ class Evergreen extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null)
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		$result = [
 			'success' => false,
@@ -395,6 +395,7 @@ class Evergreen extends AbstractIlsDriver
 					// Result for API or app use
 					$hold_result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
 					$hold_result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+					$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();

@@ -35,7 +35,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 18);
+$interface->assign('cssJsCacheCounter', 20);
 
 // Setup Translator
 global $language;
@@ -235,6 +235,11 @@ if (isset($_REQUEST['lookfor'])) {
 				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
+			$cleanedSearchTerm = strip_tags($searchTerm);
+			if ($cleanedSearchTerm != $searchTerm){
+				$_REQUEST['lookfor'][$i] = $cleanedSearchTerm;
+				$_GET['lookfor'][$i] = $cleanedSearchTerm;
+			}
 			if (strlen($searchTerm) >= 256) {
 				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
 				$interface->setTemplate('../queryTooLong.tpl');
@@ -249,6 +254,10 @@ if (isset($_REQUEST['lookfor'])) {
 		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
 			$searchTerm = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+		}
+		$cleanedSearchTerm = strip_tags($searchTerm);
+		if ($cleanedSearchTerm != $searchTerm){
+			$searchTerm = $cleanedSearchTerm;
 		}
 		if (strlen($searchTerm) >= 256) {
 			$interface->setTemplate('../queryTooLong.tpl');
@@ -330,6 +339,43 @@ if ($isLoggedIn) {
 				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
 				if (!empty($_REQUEST['recordId'])) {
 					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				header("Location: " . $followupUrl);
+				exit();
+			}elseif($_REQUEST['followupModule'] == 'WebBuilder') {
+				echo("Redirecting to followup location");
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if (!empty($_REQUEST['pageId'])) {
+					if($_REQUEST['followupAction'] == "BasicPage") {
+						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+						$basicPage = new BasicPage();
+						$basicPage->id = $_REQUEST['pageId'];
+						if($basicPage->find(true)) {
+							if($basicPage->urlAlias) {
+								$followupUrl = $basicPage->urlAlias;
+							} else {
+								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+							}
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} elseif($_REQUEST['followupAction'] == "PortalPage") {
+						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+						$portalPage = new PortalPage();
+						$portalPage->id = $_REQUEST['pageId'];
+						if($portalPage->find(true)) {
+							if($portalPage->urlAlias) {
+								$followupUrl = $portalPage->urlAlias;
+							} else {
+								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+							}
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+					}
 				}
 				header("Location: " . $followupUrl);
 				exit();

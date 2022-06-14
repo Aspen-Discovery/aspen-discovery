@@ -77,6 +77,10 @@ class BookCoverProcessor{
 			if ($this->getEbscoEdsCover($this->id)) {
 				return true;
 			}
+		} elseif ($this->type == 'ebscohost') {
+			if ($this->getEbscohostCover($this->id)) {
+				return true;
+			}
 		} else {
 			global $sideLoadSettings;
 			if ($this->type == 'overdrive') {
@@ -377,7 +381,7 @@ class BookCoverProcessor{
 				$this->type = 'ils';
 			}
 		}
-		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds'){
+		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds' && $this->type != 'ebscohost'){
 			list($this->type, $this->id) = explode(':', $this->id);
 		}
 
@@ -637,7 +641,7 @@ class BookCoverProcessor{
 				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
 			}
-		    if ($recordDriver->isValid()){
+			if ($recordDriver->isValid()){
 				$title = $recordDriver->getTitle();
 				if ($recordDriver instanceof OpenArchivesRecordDriver) {
 					$author = '';
@@ -1561,6 +1565,24 @@ class BookCoverProcessor{
 			];
 			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_ebsco', $this->cacheFile, false);
+		} else {
+			return false;
+		}
+	}
+
+	private function getEbscohostCover($id)
+	{
+		//Build a cover based on the title of the page
+		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+		$coverBuilder = new DefaultCoverImageBuilder();
+		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+
+		$ebscohostRecordDriver = new EbscohostRecordDriver($id);
+		if ($ebscohostRecordDriver->isValid()) {
+			$title = $ebscohostRecordDriver->getTitle();
+			$author = $ebscohostRecordDriver->getAuthor();
+			$coverBuilder->getCover($title, $author, $this->cacheFile);
+			return $this->processImageURL('default_ebscohost', $this->cacheFile, false);
 		} else {
 			return false;
 		}

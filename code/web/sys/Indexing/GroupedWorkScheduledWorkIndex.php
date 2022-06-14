@@ -8,6 +8,4 @@ class GroupedWorkScheduledWorkIndex extends DataObject
 	public $permanent_id;
 	public $indexAfter;
 	public $processed;
-
-
 }

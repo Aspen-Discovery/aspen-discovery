@@ -775,8 +775,8 @@ public class EvergreenExportMain {
 			}
 			//Check the existing records to see what hasn't been deleted already
 			for (String existingRecord : existingRecords.keySet()){
-				if (existingRecords.get(id) == Boolean.FALSE){
-					deletedIds.add(id);
+				if (existingRecords.get(existingRecord) == Boolean.FALSE){
+					deletedIds.add(existingRecord);
 				}
 			}
 			logEntry.addNote("There are " + newIds.size() + " new and " + restoredIds.size() + " restored ids and " + deletedIds.size() + " deleted ids");
@@ -862,7 +862,7 @@ public class EvergreenExportMain {
 						boolean updateWithAPI = true;
 						if (currentMarcRecord != null) {
 							//Find the proper item record for this
-							List<DataField> itemFields = MarcUtil.getDataFields(currentMarcRecord, indexingProfile.getItemTag());
+							List<DataField> itemFields = MarcUtil.getDataFields(currentMarcRecord, indexingProfile.getItemTagInt());
 							for (DataField itemField : itemFields) {
 								Subfield itemBarcode = itemField.getSubfield(indexingProfile.getBarcodeSubfield());
 								if (itemBarcode != null) {
@@ -917,18 +917,10 @@ public class EvergreenExportMain {
 						}else{
 							//mark the item for reindexing
 							GroupedWorkIndexer.MarcStatus saveMarcResult = indexer.saveMarcRecordToDatabase(indexingProfile, bibNumber, currentMarcRecord);
-							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
-								logEntry.incUpdated();
-							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
-							} else {
-								//No change has been made, we could skip this
-								if (!indexingProfile.isRunFullUpdate()) {
-									//TODO: Actually skip re-processing the record?
-									rowData = reader.readNext();
-									logEntry.incSkipped();
-									continue;
-								}
+							}else {
+								logEntry.incUpdated();
 							}
 
 							//Regroup the record
@@ -1398,16 +1390,10 @@ public class EvergreenExportMain {
 						if (bibliographicRecordId != null) {
 
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
-							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
-								logEntry.incUpdated();
-							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
-							} else {
-								//No change has been made, we could skip this
-								if (!indexingProfile.isRunFullUpdate()) {
-									//TODO: Actually skip re-processing the record?
-									logEntry.incSkipped();
-								}
+							}else {
+								logEntry.incUpdated();
 							}
 
 							//Regroup the record

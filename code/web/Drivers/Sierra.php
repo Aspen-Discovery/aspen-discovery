@@ -806,7 +806,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId = null){
+	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$cancelId}";
 		$cancelHoldResponse = $this->_sendPage('sierra.cancelHold', 'DELETE', $sierraUrl, '');
 		if (!$cancelHoldResponse){
@@ -943,7 +943,8 @@ class Sierra extends Millennium{
 			//No validate the barcode and pin
 			$params = [
 				'barcode' => $username,
-				'pin' => $password
+				'pin' => $password,
+				'caseSensitivity' => false,
 			];
 
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;

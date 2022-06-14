@@ -20,6 +20,10 @@ class WebBuilder_PortalPage extends Action
 		}
 
 		if (!$userCanAccess){
+			global $interface;
+			$interface->assign('id', strip_tags($_REQUEST['id']));
+			$interface->assign('module', $_REQUEST['module']);
+			$interface->assign('action', $_REQUEST['action']);
 			$this->display('noPermission.tpl', 'Access Error', '');
 			exit();
 		}

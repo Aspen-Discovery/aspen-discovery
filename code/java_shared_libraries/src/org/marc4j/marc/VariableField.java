@@ -57,6 +57,12 @@ public interface VariableField extends Serializable, Comparable<VariableField> {
     public String getTag();
 
     /**
+     * Returns the tag as an integer
+     * @return int - the tag as an integer
+     */
+    public int getNumericTag();
+
+    /**
      * Sets the tag name.
      *
      * @param tag the tag name

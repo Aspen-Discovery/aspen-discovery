@@ -33,6 +33,13 @@ class MyAccount_Fines extends MyAccount
 				$user = UserAccount::getLoggedInUser();
 				$interface->assign('profile', $user);
 				$userLibrary = $user->getHomeLibrary();
+
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 1){
+					global $library;
+					$userLibrary = $library;
+				}
+
 				$fines = $user->getFines();
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
 				$interface->assign('showOutstanding', $useOutstanding);

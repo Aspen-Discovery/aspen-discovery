@@ -198,6 +198,7 @@ export default function App() {
 								console.log("at Login: " + userToken);
 								//await AsyncStorage.setItem('@userToken', userToken);
 
+								//console.log(patronsLibrary);
 								try {
 									await AsyncStorage.setItem('@userToken', userToken);
 									await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
@@ -215,9 +216,9 @@ export default function App() {
 									await SecureStore.setItemAsync("solrScope", patronsLibrary['solrScope']);
 									await AsyncStorage.setItem("@solrScope", patronsLibrary['solrScope']);
 									await SecureStore.setItemAsync("pathUrl", data.libraryUrl);
-									await SecureStore.setItemAsync("logo", patronsLibrary['logo']);
-									await SecureStore.setItemAsync("favicon", patronsLibrary['favicon']);
-									await SecureStore.setItemAsync("discoveryVersion", patronsLibrary['version']);
+									//await SecureStore.setItemAsync("logo", patronsLibrary['theme']['logo']);
+									//await SecureStore.setItemAsync("favicon", patronsLibrary['theme']['favicon']);
+									//await SecureStore.setItemAsync("discoveryVersion", patronsLibrary['version']);
 									await AsyncStorage.setItem("@lastStoredVersion", Constants.manifest.version);
 									await AsyncStorage.setItem("@patronLibrary", JSON.stringify(patronsLibrary));
 									dispatch( {type: 'SIGN_IN', token: userToken});

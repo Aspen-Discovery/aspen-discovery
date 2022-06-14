@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
+require_once(ROOT_DIR . '/sys/MaterialsRequestUsage.php');
 require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
@@ -246,6 +247,40 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
+	}
+
+	function getStats($instanceName, $month, $year, &$statsByFormat, $statsPeriodName)
+	{
+		$usage = new MaterialsRequestUsage();
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
+		if ($month != null){
+			$usage->month = $month;
+		}
+		if ($year != null){
+			$usage->year = $year;
+		}
+		$usage->selectAdd();
+		$usage->selectAdd('formatId');
+		$usage->selectAdd('statusId');
+		$usage->selectAdd('SUM(numRequests) as numRequests');
+		$usage->find();
+
+		while ($usage->fetch()){
+			if (!array_key_exists($usage->formatId, $statsByFormat)){
+				$statsByFormat[$usage->formatId] = [];
+			}
+			if (!array_key_exists($usage->statusId, $statsByFormat[$usage->formatId])){
+				$statsByFormat[$usage->formatId][$usage->statusId] = [
+					'usageThisMonth' => 0,
+					'usageLastMonth' => 0,
+					'usageThisYear' => 0,
+					'usageAllTime' => 0
+				];
+			}
+			$statsByFormat[$usage->formatId][$usage->statusId][$statsPeriodName] = $usage->numRequests;
+		}
 	}
 
 	function getBreadcrumbs() : array

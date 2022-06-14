@@ -1159,17 +1159,10 @@ public class PolarisExportMain {
 					boolean gotItems = getItemsForBibFromPolaris(marcFactory, bibliographicRecordId, marcRecord);
 					if (gotItems){
 						GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId, marcRecord);
-						if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
-							logEntry.incUpdated();
-						}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+						if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 							logEntry.incAdded();
-						}else{
-							//No change has been made, we could skip this
-							if (!indexingProfile.isRunFullUpdate() && singleWorkId == null){
-								logEntry.incSkipped();
-							}else{
-								logEntry.incUpdated();
-							}
+						}else {
+							logEntry.incUpdated();
 						}
 
 						updateVolumeInfoForIdentifier(marcRecord, bibliographicRecordId);
@@ -1203,7 +1196,7 @@ public class PolarisExportMain {
 	private static synchronized void updateVolumeInfoForIdentifier(Record marcRecord, String bibliographicRecordId) {
 		String fullIdentifier = indexingProfile.getName() + ":" + bibliographicRecordId;
 		TreeMap<String, VolumeInfo> volumesForRecord = new TreeMap<>();
-		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTag());
+		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
 		for (DataField curItem : itemFields){
 			Subfield volumeSubfield = curItem.getSubfield(indexingProfile.getVolume());
 			if (volumeSubfield != null) {

@@ -347,16 +347,32 @@ class ListAPI extends Action
 
 			$titles = $list->getListRecords(0, $numTitlesToShow, false, 'summary');
 
+			$isLida = $this->checkIfLiDA();
+
 			foreach($titles as $title) {
-				$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
+				$imageUrl = "/bookcover.php?id=" . $title['id'];
 				$smallImageUrl = $imageUrl . "&size=small";
 				$imageUrl .= "&size=medium";
+
+				if($isLida) {
+					$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
+					$smallImageUrl = $imageUrl . "&size=small";
+					$imageUrl .= "&size=medium";
+				}
+
 				$listTitles[] = array(
 					'id' => $title['id'],
 					'image' => $imageUrl,
 					'small_image' => $smallImageUrl,
 					'title' => $title['title'],
 					'author' => $title['author'],
+					'shortId' => $title['shortId'],
+					'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
+					'titleURL' => $title['titleURL'],
+					'description' => $title['description'],
+					'length' => $title['length'],
+					'publisher' => $title['publisher'],
+					'ratingData' => $title['ratingData'],
 				);
 			}
 			return array('success' => true, 'listTitle' => $list->title, 'listDescription' => $list->description, 'titles' => $listTitles);
@@ -593,7 +609,7 @@ class ListAPI extends Action
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
 	{
 		//return a random selection of 30 titles from the list.
-		/** @var SearchObject_GroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
+		/** @var SearchObject_AbstractGroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
 		$searchObj = SearchObjectFactory::initSearchObject();
 		$searchObj->init();
 		$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
@@ -1014,7 +1030,7 @@ class ListAPI extends Action
 		$listTitles = $memCache->get('system_list_titles_' . $listName);
 		if ($listTitles == false || isset($_REQUEST['reload'])) {
 			//return a random selection of 30 titles from the list.
-			/** @var SearchObject_GroupedWorkSearcher $searchObj */
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj->setBasicQuery("*:*");
@@ -1198,6 +1214,10 @@ class ListAPI extends Action
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->numSkipped++;
 				}
+				if($nytList->deleted == 1) {
+					$nytList->deleted = 0;
+					$nytList->update();
+				}
 				//Nothing has changed, no need to update
 				return array(
 					'success' => true,
@@ -1209,6 +1229,9 @@ class ListAPI extends Action
 			}
 			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
 			$nytList->nytListModified = $lastModifiedDay;
+			if($nytList->deleted == 1) {
+				$nytList->deleted = 0;
+			}
 			$nytList->update();
 			$results = array(
 				'success' => true,
@@ -1235,7 +1258,7 @@ class ListAPI extends Action
 					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
 					if ($isbn) {
 						//look the title up by ISBN
-						/** @var SearchObject_GroupedWorkSearcher $searchObject */
+						/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 						$searchObject = SearchObjectFactory::initSearchObject(); // QUESTION: Does this need to be done within the Loop??
 						$searchObject->init();
 						$searchObject->clearFacets();
@@ -1324,6 +1347,17 @@ class ListAPI extends Action
 			$password = reset($password);
 		}
 		return array($username, $password);
+	}
+
+	function checkIfLiDA() {
+		foreach (getallheaders() as $name => $value) {
+			if($name == 'User-Agent' || $name == 'user-agent') {
+				if(strpos($value, "Aspen LiDA") !== false) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	function getBreadcrumbs() : array

@@ -30,10 +30,19 @@ class Enrichment_NYTLists extends Admin_Admin
 			$availableListsCompareFunction = function ($subjectArray0, $subjectArray1) {
 				return strcasecmp($subjectArray0->display_name, $subjectArray1->display_name);
 			};
+
+			$prevYear = date("Y-m-d",strtotime("-1 year"));
 			$availableLists = $availableLists->results;
 			usort($availableLists, $availableListsCompareFunction);
 
-			$interface->assign('availableLists', $availableLists);
+			// only fetch list of lists that have been updated by NYT in the last year (used for create/update dropdown)
+			$activeAvailableLists = [];
+			foreach($availableLists as $availableList) {
+				if($availableList->newest_published_date > $prevYear) {
+					$activeAvailableLists[] = $availableList;
+				}
+			}
+			$interface->assign('availableLists', $activeAvailableLists);
 
 			$isListSelected = !empty($_REQUEST['selectedList']);
 			$selectedList = null;
@@ -52,6 +61,7 @@ class Enrichment_NYTLists extends Admin_Admin
 						} else {
 							$interface->assign('successMessage', $results['message']);
 						}
+						sleep(7);
 					}catch (Exception $e){
 						$interface->assign('error', $e->getMessage());
 					}
@@ -64,6 +74,7 @@ class Enrichment_NYTLists extends Admin_Admin
 			$nyTimesUser = new User();
 			$nyTimesUser->username = 'nyt_user';
 			if ($nyTimesUser->find(1)) {
+				$prevYear = date("Y-m-d",strtotime("-1 year"));
 				// Get User Lists
 				$nyTimesUserLists = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
@@ -72,7 +83,22 @@ class Enrichment_NYTLists extends Admin_Admin
 				$nyTimesUserLists->orderBy('title');
 				$existingLists = $nyTimesUserLists->fetchAll();
 
-				$interface->assign('existingLists', $existingLists);
+				$activeNYTLists = [];
+				foreach($existingLists as $existingList) {
+					$activeNYTList = new UserList();
+					$activeNYTList->id = $existingList->id;
+					$activeNYTList->find();
+					while($activeNYTList->fetch()) {
+						$nytListModified = strtotime($activeNYTList->nytListModified);
+						$lastModified = date('Y-m-d', $nytListModified);
+						if($lastModified >= $prevYear) {
+							$activeNYTLists[] = $activeNYTList;
+						} else {
+							$activeNYTList->delete();
+						}
+					}
+				}
+				$interface->assign('existingLists', $activeNYTLists);
 			}
 		}
 

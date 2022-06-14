@@ -318,10 +318,11 @@ class UserPayment extends DataObject
 					$amountPaid = $queryParams['totalAmount'];
 					$transactionId = $queryParams['transactionId'];
 					$paymentType = $queryParams['paymentType']; // card or echeck
-					if ($amountPaid != $userPayment->totalPaid){
+
+/*					if ($amountPaid != $userPayment->totalPaid){
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
-					}
+					}*/
 
 					//Check to see if we have a donation for this payment
 					require_once ROOT_DIR . '/sys/Donations/Donation.php';
@@ -335,10 +336,6 @@ class UserPayment extends DataObject
 						$user = new User();
 						$user->id = $userPayment->userId;
 						if ($user->find(true)){
-//							global $logger;
-//							$logger->log("Request Vars : " . print_r($_REQUEST, true), Logger::LOG_ERROR);
-//							$logger->log("POST Vars : " . print_r($_POST, true), Logger::LOG_ERROR);
-//							$logger->log("Completing fine payment for user $user->id, $user->firstname $user->lastname", Logger::LOG_ERROR);
 							$finePaymentCompleted = $user->completeFinePayment($userPayment);
 							if ($finePaymentCompleted['success']) {
 								$success = true;

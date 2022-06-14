@@ -432,7 +432,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	function cancelHold(User $patron, $recordId, $cancelId = null) {
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 

@@ -776,7 +776,7 @@ public class CarlXExportMain {
 
 									if (currentMarcRecord != null) {
 										//Remove existing items from the bib, they will be replaced with the items we just loaded
-										List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
+										List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTagInt());
 										for (VariableField itemFieldVar : existingItemsInMarcRecord) {
 											currentMarcRecord.removeVariableField(itemFieldVar);
 										}

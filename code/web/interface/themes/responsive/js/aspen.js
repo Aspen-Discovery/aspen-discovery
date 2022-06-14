@@ -5906,21 +5906,21 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		confirmCancelHold: function(patronId, recordId, holdIdToCancel) {
+		confirmCancelHold: function(patronId, recordId, holdIdToCancel, isIll) {
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel + "&isIll="+isIll, function(data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 			}).fail(AspenDiscovery.ajaxFail);
 
 			return false
 		},
 
-		cancelHold: function(patronId, recordId, holdIdToCancel){
+		cancelHold: function(patronId, recordId, holdIdToCancel, isIll){
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel + "&isIll=" + isIll, function(data){
 					AspenDiscovery.showMessage(data.title, data.body, data.success);
 					if (data.success){
 						var tmpRecordId = recordId.replace('.', '_').replace('~', '_');
@@ -5932,7 +5932,7 @@ AspenDiscovery.Account = (function(){
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
 				this.ajaxLogin(null, function () {
-					AspenDiscovery.Account.cancelHold(patronId, recordId, holdIdToCancel)
+					AspenDiscovery.Account.cancelHold(patronId, recordId, holdIdToCancel, isIll)
 				}, false);
 			}
 
@@ -10311,6 +10311,18 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		deleteUngrouping: function(groupedWorkId, ungroupingId) {
+			var url = Globals.path + "/GroupedWork/" + groupedWorkId + "/AJAX?method=deleteUngrouping&ungroupingId=" + ungroupingId;
+			$.getJSON(url, function (data){
+				if (data.success){
+					$("#ungrouping").hide();
+				}else{
+					AspenDiscovery.showMessage(data.title, data.body);
+				}
+			});
+			return false;
+		},
+
 		getDisplayInfoForm: function(id) {
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getDisplayInfoForm";
 			$.getJSON(url, function (data){
@@ -13062,13 +13074,14 @@ AspenDiscovery.WebBuilder = function () {
 							if(data.openInNewTab) {
 								newTab.location.href = data.url
 							} else {
+								newTab.close();
 								location.assign(data.url);
 							}
 						})
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
-							return AspenDiscovery.Account.getWebResource(id);
-						}, false);
+							return AspenDiscovery.WebBuilder.getWebResource(id);
+						}, true);
 					}
 				} else {
 					var params = {
@@ -13080,6 +13093,7 @@ AspenDiscovery.WebBuilder = function () {
 						if(data.openInNewTab) {
 							newTab.location.href = data.url
 						} else {
+							newTab.close();
 							location.assign(data.url);
 						}
 					})

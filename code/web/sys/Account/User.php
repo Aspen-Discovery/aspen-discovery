@@ -1568,11 +1568,12 @@ class User extends DataObject
 	 *
 	 * @param $recordId string  The Id of the record being cancelled
 	 * @param $cancelId string  The Id of the hold to be cancelled.  Structure varies by ILS
+	 * @param $isIll boolean    If the hold is from the ILL system
 	 *
 	 * @return array            Information about the result of the cancellation process
 	 */
-	function cancelHold($recordId, $cancelId){
-		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId);
+	function cancelHold($recordId, $cancelId, $isIll){
+		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
 		$this->clearCache();
 		return $result;
 	}
@@ -2379,6 +2380,7 @@ class User extends DataObject
 			if ($library->enableMaterialsRequest == 1) {
 				$sections['materials_request'] = new AdminSection('Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
@@ -2502,9 +2504,14 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$sections['ebsco'] = new AdminSection('EBSCO');
+			$sections['ebsco'] = new AdminSection('EBSCO EDS');
 			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between EBSCO EDS and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
 			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCO EDS integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('EBSCOhost', $enabledModules)) {
+			$sections['ebscohost'] = new AdminSection('EBSCOhost');
+			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCO EDS');
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {

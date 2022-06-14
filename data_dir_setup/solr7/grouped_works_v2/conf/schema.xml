@@ -1,0 +1,407 @@
+<?xml version="1.0" ?>
+<schema name="Aspen Grouped Work Index" version="1.5">
+	<types>
+		<fieldType name="unchanged_string" class="StrField"/> 
+		<fieldType name="integer" class="IntPointField"/>
+		<fieldType name="long" class="LongPointField"/>
+		<fieldType name="float" class="FloatPointField"/>
+		<fieldType name="date" class="DatePointField"/>
+		<fieldType name="random" class="RandomSortField"/>
+		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
+				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
+				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
+				<!-- Need to stem the search in case the patron doesn't enter stemming in the same order -->
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text_minimal_stem" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text_unstemmed" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer type="index">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.EdgeNGramFilterFactory" minGramSize="5" maxGramSize="50"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="callnumber-search" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="0" catenateWords="0" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0" splitOnNumerics="1" preserveOriginal="1"/>
+				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+			<analyzer>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+	</types>	
+
+	<fields>
+		<field name="id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<field name="recordtype" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<field name="_version_" type="long" indexed="true" stored="true"/>
+
+		<!-- Used for diagnostic information in staff view -->
+		<field name="last_indexed" type="date" indexed="false" stored="true"/>
+
+		<!-- IDs of records that make up the work -->
+		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- TITLE information -->
+		<!-- indexed title with subtitle -->
+		<field name="title" type="searchable_text" indexed="true" stored="false"/>
+		<!-- Title for display not including the subtitle -->
+		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>
+		<field name="subtitle_display" type="unchanged_string" indexed="false" stored="true"/>
+		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
+		<!-- variations of title for searching -->
+		<field name="title_exact" type="text-exact" indexed="true" stored="false"/>
+		<field name="title_left" type="text-left" indexed="true" stored="false"/>
+		<field name="title_proper" type="textProper" indexed="true" stored="false"/>
+		<!-- Title full includes the author -->
+		<field name="title_full" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<!-- TODO: Can likely get rid of this -->
+		<field name="title_short" type="searchable_text" indexed="true" stored="true"/>
+		<field name="title_alt" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+		<field name="title_old" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+		<field name="title_new" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- AUTHOR INFORMATION -->
+		<field name="author" type="searchable_text_unstemmed" indexed="true" stored="false" />
+		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/> <!-- The author to display to the user -->
+		<field name="authorStr" type="unchanged_string" indexed="true" stored="true" termVectors="true"/>
+		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
+		<field name="author_left" type="text-left" indexed="true" stored="true" />
+		<field name="author-letter" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
+		<field name="auth_authorStr" type="unchanged_string" indexed="true" stored="false"/>
+		<field name="author2" type="searchable_text_unstemmed" indexed="true" stored="true" multiValued="true"/>
+		<field name="author2Str" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="author2-role" type="unchanged_string" indexed="true" stored="true" multiValued="true"/> <!-- The contributor with role and title appended -->
+		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="auth_author2Str" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+		<field name="author_additional" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="author_additionalStr" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- SERIES Fields -->
+		<field name="series" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="series2" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="series_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
+
+		<!-- Information about related records, TODO: Try storing most of this in the database for faster access and smaller solr index -->
+		<field name="record_details" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
+		<field name="item_details" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
+		<dynamicField name="scoping_details_*" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
+		<!-- The popularity of a title in terms of circulation activity -->
+		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
+		<field name="total_holds" type="integer" indexed="true" stored="false" default="0"/>
+
+		<!-- Format information -->
+		<field name="grouping_category" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+		<field name="format" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="format_boost" type="integer" indexed="true" stored="false"/>
+		<field name="format_category" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- Fields to determine ownership and location based on location codes -->
+		<field name="owning_library" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="owning_location" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="collection" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="detailed_location" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="shelf_location" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- Fields to determine availability -->
+		<field name="available_at" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="availability_toggle" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- Language Related Fields -->
+		<field name="language" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
+		<field name="translation" type="unchanged_string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
+		<field name="language_boost" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" default="1"/>
+		<field name="language_boost_es" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" default="1"/>
+
+		<!-- Publication information -->
+		<field name="publisher" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisherStr" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="publishDate" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="publishDateSort" type="unchanged_string" indexed="true" stored="true"/>
+
+		<!-- Facets -->
+		<field name="physical" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="edition" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="dateSpan" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="econtent_source" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="subject_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="subject" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="topic" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="topic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="lc_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="bisac_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="genre" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="genre_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
+		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="era" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="literary_form_full" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="literary_form" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="target_audience_full" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="target_audience" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="date_added" type="date" indexed="true" stored="true" multiValued="false"/>
+		<field name="time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
+		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
+		<field name="itype" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="barcode" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- awards and ratings -->
+		<field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="awards_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="lexile_score" type="integer" indexed="true" stored="true" multiValued="false" default="-1" docValues="true"/>
+		<field name="lexile_code" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+		<field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+		<field name="accelerated_reader_interest_level" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
+		<field name="accelerated_reader_point_value" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
+
+		<!-- Identifiers -->
+		<field name="lccn" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="oclc" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="primary_isbn" type="textProper" indexed="false" stored="true" multiValued="false"/>
+		<field name="isbn" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="issn" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="primary_upc" type="textProper" indexed="false" stored="true" multiValued="false"/>
+		<field name="upc" type="textProper" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- Call Numbers -->
+		<field name="callnumber-first" type="unchanged_string" indexed="true" stored="true" docValues="true"/>
+		<field name="callnumber-subject" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="local_callnumber" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
+		<field name="local_callnumber_exact" type="text-exact" indexed="true" stored="true" multiValued="true"/>
+		<field name="local_callnumber_left" type="text-left" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="local_callnumber_*" type="callnumber-search" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="local_callnumber_exact_*" type="text-exact" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="local_callnumber_left_*" type="text-left" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="callnumber_sort_*" type="text-exact" indexed="true" stored="true" multiValued="false"/>
+
+		<!-- Broad Search Terms -->
+		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
+		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
+
+		<!-- Descriptions -->
+		<field name="description" type="searchable_text" indexed="true" stored="false"/>
+		<field name="display_description" type="unchanged_string" indexed="false" stored="true"/>
+		<!-- Total number of holdings for a work -->
+		<field name="num_holdings" type="integer" indexed="true" stored="false"/>
+		<!-- End user rating for a work 2.5 if not set -->
+		<field name="rating" type="float" indexed="true" stored="false" multiValued="false" default="2.5"/>
+		<field name="rating_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+		<!-- suggestions (for type ahead) -->
+		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="author_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="subject_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- relations to users -->
+		<field name="user_rating_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+		<field name="user_not_interested_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+		<field name="user_reading_history_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- Edition -->
+		<field name="edition_info" type="unchanged_string" indexed="true" stored="false" multiValued="true" docValues="false"/>
+
+		<!-- Boosts -->
+		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="false"/>
+		<!-- Field to get random titles -->
+		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
+	</fields>
+	
+	<uniqueKey>id</uniqueKey>
+
+	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="author" dest="author_suggestions"/>
+	<copyField source="author2" dest="author_suggestions"/>
+	<copyField source="series" dest="title_suggestions"/>
+	<copyField source="subject_facet" dest="subject_suggestions"/>
+
+	<copyField source="title" dest="spelling"/>
+	<copyField source="author" dest="spelling"/>
+	<copyField source="author2" dest="spelling"/>
+	<copyField source="series" dest="spelling"/>
+	<copyField source="subject_facet" dest="spelling"/>
+
+	<copyField source="author" dest="authorStr"/>
+	<copyField source="author" dest="author_exact"/>
+	<copyField source="author" dest="author_left"/>
+	<copyField source="auth_author" dest="auth_authorStr"/>
+	<copyField source="author2" dest="author2Str"/>
+	<copyField source="auth_author2" dest="auth_author2Str"/>
+	<copyField source="author_additional" dest="author_additionalStr"/>
+	<copyField source="publisher" dest="publisherStr"/>
+	<copyField source="series" dest="series_facet"/>
+
+	<!-- CopyFields for Proper (Unstemmed) searching -->
+	<copyField source="title" dest="title_proper"/>
+	<copyField source="title" dest="title_exact"/>
+	<copyField source="title" dest="title_left"/>
+	<copyField source="keywords" dest="keywords_proper"/>
+	<copyField source="table_of_contents" dest="table_of_contents_proper"/>
+	<copyField source="series" dest="series_proper"/>
+	<copyField source="topic" dest="topic_proper"/>
+	<copyField source="subject_facet" dest="subject"/>
+	<copyField source="subject_facet" dest="subject_proper"/>
+	<copyField source="geographic" dest="geographic_proper"/>
+	<copyField source="era" dest="era_proper"/>
+	<copyField source="genre" dest="genre_proper"/>
+	<copyField source="local_callnumber_*" dest="local_callnumber_exact_*"/>
+	<copyField source="local_callnumber_*" dest="local_callnumber_left_*"/>
+</schema>

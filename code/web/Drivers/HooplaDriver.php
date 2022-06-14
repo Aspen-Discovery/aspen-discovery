@@ -600,7 +600,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param null $cancelId ID to cancel for compatibility
 	 * @return false|array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
     {
         return false;
     }

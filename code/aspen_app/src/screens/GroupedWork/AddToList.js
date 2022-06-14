@@ -21,7 +21,7 @@ export const AddToListFromItem = (props) => {
 
 	return (
 		<Center>
-			<Button onPress={
+			<Button mt={3} onPress={
 				async () => {
 					await getLists(libraryUrl).then(response => {
 						setLists(response);

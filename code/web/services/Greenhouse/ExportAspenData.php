@@ -308,12 +308,12 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 			$exportPath = '/data/aspen-discovery/' . $serverName . '/export/';
 			$exportDirExists = false;
 			if (!file_exists($exportPath)){
-				if (!mkdir($exportPath, 0774, true)){
+				if (!mkdir($exportPath, 0777, true)){
 					$message = 'Could not create export directory';
 					$success = false;
 				}else{
 					chgrp($exportPath, 'aspen_apache');
-					chmod($exportPath, 0774);
+					chmod($exportPath, 0777);
 					$exportDirExists = true;
 				}
 			}else{

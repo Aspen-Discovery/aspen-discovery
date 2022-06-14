@@ -6,10 +6,10 @@ import _ from "lodash";
 import {getProfile} from "../../util/loadPatron";
 
 const SelectPickupLocation = (props) => {
-
-	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, updateProfile} = props;
+	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes, updateProfile} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
+	let [volume, setVolume] = React.useState(null);
 
 	let pickupLocation = _.findIndex(locations, function(o) { return o.locationId == user.pickupLocationId; });
 	pickupLocation = _.nth(locations, pickupLocation);
@@ -27,6 +27,28 @@ const SelectPickupLocation = (props) => {
 					<Modal.CloseButton/>
 					<Modal.Header>{label}</Modal.Header>
 					<Modal.Body>
+						{majorityOfItemsHaveVolumes ? (
+							<FormControl>
+								<FormControl.Label>Select a volume</FormControl.Label>
+								<Select
+									name="volumeForHold"
+									selectedValue={volume}
+									minWidth="200"
+									accessibilityLabel="Select a volume"
+									_selectedItem={{
+										bg: "tertiary.300",
+										endIcon: <CheckIcon size="5" />
+									}}
+									mt={1}
+									mb={3}
+									onValueChange={itemValue => setVolume(itemValue)}
+								>
+									{volumes.map((item, index) => {
+										return <Select.Item label={item.displayLabel} value={item.volumeId}/>;
+									})}
+								</Select>
+							</FormControl>
+						) : null}
 						{linkedAccountsCount > 0 ? (
 							<FormControl>
 								<FormControl.Label>Place hold for account</FormControl.Label>
@@ -80,7 +102,7 @@ const SelectPickupLocation = (props) => {
 								isLoadingText="Placing hold..."
 								onPress={async () => {
 									setLoading(true);
-									await completeAction(record, action, activeAccount, "", "", location, libraryUrl).then(response => {
+									await completeAction(record, action, activeAccount, "", "", location, libraryUrl, volume).then(response => {
 										updateProfile();
 										setLoading(false);
 										setShowModal(false);

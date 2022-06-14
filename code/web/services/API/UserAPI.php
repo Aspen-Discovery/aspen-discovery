@@ -1293,6 +1293,13 @@ class UserAPI extends Action
 					} else {
 						$pickupBranch = $user->_homeLocationCode;
 					}
+
+					if(isset($_REQUEST['volumeId'])) {
+						$result = $user->placeVolumeHold($bibId, $_REQUEST['volumeId'], $pickupBranch);
+						$action = $result['api']['action'] ?? null;
+						return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+					}
+
 					//Make sure that there are not volumes available
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($bibId);
@@ -2199,11 +2206,13 @@ class UserAPI extends Action
 		$cancelId = $_REQUEST['cancelId'] ?? null;
 
 		$source = $_REQUEST['itemSource'] ?? null;
+		$isIll = $_REQUEST['isIll'] ?? false;
+
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
-				$result = $user->cancelHold($recordId, $cancelId);
+				$result = $user->cancelHold($recordId, $cancelId, $isIll);
 				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 			} else if ($source == 'overdrive') {
 				return $this->cancelOverDriveHold();

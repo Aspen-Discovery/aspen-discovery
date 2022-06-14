@@ -88,6 +88,7 @@
 						{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 						{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
 						{if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+						{if $pageId}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
 						{if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
 						{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
 					</div>

@@ -60,7 +60,11 @@ export default class GroupedWork extends Component {
 	}
 
 	authorSearch = (author, libraryUrl) => {
-		this.props.navigation.push("SearchResults", {searchTerm: author, libraryUrl: libraryUrl});
+		const { navigation } = this.props;
+		this.props.navigation.navigate("SearchByAuthor", {
+			searchTerm: author,
+			libraryUrl: libraryUrl,
+		})
 	};
 
 	openCheckouts = () => {
@@ -331,9 +335,12 @@ export default class GroupedWork extends Component {
 					{this.state.formats ?
 						<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
-					      mb={1}>{translate('grouped_work.language')}</Text>
-					{this.state.languages ?
+					                                                          mb={1}>{translate('grouped_work.language')}</Text>
+					{this.state.languages && discoveryVersion <= "22.05.00" ?
 						<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
+
+					{discoveryVersion >= "22.06.00" && this.state.data.language ? 					<Text fontSize={{base: "xs", lg: "md"}} mt={3}
+					                                                           mb={1}>{this.state.data.language}</Text> : null}
 
 					{this.state.variations ? <Manifestation data={this.state.variations} format={this.state.format}
 					                                          language={this.state.language}
@@ -351,10 +358,11 @@ export default class GroupedWork extends Component {
 					                                          openHolds={this.openHolds}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 
+					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} />
+
 					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
 						{this.state.data.description}
 					</Text>
-					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} />
 				</Box>
 				<Center>
 					<AlertDialog

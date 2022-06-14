@@ -37,7 +37,7 @@
 						<div class="form-group col-sm-3" id="sortOptions">
 							<select aria-label="{translate text="Sort By" inAttribute=true isPublicFacing=true}" class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">
 								{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
-									<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{translate text="Sort By %1%" 1=$sortOptionLabel isPublicFacing=true}</option>
+									<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{translate text="Sort By %1%" 1=$sortOptionLabel isPublicFacing=true inAttribute=true}</option>
 								{/foreach}
 							</select>
 						</div>

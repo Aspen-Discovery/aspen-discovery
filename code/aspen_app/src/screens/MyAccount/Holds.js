@@ -130,7 +130,7 @@ export default class Holds extends Component {
 
 		this.setState({
 			isLoading: true,
-			discoveryVersion: version[0],
+			discoveryVersion: discoveryVersion,
 		})
 
 		await this._fetchHolds();
@@ -394,7 +394,7 @@ function HoldItem(props) {
 							{translations.cancelHold}
 						</Actionsheet.Item>
 						: ""}
-					{data.allowFreezeHolds && allowLinkedAccountAction ?
+					{data.allowFreezeHolds === "1" && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={data.frozen === true ? thaw : freeze}
 							isLoadingText={loadingText}

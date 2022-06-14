@@ -1219,7 +1219,7 @@ public class SymphonyExportMain {
 
 
 	private static String getPrimaryIdentifierFromMarcRecord(Record marcRecord) {
-		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.getRecordNumberTag());
+		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.getRecordNumberTagInt());
 		String recordNumber = null;
 		//Make sure we only get one ils identifier
 		for (VariableField curVariableField : recordNumberFields) {

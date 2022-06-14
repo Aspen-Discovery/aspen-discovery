@@ -17,7 +17,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 		//Add variations of the identifier
 		String shortIdentifier = identifier.replace("CARL", "");
@@ -89,7 +89,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	private static int numSampleRecordsWithMultiplePrintFormats = 0;
 	@Override
 	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record) {
-		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
+		List<DataField> items = MarcUtil.getDataFields(record, itemTagInt);
 		boolean allItemsAreOrderRecords = true;
 		HashMap<String, Integer> printFormats = new HashMap<>();
 		for (DataField curItem : items){
@@ -188,7 +188,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		ilsRecord.setFormatBoost(formatBoost);
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
 		//For Nashville CARL.X, load audiences based on location code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems){
@@ -206,14 +206,14 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
 	}
 
-	ItemInfo createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
-		ItemInfo item = super.createPrintIlsItem(groupedWork, recordInfo, record, itemField);
-		if (item != null){
+	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, StringBuilder suppressionNotes) {
+		ItemInfoWithNotes item = super.createPrintIlsItem(groupedWork, recordInfo, record, itemField, suppressionNotes);
+		if (item.itemInfo != null){
 			Subfield shelfLocationField = itemField.getSubfield(shelvingLocationSubfield);
 			if (shelfLocationField != null) {
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
 				if (shelfLocation.equals("xord")) {
-					item.setIsOrderItem();
+					item.itemInfo.setIsOrderItem();
 				}
 			}
 		}

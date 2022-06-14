@@ -136,10 +136,15 @@ public class MarcUtil {
 	 * @return the result set of strings
 	 */
 	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfield, int beginIx, int endIx) {
+		int fldTagInt = Integer.parseInt(fldTag);
+		return getSubfieldDataAsSet(record, fldTagInt, subfield, beginIx, endIx);
+	}
+
+	private static Set<String> getSubfieldDataAsSet(Record record, int fldTag, String subfield, int beginIx, int endIx) {
 		Set<String> resultSet = new LinkedHashSet<>();
 
 		// Process Leader
-		if (fldTag.equals("000")) {
+		if (fldTag == 0) {
 			resultSet.add(record.getLeader().toString().substring(beginIx, endIx));
 			return resultSet;
 		}
@@ -150,27 +155,7 @@ public class MarcUtil {
 			if (!isControlField(fldTag) && subfield != null) {
 				// Data Field
 				DataField dfield = (DataField) vf;
-				if (subfield.length() > 1) {
-					// automatic concatenation of grouped subFields
-					StringBuilder buffer = new StringBuilder();
-					List<Subfield> subFields = dfield.getSubfields();
-					for (Subfield sf : subFields) {
-						if (subfield.indexOf(sf.getCode()) != -1
-								&& sf.getData().length() >= endIx) {
-							if (buffer.length() > 0)
-								buffer.append(" ");
-							buffer.append(sf.getData().substring(beginIx, endIx));
-						}
-					}
-					resultSet.add(buffer.toString());
-				} else {
-					// get all instances of the single subfield
-					List<Subfield> subFlds = dfield.getSubfields(subfield.charAt(0));
-					for (Subfield sf : subFlds) {
-						if (sf.getData().length() >= endIx)
-							resultSet.add(sf.getData().substring(beginIx, endIx));
-					}
-				}
+				resultSet.addAll(dfield.getSubfieldDataAsSet(subfield, beginIx, endIx));
 			} else // Control Field
 			{
 				String cfldData = ((ControlField) vf).getData();
@@ -197,10 +182,16 @@ public class MarcUtil {
 	 *          fldTag
 	 */
 	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfieldsStr, String separator) {
+		int fldTagInt = Integer.parseInt(fldTag);
+
+		return getSubfieldDataAsSet(record, fldTagInt, subfieldsStr, separator);
+	}
+
+	private static Set<String> getSubfieldDataAsSet(Record record, int fldTag, String subfieldsStr, String separator) {
 		Set<String> resultSet = new LinkedHashSet<>();
 
 		// Process Leader
-		if (fldTag.equals("000")) {
+		if (fldTag == 0) {
 			resultSet.add(record.getLeader().toString());
 			return resultSet;
 		}
@@ -215,29 +206,7 @@ public class MarcUtil {
 			if (!isControlField(fldTag) && subfieldsStr != null) {
 				// DataField
 				DataField dfield = (DataField) vf;
-
-				if (subfieldsStr.length() > 1 || separator != null) {
-					// concatenate subfields using specified separator or space
-					StringBuilder buffer = new StringBuilder();
-					List<Subfield> subFields = dfield.getSubfields();
-					for (Subfield sf : subFields) {
-						if (subfieldsStr.indexOf(sf.getCode()) != -1) {
-							if (buffer.length() > 0) {
-								buffer.append(separator != null ? separator : " ");
-							}
-							buffer.append(sf.getData().trim());
-						}
-					}
-					if (buffer.length() > 0){
-						resultSet.add(buffer.toString());
-					}
-				} else if (subfieldsStr.length() == 1) {
-					// get all instances of the single subfield
-					List<Subfield> subFields = dfield.getSubfields(subfieldsStr.charAt(0));
-					for (Subfield sf : subFields) {
-						resultSet.add(sf.getData().trim());
-					}
-				}
+				resultSet.addAll(dfield.getSubfieldDataAsSet(subfieldsStr, separator));
 			} else {
 				// Control Field
 				resultSet.add(((ControlField) vf).getData().trim());
@@ -249,6 +218,10 @@ public class MarcUtil {
 	private static Pattern controlFieldPattern = Pattern.compile("00[0-9]");
 	private static boolean isControlField(String fieldTag) {
 		return controlFieldPattern.matcher(fieldTag).matches();
+	}
+
+	private static boolean isControlField(int fieldTag) {
+		return fieldTag <= 9;
 	}
 
 	private static HashMap<String, Pattern> subfieldPatterns = new HashMap<>();
@@ -284,7 +257,7 @@ public class MarcUtil {
 				subfieldPatterns.put(subfield, subfieldPattern);
 			}
 		}
-		List<DataField> fields = record.getDataFields("880");
+		List<DataField> fields = record.getDataFields(880);
 		for (DataField dfield : fields) {
 			Subfield link = dfield.getSubfield('6');
 			if (link != null && link.getData().startsWith(tag)) {
@@ -345,10 +318,11 @@ public class MarcUtil {
 			}
 
 			String fldTag = fldTag1.substring(0, 3);
+			int fldTagAsInt = Integer.parseInt(fldTag);
 
 			String subfldTags = fldTag1.substring(3);
 
-			List<DataField> marcFieldList = record.getDataFields(fldTag);
+			List<DataField> marcFieldList = record.getDataFields(fldTagAsInt);
 			if (!marcFieldList.isEmpty()) {
 				for (DataField marcField : marcFieldList) {
 
@@ -381,11 +355,30 @@ public class MarcUtil {
 		return marcRecord.getDataFields(tag);
 	}
 
+	public static List<DataField> getDataFields(Record marcRecord, int tag) {
+		return marcRecord.getDataFields(tag);
+	}
+
 	public static List<DataField> getDataFields(Record marcRecord, String[] tags) {
 		return marcRecord.getDataFields(tags);
 	}
 
+	public static List<DataField> getDataFields(Record marcRecord, int[] tags) {
+		return marcRecord.getDataFields(tags);
+	}
+
 	public static ControlField getControlField(Record marcRecord, String tag){
+		List variableFields = marcRecord.getControlFields(tag);
+		ControlField variableFieldReturn = null;
+		for (Object variableField : variableFields){
+			if (variableField instanceof ControlField){
+				variableFieldReturn = (ControlField)variableField;
+			}
+		}
+		return variableFieldReturn;
+	}
+
+	public static ControlField getControlField(Record marcRecord, int tag){
 		List variableFields = marcRecord.getControlFields(tag);
 		ControlField variableFieldReturn = null;
 		for (Object variableField : variableFields){
@@ -495,7 +488,7 @@ public class MarcUtil {
 				timeAdded = attributes.creationTime().toMillis() / 1000;
 				//Check within the bib to see if there is an earlier date, first the 008
 				//Which should contain the creation date
-				ControlField oo8 = (ControlField)marcRecord.getVariableField("008");
+				ControlField oo8 = (ControlField)marcRecord.getVariableField(8);
 				if (oo8 != null){
 					if (oo8.getData().length() >= 6){
 						String dateAddedStr = oo8.getData().substring(0, 6);
@@ -511,7 +504,7 @@ public class MarcUtil {
 				}
 				//Now the 005 which has last transaction date.   Not ideal, but ok if it's earlier than
 				//what we have.
-				ControlField oo5 = (ControlField)marcRecord.getVariableField("005");
+				ControlField oo5 = (ControlField)marcRecord.getVariableField(5);
 				if (oo5 != null){
 					if (oo5.getData().length() >= 8){
 						String dateAddedStr = oo5.getData().substring(0, 8);

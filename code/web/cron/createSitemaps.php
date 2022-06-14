@@ -35,9 +35,9 @@ while ($library->fetch()){
 		ob_flush();
 
 		//Do a quick search to see how many results we have
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init($searchSource);
+		$searchObject->init();
 		$searchObject->setFieldsToReturn('id');
 		$searchObject->setLimit(1);
 		$result = $searchObject->processSearch();

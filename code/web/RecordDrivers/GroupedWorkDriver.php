@@ -6,9 +6,10 @@ require_once ROOT_DIR . '/sys/File/MARC.php';
 class GroupedWorkDriver extends IndexRecordDriver
 {
 
+	private $permanentId = null;
 	public $isValid = true;
 
-	/** @var SearchObject_GroupedWorkSearcher */
+	/** @var SearchObject_AbstractGroupedWorkSearcher */
 	private static $recordLookupSearcher = null;
 	public function __construct($indexFields)
 	{
@@ -16,6 +17,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			//We were just given the id of a record to load
 			$id = $indexFields;
 			$id = str_replace('groupedWork:', '', $id);
+			$this->permanentId = $id;
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
 			if (GroupedWorkDriver::$recordLookupSearcher == null){
@@ -43,6 +45,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$this->isValid = false;
 			} else {
 				parent::__construct($indexFields);
+				$this->permanentId = $indexFields['id'];
 			}
 		}
 	}
@@ -312,7 +315,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 								if ($localItemComparisonResult == 0) {
 									//7) All else being equal, sort by hold ratio
 									if ($a->getHoldRatio() == $b->getHoldRatio()) {
-										//Hold Ratio is the same, last thing to check is the number of copies
+										//8) Hold Ratio is the same, last thing to check is the number of copies
 										if ($a->getCopies() == $b->getCopies()) {
 											return 0;
 										} elseif ($a->getCopies() > $b->getCopies()) {
@@ -1382,7 +1385,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getPermanentId()
 	{
-		return $this->fields['id'];
+		return $this->permanentId;
 	}
 
 	public function getPrimaryAuthor($useHighlighting = false)
@@ -1902,9 +1905,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 	{
 		global $interface;
 
-		$fields = $this->fields;
-		ksort($fields);
-		$interface->assign('details', $fields);
+		if (!empty($this->fields)) {
+			$fields = $this->fields;
+			ksort($fields);
+			$interface->assign('details', $fields);
+		}
 
 		if (IPAddress::showDebuggingInformation()) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1965,11 +1970,25 @@ class GroupedWorkDriver extends IndexRecordDriver
 		if (UserAccount::userHasPermission('Set Grouped Work Display Information')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
-			$alternateTitle->permanent_id = $this->getPermanentId();
-			$alternateTitle->find();
-			$alternateTitles = [];
-			while ($alternateTitle->fetch()){
-				$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+			$permanentId = $this->getPermanentId();
+			if (!empty($permanentId)) {
+				$alternateTitle->permanent_id = $permanentId;
+				$alternateTitle->find();
+				$alternateTitles = [];
+				while ($alternateTitle->fetch()) {
+					$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+				}
+
+				//Also look for any grouped works that do not have the language attached
+				if (strlen($permanentId) == 40) {
+					$permanentId = substr($permanentId, 0, 36);
+					$alternateTitle->permanent_id = $permanentId;
+					$alternateTitle->find();
+					$alternateTitles = [];
+					while ($alternateTitle->fetch()) {
+						$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+					}
+				}
 			}
 			return $alternateTitles;
 		}
@@ -2884,7 +2903,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		//Load Similar titles (from Solr)
 		global $configArray;
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		/** @var SearchObject_GroupedWorkSearcher $db */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $db */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$searchObject->disableScoping();
