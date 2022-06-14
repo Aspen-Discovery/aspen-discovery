@@ -108,76 +108,82 @@ function removeV1GroupedWorkCore(&$update){
 }
 
 function fixListEntriesForGroupedWorksWithLanguage(&$update){
-	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-	$listEntry = new UserListEntry();
-	$listEntry->selectAdd();
-	$listEntry->selectAdd('sourceId');
-	$listEntry->selectAdd('GROUP_CONCAT(id) as relatedIds');
-	$listEntry->source = 'GroupedWork';
-	$listEntry->whereAdd('LENGTH(sourceId) = 36');
-	$listEntry->groupBy('sourceId');
-	$listEntry->find();
-	$oldIds = [];
-	while ($listEntry->fetch()){
-		/** @noinspection PhpUndefinedFieldInspection */
-		$oldIds[$listEntry->sourceId] = $listEntry->relatedIds;
-	}
-	$numUpdated = 0;
-	foreach ($oldIds as $oldId => $relatedIds){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		$groupedWork = new GroupedWork();
-		$groupedWork->whereAdd("permanent_id LIKE '$oldId-%'");
-		$groupedWork->find();
-		$relatedListIds = explode(',', $relatedIds);
-		$newId = null;
-		if ($groupedWork->getNumResults() == 0) {
-			//This grouped work is deleted
-			$oldGroupedWork = new GroupedWork();
-			$oldGroupedWork->permanent_id = $oldId;
-			if ($oldGroupedWork->find(true)){
-				$newGroupedWork = new GroupedWork();
-				$newGroupedWork->full_title = $oldGroupedWork->full_title;
-				$newGroupedWork->author = $oldGroupedWork->author;
-				$newGroupedWork->grouping_category = $oldGroupedWork->grouping_category;
-				$newGroupedWork->find();
-				while ($newGroupedWork->fetch()){
-					if (strlen($newGroupedWork->permanent_id) == 40){
-						$newId = $newGroupedWork->permanent_id;
+	$systemVariables = SystemVariables::getSystemVariables();
+	if ($systemVariables->searchVersion == 2) {
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$listEntry = new UserListEntry();
+		$listEntry->selectAdd();
+		$listEntry->selectAdd('sourceId');
+		$listEntry->selectAdd('GROUP_CONCAT(id) as relatedIds');
+		$listEntry->source = 'GroupedWork';
+		$listEntry->whereAdd('LENGTH(sourceId) = 36');
+		$listEntry->groupBy('sourceId');
+		$listEntry->find();
+		$oldIds = [];
+		while ($listEntry->fetch()) {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$oldIds[$listEntry->sourceId] = $listEntry->relatedIds;
+		}
+		$numUpdated = 0;
+		foreach ($oldIds as $oldId => $relatedIds) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$groupedWork->whereAdd("permanent_id LIKE '$oldId-%'");
+			$groupedWork->find();
+			$relatedListIds = explode(',', $relatedIds);
+			$newId = null;
+			if ($groupedWork->getNumResults() == 0) {
+				//This grouped work is deleted
+				$oldGroupedWork = new GroupedWork();
+				$oldGroupedWork->permanent_id = $oldId;
+				if ($oldGroupedWork->find(true)) {
+					$newGroupedWork = new GroupedWork();
+					$newGroupedWork->full_title = $oldGroupedWork->full_title;
+					$newGroupedWork->author = $oldGroupedWork->author;
+					$newGroupedWork->grouping_category = $oldGroupedWork->grouping_category;
+					$newGroupedWork->find();
+					while ($newGroupedWork->fetch()) {
+						if (strlen($newGroupedWork->permanent_id) == 40) {
+							$newId = $newGroupedWork->permanent_id;
+						}
+					}
+				} else {
+					continue;
+				}
+			} else if ($groupedWork->getNumResults() == 1) {
+				$groupedWork->fetch();
+				$newId = $groupedWork->permanent_id;
+			} else {
+				$newIds = [];
+				while ($groupedWork->fetch()) {
+					if (substr($groupedWork->permanent_id, 37, 3) == 'eng') {
+						$newId = $groupedWork->permanent_id;
+						break;
+					} else {
+						$newIds[] = $groupedWork->permanent_id;
 					}
 				}
-			}else {
-				continue;
-			}
-		}else if ($groupedWork->getNumResults() == 1){
-			$groupedWork->fetch();
-			$newId = $groupedWork->permanent_id;
-		}else{
-			$newIds = [];
-			while ($groupedWork->fetch()){
-				if (substr($groupedWork->permanent_id, 37, 3) == 'eng'){
-					$newId = $groupedWork->permanent_id;
-					break;
-				}else{
-					$newIds[] = $groupedWork->permanent_id;
+				if ($newId == null) {
+					$newId = reset($newIds);
 				}
 			}
-			if ($newId == null){
-				$newId = reset($newIds);
-			}
-		}
-		if ($newId){
-			foreach ($relatedListIds as $index=>$listEntryId){
-				$listEntry = new UserListEntry();
-				$listEntry->id = $listEntryId;
-				if ($listEntry->find(true)) {
-					$listEntry->sourceId = $newId;
-					$listEntry->update();
-					$numUpdated++;
+			if ($newId) {
+				foreach ($relatedListIds as $index => $listEntryId) {
+					$listEntry = new UserListEntry();
+					$listEntry->id = $listEntryId;
+					if ($listEntry->find(true)) {
+						$listEntry->sourceId = $newId;
+						$listEntry->update();
+						$numUpdated++;
+					}
 				}
 			}
 		}
+		$numOldWorks = count($oldIds);
+		$update['status'] = "Updated $numUpdated of $numOldWorks works from old to new user grouped work id<br/>";
+		$update['success'] = true;
+	}else{
+		$update['status'] = 'Search version was incorrect, not updating lists<br/>';
+		$update['success'] = false;
 	}
-	$numOldWorks = count($oldIds);
-	$update['status'] = "Updated $numUpdated of $numOldWorks works from old to new user grouped work id<br/>";
-	$update['success'] = true;
 }
