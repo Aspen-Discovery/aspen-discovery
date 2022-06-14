@@ -64,6 +64,7 @@ function removeV1GroupedWorkCore(&$update){
 	global $configArray;
 	$solrBaseUrl = $configArray['Index']['url'];
 
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
 	$systemVariables = SystemVariables::getSystemVariables();
 	if ($systemVariables->searchVersion == 2) {
 
@@ -75,13 +76,9 @@ function removeV1GroupedWorkCore(&$update){
 		);
 		$context = stream_context_create($opts);
 
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = SystemVariables::getSystemVariables();
-		if (!file_get_contents($solrBaseUrl . '/grouped_works_v2/suggest?suggest.build=true', false, $context)) {
+		if (!@file_get_contents($solrBaseUrl . '/grouped_works_v2/suggest?suggest.build=true', false, $context)) {
 			echo("Could not update suggesters for grouped_works_v2");
 			$update['status'] = '<strong>Could not update suggesters for grouped_works_v2</strong><br/>';
-			$update['success'] = false;
-			return;
 		}
 
 		//Unload the core
@@ -89,16 +86,9 @@ function removeV1GroupedWorkCore(&$update){
 			$update['status'] = '<strong>Could not unload grouped_works core</strong><br/>';
 			$update['success'] = false;
 			return;
-		}
-
-		global $serverName;
-		//Remove the data files for the core
-		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
-		if (SystemUtils::recursive_rmdir("/data/aspen-discovery/$serverName/solr7/grouped_works/data")){
-			$update['status'] = 'Removed Grouped Work core<br/>';
-			$update['success'] = true;
 		}else{
-			$update['status'] = 'Could not remove data directory /data/aspen-discovery/$serverName/solr7/grouped_works/data<br/>';
+			global $serverName;
+			$update['status'] = "<strong>grouped_works core has been unloaded, delete the data using:</strong><br/>sudo rm -rf /data/aspen-discovery/$serverName/solr7/grouped_works/data";
 			$update['success'] = false;
 		}
 	}else{
