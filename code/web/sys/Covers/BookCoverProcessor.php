@@ -1519,6 +1519,12 @@ class BookCoverProcessor{
 		$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
 		if (file_exists($uploadedImage)){
 			return $this->processImageURL('upload', $uploadedImage);
+		}elseif (strlen($permanentId) == 40) {
+			$permanentId = substr($permanentId, 0, 36);
+			$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
+			if (file_exists($uploadedImage)) {
+				return $this->processImageURL('upload', $uploadedImage);
+			}
 		}
 		return false;
 	}
