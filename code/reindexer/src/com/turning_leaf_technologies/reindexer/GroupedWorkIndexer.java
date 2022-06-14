@@ -376,7 +376,9 @@ public class GroupedWorkIndexer {
 					if (getSideLoadSettingsRS.next()){
 						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex));
+							SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
+							sideLoadProcessors.put(curType, sideloadProcessor);
+							sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							getSideLoadSettings.close();

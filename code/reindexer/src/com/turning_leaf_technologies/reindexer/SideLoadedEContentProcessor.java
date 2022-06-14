@@ -226,4 +226,12 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			logger.error("Unable to load date added for " + identifier);
 		}
 	}
+
+	public SideLoadSettings getSettings() {
+		if (settings instanceof SideLoadSettings) {
+			return (SideLoadSettings)this.settings;
+		}else{
+			return null;
+		}
+	} 
 }
