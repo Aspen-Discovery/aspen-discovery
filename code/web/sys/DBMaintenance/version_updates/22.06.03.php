@@ -64,6 +64,7 @@ function removeV1GroupedWorkCore(&$update){
 	global $configArray;
 	$solrBaseUrl = $configArray['Index']['url'];
 
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
 	$systemVariables = SystemVariables::getSystemVariables();
 	if ($systemVariables->searchVersion == 2) {
 
@@ -75,8 +76,6 @@ function removeV1GroupedWorkCore(&$update){
 		);
 		$context = stream_context_create($opts);
 
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = SystemVariables::getSystemVariables();
 		if (!@file_get_contents($solrBaseUrl . '/grouped_works_v2/suggest?suggest.build=true', false, $context)) {
 			echo("Could not update suggesters for grouped_works_v2");
 			$update['status'] = '<strong>Could not update suggesters for grouped_works_v2</strong><br/>';
