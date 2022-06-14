@@ -17,7 +17,7 @@ cd /usr/local/aspen-discovery
 git pull origin $2
 
 cd /usr/local/aspen-discovery/install
-if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
+if [ -f "/usr/local/aspen-discovery/install/upgrade_debian_$2.sh" ]; then
   /usr/local/aspen-discovery/install/upgrade_debian_$2.sh
 fi
 
@@ -35,6 +35,10 @@ cd /usr/local/aspen-discovery
 git gc
 
 service cron start
+
+if [ -f "/usr/local/aspen-discovery/install/upgrade_complete_debian_$2.sh" ]; then
+  /usr/local/aspen-discovery/install/upgrade_complete_debian_$2.sh
+fi
 
 echo "Upgrade completed."
 
