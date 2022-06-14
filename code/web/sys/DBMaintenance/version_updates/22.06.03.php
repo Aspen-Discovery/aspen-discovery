@@ -70,7 +70,7 @@ function removeV1GroupedWorkCore(&$update){
 		//Update suggesters for v2
 		$opts = array('http' =>
 			array(
-				'timeout' => 1200
+				'timeout' => 60
 			)
 		);
 		$context = stream_context_create($opts);
