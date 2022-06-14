@@ -127,6 +127,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		//Remove any empty filters if we get them
 		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
 		//Also fix dynamic field names
+		$validFields = $this->loadValidFields();
 		$dynamicFields = $this->loadDynamicFields();
 		foreach ($this->filterList as $field => $filter) {
 			if ($field === '') {
@@ -168,7 +169,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 				$fieldPrefix = "{!tag=$facetKey}";
 			}else{
-				//This is likely a field we need to convert from the old schema to new schema
+				//This is either a field we need to convert from the old schema to new schema or valid field from advanced search we aren't seeing here
 				$tmpFieldName = substr($field, 0, strrpos($field, '_'));
 				if (isset($facetConfig[$tmpFieldName])) {
 					$facetInfo = $facetConfig[$tmpFieldName];
@@ -178,8 +179,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 					$multiSelect = $facetInfo->multiSelect || $facetName == 'availability_toggle';
 					$fieldPrefix = "{!tag=$facetKey}";
 				}else{
-					//Unknown field
-					continue;
+					if (in_array($field, $validFields)){
+						$facetName = $field;
+						$multiSelect = false;
+					}else{
+						//Unknown field
+						continue;
+					}
 				}
 			}
 			$fieldValue = "";

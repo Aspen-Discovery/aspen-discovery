@@ -955,7 +955,7 @@ abstract class SearchObject_BaseSearcher
 		if (isset($_REQUEST['filter'])) {
 			if (is_array($_REQUEST['filter'])) {
 				foreach ($_REQUEST['filter'] as $filter) {
-					if (!is_array($filter)) {
+					if (!empty($filter) && !is_array($filter)) {
 						$this->addFilter(strip_tags($filter));
 					}
 				}
