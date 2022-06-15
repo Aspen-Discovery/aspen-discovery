@@ -62,6 +62,7 @@ public class GroupedWorkIndexer {
 	private final boolean fullReindex;
 	private final boolean clearIndex;
 	private boolean regroupAllRecords;
+	private boolean processEmptyGroupedWorks;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
@@ -179,13 +180,16 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 				this.indexVersion = systemVariablesRS.getInt("indexVersion");
 				this.searchVersion = systemVariablesRS.getInt("searchVersion");
+				if (fullReindex) {
+					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
+				}
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -376,7 +380,9 @@ public class GroupedWorkIndexer {
 					if (getSideLoadSettingsRS.next()){
 						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex));
+							SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
+							sideLoadProcessors.put(curType, sideloadProcessor);
+							sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							getSideLoadSettings.close();
@@ -676,6 +682,14 @@ public class GroupedWorkIndexer {
 					logEntry.incErrors("Error turning off regroupAllRecords", e);
 				}
 			}
+			if (processEmptyGroupedWorks){
+				try {
+					logEntry.addNote("Turning off processEmptyGroupedWorks");
+					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0").executeUpdate();
+				} catch (Exception e) {
+					logEntry.incErrors("Error turning off processEmptyGroupedWorks", e);
+				}
+			}
 
 			updateLastReindexTime();
 		}else {
@@ -773,6 +787,27 @@ public class GroupedWorkIndexer {
 			}
 			groupedWorks.close();
 			setLastUpdatedTime.close();
+
+			if (processEmptyGroupedWorks){
+				PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				logEntry.addNote("Starting to process grouped works with no records attached to them.");
+
+				ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery();
+				int numDeleted = 0;
+				while (emptyGroupedWorksRS.next()) {
+					String permanentId = emptyGroupedWorksRS.getString("permanent_id");
+					deleteRecord(permanentId);
+					numDeleted++;
+					if (numDeleted % 10000 == 0) {
+						try {
+							updateServer.commit(false, false, true);
+						} catch (Exception e) {
+							logger.warn("Error committing changes", e);
+						}
+					}
+				}
+				logEntry.addNote("Finished processing " + numDeleted + " grouped works with no records attached to them.");
+			}
 
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
