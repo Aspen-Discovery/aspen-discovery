@@ -108,4 +108,32 @@ class BrowseCategoryGroupEntry extends DataObject
 		}
 		return $result;
 	}
+
+	public function isDismissed(): bool
+	{
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+		if (UserAccount::isLoggedIn()){
+			$browseCategory = new BrowseCategory();
+			$browseCategory->id = $this->browseCategoryId;
+			if($browseCategory->find(true)) {
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+				$browseCategoryDismissal->userId = UserAccount::getActiveUserId();
+				if($browseCategoryDismissal->find(true)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return false;
+	}
+
+	public function isValidForDisplay(): bool
+	{
+		if ($this->isDismissed()){
+			return false;
+		}
+		return true;
+	}
 }

@@ -98,19 +98,48 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function getBrowseCategories($max = null)
+	public function getBrowseCategories()
 	{
 		if (!isset($this->_browseCategories) && $this->id) {
 			$this->_browseCategories = array();
 			$browseCategory = new BrowseCategoryGroupEntry();
 			$browseCategory->browseCategoryGroupId = $this->id;
 			$browseCategory->orderBy('weight');
-			if($max) {
-				$browseCategory->limit(0, $max);
-			}
 			$browseCategory->find();
 			while ($browseCategory->fetch()) {
 				$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
+			}
+		}
+		return $this->_browseCategories;
+	}
+
+	public function getBrowseCategoriesForLiDA($max = null): array
+	{
+		if (!isset($this->_browseCategories) && $this->id) {
+			if($max) {
+				$count = 0;
+				$this->_browseCategories = array();
+				$browseCategory = new BrowseCategoryGroupEntry();
+				$browseCategory->browseCategoryGroupId = $this->id;
+				$browseCategory->orderBy('weight');
+				$browseCategory->find();
+				do {
+					if($browseCategory->isValidForDisplay()) {
+						$count++;
+						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
+					}
+				} while ($browseCategory->fetch() && $count < $max);
+			} else {
+				$this->_browseCategories = array();
+				$browseCategory = new BrowseCategoryGroupEntry();
+				$browseCategory->browseCategoryGroupId = $this->id;
+				$browseCategory->orderBy('weight');
+				$browseCategory->find();
+				while ($browseCategory->fetch()) {
+					if($browseCategory->isValidForDisplay()) {
+						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
+					}
+				}
 			}
 		}
 		return $this->_browseCategories;
