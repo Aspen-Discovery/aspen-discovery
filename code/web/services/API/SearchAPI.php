@@ -1342,6 +1342,13 @@ class SearchAPI extends Action
 		if (isset($_REQUEST['includeSubCategories'])){
 			$includeSubCategories = ($_REQUEST['includeSubCategories'] == 'true') || ($_REQUEST['includeSubCategories'] == 1);
 		}
+
+		// check if we should limit the initial return
+		$maxCategories = null;
+		if(isset($_REQUEST['maxCategories'])) {
+			$maxCategories = $_REQUEST['maxCategories'];
+		}
+
 		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -1353,10 +1360,10 @@ class SearchAPI extends Action
 		/** @var BrowseCategoryGroupEntry[] $browseCategories */
 		if ($activeLocation == null){
 			//We don't have an active location, look at the library
-			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
+			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories($maxCategories);
 		}else{
 			//We have a location get data for that
-			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
+			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories($maxCategories);
 		}
 		$formattedCategories = array();
 
