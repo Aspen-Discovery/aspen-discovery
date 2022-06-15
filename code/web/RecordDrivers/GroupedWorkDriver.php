@@ -323,7 +323,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 										} else {
 											return 1;
 										}
-									} elseif ($a->getHoldRatio() > $b->getHoldRatio()) {
+									} elseif ($a->getHoldRatio() < $b->getHoldRatio()) {
 										return -1;
 									} else {
 										return 1;
