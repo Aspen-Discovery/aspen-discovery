@@ -298,11 +298,13 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, libraryUr
 }
 
 /* ACTIONS ON HOLDS */
-export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId) {
+export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId, thawDate = null) {
 	const postBody = await postData();
 
-	const today = moment();
-	const reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	let reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	if(thawDate) {
+		reactivationDate = thawDate;
+	}
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutFast,
