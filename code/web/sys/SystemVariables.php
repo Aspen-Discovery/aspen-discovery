@@ -11,6 +11,8 @@ class SystemVariables extends DataObject
 	public $loadCoversFrom020z;
 	public $currencyCode;
 	public $runNightlyFullIndex;
+	public $regroupAllRecordsDuringNightlyIndex;
+	public $processEmptyGroupedWorks;
 	public $allowableHtmlTags;
 	public $allowHtmlInMarkdownFields;
 	public $useHtmlEditorRatherThanMarkdown;
@@ -35,6 +37,7 @@ class SystemVariables extends DataObject
 			'currencyCode' => array('property' => 'currencyCode', 'type' => 'enum', 'values' => ['USD' => 'USD', 'CAD' => 'CAD', 'EUR' => 'EUR', 'GBP' => 'GBP'], 'label' => 'Currency Code', 'description' => 'Currency code to use when formatting money', 'required' => true, 'default' => 'USD' ),
 			'runNightlyFullIndex' => array('property' => 'runNightlyFullIndex', 'type' => 'checkbox', 'label' => 'Run full index tonight', 'description' => 'Whether or not a full index should be run in the middle of the night', 'default' => false),
 			'regroupAllRecordsDuringNightlyIndex' => array('property' => 'regroupAllRecordsDuringNightlyIndex', 'type' => 'checkbox', 'label' => 'Regroup all records during nightly index', 'description' => 'Whether or not all records should be regrouped during the nightly index', 'default' => false),
+			'processEmptyGroupedWorks' => array('property' => 'processEmptyGroupedWorks', 'type' => 'checkbox', 'label' => 'Process Empty Grouped Works', 'description' => 'Whether or not grouped works with no records should be processed during the nightly index', 'default' => false),
 			'storeRecordDetailsInSolr' => array('property' => 'storeRecordDetailsInSolr', 'type' => 'checkbox', 'label' => 'Store Record Details In Solr', 'description' => 'Whether or not a record details should be stored in solr (for backwards compatibility with 21.07)', 'default' => false),
 			'storeRecordDetailsInDatabase' => array('property' => 'storeRecordDetailsInDatabase', 'type' => 'checkbox', 'label' => 'Store Record Details in Database', 'description' => 'Whether or not a record details should be stored in the database', 'default' => true),
 			'indexVersion' => array('property' => 'indexVersion', 'type' => 'enum', 'values' => [1=>'Version 1 (No edition information)', 2=>'Version 2 (Edition information)'], 'label' => 'Grouped Work Indexing Version', 'description' => 'The Solr Core Version to index with.  In 22.06 and above this should be version 2 in most cases.', 'required' => true, 'default' => 2 ),
