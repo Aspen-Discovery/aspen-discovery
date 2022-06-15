@@ -98,13 +98,16 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function getBrowseCategories()
+	public function getBrowseCategories($max = null)
 	{
 		if (!isset($this->_browseCategories) && $this->id) {
 			$this->_browseCategories = array();
 			$browseCategory = new BrowseCategoryGroupEntry();
 			$browseCategory->browseCategoryGroupId = $this->id;
 			$browseCategory->orderBy('weight');
+			if($max) {
+				$browseCategory->limit(0, $max);
+			}
 			$browseCategory->find();
 			while ($browseCategory->fetch()) {
 				$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
