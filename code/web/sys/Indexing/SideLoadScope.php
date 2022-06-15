@@ -164,6 +164,16 @@ class SideLoadScope extends DataObject
 		return $ret;
 	}
 
+	public function delete($useWhere = false)
+	{
+		$ret = parent::delete($useWhere);
+		if ($ret !== FALSE) {
+			$this->clearLocations();
+			$this->clearLocations();
+		}
+		return $ret;
+	}
+
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
 			$this->saveOneToManyOptions($this->_libraries, 'sideLoadScopeId');

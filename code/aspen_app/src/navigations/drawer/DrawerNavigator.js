@@ -19,6 +19,7 @@ function AccountDrawer() {
 				drawerHideStatusBarOnOpen: true,
 				drawerPosition: "left",
 				headerShown: false,
+				backBehavior: "none",
 				drawerStyle: {
 					backgroundColor: screenBackgroundColor,
 				},
@@ -26,16 +27,16 @@ function AccountDrawer() {
 			drawerContent={(props) => <DrawerContent {...props} />}
 		>
 			<Drawer.Screen
-				name="LoadingScreen"
-				component={LoadingScreen}
-				options={{animationEnabled: false, header: () => null}}
-			/>
-			<Drawer.Screen
 				name="Tabs"
 				component={TabNavigator}
 				screenOptions={{
 					headerShown: false
 				}}
+			/>
+			<Drawer.Screen
+				name="LoadingScreen"
+				component={LoadingScreen}
+				options={{animationEnabled: false, header: () => null}}
 			/>
 		</Drawer.Navigator>
 	)
