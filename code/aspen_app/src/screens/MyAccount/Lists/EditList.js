@@ -42,7 +42,7 @@ const EditList = (props) => {
 							<FormControl.Label>Name</FormControl.Label>
 							<Input
 								id="title"
-								placeholder={data.title}
+								value={data.title}
 								onChangeText={text => setTitle(text)}
 							/>
 						</FormControl>
@@ -50,7 +50,7 @@ const EditList = (props) => {
 							<FormControl.Label>Description</FormControl.Label>
 							<TextArea
 								id="description"
-								placeholder={data.description}
+								value={data.description}
 								onChangeText={text => setDescription(text)}
 							/>
 						</FormControl>
