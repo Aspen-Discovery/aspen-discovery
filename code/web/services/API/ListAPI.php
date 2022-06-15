@@ -789,7 +789,7 @@ class ListAPI extends Action
 					$list->description = strip_tags($_REQUEST['description']);
 				}
 				if(isset($_REQUEST['public'])) {
-					if($_REQUEST['public'] == false) {
+					if($_REQUEST['public'] === "false") {
 						$list->public = 0;
 					} else {
 						$list->public = 1;
