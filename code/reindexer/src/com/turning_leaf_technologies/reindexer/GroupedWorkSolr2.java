@@ -421,7 +421,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							addAllWithPrefix(owningLocations, scopePrefix, curItem.getLocationOwnedNames());
 						}
 						if (addAllOwningLocationsToAvailableAt){
-							addAllWithPrefix(availableAtForItem, scopePrefix, curItem.getLocationOwnedNames());
+							availableAtForItem.addAll(curItem.getLocationOwnedNames());
 						}
 
 						for (String availableAtLocation : availableAtForItem) {
@@ -562,10 +562,4 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		availabilityToggleForItem.available = availabilityToggleForItem.available || available;
 		availabilityToggleForItem.availableOnline = availabilityToggleForItem.availableOnline || availableOnline;
 	}
-
-	protected void addAvailableAt(String location, HashSet<String> availableAtForScope){
-		availableAtForScope.add(location);
-	}
-
-
 }

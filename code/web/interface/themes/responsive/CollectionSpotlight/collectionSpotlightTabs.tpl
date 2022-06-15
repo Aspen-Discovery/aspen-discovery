@@ -25,6 +25,7 @@
 			</div>
 		{/if}
 	{/if}
+	{* TODO: If showSpotlightTitle is on add the title here *}
 	{if count($collectionSpotlight->lists) > 1}
 		<div class="tab-content">
 	{/if}
