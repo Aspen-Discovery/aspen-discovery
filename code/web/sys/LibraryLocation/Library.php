@@ -1763,6 +1763,7 @@ class Library extends DataObject
 			'allowUserLists' => $this->showFavorites,
 			'showHoldButton' => $this->showHoldButton,
 			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'maxDaysToFreeze' => $this->maxDaysToFreeze,
 			'showCardExpiration' => $this->showCardExpirationDate,
 			'showCardExpirationWarnings' => $this->showExpirationWarnings,
 			'enableReadingHistory' => $this->enableReadingHistory,

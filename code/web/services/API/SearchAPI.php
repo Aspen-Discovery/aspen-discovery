@@ -1349,6 +1349,11 @@ class SearchAPI extends Action
 			$maxCategories = $_REQUEST['maxCategories'];
 		}
 
+		$isLiDARequest = false;
+		if(isset($_REQUEST['LiDARequest'])) {
+			$isLiDARequest = $_REQUEST['LiDARequest'];
+		}
+
 		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -1360,10 +1365,18 @@ class SearchAPI extends Action
 		/** @var BrowseCategoryGroupEntry[] $browseCategories */
 		if ($activeLocation == null){
 			//We don't have an active location, look at the library
-			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories($maxCategories);
+			if($isLiDARequest) {
+				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories);
+			} else {
+				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
+			}
 		}else{
 			//We have a location get data for that
-			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories($maxCategories);
+			if($isLiDARequest) {
+				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories);
+			} else {
+				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
+			}
 		}
 		$formattedCategories = array();
 

@@ -35,6 +35,8 @@ import {cancelHold, changeHoldPickUpLocation, freezeHold, thawHold} from '../../
 import {getPickupLocations} from '../../util/loadLibrary';
 import {getTranslation, getTranslations} from "../../translations/TranslationService";
 import {userContext} from "../../context/user";
+import CalendarPicker from 'react-native-calendar-picker';
+import {DisplayMessage} from "../../components/Notifications";
 
 export default class Holds extends Component {
 
@@ -67,12 +69,20 @@ export default class Holds extends Component {
 				freezeHold: "Freeze Hold",
 				thawHold: "Thaw Hold",
 				changePickUpLocation: "Change Pickup Location"
-			}
+			},
+			selectedStartDate: null,
 		};
+		this.onDateChange = this.onDateChange.bind(this);
 		//this._fetchHolds();
 		this._pickupLocations();
 		this.loadPickupLocations();
 		this.loadHolds();
+	}
+
+	onDateChange(date) {
+		this.setState({
+			selectedStartDate: date,
+		});
 	}
 
 	loadHolds = async () => {
@@ -168,6 +178,8 @@ export default class Holds extends Component {
 				userProfile={user}
 				updateProfile = {updateProfile}
 				discoveryVersion={this.state.discoveryVersion}
+				onDateChange={this.onDateChange}
+				selectedReactivationDate={this.state.selectedStartDate}
 			/>
 		);
 	}
@@ -224,7 +236,7 @@ export default class Holds extends Component {
 function HoldItem(props) {
 	let expirationDate;
 	let availableDate;
-	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations, libraryUrl, updateProfile, discoveryVersion, userProfile} = props;
+	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations, libraryUrl, updateProfile, discoveryVersion, userProfile, onDateChange, selectedReactivationDate} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 
 	const [loading, setLoading] = useState(false);
@@ -293,7 +305,7 @@ function HoldItem(props) {
 		}
 	}
 
-	console.log(allowLinkedAccountAction);
+	//console.log(allowLinkedAccountAction);
 
 	var source = data.source;
 	var holdSource = data.holdSource;
@@ -394,30 +406,32 @@ function HoldItem(props) {
 							{translations.cancelHold}
 						</Actionsheet.Item>
 						: ""}
-					{data.allowFreezeHolds === "1" && allowLinkedAccountAction ?
+					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === false ?
+						<SelectThawDate
+							onDateChange={onDateChange}
+							onClose={onClose}
+							freezeId={data.cancelId}
+							recordId={data.recordId}
+							source={data.source}
+							libraryUrl={libraryUrl}
+							userId={data.userId}
+							reactivationDate={selectedReactivationDate}
+						/> : ""
+ 					}
+					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === true ?
 						<Actionsheet.Item
-							isLoading={data.frozen === true ? thaw : freeze}
+							isLoading={thaw}
 							isLoadingText={loadingText}
 							startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1"
 							                 size="6"/>}
 							onPress={() => {
-								if (data.frozen === true) {
-									setThaw(true);
-									setLoadingText("Thawing...");
-									thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
-										updateProfile();
-										onClose(onClose);
-										setThaw(false);
-									});
-								} else {
-									setFreeze(true);
-									setLoadingText("Freezing...");
-									freezeHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
-										updateProfile();
-										onClose(onClose);
-										setFreeze(false);
-									});
-								}
+								setThaw(true);
+								setLoadingText("Thawing...");
+								thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+									updateProfile();
+									onClose(onClose);
+									setThaw(false);
+								});
 							}}
 						>
 							{label}
@@ -436,6 +450,71 @@ function HoldItem(props) {
 	)
 }
 
+const SelectThawDate = (props) => {
+	const {onDateChange, onClose, freezeId, recordId, source, libraryUrl, userId, reactivationDate} = props;
+	const minDate = new Date(); // Today
+	const maxDate = new Date(2017, 6, 3);
+	const [freeze, setFreeze] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [showModal, setShowModal] = useState(false);
+	//YYYY-MM-DD
+
+	let selectedReactivationDate = moment(reactivationDate).format('YYYY-MM-DD');
+	if(selectedReactivationDate === "Invalid date") {
+		selectedReactivationDate = null;
+	}
+
+	return (
+	<>
+		<Actionsheet.Item startIcon={<Icon as={MaterialIcons} name="pause" color="trueGray.400" mr="1" size="6"/>}
+		                  onPress={() => {
+			                  setShowModal(true);
+		                  }}>
+			Freeze Hold
+		</Actionsheet.Item>
+		<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="full">
+			<Modal.Content>
+				<Modal.CloseButton/>
+				<Modal.Header>Freeze Hold</Modal.Header>
+				<Modal.Body>
+					<Text>Select the date when you want the hold thawed.</Text>
+					<Box mt={3} mb={3}>
+						<CalendarPicker
+							onDateChange={onDateChange}
+							minDate={minDate}
+							previousTitle={<Icon as={MaterialIcons} name="chevron-left" color="trueGray.400" size="6"/>}
+							nextTitle={<Icon as={MaterialIcons} name="chevron-right" color="trueGray.400" size="6"/>}
+						/>
+					</Box>
+					<DisplayMessage type="info" message="If a date is not selected, the hold will be frozen for 30 days." />
+				</Modal.Body>
+				<Modal.Footer>
+					<Button.Group space={2} size="md">
+						<Button colorScheme="muted" variant="outline"
+						        onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
+						<Button
+							isLoading={loading}
+							isLoadingText="Freezing..."
+							onPress={() => {
+								setLoading(true);
+								freezeHold(freezeId, recordId, source, libraryUrl, userId, selectedReactivationDate).then(r => {
+										setShowModal(false);
+										onClose(onClose);
+										setLoading(false);
+									}
+								);
+							}}
+						>
+							Freeze Hold
+						</Button>
+					</Button.Group>
+				</Modal.Footer>
+			</Modal.Content>
+		</Modal>
+	</>
+	)
+}
+
 const SelectPickupLocation = (props) => {
 
 	const {locations, label, onClose, currentPickupId, holdId, libraryUrl, userId} = props;
@@ -447,8 +526,8 @@ const SelectPickupLocation = (props) => {
 	// 									const locationId = item.locationId;
 	// 									const code = item.code;
 	// 									const id = locationId.concat("_", code);
-	console.log("Current pickup: " + currentPickupId);
-	console.log(locations);
+	//console.log("Current pickup: " + currentPickupId);
+	//console.log(locations);
 
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
