@@ -180,6 +180,10 @@ class EBSCOhostSearchSetting extends DataObject
 				}else{
 					$newDatabase->searchByDefault = false;
 				}
+				if (in_array($shortName, ['a9h', 'bth', 'f6h', 'cmedm', 'imh'])){
+					$newDatabase->showInExploreMore = true;
+					$newDatabase->showInCombinedResults = true;
+				}
 				$newDatabase->insert();
 			}
 		}
