@@ -32,7 +32,7 @@
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
 								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}"{if $subProperty.readOnly} readonly{/if}>
 								{elseif $subProperty.type=='date'}
 									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.required == true} required{/if}">
 								{elseif $subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression'}
@@ -101,7 +101,9 @@
 		</table>
 	</div>
 	<div class="{$propName}Actions">
-		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
+		{if $property.canAddNew !== false}
+			<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
+		{/if}
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right" style="padding-top: 0">
 				{foreach from=$property.additionalOneToManyActions item=action}

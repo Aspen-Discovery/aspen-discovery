@@ -7,6 +7,7 @@ require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
 class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	static $instance;
 
+	private $ebscohostSearchSettings;
 	/** @var EBSCOhostSetting */
 	private $ebscohostSettings;
 	private $ebscohostBaseUrl = 'https://eit.ebscohost.com/Services/SearchService.asmx';
@@ -23,8 +24,8 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	protected $limit = 20;
 
 	// Sorting
-	protected $sort = 'date';
-	protected $defaultSort = 'date';
+	protected $sort = 'relevance';
+	protected $defaultSort = 'relevance';
 
 	// STATS
 	protected $resultsTotal = 0;
@@ -44,6 +45,16 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		$this->searchType = 'ebscohost';
 		$this->resultsModule = 'EBSCOhost';
 		$this->resultsAction = 'Results';
+
+		global $library;
+		if ($library->ebscohostSearchSettingId > 0){
+			$searchSettings = new EBSCOhostSearchSetting();
+			$searchSettings->id = $library->ebscohostSearchSettingId;
+			if (!$searchSettings->find(true)){
+				$searchSettings = null;
+			}
+			$this->ebscohostSearchSettings = $searchSettings;
+		}
 	}
 
 	/**
@@ -106,13 +117,22 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	private function getSettings() : ?EBSCOhostSetting{
 		global $library;
 		if ($this->ebscohostSettings == null){
-			$this->ebscohostSettings = new EBSCOhostSetting();
-			$this->ebscohostSettings->id = $library->ebscohostSettingId;
-			if (!$this->ebscohostSettings->find(true)){
-				$this->ebscohostSettings = null;
+			require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSearchSetting.php';
+			$searchSettings = new EBSCOhostSearchSetting();
+			$searchSettings->id = $library->ebscohostSearchSettingId;
+			if ($searchSettings->find(true)) {
+				$this->ebscohostSettings = new EBSCOhostSetting();
+				$this->ebscohostSettings->id = $searchSettings->settingId;
+				if (!$this->ebscohostSettings->find(true)) {
+					$this->ebscohostSettings = null;
+				}
 			}
 		}
 		return $this->ebscohostSettings;
+	}
+
+	public function setSettings($ebscohostSettings){
+		$this->ebscohostSettings = $ebscohostSettings;
 	}
 
 	public function getCurlConnection(){
@@ -287,14 +307,19 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 	public function getSearchOptions() : ?SimpleXMLElement{
 		if (SearchObject_EbscohostSearcher::$searchOptions == null){
-			$curlConnection = $this->getCurlConnection();
-			$infoUrl = $this->ebscohostBaseUrl . "/Info?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}";
-			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
-			$searchOptionsStr = curl_exec($curlConnection);
+			$settings = $this->getSettings();
+			if ($settings != null) {
+				$curlConnection = $this->getCurlConnection();
+				$infoUrl = $this->ebscohostBaseUrl . "/Info?prof={$settings->profileId}&pwd={$settings->profilePwd}";
+				curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
+				$searchOptionsStr = curl_exec($curlConnection);
 
-			SearchObject_EbscohostSearcher::$searchOptions = simplexml_load_string($searchOptionsStr);
-			if (SearchObject_EbscohostSearcher::$searchOptions){
-				return SearchObject_EbscohostSearcher::$searchOptions;
+				SearchObject_EbscohostSearcher::$searchOptions = simplexml_load_string($searchOptionsStr);
+				if (SearchObject_EbscohostSearcher::$searchOptions) {
+					return SearchObject_EbscohostSearcher::$searchOptions;
+				} else {
+					return null;
+				}
 			}else{
 				return null;
 			}
@@ -305,11 +330,11 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 	public function getSearchIndexes(){
 		global $memCache;
-
-		if ($this->getSettings() == null){
+		$settings = $this->getSettings();
+		if ($settings == null){
 			return [];
 		}else {
-			$searchIndexes = $memCache->get('ebscohost_search_indexes_' . $this->getSettings()->profileId);
+			$searchIndexes = $memCache->get('ebscohost_search_indexes_' . $settings->profileId);
 			if ($searchIndexes === false) {
 				$searchOptions = $this->getSearchOptions();
 				$searchIndexes = array();
@@ -319,7 +344,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 //					}
 //				}
 				global $configArray;
-				$memCache->set('ebsco_eds_search_indexes_' . $this->getSettings()->profileId, $searchIndexes, $configArray['Caching']['ebsco_options']);
+				$memCache->set('ebsco_eds_search_indexes_' . $settings->profileId, $searchIndexes, $configArray['Caching']['ebsco_options']);
 			}
 
 			return $searchIndexes;
@@ -344,42 +369,50 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	}
 
 	public function getSortOptions() {
-		$appliedDatabase = $this->getAppliedDatabase();
+		$appliedDatabases = $this->getAppliedDatabases();
 		$searchOptions = $this->getSearchOptions();
+		if ($searchOptions == null){
+			return [];
+		}
 		$sortOptions = array();
-		if ($appliedDatabase == null){
+		if (empty($appliedDatabases)){
 			$isFirstDb = true;
-			//Get the sort options that apply to all databases
+			//Get the sort options that apply to all default databases
+			if (!empty($this->ebscohostSearchSettings)){
+				$defaultDatabases = $this->ebscohostSearchSettings->getDefaultSearchDatabases();
+			}else{
+				$defaultDatabases = [];
+			}
+
 			foreach ($searchOptions->dbInfo->db as $db){
-				if ($isFirstDb) {
-					//For the first DB add all options.
-					foreach ($db->sortOptions->sort as $sortOption){
-						$id = (string)$sortOption->attributes()['id'];
-						$name = (string)$sortOption->attributes()['name'];
-						$sortOptions[$id] = $name;
-					}
-					$isFirstDb = false;
-				}else{
-					//For the rest, remove any sort options that are not found.
-					$sortOptionsForThisDB = [];
-					foreach ($db->sortOptions->sort as $sortOption) {
-						$id = (string)$sortOption->attributes()['id'];
-						$sortOptionsForThisDB[$id] = $id;
-					}
-					foreach ($sortOptions as $id => $name){
-						if (!in_array($id, $sortOptionsForThisDB)){
-							unset($sortOptions[$id]);
+				$shortName = (string)$db->attributes()['shortName'];
+				if (empty($defaultDatabases) || in_array($shortName, $defaultDatabases)) {
+					if ($isFirstDb) {
+						//For the first DB add all options.
+						foreach ($db->sortOptions->sort as $sortOption) {
+							$id = (string)$sortOption->attributes()['id'];
+							$name = (string)$sortOption->attributes()['name'];
+							$sortOptions[$id] = $name;
+						}
+						$isFirstDb = false;
+					} else {
+						//For the rest, remove any sort options that are not found.
+						$sortOptionsForThisDB = [];
+						foreach ($db->sortOptions->sort as $sortOption) {
+							$id = (string)$sortOption->attributes()['id'];
+							$sortOptionsForThisDB[$id] = $id;
+						}
+						foreach ($sortOptions as $id => $name) {
+							if (!in_array($id, $sortOptionsForThisDB)) {
+								unset($sortOptions[$id]);
+							}
 						}
 					}
 				}
 			}
-			if (count($sortOptions) == 0){
-				$sortOptions['date'] = 'Date';
-				$sortOptions['relevance'] = 'Relevancy';
-			}
 		}else{
 			foreach ($searchOptions->dbInfo->db as $db){
-				if ($db->attributes()['shortName'] == $appliedDatabase){
+				if (in_array($db->attributes()['shortName'], $appliedDatabases)){
 					foreach ($db->sortOptions->sort as $sortOption){
 						$id = (string)$sortOption->attributes()['id'];
 						$name = (string)$sortOption->attributes()['name'];
@@ -416,47 +449,55 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	public function getFacetSet() {
 		$searchOptions = $this->getSearchOptions();
 
-		$selectedDatabase = '';
+		$selectedDatabases = [];
 		foreach ($this->filterList as $field=>$value){
 			if ($field == 'db'){
 				if (is_array($value)){
-					$selectedDatabase = reset($value);
+					$selectedDatabases = $value;
 				}else{
-					$selectedDatabase = $value;
+					$selectedDatabases = [$value];
 				}
 			}
 		}
 		$availableFacets = array();
 		$availableFacets['db'] = [
-			'multiSelect' => false,
-			'showAsDropDown' => true,
+			'multiSelect' => true,
+			'showAsDropDown' => false,
+			'valuesToShow' => 5,
+			'showMoreFacetPopup' => true,
 			'label' => 'Source',
 			'defaultValue' => translate(['text'=>'All Databases', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'hasSelectedOption' => $selectedDatabase != '',
+			'hasSelectedOption' => empty($selectedDatabases),
+			'displayNamePlural' => translate(['text'=>'Sources', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 			'list' => []
 		];
 		if ($searchOptions != null) {
-			//When we change database, we need to clear all other filters.
-			$appliedFilters = $this->filterList;
-			$this->filterList = [];
+			//Handle databases a little differently
 			foreach ($searchOptions->dbInfo->db as $dbInfo) {
 				$shortName = (string)$dbInfo->attributes()['shortName'];
 				$longName = (string)$dbInfo->attributes()['longName'];
-				$isApplied = $shortName == $selectedDatabase;
+				$isApplied = array_key_exists('db', $this->filterList) && in_array($shortName, $this->filterList['db']);
 				$availableFacets['db']['list'][$shortName] = array(
 					'type' => 'db',
 					'value' => $shortName,
 					'display' => $longName,
 					'url' => $this->renderLinkWithFilter('db', $shortName),
+					'removalUrl' => $this->renderLinkWithoutFilter("db:$shortName"),
 					'isApplied' => $isApplied,
 				);
 			}
-			$this->filterList = $appliedFilters;
 			if (!empty($this->lastSearchResults->Statistics)) {
 				foreach ($this->lastSearchResults->Statistics->Statistic as $statistic) {
 					$availableFacets['db']['list'][(string)$statistic->Database]['count'] = (int)$statistic->Hits;
 					if ($statistic->Hits == 0) {
 						unset($availableFacets['db']['list'][(string)$statistic->Database]);
+					}
+				}
+			}
+			if (!empty($this->ebscohostSearchSettings)){
+				foreach ($this->ebscohostSearchSettings->getDatabases() as $database){
+					if (!$database->allowSearching){
+						unset($availableFacets['db']['list'][$database->shortName]);
 					}
 				}
 			}
@@ -481,6 +522,15 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			};
 			uasort($availableFacets['db']['list'], $sorter);
 
+			$sortedList = array();
+			foreach ($availableFacets['db']['list'] as $key => $value) {
+				$sortedList[strtolower($value['display'])] = $value;
+			}
+			ksort($sortedList);
+			$availableFacets['db']['sortedList'] = $sortedList;
+
+			$availableFacets['db']['list'] = array_slice($availableFacets['db']['list'], 0, 6);
+
 			if (!empty($this->lastSearchResults->Facets)) {
 				if (!empty($this->lastSearchResults->Facets->Clusters)) {
 					foreach ($this->lastSearchResults->Facets->Clusters->ClusterCategory as $facetCluster) {
@@ -501,6 +551,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 								'value' => $facetValue,
 								'display' => $facetValue,
 								'url' => $this->renderLinkWithFilter($tag, $facetValue),
+								'removalUrl' => $this->renderLinkWithoutFilter("$tag:$facetValue"),
 								'isApplied' => $isApplied,
 							);
 						}
@@ -541,21 +592,26 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	}
 
 	public function retrieveRecord($dbId, $an) {
-		$curlConnection = $this->getCurlConnection();
-		curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
-		$infoUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=full";
-		$infoUrl .= "&query=$an&db=$dbId";
-		curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
-		$recordInfoStr = curl_exec($curlConnection);
-		if ($recordInfoStr == false){
-			return null;
-		}else{
-			$recordData = simplexml_load_string($recordInfoStr);
-			if ($recordData->Hits > 0) {
-				return reset($recordData->SearchResults->records);
-			}else{
+		$settings = $this->getSettings();
+		if ($settings != null) {
+			$curlConnection = $this->getCurlConnection();
+			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
+			$infoUrl = $this->ebscohostBaseUrl . "/Search?prof={$settings->profileId}&pwd={$settings->profilePwd}&format=full";
+			$infoUrl .= "&query=$an&db=$dbId";
+			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
+			$recordInfoStr = curl_exec($curlConnection);
+			if ($recordInfoStr == false) {
 				return null;
+			} else {
+				$recordData = simplexml_load_string($recordInfoStr);
+				if ($recordData->Hits > 0) {
+					return reset($recordData->SearchResults->records);
+				} else {
+					return null;
+				}
 			}
+		}else{
+			return null;
 		}
 	}
 
@@ -572,98 +628,135 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
 	{
-		$this->startQueryTimer();
-		$hasSearchTerm = false;
-		$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=detailed";
-		if (is_array($this->searchTerms)){
-			$searchUrl .= '&query=';
-			$termIndex = 1;
-			foreach ($this->searchTerms as $term){
-				if (!empty($term)) {
-					if ($termIndex > 1) $searchUrl .= ' AND ';
-					$searchUrl .= urlencode($term['lookfor']);
-					$termIndex++;
-					$hasSearchTerm = true;
+		$settings = $this->getSettings();
+		if ($settings == null){
+			return new AspenError("EBSCOhost searching is not configured for this library.");
+		}else {
+			$this->startQueryTimer();
+			$hasSearchTerm = false;
+			$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=detailed";
+			if (is_array($this->searchTerms)) {
+				$searchUrl .= '&query=';
+				$termIndex = 1;
+				foreach ($this->searchTerms as $term) {
+					if (!empty($term)) {
+						if ($termIndex > 1) $searchUrl .= ' AND ';
+						$searchUrl .= urlencode($term['lookfor']);
+						$termIndex++;
+						$hasSearchTerm = true;
+					}
+				}
+			} else {
+				if (isset($_REQUEST['searchIndex'])) {
+					$this->searchIndex = $_REQUEST['searchIndex'];
+				}
+				$searchUrl .= '&query=' . urlencode($this->searchTerms);
+			}
+			if (!$hasSearchTerm) {
+				return new AspenError('Please specify a search term');
+			}
+
+			if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) && $_REQUEST['page'] != 1) {
+				$this->page = $_REQUEST['page'];
+				$searchUrl .= '&startrec=' . (($this->page - 1) * $this->limit + 1);
+			} else {
+				$this->page = 1;
+			}
+			$searchUrl .= '&numrec=' . $this->limit;
+
+			$hasAppliedDatabase = false;
+			foreach ($this->filterList as $field => $filter) {
+				if ($field == 'db') {
+					$hasAppliedDatabase = true;
+				}
+				if (is_array($filter)) {
+					foreach ($filter as $fieldIndex => $fieldValue) {
+						$searchUrl .= "&$field=" . urlencode($fieldValue);
+					}
+				} else {
+					$searchUrl .= "&$field=" . urlencode($filter);
 				}
 			}
-		}else{
-			if (isset($_REQUEST['searchIndex'])) {
-				$this->searchIndex = $_REQUEST['searchIndex'];
-			}
-			$searchUrl .= '&query=' . urlencode($this->searchTerms);
-		}
-		if (!$hasSearchTerm){
-			return new AspenError('Please specify a search term');
-		}
 
-		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) && $_REQUEST['page'] != 1){
-			$this->page = $_REQUEST['page'];
-			$searchUrl .= '&startrec=' . (($this->page -1) * $this->limit + 1);
-		}else{
-			$this->page = 1;
-		}
-		$searchUrl .= '&numrec=' . $this->limit;
-
-		$hasAppliedDatabase = false;
-		foreach ($this->filterList as $field => $filter) {
-			if ($field == 'db'){
-				$hasAppliedDatabase = true;
-			}
-			if (is_array($filter)) {
-				foreach($filter as $fieldIndex => $fieldValue) {
-					$searchUrl .= "&$field=" . urlencode($fieldValue);
+			if (!$hasAppliedDatabase) {
+				//Apply all databases to the search (by default)
+				if ($this->ebscohostSearchSettings != null){
+					$defaultSearchDatabases = $this->ebscohostSearchSettings->getDefaultSearchDatabases();
+					foreach ($defaultSearchDatabases as $defaultDB) {
+						$searchUrl .= '&db=' . $defaultDB;
+					}
+				}else {
+					$searchOptions = $this->getSearchOptions();
+					/** @var SimpleXMLElement $dbInfo */
+					foreach ($searchOptions->dbInfo->db as $dbInfo) {
+						$searchUrl .= '&db=' . $dbInfo->attributes()['shortName'];
+					}
 				}
-			}else{
-				$searchUrl .= "&$field=" . urlencode($filter);
 			}
-		}
 
-		if (!$hasAppliedDatabase){
-			//Apply all databases to the search (by default)
-			$searchOptions = $this->getSearchOptions();
-			/** @var SimpleXMLElement $dbInfo */
-			foreach ($searchOptions->dbInfo->db as $dbInfo){
-				$searchUrl .= '&db=' . $dbInfo->attributes()['shortName'];
-			}
-		}
+			$searchUrl .= '&sort=' . $this->sort;
+			$searchUrl .= '&clusters=true';
 
-		$searchUrl .= '&sort=' . $this->sort;
-		$searchUrl .= '&clusters=true';
+			$curlConnection = $this->getCurlConnection();
+			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
 
-		$curlConnection = $this->getCurlConnection();
-		curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
+			curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
+				'Content-Type: application/json',
+				'Accept: application/json',
+			));
+			curl_setopt($curlConnection, CURLOPT_URL, $searchUrl);
+			$result = curl_exec($curlConnection);
+			try {
+				$searchData = simplexml_load_string($result);
+				if ($searchData->Message) {
+					return new AspenError("Error processing search in EBSCOhost: " . (string)$searchData->Message);
+				}
+				$this->stopQueryTimer();
+				if ($searchData && empty($searchData->ErrorNumber)) {
+					$this->resultsTotal = (int)$searchData->Hits;
+					$this->lastSearchResults = $searchData;
 
-		curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
-			'Content-Type: application/json',
-			'Accept: application/json',
-		));
-		curl_setopt($curlConnection, CURLOPT_URL, $searchUrl);
-		$result = curl_exec($curlConnection);
-		try {
-			$searchData = simplexml_load_string($result);
-			if ($searchData->Message){
-				return new AspenError("Error processing search in EBSCOhost: ". (string)$searchData->Message );
-			}
-			$this->stopQueryTimer();
-			if ($searchData && empty($searchData->ErrorNumber)){
-				$this->resultsTotal = (int)$searchData->Hits;
-				$this->lastSearchResults = $searchData;
+					return $searchData->SearchResults->records;
+				} else {
+					global $logger;
+					if (IPAddress::showDebuggingInformation()) {
+						$curlInfo = curl_getinfo($curlConnection);
+						$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
+					}
+					$this->lastSearchResults = false;
 
-				return $searchData->SearchResults->records;
-			}else{
+				}
+			} catch (Exception $e) {
 				global $logger;
-				if (IPAddress::showDebuggingInformation()) {
-					$curlInfo = curl_getinfo($curlConnection);
-					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
-				}
-				$this->lastSearchResults = false;
-
+				$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
+				return new AspenError("Error loading data from EBSCO $e");
 			}
-		}catch (Exception $e){
-			global $logger;
-			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
-			return new AspenError("Error loading data from EBSCO $e");
 		}
+	}
+
+	public function getDatabases(){
+		$databases = [];
+		$searchOptions = $this->getSearchOptions();
+		/** @var SimpleXMLElement $dbInfo */
+		foreach ($searchOptions->dbInfo->db as $dbInfo){
+			$shortName = (string)$dbInfo->attributes()['shortName'];
+			$databases[$shortName] = [];
+			foreach ($dbInfo->attributes() as $attributeName => $attributeValue){
+				$databases[$shortName][(string)$attributeName] = (string)$attributeValue;
+			}
+			$hasRelevancySort = false;
+			$hasDateSort = false;
+			foreach ($dbInfo->sortOptions->sort as $sortOptions){
+				if ($sortOptions->attributes()['id'] == 'relevance'){
+					$hasRelevancySort = true;
+				}elseif ($sortOptions->attributes()['id'] == 'date'){
+					$hasDateSort = true;
+				}
+			}
+			$databases[$shortName]['hasRelevancySort'] = $hasRelevancySort;
+			$databases[$shortName]['hasDateSort'] = $hasDateSort;
+		}
+		return $databases;
 	}
 
 	public function getIndexError()
@@ -797,14 +890,14 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $records;
 	}
 
-	public function getAppliedDatabase(){
+	public function getAppliedDatabases(){
 		$appliedDatabase = null;
 		if (isset($this->filterList['db'])) {
 			$filter = $this->filterList['db'];
 			if (is_array($filter)) {
-				$appliedDatabase = reset($filter);
-			}else{
 				$appliedDatabase = $filter;
+			}else{
+				$appliedDatabase = [$filter];
 			}
 		}
 		return $appliedDatabase;

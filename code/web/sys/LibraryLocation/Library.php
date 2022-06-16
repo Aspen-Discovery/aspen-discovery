@@ -254,7 +254,7 @@ class Library extends DataObject
 
 	//EBSCO Settings
 	public $edsSettingsId;
-	public $ebscohostSettingId;
+	public $ebscohostSearchSettingId;
 
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
@@ -288,7 +288,7 @@ class Library extends DataObject
 
 	public function getNumericColumnNames() : array {
 		return [
-			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId', 'ebscohostSettingId'
+			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId', 'ebscohostSearchSettingId'
 		];
 	}
 
@@ -910,7 +910,7 @@ class Library extends DataObject
 
 			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library EDS Options'], 'properties' => array(
 				'edsSettingsId' => array('property' => 'edsSettingsId', 'type'=>'enum', 'values'=>$edsSettings, 'label' => 'EDS Settings', 'description'=>'The EDS Settings to use for connection', 'hideInLists' => true, 'default' => -1),
-				'ebscohostSettingId' => array('property' => 'ebscohostSettingId', 'type'=>'enum', 'values'=>$ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description'=>'The EBSCOhost Settings to use for connection', 'hideInLists' => true, 'default' => -1),
+				'ebscohostSearchSettingId' => array('property' => 'ebscohostSearchSettingId', 'type'=>'enum', 'values'=>$ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description'=>'The EBSCOhost SEarch Settings to use for connection', 'hideInLists' => true, 'default' => -1),
 			)),
 
 			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection'], 'properties' => array(

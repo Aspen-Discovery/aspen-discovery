@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSearchSetting.php';
 /**
  * Class EBSCOhostSetting - Store settings for EBSCOhost
  */
@@ -15,10 +15,12 @@ class EBSCOhostSetting extends DataObject
 
 	private $_libraries;
 	private $_locations;
+	private $_searchSettings;
 
 	static function getObjectStructure() : array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
+		$ebscoHostSearchSettingStructure = EBSCOhostSearchSetting::getObjectStructure();
 
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
@@ -27,65 +29,45 @@ class EBSCOhostSetting extends DataObject
 			'profileId' => array('property' => 'profileId', 'type' => 'text', 'label' => 'Profile Id', 'description' => 'The profile used for authentication. Required if using profile authentication.', 'hideInLists' => true),
 			'profilePwd' => array('property' => 'profilePwd', 'type' => 'text', 'label' => 'Profile Password', 'description' => 'The password used for profile authentication. Required if using profile authentication.', 'hideInLists' => true),
 			'ipProfileId' => array('property' => 'ipProfileId', 'type' => 'text', 'label' => 'IP Profile Id', 'description' => 'The IP profile used for authenication. Required if using IP authentication.', 'hideInLists' => true),
-			'libraries' => array(
-				'property' => 'libraries',
-				'type' => 'multiSelect',
-				'listStyle' => 'checkboxSimple',
-				'label' => 'Libraries',
-				'description' => 'Define libraries that use this setting',
-				'values' => $libraryList
-			),
-
-			'locations' => array(
-				'property' => 'locations',
-				'type' => 'multiSelect',
-				'listStyle' => 'checkboxSimple',
-				'label' => 'Locations',
-				'description' => 'Define locations that use this setting',
-				'values' => $locationList
+			'searchSettings' => array(
+				'property' => 'searchSettings',
+				'type' => 'oneToMany',
+				'label' => 'Search Settings',
+				'description' => 'Settings for Searching',
+				'keyThis' => 'id',
+				'keyOther' => 'settingId',
+				'subObjectType' => 'EBSCOhostSearchSetting',
+				'structure' => $ebscoHostSearchSettingStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => true
 			),
 		);
-
-		if (!UserAccount::userHasPermission('Library eCommerce Options')){
-			unset($structure['libraries']);
-		}
 
 		return $structure;
 	}
 
 	public function __get($name){
-		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new Library();
-				$obj->ebscohostSettingId = $this->id;
+		if ($name == "searchSettings") {
+			if (!isset($this->_searchSettings) && $this->id){
+				$this->_searchSettings = [];
+				$obj = new EBSCOhostSearchSetting();
+				$obj->settingId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+					$this->_searchSettings[$obj->id] = clone($obj);
 				}
 			}
-			return $this->_libraries;
-		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
-				$this->_locations = [];
-				$obj = new Location();
-				$obj->ebscohostSettingId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->_searchSettings;
 		} else {
 			return $this->_data[$name];
 		}
 	}
 
 	public function __set($name, $value){
-		if ($name == "libraries") {
-			$this->_libraries = $value;
-		}elseif ($name == "locations") {
-			$this->_locations = $value;
+		if ($name == "searchSettings") {
+			$this->_searchSettings = $value;
 		}else {
 			$this->_data[$name] = $value;
 		}
@@ -95,8 +77,7 @@ class EBSCOhostSetting extends DataObject
 	{
 		$ret = parent::update();
 		if ($ret !== FALSE) {
-			$this->saveLibraries();
-			$this->saveLocations();
+			$this->saveSearchSettings();
 		}
 		return true;
 	}
@@ -105,71 +86,34 @@ class EBSCOhostSetting extends DataObject
 	{
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
-			$this->saveLibraries();
-			$this->saveLocations();
+			$this->saveSearchSettings();
+			//Create a default search settings
+			$searchSettings = new EBSCOhostSearchSetting();
+			$searchSettings->settingId = $this->id;
+			$searchSettings->name = 'default';
+			$searchSettings->insert();
 		}
 		return $ret;
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName){
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
-					//We want to apply the scope to this library
-					if ($library->ebscohostSettingId != $this->id){
-						$library->ebscohostSettingId = $this->id;
-						$library->update();
-					}
-				}else{
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->ebscohostSettingId == $this->id){
-						$library->ebscohostSettingId = -1;
-						$library->update();
-					}
-				}
-			}
-			unset($this->_libraries);
+	public function saveSearchSettings(){
+		if (isset ($this->_searchSettings) && is_array($this->_searchSettings)){
+			$this->saveOneToManyOptions($this->_searchSettings, 'settingId');
+			unset($this->_searchSettings);
 		}
 	}
 
-	public function saveLocations(){
-		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
-			/**
-			 * @var int $locationId
-			 * @var Location $location
-			 */
-			foreach ($locationList as $locationId => $displayName){
-				$location = new Location();
-				$location->locationId = $locationId;
-				$location->find(true);
-				if (in_array($locationId, $this->_locations)){
-					//We want to apply the scope to this library
-					if ($location->ebscohostSettingId != $this->id){
-						$location->ebscohostSettingId = $this->id;
-						$location->update();
-					}
-				}else{
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->ebscohostSettingId == $this->id){
-						$library = new Library();
-						$library->libraryId = $location->libraryId;
-						$library->find(true);
-						if ($library->ebscohostSettingId != -1){
-							$location->ebscohostSettingId = -1;
-						}else{
-							$location->ebscohostSettingId = -2;
-						}
-						$location->update();
-					}
-				}
-			}
-			unset($this->_locations);
+	public function delete($useWhere = false)
+	{
+		$ret = parent::delete($useWhere);
+		if ($ret) {
+			$this->clearSearchSettings();
 		}
+		return $ret;
 	}
 
+	public function clearSearchSettings(){
+		$this->clearOneToManyOptions('EBSCOhostSearchSetting', 'settingsId');
+		$this->_searchSettings = array();
+	}
 }
