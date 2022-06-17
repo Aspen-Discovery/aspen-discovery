@@ -560,30 +560,6 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			}
 		}
 
-//		$limitList = [];
-//		foreach ($availableFacets['db']['list'] as $limit => $limitOption){
-//			$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
-//
-//			$limitList[$limit] = [
-//				'url' => $this->renderLinkWithLimiter($limit),
-//				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
-//				'display' => $limitOption['display'],
-//				'value' => $limit,
-//				'isApplied' => $limitIsApplied,
-//			];
-//		}
-//
-//		if (!empty($this->lastSearchResults)){
-//			if (!empty($this->lastSearchResults->Statistics)) {
-//				foreach ($this->lastSearchResults->Statistics->Statistic as $statistic) {
-//					$limitList[(string)$statistic->Database]['count'] = (int)$statistic->Hits;
-//					if ($statistic->Hits == 0) {
-//						unset($limitList[(string)$statistic->Database]);
-//					}
-//				}
-//			}
-//		}
-
 		return $availableFacets;
 	}
 
@@ -652,6 +628,17 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 				}
 				$searchUrl .= '&query=' . urlencode($this->searchTerms);
 			}
+			foreach ($this->filterList as $field => $filter) {
+				if ($field != 'db') {
+					if (is_array($filter)){
+						foreach ($filter as $filterValue){
+							$searchUrl .= "%20AND%20$field%20" . urlencode($filterValue);
+						}
+					}else{
+						$searchUrl .= "%20AND%20$field%20" . urlencode($filter);
+					}
+				}
+			}
 			if (!$hasSearchTerm) {
 				return new AspenError('Please specify a search term');
 			}
@@ -668,13 +655,13 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			foreach ($this->filterList as $field => $filter) {
 				if ($field == 'db') {
 					$hasAppliedDatabase = true;
-				}
-				if (is_array($filter)) {
-					foreach ($filter as $fieldIndex => $fieldValue) {
-						$searchUrl .= "&$field=" . urlencode($fieldValue);
+					if (is_array($filter)) {
+						foreach ($filter as $fieldIndex => $fieldValue) {
+							$searchUrl .= "&$field=" . urlencode($fieldValue);
+						}
+					} else {
+						$searchUrl .= "&$field=" . urlencode($filter);
 					}
-				} else {
-					$searchUrl .= "&$field=" . urlencode($filter);
 				}
 			}
 
