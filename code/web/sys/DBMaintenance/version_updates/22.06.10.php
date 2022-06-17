@@ -10,6 +10,13 @@ function getUpdates22_06_10() : array
 				''
 			]
 		], //sample*/
+		'increase_course_reserves_source_length' => [
+			'title' => 'Increase Course Reserves Source Length',
+			'description' => 'Allow sourceId to be longer for course reserves entries',
+			'sql' => [
+				'ALTER TABLE course_reserve_entry CHANGE sourceId sourceId VARCHAR(40) COLLATE utf8mb4_general_ci DEFAULT NULL',
+			]
+		], //increase_course_reserves_source_length
 		'ebscohost_search_settings' => [
 			'title' => 'EBSCOhost search settings',
 			'description' => 'Add configuration of database searching for EBSCOhost',
