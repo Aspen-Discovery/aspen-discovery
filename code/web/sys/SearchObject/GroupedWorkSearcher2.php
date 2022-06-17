@@ -278,11 +278,13 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$selectedFormatValues[] = '*';
 		}
 		$allEditionFilters = [];
-		$editionFiltersFormat = [];
-		$editionFiltersFormatCategory = [];
-		$editionFiltersFormatAvailability = [];
-		$editionFiltersFormatAvailableAt = [];
+//		$editionFiltersFormat = [];
+//		$editionFiltersFormatCategory = [];
+//		$editionFiltersFormatAvailability = [];
+//		$editionFiltersFormatAvailableAt = [];
 		foreach ($selectedAvailableAtValues as $selectedAvailableAtValue){
+			$selectedAvailableAtValue = str_replace('(', '\(', $selectedAvailableAtValue);
+			$selectedAvailableAtValue = str_replace(')', '\)', $selectedAvailableAtValue);
 			foreach ($selectedFormatCategoryValues as $selectedFormatCategoryValue){
 				foreach ($selectedFormatValues as $selectedFormatValue){
 //					if ($selectedFormatValue != '*'){

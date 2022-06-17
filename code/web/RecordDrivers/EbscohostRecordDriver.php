@@ -128,6 +128,9 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
+		$interface->assign('summPublishers', $this->getPublishers());
+		$interface->assign('summPublicationDates', $this->getPublicationDates());
+		$interface->assign('summPublicationPlaces', $this->getPublicationPlaces());
 
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
@@ -371,15 +374,10 @@ class EbscohostRecordDriver extends RecordInterface
 			if ($controlInfo != null){
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
 				if ($artInfo != null){
-					$tig = $this->getChildByTagName($artInfo, 'aug');
-					if ($tig != null){
-						$atl = $this->getChildByTagName($tig, 'au');
-						return (string)$atl;
+					$ougenre = $this->getChildByTagName($artInfo, 'ougenre');
+					if ($ougenre != null){
+						return (string)$ougenre;
 					}
-				}
-				$illusInfo = $this->getChildByTagName($controlInfo, 'illusinfo');
-				if ($illusInfo != null){
-					return $illusInfo->attributes()['type'];
 				}
 			}
 		}
@@ -413,13 +411,19 @@ class EbscohostRecordDriver extends RecordInterface
 			if ($controlInfo != null){
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
 				if ($artInfo != null){
-					$ougenre = $this->getChildByTagName($artInfo, 'ougenre');
-					if ($ougenre != null){
-						return (string)$ougenre;
+					$tig = $this->getChildByTagName($artInfo, 'aug');
+					if ($tig != null){
+						$atl = $this->getChildByTagName($tig, 'au');
+						return (string)$atl;
 					}
+				}
+				$illusInfo = $this->getChildByTagName($controlInfo, 'illusinfo');
+				if ($illusInfo != null){
+					return $illusInfo->attributes()['type'];
 				}
 			}
 		}
+
 		return "";
 	}
 
@@ -521,5 +525,61 @@ class EbscohostRecordDriver extends RecordInterface
 				return $citation->getMLA();
 		}
 		return '';
+	}
+
+	private function getPublishers()
+	{
+		$publishers = array();
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
+				if ($pubInfo != null){
+					$publisher = $this->getChildByTagName($pubInfo, 'pub');
+					if ($publisher != null){
+						$publishers[] = (string)$publisher;
+					}
+				}
+			}
+		}
+		return $publishers;
+	}
+
+	private function getPublicationPlaces()
+	{
+		$publicationPlaces = array();
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
+				if ($pubInfo != null){
+					$place = $this->getChildByTagName($pubInfo, 'place');
+					if ($place != null){
+						$publicationPlaces[] = (string)$place;
+					}
+				}
+			}
+		}
+		return $publicationPlaces;
+	}
+	private function getPublicationDates()
+	{
+		$publicationDates = array();
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
+				if ($pubInfo != null){
+					$dt = $this->getChildByTagName($pubInfo, 'dt');
+					if ($dt != null){
+						$publicationDates[] = $dt->attributes()['day'] . '/' . $dt->attributes()['month'] . '/' . $dt->attributes()['year'];
+					}
+				}
+			}
+		}
+		return $publicationDates;
 	}
 }
