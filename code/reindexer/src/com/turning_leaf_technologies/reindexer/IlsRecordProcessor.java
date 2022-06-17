@@ -1705,10 +1705,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				translatedAudiences.add(treatUnknownAudienceAs);
 			}
 			if (translatedAudiences.size() == 0){
-				translatedAudiences.add("Other");
+				//We didn't get anything from the items (including Unknown), check the bib record
+				super.loadTargetAudiences(groupedWork, record, printItems, identifier, treatUnknownAudienceAs);
+			}else {
+				groupedWork.addTargetAudiences(translatedAudiences);
+				groupedWork.addTargetAudiencesFull(translatedAudiences);
 			}
-			groupedWork.addTargetAudiences(translatedAudiences);
-			groupedWork.addTargetAudiencesFull(translatedAudiences);
 		}
 	}
 
