@@ -172,7 +172,7 @@ class CollectionSpotlightList extends BaseBrowsable
 		return $this->_collectionSpotlight;
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/CollectionSpotlightLists?objectAction=edit&id=' . $this->id;
 	}
 }

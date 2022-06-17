@@ -23,7 +23,7 @@ class LibraryFacetSetting extends FacetSetting {
 		return $structure;
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/LibraryFacetSettings?objectAction=edit&id=' . $this->id;
 	}
 

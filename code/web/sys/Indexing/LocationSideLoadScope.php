@@ -36,7 +36,7 @@ class LocationSideLoadScope extends DataObject
 		);
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/SideLoads/Scopes?objectAction=edit&id=' . $this->sideLoadScopeId;
 	}
 }

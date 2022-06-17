@@ -12,7 +12,9 @@
 						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
-				<th>{translate text="Actions" isAdminFacing=true}</th>
+				{if $property.canDelete !== false || ($property.editLink neq '' || $property.canEdit)}
+					<th>{translate text="Actions" isAdminFacing=true}</th>
+				{/if}
 			</tr>
 			</thead>
 			<tbody>
@@ -84,11 +86,13 @@
 						{/if}
 						{* link to delete*}
 						<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
-						{* link to delete *}
-						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
-							{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-							<i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}
-						</a>
+						{if $property.canDelete !== false}
+							{* link to delete *}
+							<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+								{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
+								<i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}
+							</a>
+                        {/if}
 						{if $property.editLink neq '' || method_exists($subObject, 'getEditLink')}</div>{/if}
 					</td>
 				</tr>

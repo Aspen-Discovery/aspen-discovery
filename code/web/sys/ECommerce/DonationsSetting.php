@@ -397,7 +397,7 @@ class DonationsSetting extends DataObject
 		$this->donationFormFields = array();
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/DonationsSettings?objectAction=edit&id=' . $this->id;
 	}
 }

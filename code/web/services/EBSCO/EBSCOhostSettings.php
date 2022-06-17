@@ -74,7 +74,7 @@ class EBSCO_EBSCOhostSettings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebscohost', 'EBSCOhost');
-		$breadcrumbs[] = new Breadcrumb('/EBSCO/EBSCOhost Settings', 'EBSCOhost Settings');
+		$breadcrumbs[] = new Breadcrumb('/EBSCO/EBSCOhostSettings', 'EBSCOhost Settings');
 		return $breadcrumbs;
 	}
 
@@ -86,5 +86,19 @@ class EBSCO_EBSCOhostSettings extends ObjectEditor
 	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer EBSCOhost Settings');
+	}
+
+	function viewIndividualObject($structure){
+		//Update the list of databases when the user edits
+		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+		if (!empty($id) && $id > 0){
+			/** @var EBSCOhostSetting $curObject */
+			$curObject = $this->getExistingObjectById($id);
+			$searchSettings = $curObject->getSearchSettings();
+			foreach ($searchSettings as $searchSetting){
+				$searchSetting->updateDatabasesFromEBSCOhost();
+			}
+		}
+		parent::viewIndividualObject($structure);
 	}
 }
