@@ -466,6 +466,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			'valuesToShow' => 5,
 			'showMoreFacetPopup' => true,
 			'label' => 'Source',
+			'field_name' => 'db',
 			'defaultValue' => translate(['text'=>'All Databases', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 			'hasSelectedOption' => empty($selectedDatabases),
 			'displayNamePlural' => translate(['text'=>'Sources', 'isPublicFacing'=>true, 'inAttribute'=>true]),
@@ -536,11 +537,25 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					foreach ($this->lastSearchResults->Facets->Clusters->ClusterCategory as $facetCluster) {
 						$id = (string)$facetCluster->attributes()['ID'];
 						$tag = (string)$facetCluster->attributes()['Tag'];
+						require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostFacet.php';
+						$ebscohostFacet = new EBSCOhostFacet();
+						$ebscohostFacet->shortName = $tag;
+						if (!$ebscohostFacet->find(true)){
+							//Add this to the database so we can display the name later
+
+							$displayName = preg_replace('~([a-z])([A-Z])~', '\\1 \\2', $id);
+							$ebscohostFacet->displayName = $displayName;
+							$ebscohostFacet->insert();
+						}else{
+							$displayName = $ebscohostFacet->displayName;
+						}
+
+
 						$availableFacets[$tag] = [
 							'multiSelect' => false,
 							'valuesToShow' => 5,
 							'collapseByDefault' => false,
-							'label' => $id,
+							'label' => $displayName,
 							'list' => []
 						];
 						foreach ($facetCluster->Cluster as $clusterData){
@@ -632,10 +647,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 				if ($field != 'db') {
 					if (is_array($filter)){
 						foreach ($filter as $filterValue){
-							$searchUrl .= "%20AND%20$field%20" . urlencode($filterValue);
+							$searchUrl .= "%20AND%20$field%20\"" . urlencode('"' . $filterValue . '"');
 						}
 					}else{
-						$searchUrl .= "%20AND%20$field%20" . urlencode($filter);
+						$searchUrl .= "%20AND%20$field%20" . urlencode('"' . $filter . '"') ;
 					}
 				}
 			}
@@ -888,5 +903,42 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			}
 		}
 		return $appliedDatabase;
+	}
+
+	public function getFilterList()
+	{
+		$list = array();
+		// Loop through all the current filter fields
+		foreach ($this->filterList as $field => $values) {
+			if ($field == 'db'){
+				$databases = $this->getDatabases();
+				$facetLabel = 'Source';
+			}else{
+				require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostFacet.php';
+				$ebscohostFacet = new EBSCOhostFacet();
+				$ebscohostFacet->shortName = $field;
+				if ($ebscohostFacet->find(true)){
+					$facetLabel = $ebscohostFacet->displayName;
+				}else{
+					$facetLabel = $field;
+				}
+			}
+			$list[$facetLabel] = [];
+			foreach ($values as $value) {
+				if ($field == 'db'){
+					$displayValue = $databases[$value]['longName'];
+				}else{
+					$displayValue = $value;
+				}
+				$list[$facetLabel][] = array(
+					'value' => $value,     // raw value for use with Solr
+					'display' => $displayValue,   // version to display to user
+					'field' => $field,
+					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value"),
+					'countIsApproximate' => false
+				);
+			}
+		}
+		return $list;
 	}
 }

@@ -321,8 +321,8 @@ abstract class SearchObject_BaseSearcher
 				}
 			}
 
+			$facetLabel = $this->getFacetLabel($field);
 			foreach ($values as $value) {
-				$facetLabel = $this->getFacetLabel($field);
 				if ($field == 'available_at' && $value == '*') {
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
