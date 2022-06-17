@@ -262,7 +262,8 @@ class EBSCOhostSearchSetting extends DataObject
 	}
 
 	public function getEditLink(){
-		return '/Ebsco/EBSCOhostSearchSettings?objectAction=edit&id=' . $this->id;
+		return '/EBSCO/EBSCOhostSearchSettings?objectAction=edit&id=' . $this->id;
+		
 	}
 
 	public function getDefaultSearchDatabases()
