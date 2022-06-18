@@ -181,7 +181,7 @@ class EBSCOhostSearchSetting extends DataObject
 				}else{
 					$newDatabase->searchByDefault = false;
 				}
-				if (in_array($shortName, ['a9h', 'bth', 'f6h', 'cmedm', 'imh'])){
+				if (in_array($shortName, ['a9h', 'bth', 'f6h', 'cmedm', 'imh', 'aph', 'buh'])){
 					$newDatabase->showInExploreMore = true;
 					$newDatabase->showInCombinedResults = true;
 				}

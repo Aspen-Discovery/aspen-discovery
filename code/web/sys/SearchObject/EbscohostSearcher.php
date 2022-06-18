@@ -111,6 +111,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return SearchObject_EbscohostSearcher::$instance;
 	}
 
+	public function getSearchSettings() : ?EBSCOhostSearchSetting{
+		return $this->ebscohostSearchSettings;
+	}
+
 	/**
 	 * @return EBSCOhostSetting|null
 	 */

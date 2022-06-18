@@ -11,7 +11,7 @@
 		<script type="text/javascript">
 			$(document).ready(
 				function () {ldelim}
-					AspenDiscovery.Searches.loadExploreMoreBar('ebsco_eds', '{$exploreMoreSearchTerm|escape:"html"}');
+					AspenDiscovery.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
 				{rdelim}
 			);
 		</script>
