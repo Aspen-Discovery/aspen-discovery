@@ -103,7 +103,7 @@ class EBSCOhost_Results extends ResultsAction {
 		}
 		$exploreMore = new ExploreMore();
 		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
-		$interface->assign('exploreMoreSection', 'ebsco_eds');
+		$interface->assign('exploreMoreSection', 'ebscohost');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 

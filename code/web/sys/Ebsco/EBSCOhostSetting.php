@@ -13,13 +13,9 @@ class EBSCOhostSetting extends DataObject
 	public $profilePwd;
 	public $ipProfileId;
 
-	private $_libraries;
-	private $_locations;
 	private $_searchSettings;
 
 	static function getObjectStructure() : array {
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 		$ebscoHostSearchSettingStructure = EBSCOhostSearchSetting::getObjectStructure();
 
 		$structure = array(
@@ -50,19 +46,26 @@ class EBSCOhostSetting extends DataObject
 
 	public function __get($name){
 		if ($name == "searchSettings") {
-			if (!isset($this->_searchSettings) && $this->id){
-				$this->_searchSettings = [];
-				$obj = new EBSCOhostSearchSetting();
-				$obj->settingId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_searchSettings[$obj->id] = clone($obj);
-				}
-			}
-			return $this->_searchSettings;
+			return $this->getSearchSettings();
 		} else {
 			return $this->_data[$name];
 		}
+	}
+
+	/**
+	 * @return EBSCOhostSearchSetting[]
+	 */
+	public function getSearchSettings() : array{
+		if (!isset($this->_searchSettings) && $this->id){
+			$this->_searchSettings = [];
+			$obj = new EBSCOhostSearchSetting();
+			$obj->settingId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_searchSettings[$obj->id] = clone($obj);
+			}
+		}
+		return $this->_searchSettings;
 	}
 
 	public function __set($name, $value){

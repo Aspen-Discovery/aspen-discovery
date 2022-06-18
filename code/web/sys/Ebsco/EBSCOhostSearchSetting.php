@@ -18,7 +18,7 @@ class EBSCOhostSearchSetting extends DataObject
 		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostDatabase.php';
 		$databaseSearchStructure = EBSCOhostDatabase::getObjectStructure();
 
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for these settings', 'required' => true),
 			'databases' => [
@@ -35,6 +35,7 @@ class EBSCOhostSearchSetting extends DataObject
 				'allowEdit' => true,
 				'canEdit' => false,
 				'canAddNew' => false,
+				'canDelete' => false
 			],
 
 			'libraries' => array(
@@ -55,8 +56,6 @@ class EBSCOhostSearchSetting extends DataObject
 				'values' => $locationList
 			),
 		);
-
-		return $structure;
 	}
 
 	public function __get($name){
@@ -120,6 +119,9 @@ class EBSCOhostSearchSetting extends DataObject
 		}
 	}
 
+	/**
+	 * @return int|bool
+	 */
 	public function update()
 	{
 		$ret = parent::update();
@@ -128,7 +130,7 @@ class EBSCOhostSearchSetting extends DataObject
 			$this->saveLocations();
 			$this->saveDatabases();
 		}
-		return true;
+		return $ret;
 	}
 
 	public function insert()
@@ -144,7 +146,6 @@ class EBSCOhostSearchSetting extends DataObject
 	}
 
 	public function updateDatabasesFromEBSCOhost(){
-		/** @var EBSCOhostDatabase[] $currentDatabases */
 		$currentDatabases = $this->getDatabases();
 		/** @var SearchObject_EbscohostSearcher $ebscohostSearch */
 		$ebscohostSearch = SearchObjectFactory::initSearchObject('Ebscohost');
@@ -156,7 +157,7 @@ class EBSCOhostSearchSetting extends DataObject
 		}
 
 		$databaseList = $ebscohostSearch->getDatabases();
-		//Get a list of all databases that exist so far so we can check for things that have been removed.
+		//Get a list of all databases that exist to check for things that have been removed.
 		$removedDatabases = [];
 		foreach ($currentDatabases as $currentDatabase){
 			$removedDatabases[$currentDatabase->shortName] = $currentDatabase;
@@ -180,7 +181,7 @@ class EBSCOhostSearchSetting extends DataObject
 				}else{
 					$newDatabase->searchByDefault = false;
 				}
-				if (in_array($shortName, ['a9h', 'bth', 'f6h', 'cmedm', 'imh'])){
+				if (in_array($shortName, ['a9h', 'bth', 'f6h', 'cmedm', 'imh', 'aph', 'buh'])){
 					$newDatabase->showInExploreMore = true;
 					$newDatabase->showInCombinedResults = true;
 				}
@@ -188,7 +189,7 @@ class EBSCOhostSearchSetting extends DataObject
 			}
 		}
 
-		foreach ($removedDatabases as $id => $databaseInfo){
+		foreach ($removedDatabases as $databaseInfo){
 			$databaseInfo->delete();
 		}
 	}
@@ -261,16 +262,18 @@ class EBSCOhostSearchSetting extends DataObject
 		}
 	}
 
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/EBSCO/EBSCOhostSearchSettings?objectAction=edit&id=' . $this->id;
 		
 	}
 
-	public function getDefaultSearchDatabases()
+	/**
+	 * @return string[]
+	 */
+	public function getDefaultSearchDatabases() : array
 	{
 		$allDatabases = $this->getDatabases();
 		$defaultSearchDatabases = [];
-		/** @var EBSCOhostDatabase[] $allDatabases */
 		foreach ($allDatabases as $dbInfo){
 			if ($dbInfo->searchByDefault){
 				$defaultSearchDatabases[$dbInfo->shortName] = $dbInfo->shortName;

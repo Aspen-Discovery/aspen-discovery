@@ -41,6 +41,18 @@ function getUpdates22_06_10() : array
 				'ALTER TABLE location ADD COLUMN ebscohostSearchSettingId INT(11) DEFAULT -2',
 			]
 		], //ebscohost_search_settings
+		'ebscohost_facets' => [
+			'title' => 'EBSCOhost facets',
+			'description' => 'Store EBSCOhost facet names',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE ebscohost_facet (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					shortName VARCHAR(50) NOT NULL UNIQUE,
+					displayName VARCHAR(100) NOT NULL
+				) ENGINE INNODB',
+			]
+		], //ebscohost_facets
 		//TODO: Upgrade existing settings to use new search settings
 	];
 }

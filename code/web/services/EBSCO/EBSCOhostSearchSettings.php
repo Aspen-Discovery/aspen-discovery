@@ -75,7 +75,7 @@ class EBSCO_EBSCOhostSearchSettings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebscohost', 'EBSCOhost');
-		$breadcrumbs[] = new Breadcrumb('/EBSCO/EBSCOhost Search Settings', 'EBSCOhost Search Settings');
+		$breadcrumbs[] = new Breadcrumb('/EBSCO/EBSCOhostSearchSettings', 'EBSCOhost Search Settings');
 		return $breadcrumbs;
 	}
 

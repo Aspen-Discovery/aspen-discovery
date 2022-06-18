@@ -125,7 +125,7 @@ class TranslationMap extends DataObject{
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/ILS/TranslationMaps?objectAction=edit&id=' . $this->id;
 	}
 

@@ -1575,7 +1575,7 @@ class Library extends DataObject
 		return $this->_layoutSettings;
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
 

@@ -626,7 +626,9 @@ class User extends DataObject
 		return false;
 	}
 
-
+	/**
+	 * @return int|bool
+	 */
 	function update(){
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');

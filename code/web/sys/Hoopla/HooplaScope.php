@@ -89,7 +89,7 @@ class HooplaScope extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/Hoopla/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
