@@ -359,6 +359,9 @@ public class GroupedWorkIndexer {
 						case "Evergreen":
 							ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Evolve":
+							ilsRecordProcessors.put(curType, new EvolveRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
 						case "Folio":
 							ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;

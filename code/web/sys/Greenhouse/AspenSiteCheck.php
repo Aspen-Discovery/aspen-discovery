@@ -30,7 +30,7 @@ class AspenSiteCheck extends DataObject
 		$checkType = str_replace(' ', '_', strtolower($this->checkName));
 		if ($checkType == 'overdrive'){
 			return $site->baseUrl . "/OverDrive/IndexingLog";
-		}elseif ($checkType == 'koha' || $checkType == 'carl.x' || $checkType == 'symphony' || $checkType == 'sierra' || $checkType == 'polaris' || $checkType == 'evergreen'){
+		}elseif ($checkType == 'koha' || $checkType == 'carl.x' || $checkType == 'symphony' || $checkType == 'sierra' || $checkType == 'polaris' || $checkType == 'evergreen' || $checkType == 'evolve'){
 			return $site->baseUrl . "/ILS/IndexingLog";
 		}elseif ($checkType == 'axis_360'){
 			return $site->baseUrl . "/Axis360/IndexingLog";

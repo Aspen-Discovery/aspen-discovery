@@ -36,7 +36,7 @@ class AspenSite extends DataObject
 	public static $_siteTypes = [0 => 'Library Partner', 1 => 'Library Partner Test', 2 => 'Demo', 3 => 'Test'];
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
 	public static $_appAccess = [0 => 'None', 1 => 'LiDA Only', 2 => 'Whitelabel Only', 3 => 'LiDA + Whitelabel'];
-	public static $_validIls = [0 => 'Not Set', 1 => 'Koha', 2 => 'CARL.X', 3 => 'Evergreen', 4 => 'Millennium', 5=>'Polaris',6 => 'Sierra', 7 => 'Symphony'];
+	public static $_validIls = [0 => 'Not Set', 1 => 'Koha', 2 => 'CARL.X', 3 => 'Evergreen', 8=>'Evolve', 4 => 'Millennium', 5=>'Polaris',6 => 'Sierra', 7 => 'Symphony'];
 	public static $_contactFrequency = [0 => 'Weekly', 1 => 'Bi-Monthly', 2=>'Monthly', 3=> 'Quarterly', 4 => 'Every 6 Months', 5=>'Yearly'];
 	public static $_timezones = [0=> 'Unknown', 10 => 'Eastern', 12 => 'Central', 14=>'Mountain', 16=> 'Arizona', 18 => 'Pacific'];
 

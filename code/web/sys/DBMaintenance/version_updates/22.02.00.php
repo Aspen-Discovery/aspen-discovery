@@ -13,6 +13,7 @@ function getUpdates22_02_00() : array
 		'aspen_lida_settings' => [
 			'title' => 'Add settings for library branded Aspen LiDA',
 			'description' => 'Add settings for library branded Aspen LiDA',
+			'continueOnError' => true,
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS aspen_lida_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
