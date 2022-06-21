@@ -6,8 +6,9 @@ When selecting an installer, select an installer that includes PHP 7.3 (we will 
 We recommend the following tools for Aspen development due to their ease of use and ability to debug code easily. 
 - [PhpStorm](https://www.jetbrains.com/phpstorm/)
 - [IntelliJ Idea Community](https://www.jetbrains.com/idea/)
-PhpStorm does have a small subscription fee, but we find it to be very worthwhile. 
-  
+
+_PhpStorm does have a small subscription fee, but we find it to be very worthwhile._ 
+
 Once you have setup your LAMP/WAMP stack and your development tools, you can proceed to:
 - [Installing Aspen on Linux or Mac OSX](/Admin/HelpManual?page=Installing-Aspen-Linux)
 - [Installing Aspen on Windows](/Admin/HelpManual?page=Installing-Aspen-Windows)

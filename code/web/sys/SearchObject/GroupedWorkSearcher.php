@@ -870,6 +870,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 						'count' => 0,
 						'isApplied' => false,
 						'url' => null,
+						'countIsApproximate' => false
 					);
 			}
 			if (!$foundBranch && $doBranchProcessing && !empty($activeLocationFacet)) {
@@ -880,6 +881,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 						'count' => 0,
 						'isApplied' => false,
 						'url' => null,
+						'countIsApproximate' => false
 					);
 				$numValidRelatedLocations++;
 			}

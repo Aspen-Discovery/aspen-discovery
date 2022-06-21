@@ -356,6 +356,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
+				$currentSettings['countIsApproximate'] = false;
 
 
 				// Is this field a current filter?
