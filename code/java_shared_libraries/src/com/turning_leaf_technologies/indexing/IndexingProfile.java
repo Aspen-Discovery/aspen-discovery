@@ -19,8 +19,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char iCode2Subfield;
 	private char lastYearCheckoutsSubfield;
 	private char barcodeSubfield;
-	private String itemTag;
-	private int itemTagInt;
+	private String itemTag ;
 	private char itemRecordNumberSubfield;
 	private String lastCheckinFormat;
 	private SimpleDateFormat lastCheckinFormatter;
@@ -30,7 +29,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char lastCheckinDateSubfield;
 	private char locationSubfield;
 	private char itemStatusSubfield;
-	private boolean treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	private char iTypeSubfield;
 	private char collectionSubfield;
 	private char shelvingLocationSubfield;
@@ -75,7 +73,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setLastCheckinFormat(indexingProfileRS.getString("lastCheckinFormat"));
 		this.setLocationSubfield(getCharFromRecordSet(indexingProfileRS,"location"));
 		this.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
-		this.setTreatLibraryUseOnlyGroupedStatusesAsAvailable(indexingProfileRS.getBoolean("treatLibraryUseOnlyGroupedStatusesAsAvailable"));
 		this.setDueDateSubfield(getCharFromRecordSet(indexingProfileRS,"dueDate"));
 		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
 		this.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
@@ -138,8 +135,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 		this.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
-
-		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -205,13 +200,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return itemTag;
 	}
 
-	public int getItemTagInt() {
-		return itemTagInt;
-	}
-
 	public void setItemTag(String itemTag) {
 		this.itemTag = itemTag;
-		this.itemTagInt = Integer.parseInt(itemTag);
 	}
 
 	public void setId(Long id) {
@@ -236,7 +226,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setRecordNumberTag(String recordNumberTag) {
 		this.recordNumberTag = recordNumberTag;
-		this.recordNumberTagInt = Integer.parseInt(recordNumberTag);
 	}
 
 	public char getItemRecordNumberSubfield() {
@@ -599,13 +588,5 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public String getFallbackFormatField() {
 		return fallbackFormatField;
-	}
-
-	public void setTreatLibraryUseOnlyGroupedStatusesAsAvailable(boolean treatLibraryUseOnlyGroupedStatusesAsAvailable) {
-		this.treatLibraryUseOnlyGroupedStatusesAsAvailable = treatLibraryUseOnlyGroupedStatusesAsAvailable;
-	}
-
-	public boolean getTreatLibraryUseOnlyGroupedStatusesAsAvailable() {
-		return treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	}
 }

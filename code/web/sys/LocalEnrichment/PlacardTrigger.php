@@ -17,9 +17,4 @@ class PlacardTrigger extends DataObject
 			'exactMatch' => ['property' => 'exactMatch', 'type' => 'checkbox', 'label' => 'Exact Match', 'description', 'Select if the search term mus be matched exactly (case insensitive)', 'default' => 0]
 		];
 	}
-
-	public function getUniquenessFields(): array
-	{
-		return ['placardId', 'triggerWord'];
-	}
 }

@@ -79,16 +79,14 @@ class AccountProfile extends DataObject {
 	}
 
 	function insert(){
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);
 		return parent::insert();
 	}
-
-	/**
-	 * @return int|bool
-	 */
 	function update(){
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);

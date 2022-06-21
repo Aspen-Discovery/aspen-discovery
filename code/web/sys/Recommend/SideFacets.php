@@ -13,7 +13,6 @@ class SideFacets implements RecommendationInterface
 	private $searchObject;
 	private $facetSettings;
 	private $mainFacets;
-	private $facets = [];
 
 	/* Constructor
 	 *
@@ -36,7 +35,6 @@ class SideFacets implements RecommendationInterface
 		foreach ($this->facetSettings as $facetName => $facet){
 			if (!$facet->showAboveResults) {
 				$this->mainFacets[$facetName] = $facet->displayName;
-				$this->facets[$facet->facetName] = $facet;
 			}
 		}
 	}
@@ -66,7 +64,6 @@ class SideFacets implements RecommendationInterface
 	 */
 	public function process() {
 		global $interface;
-		global $library;
 
 		//Get applied facets
 		$filterList = $this->searchObject->getFilterList();
@@ -80,6 +77,7 @@ class SideFacets implements RecommendationInterface
 		//Process the side facet set to handle the Added In Last facet which we only want to be
 		//visible if there is not a value selected for the facet (makes it single select
 		$sideFacets = $this->searchObject->getFacetList($this->mainFacets);
+		$searchLibrary = Library::getSearchLibrary();
 
 		$lockSection = $this->searchObject->getSearchName();
 		if (UserAccount::isLoggedIn()){
@@ -90,12 +88,8 @@ class SideFacets implements RecommendationInterface
 		}
 		$lockedFacets = isset($lockedFacets[$lockSection]) ? $lockedFacets[$lockSection] : [];
 
-		//Figure out which counts to show.
-		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
-		$interface->assign('facetCountsToShow', $facetCountsToShow);
-
 		//Do additional processing of facets
-		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
+		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
 			foreach ($sideFacets as $facetKey => $facet) {
 				/** @var FacetSetting $facetSetting */
 				$facetSetting = $this->facetSettings[$facetKey];
@@ -107,6 +101,52 @@ class SideFacets implements RecommendationInterface
 				} elseif ($facetKey == 'rating_facet') {
 					$userRatingFacet       = $this->updateUserRatingsFacet($facet);
 					$sideFacets[$facetKey] = $userRatingFacet;
+				} elseif ($facetKey == 'available_at') {
+					//Mangle the availability facets
+					$oldFacetValues = $sideFacets['available_at']['list'];
+					ksort($oldFacetValues);
+
+					$filters = $this->searchObject->getFilterList();
+					//print_r($filters);
+					$appliedAvailability = array();
+					foreach ($filters as $appliedFilters) {
+						foreach ($appliedFilters as $filter) {
+							if ($filter['field'] == 'available_at') {
+								$appliedAvailability[$filter['value']] = $filter['removalUrl'];
+							}
+						}
+					}
+
+					$availableAtFacets = array();
+					foreach ($oldFacetValues as $facetKey2 => $facetInfo) {
+						if (strlen($facetKey2) > 1) {
+							$sortIndicator = substr($facetKey2, 0, 1);
+							if ($sortIndicator >= '1' && $sortIndicator <= '4') {
+								$availableAtFacets[$facetKey2] = $facetInfo;
+							}
+						}
+					}
+
+					$includeAnyLocationFacet = $this->searchObject->getFacetSetting("Availability", "includeAnyLocationFacet");
+					$includeAnyLocationFacet = ($includeAnyLocationFacet == '' || $includeAnyLocationFacet == 'true');
+					if ($searchLibrary) {
+						$includeAnyLocationFacet = $searchLibrary->showAvailableAtAnyLocation;
+					}
+					//print_r ("includeAnyLocationFacet = $includeAnyLocationFacet");
+					if ($includeAnyLocationFacet) {
+						$anyLocationLabel = $this->searchObject->getFacetSetting("Availability", "anyLocationLabel");
+						//print_r ("anyLocationLabel = $anyLocationLabel");
+						$availableAtFacets['*'] = array(
+							'value' => '*',
+							'display' => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
+							'count' => $this->searchObject->getResultTotal() - (isset($oldFacetValues['']['count']) ? $oldFacetValues['']['count'] : 0),
+							'url' => $this->searchObject->renderLinkWithFilter('available_at', '*'),
+							'isApplied' => array_key_exists('*', $appliedAvailability),
+							'removalUrl' => array_key_exists('*', $appliedAvailability) ? $appliedAvailability['*'] : null
+						);
+					}
+
+					$sideFacets['available_at']['list'] = $availableAtFacets;
 				} else {
 					$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
 				}

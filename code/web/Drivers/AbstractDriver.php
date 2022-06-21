@@ -94,9 +94,8 @@ abstract class AbstractDriver
 	 * @param User $patron The User to cancel the hold for
 	 * @param string $recordId The id of the bib record
 	 * @param string $cancelId Information about the hold to be cancelled
-	 * @param boolean $isIll If the hold is an ILL hold
 	 * @return  array
 	 */
-	abstract function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false);
+	abstract function cancelHold(User $patron, $recordId, $cancelId = null);
 
 }

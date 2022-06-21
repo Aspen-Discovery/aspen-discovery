@@ -46,8 +46,8 @@ class ExploreMore {
 				$exactEntityMatches = $this->loadExactEntityMatches(array(), $curSubject);
 				if (count($exactEntityMatches) > 0){
 					$exploreMoreSectionsToShow['exactEntityMatches'] = array(
-						'format' => 'list',
-						'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
+							'format' => 'list',
+							'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
 					);
 				}
 			}
@@ -55,7 +55,7 @@ class ExploreMore {
 		}
 
 		//Always load ebsco even if we are already in that section
-		$ebscoMatches = $this->loadEbscoEDSOptions('', array(), $searchTerm);
+		$ebscoMatches = $this->loadEbscoOptions('', array(), $searchTerm);
 		if (count($ebscoMatches) > 0){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
@@ -64,10 +64,10 @@ class ExploreMore {
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedCatalogContent);
 			if ($relatedWorks['numFound'] > 0){
 				$exploreMoreSectionsToShow['relatedCatalog'] = array(
-					'format' => 'scrollerWithLink',
-					'values' => $relatedWorks['values'],
-					'link' => $relatedWorks['link'],
-					'numFound' => $relatedWorks['numFound'],
+						'format' => 'scrollerWithLink',
+						'values' => $relatedWorks['values'],
+						'link' => $relatedWorks['link'],
+						'numFound' => $relatedWorks['numFound'],
 				);
 			}
 		}
@@ -89,8 +89,8 @@ class ExploreMore {
 						if (strpos($filter, ':') !== false){
 							$filterVals = explode(':', $filter, 2);
 							if ($filterVals[0] != 'mods_genre_s' &&
-								$filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' &&
-								$filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full'
+									$filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' &&
+									$filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full'
 							) {
 								$searchTerm = str_replace('"', '', $filterVals[1]);
 								break;
@@ -121,11 +121,7 @@ class ExploreMore {
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$exploreMoreOptions = $this->loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm);
-		}
-
-		if (array_key_exists('EBSCOhost', $enabledModules)) {
-			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
 		if (array_key_exists('Events', $enabledModules)) {
@@ -198,8 +194,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Web pages (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Web pages related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+							'label' => "Web pages ($numCatalogResults)",
+							'description' => "Web pages ($numCatalogResults)",
 							//TODO: provide a better icon
 							'image' => '/images/webpage.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -253,8 +249,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Events (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Events related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+							'label' => "Events ($numCatalogResults)",
+							'description' => "Events ($numCatalogResults)",
 							'image' => '/interface/themes/responsive/images/events.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
@@ -308,8 +304,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Lists (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Lists related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+							'label' => "Lists ($numCatalogResults)",
+							'description' => "Lists ($numCatalogResults)",
 							//TODO: provide a better icon
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -369,8 +365,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Archive Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Archives related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+							'label' => "Archive Results ($numCatalogResults)",
+							'description' => "Archive Results ($numCatalogResults)",
 							//TODO: Provide a better title
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
@@ -412,13 +408,13 @@ class ExploreMore {
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['catalog'] = [];
-				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObjectSolr */
+				/** @var SearchObject_GroupedWorkSearcher $searchObjectSolr */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
-				$searchObjectSolr->disableSpelling();
+                $searchObjectSolr->disableSpelling();
 				$searchObjectSolr->setSearchTerms(array(
-					'lookfor' => $searchTerm,
-					'index' => 'Keyword'
+						'lookfor' => $searchTerm,
+						'index' => 'Keyword'
 				));
 				$searchObjectSolr->clearHiddenFilters();
 				$searchObjectSolr->clearFilters();
@@ -460,8 +456,8 @@ class ExploreMore {
 						if ($numCatalogResultsAdded == $this->numEntriesToAdd && $numCatalogResults > ($this->numEntriesToAdd + 1)) {
 							//Add a link to remaining catalog results
 							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => translate(['text'=>"Catalog Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-								'description' => translate(['text'=>"All Results in Catalog related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+								'label' => "Catalog Results ($numCatalogResults)",
+								'description' => "Catalog Results ($numCatalogResults)",
 								'image' => '/interface/themes/responsive/images/library_symbol.png',
 								'link' => $searchObjectSolr->renderSearchUrl(),
 								'usageCount' => 1,
@@ -487,79 +483,13 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	public function loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm) {
-		global $library;
-		global $enabledModules;
-		if (!empty($searchTerm) && array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSearchSettingId != -1 && $activeSection != 'ebscohost') {
-			//Get a list of databases to sort through
-
-			//Load EDS options
-			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
-			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-
-			//Get a list of databases to check
-			$searchSettings = $ebscohostSearcher->getSearchSettings();
-			if ($searchSettings != null) {
-				$databases = $searchSettings->getDatabases();
-				$hasMatches = false;
-				$exploreMoreOptions['sampleRecords']['ebscohost'] = [];
-				foreach ($databases as $database) {
-					if ($database->showInExploreMore) {
-						$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-						//Find related titles
-						$ebscohostSearcher->setSearchTerms(array(
-							'lookfor' => $searchTerm,
-							'index' => 'TX'
-						));
-						$ebscohostSearcher->setLimit($this->numEntriesToAdd + 1);
-						$ebscohostSearcher->addFilter("db:$database->shortName");
-						$ebscohostResults = $ebscohostSearcher->processSearch(true, false);
-
-						$numMatches = $ebscohostSearcher->getNumResults();
-						if ($numMatches > 0) {
-							$driver = $ebscohostSearcher->getRecordDriverForResult($ebscohostResults->rec[0]);
-							//Add a link to the actual title
-							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => $database->displayName. " ($numMatches)",
-								'description' => $database->displayName,
-								'image' => $driver->getBookcoverUrl('medium'),
-								'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm) . "&filter[]=db:$database->shortName",
-								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
-							$hasMatches = true;
-						}
-					}
-				}
-				if ($hasMatches) {
-					$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-					//Find related titles
-					$ebscohostSearcher->setSearchTerms(array(
-						'lookfor' => $searchTerm,
-						'index' => 'TX'
-					));
-					$ebscohostSearcher->processSearch(true, false);
-					$numMatches = $ebscohostSearcher->getNumResults();
-					$exploreMoreOptions['searchLinks'][] = array(
-						'label' => translate(['text' => "All EBSCOhost Results (%1%)", 1 => $numMatches, 'isPublicFacing' => true]),
-						'description' => translate(['text' => "All Results in EBSCOhost related to %1%", 1 => $searchTerm, 'isPublicFacing' => true]),
-						'image' => '/interface/themes/responsive/images/ebscohost.png',
-						'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm),
-						'openInNewWindow' => false
-					);
-				}
-			}
-		}
-		return $exploreMoreOptions;
-	}
-
 	/**
 	 * @param $activeSection
 	 * @param $searchTerm
 	 * @param $exploreMoreOptions
 	 * @return array
 	 */
-	public function loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
 		global $enabledModules;
 		if (!empty($searchTerm) && array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
@@ -643,13 +573,13 @@ class ExploreMore {
 				$searchTerm .= " AND NOT id:($recordsToAvoid)";
 			}*/
 
-			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
-			$searchObject->disableSpelling();
+            $searchObject->disableSpelling();
 			$searchObject->setSearchTerms(array(
-				'lookfor' => $searchTerm,
-				'index' => 'Keyword'
+					'lookfor' => $searchTerm,
+					'index' => 'Keyword'
 			));
 			$searchObject->addFilter('literary_form_full:Non Fiction');
 			$searchObject->addFilter('target_audience:(Adult OR Unknown)');
@@ -703,9 +633,8 @@ class ExploreMore {
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Genealogy Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Genealogy related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
-
+							'label' => "Genealogy Results ($numCatalogResults)",
+							'description' => "Genealogy Results ($numCatalogResults)",
 							'image' => '/interface/themes/responsive/images/person.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,

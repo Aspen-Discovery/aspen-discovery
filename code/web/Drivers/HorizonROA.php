@@ -836,7 +836,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$hold_result['bid']   = $recordId; //TODO: bid or bib
 		return $hold_result;
 	}
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {

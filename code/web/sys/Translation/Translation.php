@@ -26,6 +26,7 @@ class Translation extends DataObject
 		$term = new TranslationTerm();
 		$term->id = $this->termId;
 		$term->find(true);
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $activeLanguage;
 		$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);

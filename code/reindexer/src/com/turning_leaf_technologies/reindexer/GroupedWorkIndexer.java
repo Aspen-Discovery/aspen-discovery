@@ -1,7 +1,9 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.grouping.*;
-import com.turning_leaf_technologies.indexing.*;
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.IndexingProfile;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
+import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -33,13 +35,9 @@ public class GroupedWorkIndexer {
 	private final Long indexStartTime;
 	private int totalRecordsHandled = 0;
 	private ConcurrentUpdateSolrClient updateServer;
-	private RecordGroupingProcessor recordGroupingProcessor;
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private final HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
-	private final HashMap<String, MarcRecordGrouper> ilsRecordGroupers = new HashMap<>();
-	private final HashMap<String, SideLoadedRecordGrouper> sideLoadRecordGroupers = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
-	private OverDriveRecordGrouper overDriveRecordGrouper;
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
@@ -61,8 +59,6 @@ public class GroupedWorkIndexer {
 
 	private final boolean fullReindex;
 	private final boolean clearIndex;
-	private boolean regroupAllRecords;
-	private boolean processEmptyGroupedWorks;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
@@ -74,7 +70,6 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getGroupedWorkInfoStmt;
 	private PreparedStatement getArBookIdForIsbnStmt;
 	private PreparedStatement getArBookInfoStmt;
-	private PreparedStatement getNumScheduledWorksStmt;
 	private PreparedStatement getScheduledWorksStmt;
 	private PreparedStatement getScheduledWorkStmt;
 	private PreparedStatement markScheduledWorkProcessedStmt;
@@ -85,8 +80,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateScopeStmt;
 	private PreparedStatement removeScopeStmt;
 
-	private PreparedStatement markIlsRecordAsDeletedStmt;
-	private PreparedStatement markIlsRecordAsRestoredStmt;
+	private PreparedStatement marcIlsRecordAsDeletedStmt;
 	private PreparedStatement getExistingRecordsForWorkStmt;
 	private PreparedStatement addRecordForWorkStmt;
 	private PreparedStatement updateRecordForWorkStmt;
@@ -136,6 +130,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateRecordInDBStmt;
 	private final CRC32 checksumCalculator = new CRC32();
 
+	private boolean removeRedundantHooplaRecords = false;
+
 	private boolean storeRecordDetailsInSolr = false;
 	private boolean storeRecordDetailsInDatabase = true;
 
@@ -144,15 +140,11 @@ public class GroupedWorkIndexer {
 
 	private String treatUnknownAudienceAs = "Unknown";
 	private boolean treatUnknownAudienceAsUnknown = false;
+	private boolean treatUnknownAudienceAsGeneral = false;
+	private boolean treatUnknownAudienceAsAdult = false;
 	private String treatUnknownLanguageAs = "English";
-	private int indexVersion;
-	private int searchVersion;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
-		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
-	}
-
-	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean regroupAllRecords, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
 		this.logEntry = logEntry;
@@ -160,7 +152,6 @@ public class GroupedWorkIndexer {
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
 		this.clearIndex = clearIndex;
-		this.regroupAllRecords = regroupAllRecords;
 
 		String solrPort = configIni.get("Reindex", "solrPort");
 
@@ -180,16 +171,11 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
-				this.indexVersion = systemVariablesRS.getInt("indexVersion");
-				this.searchVersion = systemVariablesRS.getInt("searchVersion");
-				if (fullReindex) {
-					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
-				}
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -204,14 +190,12 @@ public class GroupedWorkIndexer {
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getNumScheduledWorksStmt = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numScheduledWorks FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getScheduledWorksStmt = dbConn.prepareStatement("SELECT id, permanent_id FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ? ORDER BY indexAfter ASC LIMIT 0, 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where permanent_id = ? and indexAfter <= ?");
+			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
-			markIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
-			markIlsRecordAsRestoredStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 0, dateDeleted = null where source = ? and ilsId = ?");
+			marcIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
 			getExistingScopesStmt = dbConn.prepareStatement("SELECT * from scope", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
@@ -271,15 +255,21 @@ public class GroupedWorkIndexer {
 			return;
 		}
 
+		//Check hoopla settings to see if we need to remove redundant records
+		try{
+			PreparedStatement getHooplaSettingsStmt = dbConn.prepareStatement("SELECT excludeTitlesWithCopiesFromOtherVendors from hoopla_settings");
+			ResultSet getHooplaSettingsRS = getHooplaSettingsStmt.executeQuery();
+			if (getHooplaSettingsRS.next()) {
+				removeRedundantHooplaRecords = getHooplaSettingsRS.getBoolean("excludeTitlesWithCopiesFromOtherVendors");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error loading Hoopla Settings", e);
+		}
+
 		//Initialize the updateServer and solr server
 		logEntry.addNote("Setting up update server and solr server");
 
-		ConcurrentUpdateSolrClient.Builder solrBuilder;
-		if (indexVersion == 1) {
-			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-		}else{
-			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
-		}
+		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
 		solrBuilder.withThreadCount(1);
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
@@ -333,7 +323,6 @@ public class GroupedWorkIndexer {
 				ResultSet indexingProfileRS = getIndexingProfile.executeQuery();
 				if (indexingProfileRS.next()){
 					String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
-					IndexingProfile indexingProfile = new IndexingProfile(indexingProfileRS);
 					switch (ilsIndexingClassString) {
 						case "ArlingtonKoha":
 							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
@@ -364,13 +353,16 @@ public class GroupedWorkIndexer {
 							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
-							continue;
+							break;
 					}
-					ilsRecordGroupers.put(curType, new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger));
 					if (ilsRecordProcessors.containsKey(curType)){
 						this.treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
-						if ("Unknown".equals(this.treatUnknownAudienceAs)) {
+						if (this.treatUnknownAudienceAs.equals("Unknown")){
 							treatUnknownAudienceAsUnknown = true;
+						}else if (this.treatUnknownAudienceAs.equals("Adult")){
+							treatUnknownAudienceAsAdult = true;
+						}else if (this.treatUnknownAudienceAs.equals("General")){
+							treatUnknownAudienceAsGeneral = true;
 						}
 						this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 					}
@@ -380,9 +372,7 @@ public class GroupedWorkIndexer {
 					if (getSideLoadSettingsRS.next()){
 						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
-							sideLoadProcessors.put(curType, sideloadProcessor);
-							sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
+							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							getSideLoadSettings.close();
@@ -406,7 +396,6 @@ public class GroupedWorkIndexer {
 			logEntry.incErrors("Error loading record processors for ILS records", e);
 		}
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
-		overDriveRecordGrouper = new OverDriveRecordGrouper(dbConn, serverName, logEntry, logger);
 
 		cloudLibraryProcessor = new CloudLibraryProcessor(this, "cloud_library", dbConn, logger);
 
@@ -539,7 +528,7 @@ public class GroupedWorkIndexer {
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 1000 == 0) {
+			if (totalRecordsHandled % 25 == 0) {
 				updateServer.commit(false, false, true);
 			}
 
@@ -560,7 +549,7 @@ public class GroupedWorkIndexer {
 
 	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
-			processScheduledWorks(logEntry, true, 100);
+			processScheduledWorks(logEntry, true);
 
 			updateServer.commit(false, false, true);
 			logEntry.addNote("Shutting down the update server");
@@ -579,16 +568,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	/**
-	 * This is called from all the indexers so we would like to prevent scheduled works from being processed multiple times.
-	 * Rather than getting a list of all the scheduled works, we will process up to max works to process by getting the oldest record
-	 * continually, marking it as processed and then processing another.  The exception to this is during the full index
-	 * when we will process everything to ensure that records that have been regrouped will get processed during the full index.
-	 *
-	 * @param logEntry
-	 * @param doLogging
-	 */
-	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging, int maxWorksToProcess) {
+	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging) {
 		//Check to see what records still need to be indexed based on a timed index
 		if (doLogging) {
 			logEntry.addNote("Checking for additional works that need to be indexed");
@@ -596,59 +576,25 @@ public class GroupedWorkIndexer {
 
 		try {
 			int numWorksProcessed = 0;
-			long startTime = new Date().getTime() / 1000;
+			getScheduledWorksStmt.setLong(1, new Date().getTime() / 1000);
+			ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
+			while (scheduledWorksRS.next()) {
+				long scheduleId = scheduledWorksRS.getLong("id");
+				String workToProcess = scheduledWorksRS.getString("permanent_id");
 
-			getNumScheduledWorksStmt.setLong(1, startTime);
-			ResultSet numScheduledWorksRS = getNumScheduledWorksStmt.executeQuery();
-			int numScheduledWorks = 0;
-			if (numScheduledWorksRS.next()) {
-				numScheduledWorks = numScheduledWorksRS.getInt("numScheduledWorks");
-				if (numScheduledWorks > 0) {
-					logEntry.addNote("There are " + numScheduledWorks + " scheduled works to be indexed");
-					logEntry.saveResults();
-				}else{
-					return;
-				}
+				//reindex the actual work
+				this.processGroupedWork(workToProcess);
+
+				markScheduledWorkProcessedStmt.setLong(1, scheduleId);
+				markScheduledWorkProcessedStmt.executeUpdate();
+				numWorksProcessed++;
 			}
-
-			if (maxWorksToProcess == -1){
-				maxWorksToProcess = numScheduledWorks;
-			}else{
-				maxWorksToProcess = Math.min(numScheduledWorks, maxWorksToProcess);
-			}
-
-			while (numWorksProcessed < maxWorksToProcess) {
-				getScheduledWorksStmt.setLong(1, startTime);
-				ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
-				if (scheduledWorksRS.next()) {
-					String workToProcess = scheduledWorksRS.getString("permanent_id");
-
-					markScheduledWorkProcessedStmt.setString(1, workToProcess);
-					markScheduledWorkProcessedStmt.setLong(2, new Date().getTime() / 1000);
-					markScheduledWorkProcessedStmt.executeUpdate();
-
-					//reindex the actual work
-					try {
-						this.processGroupedWork(workToProcess, true);
-					}catch (Exception e){
-						logEntry.incErrors("Error processing scheduled work " + workToProcess, e);
-					}
-
-					numWorksProcessed++;
-					scheduledWorksRS.close();
-				}else{
-					scheduledWorksRS.close();
-					break;
-				}
-				if (numWorksProcessed % 10000 == 0) {
-					this.commitChanges();
-				}
-			}
+			scheduledWorksRS.close();
 			if (numWorksProcessed > 0){
 				if (doLogging) {
 					logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
 				}
-				this.commitChanges();
+				updateServer.commit(false, false, true);
 			}
 		}catch (Exception e){
 			logEntry.addNote("Error updating scheduled works " + e);
@@ -656,7 +602,6 @@ public class GroupedWorkIndexer {
 	}
 
 	void finishIndexing(){
-		this.processScheduledWorks(logEntry, true, -1);
 		logEntry.addNote("Finishing indexing");
 		if (fullReindex) {
 			try {
@@ -665,33 +610,6 @@ public class GroupedWorkIndexer {
 			} catch (Exception e) {
 				logEntry.incErrors("Error calling final commit", e);
 			}
-			if (indexVersion == 2 && searchVersion == 1){
-				//Update the search version to version 2
-				try {
-					logEntry.addNote("Updating search version to version 2");
-					dbConn.prepareStatement("UPDATE system_variables set searchVersion = 2").executeUpdate();
-				} catch (Exception e) {
-					logEntry.incErrors("Error updating search version", e);
-				}
-			}
-			if (regroupAllRecords){
-				try {
-					logEntry.addNote("Turning off regroupAllRecords");
-					dbConn.prepareStatement("UPDATE system_variables set regroupAllRecordsDuringNightlyIndex = 0").executeUpdate();
-				} catch (Exception e) {
-					logEntry.incErrors("Error turning off regroupAllRecords", e);
-				}
-			}
-			if (processEmptyGroupedWorks){
-				try {
-					logEntry.addNote("Turning off processEmptyGroupedWorks");
-					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0").executeUpdate();
-				} catch (Exception e) {
-					logEntry.incErrors("Error turning off processEmptyGroupedWorks", e);
-				}
-			}
-
-			updateLastReindexTime();
 		}else {
 			try {
 				logEntry.addNote("Doing a soft commit to make sure changes are saved");
@@ -703,6 +621,8 @@ public class GroupedWorkIndexer {
 				logEntry.incErrors("Error shutting down update server", e);
 			}
 		}
+
+		updateLastReindexTime();
 	}
 
 	private void updateLastReindexTime() {
@@ -732,8 +652,8 @@ public class GroupedWorkIndexer {
 			PreparedStatement getNumWorksToIndex;
 			PreparedStatement setLastUpdatedTime = dbConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
 			if (fullReindex){
-				getAllGroupedWorks = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, grouping_category, date_updated FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getNumWorksToIndex = dbConn.prepareStatement("SELECT COUNT(DISTINCT permanent_id) as numWorksWithRecords FROM grouped_work INNER JOIN grouped_work_records on grouped_work.id = groupedWorkId;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getAllGroupedWorks = dbConn.prepareStatement("SELECT * FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getNumWorksToIndex = dbConn.prepareStatement("SELECT count(id) FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			}else{
 				//Load all grouped works that have changed since the last time the index ran
 				getAllGroupedWorks = dbConn.prepareStatement("SELECT * FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -788,27 +708,6 @@ public class GroupedWorkIndexer {
 			groupedWorks.close();
 			setLastUpdatedTime.close();
 
-			if (processEmptyGroupedWorks){
-				PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				logEntry.addNote("Starting to process grouped works with no records attached to them.");
-
-				ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery();
-				int numDeleted = 0;
-				while (emptyGroupedWorksRS.next()) {
-					String permanentId = emptyGroupedWorksRS.getString("permanent_id");
-					deleteRecord(permanentId);
-					numDeleted++;
-					if (numDeleted % 10000 == 0) {
-						try {
-							updateServer.commit(false, false, true);
-						} catch (Exception e) {
-							logger.warn("Error committing changes", e);
-						}
-					}
-				}
-				logEntry.addNote("Finished processing " + numDeleted + " grouped works with no records attached to them.");
-			}
-
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
@@ -816,21 +715,17 @@ public class GroupedWorkIndexer {
 	}
 
 	public synchronized void processGroupedWork(String permanentId) {
-		processGroupedWork(permanentId, true);
-	}
-
-	public synchronized void processGroupedWork(String permanentId, boolean allowRegrouping) {
 		try{
 			getGroupedWorkInfoStmt.setString(1, permanentId);
 			ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery();
 			if (getGroupedWorkInfoRS.next()) {
 				long id = getGroupedWorkInfoRS.getLong("id");
 				String grouping_category = getGroupedWorkInfoRS.getString("grouping_category");
-				processGroupedWork(id, permanentId, grouping_category, allowRegrouping);
+				processGroupedWork(id, permanentId, grouping_category);
 			}
 			getGroupedWorkInfoRS.close();
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 1000 == 0) {
+			if (totalRecordsHandled % 25 == 0) {
 				updateServer.commit(false, false, true);
 			}
 		} catch (Exception e) {
@@ -840,117 +735,20 @@ public class GroupedWorkIndexer {
 	}
 
 	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
-		processGroupedWork(id, permanentId, grouping_category, true);
-	}
-
-	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category, boolean allowRegrouping) throws SQLException {
 		//Create a solr record for the grouped work
-		AbstractGroupedWorkSolr groupedWork;
-		if (indexVersion == 2) {
-			groupedWork = new GroupedWorkSolr2(this, logger);
-		}else{
-			groupedWork = new GroupedWorkSolr(this, logger);
-		}
+		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
-		ResultSet groupedWorkPrimaryIdentifiersRS = getGroupedWorkPrimaryIdentifiers.executeQuery();
-		ArrayList<RecordIdentifier> recordIdentifiers = new ArrayList<>();
-		while (groupedWorkPrimaryIdentifiersRS.next()){
-			String type = groupedWorkPrimaryIdentifiersRS.getString("type");
-			String identifier = groupedWorkPrimaryIdentifiersRS.getString("identifier");
-			recordIdentifiers.add(new RecordIdentifier(type, identifier));
-		}
-		groupedWorkPrimaryIdentifiersRS.close();
+		ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery();
 		int numPrimaryIdentifiers = 0;
-		HashSet<String> regroupedIdsToProcess = new HashSet<>();
-		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
-
-		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||")){
-			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
-				String type = recordIdentifier.getType();
-				String identifier = recordIdentifier.getIdentifier();
-
-				//Get the proper record grouper
-				String newId = permanentId;
-				if (ilsRecordGroupers.containsKey(type)) {
-					MarcRecordGrouper ilsGrouper = ilsRecordGroupers.get(type);
-					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
-					if (record == null) {
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
-						if (result.reindexWork) {
-							regroupedIdsToProcess.add(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							deleteRecord(result.permanentId);
-						}
-						regroupedIdentifiers.add(recordIdentifier);
-					} else {
-						newId = ilsGrouper.processMarcRecord(record, false, permanentId);
-					}
-				} else if (sideLoadRecordGroupers.containsKey(type)) {
-					SideLoadedRecordGrouper sideLoadGrouper = sideLoadRecordGroupers.get(type);
-					Record record = loadMarcRecordFromDatabase(type, identifier, logEntry);
-					if (record == null) {
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
-						if (result.reindexWork) {
-							regroupedIdsToProcess.add(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							deleteRecord(result.permanentId);
-						}
-						regroupedIdentifiers.add(recordIdentifier);
-					} else {
-						newId = sideLoadGrouper.processMarcRecord(record, false, permanentId);
-					}
-				} else if (type.equals("overdrive")) {
-					newId = overDriveRecordGrouper.processOverDriveRecord(identifier);
-				} else if (type.equals("axis360")) {
-					newId = getRecordGroupingProcessor().groupAxis360Record(identifier);
-				} else if (type.equals("cloud_library")) {
-					Record cloudLibraryRecord = loadMarcRecordFromDatabase("cloud_library", identifier, logEntry);
-					if (cloudLibraryRecord == null) {
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
-						if (result.reindexWork) {
-							regroupedIdsToProcess.add(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							deleteRecord(result.permanentId);
-						}
-					} else {
-						newId = getRecordGroupingProcessor().groupCloudLibraryRecord(identifier, cloudLibraryRecord);
-					}
-				} else if (type.equals("hoopla")) {
-					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
-				}
-				if (newId == null) {
-					//The record is not valid, skip it.
-					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(type, identifier);
-					if (result.reindexWork) {
-						regroupedIdsToProcess.add(result.permanentId);
-					} else if (result.deleteWork) {
-						//Delete the work from solr and the database
-						deleteRecord(result.permanentId);
-					}
-					regroupedIdentifiers.add(recordIdentifier);
-				} else if (!newId.equals(permanentId)) {
-					//The work will be marked as updated and therefore reindexed at the end
-					//Or just index it now?
-					regroupedIdsToProcess.add(newId);
-					regroupedIdentifiers.add(recordIdentifier);
-				}
-			}
-		}
-
-		recordIdentifiers.removeAll(regroupedIdentifiers);
-
-		for (RecordIdentifier recordIdentifier : recordIdentifiers){
-			String type = recordIdentifier.getType();
-			String identifier = recordIdentifier.getIdentifier();
+		while (groupedWorkPrimaryIdentifiers.next()){
+			String type = groupedWorkPrimaryIdentifiers.getString("type");
+			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
 
 			//Make a copy of the grouped work so we can revert if we don't add any records
-			AbstractGroupedWorkSolr originalWork;
+			GroupedWorkSolr originalWork;
 			try {
 				originalWork = groupedWork.clone();
 			}catch (CloneNotSupportedException cne){
@@ -974,10 +772,13 @@ public class GroupedWorkIndexer {
 				numPrimaryIdentifiers++;
 			}
 		}
+		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
 			//Strip out any hoopla records that have the same format as another econtent record with apis
-			groupedWork.removeRedundantHooplaRecords();
+			if (removeRedundantHooplaRecords) {
+				groupedWork.removeRedundantHooplaRecords();
+			}
 
 			//Load local enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -997,41 +798,29 @@ public class GroupedWorkIndexer {
 				if (this.isStoreRecordDetailsInDatabase()) {
 					groupedWork.saveRecordsToDatabase(id);
 				}
-
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
-				if (inputDocument == null){
-					logEntry.incErrors("Solr Input document was null for " + groupedWork.getId());
-				}else {
-					UpdateResponse response = updateServer.add(inputDocument);
-					if (response == null){
-						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + ", the response was null");
-					}else if (response.getException() != null) {
-						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
-					}
-
-					//Check to see if we need to automatically reindex this record in the future.
-					//Reindexing in the future is done if the time to reshelve is set to ensure that we reindex when that time expires.
-					try {
-						HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
-						if (autoReindexTimes.size() > 0) {
-							for (Long autoReindexTime : autoReindexTimes) {
-								getScheduledWorkStmt.setString(1, groupedWork.getId());
-								getScheduledWorkStmt.setLong(2, autoReindexTime);
-								ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery();
-								if (!getScheduledWorkRS.next()) {
-									try {
-										addScheduledWorkStmt.setString(1, groupedWork.getId());
-										addScheduledWorkStmt.setLong(2, autoReindexTime);
-										addScheduledWorkStmt.executeUpdate();
-									} catch (SQLException sqe) {
-										logEntry.incErrors("Error adding scheduled reindex time", sqe);
-									}
-								}
-								getScheduledWorkRS.close();
+				UpdateResponse response = updateServer.add(inputDocument);
+				if (response.getException() != null){
+					logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
+				}
+				//logger.debug("Updated solr \r\n" + inputDocument.toString());
+				//Check to see if we need to automatically reindex this record in the future.
+				HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
+				if (autoReindexTimes.size() > 0){
+					for (Long autoReindexTime : autoReindexTimes) {
+						getScheduledWorkStmt.setString(1, groupedWork.getId());
+						getScheduledWorkStmt.setLong(2, autoReindexTime);
+						ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery();
+						if (!getScheduledWorkRS.next()) {
+							try {
+								addScheduledWorkStmt.setString(1, groupedWork.getId());
+								addScheduledWorkStmt.setLong(2, autoReindexTime);
+								addScheduledWorkStmt.executeUpdate();
+							} catch (SQLException sqe) {
+								logEntry.incErrors("Error adding scheduled reindex time", sqe);
 							}
 						}
-					}catch (Exception e){
-						logEntry.incErrors("Error setting auto reindex times", e);
+						getScheduledWorkRS.close();
 					}
 				}
 
@@ -1044,25 +833,12 @@ public class GroupedWorkIndexer {
 			if (!this.clearIndex){
 				this.deleteRecord(permanentId);
 			}
+
 		}
 
-		try {
-			//mark that the work has been processed so we don't reprocess it later
-			markScheduledWorkProcessedStmt.setString(1, permanentId);
-			markScheduledWorkProcessedStmt.setLong(2, new Date().getTime() / 1000);
-			markScheduledWorkProcessedStmt.executeUpdate();
-		}catch (SQLException e){
-			logEntry.incErrors("Error marking that the record has been processed.", e);
-		}
-
-		for (String regroupedId : regroupedIdsToProcess){
-			if (!regroupedId.equals(permanentId)){
-				processGroupedWork(regroupedId, false);
-			}
-		}
 	}
 
-	private void loadLexileDataForWork(AbstractGroupedWorkSolr groupedWork) {
+	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
 		for(String isbn : groupedWork.getIsbns()){
 			if (lexileInformation.containsKey(isbn)){
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
@@ -1080,7 +856,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadAcceleratedDataForWork(AbstractGroupedWorkSolr groupedWork){
+	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
 		try {
 			for (String isbn : groupedWork.getIsbns()){
 				getArBookIdForIsbnStmt.setString(1, isbn);
@@ -1107,7 +883,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadLocalEnrichment(AbstractGroupedWorkSolr groupedWork) {
+	private void loadLocalEnrichment(GroupedWorkSolr groupedWork) {
 		//Load rating
 		try{
 			getRatingStmt.setString(1, groupedWork.getId());
@@ -1124,7 +900,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadUserLinkages(AbstractGroupedWorkSolr groupedWork) {
+	private void loadUserLinkages(GroupedWorkSolr groupedWork) {
 		try {
 			loadReadingHistoryLinksForUsers(groupedWork);
 			loadRatingLinksForUsers(groupedWork);
@@ -1134,7 +910,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadNotInterestedLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
+	private void loadNotInterestedLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who are not interested in the title
 		getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
@@ -1144,7 +920,7 @@ public class GroupedWorkIndexer {
 		userNotInterestedRS.close();
 	}
 
-	private void loadRatingLinksForUsers(AbstractGroupedWorkSolr groupedWork) throws SQLException {
+	private void loadRatingLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
 		//Add users who rated the title
 		getUserRatingLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
@@ -1154,7 +930,7 @@ public class GroupedWorkIndexer {
 		userRatingRS.close();
 	}
 
-	private void loadReadingHistoryLinksForUsers (AbstractGroupedWorkSolr groupedWork) throws SQLException {
+	private void loadReadingHistoryLinksForUsers (GroupedWorkSolr groupedWork) throws SQLException {
 		//Add users with the work in their reading history
 		getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
 		ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
@@ -1164,7 +940,7 @@ public class GroupedWorkIndexer {
 		userReadingHistoryRS.close();
 	}
 
-	private void loadNovelistInfo(AbstractGroupedWorkSolr groupedWork){
+	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
 		try{
 			getNovelistStmt.setString(1, groupedWork.getId());
 			ResultSet novelistRS = getNovelistStmt.executeQuery();
@@ -1187,7 +963,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadDisplayInfo(AbstractGroupedWorkSolr groupedWork) {
+	private void loadDisplayInfo(GroupedWorkSolr groupedWork) {
 		try {
 			getDisplayInfoStmt.setString(1, groupedWork.getId());
 			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
@@ -1217,7 +993,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(AbstractGroupedWorkSolr groupedWork, String type, String identifier)  {
+	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier)  {
 		groupedWork.addAlternateId(identifier);
 		type = type.toLowerCase();
 		switch (type) {
@@ -1977,7 +1753,7 @@ public class GroupedWorkIndexer {
 			getExistingItemsForRecordStmt.setLong(1, recordId);
 			ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery();
 			while (getExistingItemsForRecordRS.next()){
-				existingItems.put(getExistingItemsForRecordRS.getString("itemId").toLowerCase(), new SavedItemInfo(getExistingItemsForRecordRS));
+				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), new SavedItemInfo(getExistingItemsForRecordRS));
 			}
 		}catch (SQLException e){
 			logEntry.incErrors("Error loading existing items for record", e);
@@ -1995,7 +1771,7 @@ public class GroupedWorkIndexer {
 	}
 
 	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems) {
-		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier().toLowerCase());
+		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier());
 		long itemId = -1;
 		if (savedItem != null){
 			itemId = savedItem.id;
@@ -2013,112 +1789,97 @@ public class GroupedWorkIndexer {
 			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode());
 			long subLocationId = this.getSubLocationCodeId(itemInfo.getSubLocationCode());
 			long groupedStatusId = this.getStatusId(itemInfo.getGroupedStatus());
-			boolean errorsSavingItem = false;
 			if (savedItem == null) {
-				try {
-					addItemForRecordStmt.setLong(1, recordId);
-					addItemForRecordStmt.setLong(2, variationId);
-					addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
-					addItemForRecordStmt.setLong(4, shelfLocationId);
-					addItemForRecordStmt.setLong(5, callNumberId);
-					addItemForRecordStmt.setLong(6, sortableCallNumberId);
-					addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
-					addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
-					addItemForRecordStmt.setLong(9, statusId);
-					if (itemInfo.getDateAdded() == null) {
-						addItemForRecordStmt.setNull(10, Types.BIGINT);
-					} else {
-						addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
-					}
-					addItemForRecordStmt.setLong(11, locationCodeId);
-					addItemForRecordStmt.setLong(12, subLocationId);
-					if (itemInfo.getLastCheckinDate() == null) {
-						addItemForRecordStmt.setNull(13, Types.INTEGER);
-					} else {
-						addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
-					}
-					addItemForRecordStmt.setLong(14, groupedStatusId);
-					addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
-					addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
-					addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
-					addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
-					addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
-					addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
-					addItemForRecordStmt.executeUpdate();
-					ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
-					if (addItemForWorkRS.next()) {
-						itemId = addItemForWorkRS.getLong(1);
-					}
-					SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
-							itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-							itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
-
-					existingItems.put(itemInfo.getItemIdentifier().toLowerCase(), savedItemInfo);
-				}catch (SQLException e){
-					logEntry.incErrors("Error adding item " + itemId + " for record " + recordId, e);
-					errorsSavingItem = true;
+				addItemForRecordStmt.setLong(1, recordId);
+				addItemForRecordStmt.setLong(2, variationId);
+				addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
+				addItemForRecordStmt.setLong(4, shelfLocationId);
+				addItemForRecordStmt.setLong(5, callNumberId);
+				addItemForRecordStmt.setLong(6, sortableCallNumberId);
+				addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
+				addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
+				addItemForRecordStmt.setLong(9, statusId);
+				if (itemInfo.getDateAdded() == null) {
+					addItemForRecordStmt.setNull(10, Types.BIGINT);
+				} else {
+					addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
 				}
+				addItemForRecordStmt.setLong(11, locationCodeId);
+				addItemForRecordStmt.setLong(12, subLocationId);
+				if (itemInfo.getLastCheckinDate() == null) {
+					addItemForRecordStmt.setNull(13, Types.INTEGER);
+				} else {
+					addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
+				}
+				addItemForRecordStmt.setLong(14, groupedStatusId);
+				addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
+				addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
+				addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
+				addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
+				addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
+				addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
+				addItemForRecordStmt.executeUpdate();
+				ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
+				if (addItemForWorkRS.next()) {
+					itemId = addItemForWorkRS.getLong(1);
+				}
+				SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
+						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+						itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
+
+				existingItems.put(itemInfo.getItemIdentifier(), savedItemInfo);
 			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 					itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
 					itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
-				try {
-					updateItemForRecordStmt.setLong(1, variationId);
-					updateItemForRecordStmt.setLong(2, shelfLocationId);
-					updateItemForRecordStmt.setLong(3, callNumberId);
-					updateItemForRecordStmt.setLong(4, sortableCallNumberId);
-					updateItemForRecordStmt.setLong(5, itemInfo.getNumCopies());
-					updateItemForRecordStmt.setBoolean(6, itemInfo.isOrderItem());
-					updateItemForRecordStmt.setLong(7, statusId);
-					if (itemInfo.getDateAdded() == null) {
-						updateItemForRecordStmt.setNull(8, Types.BIGINT);
-					} else {
-						updateItemForRecordStmt.setLong(8, itemInfo.getDateAdded().getTime() / 1000);
+				updateItemForRecordStmt.setLong(1, variationId);
+				updateItemForRecordStmt.setLong(2, shelfLocationId);
+				updateItemForRecordStmt.setLong(3, callNumberId);
+				updateItemForRecordStmt.setLong(4, sortableCallNumberId);
+				updateItemForRecordStmt.setLong(5, itemInfo.getNumCopies());
+				updateItemForRecordStmt.setBoolean(6, itemInfo.isOrderItem());
+				updateItemForRecordStmt.setLong(7, statusId);
+				if (itemInfo.getDateAdded() == null) {
+					updateItemForRecordStmt.setNull(8, Types.BIGINT);
+				} else {
+					updateItemForRecordStmt.setLong(8, itemInfo.getDateAdded().getTime() / 1000);
+				}
+				updateItemForRecordStmt.setLong(9, locationCodeId);
+				updateItemForRecordStmt.setLong(10, subLocationId);
+				if (itemInfo.getLastCheckinDate() == null) {
+					updateItemForRecordStmt.setNull(11, Types.INTEGER);
+				} else {
+					updateItemForRecordStmt.setLong(11, itemInfo.getLastCheckinDate().getTime() / 1000);
+				}
+				updateItemForRecordStmt.setLong(12, groupedStatusId);
+				updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
+				updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
+				updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
+				updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
+				updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
+				updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
+				updateItemForRecordStmt.setLong(19, itemId);
+				updateItemForRecordStmt.executeUpdate();
+			}
+
+			if (itemInfo.geteContentUrl() != null){
+				addItemUrlStmt.setLong(1, itemId);
+				addItemUrlStmt.setLong(2, -1);
+				addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
+				addItemUrlStmt.executeUpdate();
+
+				//Check to see if we need to save local urls
+				for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
+					String localUrl = scopingInfo.getLocalUrl();
+					if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
+						addItemUrlStmt.setLong(1, itemId);
+						addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
+						addItemUrlStmt.setString(3, localUrl);
+						addItemUrlStmt.executeUpdate();
 					}
-					updateItemForRecordStmt.setLong(9, locationCodeId);
-					updateItemForRecordStmt.setLong(10, subLocationId);
-					if (itemInfo.getLastCheckinDate() == null) {
-						updateItemForRecordStmt.setNull(11, Types.INTEGER);
-					} else {
-						updateItemForRecordStmt.setLong(11, itemInfo.getLastCheckinDate().getTime() / 1000);
-					}
-					updateItemForRecordStmt.setLong(12, groupedStatusId);
-					updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
-					updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
-					updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
-					updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
-					updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
-					updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
-					updateItemForRecordStmt.setLong(19, itemId);
-					updateItemForRecordStmt.executeUpdate();
-				}catch (SQLException e){
-					logEntry.incErrors("Error updating item " + itemId + " record " + recordId);
-					errorsSavingItem = true;
 				}
 			}
 
-			if (itemInfo.geteContentUrl() != null && ! errorsSavingItem){
-				try {
-					addItemUrlStmt.setLong(1, itemId);
-					addItemUrlStmt.setLong(2, -1);
-					addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
-					addItemUrlStmt.executeUpdate();
-
-					//Check to see if we need to save local urls
-					for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
-						String localUrl = scopingInfo.getLocalUrl();
-						if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
-							addItemUrlStmt.setLong(1, itemId);
-							addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
-							addItemUrlStmt.setString(3, localUrl);
-							addItemUrlStmt.executeUpdate();
-						}
-					}
-				}catch (SQLException e){
-					logEntry.incErrors("Error adding url for item " + itemId, e);
-				}
-			}
-
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work item", e);
 		}
 
@@ -2216,20 +1977,10 @@ public class GroupedWorkIndexer {
 
 	public void markIlsRecordAsDeleted(String name, String existingIdentifier) {
 		try {
-			markIlsRecordAsDeletedStmt.setLong(1, new Date().getTime() / 1000);
-			markIlsRecordAsDeletedStmt.setString(2, name);
-			markIlsRecordAsDeletedStmt.setString(3, existingIdentifier);
-			markIlsRecordAsDeletedStmt.executeUpdate();
-		}catch (Exception e) {
-			logEntry.incErrors("Could not mark ils record as deleted", e);
-		}
-	}
-
-	public void markIlsRecordAsRestored(String name, String existingIdentifier){
-		try {
-			markIlsRecordAsRestoredStmt.setString(1, name);
-			markIlsRecordAsRestoredStmt.setString(2, existingIdentifier);
-			markIlsRecordAsRestoredStmt.executeUpdate();
+			marcIlsRecordAsDeletedStmt.setLong(1, new Date().getTime() / 1000);
+			marcIlsRecordAsDeletedStmt.setString(2, name);
+			marcIlsRecordAsDeletedStmt.setString(3, existingIdentifier);
+			marcIlsRecordAsDeletedStmt.executeUpdate();
 		}catch (Exception e) {
 			logEntry.incErrors("Could not mark ils record as deleted", e);
 		}
@@ -2259,8 +2010,12 @@ public class GroupedWorkIndexer {
 		return treatUnknownAudienceAsUnknown;
 	}
 
-	public void setRegroupAllRecords(boolean regroupAllRecords) {
-		this.regroupAllRecords = regroupAllRecords;
+	public boolean isTreatUnknownAudienceAsGeneral() {
+		return treatUnknownAudienceAsGeneral;
+	}
+
+	public boolean isTreatUnknownAudienceAsAdult() {
+		return treatUnknownAudienceAsAdult;
 	}
 
 	public enum MarcStatus {
@@ -2273,7 +2028,7 @@ public class GroupedWorkIndexer {
 		if (recordNumber != null) {
 			Record mergedRecord = loadMarcRecordFromDatabase(indexingSettings.getName(), recordNumber, logEntry);
 
-			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTagInt());
+			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTag());
 			for (DataField additionalItem : additionalItems) {
 				mergedRecord.addVariableField(additionalItem);
 			}
@@ -2378,12 +2133,5 @@ public class GroupedWorkIndexer {
 		}
 		return marcRecord;
 
-	}
-
-	private RecordGroupingProcessor getRecordGroupingProcessor() {
-		if (recordGroupingProcessor == null) {
-			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logEntry, logger);
-		}
-		return recordGroupingProcessor;
 	}
 }

@@ -8,10 +8,9 @@
  */
 abstract class RecordInterface
 {
-	//Used when displaying the title as part of a list
+	//Used when displaying a the title as part of a list
 	private $listNotes;
 	private $listEntryId;
-	private $listEntryWeight;
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
@@ -386,13 +385,4 @@ abstract class RecordInterface
 	function getListEntryId() {
 		return $this->listEntryId;
 	}
-
-	function setListEntryWeight($listEntryWeight) {
-		$this->listEntryWeight = $listEntryWeight;
-	}
-
-	function getListEntryWeight() {
-		return $this->listEntryWeight;
-	}
-
 }

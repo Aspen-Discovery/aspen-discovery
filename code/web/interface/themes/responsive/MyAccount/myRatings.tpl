@@ -63,7 +63,7 @@
 			{/if}
 
 			{if $notInterested}
-				<h1>{translate text="Titles You Don't Want Recommended" isPublicFacing=true}</h1>
+				<h1>{translate text="Titles You Don't Want Recommended"}</h1>
 				<table class="myAccountTable table table-striped" id="notInterestedTable">
 					<thead>
 						<tr>

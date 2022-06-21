@@ -5,7 +5,6 @@ import java.util.HashMap;
 public class HooplaScope {
 	private long id;
 	private String name;
-	private int excludeTitlesWithCopiesFromOtherVendors;
 	private boolean includeEBooks;
 	private float maxCostPerCheckoutEBooks;
 	private boolean includeEComics;
@@ -196,11 +195,4 @@ public class HooplaScope {
 		this.excludeProfanity = excludeProfanity;
 	}
 
-	public void setExcludeTitlesWithCopiesFromOtherVendors(int excludeTitlesWithCopiesFromOtherVendors) {
-		this.excludeTitlesWithCopiesFromOtherVendors = excludeTitlesWithCopiesFromOtherVendors;
-	}
-
-	public int getExcludeTitlesWithCopiesFromOtherVendors() {
-		return excludeTitlesWithCopiesFromOtherVendors;
-	}
 }

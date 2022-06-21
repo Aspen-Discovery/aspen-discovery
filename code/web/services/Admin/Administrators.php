@@ -91,8 +91,6 @@ class Admin_Administrators extends ObjectEditor
 	/** @noinspection PhpUnused */
 	function addAdministrator(){
 		global $interface;
-		global $configArray;
-		$interface->assign('ils', $configArray['Catalog']['ils']);
 		//Basic List
 		$interface->setTemplate('addAdministrator.tpl');
 	}
@@ -138,9 +136,6 @@ class Admin_Administrators extends ObjectEditor
 			header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			die();
 		} else {
-			global $configArray;
-			$interface->assign('ils', $configArray['Catalog']['ils']);
-
 			$interface->assign('errors', $errors);
 			$interface->setTemplate('addAdministrator.tpl');
 		}

@@ -5,7 +5,6 @@ class EBSCO_Results extends ResultsAction {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
-		global $library;
 
 		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
 			$_REQUEST['lookfor'] = '*';
@@ -73,10 +72,6 @@ class EBSCO_Results extends ResultsAction {
 		$interface->assign('limitList', $limitList);
 		$facetSet = $searchObject->getFacetSet();
 		$interface->assign('sideFacetSet', $facetSet);
-
-		//Figure out which counts to show.
-		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
-		$interface->assign('facetCountsToShow', $facetCountsToShow);
 
 		if ($summary['resultTotal'] > 0){
 			$link    = $searchObject->renderLinkPageTemplate();

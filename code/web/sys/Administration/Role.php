@@ -9,17 +9,7 @@ class Role extends DataObject
 	public $roleId;
 	public $name;
 	public $description;
-	protected $_permissions;
-
-	public function getUniquenessFields(): array
-	{
-		return ['name'];
-	}
-
-	public function getNumericColumnNames(): array
-	{
-		return ['roleId'];
-	}
+	private $_permissions;
 
 	static function getObjectStructure() : array
 	{
@@ -119,7 +109,7 @@ class Role extends DataObject
 				'Administer IP Addresses',
 				'Administer Indexing Profiles',
 				'Administer Languages',
-				'Administer LibraryMarket LibraryCalendar Settings',
+				'Administer Library Calendar Settings',
 				'Administer List Indexing Settings',
 				'Administer Loan Rules',
 				'Administer Modules',
@@ -130,7 +120,6 @@ class Role extends DataObject
 				'Administer Amazon SES',
 				'Administer SendGrid',
 				'Administer Side Loads',
-                'Administer Springshare LibCal',
 				'Administer System Variables',
 				'Administer Third Party Enrichment API Keys',
 				'Administer Translation Maps',
@@ -266,34 +255,5 @@ class Role extends DataObject
 			];
 		}
 		return [];
-	}
-
-	public function okToExport(array $selectedFilters) : bool{
-		return true;
-	}
-
-	public function getLinksForJSON(): array
-	{
-		$links = parent::getLinksForJSON();
-		$links['permissions'] = $this->getPermissions();
-		return $links;
-	}
-
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
-	{
-		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		$permissions = [];
-		if (array_key_exists('permissions', $jsonData)){
-			foreach ($jsonData['permissions'] as $permissionString){
-				$permission = new Permission();
-				$permission->name = $permissionString;
-				if ($permission->find(true)){
-					$permissions[] = $permission->id;
-				}
-			}
-			$result = true;
-		}
-		$this->setActivePermissions($permissions);
-		return $result;
 	}
 }

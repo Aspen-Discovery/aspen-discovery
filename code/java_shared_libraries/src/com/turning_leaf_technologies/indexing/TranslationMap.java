@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 public class TranslationMap {
 	private Logger logger;
-	private long id;
 	private String profileName;
 	private String mapName;
 	private boolean usesRegularExpressions;
@@ -17,14 +16,6 @@ public class TranslationMap {
 	private HashMap<Pattern, String> translationValuePatterns = new HashMap<>();
 
 	public TranslationMap(String profileName, String mapName, boolean usesRegularExpressions, Logger logger){
-		this.profileName = profileName;
-		this.mapName = mapName;
-		this.usesRegularExpressions = usesRegularExpressions;
-		this. logger = logger;
-	}
-
-	public TranslationMap(String profileName, Long id, String mapName, boolean usesRegularExpressions, Logger logger){
-		this.id = id;
 		this.profileName = profileName;
 		this.mapName = mapName;
 		this.usesRegularExpressions = usesRegularExpressions;
@@ -108,9 +99,5 @@ public class TranslationMap {
 
 	public boolean hasTranslation(String value) {
 		return translationValues.containsKey(value) || usesRegularExpressions;
-	}
-
-	public long getId() {
-		return id;
 	}
 }

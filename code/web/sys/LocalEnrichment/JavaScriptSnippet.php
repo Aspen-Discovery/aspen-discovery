@@ -1,17 +1,16 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
-class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
+class JavaScriptSnippet extends DataObject
 {
 	public $__table = 'javascript_snippets';
 	public $id;
 	public $name;
 	public $snippet;
 
-	protected $_libraries;
-	protected $_locations;
+	private $_libraries;
+	private $_locations;
 
 	public static function getObjectStructure() : array
 	{
@@ -42,14 +41,6 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 				'hideInLists' => true
 			),
 		];
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getUniquenessFields() : array
-	{
-		return ['name'];
 	}
 
 	/**
@@ -93,44 +84,30 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 
 	public function __get($name){
 		if ($name == "libraries") {
-			return $this->getLibraries();
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
+				$obj = new JavaScriptSnippetLibrary();
+				$obj->javascriptSnippetId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+				}
+			}
+			return $this->_libraries;
 		} elseif ($name == "locations") {
-			return $this->getLocations();
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
+				$obj = new JavaScriptSnippetLocation();
+				$obj->javascriptSnippetId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_locations[$obj->locationId] = $obj->locationId;
+				}
+			}
+			return $this->_locations;
 		}else{
 			return $this->_data[$name];
 		}
-	}
-
-	/**
-	 * @return int[]
-	 */
-	public function getLibraries() : ?array{
-		if (!isset($this->_libraries) && $this->id){
-			$this->_libraries = [];
-			$obj = new JavaScriptSnippetLibrary();
-			$obj->javascriptSnippetId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_libraries[$obj->libraryId] = $obj->libraryId;
-			}
-		}
-		return $this->_libraries;
-	}
-
-	/**
-	 * @return int[]
-	 */
-	public function getLocations() : ?array{
-		if (!isset($this->_locations) && $this->id){
-			$this->_locations = [];
-			$obj = new JavaScriptSnippetLocation();
-			$obj->javascriptSnippetId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_locations[$obj->locationId] = $obj->locationId;
-			}
-		}
-		return $this->_locations;
 	}
 
 	public function __set($name, $value){
@@ -181,9 +158,5 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 				}
 			}
 		}
-	}
-
-	public function okToExport(array $selectedFilters) : bool{
-		return parent::okToExport($selectedFilters);
 	}
 }

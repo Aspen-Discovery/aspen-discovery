@@ -499,8 +499,7 @@ BODY;
 						'value' => $facetValue,
 						'display' => $facetValue,
 						'count' => (string)$value->Count,
-						'isApplied' => $isApplied,
-						'countIsApproximate' => false
+						'isApplied' => $isApplied
 					);
 					if ($isApplied) {
 						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);

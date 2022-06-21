@@ -189,12 +189,12 @@
                             {/if}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 							{/if}
 						{else}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 							{/if}
 							{if $record->canFreeze}
 								{if $record->frozen}

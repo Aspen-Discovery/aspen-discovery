@@ -442,18 +442,4 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function hasIssueSummaries(){
 		return false;
 	}
-
-	public function isPromptForHoldNotifications() : bool
-	{
-		return false;
-	}
-
-	public function getHoldNotificationTemplate() : ?string
-	{
-		return null;
-	}
-
-	function validateUniqueId(User $user){
-		//By default, do nothing, this should be overridden for ILSs that use masquerade
-	}
 }

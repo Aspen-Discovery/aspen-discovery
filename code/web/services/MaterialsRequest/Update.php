@@ -35,7 +35,7 @@ class MaterialsRequest_Update extends Action {
 		}elseif (!UserAccount::isLoggedIn()){
 			$interface->assign('error', 'Sorry, you must be logged in to update a materials request.');
 			$processForm = false;
-		}elseif (UserAccount::userHasPermission('Manage Library Materials Requests') && $requestUser && ($user->getHomeLibrary() == null || ($requestUser->getHomeLibrary()->libraryId == $user->getHomeLibrary()->libraryId))){
+		}elseif (UserAccount::userHasPermission('Manage Library Materials Requests') && $requestUser && $requestUser->getHomeLibrary()->libraryId == $user->getHomeLibrary()->libraryId){
 			//Ok to process because they are an admin for the user's home library
 			$processForm = true;
 		}elseif ($user->id != $materialsRequest->createdBy){
@@ -113,9 +113,6 @@ class MaterialsRequest_Update extends Action {
 					$interface->assign('success', true);
 					$interface->assign('materialsRequest', $materialsRequest);
 					if ($statusChanged){
-						//Update usage table
-						$materialsRequest->updateUsageTable();
-
 						//Send an email as needed
 						$materialsRequest->sendStatusChangeEmail();
 					}

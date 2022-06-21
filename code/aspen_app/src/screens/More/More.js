@@ -10,7 +10,6 @@ import {loadError} from "../../components/loadError";
 import {UseColorMode} from "../../themes/theme";
 import {AuthContext} from "../../components/navigation";
 import {GLOBALS} from "../../util/globals";
-import {userContext} from "../../context/user";
 
 export default class More extends Component {
 	constructor() {
@@ -75,8 +74,6 @@ export default class More extends Component {
 		WebBrowser.openBrowserAsync(url);
 	}
 
-	static contextType = userContext;
-
 	render() {
 		if (this.state.isLoading) {
 			return (loadingSpinner());
@@ -85,12 +82,6 @@ export default class More extends Component {
 		if (this.state.hasError) {
 			return (loadError(this.state.error));
 		}
-
-		const user = this.context.user;
-		const location = this.context.location;
-		const library = this.context.library;
-
-		console.log(library);
 
 		return (
 			<Box>
@@ -101,8 +92,8 @@ export default class More extends Component {
 				/>
 
 				<Center mt={5}>
-					<Text mt={10} fontSize="xs" bold>Aspen LiDA <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}]</Text></Text>
-					{library.discoveryVersion ? (<Text fontSize="xs" bold>Aspen Discovery <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{library.discoveryVersion}</Text></Text>) : null}
+					<Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{GLOBALS.appVersion} p[{GLOBALS.appPatch}]</Text></Text>
+					<Text fontSize="xs" bold>{translate('app.build')} <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{GLOBALS.appBuild}</Text></Text>
 				</Center>
 			</Box>
 		);

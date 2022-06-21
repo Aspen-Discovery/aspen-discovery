@@ -36,7 +36,7 @@ class GroupedWorkTestSearch extends DataObject
 		$terms = preg_split("/\\r\\n|\\r|\\n/", $this->searchTerm);
 		$allPass = true;
 		foreach ($terms as $searchTerm){
-			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local');
 			$searchObject->setSearchTermWithIndex($this->searchIndex, $searchTerm);

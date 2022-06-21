@@ -85,12 +85,4 @@ abstract class FacetSetting extends DataObject {
 		$this->collapseByDefault = true;
 		$this->useMoreFacetPopup = true;
 	}
-
-	function getFacetName($searchVersion){
-		if ($searchVersion == 2 && $this->facetName == 'collection_group'){
-			return 'collection';
-		} else {
-			return $this->facetName;
-		}
-	}
 }

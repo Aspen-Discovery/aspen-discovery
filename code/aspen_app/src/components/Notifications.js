@@ -105,7 +105,7 @@ async function registerForPushNotificationsAsync() {
 /** status/colorScheme options: success, error, info, warning **/
 export function showILSMessage(type, message) {
 	return (
-		<Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2}>
+		<Alert w="100%" status={type} colorScheme={type} mb={2}>
 			<HStack
 				flexShrink={1}
 				space={2}
@@ -114,7 +114,7 @@ export function showILSMessage(type, message) {
 			>
 				<HStack flexShrink={1} space={2} alignItems="center">
 					<Alert.Icon/>
-					<Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">{message}</Text>
+					<Text fontSize="md" fontWeight="medium" color="coolGray.800">{message}</Text>
 				</HStack>
 			</HStack>
 		</Alert>

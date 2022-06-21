@@ -98,8 +98,6 @@ public interface Record extends Serializable {
      */
     DataField getDataField(String tag);
 
-    DataField getDataField(int tag);
-
     /**
      * Returns a list of data fields
      *
@@ -134,8 +132,6 @@ public interface Record extends Serializable {
      */
     VariableField getVariableField(String tag);
 
-    VariableField getVariableField(int tag);
-
     /**
      * Returns a list of variable fields with the given tag.
      *
@@ -144,21 +140,15 @@ public interface Record extends Serializable {
      */
     List<VariableField> getVariableFields(String tag);
 
-    List<VariableField> getVariableFields(int tag);
-
     /**
      * Gets a {@link List} of {@link DataField}s with the supplied tag.
      */
     List<DataField> getDataFields(final String tag);
 
-    List<DataField> getDataFields(final int tag);
-
     /**
      * Gets a {@link List} of {@link DataField}s with the supplied tag.
      */
     List<ControlField> getControlFields(final String tag);
-
-    List<ControlField> getControlFields(final int tag);
 
     /**
      * Returns a list of variable fields for the given tags.
@@ -175,8 +165,6 @@ public interface Record extends Serializable {
      */
     List<VariableField> getVariableFields(String[] tags);
 
-    List<VariableField> getVariableFields(int[] tags);
-
     /**
      * Returns a list of variable fields for the given tags.
      * <p>
@@ -191,8 +179,6 @@ public interface Record extends Serializable {
      * @return a list of fields that matches one of the supplied tags
      */
     List<DataField> getDataFields(String[] tags);
-
-    List<DataField> getDataFields(int[] tags);
 
     /**
      * Returns the <code>Leader</code>.
@@ -235,8 +221,6 @@ public interface Record extends Serializable {
      */
     List<VariableField> find(String tag, String pattern);
 
-    List<VariableField> find(int tag, String pattern);
-
     /**
      * Returns a List of VariableField objects with the given tags that have a
      * data element that matches the given regular expression.
@@ -250,8 +234,6 @@ public interface Record extends Serializable {
      * @return List - the result list
      */
     List<VariableField> find(String[] tag, String pattern);
-
-    List<VariableField> find(int[] tag, String pattern);
 
     /**
      * Logs an error message using the stated severity level.  Uses the values passed  

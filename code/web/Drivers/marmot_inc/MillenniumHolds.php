@@ -634,74 +634,100 @@ class MillenniumHolds{
 			$title = $record->getTitle();
 		}
 
-		if (!empty($_REQUEST['cancelDate'])){
-			$date = $_REQUEST['cancelDate'];
-		}else{
-			if ($library->defaultNotNeededAfterDays == 0){
-				//Default to a date 6 months (half a year) in the future.
-				$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-				$date = date('m/d/Y', $sixMonthsFromNow);
+		// Offline Holds
+		global $offlineMode;
+		if ($offlineMode){
+			require_once ROOT_DIR . '/sys/OfflineHold.php';
+			$offlineHold = new OfflineHold();
+			$offlineHold->bibId = $bib1;
+			$offlineHold->patronBarcode = $patron->getBarcode();
+			$offlineHold->patronId = $patron->id;
+			$offlineHold->timeEntered = time();
+			$offlineHold->status = 'Not Processed';
+			if ($offlineHold->insert()){
+				return array(
+					'title' => $title,
+					'bib' => $bib1,
+					'success' => true,
+					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
 			}else{
-				//Default to a date 6 months (half a year) in the future.
-				$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-				$date = date('m/d/Y', $nnaDate);
+				return array(
+					'title' => $title,
+					'bib' => $bib1,
+					'success' => false,
+					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.'
+				);
 			}
-		}
-
-		list($Month, $Day, $Year)=explode("/", $date);
-
-		//Make sure to connect via the driver so cookies will be correct
-		$this->driver->curlWrapper->curl_connect();
-
-		$loginResult = $this->driver->_curl_login($patron);
-		if (!$loginResult){
-			return array(
-				'title' => $title,
-				'bib' => $bib1,
-				'success' => false,
-				'message' => 'Unable to login to the circulation system to place your hold.'
-			);
-		}
-
-		$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
-		$this->driver->curlWrapper->curlGetPage($curl_url);
-
-		global $librarySingleton;
-		$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-		if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
-			$post_data['needby_Month'] = $Month;
-			$post_data['needby_Day'] = $Day;
-			$post_data['needby_Year'] = $Year;
 		}else{
-			$post_data['needby_Month'] = 'Month';
-			$post_data['needby_Day'] = 'Day';
-			$post_data['needby_Year'] = 'Year';
-		}
-
-		$post_data['pat_submit']="submit";
-		$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
-		if (!empty($itemId) && $itemId != -1){
-			if ($itemId[0] == '.'){
-				$itemId = substr($itemId, 1, -1);
+			if (!empty($_REQUEST['cancelDate'])){
+				$date = $_REQUEST['cancelDate'];
+			}else{
+				if ($library->defaultNotNeededAfterDays == 0){
+					//Default to a date 6 months (half a year) in the future.
+					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
+					$date = date('m/d/Y', $sixMonthsFromNow);
+				}else{
+					//Default to a date 6 months (half a year) in the future.
+					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+					$date = date('m/d/Y', $nnaDate);
+				}
 			}
-			$post_data['radio']=$itemId;
+
+			list($Month, $Day, $Year)=explode("/", $date);
+
+			//Make sure to connect via the driver so cookies will be correct
+			$this->driver->curlWrapper->curl_connect();
+
+			$loginResult = $this->driver->_curl_login($patron);
+			if (!$loginResult){
+				return array(
+					'title' => $title,
+					'bib' => $bib1,
+					'success' => false,
+					'message' => 'Unable to login to the circulation system to place your hold.'
+				);
+			}
+
+			$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
+			$this->driver->curlWrapper->curlGetPage($curl_url);
+
+			global $librarySingleton;
+			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
+			if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
+				$post_data['needby_Month'] = $Month;
+				$post_data['needby_Day'] = $Day;
+				$post_data['needby_Year'] = $Year;
+			}else{
+				$post_data['needby_Month'] = 'Month';
+				$post_data['needby_Day'] = 'Day';
+				$post_data['needby_Year'] = 'Year';
+			}
+
+			$post_data['pat_submit']="submit";
+			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
+			if (!empty($itemId) && $itemId != -1){
+				if ($itemId[0] == '.'){
+					$itemId = substr($itemId, 1, -1);
+				}
+				$post_data['radio']=$itemId;
+			}
+
+			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
+
+			$logger->log("Placing hold $recordId : $title", Logger::LOG_NOTICE);
+
+			$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
+
+			//Parse the response to get the status message
+			$hold_result = $this->_getHoldResult($sResult);
+			$hold_result['title']  = $title;
+			$hold_result['bid'] = $bib1;
+			if ($hold_result['success']){
+				$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
+			}
+			return $hold_result;
 		}
-
-		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
-
-		$logger->log("Placing hold $recordId : $title", Logger::LOG_NOTICE);
-
-		$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
-
-		//Parse the response to get the status message
-		$hold_result = $this->_getHoldResult($sResult);
-		$hold_result['title']  = $title;
-		$hold_result['bid'] = $bib1;
-		if ($hold_result['success']){
-			$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
-			$patron->forceReloadOfHolds();
-		}
-		return $hold_result;
 	}
 
 	/**
@@ -748,67 +774,94 @@ class MillenniumHolds{
 			$title = $record->getTitle();
 		}
 
-		if (!empty($_REQUEST['cancelDate'])){
-			$date = $_REQUEST['cancelDate'];
-		}else{
-			global $library;
-			if ($library->defaultNotNeededAfterDays == 0){
-				//Default to a date 6 months (half a year) in the future.
-				$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-				$date = date('m/d/Y', $sixMonthsFromNow);
+		// Offline Holds
+		global $offlineMode;
+		if ($offlineMode){
+			require_once ROOT_DIR . '/sys/OfflineHold.php';
+			$offlineHold = new OfflineHold();
+			$offlineHold->bibId = $bib1;
+			$offlineHold->patronBarcode = $patron->getBarcode();
+			$offlineHold->patronId = $patron->id;
+			$offlineHold->timeEntered = time();
+			$offlineHold->status = 'Not Processed';
+			if ($offlineHold->insert()){
+				return array(
+						'title' => $title,
+						'bib' => $bib1,
+						'success' => true,
+						'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
 			}else{
-				//Default to a date 6 months (half a year) in the future.
-				$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-				$date = date('m/d/Y', $nnaDate);
+				return array(
+						'title' => $title,
+						'bib' => $bib1,
+						'success' => false,
+						'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
 			}
-		}
 
-		list($Month, $Day, $Year)=explode("/", $date);
 
-		//Make sure to connect via the driver so cookies will be correct
-		$this->driver->curlWrapper->curl_connect();
+		}else{
+			if (!empty($_REQUEST['cancelDate'])){
+				$date = $_REQUEST['cancelDate'];
+			}else{
+				global $library;
+				if ($library->defaultNotNeededAfterDays == 0){
+					//Default to a date 6 months (half a year) in the future.
+					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
+					$date = date('m/d/Y', $sixMonthsFromNow);
+				}else{
+					//Default to a date 6 months (half a year) in the future.
+					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+					$date = date('m/d/Y', $nnaDate);
+				}
+			}
+
+			list($Month, $Day, $Year)=explode("/", $date);
+
+			//Make sure to connect via the driver so cookies will be correct
+			$this->driver->curlWrapper->curl_connect();
 
 //			curl_setopt($curl_connection, CURLOPT_POST, true);
 
-		$loginResult = $this->driver->_curl_login($patron);
+			$loginResult = $this->driver->_curl_login($patron);
 
-		$volumeId = substr(str_replace('.j', 'j', $volumeId), 0, -1);
-		$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib&jrecnum=$volumeId";
+			$volumeId = substr(str_replace('.j', 'j', $volumeId), 0, -1);
+			$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib&jrecnum=$volumeId";
 
-		global $librarySingleton;
-		$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-		if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
-			$post_data['needby_Month']= $Month;
-			$post_data['needby_Day']= $Day;
-			$post_data['needby_Year']=$Year;
-		}else{
-			$post_data['needby_Month']= 'Month';
-			$post_data['needby_Day']= 'Day';
-			$post_data['needby_Year']='Year';
+			global $librarySingleton;
+			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
+			if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
+				$post_data['needby_Month']= $Month;
+				$post_data['needby_Day']= $Day;
+				$post_data['needby_Year']=$Year;
+			}else{
+				$post_data['needby_Month']= 'Month';
+				$post_data['needby_Day']= 'Day';
+				$post_data['needby_Year']='Year';
+			}
+
+			$post_data['pat_submit']="submit";
+			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
+			if (!empty($itemId) && $itemId != -1){
+				$post_data['radio']=$itemId;
+			}
+
+			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
+
+			$logger->log("Placing hold $recordId : $title", Logger::LOG_NOTICE);
+
+			$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
+
+			//Parse the response to get the status message
+			$hold_result = $this->_getHoldResult($sResult);
+			$hold_result['title']  = $title;
+			$hold_result['bid'] = $bib1;
+
+			if ($hold_result['success']){
+				$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
+			}
+			return $hold_result;
 		}
-
-		$post_data['pat_submit']="submit";
-		$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
-		if (!empty($itemId) && $itemId != -1){
-			$post_data['radio']=$itemId;
-		}
-
-		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
-
-		$logger->log("Placing hold $recordId : $title", Logger::LOG_NOTICE);
-
-		$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
-
-		//Parse the response to get the status message
-		$hold_result = $this->_getHoldResult($sResult);
-		$hold_result['title']  = $title;
-		$hold_result['bid'] = $bib1;
-
-		if ($hold_result['success']){
-			$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
-			$patron->forceReloadOfHolds();
-		}
-		return $hold_result;
 	}
 
 	/**

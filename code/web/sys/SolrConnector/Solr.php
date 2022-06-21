@@ -574,7 +574,7 @@ abstract class Solr
 							}
 						}
 					} elseif ($field == 'id') {
-						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})(-\w{3})?"?$/i', $fieldValue)) {
+						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"?$/i', $fieldValue)) {
 							continue;
 						}
 					} elseif ($field == 'alternate_ids') {
@@ -1050,7 +1050,6 @@ abstract class Solr
 	{
 		global $timer;
 		global $configArray;
-		global $solrScope;
 		// Query String Parameters
 		$options = array('q' => $query, 'q.op' => 'AND', 'rows' => $limit, 'start' => $start, 'indent' => 'yes');
 
@@ -1074,6 +1073,23 @@ abstract class Solr
 		//We will do this whenever all or part of a string is surrounded by quotes.
 		if (is_array($query)) {
 			echo("Invalid query " . print_r($query, true));
+		}
+		if (preg_match('/^\\"[^\\"]+?\\"$/', $query)) {
+			if ($handler == 'Keyword') {
+				$handler = 'KeywordProper';
+			} else if ($handler == 'Author') {
+				$handler = 'AuthorProper';
+			} else if ($handler == 'Subject') {
+				$handler = 'SubjectProper';
+			} else if ($handler == 'AllFields') {
+				$handler = 'KeywordProper';
+			} else if ($handler == 'Title') {
+				$handler = 'TitleProper';
+			} else if ($handler == 'Title') {
+				$handler = 'TitleProper';
+			} else if ($handler == 'Series') {
+				$handler = 'SeriesProper';
+			}
 		}
 
 		// Determine which handler to use
@@ -1172,12 +1188,47 @@ abstract class Solr
 		}
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
+		$facetInfoForFieldKey = [];
 		if ($filter != null && $scopingFilters != null) {
 			if (!is_array($filter)) {
 				$filter = array($filter);
 			}
-
-			$filters = array_merge($filter, $scopingFilters);
+			//Check the filters to make sure they are for the correct scope
+			$validFields = $this->loadValidFields();
+			$dynamicFields = $this->loadDynamicFields();
+			global $solrScope;
+			$validFilters = array();
+			foreach ($filter as $id => $filterTerm) {
+				list($fieldName, $term) = explode(":", $filterTerm, 2);
+				$tagging = '';
+				if (preg_match("/({!tag=\d+})(.*)/", $fieldName, $matches)){
+					$tagging = $matches[1];
+					$fieldName = $matches[2];
+				}
+				if (!in_array($fieldName, $validFields)) {
+					//Special handling for availability_by_format
+					if (preg_match("/availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
+						//This is a valid field
+						$validFilters[$id] = $filterTerm;
+					} elseif (preg_match("/available_at_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
+						//This is a valid field
+						$validFilters[$id] = $filterTerm;
+					} else {
+						//Field doesn't exist, check to see if it is a dynamic field
+						//Where we can replace the scope with the current scope
+						foreach ($dynamicFields as $dynamicField) {
+							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
+								//This is a dynamic field with the wrong scope
+								$validFilters[$id] = $tagging . $dynamicField . $solrScope . ":" . $term;
+								break;
+							}
+						}
+					}
+				} else {
+					$validFilters[$id] = $filterTerm;
+				}
+			}
+			$filters = array_merge($validFilters, $scopingFilters);
 		} else if ($filter == null) {
 			$filters = $scopingFilters;
 		} else {
@@ -1192,6 +1243,25 @@ abstract class Solr
 			$options['facet.method'] = 'fcs';
 			$options['facet.threads'] = 25;
 			$options['facet.limit'] = (isset($facet['limit'])) ? $facet['limit'] : null;
+
+			//Determine which fields should be treated as enums
+			global $solrScope;
+			if (preg_match('/.*(grouped_works).*/i', $this->host)) {
+				$options["f.series_facet.facet.mincount"] = 2;
+				$options["f.target_audience_full.facet.method"] = 'enum';
+				$options["f.target_audience.facet.method"] = 'enum';
+				$options["f.literary_form_full.facet.method"] = 'enum';
+				$options["f.literary_form.facet.method"] = 'enum';
+				$options["f.lexile_code.facet.method"] = 'enum';
+				$options["f.mpaa_rating.facet.method"] = 'enum';
+				$options["f.rating_facet.facet.method"] = 'enum';
+				$options["f.format_category_{$solrScope}.facet.method"] = 'enum';
+				$options["f.format_{$solrScope}.facet.method"] = 'enum';
+				$options["f.availability_toggle_{$solrScope}.facet.method"] = 'enum';
+				$options["f.local_time_since_added_{$solrScope}.facet.method"] = 'enum';
+				$options["f.owning_library_{$solrScope}.facet.method"] = 'enum';
+				$options["f.owning_location_{$solrScope}.facet.method"] = 'enum';
+			}
 
 			unset($facet['limit']);
 			if (isset($facet['field']) && is_array($facet['field']) && in_array('date_added', $facet['field'])) {
@@ -1208,8 +1278,20 @@ abstract class Solr
 			}
 
 			if (isset($facet['field'])) {
-				foreach ($facet['field'] as $facetField => $facetInfo) {
-					$options['facet.field'][] = $facetInfo;
+				foreach ($facet['field'] as $key => $facetInfo) {
+					if ($facetInfo instanceof FacetSetting) {
+						$facetName = $facetInfo->facetName;
+						if ($facetInfo->multiSelect) {
+							$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+							$options['facet.field'][] = "{!ex={$facetKey}}" . $key;
+						} elseif (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0) {
+							$options['facet.field'][] = '{!ex=avail}' . $key;
+						} else {
+							$options['facet.field'][] = $key;
+						}
+					} else {
+						$options['facet.field'][] = $facetInfo;
+					}
 				}
 			} else {
 				$options['facet.field'] = null;
@@ -1226,6 +1308,11 @@ abstract class Solr
 				$options['facet.limit'] = $facet['limit'];
 				unset($facet['limit']);
 			}
+			if (preg_match('/.*(grouped_works).*/i', $this->host)) {
+				if (isset($searchLibrary) && $searchLibrary->showAvailableAtAnyLocation) {
+					$options['f.available_at.facet.missing'] = 'true';
+				}
+			}
 
 			foreach ($facet as $param => $value) {
 				if ($param != 'additionalOptions' && $param != 'field') {
@@ -1239,6 +1326,32 @@ abstract class Solr
 		}
 
 		$timer->logTime("build facet options");
+
+		//Check to see if there are filters we want to show all values for
+		global $solrScope;
+		if (isset($filters) && is_array($filters)) {
+			foreach ($filters as $key => $value) {
+				if (is_numeric($key)) {
+					$facetName = substr($value, 0, strpos($value, ':'));
+				} else {
+					$facetName = $key;
+				}
+				$fullFacetName = $facetName;
+				$facetName = str_replace("_$solrScope", "", $facetName);
+
+				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
+					$filters[$key] = '{!tag=avail}' . $value;
+				}elseif (isset($facet['field'][$facetName])) {
+					$facetSetting = $facet['field'][$facetName];
+					if ($facetSetting instanceof FacetSetting) {
+						if ($facetSetting->multiSelect) {
+							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
+							$filters[$key] = "{!tag={$facetKey}}" . $value;
+						}
+					}
+				}
+			}
+		}
 
 		// Build Filter Query
 		if (is_array($filters) && count($filters)) {
@@ -1401,25 +1514,11 @@ abstract class Solr
 	 */
 	function deleteRecord($id)
 	{
-		$body = "<delete><id>$id</id></delete>";
-
-		$result = $this->_update($body);
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result);
+		if ($this->debugSolrQuery) {
+			echo "<pre>Delete Record: $id</pre>\n";
 		}
 
-		return $result;
-	}
-
-	/**
-	 * Delete All Records from Database
-	 *
-	 * @return    boolean
-	 * @access    public
-	 */
-	function deleteAllRecords()
-	{
-		$body = "<delete><query>*:*</query></delete>";
+		$body = "<delete><id>$id</id></delete>";
 
 		$result = $this->_update($body);
 		if ($result instanceof AspenError) {
@@ -1627,11 +1726,19 @@ abstract class Solr
 
 		$this->pingServer();
 
+		if ($this->debugSolrQuery) {
+			echo "<pre>POST: ";
+			print_r($this->host . "/update/");
+			echo "XML:\n";
+			print_r($xml);
+			echo "</pre>\n";
+		}
+
 		// Set up XML
 		$this->client->addCustomHeaders(['Content-Type: text/xml; charset=utf-8'], false);
 
 		// Send Request
-		$result = $this->client->curlPostBodyData($this->host . "/update?commit=true", $xml, false);
+		$result = $this->client->curlPostBodyData($this->host . "/update/", $xml, false);
 		$responseCode = $this->client->getResponseCode();
 
 		if ($responseCode == 500 || $responseCode == 400) {
@@ -1954,14 +2061,15 @@ abstract class Solr
 
 	function loadDynamicFields()
 	{
-		global $memCache;
+		global /** @var Memcache $memCache*/ $memCache;
 		global $solrScope;
 		$fields = $memCache->get("schema_dynamic_fields_{$solrScope}_{$this->index}");
 		if (!$fields || isset($_REQUEST['reload'])) {
 			global $configArray;
-			$schemaUrl = $configArray['Index']['url'] . "/$this->index/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8";
+			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = simplexml_load_file($schemaUrl);
 			$fields = array();
+			/** @noinspection PhpUndefinedFieldInspection */
 			foreach ($schema->fields->dynamicField as $field) {
 				$fields[] = substr((string)$field['name'], 0, -1);
 			}
@@ -1992,7 +2100,7 @@ abstract class Solr
 				/** @noinspection PhpUndefinedFieldInspection */
 				foreach ($schema->fields->field as $field) {
 					//print_r($field);
-					if ($field['stored'] == 'true' || $field['indexed'] == 'true') {
+					if ($field['stored'] == 'true') {
 						$fields[] = (string)$field['name'];
 					}
 				}

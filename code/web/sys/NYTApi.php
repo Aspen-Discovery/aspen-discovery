@@ -60,7 +60,7 @@ class NYTApi {
 		// Close request to clear up some resources
 		curl_close($curl);
 		//NYT recommends sleeping for 6 seconds between API calls to avoid rate limits.
-		sleep(7);
+		sleep(6);
 
 		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
 			NYTApi::$allListsInfo = $response;

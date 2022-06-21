@@ -160,7 +160,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		checksumCalculator.reset();
 		checksumCalculator.update(marcAsString.getBytes());
 		long itemChecksum = checksumCalculator.getValue();
-		String cloudLibraryId = ((ControlField) marcRecord.getVariableField(1)).getData();
+		String cloudLibraryId = ((ControlField) marcRecord.getVariableField("001")).getData();
 		logger.debug("processing " + cloudLibraryId);
 
 		CloudLibraryTitle existingTitle = existingRecords.get(cloudLibraryId);
@@ -180,8 +180,6 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		String title = MarcUtil.getFirstFieldVal(marcRecord, "245a");
 		String subtitle = MarcUtil.getFirstFieldVal(marcRecord, "245b");
 		String author = MarcUtil.getFirstFieldVal(marcRecord, "100a");
-
-		String primaryLanguage = recordGroupingProcessor.getLanguageBasedOnMarcRecord(marcRecord);
 
 		//Get availability for the title
 		CloudLibraryAvailability availability = exporter.loadAvailabilityForRecord(cloudLibraryId);
@@ -281,7 +279,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 		String groupedWorkId = null;
 		if (metadataChanged || doFullReload) {
-			groupedWorkId = groupCloudLibraryRecord(title, subtitle, author, format, primaryLanguage, cloudLibraryId);
+			groupedWorkId = groupCloudLibraryRecord(title, subtitle, author, format, cloudLibraryId);
 		}
 		if (metadataChanged || availabilityChanged || doFullReload) {
 			logEntry.incUpdated();
@@ -293,11 +291,11 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	}
 
 	Pattern wordsInParensPattern = Pattern.compile("\\(.*?\\)", Pattern.CASE_INSENSITIVE);
-	private String groupCloudLibraryRecord(String title, String subtitle, String author, String format, String primaryLanguage, String cloudLibraryId) {
+	private String groupCloudLibraryRecord(String title, String subtitle, String author, String format, String cloudLibraryId) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
 		//cloudLibrary puts awards within parentheses, we need to remove all of those.
 		title = wordsInParensPattern.matcher(title).replaceAll("");
-		return recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, format, primaryLanguage, true);
+		return recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, format, true);
 	}
 
 	int getNumDocuments() {

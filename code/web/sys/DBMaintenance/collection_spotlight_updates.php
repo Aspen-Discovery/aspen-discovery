@@ -196,7 +196,7 @@ function updateSpotlightSources(){
 					$spotlightList->update();
 				}elseif ($sourceName == 'search') {
 					if (empty($spotlightList->sourceListId)){
-						/** @var SearchObject_AbstractGroupedWorkSearcher $searcher */
+						/** @var SearchObject_GroupedWorkSearcher $searcher */
 						$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
 						$savedSearch = $searcher->restoreSavedSearch($sourceId, false, true);
 						if ($savedSearch !== false) {

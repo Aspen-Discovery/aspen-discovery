@@ -4,8 +4,6 @@ import BrowseCategoryHome from "../../screens/BrowseCategory/Home";
 import {translate} from "../../translations/translations";
 import GroupedWork from "../../screens/GroupedWork/GroupedWork";
 import AppHeader from "../AppHeader";
-import SearchByCategory from "../../screens/BrowseCategory/SearchByCategory";
-import Results from "../../screens/Search/Results";
 
 
 const BrowseStackNavigator = () => {
@@ -15,6 +13,7 @@ const BrowseStackNavigator = () => {
 			initialRouteName="HomeScreen"
 			screenOptions={{
 				headerShown: true,
+				backBehavior: "history",
 				headerBackTitleVisible: false,
 			}}
 		>
@@ -31,20 +30,6 @@ const BrowseStackNavigator = () => {
 				options={{
 					title: translate('grouped_work.title') ,
 				}}
-			/>
-			<Stack.Screen
-				name="SearchByCategory"
-				component={SearchByCategory}
-				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.categoryLabel,
-				})}
-			/>
-			<Stack.Screen
-				name="SearchByAuthor"
-				component={Results}
-				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.searchTerm,
-				})}
 			/>
 		</Stack.Navigator>
 	)

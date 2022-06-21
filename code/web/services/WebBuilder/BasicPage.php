@@ -12,10 +12,6 @@ class WebBuilder_BasicPage extends Action{
 		$userCanAccess = $this->canView();
 
 		if (!$userCanAccess){
-			global $interface;
-			$interface->assign('id', strip_tags($_REQUEST['id']));
-			$interface->assign('module', $_REQUEST['module']);
-			$interface->assign('action', $_REQUEST['action']);
 			$this->display('noPermission.tpl', 'Access Error', '');
 			exit();
 		}
@@ -51,6 +47,8 @@ class WebBuilder_BasicPage extends Action{
 
 	function canView() : bool
 	{
+		/** @var Location $locationSingleton */
+		global $locationSingleton;
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAccess.php';
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
@@ -60,10 +58,49 @@ class WebBuilder_BasicPage extends Action{
 		$id = strip_tags($_REQUEST['id']);
 		$page = new BasicPage();
 		$page->id = $id;
-		if ($page->find(true)){
-			return $page->canView();
-		}else{
-			return false;
+		$page->find();
+		while($page->fetch()){
+			$requireLogin = $page->requireLogin;
+			$allowInLibrary = $page->requireLoginUnlessInLibrary;
+		}
+
+		$activeLibrary = $locationSingleton->getActiveLocation();
+		$user = UserAccount::getLoggedInUser();
+		if($requireLogin){
+			if($allowInLibrary && $activeLibrary != null) {
+				return true;
+			}
+			if(!$user) {
+				return false;
+			} else {
+				$userPatronType = $user->patronType;
+
+				if ($userPatronType == NULL) {
+					return true;
+				} elseif (empty($page->getAccess())){
+					//No patron types defined, everyone can access
+					return true;
+				} else {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
+						$patronTypeId = $patronType->id;
+					}else{
+						return false;
+					}
+
+					$patronTypeLink = new BasicPageAccess();
+					$patronTypeLink->basicPageId = $id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if ($patronTypeLink->find(true)) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			}
+		} else {
+			return true;
 		}
 
 	}

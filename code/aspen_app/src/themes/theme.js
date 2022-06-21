@@ -1,6 +1,6 @@
 import React from "react";
 import {extendTheme, Box, Icon, IconButton, useColorMode, useColorModeValue} from "native-base";
-import {MaterialIcons} from "@expo/vector-icons";
+import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import {create} from 'apisauce';
 import Constants from "expo-constants";
 import chroma from "chroma-js";
@@ -8,7 +8,6 @@ import {createAuthTokens, getHeaders} from "../util/apiAuth";
 import {getAppSettings, getLibraryInfo} from "../util/loadLibrary";
 import _ from "lodash";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Sentry from 'sentry-expo';
 
 async function getThemeInfo() {
 	let themeId = 1;
@@ -36,6 +35,7 @@ async function getThemeInfo() {
 		console.log("Theme downloaded and swatches generated from <" + Constants.manifest.extra.apiUrl + "> from theme used for library #" + Constants.manifest.extra.mainLibrary + ".");
 		return palettes;
 	} else {
+		console.log(response);
 		const COLOR_SCHEMES = [
 			'#3dbdd6',
 			'#9acf87',
@@ -43,7 +43,6 @@ async function getThemeInfo() {
 		];
 		const palettes = COLOR_SCHEMES.map(generateSwatches);
 		console.log("Backup theme loaded.");
-		console.log(response);
 		return palettes;
 	}
 }
@@ -155,7 +154,6 @@ export async function saveTheme() {
 		} catch (e) {
 			//save error
 			console.log("Unable to save essential colors to async storage in theme.js");
-			console.log(e);
 		}
 
 
@@ -173,7 +171,6 @@ export async function fetchTheme() {
 		return colors;
 	} catch (e) {
 		console.log("Unable to fetch essential colors from async storage.");
-		console.log(e);
 	}
 }
 

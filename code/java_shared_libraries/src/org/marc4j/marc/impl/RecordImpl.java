@@ -20,7 +20,10 @@
 
 package org.marc4j.marc.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.marc4j.MarcError;
 import org.marc4j.marc.ControlField;
@@ -50,8 +53,6 @@ class RecordImpl implements Record {
     List<ControlField> controlFields;
 
     List<DataField> dataFields;
-
-    HashMap<Integer, List<VariableField>> fieldsByTag = new HashMap<>();
 
     protected List<MarcError> errors = null;
 
@@ -137,11 +138,6 @@ class RecordImpl implements Record {
         } else {
             dataFields.add((DataField) field);
         }
-        Integer tagAsInt = Integer.parseInt(tag);
-        if (!fieldsByTag.containsKey(tagAsInt)){
-            fieldsByTag.put(tagAsInt, new ArrayList<>());
-        }
-        fieldsByTag.get(tagAsInt).add(field);
         stringRepresentation = null;
     }
 
@@ -204,14 +200,6 @@ class RecordImpl implements Record {
         return null;
     }
 
-    public VariableField getVariableField(final int tag) {
-        if (fieldsByTag.containsKey(tag)){
-            return fieldsByTag.get(tag).iterator().next();
-        }
-
-        return null;
-    }
-
     private boolean fieldMatches(final VariableField field, final String tag) {
         if (field.getTag().equals(tag)) {
             return true;
@@ -222,13 +210,6 @@ class RecordImpl implements Record {
             if (link != null && link.getData().equals(tag.substring(3))) {
                 return true;
             }
-        }
-        return false;
-    }
-
-    private boolean fieldMatches(final VariableField field, final int tag) {
-        if (field.getNumericTag() == tag) {
-            return true;
         }
         return false;
     }
@@ -249,14 +230,6 @@ class RecordImpl implements Record {
         return result;
     }
 
-    public List<VariableField> getVariableFields(final int tag) {
-        if (fieldsByTag.containsKey(tag)){
-            return fieldsByTag.get(tag);
-        }else {
-            return new ArrayList<>();
-        }
-    }
-
     public DataField getDataField(String tag){
         for (final DataField field : dataFields) {
             if (fieldMatches(field, tag)) {
@@ -264,15 +237,6 @@ class RecordImpl implements Record {
             }
         }
         return null;
-    }
-
-    public DataField getDataField(int tag){
-        VariableField field = getVariableField(tag);
-        if (field != null && field instanceof DataField){
-            return (DataField) field;
-        }else {
-            return null;
-        }
     }
 
     /**
@@ -289,16 +253,6 @@ class RecordImpl implements Record {
         return result;
     }
 
-    public List<DataField> getDataFields(final int tag) {
-        final List<DataField> result = new ArrayList<>();
-        for (final VariableField field : getVariableFields(tag)) {
-            if (field instanceof DataField) {
-                result.add((DataField)field);
-            }
-        }
-        return result;
-    }
-
     /**
      * Gets a {@link List} of {@link ControlField}s with the supplied tag.
      */
@@ -308,16 +262,6 @@ class RecordImpl implements Record {
         for (final ControlField field : controlFields) {
             if (fieldMatches(field, tag)) {
                 result.add(field);
-            }
-        }
-        return result;
-    }
-
-    public List<ControlField> getControlFields(final int tag) {
-        final List<ControlField> result = new ArrayList<>();
-        for (final VariableField field : getVariableFields(tag)) {
-            if (field instanceof ControlField) {
-                result.add((ControlField)field);
             }
         }
         return result;
@@ -385,15 +329,6 @@ class RecordImpl implements Record {
         return result;
     }
 
-    public List<VariableField> getVariableFields(final int[] tags) {
-        final List<VariableField> result = new ArrayList<VariableField>();
-        for (int tag : tags) {
-            result.addAll(getVariableFields(tag));
-        }
-
-        return result;
-    }
-
     /**
      * Gets the {@link DataField}s in the {@link Record} with the supplied tags.
      */
@@ -407,15 +342,6 @@ class RecordImpl implements Record {
                     break;
                 }
             }
-        }
-
-        return result;
-    }
-
-    public List<DataField> getDataFields(final int[] tags) {
-        final List<DataField> result = new ArrayList<>();
-        for (int tag : tags) {
-            result.addAll(getDataFields(tag));
         }
 
         return result;
@@ -512,35 +438,11 @@ class RecordImpl implements Record {
         return result;
     }
 
-    public List<VariableField> find(final int tag, final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
-
-        for (final VariableField field : getVariableFields(tag)) {
-            if (field.find(pattern)) {
-                result.add(field);
-            }
-        }
-
-        return result;
-    }
-
     /**
      * Finds all the {@link VariableField}s that match the supplied tags and regular expression pattern.
      */
     @Override
     public List<VariableField> find(final String[] tag, final String pattern) {
-        final List<VariableField> result = new ArrayList<VariableField>();
-
-        for (final VariableField field : getVariableFields(tag)) {
-            if (field.find(pattern)) {
-                result.add(field);
-            }
-        }
-
-        return result;
-    }
-
-    public List<VariableField> find(final int[] tag, final String pattern) {
         final List<VariableField> result = new ArrayList<VariableField>();
 
         for (final VariableField field : getVariableFields(tag)) {

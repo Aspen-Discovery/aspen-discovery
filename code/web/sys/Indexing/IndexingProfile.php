@@ -57,7 +57,6 @@ class IndexingProfile extends DataObject
 	public $status;
 	public /** @noinspection PhpUnused */ $nonHoldableStatuses;
 	public /** @noinspection PhpUnused */ $statusesToSuppress;
-	public /** @noinspection PhpUnused */ $treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	public /** @noinspection PhpUnused */ $totalCheckouts;
 	public /** @noinspection PhpUnused */ $lastYearCheckouts;
 	public /** @noinspection PhpUnused */ $yearToDateCheckouts;
@@ -153,12 +152,12 @@ class IndexingProfile extends DataObject
 
 			'determineAudienceBy' => ['property' => 'determineAudienceBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Collection using audience map', '2' => 'Item Shelf Location using audience map', '3' => 'Specified Item subfield using audience map'], 'label' => 'Determine Audience By', 'description' => 'How to determine the audience for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();', 'forcesReindex' => true],
 			'audienceSubfield' => ['property' => 'audienceSubfield', 'type' => 'text', 'label' => 'Audience Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the audience', 'default' => ''],
-			'treatUnknownAudienceAs' => ['property' => 'treatUnknownAudienceAs', 'type'=>'enum', 'label' => 'Treat Unknown Audience As', 'values' => ['General' => 'General', 'Adult' => 'Adult', 'Unknown' => 'Unknown'], 'description' => 'Records with an Unknown Audience will use this audience instead.', 'default' => 'General', 'forcesReindex' => true],
+			'treatUnknownAudienceAs' => ['property' => 'treatUnknownAudienceAs', 'type'=>'enum', 'label' => 'Treat Unknown Audience As', 'values' => ['General' => 'General', 'Adult' => 'Adult', 'Unknown' => 'Unknown'], 'description' => 'Records with an Unknown Audience will use this audience instead.', 'default' => 'Unknown', 'forcesReindex' => true],
 
 			'determineLiteraryFormBy' => ['property' => 'determineLiteraryFormBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Subfield with literary_form map'], 'label' => 'Determine Literary Form By', 'description' => 'How to determine the literary for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();', 'forcesReindex' => true],
 			'literaryFormSubfield' => ['property' => 'literaryFormSubfield', 'type' => 'text', 'label' => 'Literary Form Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the literary form', 'default' => '', 'forcesReindex' => true],
-			'hideUnknownLiteraryForm' => array('property' => 'hideUnknownLiteraryForm', 'type' => 'checkbox', 'label' => 'Hide Unknown Literary Forms', 'description' => 'Whether or not Literary Form Facets of Unknown are shown', 'forcesReindex' => true, 'default' => true),
-			'hideNotCodedLiteraryForm' => array('property' => 'hideNotCodedLiteraryForm', 'type' => 'checkbox', 'label' => 'Hide Not Coded Literary Forms', 'description' => 'Whether or not Literary Form Facets of Not Coded are shown', 'forcesReindex' => true, 'default' => true),
+			'hideUnknownLiteraryForm' => array('property' => 'hideUnknownLiteraryForm', 'type' => 'checkbox', 'label' => 'Hide Unknown Literary Forms', 'description' => 'Whether or not Literary Form Facets of Unknown are shown', 'forcesReindex' => true),
+			'hideNotCodedLiteraryForm' => array('property' => 'hideNotCodedLiteraryForm', 'type' => 'checkbox', 'label' => 'Hide Not Coded Literary Forms', 'description' => 'Whether or not Literary Form Facets of Not Coded are shown', 'forcesReindex' => true),
 
 			'itemSection' => ['property' => 'itemSection', 'type' => 'section', 'label' => 'Item Information', 'hideInLists' => true, 'properties' => [
 				'suppressItemlessBibs' => array('property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed', 'forcesReindex' => true),
@@ -183,7 +182,6 @@ class IndexingProfile extends DataObject
 				'status' => array('property' => 'status', 'type' => 'text', 'label' => 'Status', 'maxLength' => 1, 'description' => 'Subfield for status', 'forcesReindex' => true),
 				'nonHoldableStatuses' => array('property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds', 'forcesReindex' => true),
 				'statusesToSuppress' => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed', 'forcesReindex' => true),
-				'treatLibraryUseOnlyGroupedStatusesAsAvailable' => array('property' => 'treatLibraryUseOnlyGroupedStatusesAsAvailable', 'type' => 'checkbox', 'label' => 'Treat Library Use Only Grouped Statuses As Available', 'description' => 'Should items that have a grouped status of Library Use Only be treated as Available', 'forcesReindex' => true, 'default'=>1),
 				'totalCheckouts' => array('property' => 'totalCheckouts', 'type' => 'text', 'label' => 'Total Checkouts', 'maxLength' => 1, 'description' => 'Subfield for total checkouts', 'forcesReindex' => true),
 				'lastYearCheckouts' => array('property' => 'lastYearCheckouts', 'type' => 'text', 'label' => 'Last Year Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts done last year', 'forcesReindex' => true),
 				'yearToDateCheckouts' => array('property' => 'yearToDateCheckouts', 'type' => 'text', 'label' => 'Year To Date', 'maxLength' => 1, 'description' => 'Subfield for checkouts so far this year', 'forcesReindex' => true),
@@ -212,7 +210,7 @@ class IndexingProfile extends DataObject
 				'specifiedFormat' => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'enum', 'values'=>[1=>'None', '3'=>'Low',6=>'Medium', 9=>'High', '12'=>'Very High'], 'label' => 'Specified Format Boost', 'description' => 'The format boost to set when using a defined format', 'default' => '8', 'required' => false, 'forcesReindex' => true),
-				'checkRecordForLargePrint' => array('property' => 'checkRecordForLargePrint', 'type' => 'checkbox', 'label' => 'Check Record for Large Print', 'default' => true, 'description' => 'Check metadata within the record to see if a book is large print', 'forcesReindex' => true),
+				'checkRecordForLargePrint' => array('property' => 'checkRecordForLargePrint', 'type' => 'checkbox', 'label' => 'Check Record for Large Print', 'default' => false, 'description' => 'Check metadata within the record to see if a book is large print', 'forcesReindex' => true),
 				'formatMap' => array(
 					'property' => 'formatMap',
 					'type' => 'oneToMany',

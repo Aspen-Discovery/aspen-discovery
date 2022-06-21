@@ -13,8 +13,9 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 	}
 
 	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return itemInfo.getStatusCode().equalsIgnoreCase("in") || groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
+	protected boolean isItemAvailable(ItemInfo itemInfo) {
+		String displayGroupedStatus = this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+		return itemInfo.getStatusCode().equalsIgnoreCase("in") || displayGroupedStatus.equals("On Shelf") || displayGroupedStatus.equals("Library Use Only");
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
@@ -23,12 +24,12 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String collectionCode = getItemSubfieldData(collectionSubfield, itemField);
 		if (includeLocationNameInDetailedLocation) {
-			location = translateValue("location", locationCode, identifier, true);
+			location = translateValue("location", locationCode, identifier);
 		}else{
 			location = "";
 		}
 		if (subLocationCode != null && subLocationCode.length() > 0){
-			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
 			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
 				if (location.length() > 0) {
 					location += " - ";
@@ -37,7 +38,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 			}
 		}
 		if (collectionCode != null && collectionCode.length() > 0 && !collectionCode.equals(subLocationCode)){
-			String translatedCollection = translateValue("collection", collectionCode, identifier, true);
+			String translatedCollection = translateValue("collection", collectionCode, identifier);
 			if (translatedCollection != null && translatedCollection.length() > 0) {
 				if (location.length() > 0) {
 					location += " - ";
@@ -50,7 +51,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 			if (location.length() > 0){
 				location += " - ";
 			}
-			location += translateValue("shelf_location", shelvingLocation, identifier, true);
+			location += translateValue("shelf_location", shelvingLocation, identifier);
 		}
 		return location;
 	}

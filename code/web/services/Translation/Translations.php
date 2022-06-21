@@ -90,7 +90,6 @@ class Translation_Translations extends Admin_Admin
 	private function exportAllTranslations()
 	{
 		set_time_limit(0);
-		ini_set('memory_limit','1G');
 		header('Content-type: application/csv');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past

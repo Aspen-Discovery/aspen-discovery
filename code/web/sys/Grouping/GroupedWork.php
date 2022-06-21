@@ -7,7 +7,6 @@ class GroupedWork extends DataObject {
 	public $full_title;
 	public $author;
 	public $grouping_category;
-	public $primary_language;
 	public $date_updated;
 	public $referenceCover;
 

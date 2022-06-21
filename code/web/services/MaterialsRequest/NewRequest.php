@@ -11,6 +11,7 @@ class MaterialsRequest_NewRequest extends Action
 
 	function launch()
 	{
+		global $configArray;
 		global $interface;
 		global $library;
 

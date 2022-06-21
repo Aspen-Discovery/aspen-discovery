@@ -37,22 +37,4 @@ class SystemUtils
 			return round($size);
 		}
 	}
-
-	static function recursive_rmdir($dir) : bool {
-		if (is_dir($dir)) {
-			$objects = scandir($dir);
-			foreach ($objects as $object) {
-				if ($object != "." && $object != "..") {
-					if (is_dir($dir."/".$object) && !is_link($dir."/".$object))
-						SystemUtils::recursive_rmdir($dir."/".$object);
-					else
-						unlink($dir."/".$object);
-				}
-			}
-			rmdir($dir);
-			return true;
-		}else{
-			return false;
-		}
-	}
 }

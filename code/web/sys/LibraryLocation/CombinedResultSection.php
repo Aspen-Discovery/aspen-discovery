@@ -21,9 +21,6 @@ abstract class CombinedResultSection extends DataObject{
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$validResultSources['ebsco_eds'] = 'EBSCO EDS';
 		}
-		if (array_key_exists('EBSCOhost', $enabledModules)) {
-			$validResultSources['ebscohost'] = 'EBSCOhost';
-		}
 		if (array_key_exists('Events', $enabledModules)){
 			$validResultSources['events'] = 'Events';
 		}
@@ -59,8 +56,6 @@ abstract class CombinedResultSection extends DataObject{
 			return "https://dp.la/search?q=$searchTerm";
 		}elseif ($this->source == 'ebsco_eds'){
 			return "/EBSCO/Results?lookfor=$searchTerm&searchSource=ebsco_eds";
-		}elseif ($this->source == 'ebscohost'){
-			return "/EBSCOhost/Results?lookfor=$searchTerm&searchSource=ebscohost";
 		}elseif ($this->source == 'events'){
 			return "/Events/Results?lookfor=$searchTerm&searchSource=events";
 		}elseif ($this->source == 'genealogy'){

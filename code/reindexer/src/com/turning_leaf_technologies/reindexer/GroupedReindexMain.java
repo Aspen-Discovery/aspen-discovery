@@ -13,13 +13,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.sql.*;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.TemporalField;
 import java.util.Date;
-import java.util.TimeZone;
 
 public class GroupedReindexMain {
 	private static BaseLogEntry logEntry;
@@ -96,22 +90,7 @@ public class GroupedReindexMain {
 
 		//Process grouped works
 		try {
-			boolean regroupAllRecords = false;
-			if (fullReindex){
-				//Check to see if we should regroup all records
-				try {
-					PreparedStatement getRegroupAllRecordsStmt = dbConn.prepareStatement("SELECT regroupAllRecordsDuringNightlyIndex from system_variables");
-					ResultSet regroupAllRecordsRS = getRegroupAllRecordsStmt.executeQuery();
-					if (regroupAllRecordsRS.next()) {
-						regroupAllRecords = regroupAllRecordsRS.getBoolean("regroupAllRecordsDuringNightlyIndex");
-					}
-					getRegroupAllRecordsStmt.close();
-				} catch (Exception e) {
-					logger.error("Unable to determine if we should regroup all records", e);
-				}
-			}
-
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, regroupAllRecords, logEntry, logger);
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, logEntry, logger);
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
@@ -120,9 +99,7 @@ public class GroupedReindexMain {
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
 						if (infoAboutWork.next()) {
-							groupedWorkIndexer.setRegroupAllRecords(true);
 							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"));
-							groupedWorkIndexer.setRegroupAllRecords(regroupAllRecords);
 						} else {
 							logger.error("Could not find a work with id " + individualWorkToProcess);
 						}
@@ -251,51 +228,12 @@ public class GroupedReindexMain {
 				String arExportPath = arSettingsRS.getString("arExportPath");
 				File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
 
-				boolean reloadArData = false;
-				if (lastFetched == 0){
-					reloadArData = true;
-				}else{
-					int updateOn = arSettingsRS.getInt("updateOn");
-					int updateFrequency = arSettingsRS.getInt("updateFrequency");
-
-					//There is some variation in when the nightly index starts, we will only update if it is after 8pm or before 6am on the specified day.
-					LocalDateTime today = LocalDateTime.now();
-					if (updateOn == 0){ //Friday night, saturday morning
-						if (today.getDayOfWeek() == DayOfWeek.FRIDAY && today.getHour() >= 12 || today.getDayOfWeek() == DayOfWeek.SATURDAY && today.getHour() < 6){
-							reloadArData = true;
-						}
-					}else if (updateOn == 1){ //Saturday night, Sunday morning
-						if (today.getDayOfWeek() == DayOfWeek.SATURDAY && today.getHour() >= 20 || today.getDayOfWeek() == DayOfWeek.SUNDAY && today.getHour() < 6){
-							reloadArData = true;
-						}
-					}
-					if (reloadArData){
-						reloadArData = false;
-						//It's the correct day to run, check the frequency.
-						long todayInSecs = new Date().getTime() / 1000;
-						long elapasedTime = todayInSecs - lastFetched;
-						int daysElapsed = (int)Math.ceil((double)elapasedTime / (double)(24 * 60 * 60));
-						logEntry.addNote("Correct day to run AR updates, checking if enough time has elapsed, " + daysElapsed + " have elapsed.");
-						if (updateFrequency == 0) { //Weekly
-							if (daysElapsed >= 7){
-								reloadArData = true;
-							}
-						}else if (updateFrequency == 1) { //Bi-Weekly
-							if (daysElapsed >= 14){
-								reloadArData = true;
-							}
-						}else if (updateFrequency == 2) { //Monthly (technically every 4 weeks)
-							if (daysElapsed >= 28){
-								reloadArData = true;
-							}
-						}
-					}
-				}
+				long existingFileLastModified = localFile.lastModified();
 
 				//Fetch the file if we have never updated or if we last updated more than a week ago
 				boolean updateDB = false;
 				//Use 23 hours rather than 24 hours to avoid the day accelerated reader loads doesn't drift.
-				if (reloadArData){
+				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60 * 1000))){
 					updateDB = true;
 					logEntry.addNote("Fetching new Accelerated Reader Data");
 					logEntry.saveResults();
@@ -333,11 +271,11 @@ public class GroupedReindexMain {
 					} catch (SftpException e) {
 						logEntry.incErrors("Sftp Error retrieving accelerated reader file from server", e);
 					}
-				}else if (localFile.exists()){
-					//If the last modification time is greater than now, update (to deal with multiple instances on the same server).
-					if (localFile.lastModified() / 1000 > lastFetched){
+				}else{
+					//We didn't have to fetch the file, but we will still update the database if the file is newer
+					//than when we last fetched
+					if ((existingFileLastModified / 1000) > lastFetched) {
 						updateDB = true;
-						logEntry.addNote("Updating AR Data because the file was last modified on the server since we last updated. ");
 					}
 				}
 

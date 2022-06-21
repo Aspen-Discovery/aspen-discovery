@@ -13,11 +13,6 @@ class WebResourceUsage extends DataObject
 	public $pageViewsByAuthenticatedUsers;
 	public $pageViewsInLibrary;
 
-	public function getUniquenessFields(): array
-	{
-		return ['resourceName','year', 'month'];
-	}
-
 	public function getNumericColumnNames() : array
 	{
 		return [
@@ -25,14 +20,5 @@ class WebResourceUsage extends DataObject
 			'pageViewsByAuthenticatedUsers',
 			'pageViewsInLibrary',
 		];
-	}
-
-	public function okToExport(array $selectedFilters): bool
-	{
-		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
-			$okToExport = true;
-		}
-		return $okToExport;
 	}
 }

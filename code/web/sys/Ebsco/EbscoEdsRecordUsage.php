@@ -11,18 +11,4 @@ class EbscoEdsRecordUsage extends DataObject
     public $month;
     public $timesViewedInSearch;
     public $timesUsed;
-
-	public function getUniquenessFields(): array
-	{
-		return ['instance','ebscoId','year', 'month'];
-	}
-
-	public function okToExport(array $selectedFilters): bool
-	{
-		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
-			$okToExport = true;
-		}
-		return $okToExport;
-	}
 }

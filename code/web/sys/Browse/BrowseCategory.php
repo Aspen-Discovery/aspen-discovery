@@ -23,23 +23,16 @@ class BrowseCategory extends BaseBrowsable
 	public $numTitlesClickedOn;
 	public $numTimesDismissed;
 
-	protected $_subBrowseCategories;
+	private $_subBrowseCategories;
 
 	function getNumericColumnNames() : array
 	{
 		return ['id', 'sourceListId', 'sourceCourseReserveId', 'userId'];
 	}
 
-	function getUniquenessFields(): array
-	{
-		return ['textId'];
-	}
-
-	/**
-	 * Note, may return invalid categories
-	 *
-	 * @return SubBrowseCategories[]
-	 */
+	/*
+	returns both valid and invalid categories
+	*/
 	public function getSubCategories()
 	{
 		global $module;
@@ -55,7 +48,7 @@ class BrowseCategory extends BaseBrowsable
 					$SearchEntry->find();
 					$count = 0;
 					do {
-						if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+						if($SearchEntry->title) {
 							$count++;
 							$searchId = $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
@@ -72,18 +65,15 @@ class BrowseCategory extends BaseBrowsable
 					$lists->user_id = UserAccount::getActiveUserId();
 					$lists->deleted = "0";
 					$lists->orderBy('dateUpdated desc');
+					$lists->limit(0,5);
 					$lists->find();
-					$count = 0;
-					do {
-						if($lists->isValidForDisplay()) {
-							$count++;
-							$id = $lists->id;
-							$this->_subBrowseCategories[$id] = clone($lists);
-							$this->_subBrowseCategories[$id]->id = $this->textId . '_' . $id;
-							$this->_subBrowseCategories[$id]->label = $lists->title;
-							$this->_subBrowseCategories[$id]->_source = "userList";
-						}
-					} while ($lists->fetch() && $count < 5);
+					while ($lists->fetch()) {
+						$id = $lists->id;
+						$this->_subBrowseCategories[$id] = clone($lists);
+						$this->_subBrowseCategories[$id]->id = $this->textId . '_' . $id;
+						$this->_subBrowseCategories[$id]->label = $lists->title;
+						$this->_subBrowseCategories[$id]->_source = "userList";
+					}
 				} else {
 					$subCategory = new SubBrowseCategories();
 					$subCategory->browseCategoryId = $this->id;
@@ -277,7 +267,7 @@ class BrowseCategory extends BaseBrowsable
 		);
 	}
 
-	function getEditLink() : string{
+	function getEditLink(){
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->id;
 	}
 
@@ -367,14 +357,12 @@ class BrowseCategory extends BaseBrowsable
 	}
 
 	function isDismissed($user) {
-		if (!empty($user)) {
-			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-			$browseCategoryDismissal = new BrowseCategoryDismissal();
-			$browseCategoryDismissal->browseCategoryId = $this->textId;
-			$browseCategoryDismissal->userId = $user->id;
-			if ($browseCategoryDismissal->find(true)) {
-				return true;
-			}
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+		$browseCategoryDismissal = new BrowseCategoryDismissal();
+		$browseCategoryDismissal->browseCategoryId = $this->textId;
+		$browseCategoryDismissal->userId = $user->id;
+		if($browseCategoryDismissal->find(true)){
+			return true;
 		}
 		return false;
 	}
@@ -386,86 +374,4 @@ class BrowseCategory extends BaseBrowsable
 		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
 		return true;
 	}
-
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
-		unset ($return['libraryId']);
-		unset ($return['userId']);
-
-		return $return;
-	}
-
-	public function getLinksForJSON(): array
-	{
-		$links = parent::getLinksForJSON();
-		//library
-		$allLibraries = Library::getLibraryListAsObjects(false);
-		if (array_key_exists($this->libraryId, $allLibraries)) {
-			$library = $allLibraries[$this->libraryId];
-			$links['library'] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
-		}
-		//user
-		$user = new User();
-		$user->id = $this->userId;
-		if ($user->find(true)){
-			$links['user'] = $user->cat_username;
-		}
-		//sub browse categories
-		$subCategories = $this->getSubCategories();
-		if (count($subCategories) > 0){
-			$links['subCategories'] = [];
-			foreach ($subCategories as $subCategory){
-				$subCategoryArray = $subCategory->toArray();
-				$subCategoryArray['links'] = $subCategory->getLinksForJSON();
-				$links['subCategories'][] = $subCategoryArray;
-			}
-		}
-
-		return $links;
-	}
-
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
-		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
-
-		if (isset($jsonData['library'])){
-			$allLibraries = Library::getLibraryListAsObjects(false);
-			$subdomain = $jsonData['library'];
-			if (array_key_exists($subdomain, $mappings['libraries'])){
-				$subdomain = $mappings['libraries'][$subdomain];
-			}
-			foreach ($allLibraries as $tmpLibrary){
-				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
-					$this->libraryId = $tmpLibrary->libraryId;
-					break;
-				}
-			}
-		}
-		if (isset($jsonData['user'])){
-			$username = $jsonData['user'];
-			$user = new User();
-			$user->cat_username = $username;
-			if ($user->find(true)){
-				$this->userId = $user->id;
-			}
-		}
-	}
-
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
-		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['subCategories'])){
-			$subCategories = [];
-			foreach ($jsonData['subCategories'] as $subCategory) {
-				$subCategoryObj = new SubBrowseCategories();
-				$subCategoryObj->browseCategoryId = $this->id;
-				$subCategoryObj->loadFromJSON($subCategory, $mappings, $overrideExisting);
-				$subCategories[$subCategoryObj->id] = $subCategoryObj;
-			}
-			$this->_subBrowseCategories = $subCategories;
-			$result = true;
-		}
-		return $result;
-	}
-
 }

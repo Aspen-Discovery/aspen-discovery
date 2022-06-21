@@ -1,12 +1,11 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLocation.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLanguage.php';
 
-class Placard extends DB_LibraryLocationLinkedObject
+class Placard extends DataObject
 {
 	public $__table = 'placards';
 	public $id;
@@ -20,15 +19,9 @@ class Placard extends DB_LibraryLocationLinkedObject
 	public $startDate;
 	public $endDate;
 
-	protected $_triggers;
-	protected $_libraries;
-	protected $_locations;
-	protected $_languages;
-
-	public function getUniquenessFields(): array
-	{
-		return ['title'];
-	}
+	private $_libraries;
+	private $_locations;
+	private $_languages;
 
 	static function getObjectStructure() : array {
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
@@ -93,48 +86,33 @@ class Placard extends DB_LibraryLocationLinkedObject
 		];
 	}
 
-	/**
-	 * @return int[]
-	 */
-	public function getLibraries() : ?array
-	{
-		if (!isset($this->_libraries) && $this->id){
-			$this->_libraries = [];
-			$obj = new PlacardLibrary();
-			$obj->placardId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_libraries[$obj->libraryId] = $obj->libraryId;
-			}
-		}
-		return $this->_libraries;
-	}
-
-	/**
-	 * @return int[]
-	 */
-	public function getLocations() : ?array
-	{
-		if (!isset($this->_locations) && $this->id){
-			$this->_locations = [];
-			$obj = new PlacardLocation();
-			$obj->placardId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_locations[$obj->locationId] = $obj->locationId;
-			}
-		}
-		return $this->_locations;
-	}
-
 	public function __get($name){
 		if ($name == "libraries") {
-			return $this->getLibraries();
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
+				$obj = new PlacardLibrary();
+				$obj->placardId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+				}
+			}
+			return $this->_libraries;
 		} elseif ($name == "locations") {
-			return $this->getLocations();
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
+				$obj = new PlacardLocation();
+				$obj->placardId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_locations[$obj->locationId] = $obj->locationId;
+				}
+			}
+			return $this->_locations;
 		} elseif ($name == 'triggers') {
 			$this->getTriggers();
-			return $this->_triggers;
+			/** @noinspection PhpUndefinedFieldInspection */
+			return $this->triggers;
 		} elseif ($name == 'languages') {
 			$this->getLanguages();
 			return $this->_languages;
@@ -149,7 +127,8 @@ class Placard extends DB_LibraryLocationLinkedObject
 		}elseif ($name == "locations") {
 			$this->_locations = $value;
 		}elseif ($name == 'triggers') {
-			$this->_triggers = $value;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$this->triggers = $value;
 		}elseif ($name == 'languages') {
 			$this->_languages = $value;
 		}else{
@@ -216,9 +195,9 @@ class Placard extends DB_LibraryLocationLinkedObject
 	}
 
 	public function saveTriggers(){
-		if (isset ($this->_triggers) && is_array($this->_triggers)) {
+		if (isset ($this->triggers) && is_array($this->triggers)) {
 			/** @var PlacardTrigger $trigger */
-			foreach ($this->_triggers as $trigger) {
+			foreach ($this->triggers as $trigger) {
 				if ($trigger->_deleteOnSave == true) {
 					$trigger->delete();
 				} else {
@@ -230,31 +209,25 @@ class Placard extends DB_LibraryLocationLinkedObject
 					}
 				}
 			}
-			unset($this->_triggers);
+			unset($this->triggers);
 		}
 	}
 
-	/**
-	 * @return PlacardTrigger[]
-	 */
-	public function getTriggers() : ?array{
-		if (!isset($this->_triggers) && $this->id) {
-			$this->_triggers = [];
+	public function getTriggers(){
+		if (!isset($this->triggers) && $this->id) {
+			$this->triggers = [];
 			$trigger = new PlacardTrigger();
 			$trigger->placardId = $this->id;
 			$trigger->orderBy('triggerWord');
 			$trigger->find();
 			while ($trigger->fetch()) {
-				$this->_triggers[$trigger->id] = clone($trigger);
+				$this->triggers[$trigger->id] = clone($trigger);
 			}
 		}
-		return $this->_triggers;
+		return $this->triggers;
 	}
 
-	/**
-	 * @return int[]
-	 */
-	public function getLanguages() : ?array{
+	public function getLanguages(){
 		if (!isset($this->_languages) && $this->id) {
 			$this->_languages = [];
 			$language = new PlacardLanguage();
@@ -388,60 +361,5 @@ class Placard extends DB_LibraryLocationLinkedObject
 			return false;
 		}
 		return true;
-	}
-
-	public function getLinksForJSON() : array{
-		$links = parent::getLinksForJSON();
-		//Triggers
-		$triggers = $this->getTriggers();
-		$links['triggers'] = [];
-		foreach ($triggers as $trigger){
-			$triggerArray = $trigger->toArray();
-			unset ($triggerArray['placardId']);
-			$links['triggers'][] = $triggerArray;
-		}
-		//Languages
-		$languages = $this->getLanguages();
-		$links['languages'] = [];
-		foreach ($languages as $languageId){
-			$language = new Language();
-			$language->id = $languageId;
-			if ($language->find(true)){
-				$links['languages'][] = $language->code;
-			}
-		}
-
-		return $links;
-	}
-
-	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool{
-		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings);
-
-		if (array_key_exists('triggers', $jsonLinks)){
-			$triggers = [];
-			foreach ($jsonLinks['triggers'] as $trigger){
-				$triggerObj = new PlacardTrigger();
-				$triggerObj->placardId = $this->id;
-				//Make sure we don't overwrite the placard id we just set
-				unset($trigger['placardId']);
-				$triggerObj->loadFromJSON($trigger, $mappings);
-				$triggers[] = $triggerObj;
-			}
-			$this->_triggers = $triggers;
-			$result = true;
-		}
-		if (array_key_exists('languages', $jsonLinks)){
-			$languages = [];
-			$languageIds = Language::getLanguageIdsByCode();
-			foreach ($jsonLinks['languages'] as $language){
-				if (array_key_exists($language, $languageIds)){
-					$languageId = $languageIds[$language];
-					$languages[$languageId] = $languageId;
-				}
-			}
-			$this->_languages = $languages;
-			$result = true;
-		}
-		return $result;
 	}
 }

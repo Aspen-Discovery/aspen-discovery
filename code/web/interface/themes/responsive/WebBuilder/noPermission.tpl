@@ -9,7 +9,7 @@
 					{translate text="You may be able to view this page if you sign in." isPublicFacing=true}
 				</div>
 				<div>
-					<a href='/MyAccount/Login?followupModule={$module}&followupAction={$action}&pageId={$id}' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
+					<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 				</div>
 			{/if}
 		</div>

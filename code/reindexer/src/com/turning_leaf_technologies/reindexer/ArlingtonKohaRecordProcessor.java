@@ -18,7 +18,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	}
 
 	@Override
-	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//For Arlington we can load the literary forms based off of the location code:
 		// ??f?? = Fiction
 		// ??n?? = Non-Fiction
@@ -53,10 +53,10 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington, eContent will always have no items on the bib record.
-		List<DataField> items = MarcUtil.getDataFields(record, itemTagInt);
+		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
 		if (items.size() > 0){
 			return unsuppressedEcontentRecords;
 		}else{
@@ -127,15 +127,15 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	/**
 	 * For Arlington do not load Bisac Subjects and load full stings with subfields for topics
 	 */
-	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
+	protected void loadSubjects(GroupedWorkSolr groupedWork, Record record){
 		HashSet<String> validSubjects = new HashSet<>();
-		getSubjectValues(MarcUtil.getDataFields(record, 600), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, 610), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, 611), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, 630), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, 650), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, 651), validSubjects);
-		getSubjectValues(MarcUtil.getDataFields(record, 690), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "600"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "610"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "611"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "630"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "650"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "651"), validSubjects);
+		getSubjectValues(MarcUtil.getDataFields(record, "690"), validSubjects);
 
 		groupedWork.addSubjects(validSubjects);
 		//Add lc subjects

@@ -137,7 +137,7 @@ class CollectionSpotlightList extends BaseBrowsable
 	 */
 	public function getSearchObject()
 	{
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($this->source);
 		if (!empty($this->defaultFilter)) {
 			$defaultFilterInfo = $this->defaultFilter;
@@ -172,7 +172,7 @@ class CollectionSpotlightList extends BaseBrowsable
 		return $this->_collectionSpotlight;
 	}
 
-	function getEditLink() : string{
+	function getEditLink(){
 		return '/Admin/CollectionSpotlightLists?objectAction=edit&id=' . $this->id;
 	}
 }

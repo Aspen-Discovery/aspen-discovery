@@ -18,10 +18,6 @@ abstract class Admin_Admin extends Action {
 			exit();
 		}
 
-		header("Cache-Control: no-cache, no-store, must-revalidate");
-		header("Pragma: no-cache");
-		header("Expires: 0");
-
 		//Make sure the user has permission to access the page
 		$userCanAccess = $this->canView();
 

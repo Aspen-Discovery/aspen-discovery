@@ -92,11 +92,7 @@ public class SideLoadScope {
 					break;
 				}
 			}
-			if (includeExcludeMatches) {
-				isIncluded = hasMatch;
-			} else{
-				isIncluded = !hasMatch;
-			}
+			isIncluded = hasMatch && includeExcludeMatches;
 		}
 		return isIncluded;
 	}

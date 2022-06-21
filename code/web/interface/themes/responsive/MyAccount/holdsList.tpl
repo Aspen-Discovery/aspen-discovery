@@ -60,7 +60,6 @@
 	{/if}
 {/foreach}
 <br>
-{if !$offline}
 <div class="holdsWithSelected{$sectionKey}">
 	<form id="withSelectedHoldsFormBottom{$sectionKey}" action="{$fullPath}">
 		<div class="btn-group">
@@ -81,4 +80,3 @@
 		</div>
 	</form>
 </div>
-{/if}

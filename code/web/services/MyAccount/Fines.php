@@ -33,13 +33,6 @@ class MyAccount_Fines extends MyAccount
 				$user = UserAccount::getLoggedInUser();
 				$interface->assign('profile', $user);
 				$userLibrary = $user->getHomeLibrary();
-
-				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables->libraryToUseForPayments == 1){
-					global $library;
-					$userLibrary = $library;
-				}
-
 				$fines = $user->getFines();
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
 				$interface->assign('showOutstanding', $useOutstanding);
@@ -79,35 +72,6 @@ class MyAccount_Fines extends MyAccount
 						$interface->assign('finePaymentResult', $finePaymentResult);
 					}
 				}
-
-				// FIS WorldPay data
-				if($userLibrary->finePaymentType == 7) {
-					$aspenUrl = $configArray['Site']['url'];
-					$interface->assign('aspenUrl', $aspenUrl);
-
-					global $library;
-					require_once ROOT_DIR . '/sys/ECommerce/WorldPaySetting.php';
-					$worldPaySettings = new WorldPaySetting();
-					$worldPaySettings->id = $library->worldPaySettingId;
-
-					$merchantCode = 0;
-					$settleCode = 0;
-					$paymentSite = "";
-					$useLineItems = 0;
-
-					if($worldPaySettings->find(true)){
-						$merchantCode = $worldPaySettings->merchantCode;
-						$settleCode = $worldPaySettings->settleCode;
-						$paymentSite = $worldPaySettings->paymentSite;
-						$useLineItems = $worldPaySettings->useLineItems;
-					}
-
-					$interface->assign('settleCode', $settleCode);
-					$interface->assign('merchantCode', $merchantCode);
-					$interface->assign('paymentSite', $paymentSite);
-					$interface->assign('useLineItems', $useLineItems);
-				}
-
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 

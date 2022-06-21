@@ -173,14 +173,6 @@ class CatalogConnection
 	}
 
 	/**
-	 * @param string $patronBarcode
-	 * @return bool|User
-	 */
-	public function findNewUser(string $patronBarcode){
-		return $this->driver->findNewUser($patronBarcode);
-	}
-
-	/**
 	 * @param User $user
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user)
@@ -808,9 +800,9 @@ class CatalogConnection
 		$patron->update();
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-		return $this->driver->cancelHold($patron, $recordId, $cancelId, $isIll);
+		return $this->driver->cancelHold($patron, $recordId, $cancelId);
 	}
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
@@ -1001,7 +993,7 @@ class CatalogConnection
 
 							if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)){
 								$result['success'] = true;
-								$result['message'] = translate(['text' => "The email with your PIN reset link was sent. Please click on the link within that email or enter the code below.", 'isPublicFacing'=>true]);
+								$result['message'] = translate(['text' => "The email with your PIN reset link was sent. Please take click on the link within that email or enter the code below.", 'isPublicFacing'=>true]);
 							}else{
 								$result['error'] = translate(['text' => "The email with your PIN reset link could not be sent, please contact the library.", 'isPublicFacing'=>true]);
 							}
@@ -1284,19 +1276,5 @@ class CatalogConnection
 	public function getAllCurbsidePickups()
 	{
 		return $this->driver->getAllCurbsidePickups();
-	}
-
-	public function isPromptForHoldNotifications() : bool
-	{
-		return $this->driver->isPromptForHoldNotifications();
-	}
-
-	public function getHoldNotificationTemplate() : ?string
-	{
-		return $this->driver->getHoldNotificationTemplate();
-	}
-
-	public function validateUniqueId(User $user){
-		$this->driver->validateUniqueId($user);
 	}
 }

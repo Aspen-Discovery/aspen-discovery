@@ -58,7 +58,7 @@ class Suggestions{
 		if (count($allLikedRatedTitles) > 0){
 			//Get recommendations based on everything I've rated using more like this functionality
 
-			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 
 			if ($page == 1){
@@ -87,13 +87,13 @@ class Suggestions{
 	/**
 	 * @param $page
 	 * @param $limit
-	 * @param SearchObject_AbstractGroupedWorkSearcher $searchObject
+	 * @param SearchObject_GroupedWorkSearcher $searchObject
 	 * @param string[] $titlesToBaseRecommendationsOn
 	 * @param string[] $notInterestedTitles
 	 * @param array $suggestions
 	 * @return array
 	 */
-	private static function getMoreLikeTheseSuggestions($page, $limit, SearchObject_AbstractGroupedWorkSearcher $searchObject, array $titlesToBaseRecommendationsOn, array $notInterestedTitles, array $suggestions): array
+	private static function getMoreLikeTheseSuggestions($page, $limit, SearchObject_GroupedWorkSearcher $searchObject, array $titlesToBaseRecommendationsOn, array $notInterestedTitles, array $suggestions): array
 	{
 		$moreLikeTheseSuggestions = $searchObject->getMoreLikeThese($titlesToBaseRecommendationsOn, $page, $limit, $notInterestedTitles);
 		if (isset($moreLikeTheseSuggestions['response']['docs'])) {

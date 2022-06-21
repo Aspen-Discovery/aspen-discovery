@@ -44,7 +44,7 @@ class LibraryCloudLibraryScope extends DataObject
 		];
 	}
 
-	function getEditLink() : string{
+	function getEditLink(){
 		return '/CloudLibrary/Scopes?objectAction=edit&id=' . $this->scopeId;
 	}
 }

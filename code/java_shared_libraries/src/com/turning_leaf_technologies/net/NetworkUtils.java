@@ -3,9 +3,6 @@ package com.turning_leaf_technologies.net;
 import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,9 +10,6 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.HashMap;
 
@@ -90,54 +84,30 @@ public class NetworkUtils {
 			retVal.setCallTimedOut(true);
 		} catch (IOException e) {
 			logger.error("Error posting to url \r\n" + url, e);
-			retVal = new WebServiceResponse(false, -1, "Error getting to url \r\n" + url + "\r\n" + e.toString());
+			retVal = new WebServiceResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
 		}
 		return retVal;
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8, null, true);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8, null, true);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8, null, true);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, authenticationCharSet, null, true);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, authenticationCharSet, null);
 	}
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet, HashMap<String, String> headers) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, authenticationCharSet, null, true);
-	}
-	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet, HashMap<String, String> headers, boolean validateSSL) {
 		WebServiceResponse retVal;
 		HttpURLConnection conn = null;
 		try {
-			if (!validateSSL) {
-				TrustManager[] trustAllCerts = new TrustManager[]{
-						new X509TrustManager() {
-							public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-								return null;
-							}
-
-							public void checkClientTrusted(X509Certificate[] certs, String authType) {
-							}
-
-							public void checkServerTrusted(X509Certificate[] certs, String authType) {
-							}
-
-						}
-				};
-
-				SSLContext sc = SSLContext.getInstance("SSL");
-				sc.init(null, trustAllCerts, new java.security.SecureRandom());
-				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-			}
-
 			URL emptyIndexURL = new URL(url);
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			conn.setConnectTimeout(connectTimeout);
@@ -153,7 +123,6 @@ public class NetworkUtils {
 					//Do not verify host names
 					return true;
 				});
-
 			}
 			conn.setDoInput(true);
 			if (referer != null) {
@@ -234,12 +203,6 @@ public class NetworkUtils {
 			logger.error("URL to post (" + url + ") is malformed", e);
 			retVal = new WebServiceResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url \r\n" + url, e);
-			retVal = new WebServiceResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
-		} catch (NoSuchAlgorithmException e) {
-			logger.error("Error posting to url \r\n" + url, e);
-			retVal = new WebServiceResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
-		} catch (KeyManagementException e) {
 			logger.error("Error posting to url \r\n" + url, e);
 			retVal = new WebServiceResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
 		} finally {

@@ -367,13 +367,10 @@ class HooplaDriver extends AbstractEContentDriver{
 						$apiResult['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
 						$apiResult['message'] = strip_tags($checkoutResponse->message);
 
-						//Prepare message for translation
-						$checkoutResponseMessage = $checkoutResponse->message;
-						$checkoutResponseMessage = str_replace($patron->getBarcode(), '%1%', $checkoutResponseMessage);
 						return array(
 							'success'   => true,
-							'message'   => translate(['text'=>$checkoutResponseMessage, 1=> $patron->getBarcode(), 'isPublicFacing'=>true]),
-							'title'     => translate(['text'=> $checkoutResponse->title, 'isPublicFacing'=>true]),
+							'message'   => $checkoutResponse->message,
+							'title'     => $checkoutResponse->title,
 							'HooplaURL' => $checkoutResponse->url,
 							'due'       => $checkoutResponse->due,
 							'api'       => $apiResult,
@@ -384,11 +381,9 @@ class HooplaDriver extends AbstractEContentDriver{
 						$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 						$apiResult['message'] = isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
 
-						$checkoutResponseMessage =  isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
-						$checkoutResponseMessage = str_replace($patron->getBarcode(), '%1%', $checkoutResponseMessage);
 						return array(
 							'success' => false,
-							'message' => translate(['text'=>$checkoutResponseMessage, 1=> $patron->getBarcode(), 'isPublicFacing'=>true]),
+							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.',
 							'api' => $apiResult
 						);
 					}
@@ -600,7 +595,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param null $cancelId ID to cancel for compatibility
 	 * @return false|array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null)
     {
         return false;
     }

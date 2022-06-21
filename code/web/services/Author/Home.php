@@ -110,10 +110,8 @@ class Author_Home extends ResultsAction
 			}
 		}
 
-		$interface->assign('showNotInterested', false);
-
 		// Initialise from the current search globals
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);

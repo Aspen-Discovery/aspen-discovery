@@ -101,33 +101,26 @@ class Translator
 						$translationTerm->isAdminEnteredData = $isAdminEnteredData;
 						$translationTerm->lastUpdate = time();
 						try {
-							if ($translationTerm->insert() !== false) {
-								$termTooLong = false;
-								//Send this to the Greenhouse as well
+							$translationTerm->insert();
+							//Send this to the Greenhouse as well
 
-								require_once ROOT_DIR . '/sys/SystemVariables.php';
-								$systemVariables = SystemVariables::getSystemVariables();
-								if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
-									if ($this->greenhouseCurlWrapper == null) {
-										require_once ROOT_DIR . '/sys/CurlWrapper.php';
-										$this->greenhouseCurlWrapper = new CurlWrapper();
-									}
-									$body = [
-										'term' => $phrase,
-										'isPublicFacing' => $isPublicFacing,
-										'isAdminFacing' => $isAdminFacing,
-										'isMetadata' => $isMetadata,
-										'isAdminEnteredData' => $isAdminEnteredData,
-									];
-									$this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
+							require_once ROOT_DIR . '/sys/SystemVariables.php';
+							$systemVariables = SystemVariables::getSystemVariables();
+							if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+								if ($this->greenhouseCurlWrapper == null) {
+									require_once ROOT_DIR . '/sys/CurlWrapper.php';
+									$this->greenhouseCurlWrapper = new CurlWrapper();
 								}
-							}else{
-								$termTooLong = true;
+								$body = [
+									'term' => $phrase,
+									'isPublicFacing' => $isPublicFacing,
+									'isAdminFacing' => $isAdminFacing,
+									'isMetadata' => $isMetadata,
+									'isAdminEnteredData' => $isAdminEnteredData,
+								];
+								$this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
 							}
 						} catch (Exception $e) {
-							$termTooLong = true;
-						}
-						if ($termTooLong){
 							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
 								//Just show the phrase for now, maybe show the error in debug mode?
 								if (IPAddress::showDebuggingInformation()) {

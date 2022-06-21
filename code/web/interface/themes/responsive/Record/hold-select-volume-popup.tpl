@@ -139,11 +139,6 @@
 							</div>
 						</div>
 					{/if}
-					{if $promptForHoldNotifications}
-						<div id="holdNotification" class="form-group">
-							{include file=$holdNotificationTemplate}
-						</div>
-					{/if}
 					{if count($holdDisclaimers) > 0}
 						{foreach from=$holdDisclaimers item=holdDisclaimer key=library}
 							<div class="holdDisclaimer alert alert-warning">

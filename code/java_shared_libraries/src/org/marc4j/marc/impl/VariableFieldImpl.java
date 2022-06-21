@@ -36,7 +36,6 @@ public abstract class VariableFieldImpl implements VariableField {
     private static final long serialVersionUID = -8396090810780390995L;
 
     private String tag;
-    private int numericTag;
 
     /**
      * Creates a new <code>VariableField</code>.
@@ -63,7 +62,6 @@ public abstract class VariableFieldImpl implements VariableField {
     @Override
     public void setTag(final String tag) {
         this.tag = tag;
-        this.numericTag = Integer.parseInt(tag);
     }
 
     /**
@@ -74,10 +72,6 @@ public abstract class VariableFieldImpl implements VariableField {
     @Override
     public String getTag() {
         return tag;
-    }
-
-    public int getNumericTag() {
-        return this.numericTag;
     }
 
     /**
@@ -92,7 +86,7 @@ public abstract class VariableFieldImpl implements VariableField {
             throw new ClassCastException("A VariableField object expected");
         }
 
-        return Integer.compare(numericTag, ((VariableFieldImpl) obj).getNumericTag());
+        return tag.compareTo(obj.getTag());
     }
 
     /**

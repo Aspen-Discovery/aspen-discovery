@@ -88,10 +88,9 @@ public class PolarisExportMain {
 	private static Set<String> bibIdsUpdatedDuringContinuous;
 	private static Set<Long> itemIdsUpdatedDuringContinuous;
 
-	private static String singleWorkId = null;
-
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
+		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -1159,10 +1158,15 @@ public class PolarisExportMain {
 					boolean gotItems = getItemsForBibFromPolaris(marcFactory, bibliographicRecordId, marcRecord);
 					if (gotItems){
 						GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId, marcRecord);
-						if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
-							logEntry.incAdded();
-						}else {
+						if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
 							logEntry.incUpdated();
+						}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+							logEntry.incAdded();
+						}else{
+							//No change has been made, we could skip this
+							if (!indexingProfile.isRunFullUpdate()){
+								logEntry.incSkipped();
+							}
 						}
 
 						updateVolumeInfoForIdentifier(marcRecord, bibliographicRecordId);
@@ -1196,7 +1200,7 @@ public class PolarisExportMain {
 	private static synchronized void updateVolumeInfoForIdentifier(Record marcRecord, String bibliographicRecordId) {
 		String fullIdentifier = indexingProfile.getName() + ":" + bibliographicRecordId;
 		TreeMap<String, VolumeInfo> volumesForRecord = new TreeMap<>();
-		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
+		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTag());
 		for (DataField curItem : itemFields){
 			Subfield volumeSubfield = curItem.getSubfield(indexingProfile.getVolume());
 			if (volumeSubfield != null) {
@@ -1312,12 +1316,7 @@ public class PolarisExportMain {
 							DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemRecordNumberSubfield(), "ItemRecordID");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
-							String callNumber = getItemFieldData(curItem, "CallNumber").trim();
-							String designation = getItemFieldData(curItem, "Designation").trim();
-							if (designation.length() > 0){
-								callNumber = callNumber + " " + designation;
-							}
-							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
+							updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionName");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
@@ -1500,7 +1499,7 @@ public class PolarisExportMain {
 		if (method.equals("GET")) {
 			return NetworkUtils.getURL(fullUrl, logger, headers);
 		}else{
-			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers, !serverName.contains(".localhost"));
+			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers);
 		}
 	}
 

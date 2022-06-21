@@ -156,11 +156,6 @@
 							</div>
 						</div>
 					{/if}
-					{if $promptForHoldNotifications}
-						<div id="holdNotification" class="form-group">
-							{include file=$holdNotificationTemplate}
-						</div>
-					{/if}
 					{if count($holdDisclaimers) > 0}
 						{foreach from=$holdDisclaimers item=holdDisclaimer key=library}
 							<div class="holdDisclaimer alert alert-warning">
@@ -172,7 +167,7 @@
 					<br>
 					{if $showLogMeOut == 1}
 					<div class="form-group">
-						<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" idN="autologout" {if $logMeOutDefault == true}checked="checked"{/if}> {translate text="Log me out after requesting the item." isPublicFacing=true}</label>
+						<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" id="autologout" {if $logMeOutDefault == true}checked="checked"{/if}> {translate text="Log me out after requesting the item." isPublicFacing=true}</label>
 					</div>
 					{/if}
 				</div>

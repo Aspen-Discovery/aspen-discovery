@@ -13,7 +13,7 @@
 
 	<h1>{translate text='Fines' isPublicFacing=true}</h1>
 	{if $offline}
-		<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
+		<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 	{else}
 		{if $finePaymentResult}
 			<div class="alert alert-{if $finePaymentResult->success === true}success{else}danger{/if}" id="finePaymentResult">{$finePaymentResult->message}</div>
@@ -145,10 +145,6 @@
 									{include file="MyAccount/comprisePayments.tpl"}
 								{elseif $finePaymentType == 5}
 									{include file="MyAccount/proPayPayments.tpl"}
-								{elseif $finePaymentType == 6}
-									{include file="MyAccount/xpressPayPayments.tpl"}
-                                {elseif $finePaymentType == 7}
-                                    {include file="MyAccount/worldPayPayments.tpl"}
 								{/if}
 							{else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>

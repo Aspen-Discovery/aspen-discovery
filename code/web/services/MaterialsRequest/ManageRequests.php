@@ -9,6 +9,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 	function launch()
 	{
+		global $configArray;
 		global $interface;
 
 		//Load status information
@@ -16,11 +17,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		$homeLibrary = Library::getPatronHomeLibrary();
 		$user = UserAccount::getLoggedInUser();
-		if (is_null($homeLibrary)) {
-			//User does not have a home library, this is likely an admin account.  Use the active library
-			global $library;
-			$homeLibrary = $library;
-		}
 
 		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		$materialsRequestStatus->find();
@@ -64,13 +60,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$materialRequest = new MaterialsRequest();
 				$materialRequest->id = $requestId;
 				if ($materialRequest->find(true)){
-					if ($materialRequest->status != $statusToSet) {
-						$materialRequest->status = $statusToSet;
-						$materialRequest->dateUpdated = time();
-						$materialRequest->update();
+					$materialRequest->status = $statusToSet;
+					$materialRequest->dateUpdated = time();
+					$materialRequest->update();
 
-						$materialRequest->sendStatusChangeEmail();
-					}
+					$materialRequest->sendStatusChangeEmail();
 				}
 			}
 		}
@@ -125,8 +119,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
 
 			//Need to limit to only requests submitted for the user's home location
+			$userHomeLibrary = Library::getPatronHomeLibrary();
 			$locations = new Location();
-			$locations->libraryId = $homeLibrary->libraryId;
+			$locations->libraryId = $userHomeLibrary->libraryId;
 			$locations->find();
 			$locationsForLibrary = array();
 			while ($locations->fetch()){
@@ -220,8 +215,14 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					// Get Available Assignees
 					$materialsRequestManagers = new User();
 
-					if ($materialsRequestManagers->query("SELECT id, displayName from user WHERE id IN (SELECT userId FROM user_roles WHERE roleId = {$rolePermissions->roleId}) AND homeLocationId IN (" . implode(', ', $locationsForLibrary) . ")")){
+					require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+					$userRole         = new UserRoles();
+					$userRole->roleId = $rolePermissions->roleId;
 
+					$materialsRequestManagers->joinAdd($userRole, 'INNER', 'user', 'id', 'userId');
+					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+
+					if ($materialsRequestManagers->find()) {
 						while ($materialsRequestManagers->fetch()){
 							$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->displayName;
 						}

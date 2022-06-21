@@ -42,7 +42,7 @@ class LibrarySideLoadScope extends DataObject
 		);
 	}
 
-	function getEditLink() : string{
+	function getEditLink(){
 		return '/SideLoads/Scopes?objectAction=edit&id=' . $this->sideLoadScopeId;
 	}
 }

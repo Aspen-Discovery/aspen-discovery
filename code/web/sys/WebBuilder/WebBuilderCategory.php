@@ -8,11 +8,6 @@ class WebBuilderCategory extends DataObject
 	public $id;
 	public $name;
 
-	public function getUniquenessFields(): array
-	{
-		return ['name'];
-	}
-
 	public static function getObjectStructure() : array {
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
@@ -30,10 +25,5 @@ class WebBuilderCategory extends DataObject
 			$categories[$category->id] = $category->name;
 		}
 		return $categories;
-	}
-
-	public function okToExport(array $selectedFilters): bool
-	{
-		return true;
 	}
 }

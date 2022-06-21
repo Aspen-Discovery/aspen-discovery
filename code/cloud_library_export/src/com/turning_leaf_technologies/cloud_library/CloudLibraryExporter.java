@@ -8,7 +8,6 @@ import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
-import org.marc4j.marc.Record;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -353,22 +352,10 @@ public class CloudLibraryExporter {
 					String format = getItemDetailsForRecordRS.getString("format");
 					RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
 
-					Record cloudLibraryRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase("cloud_library", cloudLibraryId, logEntry);
-					if (cloudLibraryRecord != null) {
-						String primaryLanguage = getRecordGroupingProcessor().getLanguageBasedOnMarcRecord(cloudLibraryRecord);
 
-						String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, primaryLanguage, true);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-					}else{
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("cloud_library", cloudLibraryId);
-						if (result.reindexWork) {
-							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId);
-						}
-					}
+					String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, true);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 
 					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 					markRecordToReloadAsProcessedStmt.executeUpdate();

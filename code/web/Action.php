@@ -79,9 +79,6 @@ abstract class Action
 
 	protected function grantTokenAccess()
 	{
-		//TODO: store if the authentication token is valid or not for 5 minutes to help improve performance
-		global $memCache;
-
 		$postData = http_build_query(
 			array(
 				'key1' => base64_decode($_SERVER['PHP_AUTH_USER']),

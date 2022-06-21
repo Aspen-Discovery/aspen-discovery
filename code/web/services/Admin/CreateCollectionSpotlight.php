@@ -65,7 +65,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				if ($source == 'search') {
 					$spotlightList->sourceListId = -1;
 					$spotlightList->sourceCourseReserveId = -1;
-					/** @var SearchObject_AbstractGroupedWorkSearcher $searchObj */
+					/** @var SearchObject_GroupedWorkSearcher $searchObj */
 					$searchObj = SearchObjectFactory::initSearchObject();
 					$searchObj->init();
 					$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
@@ -98,7 +98,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				if ($source == 'search') {
 					$spotlightList->sourceListId = -1;
 					$spotlightList->sourceCourseReserveId = -1;
-					/** @var SearchObject_AbstractGroupedWorkSearcher $searchObj */
+					/** @var SearchObject_GroupedWorkSearcher $searchObj */
 					$searchObj = SearchObjectFactory::initSearchObject();
 					$searchObj->init();
 					$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);

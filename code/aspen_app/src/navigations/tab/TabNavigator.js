@@ -13,7 +13,6 @@ import LibraryCardStackNavigator from "../stack/LibraryCardStackNavigator";
 import AccountStackNavigator from "../stack/AccountStackNavigator";
 import MoreStackNavigator from "../stack/MoreStackNavigator";
 import DrawerNavigator from "../drawer/DrawerNavigator";
-import Login from "../../screens/Auth/Login";
 
 export default function TabNavigator() {
 	const Tab = createBottomTabNavigator();
@@ -24,7 +23,6 @@ export default function TabNavigator() {
 			initialRouteName="HomeTab"
 			screenOptions={({ route }) => ({
 				headerShown: false,
-				backBehavior: "none",
 				tabBarHideOnKeyboard: true,
 				tabBarIcon: ({ focused, color, size }) => {
 					let iconName;
@@ -47,9 +45,12 @@ export default function TabNavigator() {
 					fontWeight: '400'
 				},
 				tabBarStyle: {
-					backgroundColor: tabBarBackgroundColor,
-					elevation: 0
+					position: 'absolute',
 				},
+				tabBarBackground: () => (
+					<BlurView tint={tabBarBackgroundColor} intensity={100} style={{flex: 1, padding: 20}} />
+				),
+				backBehavior: 'history'
 			})}
 		>
 			<Tab.Screen
@@ -57,7 +58,7 @@ export default function TabNavigator() {
 				component={BrowseStackNavigator}
 				options={{
 					tabBarLabel: translate('navigation.home'),
-					unmountOnBlur: false,
+					unmountOnBlur: true,
 				}}
 				screenOptions={{
 					headerShown: false,
@@ -93,13 +94,6 @@ export default function TabNavigator() {
 			<Tab.Screen
 				name="AccountScreenTab"
 				component={AccountStackNavigator}
-				options={{
-					tabBarButton: () => null,
-				}}
-			/>
-			<Tab.Screen
-				name="Login"
-				component={Login}
 				options={{
 					tabBarButton: () => null,
 				}}

@@ -9,39 +9,32 @@ import * as Location from "expo-location";
 import * as Updates from 'expo-updates';
 import Constants from "expo-constants";
 import {create} from 'apisauce';
-import * as Sentry from 'sentry-expo';
 
-import Splash from "./splash";
+import LoadingScreen from "./splash";
 import Login from "../screens/Auth/Login";
 
-import LoadingScreen from "../screens/Auth/Loading";
 import AccountDrawer from "../navigations/drawer/DrawerNavigator";
 import {translate} from "../translations/translations";
-import {createAuthTokens, getHeaders, postData} from "../util/apiAuth";
+import {createAuthTokens, getHeaders} from "../util/apiAuth";
 import {popAlert, popToast} from "./loadError";
 import {removeData} from "../util/logout";
 import {navigationRef} from "../helpers/RootNavigator";
-import {GLOBALS} from "../util/globals";
-import {getILSMessages} from "../util/loadPatron";
+import {getProfile} from "../util/loadPatron";
+
+import {UserContext} from "../context/user";
+import {setGlobalVariables} from "../util/setVariables";
 
 const Stack = createNativeStackNavigator();
 
 export const AuthContext = React.createContext();
 
-// Construct a new instrumentation instance. This is needed to communicate between the integration and React
-const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
-
-Sentry.init({
-	dsn: Constants.manifest.extra.sentryDSN,
-	enableInExpoDevelopment: true,
-	enableAutoSessionTracking: true,
-	debug: false,
-	tracesSampleRate: 1.0,
-	environment: Updates.releaseChannel,
-	release: Constants.manifest.version,
-	dist: GLOBALS.appPatch,
-});
-
+const defaultErrorHandler = ErrorUtils.getGlobalHandler();
+const globalErrorHandler = (err, isFatal) => {
+	console.log("globalErrorHandler called!");
+	ErrorRecovery.setRecoveryProps({ info: err });
+	defaultErrorHandler(err, isFatal);
+};
+ErrorUtils.setGlobalHandler(globalErrorHandler);
 
 export default function App() {
 
@@ -95,16 +88,15 @@ export default function App() {
 				const update = await Updates.checkForUpdateAsync()
 				if (update.isAvailable) {
 					try {
-						await Updates.fetchUpdateAsync().then(async r => {
-							await Updates.reloadAsync();
-						});
+						await Updates.fetchUpdateAsync();
+						// ... notify user of update ...
+						await Updates.reloadAsync();
 					} catch (e) {
 						console.log(e);
-						Sentry.Native.captureException(e);
 					}
 				}
 			}
-		}, 15000)
+		}, 3000)
 		return () => clearInterval(timer)
 	}, [])
 
@@ -114,34 +106,38 @@ export default function App() {
 			await getPermissions();
 			await setAppDetails();
 
-			console.log("Checking existing session...");
 			let userToken;
 			try {
-				// Restore token stored in `AsyncStorage`
-				userToken = await AsyncStorage.getItem('@userToken');
+				// Restore token stored in `SecureStore` or any other encrypted storage
+				userToken = await SecureStore.getItemAsync('userToken');
 			} catch(e) {
 				// Restoring token failed
 				console.log(e);
 			}
-			console.log("Session OK!")
 			dispatch({ type: 'RESTORE_TOKEN', token: userToken });
 		};
 		bootstrapAsync();
 	}, [])
+
+	const [user, setUser] = React.useState("");
+	const userContext = React.useMemo(
+		() => ({ user, setUser }),
+		[user]
+	);
 
 	const authContext = React.useMemo(
 		() => ({
 			signIn: async (data) => {
 				let userToken;
 				let patronsLibrary = data.patronsLibrary;
-
+				//console.log(patronsLibrary);
 				try {
 					const postBody = new FormData();
 					postBody.append('username', data.valueUser);
 					postBody.append('password', data.valueSecret);
 					const api = create({
 						baseURL: data.libraryUrl + '/API',
-						timeout: 6000,
+						timeout: 5000,
 						headers: getHeaders(true),
 						auth: createAuthTokens()
 					});
@@ -168,61 +164,30 @@ export default function App() {
 								}
 								userToken = JSON.stringify(result.firstname + " " + result.lastname)
 								console.log("Valid user: " + userToken);
-								// start an aspen discovery session
-								// const loginResponse = await api.post('/UserAPI?method=login', postBody);
-								// let aspenSession = null;
-								// if(loginResponse.data.result.success) {
-								//	await SecureStore.setItemAsync("aspenSession", loginResponse.data.result.session);
-								// }
+								// store login data for safe keeping
+								//const loginResponse = await api.post('/UserAPI?method=login', postBody);
+								//console.log(loginResponse);
 
 								global.libraryUrl = patronsLibrary['baseUrl'];
 								global.libraryId = patronsLibrary['libraryId'];
 
 								try {
-									// prepare app data
-									global.slug = Constants.manifest.slug;
-									global.apiUrl = Constants.manifest.extra.apiUrl;
-									global.patron = patronName;
-									global.libraryId = patronsLibrary['libraryId'];
-									global.libraryName = patronsLibrary['name'];
-									global.locationId = patronsLibrary['locationId'];
-									global.solrScope = patronsLibrary['solrScope'];
-									global.libraryUrl = patronsLibrary['baseUrl'];
-									global.logo = patronsLibrary['logo'];
-									global.favicon = patronsLibrary['favicon'];
-									global.aspen = patronsLibrary['version'];
-								} catch (e) {
-									console.log(e);
-								}
-
-								console.log("at Login: " + userToken);
-								//await AsyncStorage.setItem('@userToken', userToken);
-
-								//console.log(patronsLibrary);
-								try {
-									await AsyncStorage.setItem('@userToken', userToken);
-									await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
-									await AsyncStorage.setItem('@libName', patronsLibrary['name']);
 									await SecureStore.setItemAsync("userKey", data.valueUser);
 									await SecureStore.setItemAsync("secretKey", data.valueSecret);
 									await SecureStore.setItemAsync("userToken", userToken);
 									// save variables in the Secure Store to access later on
 									await SecureStore.setItemAsync("patronName", patronName);
 									await SecureStore.setItemAsync("library", patronsLibrary['libraryId']);
-									await AsyncStorage.setItem("@libraryId", patronsLibrary['libraryId']);
 									await SecureStore.setItemAsync("libraryName", patronsLibrary['name']);
 									await SecureStore.setItemAsync("locationId", patronsLibrary['locationId']);
-									await AsyncStorage.setItem("@locationId", patronsLibrary['locationId']);
 									await SecureStore.setItemAsync("solrScope", patronsLibrary['solrScope']);
-									await AsyncStorage.setItem("@solrScope", patronsLibrary['solrScope']);
-									await SecureStore.setItemAsync("pathUrl", data.libraryUrl);
-									//await SecureStore.setItemAsync("logo", patronsLibrary['theme']['logo']);
-									//await SecureStore.setItemAsync("favicon", patronsLibrary['theme']['favicon']);
-									//await SecureStore.setItemAsync("discoveryVersion", patronsLibrary['version']);
-									await AsyncStorage.setItem("@lastStoredVersion", Constants.manifest.version);
+									await SecureStore.setItemAsync("pathUrl", patronsLibrary['baseUrl']);
+									await SecureStore.setItemAsync("logo", patronsLibrary['logo']);
+									await SecureStore.setItemAsync("favicon", patronsLibrary['favicon']);
 									await AsyncStorage.setItem("@patronLibrary", JSON.stringify(patronsLibrary));
-									dispatch( {type: 'SIGN_IN', token: userToken});
-
+									await getProfile();
+									//await SecureStore.setItemAsync("aspenSession", result.session);
+									dispatch({type: 'SIGN_IN', token: userToken});
 								} catch(e) {
 									console.log("Unable to log in user.");
 									console.log(e);
@@ -249,47 +214,54 @@ export default function App() {
 				}
 			},
 			signOut: async () => {
-				await removeData().then(res => {
-					dispatch({ type: 'SIGN_OUT' });
-				});
-				console.log("Session ended.")
+					await removeData().then(res => {
+						dispatch({ type: 'SIGN_OUT' });
+					});
+					console.log("Session ended.")
+
 			},
 		}),
 		[]
 	);
 
-	const navigation = React.useRef();
-
 	return (
 		<AuthContext.Provider value={authContext}>
-			<NavigationContainer theme={navigationTheme}
-			                     ref={navigationRef}
-			>
-				<Stack.Navigator
-					screenOptions={{ headerShown: false }}
-				>
-					{state.userToken == null ? (
-						// No token found, user isn't signed in
-						<Stack.Screen
-							name="Login"
-							component={Login}
-							options={{
-								headerShown: false,
-								animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-							}}
+			<UserContext.Provider value={userContext}>
+				<NavigationContainer theme={navigationTheme} ref={navigationRef}>
+					<Stack.Navigator
+						screenOptions={{ headerShown: false }}
+					>
+						{state.isLoading ? (
+							<Stack.Screen
+								name="Splash"
+								component={LoadingScreen}
+								options={{
+									headerShown: false,
+								}}
 							/>
-					) : (
-						// User is signed in
-						<Stack.Screen
-							name={translate('navigation.home')}
-							component={AccountDrawer}
-							screenOptions={{
-								headerShown: false
-							}}
-						/>
-					)}
-				</Stack.Navigator>
-			</NavigationContainer>
+						) : state.userToken == null ? (
+							// No token found, user isn't signed in
+							<Stack.Screen
+								name="Login"
+								component={Login}
+								options={{
+									headerShown: false,
+									animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+								}}
+								/>
+						) : (
+							// User is signed in
+							<Stack.Screen
+								name={translate('navigation.home')}
+								component={AccountDrawer}
+								screenOptions={{
+									headerShown: false
+								}}
+							/>
+						)}
+					</Stack.Navigator>
+				</NavigationContainer>
+			</UserContext.Provider>
 		</AuthContext.Provider>
 	)
 }

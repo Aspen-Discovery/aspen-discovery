@@ -14,8 +14,6 @@ class Translation_ImportTranslations extends Admin_Admin
 		if (isset($_REQUEST['submit'])){
 			//Make sure we don't time out while loading translations
 			set_time_limit(-1);
-			ini_set('memory_limit','1G');
-
 			$overrideExistingTranslations = isset($_REQUEST['overwriteExisting']);
 
 			$languagesToImport = [];

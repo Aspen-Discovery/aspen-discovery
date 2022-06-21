@@ -145,14 +145,10 @@ class SideLoad extends DataObject
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			if (!file_exists($this->marcPath)) {
-				mkdir($this->marcPath, 0774, true);
-				chgrp($this->marcPath, 'aspen_apache');
-				chmod($this->marcPath, 0775);
+				mkdir($this->marcPath, 0770, true);
 			}
 			if (!file_exists($this->individualMarcPath)) {
-				mkdir($this->individualMarcPath, 0775, true);
-				chgrp($this->individualMarcPath, 'aspen_apache');
-				chmod($this->individualMarcPath, 0775);
+				mkdir($this->individualMarcPath, 0770, true);
 			}
 			$this->saveScopes();
 		}
@@ -164,14 +160,10 @@ class SideLoad extends DataObject
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (!file_exists($this->marcPath)) {
-				mkdir($this->marcPath, 0775, true);
-				chgrp($this->marcPath, 'aspen_apache');
-				chmod($this->marcPath, 0775);
+				mkdir($this->marcPath, 0770, true);
 			}
 			if (!file_exists($this->individualMarcPath)) {
-				mkdir($this->individualMarcPath, 0775, true);
-				chgrp($this->individualMarcPath, 'aspen_apache');
-				chmod($this->individualMarcPath, 0775);
+				mkdir($this->individualMarcPath, 0770, true);
 			}
 
 			if (empty($this->_scopes)){

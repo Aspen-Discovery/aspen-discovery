@@ -1,7 +1,6 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 class UserList extends DataObject
 {
@@ -18,11 +17,6 @@ class UserList extends DataObject
 	public $defaultSort;
 	public $importedFrom;
 	public $nytListModified;
-
-	public function getUniquenessFields(): array
-	{
-		return ['id'];
-	}
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{
@@ -44,7 +38,7 @@ class UserList extends DataObject
 
 	public function getNumericColumnNames() : array
 	{
-		return ['id', 'user_id', 'public', 'deleted', 'searchable'];
+		return ['user_id', 'public', 'deleted', 'searchable'];
 	}
 
 	// Used by FavoriteHandler as well//
@@ -106,6 +100,7 @@ class UserList extends DataObject
 				$this->dateUpdated = time();
 			}
 		}
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return parent::insert();
@@ -117,6 +112,7 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$result = parent::update();
 		if ($result) {
+			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
@@ -128,6 +124,7 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$ret = parent::update();
 
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $ret;
@@ -314,6 +311,7 @@ class UserList extends DataObject
 
 		unset($this->listTitles[$this->id]);
 
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 	}
@@ -321,7 +319,7 @@ class UserList extends DataObject
 	private $_cleanDescription = null;
 
 	/** @noinspection PhpUnused */
-	function getCleanDescription() :?string{
+	function getCleanDescription(){
 		if ($this->_cleanDescription == null){
 			$this->_cleanDescription = strip_tags($this->description, '<p><b><em><strong><i><br>');
 		}
@@ -332,7 +330,7 @@ class UserList extends DataObject
 	 * remove all resources within this list
 	 * @param bool $updateBrowseCategories
 	 */
-	function removeAllListEntries(bool $updateBrowseCategories = true){
+	function removeAllListEntries($updateBrowseCategories = true){
 		$allListEntries = $this->getListTitles();
 		foreach ($allListEntries as $listEntry){
 			$this->removeListEntry($listEntry, $updateBrowseCategories);
@@ -348,7 +346,7 @@ class UserList extends DataObject
 	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null) : array {
+	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null) {
 		//Get all entries for the list
 		if ($sortName == null) {
 			$sortName = $this->defaultSort;
@@ -425,20 +423,19 @@ class UserList extends DataObject
 	 * @param int $startRecord The first record being displayed
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getResultListHTML($records, $allListEntryIds, $allowEdit, $startRecord = 0) :array
+	private function getResultListHTML($records, $allListEntryIds, $allowEdit, $startRecord = 0)
 	{
 		global $interface;
 		$html = array();
 		//Reorder the documents based on the list of id's
-		foreach ($allListEntryIds as $listPosition => $currentListEntry) {
+		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
 			$current = null; // empty out in case we don't find the matching record
 			reset($records);
 			foreach ($records as $docIndex => $recordDriver) {
-				if ($recordDriver->getId() == $currentListEntry['sourceId']) {
-					$recordDriver->setListNotes($currentListEntry['notes']);
-					$recordDriver->setListEntryId($currentListEntry['listEntryId']);
-					$recordDriver->setListEntryWeight($currentListEntry['weight']);
+				if ($recordDriver->getId() == $currentId['sourceId']) {
+					$recordDriver->setListNotes($currentId['notes']);
+					$recordDriver->setListEntryId($currentId['listEntryId']);
 					$current = $recordDriver;
 					break;
 				}
@@ -450,7 +447,6 @@ class UserList extends DataObject
 				//Get information from list entry
 				$interface->assign('listEntryNotes', $current->getListNotes());
 				$interface->assign('listEntryId', $current->getListEntryId());
-				$interface->assign('listEntryWeight', $current->getListEntryWeight());
 				$interface->assign('listEditAllowed', $allowEdit);
 
 				$interface->assign('recordDriver', $current);
@@ -460,7 +456,7 @@ class UserList extends DataObject
 		return $html;
 	}
 
-	private function getResultListSummary($records, $allListEntryIds) :array
+	private function getResultListSummary($records, $allListEntryIds)
 	{
 		$results = array();
 		//Reorder the documents based on the list of id's
@@ -469,9 +465,10 @@ class UserList extends DataObject
 			$current = null; // empty out in case we don't find the matching record
 			reset($records);
 			/**
+			 * @var int $docIndex
 			 * @var IndexRecordDriver $recordDriver
 			 */
-			foreach ($records as $recordDriver) {
+			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$recordDriver->setListNotes($currentId['notes']);
 					$current = $recordDriver;
@@ -485,7 +482,7 @@ class UserList extends DataObject
 		return $results;
 	}
 
-	private function getResultListCitations($records, $allListEntryIds, $format) : array {
+	private function getResultListCitations($records, $allListEntryIds, $format){
 		global $interface;
 		$results = array();
 		//Reorder the documents based on the list of id's
@@ -510,7 +507,7 @@ class UserList extends DataObject
 		return $results;
 	}
 
-	private function getResultListRecordDrivers($records, $allListEntryIds) : array
+	private function getResultListRecordDrivers($records, $allListEntryIds)
 	{
 		$results = array();
 		//Reorder the documents based on the list of id's
@@ -522,7 +519,7 @@ class UserList extends DataObject
 			 * @var int $docIndex
 			 * @var IndexRecordDriver $recordDriver
 			 */
-			foreach ($records as $recordDriver) {
+			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$recordDriver->setListNotes($currentId['notes']);
 					$current = $recordDriver;
@@ -541,7 +538,7 @@ class UserList extends DataObject
 	 * @param int $numItems  Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecords($start, $numItems) : array {
+	public function getBrowseRecords($start, $numItems) {
 		//Get all entries for the list
 		$listEntryInfo = $this->getListEntries($this->defaultSort);
 
@@ -579,7 +576,7 @@ class UserList extends DataObject
 	 * @param int $numItems  Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecordsRaw($start, $numItems) : array {
+	public function getBrowseRecordsRaw($start, $numItems) {
 		//Get all entries for the list
 		$listEntryInfo = $this->getListEntries();
 
@@ -636,7 +633,7 @@ class UserList extends DataObject
 	 * @param int $start
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getBrowseRecordHTML($records, $allListEntryIds, $start) : array
+	private function getBrowseRecordHTML($records, $allListEntryIds, $start)
 	{
 		global $interface;
 		$html = array();
@@ -645,7 +642,7 @@ class UserList extends DataObject
 			// use $IDList as the order guide for the html
 			$current = null; // empty out in case we don't find the matching record
 			reset($records);
-			foreach ($records as $recordDriver) {
+			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$current = $recordDriver;
 					break;
@@ -665,12 +662,12 @@ class UserList extends DataObject
 	/**
 	 * @return array
 	 */
-	public static function getSortOptions() : array
+	public static function getSortOptions()
 	{
 		return UserList::$__userListSortOptions;
 	}
 
-	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight) : array
+	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight)
 	{
 		$allEntries = $this->getListTitles();
 
@@ -692,7 +689,7 @@ class UserList extends DataObject
 		return $results;
 	}
 
-	public static function getUserListsForSaveForm($source, $sourceId) : array{
+	public static function getUserListsForSaveForm($source, $sourceId){
 		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
@@ -737,7 +734,7 @@ class UserList extends DataObject
 		];
 	}
 
-	public static function getUserListsForRecord($source, $sourceId) : array
+	public static function getUserListsForRecord($source, $sourceId)
 	{
 		$userLists = [];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -772,132 +769,5 @@ class UserList extends DataObject
 		}
 		ksort($userLists);
 		return $userLists;
-	}
-
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
-		unset($return['user_id']);
-		return $return;
-	}
-
-	public function okToExport(array $selectedFilters) : bool{
-		$okToExport = parent::okToExport($selectedFilters);
-		$user = new User();
-		$user->id = $this->user_id;
-		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
-				$okToExport = true;
-			}
-		}
-		return $okToExport;
-	}
-
-	public function getLinksForJSON(): array
-	{
-		$links =  parent::getLinksForJSON();
-		$user = new User();
-		$user->id = $this->user_id;
-		if ($user->find(true)){
-			$links['user'] = $user->cat_username;
-		}
-
-		$userListEntries = [];
-		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-		$userListEntry = new UserListEntry();
-		$userListEntry->listId = $this->id;
-		$userListEntry->find();
-		while ($userListEntry->fetch()){
-			$userListEntryArray = $userListEntry->toArray(false, true);
-			$userListEntryArray['links'] = $userListEntry->getLinksForJSON();
-			$userListEntries[] = $userListEntryArray;
-		}
-
-		$links['userListEntries'] = $userListEntries;
-		return $links;
-	}
-
-	public function loadObjectPropertiesFromJSON($jsonData, $mappings)
-	{
-		parent::loadObjectPropertiesFromJSON($jsonData, $mappings);
-		//Need to load ID for lists since we link to a list based on the id
-		$this->id = (int)$jsonData['id'];
-	}
-
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
-		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['user'])){
-			$username = $jsonData['user'];
-			$user = new User();
-			$user->cat_username = $username;
-			if ($user->find(true)){
-				$this->user_id = $user->id;
-			}
-		}
-	}
-
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
-	{
-		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (array_key_exists('userListEntries', $jsonData)){
-			//Remove any list entries that we already have for this list
-			$tmpListEntry = new UserListEntry();
-			$tmpListEntry->listId = $this->id;
-			$tmpListEntry->delete(true);
-			foreach ($jsonData['userListEntries'] as $listEntry){
-				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-				$userListEntry = new UserListEntry();
-				$userListEntry->listId = $this->id;
-				unset($listEntry['listId']);
-				$userListEntry->loadFromJSON($listEntry, $mappings, $overrideExisting);
-			}
-			$result = true;
-		}
-		return $result;
-	}
-
-	public function isDismissed() {
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-		if (UserAccount::isLoggedIn()){
-			$savedSearchDismissal = new BrowseCategoryDismissal();
-			$savedSearchDismissal->browseCategoryId = "system_user_lists_" . $this->id;
-			$savedSearchDismissal->userId = UserAccount::getActiveUserId();
-			if($savedSearchDismissal->find(true)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public function isValidForDisplay()
-	{
-		if ($this->isDismissed()) {
-			return false;
-		}
-		return true;
-	}
-
-	public function fixWeights(){
-		$changeMade = false;
-
-		$listEntries = new UserListEntry();
-		$listEntries->listId = $this->id;
-		$listEntries->orderBy('weight');
-		/** @var UserListEntry[] $allListEntries */
-		$allListEntries = $listEntries->fetchAll();
-		$curIndex = 1;
-		foreach ($allListEntries as $listEntry){
-			if ($listEntry->weight != $curIndex){
-				$listEntry->weight = $curIndex;
-				$listEntry->update();
-				$changeMade = true;
-			}
-			$curIndex++;
-		}
-
-		if ($changeMade){
-			$this->update();
-		}
 	}
 }

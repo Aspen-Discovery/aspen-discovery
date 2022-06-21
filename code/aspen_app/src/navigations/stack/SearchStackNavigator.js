@@ -13,6 +13,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
 			initialRouteName="SearchScreen"
 			screenOptions={{
 				headerShown: true,
+				backBehavior: "history",
 				headerBackTitleVisible: false,
 			}}
 		>

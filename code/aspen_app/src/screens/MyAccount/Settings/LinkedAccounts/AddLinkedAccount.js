@@ -6,7 +6,7 @@ import {translate} from "../../../../translations/translations";
 
 // custom components and helper files
 
-const AddLinkedAccount = (props) => {
+const AddLinkedAccount = () => {
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
@@ -63,15 +63,12 @@ const AddLinkedAccount = (props) => {
 							<Button
 								isLoading={loading}
 								isLoadingText="Adding..."
-								onPress={
-									async () => {
-										setLoading(true);
-										await addLinkedAccount(user, password, props.libraryUrl).then(r => {
-											setShowModal(false);
-											setLoading(false);
-										})
-									}
-								}>{translate('linked_accounts.add')}</Button>
+								onPress={async () => {
+								setLoading(true);
+								await addLinkedAccount(user, password)
+								setShowModal(false);
+								setLoading(false);
+							}}>{translate('linked_accounts.add')}</Button>
 						</Button.Group>
 					</Modal.Footer>
 				</Modal.Content>

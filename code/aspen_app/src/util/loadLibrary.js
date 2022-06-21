@@ -5,42 +5,41 @@ import _ from "lodash";
 import {GLOBALS} from "./globals";
 
 // custom components and helper files
-import {createAuthTokens, getHeaders, postData} from "./apiAuth";
+import {translate} from "../translations/translations";
+import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
+import {popToast} from "../components/loadError";
+import {getILSMessages} from "./loadPatron";
 import {removeData} from "./logout";
 
 /**
  * Fetch branch/location information
  **/
-export async function getLocationInfo(library, location) {
+export async function getLocationInfo() {
 	const api = create({
-		baseURL: library.baseUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: 10000,
 		headers: getHeaders(),
 		auth: createAuthTokens()
 	});
 	const response = await api.get('/SystemAPI?method=getLocationInfo', {
-		id: location.locationId,
-		library: global.solrScope, //need to pull this out of global.
-		version: GLOBALS.appVersion
+		id: global.locationId,
+		library: global.solrScope,
+		version: global.version
 	});
 	if (response.ok) {
 		if(response.data.result.success) {
 			let profile = [];
 			if(typeof response.data.result.location !== 'undefined') {
 				profile = response.data.result.location;
-				//console.log("Location profile saved")
+				console.log("Location profile saved")
 			} else {
 				console.log(response);
 			}
 			await AsyncStorage.setItem('@locationInfo', JSON.stringify(profile));
 			return profile;
 		}
-		let profile = [];
-		return profile;
 	} else {
-		//console.log(response);
-		let profile = [];
-		return profile;
+		console.log(response);
 	}
 }
 
@@ -64,7 +63,7 @@ export async function getLibraryInfo(libraryId, libraryUrl, timeout) {
 				global.libraryTheme = profile.themeId;
 				global.quickSearches = profile.quickSearches;
 				global.allowLinkedAccounts = profile.allowLinkedAccounts;
-				//console.log("Library profile saved");
+				console.log("Library profile saved");
 			} else {
 				global.barcodeStyle = "CODE128";
 				global.libraryTheme = 1;
@@ -75,15 +74,13 @@ export async function getLibraryInfo(libraryId, libraryUrl, timeout) {
 			await AsyncStorage.setItem('@libraryInfo', JSON.stringify(profile));
 			return profile;
 		}
-		let profile = [];
-		return profile;
+		return response;
 	} else {
-		//console.log(response);
+		// no data yet
+		console.log(response);
 		if (_.isUndefined(global.barcodeStyle)) {
 			global.barcodeStyle = "CODE128"
 		}
-		let profile = [];
-		return profile;
 	}
 }
 
@@ -112,18 +109,17 @@ export async function getAppSettings(url, timeout, slug) {
 /**
  * Fetch valid pickup locations for the patron
  **/
-export async function getPickupLocations(libraryUrl) {
+export async function getPickupLocations() {
 	const postBody = await postData();
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=getValidPickupLocations', postBody);
-
 	if (response.ok) {
-		let locations = {};
+		let locations = [];
 		const data = response.data.result.pickupLocations;
 		locations = data.map(({displayName, code, locationId}) => ({
 			key: locationId,
@@ -131,10 +127,8 @@ export async function getPickupLocations(libraryUrl) {
 			code: code,
 			name: displayName,
 		}));
-
 		await AsyncStorage.setItem('@pickupLocations', JSON.stringify(locations));
-		//console.log("Pickup locations saved")
-		//console.log(locations);
+		console.log("Pickup locations saved")
 		return locations;
 	} else {
 		console.log(response);
@@ -144,106 +138,45 @@ export async function getPickupLocations(libraryUrl) {
 /**
  * Fetch active browse categories for the branch/location
  **/
-export async function getBrowseCategories(libraryUrl, discoveryVersion) {
-	if(libraryUrl) {
-		const postBody = await postData();
-		const api = create({
-			baseURL: libraryUrl + '/API',
-			timeout: GLOBALS.timeoutAverage,
-			headers: getHeaders(true),
-			auth: createAuthTokens()
+export async function getBrowseCategories() {
+	const postBody = await postData();
+	const api = create({
+		baseURL: global.libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
+	if (response.status === 403) {
+		await removeData().then(res => {
+			console.log("Session ended.")
 		});
-		const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
-		const hiddenCategories = [];
-		if(responseHiddenCategories.ok) {
-			if(typeof responseHiddenCategories.data.result !== "undefined") {
-				const categories = responseHiddenCategories.data.result.categories;
-				if (_.isArray(categories) === true) {
-					if (categories.length > 0) {
-						categories.map(function (category, index, array) {
-							hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
-						});
-					}
-				}
+	}
+	if (response.ok) {
+		const items = response.data.result;
+		let allCategories = [];
+		items.map(function (category, index, array) {
+			const subCategories = category['subCategories'];
+
+			if (subCategories.length !== 0) {
+				subCategories.forEach(item => allCategories.push({
+					'key': item.key,
+					'title': item.title,
+					'isHidden': false
+				}))
+			} else {
+				allCategories.push({'key': category.key, 'title': category.title, 'isHidden': false});
 			}
-		}
-		//console.log(hiddenCategories);
-		const response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
-		if (response.status === 403) {
-			await removeData().then(res => {
-				console.log("Session ended.")
-			});
-		}
-		if (response.ok) {
-			const items = response.data.result;
-			let allCategories = [];
-			if(typeof items !== "undefined") {
-				items.map(function (category, index, array) {
-					const subCategories = category['subCategories'];
-
-					if(discoveryVersion >= "22.05.00") {
-						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
-							subCategories.forEach(item => allCategories.push({
-								'key': item.key,
-								'title': item.title,
-								'records': item.records,
-							}))
-						} else {
-							allCategories.push({'key': category.key, 'title': category.title});
-
-							if (typeof subCategories != "undefined") {
-								if (subCategories.length !== 0) {
-									subCategories.forEach(item => allCategories.push({
-										'key': item.key,
-										'title': item.title,
-										'records': item.records,
-									}))
-								} else {
-									allCategories.push({'key': category.key, 'title': category.title, 'records': category.records});
-								}
-
-							}
-						}
-					} else {
-						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
-							subCategories.forEach(item => allCategories.push({
-								'key': item.key,
-								'title': item.title,
-							}))
-						} else {
-							allCategories.push({'key': category.key, 'title': category.title});
-
-							if (typeof subCategories != "undefined") {
-								if (subCategories.length !== 0) {
-									subCategories.forEach(item => allCategories.push({
-										'key': item.key,
-										'title': item.title,
-									}))
-								} else {
-									allCategories.push({'key': category.key, 'title': category.title});
-								}
-
-							}
-						}
-					}
-				});
-			}
-
-			allCategories = _.pullAllBy(allCategories, hiddenCategories, 'key');
-
-			return allCategories;
-		} else {
-			console.log(response);
-		}
+		});
+		await AsyncStorage.setItem('@browseCategories', JSON.stringify(allCategories));
 	} else {
-		console.log("getBrowseCategories: " + libraryUrl);
-
+		console.log(response);
 	}
 }
 
-export async function getLanguages(libraryUrl) {
+export async function getLanguages() {
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: 10000,
 		headers: getHeaders(true),
 		auth: createAuthTokens()

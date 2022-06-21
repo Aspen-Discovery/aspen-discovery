@@ -7,18 +7,8 @@ class BadWord extends DataObject
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
 
-	public static function getObjectStructure(): array
-	{
-		return [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'word' => array('property' => 'word', 'type' => 'text', 'label' => 'Word', 'description' => 'The word to be censored', 'maxLength' => 50, 'required' => true),
-		];
-	}
-
-	/**
-	 * @return string[]
-	 */
-	function getBadWordExpressions() : array {
+	function getBadWordExpressions(){
+		/** @var $memCache Memcache */
 		global $memCache;
 		global $configArray;
 		global $timer;
@@ -39,16 +29,13 @@ class BadWord extends DataObject
 		return $badWordsList;
 	}
 
-	function censorBadWords(?string $search, string $replacement = '***') : ?string{
-		if ($search == null){
-			return $search;
-		}
+	function censorBadWords($search, $replacement = '***') {
 		$badWordsList = $this->getBadWordExpressions();
 		$result = preg_replace($badWordsList, $replacement, $search);
 		return $result;
 	}
 
-	function hasBadWords($search) : bool{
+	function hasBadWords($search){
 		$badWordsList = $this->getBadWordExpressions();
 		foreach ($badWordsList as $badWord) {
 			if (preg_match($badWord, $search)) return true;

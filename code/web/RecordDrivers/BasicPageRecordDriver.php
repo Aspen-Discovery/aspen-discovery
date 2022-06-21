@@ -76,36 +76,10 @@ class BasicPageRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		$basicPage = $this->getBasicPage();
-		if ($basicPage != null && $basicPage->canView()) {
-			if (isset($this->fields['description'])) {
-				return strip_tags($this->fields['description']);
-			} else {
-				return '';
-			}
+		if (isset($this->fields['description'])) {
+			return strip_tags($this->fields['description']);
 		}else{
-			if ($basicPage != null){
-				return $basicPage->getHiddenReason();
-			}else{
-				return '';
-			}
-		}
-	}
-
-	private $basicPage;
-	private function getBasicPage() : ?BasicPage {
-		if ($this->basicPage == null) {
-			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-			$this->basicPage = new BasicPage();
-			list(,$id) = explode(':',$this->getId());
-			$this->basicPage->id = $id;
-			if ($this->basicPage->find(true)) {
-				return $this->basicPage;
-			} else {
-				return null;
-			}
-		}else{
-			return $this->basicPage;
+			return '';
 		}
 	}
 

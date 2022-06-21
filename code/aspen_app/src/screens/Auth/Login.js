@@ -25,14 +25,13 @@ import {create} from 'apisauce';
 import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import _ from "lodash";
 import Constants from "expo-constants";
-import * as Updates from "expo-updates";
 
 // custom components and helper files
 import {translate} from "../../translations/translations";
 import {AuthContext} from "../../components/navigation";
 import {getHeaders, problemCodeMap} from "../../util/apiAuth";
 import {popToast} from "../../components/loadError";
-import {GLOBALS} from "../../util/globals";
+
 
 export default class Login extends Component {
 
@@ -57,10 +56,8 @@ export default class Login extends Component {
 		this.filteredLibraries = [];
 
 		// check for beta release channel
-		if (Updates.releaseChannel === 'beta') {
+		if (global.releaseChannel === 'beta') {
 			this.setState({isBeta: true});
-		} else if (Updates.releaseChannel === 'dev') {
-			this.setState({isBeta: true})
 		}
 	}
 
@@ -99,26 +96,16 @@ export default class Login extends Component {
 		let baseApiUrl;
 		if(Constants.manifest.slug === "aspen-lida") { method = "getLibraries"; } else { method = "getLibrary"; }
 		if(Constants.manifest.slug === "aspen-lida") { baseApiUrl = Constants.manifest.extra.greenhouse; } else { baseApiUrl = Constants.manifest.extra.apiUrl; }
-
-		let latitude = 0;
-		let longitude = 0;
-		try {
-			latitude = await SecureStore.getItemAsync("latitude");
-			longitude = await SecureStore.getItemAsync("longitude");
-		} catch(e) {
-			console.log(e);
-		}
 		const api = create({
 			baseURL: baseApiUrl + '/API',
-			timeout: 100000,
+			timeout: 5000,
 			headers: getHeaders(),
 		});
 		const response = await api.get('/GreenhouseAPI?method=' + method, {
-			latitude: latitude,
-			longitude: longitude,
-			release_channel: Updates.releaseChannel
+			latitude: global.latitude,
+			longitude: global.longitude,
+			release_channel: global.releaseChannel
 		});
-		//console.log(response);
 		if (response.ok) {
 			let res = response.data;
 			if(Constants.manifest.slug === "aspen-lida") {
@@ -160,7 +147,7 @@ export default class Login extends Component {
 			headers: getHeaders(),
 		});
 		const response = await api.get('/GreenhouseAPI?method=getLibraries', {
-			release_channel: Updates.releaseChannel
+			release_channel: global.releaseChannel
 		});
 		if(response.ok) {
 			let results = response.data;
@@ -183,17 +170,14 @@ export default class Login extends Component {
     // When a library is picked it stores information from the Greenhouse API response used to validate login
 	 **/
 	showLibraries = () => {
-		let uniqueLibraries = [];
+		let uniqueLibraries;
 		let showSelectLibrary = true;
 		if(Constants.manifest.slug === "aspen-lida") {
 			uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.librarySystem, v.name].join());
 		} else {
-			uniqueLibraries = _.values(this.state.libraryData);
-			uniqueLibraries = _.uniqBy(uniqueLibraries, v => [v.libraryId, v.name].join());
+			uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.libraryId, v.name].join());
 			if(this.state.locationNum <= 1) {
 				showSelectLibrary = false;
-				//console.log("showLibraries:");
-				//console.log(uniqueLibraries[0]);
 				this.setLibraryBranch(uniqueLibraries[0]);
 			}
 		}
@@ -317,13 +301,11 @@ export default class Login extends Component {
 		let isCommunity = true;
 		if(Constants.manifest.slug !== "aspen-lida") { isCommunity = false; }
 
-		//console.log(this.state);
-
 		// TODO: Get library logo, fallback on LiDA
 		return (
 			<Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
 				<Image source={{ uri: logo }} rounded={25} size={{base: "xl", lg: "2xl"}}
-				       alt={translate('app.name')} />
+				       alt={translate('app.name')}/>
 
 				{this.showLibraries()}
 
@@ -357,7 +339,7 @@ export default class Login extends Component {
 					: null }
 					<Center>{isBeta ? <Badge rounded={5}
 					                         mt={5}>{translate('app.beta')}</Badge> : null}</Center>
-					<Center><Text mt={5} fontSize={{base: "xs", lg: "sm"}} color="coolGray.600">v{Constants.manifest.version} b[{Constants.nativeAppVersion}] p[{GLOBALS.appPatch}]</Text></Center>
+					<Center><Text mt={5} fontSize={{base: "xs", lg: "sm"}} color="coolGray.600">v{Constants.manifest.version} [b{Constants.nativeAppVersion}] p0</Text></Center>
 				</KeyboardAvoidingView>
 			</Box>
 		);
@@ -452,15 +434,10 @@ const GetLoginForm = (props) => {
 					size={{base: "md", lg: "lg"}}
 					color="#30373b"
 					isLoading={loading}
-					isLoadingText="Logging in..."
+					isLoadingText="Submitting..."
 					onPress={() => {
 						setLoading(true);
-						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary});
-						setTimeout(
-							function () {
-								setLoading(false);
-							}.bind(this), 1500
-						);
+						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary})
 					}}
 				>
 					{translate('general.login')}

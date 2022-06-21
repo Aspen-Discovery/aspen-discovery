@@ -591,18 +591,6 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		deleteUngrouping: function(groupedWorkId, ungroupingId) {
-			var url = Globals.path + "/GroupedWork/" + groupedWorkId + "/AJAX?method=deleteUngrouping&ungroupingId=" + ungroupingId;
-			$.getJSON(url, function (data){
-				if (data.success){
-					$("#ungrouping").hide();
-				}else{
-					AspenDiscovery.showMessage(data.title, data.body);
-				}
-			});
-			return false;
-		},
-
 		getDisplayInfoForm: function(id) {
 			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getDisplayInfoForm";
 			$.getJSON(url, function (data){

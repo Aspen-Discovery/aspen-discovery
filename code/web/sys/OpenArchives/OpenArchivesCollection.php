@@ -17,7 +17,6 @@ class OpenArchivesCollection extends DataObject
 	public /** @noinspection PhpUnused */ $fetchFrequency;
 	public /** @noinspection PhpUnused */ $loadOneMonthAtATime;
 	public $lastFetched;
-	public $deleted;
 
 	public $_libraries;
 	public $_locations;
@@ -107,7 +106,6 @@ class OpenArchivesCollection extends DataObject
 	{
 		$this->clearLibraries();
 		$this->clearLocations();
-		$this->deleted = true;
 		return $this->update();
 	}
 

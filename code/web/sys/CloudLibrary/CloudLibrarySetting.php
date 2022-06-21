@@ -53,16 +53,13 @@ class CloudLibrarySetting extends DataObject
 		return $this->libraryId . " - " . $this->userInterfaceUrl;
 	}
 
-	/**
-	 * @return int|bool
-	 */
 	public function update()
 	{
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
 		}
-		return $ret;
+		return true;
 	}
 
 	public function insert()

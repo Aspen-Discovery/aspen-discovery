@@ -21,10 +21,6 @@ class EncryptionUtils
 
 	public static function decryptField($fieldData){
 		$key = EncryptionUtils::loadKey();
-		return EncryptionUtils::doDecryption($fieldData, $key);
-	}
-
-	private static function doDecryption($fieldData, $key){
 		if ($key == false){
 			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~'){
 				return "Invalid encryption";
@@ -53,21 +49,9 @@ class EncryptionUtils
 		}
 	}
 
-	private static $_providedKeys = [];
-	public static function decryptFieldWithProvidedKey($fieldData, $key){
-		if (!array_key_exists($key, EncryptionUtils::$_providedKeys)){
-			list($cipher, $key) = explode(':', $key, 2);
-			EncryptionUtils::$_providedKeys[$key] = [
-				'cipher' => $cipher,
-				'key' => hex2bin($key)
-			];
-		}
-		$keyData =  EncryptionUtils::$_providedKeys[$key];
-		return EncryptionUtils::doDecryption($fieldData, $keyData);
-	}
-
 	private static $_key = null;
 	private static function loadKey(){
+		/** @var MemCache $memCache */
 		global $memCache;
 		if (EncryptionUtils::$_key == null){
 			global $serverName;

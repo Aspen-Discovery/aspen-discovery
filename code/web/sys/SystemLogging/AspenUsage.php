@@ -28,11 +28,6 @@ class AspenUsage extends DataObject
 	public $timedOutSearchesWithHighLoad;
 	public $searchesWithErrors;
 
-	public function getUniquenessFields(): array
-	{
-		return ['instance', 'year', 'month'];
-	}
-
 	public function getNumericColumnNames() : array
 	{
 		return [
@@ -54,14 +49,5 @@ class AspenUsage extends DataObject
 			'timedOutSearchesWithHighLoad',
 			'searchesWithErrors'
 		];
-	}
-
-	public function okToExport(array $selectedFilters): bool
-	{
-		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
-			$okToExport = true;
-		}
-		return $okToExport;
 	}
 }

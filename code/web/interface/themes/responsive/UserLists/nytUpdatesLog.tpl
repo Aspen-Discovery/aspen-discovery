@@ -3,8 +3,8 @@
 		<h1>{translate text="New York Times Updates Log" isAdminFacing=true}</h1>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div class="adminTableRegion fixed-height-table">
-			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
+		<div id="exportLogContainer">
+			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
 					<tr>
 						<th>{translate text="Id" isAdminFacing=true}</th>

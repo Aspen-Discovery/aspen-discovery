@@ -19,7 +19,6 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	private String currentId;
 	private boolean isFullUpdate;
 	private int numErrors = 0;
-	private int numRecordsWithInvalidMarc = 0;
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
@@ -34,7 +33,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		this.indexingProfile = indexingProfile;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into ils_extract_log (startTime, indexingProfile) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, isFullUpdate = ?, endTime = ?, notes = ?, numRegrouped =?, numChangedAfterGrouping = ?, numProducts = ?, numRecordsWithInvalidMarc = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, currentId = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, isFullUpdate = ?, endTime = ?, notes = ?, numRegrouped =?, numChangedAfterGrouping = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, currentId = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -97,7 +96,6 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numRegrouped);
 				updateLogEntry.setInt(++curCol, numChangedAfterGrouping);
 				updateLogEntry.setInt(++curCol, numProducts);
-				updateLogEntry.setInt(++curCol, numRecordsWithInvalidMarc);
 				updateLogEntry.setInt(++curCol, numErrors);
 				updateLogEntry.setInt(++curCol, numAdded);
 				updateLogEntry.setInt(++curCol, numUpdated);
@@ -125,12 +123,6 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
-	}
-
-	public void incRecordsWithInvalidMarc(String note) {
-		this.numRecordsWithInvalidMarc++;
-		this.addNote(note);
-		this.saveResults();
 	}
 
 	public void incErrors(String note, Exception e){

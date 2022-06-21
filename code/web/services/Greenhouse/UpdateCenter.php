@@ -8,8 +8,8 @@ class Greenhouse_UpdateCenter extends Admin_Admin
 	function launch()
 	{
 		$sites = new AspenSite();
-		$sites->whereAdd('implementationStatus != 4');
-		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
+		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
+		$sites->orderBy('implementationStatus ASC, name ASC');
 		$sites->find();
 		$allSites = [];
 		while ($sites->fetch()){

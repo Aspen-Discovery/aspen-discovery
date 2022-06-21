@@ -62,13 +62,6 @@ AspenDiscovery.Searches = (function(){
 			return false;
 		},
 
-		changeDropDownFacet: function (facetId) {
-			var selectedFacetDropdown = $('#' + facetId + ' option:selected');
-			var destination = selectedFacetDropdown.data('destination');
-			window.location = destination;
-			return false;
-		},
-
 		getPreferredDisplayMode: function(){
 			if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
 				temp = window.localStorage.getItem('searchResultsDisplayMode');

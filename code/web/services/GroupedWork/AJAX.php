@@ -175,15 +175,8 @@ class GroupedWork_AJAX extends JSON_Action
 		if ($recordDriver->isValid()){
 			//Load Similar titles (from Solr)
 			$url = $configArray['Index']['url'];
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->searchVersion == 1){
-				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-				$db = new GroupedWorksSolrConnector($url);
-			}else{
-				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
-				$db = new GroupedWorksSolrConnector2($url);
-			}
-
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$db = new GroupedWorksSolrConnector($url);
 			$db->disableScoping();
 			$similar = $db->getMoreLikeThis($id);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
@@ -246,7 +239,7 @@ class GroupedWork_AJAX extends JSON_Action
 			//Load Similar titles (from Solr)
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			/** @var SearchObject_AbstractGroupedWorkSearcher $db */
+			/** @var SearchObject_GroupedWorkSearcher $db */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			$searchObject->disableScoping();
@@ -413,7 +406,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody' => $modalBody,
 			'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
-				."<a href='$url'><button class='modal-buttons btn btn-primary addToListBtn'>" . translate(['text'=>"More Info", 'isPublicFacing'=>true]) . "</button></a>"
+				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate(['text'=>"More Info", 'isPublicFacing'=>true]) . "</button></a>"
 		);
 	}
 
@@ -798,7 +791,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -1185,7 +1178,7 @@ class GroupedWork_AJAX extends JSON_Action
 				$interface->assign('groupedWork', $groupedWork);
 
 				$searchId = $_REQUEST['searchId'];
-				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject();
 				$searchObject->init();
 				$searchObject = $searchObject->restoreSavedSearch($searchId, false);
@@ -1235,12 +1228,16 @@ class GroupedWork_AJAX extends JSON_Action
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
-		global $interface;
-		$interface->assign('recordDriver', $recordDriver);
-		$result = [
-			'success' => true,
-			'staffView' => $interface->fetch($recordDriver->getStaffView())
-		];
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = translate(['text'=>'Could not find that record', 'isPublicFacing'=>true]);
+		}
 		return $result;
 	}
 
@@ -1250,7 +1247,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => translate(['text'=>'Unknown error deleting alternate title', 'isAdminFacing'=>true])
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
 			$id = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
@@ -1263,37 +1260,6 @@ class GroupedWork_AJAX extends JSON_Action
 				];
 			}else{
 				$result['message'] = translate(['text'=>"Could not find the alternate title to delete", 'isAdminFacing'=>true]);
-			}
-		}else{
-			$result['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
-		}
-		return $result;
-	}
-
-	function deleteUngrouping(){
-		$result = [
-			'success' => false,
-			'message' => translate(['text'=>'Unknown error deleting ungrouping', 'isAdminFacing'=>true])
-		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
-			$id = $_REQUEST['ungroupingId'];
-			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-			$nonGroupedRecord = new NonGroupedRecord();
-			$nonGroupedRecord->id = $id;
-			if ($nonGroupedRecord->find(true)){
-				$nonGroupedRecord->delete();
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-				$groupedRecord = new GroupedWork();
-				$groupedRecord->permanent_id = $_REQUEST['id'];
-				if ($groupedRecord->find(true)){
-					$groupedRecord->forceReindex(true);
-				}
-				$result = [
-					'success' => true,
-					'message' => translate(['text'=>"This title can group with other records again", 'isAdminFacing'=>true])
-				];
-			}else{
-				$result['message'] = translate(['text'=>"Could not find the ungrouping entry to delete", 'isAdminFacing'=>true]);
 			}
 		}else{
 			$result['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);

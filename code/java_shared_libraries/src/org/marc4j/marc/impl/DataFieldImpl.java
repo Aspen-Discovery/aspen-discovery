@@ -21,9 +21,7 @@
 package org.marc4j.marc.impl;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -305,58 +303,6 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
     @Override
     public Long getId() {
         return id;
-    }
-
-    public Set<String> getSubfieldDataAsSet(String subfieldsStr, int beginIx, int endIx){
-        Set<String> resultSet = new LinkedHashSet<>();
-        if (subfieldsStr.length() > 1) {
-            // automatic concatenation of grouped subFields
-            StringBuilder buffer = new StringBuilder();
-            List<Subfield> subFields = subfields;
-            for (Subfield sf : subFields) {
-                if (subfieldsStr.indexOf(sf.getCode()) != -1 && sf.getData().length() >= endIx) {
-                    if (buffer.length() > 0)
-                        buffer.append(" ");
-                    buffer.append(sf.getData().substring(beginIx, endIx));
-                }
-            }
-            resultSet.add(buffer.toString());
-        } else {
-            // get all instances of the single subfield
-            List<Subfield> subFlds = getSubfields(subfieldsStr.charAt(0));
-            for (Subfield sf : subFlds) {
-                if (sf.getData().length() >= endIx)
-                    resultSet.add(sf.getData().substring(beginIx, endIx));
-            }
-        }
-        return resultSet;
-    }
-
-    public Set<String> getSubfieldDataAsSet(String subfieldsStr, String separator){
-        Set<String> resultSet = new LinkedHashSet<>();
-        if (subfieldsStr.length() > 1 || separator != null) {
-            // concatenate subfields using specified separator or space
-            StringBuilder buffer = new StringBuilder();
-            List<Subfield> subFields = subfields;
-            for (Subfield sf : subFields) {
-                if (subfieldsStr.indexOf(sf.getCode()) != -1) {
-                    if (buffer.length() > 0) {
-                        buffer.append(separator != null ? separator : " ");
-                    }
-                    buffer.append(sf.getData().trim());
-                }
-            }
-            if (buffer.length() > 0){
-                resultSet.add(buffer.toString());
-            }
-        } else if (subfieldsStr.length() == 1) {
-            // get all instances of the single subfield
-            List<Subfield> subFields = getSubfields(subfieldsStr.charAt(0));
-            for (Subfield sf : subFields) {
-                resultSet.add(sf.getData().trim());
-            }
-        }
-        return resultSet;
     }
 
 }

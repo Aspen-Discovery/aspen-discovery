@@ -9,6 +9,8 @@ class Axis360Title {
 	private boolean processed;
 	private boolean deleted;
 
+	private HashSet<Long> activeSettings = new HashSet<>(); //The settings (libraries) the title is active in
+
 	Axis360Title(long id, String axis360Id, long checksum, boolean deleted) {
 		this.id = id;
 		this.axis360Id = axis360Id;
@@ -30,6 +32,18 @@ class Axis360Title {
 
 	boolean isDeleted() {
 		return deleted;
+	}
+
+	void addSetting(long settingId) {
+		this.activeSettings.add(settingId);
+	}
+
+	void removeSetting(long id) {
+		this.activeSettings.remove(id);
+	}
+
+	int getNumSettings(){
+		return this.activeSettings.size();
 	}
 
 	boolean isProcessed() {

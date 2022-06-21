@@ -47,38 +47,22 @@ public class EventsIndexerMain {
 				String solrPort = configIni.get("Reindex", "solrPort");
 				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
 
-				// LibraryMarket LibraryCalendar
-				PreparedStatement getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from lm_library_calendar_settings");
-				ResultSet eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();
-				while (eventsSitesRS.next()) {
-					LibraryMarketLibraryCalendarIndexer indexer = new LibraryMarketLibraryCalendarIndexer(
-							eventsSitesRS.getLong("id"),
-							eventsSitesRS.getString("name"),
-							eventsSitesRS.getString("baseUrl"),
-							eventsSitesRS.getString("clientId"),
-							eventsSitesRS.getString("clientSecret"),
-							eventsSitesRS.getString("username"),
-							eventsSitesRS.getString("password"),
+				PreparedStatement getLibraryCalendarSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from lm_library_calendar_settings");
+				ResultSet libraryCalendarSitesRS = getLibraryCalendarSitesToIndexStmt.executeQuery();
+				while (libraryCalendarSitesRS.next()) {
+					LibraryCalendarIndexer indexer = new LibraryCalendarIndexer(
+							libraryCalendarSitesRS.getLong("id"),
+							libraryCalendarSitesRS.getString("name"),
+							libraryCalendarSitesRS.getString("baseUrl"),
+							libraryCalendarSitesRS.getString("clientId"),
+							libraryCalendarSitesRS.getString("clientSecret"),
+							libraryCalendarSitesRS.getString("username"),
+							libraryCalendarSitesRS.getString("password"),
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
 
-				// Springshare LibCal
-				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from springshare_libcal_settings");
-				eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();
-				while (eventsSitesRS.next()) {
-					SpringshareLibCalIndexer indexer = new SpringshareLibCalIndexer(
-							eventsSitesRS.getLong("id"),
-							eventsSitesRS.getString("name"),
-							eventsSitesRS.getString("baseUrl"),
-							eventsSitesRS.getString("calId"),
-							eventsSitesRS.getString("clientId"),
-							eventsSitesRS.getString("clientSecret"),
-							solrUpdateServer, aspenConn, logger);
-					indexer.indexEvents();
-				}
-
-					//Index events from other source here
+				//Index events from other source here
 			} catch (SQLException e) {
 				logger.error("Error indexing events", e);
 			}

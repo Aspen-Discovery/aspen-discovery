@@ -11,7 +11,6 @@ class AspenSite extends DataObject
 	public $siteType;
 	public $libraryType;
 	public $libraryServes;
-	public $timezone;
 	public $implementationStatus;
 	public $hosting;
 	public $appAccess;
@@ -27,23 +26,12 @@ class AspenSite extends DataObject
 	public $lastContacted;
 	public $nextMeetingDate;
 	public $nextMeetingPerson;
-	public $activeTicketFeed;
-	//public $jointAspenKohaImplementation;
-	//public $ilsMigration;
-
-	//public $implementationSpecialist;
 
 	public static $_siteTypes = [0 => 'Library Partner', 1 => 'Library Partner Test', 2 => 'Demo', 3 => 'Test'];
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
 	public static $_appAccess = [0 => 'None', 1 => 'LiDA Only', 2 => 'Whitelabel Only', 3 => 'LiDA + Whitelabel'];
 	public static $_validIls = [0 => 'Not Set', 1 => 'Koha', 2 => 'CARL.X', 3 => 'Evergreen', 4 => 'Millennium', 5=>'Polaris',6 => 'Sierra', 7 => 'Symphony'];
 	public static $_contactFrequency = [0 => 'Weekly', 1 => 'Bi-Monthly', 2=>'Monthly', 3=> 'Quarterly', 4 => 'Every 6 Months', 5=>'Yearly'];
-	public static $_timezones = [0=> 'Unknown', 10 => 'Eastern', 12 => 'Central', 14=>'Mountain', 16=> 'Arizona', 18 => 'Pacific'];
-
-	public function getNumericColumnNames(): array
-	{
-		return ['siteType', 'libraryTYpe', 'libraryServes', 'implementationStatus', 'appAccess', 'ils'];
-	}
 
 	public static function getObjectStructure() : array {
 		return [
@@ -51,7 +39,6 @@ class AspenSite extends DataObject
 			'name' => ['property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The name of the website to index', 'maxLength'=>50, 'required' => true],
 			'internalServerName' => ['property'=>'internalServerName', 'type'=>'text', 'label'=>'Internal Server Name', 'description'=>'The internal server name', 'maxLength'=>50, 'required' => false],
 			'siteType' => ['property'=>'siteType', 'type'=>'enum', 'values' => AspenSite::$_siteTypes, 'label'=>'Type of Server', 'description'=>'The type of server', 'required' => true, 'default' => 0],
-			'timezone' => ['property'=>'timezone', 'type'=>'enum', 'values' => AspenSite::$_timezones, 'label'=>'Timezone', 'description'=>'The timezone of the library', 'required' => true, 'default' => 0],
 			'libraryType' => ['property'=>'libraryType', 'type'=>'enum', 'values' => [0 => 'Single branch library', 1 => 'Multi-branch library', 2 => 'Consortia - Central Admin', 3 => 'Consortia - Member Admin', 4 => 'Consortia - Hybrid Admin'], 'label'=>'Type of Library', 'description'=>'The type of server', 'required' => true, 'default' => 0],
 			'libraryServes' => ['property'=>'libraryServes', 'type'=>'enum', 'values' => [0 => 'Public', 1 => 'Academic', 2 => 'Schools', 3 => 'Special', 4 => 'Mixed'], 'label'=>'Library Serves...', 'description'=>'Who the library primarily serves', 'required' => true, 'default' => 0],
 			'implementationStatus' => ['property'=>'implementationStatus', 'type'=>'enum', 'values' => AspenSite::$_implementationStatuses, 'label'=>'Implementation Status', 'description'=>'The status of implementation', 'required' => true, 'default' => 0],
@@ -62,7 +49,6 @@ class AspenSite extends DataObject
 			'appAccess' => ['property'=>'appAccess', 'type'=>'enum', 'values' => AspenSite::$_appAccess, 'label'=>'App Access Level', 'description'=>'The level of access to the Aspen app that the library has', 'required' => true, 'default' => 0],
 			'ils' => ['property'=>'ils', 'type'=>'enum', 'values' => AspenSite::$_validIls, 'label'=>'ILS', 'description'=>'The ils used by the library', 'required' => true, 'default' => 0],
 			'operatingSystem' => ['property'=>'operatingSystem', 'type'=>'text', 'label'=>'Operating System', 'description'=>'What operating system the site is on', 'maxLength'=>75, 'required' => false],
-			'activeTicketFeed' => ['property'=>'activeTicketFeed', 'type'=>'url', 'label'=>'Active Ticket Feed', 'description'=>'The URL to get a list of all active tickets for an instance', 'maxLength'=>1000, 'required' => false, 'hideInLists'=>true],
 			'contactFrequency' => ['property'=>'contactFrequency', 'type'=>'enum', 'values' => AspenSite::$_contactFrequency, 'label'=>'Contact Frequency', 'description'=>'How often we want to contact the library', 'required' => true, 'default' => 3],
 			'lastContacted' => ['property' => 'lastContacted', 'type'=>'date', 'label'=>'Last Contacted', 'description'=>'When the library was last contacted.', 'hideInLists' => false],
 			'nextMeetingDate' => ['property' => 'nextMeetingDate', 'type'=>'date', 'label'=>'Next Meeting Date', 'description'=>'When we want to talk to the library next.', 'hideInLists' => false],
@@ -127,8 +113,7 @@ class AspenSite extends DataObject
 				$status['checks'][$checkName] = [
 					'name' => $statusChecks->checkName,
 					'status' => $statusValue,
-					'note' => $note,
-					'url' => $statusChecks->getUrl($this)
+					'note' => $note
 				];
 			}
 			if ($hasCriticalErrors){
@@ -180,11 +165,10 @@ class AspenSite extends DataObject
 		return $version;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	public function toArray(): array
 	{
-		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		$return = parent::toArray();
 		$return['implementationStatus'] = AspenSite::$_implementationStatuses[$this->implementationStatus];
-		$return['timezone'] = AspenSite::$_timezones[$this->timezone];
 		return $return;
 	}
 
@@ -194,9 +178,5 @@ class AspenSite extends DataObject
 
 	public function getSiteTypeName(){
 		return AspenSite::$_siteTypes[$this->siteType];
-	}
-
-	public function getTimezoneName(){
-		return AspenSite::$_timezones[$this->timezone];
 	}
 }

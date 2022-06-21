@@ -56,9 +56,6 @@ class Record_AJAX extends Action
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
 			$id = $_REQUEST['id'];
-			if (strpos($id, ':') > 0){
-				list(,$id) = explode(':', $id);
-			}
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])) {
@@ -1034,15 +1031,8 @@ class Record_AJAX extends Action
 		}
 		$interface->assign('mustPickupAtHoldingBranch', $mustPickupAtHoldingBranch);
 
-		//Check to see if we need to prompt for hold notifications
-		$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
-		$interface->assign('promptForHoldNotifications', $promptForHoldNotifications);
-		if ($promptForHoldNotifications) {
-			$interface->assign('holdNotificationTemplate', $user->getCatalogDriver()->getHoldNotificationTemplate());
-		}
-
 		global $library;
-		if (!$multipleAccountPickupLocations && !$promptForHoldNotifications && $library->allowRememberPickupLocation) {
+		if (!$multipleAccountPickupLocations && $library->allowRememberPickupLocation) {
 			//If the patron's preferred pickup location is not valid then force them to pick a new location
 			$preferredPickupLocationIsValid = false;
 			foreach ($locations as $location){
@@ -1068,7 +1058,7 @@ class Record_AJAX extends Action
 		$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
 		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
 		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
-		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation && !$promptForHoldNotifications);
+		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation);
 		$interface->assign('showLogMeOut', $library->showLogMeOutAfterPlacingHolds);
 
 		$activeIP = IPAddress::getActiveIp();
@@ -1132,7 +1122,7 @@ class Record_AJAX extends Action
 			'needsItemLevelHold' => true,
 			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
 			'title' => $return['title'] ?? '',
-			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>"
+			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 }

@@ -2,41 +2,14 @@ import React, {useState} from "react";
 import {Button, Center, Modal, HStack, Text, Icon, FlatList, Heading } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import {translate} from "../../translations/translations";
-import {getItemDetails} from "../../util/recordActions";
 
 const ShowItemDetails = (props) => {
-	const { data, title, id, format, libraryUrl } = props;
+	const { data, title } = props;
 	const [showModal, setShowModal] = useState(false);
-	const [details, setDetails] = React.useState('');
-	const [shouldFetch, setShouldFetch] = React.useState(true);
-	const loading = React.useCallback(() => setShouldFetch(true), []);
-
-	React.useEffect(() => {
-		if(!loading) {
-			return;
-		}
-
-		const loadItemDetails = async () => {
-			//id === undefined
-			//format === null
-			if(typeof id !== "undefined" && format !== null) {
-				await getItemDetails(libraryUrl, id, format).then(response => {
-					setShouldFetch(false);
-					setDetails(response);
-				});
-			}
-		};
-		loadItemDetails();
-	}, [loading])
 	return (
 		<Center>
 			<Button
-				onPress={() => {
-					getItemDetails(libraryUrl, id, format).then(response => {
-						setDetails(response);
-						setShowModal(true);
-					})
-				}}
+				onPress={() => setShowModal(true)}
 				colorScheme="tertiary"
 				variant="ghost"
 				size="sm"
@@ -54,7 +27,7 @@ const ShowItemDetails = (props) => {
 					</Modal.Header>
 					<Modal.Body>
 						<FlatList
-							data={details}
+							data={data}
 							keyExtractor={(item) => item.description}
 							ListHeaderComponent={renderHeader()}
 							renderItem={({item}) => renderCopyDetails(item)}

@@ -17,9 +17,6 @@ class OMDBSetting extends DataObject
 		];
 	}
 
-	/**
-	 * @return int|bool
-	 */
 	public function update()
 	{
 		$result = parent::update();

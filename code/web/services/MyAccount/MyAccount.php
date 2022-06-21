@@ -19,10 +19,6 @@ abstract class MyAccount extends Action
 			exit();
 		}
 
-		header("Cache-Control: no-cache, no-store, must-revalidate");
-		header("Pragma: no-cache");
-		header("Expires: 0");
-
 		//Load system messages
 		if (UserAccount::isLoggedIn()) {
 			$accountMessages = [];
@@ -36,8 +32,6 @@ abstract class MyAccount extends Action
 					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 3");
 				} elseif ($action == 'Fines') {
 					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
-				} elseif ($action == 'ContactInformation') {
-					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 5");
 				} else {
 					$customAccountMessages->showOn = 1;
 				}

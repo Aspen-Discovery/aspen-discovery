@@ -17,16 +17,7 @@ class Suggest extends Action {
 		header('Content-type: application/json');
 
 		// Setup Search Engine Connection
-
-		$url = $configArray['Index']['url'];
-		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$db = new GroupedWorksSolrConnector($url);
-		}else{
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
-			$db = new GroupedWorksSolrConnector2($url);
-		}
+		$db = new GroupedWorksSolrConnector($configArray['Index']['url']);
 
 		$results = $db->getSuggestion(strtolower(strip_tags($_GET['lookfor'])), 'title_sort', 10);
 		echo json_encode($results);

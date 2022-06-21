@@ -31,10 +31,11 @@ if (isset($_REQUEST['test_role'])){
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
+/** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 20);
+$interface->assign('cssJsCacheCounter', 17);
 
 // Setup Translator
 global $language;
@@ -136,7 +137,7 @@ try {
 				if (strlen($linkedProperties) > 0) {
 					$linkedProperties .= ', ';
 				}
-				$linkedProperties .= "'$linkedProperty'";
+				$linkedProperties .= "'{$linkedProperty}'";
 			}
 		}
 		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
@@ -156,7 +157,7 @@ global $configArray;
 
 //Get the name of the active instance
 //$inLibrary, is used to pre-select auto-logout on place hold forms;
-// to hide the "remember me" option on login pages;
+// to hide the remember me option on login pages;
 // and to show the Location in the page footer
 if ($locationSingleton->getIPLocation() != null){
 	$interface->assign('inLibrary', true);
@@ -184,10 +185,6 @@ if ($action == 'trackback'){
 }
 if ($action == 'SimilarTitles'){
 	$action = 'Home';
-}
-//Don't show DBMaintenance warning on the DB Maintenance page
-if ($action == 'DBMaintenance'){
-	$interface->assign('hasSqlUpdates', false);
 }
 //Set these initially in case user login fails, we will need the module to be set.
 $interface->assign('module', $module);
@@ -229,26 +226,14 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);
 
+//Look for spammy searches and kill them
 if (isset($_REQUEST['lookfor'])) {
 	// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
-			if ( isSpammySearchTerm($searchTerm)){
-				global $interface;
-				$interface->assign('module','Error');
-				$interface->assign('action','Handle404');
-				$module = 'Error';
-				$action = 'Handle404';
-				require_once ROOT_DIR . "/services/Error/Handle404.php";
-			}
 			if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
 				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
-				$_GET['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
-			}
-			$cleanedSearchTerm = strip_tags($searchTerm);
-			if ($cleanedSearchTerm != $searchTerm){
-				$_REQUEST['lookfor'][$i] = $cleanedSearchTerm;
-				$_GET['lookfor'][$i] = $cleanedSearchTerm;
+				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			if (strlen($searchTerm) >= 256) {
 				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
@@ -259,23 +244,11 @@ if (isset($_REQUEST['lookfor'])) {
 			}
 		}
 	} else {
-		if ( isSpammySearchTerm($_REQUEST['lookfor'])){
-			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
-			$module = 'Error';
-			$action = 'Handle404';
-			require_once ROOT_DIR . "/services/Error/Handle404.php";
-		}
 		// Basic Search
 		$searchTerm = trim($_REQUEST['lookfor']);
 		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
 			$searchTerm = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
-		}
-		$cleanedSearchTerm = strip_tags($searchTerm);
-		if ($cleanedSearchTerm != $searchTerm){
-			$searchTerm = $cleanedSearchTerm;
 		}
 		if (strlen($searchTerm) >= 256) {
 			$interface->setTemplate('../queryTooLong.tpl');
@@ -311,17 +284,7 @@ if ($isLoggedIn) {
         AspenError::raiseError("Error authenticating patron " . $e->getMessage());
     }
     $timer->logTime('Login the user');
-	require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
-	if ($user instanceof ExpiredPasswordError) {
-		$_REQUEST['token'] =  $user->resetToken;
-
-		require_once ROOT_DIR . '/services/MyAccount/CompletePinReset.php';
-		$launchAction = new MyAccount_CompletePinReset();
-		$launchAction->setPinExpired(true);
-		$launchAction->launch();
-
-		exit();
-	}elseif ($user instanceof AspenError) {
+	if ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
 		$error_msg    = translate(['text'=>$user->getMessage(),'isPublicFacing'=>true]);
@@ -357,43 +320,6 @@ if ($isLoggedIn) {
 				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
 				if (!empty($_REQUEST['recordId'])) {
 					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
-				}
-				header("Location: " . $followupUrl);
-				exit();
-			}elseif($_REQUEST['followupModule'] == 'WebBuilder') {
-				echo("Redirecting to followup location");
-				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
-				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
-				if (!empty($_REQUEST['pageId'])) {
-					if($_REQUEST['followupAction'] == "BasicPage") {
-						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-						$basicPage = new BasicPage();
-						$basicPage->id = $_REQUEST['pageId'];
-						if($basicPage->find(true)) {
-							if($basicPage->urlAlias) {
-								$followupUrl = $basicPage->urlAlias;
-							} else {
-								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-							}
-						} else {
-							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-						}
-					} elseif($_REQUEST['followupAction'] == "PortalPage") {
-						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-						$portalPage = new PortalPage();
-						$portalPage->id = $_REQUEST['pageId'];
-						if($portalPage->find(true)) {
-							if($portalPage->urlAlias) {
-								$followupUrl = $portalPage->urlAlias;
-							} else {
-								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-							}
-						} else {
-							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-						}
-					} else {
-						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-					}
 				}
 				header("Location: " . $followupUrl);
 				exit();
@@ -474,6 +400,20 @@ $timer->logTime('Assign module and action');
 require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
 $searchSources = new SearchSources();
 list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
+
+$interface->assign('curFormatCategory', 'Everything');
+if (isset($_REQUEST['filter'])){
+	foreach ($_REQUEST['filter'] as $curFilter){
+		if (!is_array($curFilter)){
+			$filterInfo = explode(":", $curFilter);
+			if ($filterInfo[0] == 'format_category'){
+				$curFormatCategory = str_replace('"', '', $filterInfo[1]);
+				$interface->assign('curFormatCategory', $curFormatCategory);
+				break;
+			}
+		}
+	}
+}
 
 $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
@@ -575,9 +515,8 @@ if (!$isAJAX){
 			$systemMessage = new SystemMessage();
 			$systemMessage->id = -1;
 			$systemMessage->dismissable = 0;
-			$systemMessage->message =  $interface->getVariable('offlineMessage');
-			$systemMessage->messageStyle = 'danger';
-			$systemMessages[] = $systemMessage;
+			$systemMessage->setPreFormattedMessage("<p class='alert alert-warning'><strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time.</p>");
+			$interface->assign('systemMessage', $systemMessage);
 		}
 		//Set System Message after translator has been setup
 		if (strlen($library->systemMessage) > 0) {
@@ -699,6 +638,7 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }else if (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
+	/** @noinspection PhpIncludeInspection */
 	require_once $actionFile;
 	$moduleActionClass = "{$module}_{$action}";
 	if (class_exists($moduleActionClass, false)) {
@@ -886,14 +826,18 @@ function aspen_autoloader($class) {
 	try{
 		if (file_exists('sys/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/' . $class . '.php';
-            require_once $className;
+            /** @noinspection PhpIncludeInspection */
+			require_once $className;
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
-            require_once $className;
+            /** @noinspection PhpIncludeInspection */
+			require_once $className;
 		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
 			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
-            require_once $className;
+            /** @noinspection PhpIncludeInspection */
+			require_once $className;
 		}else{
+            /** @noinspection PhpIncludeInspection */
             require_once $nameSpaceClass;
 		}
 	}catch (Exception $e){
@@ -924,7 +868,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
@@ -1115,32 +1059,12 @@ function initializeSession(){
 	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
 	//register_shutdown_function('session_write_close');
 	$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-    require_once $sessionClass;
+    /** @noinspection PhpIncludeInspection */
+	require_once $sessionClass;
 	if (class_exists($session_type)) {
 		/** @var SessionInterface $session */
 		$session = new $session_type();
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}
 	$timer->logTime('Session initialization ' . $session_type);
-}
-
-//Look for spammy searches and kill them
-function isSpammySearchTerm($lookfor) : bool
-{
-	if (strpos($lookfor, 'DBMS_PIPE.RECEIVE_MESSAGE') !== false) {
-		return true;
-	} elseif (strpos($lookfor, 'PG_SLEEP') !== false) {
-		return true;
-	} elseif (strpos($lookfor, 'SELECT') !== false) {
-		return true;
-	} elseif (strpos($lookfor, 'SLEEP') !== false) {
-		return true;
-	} elseif (strpos($lookfor, 'ORDER BY') !== false) {
-		return true;
-	} elseif (strpos($lookfor, 'WAITFOR') !== false) {
-		return true;
-	} elseif (strpos($lookfor, 'nvOpzp') !== false) {
-		return true;
-	}
-	return false;
 }

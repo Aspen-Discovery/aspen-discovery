@@ -25,12 +25,6 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		$object = new MaterialsRequestStatus();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
-		if (is_null($homeLibrary)) {
-			//User does not have a home library, this is likely an admin account.  Use the active library
-			global $library;
-			$homeLibrary = $library;
-		}
-
 		$object->libraryId = $homeLibrary->libraryId;
 		$this->applyFilters($object);
 
@@ -78,11 +72,6 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 	/** @noinspection PhpUnused */
 	function resetToDefault(){
 		$homeLibrary = Library::getPatronHomeLibrary();
-		if (is_null($homeLibrary)) {
-			//User does not have a home library, this is likely an admin account.  Use the active library
-			global $library;
-			$homeLibrary = $library;
-		}
 		$materialRequestStatus = new MaterialsRequestStatus();
 		$materialRequestStatus->libraryId = $homeLibrary->libraryId;
 		$materialRequestStatus->delete(true);

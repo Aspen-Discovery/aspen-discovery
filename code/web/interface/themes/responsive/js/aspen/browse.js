@@ -218,7 +218,6 @@ AspenDiscovery.Browse = (function(){
 							$('.grid-item').remove();
 							AspenDiscovery.Browse.colcade.append($(data.records));
 							resultsPanel.fadeIn('slow');
-							AspenDiscovery.Ratings.initializeRaters();
 						});
 
 						$('#selected-browse-search-link').attr('href', data.searchUrl); // set the Label's link
@@ -312,7 +311,6 @@ AspenDiscovery.Browse = (function(){
 						selectedBrowseCategory: data.textId,
 						subBrowseCategory: subCategoryTextId
 					};
-
 					var label = 'Browse Catalog - ';
 					if (data.label) {
 						label += data.label;
@@ -334,11 +332,7 @@ AspenDiscovery.Browse = (function(){
 					}
 
 					$('.selected-browse-dismiss').removeAttr('onclick');
-					if(data.textId === "system_user_lists" || data.textId === "system_saved_searches") {
-						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ data.textId + "_" + subCategoryTextId+'")');
-					} else {
-						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
-					}
+					$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
 
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
@@ -357,8 +351,7 @@ AspenDiscovery.Browse = (function(){
 					if (data.subCategoryTextId) AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 
 					AspenDiscovery.Browse.colcade.append($(data.records));
-					AspenDiscovery.Ratings.initializeRaters();
-					
+
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
 
 					if (data.lastPage){
@@ -448,7 +441,6 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
 					AspenDiscovery.Browse.colcade.append($(data.records));
-					AspenDiscovery.Ratings.initializeRaters();
 					if (data.lastPage){
 						$('#more-browse-results').hide(); // hide the load more results TODO: implement server side
 					}

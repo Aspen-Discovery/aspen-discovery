@@ -54,16 +54,13 @@ class Axis360Setting extends DataObject
 		return 'Library ' . $this->libraryPrefix . ' (' . $this->apiUrl . ')';
 	}
 
-	/**
-	 * @return int|bool
-	 */
 	public function update()
 	{
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
 		}
-		return $ret;
+		return true;
 	}
 
 	public function insert()

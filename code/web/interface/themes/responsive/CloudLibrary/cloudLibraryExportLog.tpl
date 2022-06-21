@@ -3,8 +3,8 @@
 		<h1>{translate text="cloudLibrary Export Log" isAdminFacing=true}</h1>
 
 		{include file='Admin/exportLogFilters.tpl'}
-		<div class="adminTableRegion fixed-height-table">
-			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
+		<div id="exportLogContainer">
+			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
 					<tr><th>{translate text="Id" isAdminFacing=true}</th><th>{translate text="Setting ID" isAdminFacing=true}</th><th>{translate text="Started" isAdminFacing=true}</th><th>{translate text="Last Update" isAdminFacing=true}</th><th>{translate text="Finished" isAdminFacing=true}</th><th>{translate text="Elapsed" isAdminFacing=true}</th><th>{translate text="Total Products" isAdminFacing=true}</th><th>{translate text="Num Errors" isAdminFacing=true}</th><th>{translate text="Products Added" isAdminFacing=true}</th><th>{translate text="Products Deleted" isAdminFacing=true}</th><th>{translate text="Products Updated" isAdminFacing=true}</th><th>{translate text="Num Availability Changes" isAdminFacing=true}</th><th>{translate text="Num Metadata Changes" isAdminFacing=true}</th><th>{translate text="Notes" isAdminFacing=true}</th></tr>
 				</thead>

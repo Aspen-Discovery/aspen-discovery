@@ -19,11 +19,6 @@ class MaterialsRequest_MyRequests extends MyAccount
 		$interface->assign('showOpen', $showOpen);
 
 		$homeLibrary = Library::getPatronHomeLibrary();
-		if (is_null($homeLibrary)){
-			/** Admin User */
-			global $library;
-			$homeLibrary = $library;
-		}
 
 		$maxActiveRequests  = isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
 		$maxRequestsPerYear = isset($homeLibrary) ? $homeLibrary->maxRequestsPerYear : 60;
@@ -69,6 +64,8 @@ class MaterialsRequest_MyRequests extends MyAccount
 
 			$statusQuery = new MaterialsRequestStatus();
 			if ($showOpen){
+				$user = UserAccount::getActiveUserObj();
+				$homeLibrary = $user->getHomeLibrary();
 				$statusQuery->libraryId = $homeLibrary->libraryId;
 				$statusQuery->isOpen = 1;
 			}

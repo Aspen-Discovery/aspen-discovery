@@ -16,7 +16,7 @@ class ILS_CurbsidePickupSettings extends ObjectEditor
 	}
 
 	function getToolName() : string {
-		return 'CurbsidePickupSettings';
+		return 'Settings';
 	}
 
 	function getPageTitle() : string {

@@ -111,7 +111,6 @@
 		<!-- Core Fields  -->
 		<field name="id" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="recordtype" type="unchanged_string" indexed="true" stored="true"/>
-		<field name="settingId" type="integer" indexed="true" stored="true"/>
 		<field name="website_name" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="search_category" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="source_url" type="unchanged_string" indexed="true" stored="true"/>

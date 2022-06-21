@@ -221,12 +221,11 @@ class MyAccount_AJAX extends JSON_Action
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
 		$cancelId = $_REQUEST['cancelId'];
-		$isIll = $_REQUEST['isIll'];
 		$cancelButtonLabel = translate(['text'=>'Confirm Cancel Hold','isPublicFacing'=>true]);
 		return array(
 			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
 			'body' => translate(['text'=>"Are you sure you want to cancel this hold?",'isPublicFacing'=>true]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\", \"$isIll\")'>$cancelButtonLabel</span>",
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
 		);
 	}
 
@@ -254,8 +253,7 @@ class MyAccount_AJAX extends JSON_Action
 				} else {
 					$cancelId = $_REQUEST['cancelId'];
 					$recordId = $_REQUEST['recordId'];
-					$isIll = $_REQUEST['isIll'] ?? false;
-					$result = $patronOwningHold->cancelHold($recordId, $cancelId, $isIll);
+					$result = $patronOwningHold->cancelHold($recordId, $cancelId);
 				}
 			}
 		}
@@ -308,7 +306,7 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 						if ($holdType == 'ils') {
-							$tmpResult = $user->cancelHold($recordId, $cancelId, $key->isIll);
+							$tmpResult = $user->cancelHold($recordId, $cancelId);
 							if($tmpResult['success']){$success++;}
 						} else if ($holdType == 'axis360') {
 							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -357,9 +355,8 @@ class MyAccount_AJAX extends JSON_Action
 				$recordId = $hold->sourceId;
 				$cancelId = $hold->cancelId;
 				$holdType = $hold->source;
-				$isIll = $hold->isIll;
 				if ($holdType == 'ils') {
-					$tmpResult = $user->cancelHold($recordId, $cancelId, $isIll);
+					$tmpResult = $user->cancelHold($recordId, $cancelId);
 					if($tmpResult['success']){$success++;}
 				} else if ($holdType == 'axis360') {
 					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -1730,7 +1727,7 @@ class MyAccount_AJAX extends JSON_Action
 		$user = UserAccount::getActiveUserObj();
 
 		$ils = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra');
+		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 		$showExpireTime = ($ils == 'Horizon' || $ils == 'Symphony');
 		$selectedAvailableSortOption = $this->setSort('availableHoldSort', 'availableHold');
 		$selectedUnavailableSortOption = $this->setSort('unavailableHoldSort', 'unavailableHold');
@@ -2073,7 +2070,7 @@ class MyAccount_AJAX extends JSON_Action
 		];
 
 		global $offlineMode;
-		if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
+		if (!$offlineMode) {
 			global $configArray;
 
 			$source = $_REQUEST['source'];
@@ -2157,7 +2154,7 @@ class MyAccount_AJAX extends JSON_Action
 		];
 
 		global $offlineMode;
-		if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
+		if (!$offlineMode) {
 			global $configArray;
 			global $library;
 
@@ -2181,8 +2178,8 @@ class MyAccount_AJAX extends JSON_Action
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra');
-				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || 'Polaris');
+				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
@@ -2301,10 +2298,10 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			// Define sorting options
-			$sortOptions = array('title' => translate(['text' => 'Title', 'isPublicFacing' => true]),
-				'author' => translate(['text' => 'Author', 'isPublicFacing' => true]),
-				'checkedOut' => translate(['text' => 'Last Used', 'isPublicFacing' => true]),
-				'format' => translate(['text' => 'Format', 'isPublicFacing' => true]),
+			$sortOptions = array('title' => 'Title',
+				'author' => 'Author',
+				'checkedOut' => 'Last Used',
+				'format' => 'Format',
 			);
 			$selectedSortOption = $this->setSort('sort', 'readingHistory');
 			if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
@@ -3224,26 +3221,7 @@ class MyAccount_AJAX extends JSON_Action
 			} else {
 				$user = UserAccount::getActiveUserObj();
 				$patron = $user->getUserReferredTo($patronId);
-
-				$result = $patron->completeFinePayment($payment);
-				if ($result['success'] == false){
-					//If the payment does not complete in the ILS, add information to the payment for tracking
-					//Also send an email to admin that it was completed in paypal, but not the ILS
-					$payment->message .= 'Fine Payment was not completed within the ILS. ' . $result['message'];
-					$payment->update();
-
-					if (!empty($payPalSettings->errorEmail)){
-						require_once ROOT_DIR . '/sys/Email/Mailer.php';
-						$mail = new Mailer();
-						$subject = 'Error updating ILS after PayPal Payment';
-						$body = "There was an error updating payment $payment->id within the ILS for patron with barcode {$user->getBarcode()}. The payment should either be voided or the ILS should be updated.";
-						global $configArray;
-						$baseUrl = $configArray['Site']['url'];
-						$htmlBody = "There was an error updating payment <a href='$baseUrl/Admin/eCommerceReport?objectAction=edit&id=$payment->id'>$payment->id</a> within the ILS for patron with barcode {$user->getBarcode()}. The payment should either be voided or the ILS should be updated.";
-						$mail->send($payPalSettings->errorEmail, $subject, $body, null, $htmlBody);
-					}
-				}
-				return $result;
+				return $patron->completeFinePayment($payment);
 			}
 		}
 	}
@@ -3538,74 +3516,6 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function createWorldPayOrder() {
-		$transactionType = $_REQUEST['type'];
-		if($transactionType == 'donation') {
-			$result = $this->createGenericDonation('worldpay');
-		} else {
-			$result = $this->createGenericOrder('worldpay');
-		}
-
-		if (array_key_exists('success', $result) && $result['success'] === false) {
-			return $result;
-		} else {
-			if($transactionType == 'donation') {
-				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
-			} else {
-				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
-			}
-
-			return ['success' => true, 'paymentId' => $payment->id];
-		}
-	}
-
-	/** @noinspection PhpUnused */
-	function createXPressPayOrder() {
-		global $configArray;
-
-		$transactionType = $_REQUEST['type'];
-		if($transactionType == 'donation') {
-			$result = $this->createGenericDonation('xpresspay');
-		} else {
-			$result = $this->createGenericOrder('xpresspay');
-		}
-		if (array_key_exists('success', $result) && $result['success'] === false) {
-			return $result;
-		} else {
-			/** @noinspection PhpUnusedLocalVariableInspection */
-			if($transactionType == 'donation') {
-				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
-			} else {
-				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
-			}
-
-			require_once ROOT_DIR . '/sys/ECommerce/XpressPaySetting.php';
-			$xpressPaySettings = new XpressPaySetting();
-			$xpressPaySettings->id = $paymentLibrary->xpressPaySettingId;
-			if (!$xpressPaySettings->find(true)){
-				return ['success' => false, 'message' => "Xpress-pay payments are not configured correctly for ."];
-			}
-
-			$patron->loadContactInformation();
-			$baseUrl = 'https://pay.xpress-pay.com/';
-			$paymentRequestUrl = $baseUrl . "?pk=" . $xpressPaySettings->paymentTypeCode;
-			$paymentRequestUrl .= "&l1=" . $payment->id;
-			$paymentRequestUrl .= "&l2=" . $patron->_fullname;
-			$paymentRequestUrl .= "&a=" . $payment->totalPaid;
-			$paymentRequestUrl .= "&n=" . $patron->_fullname;
-			$paymentRequestUrl .= "&addr=" . $patron->_address1;
-			$paymentRequestUrl .= "&z=" . $patron->_zip;
-			$paymentRequestUrl .= "&e=" . $patron->email;
-			$paymentRequestUrl .= "&p=" . $patron->phone;
-			$paymentRequestUrl .= "&uid=" . $payment->id;
-
-			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
-		}
-	}
-
-	/** @noinspection PhpUnused */
 	function dismissPlacard(){
 		$patronId = $_REQUEST['patronId'];
 		$placardId = $_REQUEST['placardId'];
@@ -3651,74 +3561,25 @@ class MyAccount_AJAX extends JSON_Action
 		if ($patronId != UserAccount::getActiveUserId()){
 			$result['message'] = 'Incorrect user information, please login again.';
 		}else{
-			if(strpos($browseCategoryId, "system_saved_searches") !== false) {
-				$label = explode('_', $browseCategoryId);
-				$id = $label[3];
-				$searchEntry = new SearchEntry();
-				$searchEntry->id = $id;
-				if(!$searchEntry->find(true)) {
-					$result['message'] = 'Invalid browse category provided, please try again.';
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $browseCategoryId;
+			if (!$browseCategory->find(true)){
+				$result['message'] = 'Invalid browse category provided, please try again.';
+			}else{
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+				$browseCategoryDismissal->userId = $patronId;
+				if($browseCategoryDismissal->find(true)) {
+					$result['message'] = "User already dismissed this category.";
 				} else {
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-					$browseCategoryDismissal = new BrowseCategoryDismissal();
-					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
-					$browseCategoryDismissal->userId = $patronId;
-					if($browseCategoryDismissal->find(true)) {
-						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
-					} else {
-						$browseCategoryDismissal->insert();
-						$result = [
-							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
-						];
-					}
-				}
-			} elseif(strpos($browseCategoryId, "system_user_lists") !== false) {
-				$label = explode('_', $browseCategoryId);
-				$id = $label[3];
-				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$userList = new UserList();
-				$userList->id = $id;
-				if(!$userList->find(true)) {
-					$result['message'] = 'Invalid browse category provided, please try again.';
-				} else {
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-					$browseCategoryDismissal = new BrowseCategoryDismissal();
-					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
-					$browseCategoryDismissal->userId = $patronId;
-					if($browseCategoryDismissal->find(true)) {
-						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
-					} else {
-						$browseCategoryDismissal->insert();
-						$result = [
-							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
-						];
-					}
-				}
-			} else {
-				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-				$browseCategory = new BrowseCategory();
-				$browseCategory->textId = $browseCategoryId;
-				if (!$browseCategory->find(true)){
-					$result['message'] = 'Invalid browse category provided, please try again.';
-				}else{
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-					$browseCategoryDismissal = new BrowseCategoryDismissal();
-					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
-					$browseCategoryDismissal->userId = $patronId;
-					if($browseCategoryDismissal->find(true)) {
-						$result['message'] = "User already dismissed this category.";
-					} else {
-						$browseCategoryDismissal->insert();
-						$browseCategory->numTimesDismissed += 1;
-						$browseCategory->update();
-						$result = [
-							'success' => true
-						];
-					}
+					$browseCategoryDismissal->insert();
+					$browseCategory->numTimesDismissed += 1;
+					$browseCategory->update();
+					$result = [
+						'success' => true
+					];
 				}
 			}
 		}
@@ -3746,61 +3607,14 @@ class MyAccount_AJAX extends JSON_Action
 			if($browseCategoryDismissals->count() > 0) {
 				$categories = [];
 				foreach($hiddenCategories as $hiddenCategory) {
-					if(strpos($hiddenCategory->browseCategoryId, "system_saved_searches") !== false) {
-						$parentLabel = "";
-						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-						$savedSearchesBrowseCategory = new BrowseCategory();
-						$savedSearchesBrowseCategory->textId = "system_saved_searches";
-						if($savedSearchesBrowseCategory->find(true)) {
-							$parentLabel = $savedSearchesBrowseCategory->label . ": ";
-						}
-
-						$label = explode('_', $hiddenCategory->browseCategoryId);
-						$id = $label[3];
-						$searchEntry = new SearchEntry();
-						$searchEntry->id = $id;
-						if($searchEntry->find(true)) {
-							$category['id'] = $hiddenCategory->browseCategoryId;
-							$category['name'] = $parentLabel;
-							if($searchEntry->title) {
-								$category['name'] = $parentLabel . $searchEntry->title;
-							}
-							$category['description'] = "";
-							$categories[] = $category;
-						}
-					} elseif (strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
-						$parentLabel = "";
-						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-						$userListsBrowseCategory = new BrowseCategory();
-						$userListsBrowseCategory->textId = "system_user_lists";
-						if($userListsBrowseCategory->find(true)) {
-							$parentLabel = $userListsBrowseCategory->label . ": ";
-						}
-
-						$label = explode('_', $hiddenCategory->browseCategoryId);
-						$id = $label[3];
-						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-						$sourceList = new UserList();
-						$sourceList->id = $id;
-						if ($sourceList->find(true)) {
-							$category['id'] = $hiddenCategory->browseCategoryId;
-							$category['name'] = $parentLabel;
-							if($sourceList->title) {
-								$category['name'] = $parentLabel . $sourceList->title;
-							}
-							$category['description'] = $sourceList->description;
-							$categories[] = $category;
-						}
-					} else {
-						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-						$browseCategory = new BrowseCategory();
-						$browseCategory->textId = $hiddenCategory->browseCategoryId;
-						if($browseCategory->find(true)){
-							$category['id'] = $browseCategory->textId;
-							$category['name'] = $browseCategory->label;
-							$category['description'] = $browseCategory->description;
-							$categories[] = $category;
-						}
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+					$browseCategory = new BrowseCategory();
+					$browseCategory->textId = $hiddenCategory->browseCategoryId;
+					if($browseCategory->find(true)){
+						$category['id'] = $browseCategory->textId;
+						$category['name'] = $browseCategory->label;
+						$category['description'] = $browseCategory->description;
+						$categories[] = $category;
 					}
 				}
 				$interface->assign('hiddenBrowseCategories', $categories);
@@ -3838,68 +3652,23 @@ class MyAccount_AJAX extends JSON_Action
 		if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
 			$categoriesToShow = $_REQUEST['selected'];
 			foreach ($categoriesToShow as $showThisCategory => $selected){
-				if(strpos($showThisCategory, "system_saved_searches") !== false) {
-					$label = explode('_', $showThisCategory);
-					$id = $label[3];
-					$searchEntry = new SearchEntry();
-					$searchEntry->id = $id;
-					if(!$searchEntry->find(true)) {
-						$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
-					} else {
-						require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-						$browseCategoryDismissal = new BrowseCategoryDismissal();
-						$browseCategoryDismissal->browseCategoryId = $showThisCategory;
-						$browseCategoryDismissal->userId = $patronId;
-						if ($browseCategoryDismissal->find(true)) {
-							$browseCategoryDismissal->delete();
-							$result = [
-								'success' => true
-							];
-						} else {
-							$result['message'] = "User already had this category visible.";
-						}
-					}
-				} elseif(strpos($showThisCategory, "system_user_lists") !== false) {
-					$label = explode('_', $showThisCategory);
-					$id = $label[3];
-					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-					$userList = new UserList();
-					$userList->id = $id;
-					if(!$userList->find(true)) {
-						$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
-					} else {
-						require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-						$browseCategoryDismissal = new BrowseCategoryDismissal();
-						$browseCategoryDismissal->browseCategoryId = $showThisCategory;
-						$browseCategoryDismissal->userId = $patronId;
-						if ($browseCategoryDismissal->find(true)) {
-							$browseCategoryDismissal->delete();
-							$result = [
-								'success' => true
-							];
-						} else {
-							$result['message'] = "User already had this category visible.";
-						}
-					}
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$browseCategory = new BrowseCategory();
+				$browseCategory->textId = $showThisCategory;
+				if (!$browseCategory->find(true)) {
+					$result['message'] = 'Invalid browse category provided, please try again.';
 				} else {
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-					$browseCategory = new BrowseCategory();
-					$browseCategory->textId = $showThisCategory;
-					if (!$browseCategory->find(true)) {
-						$result['message'] = 'Invalid browse category provided, please try again.';
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+					$browseCategoryDismissal->userId = $patronId;
+					if ($browseCategoryDismissal->find(true)) {
+						$browseCategoryDismissal->delete();
+						$result = [
+							'success' => true
+						];
 					} else {
-						require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-						$browseCategoryDismissal = new BrowseCategoryDismissal();
-						$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
-						$browseCategoryDismissal->userId = $patronId;
-						if ($browseCategoryDismissal->find(true)) {
-							$browseCategoryDismissal->delete();
-							$result = [
-								'success' => true
-							];
-						} else {
-							$result['message'] = "User already had this category visible.";
-						}
+						$result['message'] = "User already had this category visible.";
 					}
 				}
 			}
@@ -4274,32 +4043,28 @@ class MyAccount_AJAX extends JSON_Action
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
-		if (isset($_REQUEST['selected'])){
-			$itemsToRemove = $_REQUEST['selected'];
-			foreach ($itemsToRemove as $listId => $selected) {
-				$list = new UserList();
-				$list->id = $listId;
-				if ($list->find(true)){
-					//Perform an action on the list, but verify that the user has permission to do so.
-					$userCanEdit = false;
-					$userObj = UserAccount::getActiveUserObj();
-					if ($userObj != false){
-						$userCanEdit = $userObj->canEditList($list);
+			if (isset($_REQUEST['selected'])){
+					$itemsToRemove = $_REQUEST['selected'];
+					foreach ($itemsToRemove as $listId => $selected) {
+						$list = new UserList();
+						$list->id = $listId;
+
+						//Perform an action on the list, but verify that the user has permission to do so.
+						$userCanEdit = false;
+						$userObj = UserAccount::getActiveUserObj();
+						if ($userObj != false){
+							$userCanEdit = $userObj->canEditList($list);
+						}
+						if ($userCanEdit) {
+							$list->find();
+							$list->delete();
+							$result['success'] = true;
+							$result['message'] = 'Selected lists deleted successfully';
+						} else {
+							$result['success'] = false;
+						}
 					}
-					if ($userCanEdit) {
-						$list->delete();
-						$result['success'] = true;
-						$result['message'] = 'Selected lists deleted successfully';
-					} else {
-						$result['message'] = 'You do not have permissions to delete that list';
-						$result['success'] = false;
-					}
-				}else{
-					$result['success'] = false;
-					$result['message'] = 'Could not find the list to delete';
-				}
 			}
-		}
 
 		return $result;
 	}
@@ -4395,9 +4160,8 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function editListItem() :array
+	function editListItem()
 	{
-		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
 			'title' => translate(['text'=>'Updating list entry','isPublicFacing'=>true]),
@@ -4408,121 +4172,100 @@ class MyAccount_AJAX extends JSON_Action
 
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
-		$listId = $_REQUEST['listId'];
+		$currentLoc = $_REQUEST['listId'];
 		$position = $_REQUEST['position'];
 
 		$moveTo = $_REQUEST['moveTo'];
 		$copyTo = $_REQUEST['copyTo'];
 
 		$list = new UserList();
-		$list->id = $listId;
+		$list->id = $currentLoc;
 
-		if ($list->find(true)) {
-			if ($userListEntry->find(true)) {
+		if ($userListEntry->find(true)) {
 
-				$userListEntry->notes = strip_tags($_REQUEST['notes']);
-				$userListEntry->update();
+			$userListEntry->notes = strip_tags($_REQUEST['notes']);
+			$userListEntry->update();
 
-				$numListEntries = count($list->getListTitles());
+			if(($position != $userListEntry->weight) && ($position != '')) {
+				$moveToPosition = $_REQUEST['position'];
+				$moveFromPosition = $userListEntry->weight;
 
-				if (!empty($position) && ($position != $userListEntry->weight)) {
-					$moveToPosition = $_REQUEST['position'];
-					$moveFromPosition = $userListEntry->weight;
-
-					$lowestPosition = min($moveFromPosition, $moveToPosition);
-					$highestPosition = max($moveFromPosition, $moveToPosition);
-
-					$listEntryMoveTo = new UserListEntry();
-					$listEntryMoveTo->listId = $_REQUEST['listId'];
-					$listEntryMoveTo->weight = $moveToPosition;
-					if ($listEntryMoveTo->find(true)) {
-						$listEntry = new UserListEntry();
-						$listEntry->listId = $_REQUEST['listId'];
-						$listEntry->orderBy('weight');
-						$listEntry->whereAdd("weight >= $lowestPosition && weight <= $highestPosition");
-						$listEntry->find();
-						while ($listEntry->fetch()) {
-							if ($listEntry->weight < $lowestPosition){
-								//No change needed, this is outside the range of things changing.
-							}elseif($listEntry->weight > $highestPosition){
-								//No change needed, this is outside the range of things changing.
-							}else{
-								//Things be changing!
-								if ($listEntry->id == $_REQUEST['listEntry']){
-									$listEntry->weight = $moveToPosition;
-									$listEntry->update();
-								}else{
-									if ($moveToPosition > $moveFromPosition) {
-										// if item is increasing in weight, move items down by 1
-										$listEntry->weight = $listEntry->weight - 1;
-										$listEntry->update();
-									} elseif ($moveToPosition < $moveFromPosition) {
-										$listEntry->weight = $listEntry->weight + 1;
-										$listEntry->update();
-									}
-								}
+				$listEntryMoveTo = new UserListEntry();
+				$listEntryMoveTo->listId = $_REQUEST['listId'];
+				$listEntryMoveTo->weight = $moveToPosition;
+				if ($listEntryMoveTo->find(true)){
+					$listEntry = new UserListEntry();
+					$listEntry->listId = $_REQUEST['listId'];
+					$maxPosition = $listEntry->count();
+					$listEntry->find();
+					while ($listEntry->fetch()){
+						if($listEntry->weight == 1){
+							// update position 1 only if replacing 1
+							if($moveToPosition == 1) {
+								$listEntry->weight = $listEntry->weight + 1;
+								$listEntry->update();
+							}
+						} elseif($listEntry->weight == $maxPosition) {
+							// update last position only if replacing
+							if($moveToPosition == $maxPosition){
+								$listEntry->weight = $listEntry->weight - 1;
+								$listEntry->update();
+							}
+						} elseif($moveToPosition > $moveFromPosition){
+							// if item is increasing in weight, move items down by 1
+							if ($listEntry->weight >= $moveToPosition) {
+								$listEntry->weight = $listEntry->weight - 1;
+								$listEntry->update();
+							}
+						} elseif($moveToPosition < $moveFromPosition){
+							// if item is decreasing in weight, move items up by 1
+							if ($listEntry->weight <= $moveToPosition) {
+								$listEntry->weight = $listEntry->weight + 1;
+								$listEntry->update();
 							}
 						}
-
-						$result['success'] = true;
-					}elseif ($moveToPosition <= $numListEntries){
-						//The positions are out of order, fix it.
-						$userListEntry->weight = $position;
-						$userListEntry->update();
-						$result['success'] = true;
 					}
-				}
-				if (($moveTo != $listId) && ($moveTo != 'null')) {
-					// check to make sure item isn't on new list?
 
-					//Make sure the list gets marked as updated
-					$moveToList = new UserList();
-					$moveToList->id = $moveTo;
-					$moveToList->find(true);
-
-					$userListEntry->listId = $moveTo;
-					$userListEntry->weight = count($moveToList->getListEntries()) +1;
+					$userListEntry->weight = $moveToPosition;
 					$userListEntry->update();
-
-					$list->fixWeights();
-					$moveToList->fixWeights();
-					$moveToList->update();
 
 					$result['success'] = true;
 				}
-				if (($copyTo != $listId) && ($copyTo != 'null')) {
-					// check to make sure item isn't on new list?
-					$copyToList = new UserList();
-					$copyToList->id = $copyTo;
-					if ($copyToList->find(true)){
-						$copyUserListEntry = new UserListEntry();
-						$copyUserListEntry->listId = $copyTo;
-						$copyUserListEntry->sourceId = $userListEntry->sourceId;
-						$copyUserListEntry->notes = $userListEntry->notes;
-						$copyUserListEntry->weight = count($copyToList->getListEntries()) +1;
-						$copyUserListEntry->source = $userListEntry->source;
-						$copyUserListEntry->dateAdded = time();
-						$copyUserListEntry->update();
-
-						//Make sure the list gets marked as updated
-						$copyToList = new UserList();
-						$copyToList->id = $copyTo;
-						$copyToList->fixWeights();
-						$copyToList->update();
-
-						$result['success'] = true;
-					}else{
-						$result['message'] = translate(['text'=>'Could not find list to copy to','isPublicFacing'=>true]);
-					}
-
-				}
-				$list->update();
-			} else {
-				$result['success'] = false;
 			}
-		}else{
+			if(($moveTo != $currentLoc) && ($moveTo != 'null')) {
+				// check to make sure item isn't on new list?
+
+				$userListEntry->listId = $moveTo;
+				$userListEntry->update();
+
+				$moveToList = new UserList();
+				$moveToList->id = $moveTo;
+				$moveToList->update();
+
+				$result['success'] = true;
+			}
+			if(($copyTo != $currentLoc) && ($copyTo != 'null')) {
+				// check to make sure item isn't on new list?
+
+				$copyUserListEntry = new UserListEntry();
+				$copyUserListEntry->listId = $copyTo;
+				$copyUserListEntry->sourceId = $userListEntry->sourceId;
+				$copyUserListEntry->notes = $userListEntry->notes;
+				$copyUserListEntry->weight = $userListEntry->weight;
+				$copyUserListEntry->source = $userListEntry->source;
+				$copyUserListEntry->dateAdded = time();
+				$copyUserListEntry->update();
+
+				$copyToList = new UserList();
+				$copyToList->id = $copyTo;
+				$copyToList->update();
+
+				$result['success'] = true;
+			}
+			$list->update();
+			$result['success'] = true;
+		} else {
 			$result['success'] = false;
-			$result['message'] = translate(['text'=>'Invalid List Id was specified','isPublicFacing'=>true]);
 		}
 
 		if ($result['success']){

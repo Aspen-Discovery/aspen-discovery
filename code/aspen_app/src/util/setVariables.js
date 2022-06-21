@@ -2,7 +2,6 @@ import React from "react";
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
 import moment from "moment";
-import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
 
@@ -14,7 +13,6 @@ export async function setInitialVariables() {
 	} catch (e) {
 		console.log("Error setting fetching data from SecureStore.");
 		console.log(e);
-		Sentry.Native.captureException(e);
 	}
 }
 
@@ -47,7 +45,8 @@ export async function setGlobalVariables() {
 		global.libraryUrl = await SecureStore.getItemAsync("pathUrl");
 		global.logo = await SecureStore.getItemAsync("logo");
 		global.favicon = await SecureStore.getItemAsync("favicon");
-		console.log("Global variables set.");
+
+		console.log("Global variables set.")
 	} catch (e) {
 		console.log("Error setting fetching data from SecureStore.");
 		console.log(e);

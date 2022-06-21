@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
-require_once(ROOT_DIR . '/sys/MaterialsRequestUsage.php');
 require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
@@ -80,11 +79,6 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
-			if (is_null($userHomeLibrary)) {
-				//User does not have a home library, this is likely an admin account.  Use the active library
-				global $library;
-				$userHomeLibrary = $library;
-			}
 			$locations = new Location();
 			$locations->libraryId = $userHomeLibrary->libraryId;
 			$locations->find();
@@ -123,10 +117,20 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$materialsRequest->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
 			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequest->selectAdd();
-			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests, description as description');
+			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests,description');
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
 			if (UserAccount::userHasPermission('View Materials Requests Reports')){
-				$materialsRequest->whereAdd('user.homeLocationId IN (' . $locationsToRestrictTo . ')');
+				//Need to limit to only requests submitted for the user's home location
+				$userHomeLibrary = Library::getPatronHomeLibrary();
+				$locations = new Location();
+				$locations->libraryId = $userHomeLibrary->libraryId;
+				$locations->find();
+				$locationsForLibrary = array();
+				while ($locations->fetch()){
+					$locationsForLibrary[] = $locations->locationId;
+				}
+
+				$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 			}
 			$materialsRequest->groupBy('status');
 			$materialsRequest->orderBy('status');
@@ -247,40 +251,6 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
-	}
-
-	function getStats($instanceName, $month, $year, &$statsByFormat, $statsPeriodName)
-	{
-		$usage = new MaterialsRequestUsage();
-		if (!empty($instanceName)){
-			$usage->instance = $instanceName;
-		}
-		if ($month != null){
-			$usage->month = $month;
-		}
-		if ($year != null){
-			$usage->year = $year;
-		}
-		$usage->selectAdd();
-		$usage->selectAdd('formatId');
-		$usage->selectAdd('statusId');
-		$usage->selectAdd('SUM(numRequests) as numRequests');
-		$usage->find();
-
-		while ($usage->fetch()){
-			if (!array_key_exists($usage->formatId, $statsByFormat)){
-				$statsByFormat[$usage->formatId] = [];
-			}
-			if (!array_key_exists($usage->statusId, $statsByFormat[$usage->formatId])){
-				$statsByFormat[$usage->formatId][$usage->statusId] = [
-					'usageThisMonth' => 0,
-					'usageLastMonth' => 0,
-					'usageThisYear' => 0,
-					'usageAllTime' => 0
-				];
-			}
-			$statsByFormat[$usage->formatId][$usage->statusId][$statsPeriodName] = $usage->numRequests;
-		}
 	}
 
 	function getBreadcrumbs() : array

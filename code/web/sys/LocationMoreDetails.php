@@ -21,7 +21,7 @@ class LocationMoreDetails extends DataObject{
 		return $structure;
 	}
 
-	function getEditLink() : string{
+	function getEditLink(){
 		return '';
 	}
 }

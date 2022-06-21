@@ -28,7 +28,7 @@
                         {if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
 			            <input type="hidden" id="myAccountAuth" value="true">
 			            <input type="submit" name="submit" value="{translate text="Verify" isPublicFacing=true}" id="loginFormVerify" class="btn btn-primary" onclick="return AspenDiscovery.Account.verify2FALogin();">
-			            <a class="btn btn-xs btn-link" style="display: block; margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</a>
+			            <button class="btn btn-xs btn-link" style="display: block; margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</button>
 
 		            </div>
 	            </div>

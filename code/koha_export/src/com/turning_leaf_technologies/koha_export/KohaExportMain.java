@@ -42,8 +42,8 @@ public class KohaExportMain {
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
 
-	private static boolean extractSingleWork = false;
 	public static void main(String[] args) {
+		boolean extractSingleWork = false;
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
@@ -1010,17 +1010,14 @@ public class KohaExportMain {
 			long lastKohaExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 			if (lastKohaExtractTime == 0) {
 				lastKohaExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
-			}else{
-				//Give a one-minute buffer to account for server time differences.
-				lastKohaExtractTime -= 60;
 			}
 
 			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
 
-			TreeMap<Long, String> changedBibIds = new TreeMap<>();
+			HashSet<String> changedBibIds = new HashSet<>();
 
 			if (singleWorkId != null){
-				changedBibIds.put(Long.parseLong(singleWorkId), singleWorkId);
+				changedBibIds.add(singleWorkId);
 			}else {
 				//Check to see if we should regroup all records
 				if (indexingProfile.isRegroupAllRecords()){
@@ -1046,7 +1043,7 @@ public class KohaExportMain {
 
 				ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
 				while (getChangedBibsFromKohaRS.next()) {
-					changedBibIds.put(getChangedBibsFromKohaRS.getLong("biblionumber"), getChangedBibsFromKohaRS.getString("biblionumber"));
+					changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
 				}
 
 				//Get a list of changed bibs by biblio_metadata timestamp as well
@@ -1059,7 +1056,7 @@ public class KohaExportMain {
 					ResultSet getChangedBibMetadataFromKohaRS = getChangedBibMetadataFromKohaStmt.executeQuery();
 					int numRecordsWithChangedMetadata = 0;
 					while (getChangedBibMetadataFromKohaRS.next()) {
-						if (changedBibIds.put(getChangedBibMetadataFromKohaRS.getLong("biblionumber"), getChangedBibMetadataFromKohaRS.getString("biblionumber")) == null){
+						if (changedBibIds.add(getChangedBibMetadataFromKohaRS.getString("biblionumber"))){
 							numRecordsWithChangedMetadata++;
 						}
 					}
@@ -1076,7 +1073,7 @@ public class KohaExportMain {
 					ResultSet getZebraQueueBibsToReindexRS = getZebraQueueBibsToReindexStmt.executeQuery();
 					int numRecordsToForceReindex = 0;
 					while (getZebraQueueBibsToReindexRS.next()) {
-						if (changedBibIds.put(getZebraQueueBibsToReindexRS.getLong("biblio_auth_number"), getZebraQueueBibsToReindexRS.getString("biblio_auth_number")) == null){
+						if (changedBibIds.add(getZebraQueueBibsToReindexRS.getString("biblio_auth_number"))){
 							numRecordsToForceReindex++;
 						}
 					}
@@ -1091,7 +1088,7 @@ public class KohaExportMain {
 
 				ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
 				while (itemChangeRS.next()) {
-					changedBibIds.put(itemChangeRS.getLong("biblionumber"), itemChangeRS.getString("biblionumber"));
+					changedBibIds.add(itemChangeRS.getString("biblionumber"));
 				}
 
 				//Items that have been deleted do not update the bib as changed so get that list as well
@@ -1100,7 +1097,7 @@ public class KohaExportMain {
 
 				ResultSet itemDeletedRS = getDeletedItemsFromKohaStmt.executeQuery();
 				while (itemDeletedRS.next()) {
-					changedBibIds.put(itemDeletedRS.getLong("biblionumber"), itemDeletedRS.getString("biblionumber"));
+					changedBibIds.add(itemDeletedRS.getString("biblionumber"));
 				}
 			}
 
@@ -1111,7 +1108,7 @@ public class KohaExportMain {
 			if (singleWorkId == null && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
-			for (String curBibId : changedBibIds.values()) {
+			for (String curBibId : changedBibIds) {
 				logEntry.setCurrentId(curBibId);
 				if ((singleWorkId != null) || (numProcessed >= indexingProfile.getLastChangeProcessed())) {
 					//Update the marc record
@@ -1296,10 +1293,16 @@ public class KohaExportMain {
 					}
 
 					GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, curBibId, marcRecord);
-					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
-						logEntry.incAdded();
-					}else {
+					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
 						logEntry.incUpdated();
+					}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+						logEntry.incAdded();
+					}else{
+						//No change has been made, we could skip this
+						if (!indexingProfile.isRunFullUpdate()){
+							logEntry.incSkipped();
+							return;
+						}
 					}
 
 					//Regroup the record

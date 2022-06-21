@@ -21,7 +21,6 @@
 package org.marc4j.marc;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Represents a data field in a MARC record.
@@ -165,7 +164,4 @@ public interface DataField extends VariableField {
      */
     public void removeSubfield(Subfield subfield);
 
-    public Set<String> getSubfieldDataAsSet(String subfield, int beginIx, int endIx);
-
-    public Set<String> getSubfieldDataAsSet(String subfieldsStr, String separator);
 }

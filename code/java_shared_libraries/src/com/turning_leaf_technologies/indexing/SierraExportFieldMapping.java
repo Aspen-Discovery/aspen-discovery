@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 
 public class SierraExportFieldMapping {
 	private String fixedFieldDestinationField;
-	private int fixedFieldDestinationFieldInt;
 	private char bcode3DestinationSubfield;
 	private char materialTypeSubfield;
 	private char bibLevelLocationsSubfield;
@@ -27,13 +26,8 @@ public class SierraExportFieldMapping {
 		return fixedFieldDestinationField;
 	}
 
-	public int getFixedFieldDestinationFieldInt() {
-		return fixedFieldDestinationFieldInt;
-	}
-
 	private void setFixedFieldDestinationField(String bcode3DestinationField) {
 		this.fixedFieldDestinationField = bcode3DestinationField;
-		this.fixedFieldDestinationFieldInt = Integer.parseInt(fixedFieldDestinationField);
 	}
 
 	public char getBcode3DestinationSubfield() {

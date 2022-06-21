@@ -57,7 +57,7 @@ class User extends DataObject
 
 	public $lastLoginValidation;
 
-	public $twoFactorStatus; //Whether the user has enrolled
+	public $twoFactorStatus; //Whether or not the user has enrolled
 	public $twoFactorAuthSettingId; //The settings based on their PType
 
 	public $updateMessage;
@@ -112,16 +112,11 @@ class User extends DataObject
 
 	function getNumericColumnNames() : array
 	{
-		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
+		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
 	function getEncryptedFieldNames() : array {
 		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
-	}
-
-	public function getUniquenessFields(): array
-	{
-		return ['source', 'username'];
 	}
 
 	function getLists() {
@@ -626,9 +621,7 @@ class User extends DataObject
 		return false;
 	}
 
-	/**
-	 * @return int|bool
-	 */
+
 	function update(){
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
@@ -980,8 +973,7 @@ class User extends DataObject
 			global $timer;
 			$allCheckedOut = [];
 			//Get checked out titles from the ILS
-			global $offlineMode;
-			if ($this->hasIlsConnection() && !$offlineMode) {
+			if ($this->hasIlsConnection()) {
 				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
 				$allCheckedOut = $ilsCheckouts;
 				$timer->logTime("Loaded transactions from catalog. {$this->id}");
@@ -1118,9 +1110,8 @@ class User extends DataObject
 			$allHolds = array(
 				'available' => [],
 				'unavailable' => []
-			);
-			global $offlineMode;
-			if ($this->hasIlsConnection() && !$offlineMode) {
+			);;
+			if ($this->hasIlsConnection()) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();
@@ -1570,12 +1561,11 @@ class User extends DataObject
 	 *
 	 * @param $recordId string  The Id of the record being cancelled
 	 * @param $cancelId string  The Id of the hold to be cancelled.  Structure varies by ILS
-	 * @param $isIll boolean    If the hold is from the ILL system
 	 *
 	 * @return array            Information about the result of the cancellation process
 	 */
-	function cancelHold($recordId, $cancelId, $isIll){
-		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
+	function cancelHold($recordId, $cancelId){
+		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId);
 		$this->clearCache();
 		return $result;
 	}
@@ -1631,20 +1621,17 @@ class User extends DataObject
 					} else if ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 						$driver = new OverDriveDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId, null);
+						$tmpResult = $driver->freezeHold($user, $recordId);
 						if ($tmpResult['success']) {
 							$success++;
 						}
-
-					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else
-					  /** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
-						//Can't freeze cloud library holds
-//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-//						$driver = new CloudLibraryDriver();
-//						$tmpResult = $driver->freezeHold($user, $recordId);
-//						if ($tmpResult['success']) {
-//							$success++;
-//						}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
 					} else {
 						$failed++;
 						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
@@ -1656,6 +1643,8 @@ class User extends DataObject
 					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
 				}
 			}
+		} else {
+			$tmpResult['message'] = 'No holds available to freeze.';
 		}
 
 		if ($success >= 1) {
@@ -1667,12 +1656,7 @@ class User extends DataObject
 
 			$tmpResult['message'] = $message;
 		} else {
-			if ($total == 0){
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'No holds available to freeze', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
-			}else{
-				$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
-			}
-
+			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 		}
 
 		return $tmpResult;
@@ -1712,16 +1696,14 @@ class User extends DataObject
 						$driver = new OverDriveDriver();
 						$tmpResult = $driver->thawHold($user, $recordId);
 						if($tmpResult['success']){$success++;}
-					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else
-					  /** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
-						//Cloud library holds cannot be frozen
-//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-//						$driver = new CloudLibraryDriver();
-//						$tmpResult = $driver->thawHold($user, $recordId);
-//						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
 					} else {
 						$failed++;
-						//$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
 					}
 
 				} else if ($canFreeze == 0) {
@@ -1739,11 +1721,11 @@ class User extends DataObject
 
 					$tmpResult['message'] = $message;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed', 'isPublicFacing' => true]) . '</div>';
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed']) . '</div>';
 				}
 			}
 		} else {
-			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'No holds available to thaw.', 'isPublicFacing' => true]) . '</div>';
+			$tmpResult['message'] = 'No holds available to thaw.';
 		}
 
 		return $tmpResult;
@@ -1802,7 +1784,7 @@ class User extends DataObject
 					}else if (!$renewAllResults['success'] && !$linkedResults['success']){
 						//Append the new message
 
-						$renewAllResults['message'] = array_merge($renewAllResults['message'], $linkedResults['message']);
+						array_merge($renewAllResults['message'], $linkedResults['message']);
 					}
 				}
 			}
@@ -2026,7 +2008,6 @@ class User extends DataObject
 				return false;
 			}
 		}
-		return false;
 	}
 
 	function getMessages(){
@@ -2382,7 +2363,6 @@ class User extends DataObject
 			if ($library->enableMaterialsRequest == 1) {
 				$sections['materials_request'] = new AdminSection('Materials Requests');
 				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
-				$sections['materials_request']->addAction(new AdminAction('Usage Dashboard', 'View the usage dashboard for Materials Requests.', '/MaterialsRequest/Dashboard'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
@@ -2419,7 +2399,6 @@ class User extends DataObject
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
-		$sections['local_enrichment']->addAction(new AdminAction('Bad Words List', 'Define the list of words to be censored.', '/Admin/BadWords'), ['Administer Bad Words']);
 		$browseCategoryGroupsAction = new AdminAction('Browse Category Groups', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/BrowseCategoryGroups');
 		$browseCategoryGroupsAction->addSubAction(new AdminAction('Browse Categories', 'Define browse categories shown on the library home page.', '/Admin/BrowseCategories'), ['Administer All Browse Categories', 'Administer Library Browse Categories']);
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, ['Administer All Browse Categories', 'Administer Library Browse Categories']);
@@ -2456,7 +2435,6 @@ class User extends DataObject
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
 		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
-		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
@@ -2506,15 +2484,9 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$sections['ebsco'] = new AdminSection('EBSCO EDS');
+			$sections['ebsco'] = new AdminSection('EBSCO');
 			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between EBSCO EDS and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
 			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCO EDS integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
-		}
-
-		if (array_key_exists('EBSCOhost', $enabledModules)) {
-			$sections['ebscohost'] = new AdminSection('EBSCOhost');
-			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCOhost Settings');
-			$sections['ebscohost']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCOhost integration.', '/EBSCO/EbscohostDashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {
@@ -2572,9 +2544,8 @@ class User extends DataObject
 
 		if (array_key_exists('Events', $enabledModules)){
 			$sections['events'] = new AdminSection('Events');
-			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer LibraryMarket LibraryCalendar Settings');
-            $sections['events']->addAction(new AdminAction('Springshare - LibCal Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/SpringshareLibCalSettings'), 'Administer Springshare LibCal Settings');
-            $sections['events']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Events.', '/Events/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer Library Calendar Settings');
+			$sections['events']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Events.', '/Events/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 		}
 
 		if (array_key_exists('Web Indexer', $enabledModules)){
@@ -2862,135 +2833,6 @@ class User extends DataObject
 			return true;
 		}
 		return false;
-	}
-
-	public function okToExport(array $selectedFilters) : bool{
-		$okToExport = parent::okToExport($selectedFilters);
-		if ($this->homeLocationId == 0 || in_array($this->homeLocationId, $selectedFilters['locations'])){
-			$okToExport = true;
-		}
-		return $okToExport;
-	}
-
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
-		unset($return['homeLocationId']);
-		unset($return['myLocation1Id']);
-		unset($return['myLocation2Id']);
-		unset($return['pickupLocationId']);
-		unset($return['lastListUsed']);
-		unset($return['twoFactorAuthSettingId']);
-		return $return;
-	}
-
-	public function loadObjectPropertiesFromJSON($jsonData, $mappings){
-		$encryptedFields = $this->getEncryptedFieldNames();
-		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
-		foreach ($jsonData as $property => $value){
-			if ($property != $this->getPrimaryKey() && $property != 'links'){
-				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)){
-					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
-				}
-				if ($property == 'username'){
-					if (array_key_exists($value, $mappings['users'])){
-						$value = $mappings['users'][$value];
-					}
-				}
-				$this->$property = $value;
-			}
-		}
-	}
-
-	public function getLinksForJSON(): array
-	{
-		$links = parent::getLinksForJSON();
-		$allLocations = Location::getLocationListAsObjects(false);
-		$links['homeLocationId'] = '';
-		if (array_key_exists($this->homeLocationId, $allLocations)){
-			$links['homeLocationId'] = $allLocations[$this->homeLocationId]->code;
-		}
-		$links['myLocation1Id'] = '';
-		if (array_key_exists($this->myLocation1Id, $allLocations)){
-			$links['myLocation1Id'] = $allLocations[$this->myLocation1Id]->code;
-		}
-		$links['myLocation2Id'] = '';
-		if (array_key_exists($this->myLocation2Id, $allLocations)){
-			$links['myLocation2Id'] = $allLocations[$this->myLocation2Id]->code;
-		}
-		$links['pickupLocationId'] = '';
-		if (array_key_exists($this->pickupLocationId, $allLocations)){
-			$links['pickupLocationId'] = $allLocations[$this->pickupLocationId]->code;
-		}
-		return $links;
-	}
-
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
-		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		$allLocations = Location::getLocationListAsObjects(false);
-		if (empty($jsonData['homeLocationId'])){
-			$this->homeLocationId = 0;
-		}else{
-			$code = $jsonData['homeLocationId'];
-			if (array_key_exists($code, $mappings['locations'])){
-				$code = $mappings['locations'][$code];
-			}
-			foreach ($allLocations as $tmpLocation){
-				if ($tmpLocation->code == $code){
-					$this->homeLocationId = $tmpLocation->locationId;
-					break;
-				}
-			}
-		}
-		if (empty($jsonData['myLocation1Id'])){
-			$this->myLocation1Id = 0;
-		}else{
-			$code = $jsonData['myLocation1Id'];
-			if (array_key_exists($code, $mappings['locations'])){
-				$code = $mappings['locations'][$code];
-			}
-			foreach ($allLocations as $tmpLocation){
-				if ($tmpLocation->code == $code){
-					$this->myLocation1Id = $tmpLocation->locationId;
-					break;
-				}
-			}
-		}
-		if (empty($jsonData['myLocation2Id'])){
-			$this->myLocation2Id = 0;
-		}else{
-			$code = $jsonData['myLocation2Id'];
-			if (array_key_exists($code, $mappings['locations'])){
-				$code = $mappings['locations'][$code];
-			}
-			foreach ($allLocations as $tmpLocation){
-				if ($tmpLocation->code == $code){
-					$this->myLocation2Id = $tmpLocation->locationId;
-					break;
-				}
-			}
-		}
-		if (empty($jsonData['pickupLocationId'])){
-			$this->pickupLocationId = 0;
-		}else{
-			$code = $jsonData['pickupLocationId'];
-			if (array_key_exists($code, $mappings['locations'])){
-				$code = $mappings['locations'][$code];
-			}
-			foreach ($allLocations as $tmpLocation){
-				if ($tmpLocation->code == $code){
-					$this->pickupLocationId = $tmpLocation->locationId;
-					break;
-				}
-			}
-		}
-	}
-
-	function validateUniqueId(){
-		if ($this->getCatalogDriver() != null){
-			$this->getCatalogDriver()->validateUniqueId($this);
-		}
 	}
 }
 

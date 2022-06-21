@@ -123,8 +123,6 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 
-		//TODO: Implement /public/1/patron/{PatronBarcode}/messages (Ticket 95499) - Also implement marking as read
-
 		return $messages;
 	}
 
@@ -233,11 +231,7 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->checkoutDate = $this->parsePolarisDate($itemOut->CheckOutDate);
 
 					$curCheckout->renewCount = $itemOut->RenewalCount;
-					if (isset($itemOut->CanItemBeRenewed)) {
-						$curCheckout->canRenew = $itemOut->CanItemBeRenewed;
-					}else{
-						$curCheckout->canRenew = $itemOut->RenewalCount < $itemOut->RenewalLimit;
-					}
+					$curCheckout->canRenew = $itemOut->RenewalCount < $itemOut->RenewalLimit;
 					$curCheckout->maxRenewals = $itemOut->RenewalLimit;
 					$curCheckout->renewalId = $itemOut->ItemID;
 					$curCheckout->renewIndicator = $itemOut->ItemID;
@@ -246,9 +240,6 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->author = $itemOut->Author;
 					$curCheckout->formats = [$itemOut->FormatDescription];
 					$curCheckout->callNumber = $itemOut->CallNumber;
-					if (!empty($itemOut->Designation)){
-						$curCheckout->callNumber .= ' ' . $itemOut->Designation;
-					}
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
@@ -444,7 +435,6 @@ class Polaris extends AbstractIlsDriver
 					case 1:
 						//Frozen
 						$curHold->status = $holdInfo->StatusDescription;
-						$curHold->reactivateDate = $this->parsePolarisDate($holdInfo->ActivationDate);
 						$curHold->frozen = true;
 						break;
 					case 3:
@@ -498,9 +488,6 @@ class Polaris extends AbstractIlsDriver
 				$curHold->title = $holdInfo->Title;
 				$curHold->author = $holdInfo->Author;
 				$curHold->callNumber = $holdInfo->CallNumber;
-				if (!empty($holdInfo->Designation)){
-					$curHold->callNumber .= ' ' . $holdInfo->Designation;
-				}
 				$curPickupBranch = new Location();
 				$curPickupBranch->code = $holdInfo->PickupBranchID;
 				if ($curPickupBranch->find(true)) {
@@ -520,81 +507,6 @@ class Polaris extends AbstractIlsDriver
 				if ($recordDriver->isValid()){
 					$curHold->updateFromRecordDriver($recordDriver);
 				}
-
-				$curHold->available = $isAvailable;
-				if ($curHold->available) {
-					$holds['available'][] = $curHold;
-				} else {
-					$holds['unavailable'][] = $curHold;
-				}
-			}
-		}
-
-		//Get ILL holds
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/illrequests/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
-		ExternalRequestLogEntry::logRequest('polaris.illRequests', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
-		if ($response && $this->lastResponseCode == 200) {
-			$jsonResponse = json_decode($response);
-			$illRequestList = $jsonResponse->PatronILLRequestsGetRows;
-			$illCancelAvailable = true;
-			if (!empty($this->accountProfile->apiVersion)){
-				$apiVersionFloat = floatval($this->accountProfile->apiVersion);
-				$illCancelAvailable = $apiVersionFloat >= 7;
-			}
-			foreach ($illRequestList as $index => $illRequestInfo){
-				$curHold = new Hold();
-				$curHold->userId = $patron->id;
-				$curHold->type = 'ils';
-				$curHold->source = $this->getIndexingProfile()->name;
-				$curHold->sourceId = $illRequestInfo->ILLRequestID;
-				$curHold->recordId = $illRequestInfo->BibRecordID;
-				$curHold->cancelId = $illRequestInfo->ILLRequestID;
-				$curHold->frozen = false;
-				$curHold->locationUpdateable = false;
-
-				$curHold->cancelable = $illCancelAvailable && ($illRequestInfo->ILLStatusID == 1 || $illRequestInfo->ILLStatusID == 2 || $illRequestInfo->ILLStatusID == 3 || $illRequestInfo->ILLStatusID == 5);
-				$isAvailable = false;
-				$curHold->status = $illRequestInfo->Status;
-				switch ($illRequestInfo->ILLStatusID){
-					case 1: //Inactive
-					case 2: //Active?
-					case 3: //Active
-					case 5: //Shipped
-					case 11: //Received-Transferred
-						$curHold->status = $illRequestInfo->Status;
-						break;
-
-					case 10: //Received-Held
-						$curHold->status = $illRequestInfo->Status;
-						$isAvailable = true;
-						$curHold->expirationDate = $this->parsePolarisDate($illRequestInfo->PickupByDate);
-						break;
-					case 12: //Received-Satisfied
-					case 13: //Received-Used
-					case 14: //Received-Unused
-					case 15: //Returned
-					case 16: //Cancelled
-						$curHold->status = $illRequestInfo->Status;
-						continue 2;
-				}
-				$curHold->canFreeze = false;
-				$curHold->title = $illRequestInfo->Title;
-				$curHold->author = $illRequestInfo->Author;
-				$curHold->callNumber = $illRequestInfo->CallNumber;
-				$curPickupBranch = new Location();
-				$curPickupBranch->code = $illRequestInfo->PickupBranchID;
-				if ($curPickupBranch->find(true)) {
-					$curPickupBranch->fetch();
-					$curHold->pickupLocationId = $curPickupBranch->locationId;
-					$curHold->pickupLocationName = $curPickupBranch->displayName;
-				}else{
-					$curHold->pickupLocationName = $illRequestInfo->PickupBranch;
-				}
-				$curHold->expirationDate = $this->parsePolarisDate($illRequestInfo->PickupByDate);
-				$curHold->volume = $illRequestInfo->VolumeAndIssue;
-				$curHold->format = $illRequestInfo->Format;
-				$curHold->isIll = true;
 
 				$curHold->available = $isAvailable;
 				if ($curHold->available) {
@@ -629,54 +541,89 @@ class Polaris extends AbstractIlsDriver
 			$title = $record->getTitle();
 		}
 
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
-		$body = new stdClass();
-		$body->PatronID = (int)$patron->username;
-		$body->BibID = (int)$shortId;
-		if (!empty($itemId)) {
-			//Check to see if we also have a volume
-			$relatedRecord = $record->getRelatedRecord();
-			foreach ($relatedRecord->getItems() as $item){
-				if ($item->itemId == $itemId){
-					if (!empty($item->volume)) {
-						//Volume holds just need the volume
-						$body->VolumeNumber = $item->volume;
-					}else{
-						$marcRecord = $record->getMarcRecord();
-						//If we place a hold on just an item, we need a barcode for the item rather than the record number
-						/** @var File_MARC_Data_Field[] $marcItems */
-						$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-						foreach ($marcItems as $marcItem) {
-							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-							if ($itemSubField->getData() == $itemId){
-								$barcodeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->barcode);
-								if ($barcodeSubfield != null) {
-									$body->ItemBarcode = $barcodeSubfield->getData();
-									break;
+		global $offlineMode;
+		if ($offlineMode) {
+			require_once ROOT_DIR . '/sys/OfflineHold.php';
+			$offlineHold                = new OfflineHold();
+			$offlineHold->bibId         = $shortId;
+			$offlineHold->patronBarcode = $patron->getBarcode();
+			$offlineHold->patronId      = $patron->id;
+			$offlineHold->timeEntered   = time();
+			$offlineHold->status        = 'Not Processed';
+			if ($offlineHold->insert()) {
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['success'] = true;
+				$result['message'] = translate(['text' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing'=>true]);
+
+				return $result;
+			} else {
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['success'] = false;
+				$result['message'] = translate(['text' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing'=>true]);
+
+				return $result;
+			}
+
+		} else {
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
+			$body = new stdClass();
+			$body->PatronID = (int)$patron->username;
+			$body->BibID = (int)$shortId;
+			if (!empty($itemId)) {
+				//Check to see if we also have a volume
+				$relatedRecord = $record->getRelatedRecord();
+				foreach ($relatedRecord->getItems() as $item){
+					if ($item->itemId == $itemId){
+						if (!empty($item->volume)) {
+							//Volume holds just need the volume
+							$body->VolumeNumber = $item->volume;
+						}else{
+							$marcRecord = $record->getMarcRecord();
+							//If we place a hold on just an item, we need a barcode for the item rather than the record number
+							/** @var File_MARC_Data_Field[] $marcItems */
+							$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+							foreach ($marcItems as $marcItem) {
+								$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+								if ($itemSubField->getData() == $itemId){
+									$barcodeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->barcode);
+									if ($barcodeSubfield != null) {
+										$body->ItemBarcode = $barcodeSubfield->getData();
+										break;
+									}
 								}
 							}
 						}
+						break;
 					}
-					break;
 				}
 			}
+			$body->PickupOrgID = (int)$pickupBranch;
+			//Need to set the Workstation
+			$body->WorkstationID = $this->getWorkstationID($patron);
+			//Get the ID of the staff user
+			$staffUserInfo = $this->getStaffUserInfo();
+			$body->UserID = (int)$staffUserInfo['polarisId'];
+			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+			$encodedBody = json_encode($body);
+			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
+			ExternalRequestLogEntry::logRequest('polaris.placeHold', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
+			$hold_result = $this->processHoldRequestResponse($response, $patron);
+
+			$hold_result['title'] = $title;
+			$hold_result['bid']   = $shortId;
+
+			return $hold_result;
 		}
-		$body->PickupOrgID = (int)$pickupBranch;
-		//Need to set the Workstation
-		$body->WorkstationID = $this->getWorkstationID($patron);
-		//Get the ID of the staff user
-		$staffUserInfo = $this->getStaffUserInfo();
-		$body->UserID = (int)$staffUserInfo['polarisId'];
-		$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
-		$encodedBody = json_encode($body);
-		$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
-		ExternalRequestLogEntry::logRequest('polaris.placeHold', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
-		$hold_result = $this->processHoldRequestResponse($response, $patron);
-
-		$hold_result['title'] = $title;
-		$hold_result['bid']   = $shortId;
-
-		return $hold_result;
 	}
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
@@ -737,11 +684,7 @@ class Polaris extends AbstractIlsDriver
 		}
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error confirming the hold',
-			'api' => [
-				'title' => 'Unable to place hold',
-				'message' => 'Unknown error confirming the hold'
-			]
+			'message' => 'Unknown error confirming the hold'
 		];
 		require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
 		$holdRequestConfirmation = new HoldRequestConfirmation();
@@ -765,61 +708,54 @@ class Polaris extends AbstractIlsDriver
 
 		}else{
 			$result['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
-			$result['api']['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
 		}
 		return $result;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-		if (!$isIll) {
-			$staffInfo = $this->getStaffUserInfo();
-			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
-			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
-			ExternalRequestLogEntry::logRequest('polaris.cancelHold', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
-		}else{
-			$staffInfo = $this->getStaffUserInfo();
-			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/illrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
-			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
-			ExternalRequestLogEntry::logRequest('polaris.cancelIllHold', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
-		}
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+		ExternalRequestLogEntry::logRequest('polaris.cancelHold', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 				$result['success'] = true;
-				$result['message'] = translate(['text' => 'The hold has been cancelled.', 'isPublicFacing' => true]);;
+				$result['message'] = translate(['text'=>'The hold has been cancelled.', 'isPublicFacing'=>true]);;
 
 				// Result for API or app use
-				$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing' => true]);
-				$result['api']['message'] = translate(['text' => 'Your hold has been cancelled.', 'isPublicFacing' => true]);
+				$result['api']['title'] = translate(['text'=>'Hold cancelled', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold has been cancelled.', 'isPublicFacing'=>true]);
 
 				return $result;
-			} else {
+			}else{
 				$message = "The hold could not be cancelled. {$jsonResponse->ErrorMessage}";
 				$result['success'] = false;
 				$result['message'] = $message;
 
 				// Result for API or app use
-				$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing' => true]);
+				$result['api']['title'] = translate(['text'=>'Unable to cancel hold', 'isPublicFacing'=>true]);
 				$result['api']['message'] = $jsonResponse->ErrorMessage;
 
 				return $result;
 			}
-		} else {
+		}else{
 			$message = "The hold could not be cancelled.";
-			if (IPAddress::showDebuggingInformation()) {
+			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
 			$result['success'] = false;
 			$result['message'] = $message;
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Hold not cancelled', 'isPublicFacing' => true]);
-			$result['api']['message'] = translate(['text' => 'The hold could not be cancelled.', 'isPublicFacing' => true]);
+			$result['api']['title'] = translate(['text'=>'Hold not cancelled', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true]);
 
 			return $result;
+
 		}
 	}
 
@@ -1902,7 +1838,7 @@ class Polaris extends AbstractIlsDriver
 		if ($type == 'selfReg' && $library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields['personalInformationSection']['properties']['birthDate'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields['personalInformationSection']['properties'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
 		$fields['nameOnIdentificationSection'] = array('property' => 'nameOnIdentificationSection', 'type' => 'section', 'label' => 'Name on Identification', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'firstNameOnIdentification' => array('property' => 'firstNameOnIdentification', 'type' => 'text', 'label' => 'First Name', 'description' => 'The first name on your ID', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),

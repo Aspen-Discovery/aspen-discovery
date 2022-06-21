@@ -6,15 +6,24 @@ import _ from "lodash";
 // custom components and helper files
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {userContext} from "../../context/user";
 
 export default class Search extends Component {
 	constructor() {
 		super();
 		this.state = {
 			isLoading: true,
+			library: [],
 			searchTerm: "",
 		};
+	}
+
+	loadLibrary = async () => {
+		const tmp = await AsyncStorage.getItem('@libraryInfo');
+		const profile = JSON.parse(tmp);
+		this.setState({
+			library: profile,
+			isLoading: false,
+		})
 	}
 
 	componentDidMount = async () => {
@@ -22,18 +31,18 @@ export default class Search extends Component {
 			isLoading: false,
 		});
 
+		await this.loadLibrary();
 	};
 
 	initiateSearch = async () => {
-		const {searchTerm, libraryUrl} = this.state;
+		const {searchTerm} = this.state;
 		const { navigation } = this.props;
 		navigation.navigate("SearchResults", {
-			searchTerm: searchTerm,
-			libraryUrl: libraryUrl,
+			searchTerm: searchTerm
 		});
 	};
 
-	renderItem = (item, libraryUrl) => {
+	renderItem = (item) => {
 		const { navigation } = this.props;
 		return (
 			<Button
@@ -41,7 +50,6 @@ export default class Search extends Component {
 				onPress={() =>
 					navigation.navigate("SearchResults", {
 						searchTerm: item.searchTerm,
-						libraryUrl: libraryUrl,
 					})
 				}
 			>
@@ -54,12 +62,8 @@ export default class Search extends Component {
 		this.setState({searchTerm: ""});
 	};
 
-	static contextType = userContext;
-
 	render() {
-		const user = this.context.user;
-		const location = this.context.location;
-		const library = this.context.library;
+		const {library} = this.state;
 
 		const quickSearchNum = _.size(library.quickSearches);
 
@@ -73,7 +77,7 @@ export default class Search extends Component {
 					<Input
 						variant="filled"
 						autoCapitalize="none"
-						onChangeText={(searchTerm) => this.setState({searchTerm, libraryUrl: library.baseUrl})}
+						onChangeText={(searchTerm) => this.setState({searchTerm})}
 						status="info"
 						placeholder={translate('search.title')}
 						clearButtonMode="always"
@@ -92,7 +96,7 @@ export default class Search extends Component {
 				: null }
 					<FlatList
 						data={_.sortBy(library.quickSearches, ['weight', 'label'])}
-						renderItem={({item}) => this.renderItem(item, library.baseUrl)}
+						renderItem={({item}) => this.renderItem(item)}
 					/>
 			</Box>
 		);

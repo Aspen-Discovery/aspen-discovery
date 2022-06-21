@@ -16,15 +16,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private final String recordNumberTag;
-	private final int recordNumberTagInt;
 	private final char recordNumberSubfield;
 	private final String recordNumberPrefix;
 	private final BaseIndexingSettings baseSettings;
-	private final String treatUnknownLanguageAs;
 
 	private final Connection dbConn;
 
@@ -37,10 +34,8 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		super(dbConn, serverName, logEntry, logger);
 		this.dbConn = dbConn;
 		recordNumberTag = settings.getRecordNumberTag();
-		recordNumberTagInt = Integer.parseInt(recordNumberTag);
 		recordNumberSubfield = settings.getRecordNumberSubfield();
 		recordNumberPrefix = settings.getRecordNumberPrefix();
-		treatUnknownLanguageAs = settings.getTreatUnknownLanguageAs();
 
 		baseSettings = settings;
 	}
@@ -49,7 +44,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
-		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTagInt);
+		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTag);
 		//Make sure we only get one ils identifier
 		if (recordNumberField != null) {
 			if (recordNumberField instanceof DataField) {
@@ -82,7 +77,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	protected String getFormatFromBib(Record record) {
 		String leader = record.getLeader().toString();
 		char leaderBit;
-		ControlField fixedField = (ControlField) record.getVariableField(8);
+		ControlField fixedField = (ControlField) record.getVariableField("008");
 		char formatCode;
 
 		// check for music recordings quickly so we can figure out if it is music
@@ -96,7 +91,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		// check for playaway in 260|b
-		DataField sysDetailsNote = record.getDataField(260);
+		DataField sysDetailsNote = record.getDataField("260");
 		if (sysDetailsNote != null) {
 			if (sysDetailsNote.getSubfield('b') != null) {
 				String sysDetailsValue = sysDetailsNote.getSubfield('b').getData().toLowerCase();
@@ -107,7 +102,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		// Check for formats in the 538 field
-		DataField sysDetailsNote2 = record.getDataField(538);
+		DataField sysDetailsNote2 = record.getDataField("538");
 		if (sysDetailsNote2 != null) {
 			if (sysDetailsNote2.getSubfield('a') != null) {
 				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
@@ -125,7 +120,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		// Check for formats in the 500 tag
-		DataField noteField = record.getDataField(500);
+		DataField noteField = record.getDataField("500");
 		if (noteField != null) {
 			if (noteField.getSubfield('a') != null) {
 				String noteValue = noteField.getSubfield('a').getData().toLowerCase();
@@ -137,7 +132,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 		// Check for large print book (large format in 650, 300, or 250 fields)
 		// Check for blu-ray in 300 fields
-		DataField edition = record.getDataField(250);
+		DataField edition = record.getDataField("250");
 		if (edition != null) {
 			if (edition.getSubfield('a') != null) {
 				if (edition.getSubfield('a').getData().toLowerCase().contains("large type")) {
@@ -146,7 +141,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			}
 		}
 
-		List<DataField> physicalDescription = getDataFields(record, 300);
+		List<DataField> physicalDescription = getDataFields(record, "300");
 		if (physicalDescription != null) {
 			Iterator<DataField> fieldsIterator = physicalDescription.iterator();
 			DataField field;
@@ -163,7 +158,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				}
 			}
 		}
-		List<DataField> topicalTerm = getDataFields(record, 650);
+		List<DataField> topicalTerm = getDataFields(record, "650");
 		if (topicalTerm != null) {
 			Iterator<DataField> fieldsIterator = topicalTerm.iterator();
 			DataField field;
@@ -178,7 +173,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			}
 		}
 
-		List<DataField> localTopicalTerm = getDataFields(record, 690);
+		List<DataField> localTopicalTerm = getDataFields(record, "690");
 		if (localTopicalTerm != null) {
 			Iterator<DataField> fieldsIterator = localTopicalTerm.iterator();
 			DataField field;
@@ -194,7 +189,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		// check the 007 - this is a repeating field
-		List<DataField> fields = getDataFields(record, 7);
+		List<DataField> fields = getDataFields(record, "007");
 		if (fields != null) {
 			Iterator<DataField> fieldsIterator = fields.iterator();
 			ControlField formatField;
@@ -426,11 +421,11 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle, DataField field245, String groupingFormat) {
 		String author = null;
-		DataField field100 = marcRecord.getDataField(100);
-		DataField field110 = marcRecord.getDataField(110);
-		DataField field260 = marcRecord.getDataField(260);
-		DataField field264 = marcRecord.getDataField(264);
-		DataField field710 = marcRecord.getDataField(710);
+		DataField field100 = marcRecord.getDataField("100");
+		DataField field110 = marcRecord.getDataField("110");
+		DataField field260 = marcRecord.getDataField("260");
+		DataField field264 = marcRecord.getDataField("264");
+		DataField field710 = marcRecord.getDataField("710");
 
 		//Depending on the format we will promote the use of the 245c
 		if (field100 != null && field100.getSubfield('a') != null) {
@@ -465,7 +460,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
 		//Check for a uniform title field
 		//The uniform title is useful for movies (often has the release year)
-		DataField field130 = marcRecord.getDataField(130);
+		DataField field130 = marcRecord.getDataField("130");
 		if (field130 != null && field130.getSubfield('a') != null){
 			Subfield subfieldK = field130.getSubfield('k');
 			if (subfieldK == null || !subfieldK.getData().toLowerCase().contains("selections")) {
@@ -477,7 +472,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		//The 240 only gives good information if the language is not English.  If the language isn't English,
 		//it generally gives the english translation which could help to group translated versions with the original work.
 		// Not implementing this for now until we get additional feedback 2/2021
-		/*DataField field240 = marcRecord.getDataField(240);
+		/*DataField field240 = marcRecord.getDataField("240");
 		if (field240 != null && field240.getSubfield('a') != null){
 			if (field240.getSubfield('l') != null) {
 				if (!field240.getSubfield('l').getData().equalsIgnoreCase("English")) {
@@ -487,7 +482,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			}
 		}*/
 
-		DataField field245 = marcRecord.getDataField(245);
+		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
 			assignTitleInfoFromMarcField(workForTitle, field245, 2);
 			return field245;
@@ -556,40 +551,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 		//Author
 		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, field245, groupingFormat);
-
-		//Language
-		setLanguageBasedOnMarcRecord(marcRecord, workForTitle);
-
 		return workForTitle;
-	}
-
-	String languageFields = "008[35-37]";
-	private void setLanguageBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
-		String activeLanguage = null;
-		Set<String> languages = MarcUtil.getFieldList(marcRecord, languageFields);
-		for (String language : languages){
-			if (language.trim().length() != 0 && !language.equals("|||")) {
-				if (activeLanguage == null) {
-					activeLanguage = language;
-				} else {
-					if (!activeLanguage.equals(language)) {
-						activeLanguage = "mul";
-						break;
-					}
-				}
-			}
-		}
-		if (activeLanguage == null){
-			if (treatUnknownLanguageAs.length() > 0){
-				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
-				if (activeLanguage.length() != 3){
-					activeLanguage = "unk";
-				}
-			}else {
-				activeLanguage = "unk";
-			}
-		}
-		workForTitle.setLanguage(activeLanguage);
 	}
 
 	public void removeExistingRecord(String identifier) {
@@ -612,8 +574,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
-			//Clear previous records if we load multiple times
-			existingRecords = new HashMap<>();
+			if (existingRecords == null) existingRecords = new HashMap<>();
 			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, checksum, dateFirstDetected, deleted FROM ils_records where source = ?;");
 			getAllExistingRecordsStmt.setString(1, baseSettings.getName());
 			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();

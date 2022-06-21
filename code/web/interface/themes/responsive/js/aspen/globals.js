@@ -17,7 +17,6 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
-		isPrint: false,
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
 		requestFailedTitle: 'Request Failed',

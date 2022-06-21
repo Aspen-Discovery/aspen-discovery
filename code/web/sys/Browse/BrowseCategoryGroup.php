@@ -1,9 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
-require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 
-class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
+class BrowseCategoryGroup extends DataObject
 {
 	public $__table = 'browse_category_group';
 	public $__displayNameColumn = 'name';
@@ -13,10 +12,10 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	public $defaultBrowseMode;
 	public $browseCategoryRatingsMode;
 
-	protected $_browseCategories;
+	private $_browseCategories;
 
-	protected $_libraries;
-	protected $_locations;
+	private $_libraries;
+	private $_locations;
 
 	public static function getObjectStructure() : array{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
@@ -77,14 +76,6 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		];
 	}
 
-	/**
-	 * @return string[]
-	 */
-	public function getUniquenessFields() : array
-	{
-		return ['name'];
-	}
-
 	public function __get($name)
 	{
 		if ($name == "libraries") {
@@ -108,38 +99,6 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 			$browseCategory->find();
 			while ($browseCategory->fetch()) {
 				$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
-			}
-		}
-		return $this->_browseCategories;
-	}
-
-	public function getBrowseCategoriesForLiDA($max = null): array
-	{
-		if (!isset($this->_browseCategories) && $this->id) {
-			if($max) {
-				$count = 0;
-				$this->_browseCategories = array();
-				$browseCategory = new BrowseCategoryGroupEntry();
-				$browseCategory->browseCategoryGroupId = $this->id;
-				$browseCategory->orderBy('weight');
-				$browseCategory->find();
-				do {
-					if($browseCategory->isValidForDisplay()) {
-						$count++;
-						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
-					}
-				} while ($browseCategory->fetch() && $count < $max);
-			} else {
-				$this->_browseCategories = array();
-				$browseCategory = new BrowseCategoryGroupEntry();
-				$browseCategory->browseCategoryGroupId = $this->id;
-				$browseCategory->orderBy('weight');
-				$browseCategory->find();
-				while ($browseCategory->fetch()) {
-					if($browseCategory->isValidForDisplay()) {
-						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
-					}
-				}
 			}
 		}
 		return $this->_browseCategories;
@@ -272,7 +231,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	}
 
 	/** @return Library[] */
-	public function getLibraries() : ?array
+	public function getLibraries()
 	{
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = [];
@@ -287,7 +246,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	}
 
 	/** @return Location[] */
-	public function getLocations() : ?array
+	public function getLocations()
 	{
 		if (!isset($this->_locations) && $this->id){
 			$this->_locations = [];
@@ -309,39 +268,5 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	public function setLocations($val)
 	{
 		$this->_locations = $val;
-	}
-
-	public function getLinksForJSON() : array{
-		$links = parent::getLinksForJSON();
-		//Browse Categories
-		$browseCategoriesGroupEntries = $this->getBrowseCategories();
-		$links['browseCategories'] = [];
-		//We need to be careful of recursion here, so we will preload 2 levels of categories and sub categories
-		foreach ($browseCategoriesGroupEntries as $browseCategoryGroupEntry){
-			$browseCategoryArray = $browseCategoryGroupEntry->toArray(false, true);
-			$browseCategoryArray['links'] = $browseCategoryGroupEntry->getLinksForJSON();
-
-			$links['browseCategories'][] = $browseCategoryArray;
-		}
-
-		return $links;
-	}
-
-	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool
-	{
-		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
-
-		if (array_key_exists('browseCategories', $jsonLinks)){
-			$browseCategories = [];
-			foreach ($jsonLinks['browseCategories'] as $browseCategory){
-				$browseCategoryObj = new BrowseCategoryGroupEntry();
-				$browseCategoryObj->browseCategoryGroupId = $this->id;
-				$browseCategoryObj->loadFromJSON($browseCategory, $mappings, $overrideExisting);
-				$browseCategories[$browseCategoryObj->browseCategoryId] = $browseCategoryObj;
-			}
-			$this->_browseCategories = $browseCategories;
-			$result = true;
-		}
-		return $result;
 	}
 }

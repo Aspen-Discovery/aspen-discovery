@@ -9,8 +9,8 @@
 			"upc":"{$recordDriver->getCleanUPC()}",
 			"id":"{$recordDriver->getPermanentId()}",
 			"unbound_container_id":"#syndetics_unbound",
-			"sectionTitle":"{translate text="See More from Syndetics Unbound" inAttribute=true isPublicFacing=true}",
-			"buttonTitle":"{translate text="Explore" inAttribute=true isPublicFacing=true}"
+			"sectionTitle":"{translate text="See More from Syndetics Unbound" inAttribute=true}",
+			"buttonTitle":"{translate text="Explore" inAttribute=true}"
 		{rdelim});
 		unboundLoaded = function() {ldelim}
 			var numEnrichments = LibraryThingConnector.numberOfEnhancementsShown();

@@ -8,9 +8,9 @@ import {createAuthTokens, getHeaders, postData, problemCodeMap} from "../util/ap
 import {GLOBALS} from "../util/globals";
 import {showILSMessage} from "../components/Notifications";
 
-export async function getTranslation(term, language, libraryUrl) {
+export async function getTranslation(term, language) {
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens()
@@ -33,9 +33,9 @@ export async function getTranslation(term, language, libraryUrl) {
 	}
 }
 
-export async function getTranslations(terms, language, libraryUrl) {
+export async function getTranslations(terms, language) {
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens()
@@ -54,9 +54,9 @@ export async function getTranslations(terms, language, libraryUrl) {
 	}
 }
 
-export async function getDefaultTranslations(libraryUrl) {
+export async function getDefaultTranslations() {
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens()
@@ -158,9 +158,9 @@ export async function getDefaultTranslations(libraryUrl) {
 	})
 }
 
-export async function getDefaultTranslation(term, language, libraryUrl) {
+export async function getDefaultTranslation(term, language) {
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: global.libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens()

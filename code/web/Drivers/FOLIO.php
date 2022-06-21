@@ -318,7 +318,7 @@ class FOLIO extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		global $logger;
 		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);

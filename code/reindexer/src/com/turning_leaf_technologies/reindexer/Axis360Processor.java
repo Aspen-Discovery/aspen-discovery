@@ -36,7 +36,7 @@ class Axis360Processor {
 		}
 	}
 
-	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -198,7 +198,7 @@ class Axis360Processor {
 	 * @param titleData JSON representing the raw data metadata from OverDrive
 	 * @throws JSONException Exception if something goes horribly wrong
 	 */
-	private void loadAxis360Subjects(AbstractGroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
+	private void loadAxis360Subjects(GroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
 		//Load subject data
 
 		HashSet<String> topics = new HashSet<>();

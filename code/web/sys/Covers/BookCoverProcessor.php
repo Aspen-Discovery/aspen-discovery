@@ -65,20 +65,12 @@ class BookCoverProcessor{
 			if ($this->getLibraryCalendarCover($this->id)) {
 				return true;
 			}
-        } elseif ($this->type == 'springshare_libcal_event') {
-            if ($this->getSpringshareLibCalCover($this->id)) {
-                return true;
-            }
-		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage') {
+		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
 			}
 		} elseif ($this->type == 'ebsco_eds') {
 			if ($this->getEbscoEdsCover($this->id)) {
-				return true;
-			}
-		} elseif ($this->type == 'ebscohost') {
-			if ($this->getEbscohostCover($this->id)) {
 				return true;
 			}
 		} else {
@@ -381,7 +373,7 @@ class BookCoverProcessor{
 				$this->type = 'ils';
 			}
 		}
-		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds' && $this->type != 'ebscohost'){
+		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds'){
 			list($this->type, $this->id) = explode(':', $this->id);
 		}
 
@@ -641,7 +633,7 @@ class BookCoverProcessor{
 				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
 			}
-			if ($recordDriver->isValid()){
+		    if ($recordDriver->isValid()){
 				$title = $recordDriver->getTitle();
 				if ($recordDriver instanceof OpenArchivesRecordDriver) {
 					$author = '';
@@ -682,15 +674,6 @@ class BookCoverProcessor{
 			//Make sure we don't get an image not found cover
 			$imageChecksum = md5($image);
 			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c'){
-				return false;
-			}elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e'){
-				//Syndetics Unbound default image at medium size
-				return false;
-			}elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b'){
-				//Syndetics Unbound default image at small size
-				return false;
-			}elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db'){
-				//Syndetics Unbound default image at large size
 				return false;
 			}
 
@@ -1452,29 +1435,6 @@ class BookCoverProcessor{
 		return false;
 	}
 
-    private function getSpringshareLibCalCover($id) {
-        if (strpos($id, ':') !== false) {
-            list(, $id) = explode(":", $id);
-        }
-        require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
-        $driver = new SpringshareLibCalEventRecordDriver($id);
-        if ($driver) {
-//			$coverUrl = $driver->getEventCoverUrl();
-//			if ($coverUrl == null) {
-            require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-            $coverBuilder = new EventCoverBuilder();
-            $props = [
-                'eventDate' => $driver->getStartDate()
-            ];
-            $coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-            return $this->processImageURL('default_event', $this->cacheFile, false);
-//			}else{
-//				return $this->processImageURL('springshare_libcal_event', $coverUrl, true);
-//			}
-        }
-        return false;
-    }
-
 	private function getWebPageCover($id)
 	{
 		//Build a cover based on the title of the page
@@ -1488,9 +1448,6 @@ class BookCoverProcessor{
 		}elseif ($this->type == 'BasicPage'){
 			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
 			$recordDriver = new BasicPageRecordDriver($this->type . ':' . $id);
-		}elseif ($this->type == 'PortalPage'){
-			require_once ROOT_DIR . '/RecordDrivers/PortalPageRecordDriver.php';
-			$recordDriver = new PortalPageRecordDriver($this->type . ':' . $id);
 		}elseif ($this->type == 'WebResource') {
 			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 			$recordDriver = new WebResourceRecordDriver($this->type . ':' . $id);
@@ -1519,12 +1476,6 @@ class BookCoverProcessor{
 		$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
 		if (file_exists($uploadedImage)){
 			return $this->processImageURL('upload', $uploadedImage);
-		}elseif (strlen($permanentId) == 40) {
-			$permanentId = substr($permanentId, 0, 36);
-			$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
-			if (file_exists($uploadedImage)) {
-				return $this->processImageURL('upload', $uploadedImage);
-			}
 		}
 		return false;
 	}
@@ -1571,24 +1522,6 @@ class BookCoverProcessor{
 			];
 			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_ebsco', $this->cacheFile, false);
-		} else {
-			return false;
-		}
-	}
-
-	private function getEbscohostCover($id)
-	{
-		//Build a cover based on the title of the page
-		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
-		$coverBuilder = new DefaultCoverImageBuilder();
-		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
-
-		$ebscohostRecordDriver = new EbscohostRecordDriver($id);
-		if ($ebscohostRecordDriver->isValid()) {
-			$title = $ebscohostRecordDriver->getTitle();
-			$author = $ebscohostRecordDriver->getAuthor();
-			$coverBuilder->getCover($title, $author, $this->cacheFile);
-			return $this->processImageURL('default_ebscohost', $this->cacheFile, false);
 		} else {
 			return false;
 		}

@@ -31,8 +31,7 @@ class Search_Advanced extends Search_AdvancedBase {
 			$savedSearch = $this->loadSavedSearch();
 		}else{
 			if (isset($_REQUEST['lookfor'])){
-				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
-				$savedSearch = SearchObjectFactory::initSearchObject();
+				$savedSearch = new SearchObject_GroupedWorkSearcher();
 				$interface->assign('lookfor', $_REQUEST['lookfor']);
 				$savedSearch->setSearchTerms([
 					'index' => 'Keyword',

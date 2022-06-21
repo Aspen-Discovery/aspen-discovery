@@ -24,7 +24,7 @@ class MyRatings extends MyAccount{
 		}
 		$timer->logTime("Loaded ids of titles the user has rated");
 
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$records = $searchObject->getRecords(array_keys($ratedIds));
 		foreach ($ratedIds as $permanentId => $rating){
@@ -60,7 +60,7 @@ class MyRatings extends MyAccount{
 		}
 		$timer->logTime("Loaded ids of titles the user is not interested in");
 
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$records = $searchObject->getRecords(array_keys($notInterestedIds));
 		foreach ($notInterestedIds as $permanentId => $notInterestedObj){

@@ -32,7 +32,7 @@
 {/if}
 
 {if (!empty($alternateTitles))}
-	<h4>{translate text="Alternate Titles and Authors" isPublicFacing=true}</h4>
+	<h4>Alternate Titles and Authors</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
 		<tr><th>{translate text="Title" isPublicFacing=true}</th><th>{translate text="Author" isPublicFacing=true}</th>{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}<th>{translate text="Actions" isPublicFacing=true}</th>{/if}</tr>
@@ -47,15 +47,6 @@
 			</tr>
 		{/foreach}
 	</table>
-{/if}
-
-{if !empty($isUngrouped)}
-	<div id="ungrouping">
-		<h4>{translate text="Record Ungrouped" isPublicFacing=true}</h4>
-		<table class="table-striped table table-condensed notranslate">
-		<tr><td>{translate text="This record has been ungrouped from all other records" isPublicFacing=true}</td><td><a onclick="AspenDiscovery.GroupedWork.deleteUngrouping('{$recordDriver->getPermanentId()}', '{$ungroupingId}')" class="btn btn-danger btn-sm">{translate text="Allow to Group" isPublicFacing=true}</a></td></tr>
-		</table>
-	</div>
 {/if}
 
 {if (!empty($primaryIdentifiers))}

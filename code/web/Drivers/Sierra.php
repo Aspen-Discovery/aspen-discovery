@@ -2,15 +2,12 @@
 
 require_once ROOT_DIR . '/Drivers/Millennium.php';
 class Sierra extends Millennium{
-	protected $urlIdRegExp = "/.*\/([\d]*)$/";
-	protected $urlInnReachIdRegExp = "/.*\/(\d*)@.*$/";
+	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
 	private $sierraToken = null;
 	private $lastResponseCode;
 	private $lastError;
 	private $lastErrorMessage;
-
-	private $_sierraDNAConnection;
 
 	public function _connectToApi(){
 		if ($this->sierraToken == null){
@@ -41,10 +38,6 @@ class Sierra extends Millennium{
 			$this->sierraToken = json_decode($return);
 		}
 		return $this->sierraToken;
-	}
-
-	public function __destruct(){
-		$this->closeSierraDNAConnection();
 	}
 
 	public function _callUrl($requestType, $url){
@@ -291,11 +284,8 @@ class Sierra extends Millennium{
 			// status, cancelable, freezable
 			$recordStatus = $sierraHold->status->code;
 			// check item record status
-			if (preg_match($this->urlIdRegExp, $sierraHold->record, $m)) {
-				$recordId = $m[1];
-			}else {
-				$recordId = substr($sierraHold->record, strrpos($sierraHold->record, '/') + 1);
-			}
+			preg_match($this->urlIdRegExp, $sierraHold->record, $m);
+			$recordId = $m[1];
 			if ($sierraHold->recordType == 'i') {
 				$recordItemStatus = $sierraHold->status->code;
 				// If this is an inn-reach exclude from check -- this comes later
@@ -380,15 +370,17 @@ class Sierra extends Millennium{
 			}
 			$curHold->status    = $status;
 			if(isset($curHold->holdQueueLength)) {
-				// if the patron is the only person on wait list hold can't be frozen
-				if(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
+				if(isset($curHold->position) && ((int)$curHold->position <= 2 && (int)$curHold->holdQueueLength >= 2)) {
+					$freezeable = false;
+					// if the patron is the only person on wait list hold can't be frozen
+				} elseif(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
 					$freezeable = false;
 					// if there is no priority set but queueLength = 1
 				} elseif(!isset($curHold->position) && $curHold->holdQueueLength == 1) {
 					$freezeable = false;
 				}
 			}
-			$curHold->canFreeze = $freezeable || $curHold->frozen;
+			$curHold->canFreeze = $freezeable;
 			$curHold->cancelable = $cancelable;
 			$curHold->locationUpdateable = $updatePickup;
 			$curHold->available = $available;
@@ -417,15 +409,7 @@ class Sierra extends Millennium{
 			// determine if this is an innreach hold
 			// or if it's a regular ILS hold
 			if(strstr($recordId, "@")) {
-				$titleAuthor = $this->getTitleAndAuthorForInnReachHold($curHold->cancelId);
-				if ($titleAuthor !== false){
-					$curHold->title = $titleAuthor['title'];
-					$curHold->author = $titleAuthor['author'];
-				}else{
-					$curHold->title = 'Unknown';
-					$curHold->author = 'Unknown';
-				}
-
+				//TODO: Handle INNREACH Holds
 			} else {
 				///////////////
 				// ILS HOLD
@@ -481,11 +465,7 @@ class Sierra extends Millennium{
 			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
 		}
 		$readingHistoryTitles = array();
-
-		//Sierra does not report reading history enabled properly so we should always get it.
 		if (true || $readingHistoryEnabled){
-			ini_set('memory_limit','2G');
-
 			$numProcessed = 0;
 			$totalToProcess = 1000;
 			while ($numProcessed < $totalToProcess){
@@ -521,23 +501,9 @@ class Sierra extends Millennium{
 							//get title and author by looking up the bib
 							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
 							if ($getBibResponse){
-								if (isset($getBibResponse->deleted) && $getBibResponse->deleted == true){
-									$curTitle['title'] = 'Deleted from catalog';
-									$curTitle['author'] = 'Unknown';
-									$curTitle['format'] = 'Unknown';
-								}else{
-									if (isset($getBibResponse->title)) {
-										$curTitle['title'] = $getBibResponse->title;
-									}else{
-										$curTitle['title'] = 'Unknown';
-									}
-									if (isset($getBibResponse->author)) {
-										$curTitle['author'] = $getBibResponse->author;
-									}else{
-										$curTitle['author'] = 'Unknown';
-									}
-									$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
-								}
+								$curTitle['title'] = $getBibResponse->title;
+								$curTitle['author'] = $getBibResponse->author;
+								$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
 							}else{
 								$curTitle['title'] = 'Unknown';
 								$curTitle['author'] = 'Unknown';
@@ -580,6 +546,11 @@ class Sierra extends Millennium{
 				preg_match($this->urlIdRegExp, $entry->id, $m);
 				$checkoutId = $m[1];
 
+				preg_match($this->urlIdRegExp, $entry->item, $m);
+				$itemIdShort = $m[1];
+				$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
+				$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
+
 				$curCheckout = new Checkout();
 				$curCheckout->type = 'ils';
 				$curCheckout->source = $this->getIndexingProfile()->name;
@@ -588,71 +559,53 @@ class Sierra extends Millennium{
 				$curCheckout->checkoutDate = strtotime($entry->outDate);
 				$curCheckout->renewCount = $entry->numberOfRenewals;
 				$curCheckout->canRenew = true;
-				$curCheckout->renewalId = $checkoutId;
-				$curCheckout->renewIndicator = $checkoutId;
+				$curCheckout->callNumber = $entry->callNumber;
 				if (isset($entry->barcode)) {
 					$curCheckout->barcode = $entry->barcode;
 				}
-				if(strpos($entry->item, "@") !== false) {
-					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
-					if ($titleAuthor != false) {
-						$curCheckout->title = $titleAuthor['title'];
-						$curCheckout->author = $titleAuthor['author'];
-						$curCheckout->formats = ['Unknown'];
-					}else{
-						$curCheckout->title = 'Unknown';
-						$curCheckout->author = 'Unknown';
-						$curCheckout->formats = ['Unknown'];
-					}
-				}else{
-					preg_match($this->urlIdRegExp, $entry->item, $m);
-					$itemIdShort = $m[1];
-					$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
-					$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
-
-					$curCheckout->callNumber = $entry->callNumber;
-
-					$curCheckout->itemId = $itemId;
-					if ($bibId != false){
-						$curCheckout->sourceId = $bibId;
-						$curCheckout->recordId = $bibId;
-						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-						$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
-						if ($recordDriver->isValid()){
-							$curCheckout->updateFromRecordDriver($recordDriver);
-							$relatedRecord = $recordDriver->getRelatedRecord();
-							if ($relatedRecord != null) {
-								//Check to see if we have volume info for the item
-								foreach ($relatedRecord->getItems() as $item) {
-									if ($item->itemId == $itemId) {
-										if (!empty($item->volume)) {
-											$curCheckout->volume = $item->volume;
-										}
-										if ($item->callNumber != $curCheckout->callNumber){
-											$curCheckout->callNumber = $item->callNumber;
-										}
-										break;
+				$curCheckout->itemId = $itemId;
+				$curCheckout->renewalId = $checkoutId;
+				$curCheckout->renewIndicator = $checkoutId;
+				if ($bibId != false){
+					$curCheckout->sourceId = $bibId;
+					$curCheckout->recordId = $bibId;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+					if ($recordDriver->isValid()){
+						$curCheckout->updateFromRecordDriver($recordDriver);
+						$relatedRecord = $recordDriver->getRelatedRecord();
+						if ($relatedRecord != null) {
+							//Check to see if we have volume info for the item
+							foreach ($relatedRecord->getItems() as $item) {
+								if ($item->itemId == $itemId) {
+									if (!empty($item->volume)) {
+										$curCheckout->volume = $item->volume;
 									}
+									if ($item->callNumber != $curCheckout->callNumber){
+										$curCheckout->callNumber = $item->callNumber;
+									}
+									break;
 								}
-							}
-						}else{
-							$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
-							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
-							if ($getBibResponse){
-								$curCheckout->title = isset($getBibResponse->title) ? $getBibResponse->title : 'Unknown';
-								$curCheckout->author = isset($getBibResponse->author) ? $getBibResponse->author : 'Unknown';
-								$curCheckout->formats = [isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown'];
-							}else{
-								$curCheckout->title = 'Unknown';
-								$curCheckout->author = 'Unknown';
-								$curCheckout->formats = ['Unknown'];
 							}
 						}
 					}else{
-						$curCheckout->sourceId = '';
-						$curCheckout->recordId = '';
+						$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
+						$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
+						if ($getBibResponse){
+							$curCheckout->title = $getBibResponse->title;
+							$curCheckout->author = $getBibResponse->author;
+							$curCheckout->formats = [isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown'];
+						}else{
+							$curCheckout->title = 'Unknown';
+							$curCheckout->author = 'Unknown';
+							$curCheckout->formats = ['Unknown'];
+						}
 					}
+				}else{
+					$curCheckout->sourceId = '';
+					$curCheckout->recordId = '';
 				}
+
 				$index = $i + $numProcessed;
 				$sortKey = "{$curCheckout->source}_{$curCheckout->sourceId}_$index";
 				$checkedOutTitles[$sortKey] = $curCheckout;
@@ -806,7 +759,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
+	public function cancelHold($patron, $recordId, $cancelId = null){
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$cancelId}";
 		$cancelHoldResponse = $this->_sendPage('sierra.cancelHold', 'DELETE', $sierraUrl, '');
 		if (!$cancelHoldResponse){
@@ -943,8 +896,7 @@ class Sierra extends Millennium{
 			//No validate the barcode and pin
 			$params = [
 				'barcode' => $username,
-				'pin' => $password,
-				'caseSensitivity' => false,
+				'pin' => $password
 			];
 
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
@@ -1324,9 +1276,7 @@ class Sierra extends Millennium{
 		if (!empty($primaryPhone)){
 			$user->phone = $primaryPhone->number;
 		}
-		if (!empty($patronInfo->emails)) {
-			$user->email = reset($patronInfo->emails);
-		}
+		$user->email = reset($patronInfo->emails);
 
 		$homeLocationCode = $patronInfo->homeLibraryCode;
 		$location = new Location();
@@ -1455,60 +1405,5 @@ class Sierra extends Millennium{
 			$result['message'] = $message;
 		}
 		return $result;
-	}
-
-	public function connectToSierraDNA(){
-		if ($this->_sierraDNAConnection == null){
-			$accountProfile = $this->accountProfile;
-			$this->_sierraDNAConnection = pg_connect("host={$accountProfile->databaseHost} port={$accountProfile->databasePort} dbname={$accountProfile->databaseName} user={$accountProfile->databaseUser} password={$accountProfile->databasePassword}");
-		}
-		return $this->_sierraDNAConnection;
-	}
-
-	public function closeSierraDNAConnection(){
-		if ($this->_sierraDNAConnection != null){
-			pg_close($this->_sierraDNAConnection);
-			$this->_sierraDNAConnection = null;
-		}
-	}
-	public function getTitleAndAuthorForInnReachCheckout($checkoutId){
-		/** @noinspection SqlResolve */
-		$checkoutInfoSql = "SELECT 
-			  bib_record_property.best_title as title,
-			  bib_record_property.best_author as author,
-			  bib_record_property.best_title_norm as sort_title
-			FROM 
-			  sierra_view.checkout, 
-			  sierra_view.bib_record_item_record_link, 
-			  sierra_view.bib_record_property
-			WHERE 
-			  sierra_view.checkout.id = $1
-			  AND checkout.item_record_id = bib_record_item_record_link.item_record_id
-			  AND bib_record_item_record_link.bib_record_id = bib_record_property.bib_record_id";
-		$innReachConnection = $this->connectToSierraDNA();
-		$res = pg_query_params($innReachConnection, $checkoutInfoSql, array($checkoutId));
-		$titleAndAuthor = pg_fetch_array($res, 0);
-		return $titleAndAuthor;
-	}
-
-	public function getTitleAndAuthorForInnReachHold($holdId){
-		/** @noinspection SqlResolve */
-		$holdInfoSql = "SELECT 
-			  bib_record_property.best_title as title,
-			  bib_record_property.best_author as author,
-			  bib_record_property.best_title_norm as sort_title
-			FROM 
-			  sierra_view.hold, 
-			  sierra_view.bib_record_item_record_link, 
-			  sierra_view.bib_record_property
-			WHERE 
-			  sierra_view.hold.id = $1
-					AND sierra_view.hold.is_ir=true
-					AND sierra_view.hold.record_id = bib_record_item_record_link.item_record_id
-					AND bib_record_item_record_link.bib_record_id = bib_record_property.bib_record_id";
-		$innReachConnection = $this->connectToSierraDNA();
-		$res = pg_query_params($innReachConnection, $holdInfoSql, array($holdId));
-		$titleAndAuthor = pg_fetch_array($res, 0);
-		return $titleAndAuthor;
 	}
 }

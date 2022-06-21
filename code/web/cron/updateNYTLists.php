@@ -62,12 +62,9 @@ if (!$nytSettings->find(true)) {
 	$listAPI = new ListAPI();
 
 	if ($availableLists != null && isset($availableLists->results)) {
-		$prevYear = date("Y-m-d",strtotime("-1 year"));
 		$allListsNames = [];
-		foreach($availableLists->results as $availableList) {
-			if($availableList->newest_published_date > $prevYear) {
-				$allListsNames[] = $availableList->list_name_encoded;
-			}
+		foreach ($availableLists->results as $listInfo) {
+			$allListsNames[] = $listInfo->list_name_encoded;
 		}
 		$nytUpdateLog->numLists = count($allListsNames);
 		$nytUpdateLog->update();
@@ -82,7 +79,7 @@ if (!$nytSettings->find(true)) {
 			$nytUpdateLog->lastUpdate = time();
 			$nytUpdateLog->update();
 			//Make sure we don't hit our quota.  Wait between updates
-			sleep(7);
+			sleep(6);
 		}
 	}
 }

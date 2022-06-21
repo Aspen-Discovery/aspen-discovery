@@ -14,7 +14,6 @@ class IlsExtractLogEntry extends BaseLogEntry
 	public $numChangedAfterGrouping;
 	public $currentId;
 	public $numProducts;
-	public $numRecordsWithInvalidMarc;
 	public $numErrors;
 	public $numAdded;
 	public $numDeleted;

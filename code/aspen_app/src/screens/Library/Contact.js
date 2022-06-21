@@ -8,7 +8,6 @@ import * as WebBrowser from 'expo-web-browser';
 import {showLocation} from 'react-native-map-link';
 
 // custom components and helper files
-import {userContext} from "../../context/user";
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {getLibraryInfo, getLocationInfo} from '../../util/loadLibrary';
@@ -21,9 +20,27 @@ export default class Contact extends Component {
 			isLoading: true,
 			hasError: false,
 			error: null,
-			userLatitude: 0,
-			userLongitude: 0
+			location: [],
+			library: [],
 		};
+	}
+
+	loadLocation = async () => {
+		const tmp = await AsyncStorage.getItem('@locationInfo');
+		const profile = JSON.parse(tmp);
+		this.setState({
+			location: profile,
+			isLoading: false,
+		})
+	}
+
+	loadLibrary = async () => {
+		const tmp = await AsyncStorage.getItem('@patronLibrary');
+		const profile = JSON.parse(tmp);
+		this.setState({
+			library: profile,
+			isLoading: false,
+		})
 	}
 
 	componentDidMount = async () => {
@@ -32,7 +49,21 @@ export default class Contact extends Component {
 			userLongitude: await SecureStore.getItemAsync("longitude"),
 			isLoading: false,
 		})
+
+		await this.loadLibrary();
+		await this.loadLocation();
+
+		this.interval = setInterval(() => {
+			this.loadLibrary()
+			this.loadLocation();
+		}, 5000)
+
+		return () => clearInterval(this.interval)
 	};
+
+	componentWillUnmount() {
+		clearInterval(this.interval);
+	}
 
 	dialCall = (number) => {
 		let phoneNumber = "";
@@ -46,30 +77,28 @@ export default class Contact extends Component {
 		Linking.openURL(emailAddress);
 	};
 
-	openWebsite = async (url, libraryUrl) => {
+	openWebsite = async (url) => {
 		if (url === '/') {
-			WebBrowser.openBrowserAsync(libraryUrl)
+			WebBrowser.openBrowserAsync(global.libraryUrl)
 		} else {
 			WebBrowser.openBrowserAsync(url);
 		}
 	}
 
-	getDirections = async (locationLatitude, locationLongitude) => {
+	getDirections = async () => {
 		showLocation({
-			latitude: locationLatitude,
-			longitude: locationLongitude,
+			latitude: this.state.location.latitude,
+			longitude: this.state.location.longitude,
 			sourceLatitude: this.state.userLatitude,
 			sourceLongitude: this.state.userLongitude,
 			googleForceLatLon: true,
 		})
 	};
 
-	static contextType = userContext;
 
 	render() {
 
-		const location = this.context.location;
-		const library = this.context.library;
+		const {location, library} = this.state;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
@@ -78,8 +107,7 @@ export default class Contact extends Component {
 		return (
 			<Box safeArea={5}>
 				<Center>
-					<Heading>{library.displayName}</Heading>
-					<Text mb={2}>{location.displayName}</Text>
+					<Heading mb={2}>{library.name}</Heading>
 					{location.showInLocationsAndHoursList === "1" ?
 						<HoursAndLocation hoursMessage={location.hoursMessage} hours={location.hours}
 						                  description={location.description}/> : null}
@@ -93,11 +121,11 @@ export default class Contact extends Component {
 						}} startIcon={<Icon as={MaterialIcons} name="email"
 						                    size="sm"/>}>{translate('library_contact.email_button')}</Button> : null}
 						{location.latitude !== 0 ? <Button mb={3} onPress={() => {
-							this.getDirections(location.latitude, location.longitude);
+							this.getDirections();
 						}} startIcon={<Icon as={MaterialIcons} name="map"
 						                    size="sm"/>}>{translate('library_contact.directions_button')}</Button> : null}
 						{location.homeLink ? <Button onPress={() => {
-							this.openWebsite(location.homeLink, library.baseUrl);
+							this.openWebsite(location.homeLink);
 						}} startIcon={<Icon as={MaterialIcons} name="home"
 						                    size="sm"/>}>{translate('library_contact.website_button')}</Button> : null}
 					</Box>

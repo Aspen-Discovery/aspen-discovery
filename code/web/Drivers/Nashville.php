@@ -39,12 +39,12 @@ class Nashville extends CarlX {
 				}
 			}
 			if ($allPaymentsSucceed === false) {
-				$success = false;
+				//$success = false;
 				$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
 				$level = Logger::LOG_ERROR;
 				$payment->completed = 9;
 			} else {
-				$success = true;
+				//$success = true;
 				$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
 				$level = Logger::LOG_NOTICE;
 				$payment->completed = 1;
