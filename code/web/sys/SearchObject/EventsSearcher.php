@@ -152,8 +152,14 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 
 	public function getRecordDriverForResult($current)
 	{
-		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
-		return new LibraryCalendarEventRecordDriver($current);
+        if (substr($current['type'],0,12) == 'event_libcal') {
+            require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+            return new SpringshareLibCalEventRecordDriver($current);
+        } else {
+// TODO: rewrite Library Market Library Calendar type as event_lm or something similar. 2022 03 20 James.
+            require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+            return new LibraryCalendarEventRecordDriver($current);
+        }
 	}
 
 	public function getSearchesFile()
@@ -185,14 +191,26 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	{
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
+//
+//            $eventDate = new LibraryFacetSetting();
+//            $eventDate->id = count($facetConfig) +1;
+//            $eventDate->multiSelect = false;
+//            $eventDate->facetName = "start_date";
+//            $eventDate->displayName = "Event Date";
+//            $eventDate->numEntriesToShowByDefault = 5;
+//            $eventDate->translate = false;
+//            $eventDate->collapseByDefault = false;
+//            $eventDate->useMoreFacetPopup = false;
+//            $facetConfig["start_date"] = $eventDate;
+
 			$ageGroup = new LibraryFacetSetting();
 			$ageGroup->id = count($facetConfig) +1;
 			$ageGroup->multiSelect = true;
 			$ageGroup->facetName = "age_group_facet";
-			$ageGroup->displayName = "Age Group";
+			$ageGroup->displayName = "Age Group/Audience";
 			$ageGroup->numEntriesToShowByDefault = 5;
 			$ageGroup->translate = true;
-			$ageGroup->collapseByDefault = true;
+			$ageGroup->collapseByDefault = false;
 			$ageGroup->useMoreFacetPopup = true;
 			$facetConfig["age_group_facet"] = $ageGroup;
 
@@ -203,7 +221,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$programType->displayName = "Program Type";
 			$programType->numEntriesToShowByDefault = 5;
 			$programType->translate = true;
-			$programType->collapseByDefault = true;
+			$programType->collapseByDefault = false;
 			$programType->useMoreFacetPopup = true;
 			$facetConfig["program_type_facet"] = $programType;
 
@@ -214,7 +232,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$branch->displayName = "Branch";
 			$branch->numEntriesToShowByDefault = 5;
 			$branch->translate = false;
-			$branch->collapseByDefault = true;
+			$branch->collapseByDefault = false;
 			$branch->useMoreFacetPopup = true;
 			$facetConfig["branch"] = $branch;
 

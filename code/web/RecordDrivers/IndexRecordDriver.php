@@ -9,6 +9,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
  *  - Grouped Works
  *  - People
  *  - Lists
+ *  - Events
  */
 abstract class IndexRecordDriver extends RecordInterface
 {

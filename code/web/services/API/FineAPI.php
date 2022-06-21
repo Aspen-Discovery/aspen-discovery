@@ -47,7 +47,10 @@ class FineAPI extends Action
 		global $logger;
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		$success = false;
+		$message = "MSB Unknown error.";
 		$mailer = new Mailer();
+		$level = Logger::LOG_ERROR;
 		$systemVariables = SystemVariables::getSystemVariables();
 		$json_params = file_get_contents("php://input");
 		if (strlen($json_params) > 0 && $this->isValidJSON($json_params)) {
@@ -56,7 +59,6 @@ class FineAPI extends Action
 				// 2021 01 20: MSB reports they will only use the post back link when the operation is successful
 				$success = false;
 				$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
-				$level = Logger::LOG_ERROR;
 			} else {
 				//Retrieve the order information from Aspen db
 				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -68,13 +70,11 @@ class FineAPI extends Action
 					if ($payment->completed != 0) {
 						$success = false;
 						$message = "MSB Payment has already been processed for Payment Reference ID $payment->id";
-						$level = Logger::LOG_ERROR;
 					} else {
 						// Ensure MSB-reported transaction amount (which does not include convenience fee) equals Aspen-expected total paid
 						if ($payment->totalPaid != $msb["TransactionAmount"]) {
 							$success = false;
 							$message = "MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid";
-							$level = Logger::LOG_ERROR;
 						} else {
 							$user = new User();
 							$user->id = $payment->userId;
@@ -83,16 +83,17 @@ class FineAPI extends Action
 							} else {
 								$success = false;
 								$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
-								$level = Logger::LOG_ERROR;
 							}
 						}
 					}
 				} else {
 					$success = false;
 					$message = "MSB Payment not found in Aspen for Payment Reference ID $payment->id .";
-					$level = Logger::LOG_ERROR;
 				}
 			}
+		} else {
+			$success = false;
+			$message = "MSB Payment: processor payload not received";
 		}
 		$logger->log($message, $level);
 		if (!empty($systemVariables->errorEmail)) {

@@ -35,7 +35,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
+	public void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -169,7 +169,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		//Unused, just calls updateGroupedWorkSolrDataBasedOnStandardMarcData
 	}
 

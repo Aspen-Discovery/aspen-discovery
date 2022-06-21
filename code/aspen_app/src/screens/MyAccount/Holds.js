@@ -1,6 +1,6 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RefreshControl} from "react-native";
+import {RefreshControl, ScrollView} from "react-native";
 import {
 	Actionsheet,
 	Avatar,
@@ -17,7 +17,10 @@ import {
 	Text,
 	useDisclose,
 	HStack,
-	VStack
+	VStack,
+	IconButton,
+	Select,
+	CheckIcon
 } from "native-base";
 import {Ionicons, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -27,15 +30,18 @@ import {GLOBALS} from "../../util/globals";
 // custom components and helper files
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {getHolds} from '../../util/loadPatron';
+import {getCheckedOutItems, getHolds, getProfile, reloadProfile} from '../../util/loadPatron';
 import {cancelHold, changeHoldPickUpLocation, freezeHold, thawHold} from '../../util/accountActions';
 import {getPickupLocations} from '../../util/loadLibrary';
 import {getTranslation, getTranslations} from "../../translations/TranslationService";
+import {userContext} from "../../context/user";
+import CalendarPicker from 'react-native-calendar-picker';
+import {DisplayMessage} from "../../components/Notifications";
 
 export default class Holds extends Component {
 
-	constructor(props) {
-		super(props);
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -44,9 +50,11 @@ export default class Holds extends Component {
 			locations: null,
 			forceReload: true,
 			holds: [],
+			isUpdating: false,
 			user: {
 				interfaceLanguage: "en",
 			},
+			library: this.context.library,
 			holdsNotReady: [],
 			holdsReady: [],
 			translation: {
@@ -61,24 +69,20 @@ export default class Holds extends Component {
 				freezeHold: "Freeze Hold",
 				thawHold: "Thaw Hold",
 				changePickUpLocation: "Change Pickup Location"
-			}
+			},
+			selectedStartDate: null,
 		};
-		getPickupLocations();
-		getHolds();
-		this.loadUser();
+		this.onDateChange = this.onDateChange.bind(this);
+		//this._fetchHolds();
+		this._pickupLocations();
 		this.loadPickupLocations();
-		this.loadLibrary();
 		this.loadHolds();
-		this.loadTranslations();
 	}
 
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
+	onDateChange(date) {
 		this.setState({
-			user: profile,
-			isLoading: false,
-		})
+			selectedStartDate: date,
+		});
 	}
 
 	loadHolds = async () => {
@@ -96,13 +100,14 @@ export default class Holds extends Component {
 		})
 	}
 
-	loadLibrary = async () => {
-		const tmp = await AsyncStorage.getItem('@patronLibrary');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			library: profile,
-			isLoading: false,
-		})
+	_fetchHolds = async () => {
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getHolds(libraryUrl).then(r => {
+			console.log(r);
+			this.loadHolds()
+		});
 	}
 
 	loadPickupLocations = async () => {
@@ -114,30 +119,37 @@ export default class Holds extends Component {
 		})
 	}
 
-	loadTranslations = async () => {
-		const tmp = await AsyncStorage.getItem('@libraryLanguages');
-		let languages = JSON.parse(tmp);
-		languages = _.values(languages);
-		languages.map(async (language) => {
-			const tmp = await AsyncStorage.getItem(language.code);
-		})
+	_pickupLocations = async () => {
+		this.setState({
+			isLoading: true,
+		});
+
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
 	}
 
 	componentDidMount = async () => {
+		let discoveryVersion = "22.04.00";
+		if(this.context.library.discoveryVersion) {
+			let version = this.context.library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
 		this.setState({
-			isLoading: false,
+			isLoading: true,
+			discoveryVersion: discoveryVersion,
 		})
 
-		await this.loadUser();
+		await this._fetchHolds();
+		await this._pickupLocations();
 		await this.loadHolds();
-		await this.loadLibrary();
 		await this.loadPickupLocations();
-		await this.loadTranslations();
 
 		this.interval = setInterval(() => {
 			this.loadHolds();
-			this.loadUser();
-			this.loadTranslations();
 		}, 1000)
 
 		return () => clearInterval(this.interval)
@@ -148,12 +160,12 @@ export default class Holds extends Component {
 	}
 
 	// Handles opening the GroupedWork screen with the item data
-	openGroupedWork = (item) => {
-		this.props.navigation.navigate("GroupedWork", {item});
+	openGroupedWork = (item, libraryUrl) => {
+		this.props.navigation.navigate("GroupedWork", {item: item, libraryUrl: libraryUrl});
 	};
 
 	// Renders the hold items on the screen
-	renderHoldItem = (item) => {
+	renderHoldItem = (item, libraryUrl, user, updateProfile) => {
 		return (
 			<HoldItem
 				data={item}
@@ -162,16 +174,21 @@ export default class Holds extends Component {
 				locations={this.state.locations}
 				openGroupedWork={this.openGroupedWork}
 				translations={this.state.translation}
+				libraryUrl={libraryUrl}
+				userProfile={user}
+				updateProfile = {updateProfile}
+				discoveryVersion={this.state.discoveryVersion}
+				onDateChange={this.onDateChange}
+				selectedReactivationDate={this.state.selectedStartDate}
 			/>
 		);
 	}
 
-	// Triggers a screen refresh
-	_onRefresh() {
-		this.setState({isRefreshing: true}, () => {
-			this.loadHolds().then(() => {
-				this.setState({isRefreshing: false});
-			});
+	// Trigger a context refresh
+	updateProfile = async () => {
+		console.log("Getting new profile data from holds...");
+		await getProfile().then(response => {
+			this.context.user = response;
 		});
 	}
 
@@ -185,28 +202,33 @@ export default class Holds extends Component {
 		);
 	};
 
+	static contextType = userContext;
+
 	render() {
 		const {holds} = this.state;
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner(this.state.loadingMessage));
 		}
 
 		return (
-			<Box h="100%">
+			<ScrollView>
+			<Box>
 				<FlatList
 					data={holds}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({item}) => this.renderHoldItem(item)}
-					keyExtractor={(item) => item.id}
-					refreshControl={
-						<RefreshControl
-							refreshing={this.state.isRefreshing}
-							onRefresh={this._onRefresh.bind(this)}
-						/>
-					}
+					renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile)}
+					keyExtractor={(item) => item.id.concat("_", item.position)}
 				/>
+				<Center pt={5} pb={5}>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
+					/>
+				</Center>
 			</Box>
+			</ScrollView>
 		);
 	}
 }
@@ -214,7 +236,7 @@ export default class Holds extends Component {
 function HoldItem(props) {
 	let expirationDate;
 	let availableDate;
-	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations} = props;
+	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations, libraryUrl, updateProfile, discoveryVersion, userProfile, onDateChange, selectedReactivationDate} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 
 	const [loading, setLoading] = useState(false);
@@ -275,6 +297,15 @@ function HoldItem(props) {
 			var author = author.substring(0, author.lastIndexOf(','));
 		}
 	}
+
+	let allowLinkedAccountAction = true;
+	if(discoveryVersion < "22.05.00") {
+		if(data.userId !== userProfile.id) {
+			allowLinkedAccountAction = false;
+		}
+	}
+
+	//console.log(allowLinkedAccountAction);
 
 	var source = data.source;
 	var holdSource = data.holdSource;
@@ -351,21 +382,22 @@ function HoldItem(props) {
 						<Actionsheet.Item
 							startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
-								openGroupedWork(data.groupedWorkId);
+								openGroupedWork(data.groupedWorkId, libraryUrl);
 								onClose(onClose);
 							}}>
 							{translations.viewItemDetails}
 						</Actionsheet.Item>
 						: ""
 					}
-					{cancelable ?
+					{cancelable && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={loading}
 							isLoadingText="Cancelling..."
 							startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setLoading(true);
-								cancelHold(data.cancelId, data.recordId, data.source).then(r => {
+								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+									updateProfile();
 									onClose(onClose);
 									setLoading(false);
 								});
@@ -374,37 +406,42 @@ function HoldItem(props) {
 							{translations.cancelHold}
 						</Actionsheet.Item>
 						: ""}
-					{data.allowFreezeHolds ?
+					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === false ?
+						<SelectThawDate
+							onDateChange={onDateChange}
+							onClose={onClose}
+							freezeId={data.cancelId}
+							recordId={data.recordId}
+							source={data.source}
+							libraryUrl={libraryUrl}
+							userId={data.userId}
+							reactivationDate={selectedReactivationDate}
+						/> : ""
+ 					}
+					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === true ?
 						<Actionsheet.Item
-							isLoading={data.frozen === true ? thaw : freeze}
+							isLoading={thaw}
 							isLoadingText={loadingText}
 							startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1"
 							                 size="6"/>}
 							onPress={() => {
-								if (data.frozen === true) {
-									setThaw(true);
-									setLoadingText("Thawing...");
-									thawHold(data.cancelId, data.recordId, data.source).then(r => {
-										onClose(onClose);
-										setThaw(false);
-									});
-								} else {
-									setFreeze(true);
-									setLoadingText("Freezing...");
-									freezeHold(data.cancelId, data.recordId, data.source).then(r => {
-										onClose(onClose);
-										setFreeze(false);
-									});
-								}
+								setThaw(true);
+								setLoadingText("Thawing...");
+								thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+									updateProfile();
+									onClose(onClose);
+									setThaw(false);
+								});
 							}}
 						>
 							{label}
 						</Actionsheet.Item>
 						: ""}
 
-					{updateLocation ?
+					{updateLocation && allowLinkedAccountAction ?
 						<SelectPickupLocation locations={locations} onClose={onClose}
-						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation}/>
+						                      userId = {data.userId}
+						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation} libraryUrl={libraryUrl}/>
 						: ""}
 
 				</Actionsheet.Content>
@@ -413,13 +450,88 @@ function HoldItem(props) {
 	)
 }
 
+const SelectThawDate = (props) => {
+	const {onDateChange, onClose, freezeId, recordId, source, libraryUrl, userId, reactivationDate} = props;
+	const minDate = new Date(); // Today
+	const maxDate = new Date(2017, 6, 3);
+	const [freeze, setFreeze] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [showModal, setShowModal] = useState(false);
+	//YYYY-MM-DD
+
+	let selectedReactivationDate = moment(reactivationDate).format('YYYY-MM-DD');
+	if(selectedReactivationDate === "Invalid date") {
+		selectedReactivationDate = null;
+	}
+
+	return (
+	<>
+		<Actionsheet.Item startIcon={<Icon as={MaterialIcons} name="pause" color="trueGray.400" mr="1" size="6"/>}
+		                  onPress={() => {
+			                  setShowModal(true);
+		                  }}>
+			Freeze Hold
+		</Actionsheet.Item>
+		<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="full">
+			<Modal.Content>
+				<Modal.CloseButton/>
+				<Modal.Header>Freeze Hold</Modal.Header>
+				<Modal.Body>
+					<Text>Select the date when you want the hold thawed.</Text>
+					<Box mt={3} mb={3}>
+						<CalendarPicker
+							onDateChange={onDateChange}
+							minDate={minDate}
+							previousTitle={<Icon as={MaterialIcons} name="chevron-left" color="trueGray.400" size="6"/>}
+							nextTitle={<Icon as={MaterialIcons} name="chevron-right" color="trueGray.400" size="6"/>}
+						/>
+					</Box>
+					<DisplayMessage type="info" message="If a date is not selected, the hold will be frozen for 30 days." />
+				</Modal.Body>
+				<Modal.Footer>
+					<Button.Group space={2} size="md">
+						<Button colorScheme="muted" variant="outline"
+						        onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
+						<Button
+							isLoading={loading}
+							isLoadingText="Freezing..."
+							onPress={() => {
+								setLoading(true);
+								freezeHold(freezeId, recordId, source, libraryUrl, userId, selectedReactivationDate).then(r => {
+										setShowModal(false);
+										onClose(onClose);
+										setLoading(false);
+									}
+								);
+							}}
+						>
+							Freeze Hold
+						</Button>
+					</Button.Group>
+				</Modal.Footer>
+			</Modal.Content>
+		</Modal>
+	</>
+	)
+}
+
 const SelectPickupLocation = (props) => {
 
-	const {locations, label, onClose, currentPickupId, holdId} = props;
+	const {locations, label, onClose, currentPickupId, holdId, libraryUrl, userId} = props;
+
+	let pickupLocation = _.findIndex(locations, function(o) { return o.locationId == currentPickupId; });
+	pickupLocation = _.nth(locations, pickupLocation);
+	let pickupLocationCode = _.get(pickupLocation, 'code', '');
+	pickupLocation = currentPickupId.concat("_", pickupLocationCode);
+	// 									const locationId = item.locationId;
+	// 									const code = item.code;
+	// 									const id = locationId.concat("_", code);
+	//console.log("Current pickup: " + currentPickupId);
+	//console.log(locations);
 
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
-	let [value, setValue] = React.useState(currentPickupId);
+	let [location, setLocation] = React.useState(pickupLocation);
 
 	return (
 		<>
@@ -436,21 +548,26 @@ const SelectPickupLocation = (props) => {
 					<Modal.Body>
 						<FormControl>
 							<FormControl.Label>{translate('pickup_locations.select_new_pickup')}</FormControl.Label>
-							<Radio.Group
+							<Select
 								name="pickupLocations"
-								value={value}
-								onChange={(nextValue) => {
-									setValue(nextValue);
+								selectedValue={location}
+								minWidth="200"
+								accessibilityLabel="Select a new pickup location"
+								_selectedItem={{
+									bg: "tertiary.300",
+									endIcon: <CheckIcon size="5" />
 								}}
-								mt="1"
+								mt={1}
+								mb={3}
+								onValueChange={itemValue => setLocation(itemValue)}
 							>
 								{locations.map((item, index) => {
 									const locationId = item.locationId;
 									const code = item.code;
 									const id = locationId.concat("_", code);
-									return <Radio value={id} my={1}>{item.name}</Radio>;
+									return <Select.Item value={id} label={item.name}/>;
 								})}
-							</Radio.Group>
+							</Select>
 						</FormControl>
 					</Modal.Body>
 					<Modal.Footer>
@@ -462,7 +579,7 @@ const SelectPickupLocation = (props) => {
 								isLoadingText="Updating..."
 								onPress={() => {
 									setLoading(true);
-									changeHoldPickUpLocation(holdId, value).then(r => {
+									changeHoldPickUpLocation(holdId, location, libraryUrl, userId).then(r => {
 											setShowModal(false);
 											onClose(onClose);
 											setLoading(false);

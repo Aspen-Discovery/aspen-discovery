@@ -3,8 +3,12 @@
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class CompletePinReset extends Action
+class MyAccount_CompletePinReset extends Action
 {
+	private $pinExpired = false;
+	function setPinExpired($flag){
+		$this->pinExpired = $flag;
+	}
 	function launch(){
 		global $interface;
 
@@ -27,10 +31,11 @@ class CompletePinReset extends Action
 			$interface->assign('error', translate(['text' => 'No PIN Reset token provided.', 'isPublicFacing' => true]));
 		}
 
+		$interface->assign('pinExpired', $this->pinExpired);
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		$pinValidationRules = $catalog->getPasswordPinValidationRules();
 		$interface->assign('pinValidationRules', $pinValidationRules);
-		if (isset($_REQUEST['update']) && $tokenValid) {
+		if ((isset($_REQUEST['update']) || (isset($_REQUEST['pin1']) && isset($_REQUEST['pin2']))) && $tokenValid) {
 			$userToResetPinFor = new User();
 			$userToResetPinFor->id = $pinResetToken->userId;
 			if ($userToResetPinFor->find(true)){

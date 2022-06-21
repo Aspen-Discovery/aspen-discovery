@@ -1,6 +1,6 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RefreshControl} from "react-native";
+import {RefreshControl, ScrollView} from "react-native";
 import {
 	Actionsheet,
 	Avatar,
@@ -15,7 +15,8 @@ import {
 	Text,
 	useDisclose,
 	HStack,
-	VStack
+	VStack,
+	IconButton
 } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -25,7 +26,7 @@ import * as WebBrowser from 'expo-web-browser';
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
-import {getCheckedOutItems} from '../../util/loadPatron';
+import {getCheckedOutItems, getProfile, reloadProfile} from '../../util/loadPatron';
 import {
 	isLoggedIn,
 	renewAllCheckouts,
@@ -34,10 +35,11 @@ import {
 	viewOnlineItem,
 	viewOverDriveItem
 } from '../../util/accountActions';
+import {userContext} from "../../context/user";
 
 export default class CheckedOut extends Component {
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -45,17 +47,10 @@ export default class CheckedOut extends Component {
 			isRefreshing: false,
 			renewingAll: false,
 			user: [],
-			checkouts: []
+			checkouts: [],
 		};
-	}
-
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			user: profile,
-			isLoading: false,
-		})
+		//this._fetchCheckouts();
+		this.loadCheckouts();
 	}
 
 	loadCheckouts = async () => {
@@ -68,11 +63,20 @@ export default class CheckedOut extends Component {
 	}
 
 	componentDidMount = async () => {
+		let discoveryVersion = "22.04.00";
+		if(this.context.library.discoveryVersion) {
+			let version = this.context.library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
+
 		this.setState({
 			isLoading: false,
+			discoveryVersion: discoveryVersion,
 		});
 
-		await this.loadUser();
+		await this._fetchCheckouts();
 		await this.loadCheckouts();
 
 		this.interval = setInterval(() => {
@@ -89,44 +93,34 @@ export default class CheckedOut extends Component {
 
 	// grabs the items checked out to the account
 	_fetchCheckouts = async () => {
-
 		this.setState({
 			isLoading: true,
 		});
 
-		const forceReload = this.state.isRefreshing;
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getCheckedOutItems(forceReload).then(response => {
-			if (response === "TIMEOUT_ERROR") {
-				this.setState({
-					hasError: true,
-					error: translate('error.timeout'),
-					isLoading: false,
-				});
-			} else {
-				this.setState({
-					data: response,
-					hasError: false,
-					error: null,
-					isLoading: false,
-				});
-			}
-		})
+		await getCheckedOutItems(libraryUrl).then(r => this.loadCheckouts());
 	}
 
 	// renders the items on the screen
-	renderNativeItem = (item) => {
+	renderNativeItem = (item, library, user, updateProfile) => {
 		return (
 			<CheckedOutItem
 				data={item}
+				navigation={this.props.navigation}
 				openWebsite={this.openWebsite}
 				openGroupedWork={this.openGroupedWork}
+				libraryUrl={library.baseUrl}
+				user={user}
+				updateProfile={updateProfile}
+				discoveryVersion={this.state.discoveryVersion}
 			/>
 		);
 	};
 
-	openGroupedWork = (item) => {
-		this.props.navigation.navigate("GroupedWork", {item});
+	openGroupedWork = (item, libraryUrl) => {
+		this.props.navigation.navigate("GroupedWork", {item: item, libraryUrl: libraryUrl});
 	};
 
 	openWebsite = async (url) => {
@@ -187,18 +181,22 @@ export default class CheckedOut extends Component {
 		);
 	};
 
-	_onRefresh = () => {
-		this.setState({isRefreshing: true}, () => {
-			this._fetchCheckouts().then(() => {
-				this.setState({isRefreshing: false});
+	// Trigger a context refresh
+	updateProfile = async () => {
+			console.log("Getting new profile data from checkouts...");
+			await getProfile().then(response => {
+				this.context.user = response;
 			});
-		});
 	}
 
+	static contextType = userContext;
 
 	render() {
 
-		const {checkouts, user} = this.state;
+		const {checkouts} = this.state;
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
@@ -209,8 +207,9 @@ export default class CheckedOut extends Component {
 		}
 
 		return (
-			<Box h="100%">
-				{user.numCheckedOut > 0 ?
+			<ScrollView>
+			<Box>
+				{user.numCheckedOut && user.numCheckedOut > 0 ?
 					<Center pt={3} pb={3}>
 						<Button
 							isLoading={this.state.renewingAll}
@@ -219,7 +218,7 @@ export default class CheckedOut extends Component {
 							colorScheme="primary"
 							onPress={() => {
 								this.setState({renewingAll: true})
-								renewAllCheckouts().then(r => {
+								renewAllCheckouts(library.baseUrl).then(r => {
 									this.setState({renewingAll: false})
 								})
 							}}
@@ -232,16 +231,15 @@ export default class CheckedOut extends Component {
 				<FlatList
 					data={checkouts}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({item}) => this.renderNativeItem(item)}
+					renderItem={({item}) => this.renderNativeItem(item, library, user, this.updateProfile)}
 					keyExtractor={(item) => item.recordId}
-					refreshControl={
-						<RefreshControl
-							refreshing={this.state.isRefreshing}
-							onRefresh={this._onRefresh.bind(this)}
-						/>
-					}
 				/>
+				<Center pt={5} pb={5}>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchCheckouts()}}
+					/>
+				</Center>
 			</Box>
+			</ScrollView>
 		);
 
 	}
@@ -252,7 +250,7 @@ function CheckedOutItem(props) {
 	const [access, setAccess] = useState(false);
 	const [returning, setReturn] = useState(false);
 	const [renewing, setRenew] = useState(false);
-	const {openWebsite, data, renewItem, openGroupedWork} = props;
+	const {openWebsite, data, renewItem, openGroupedWork, libraryUrl, user, updateProfile, discoveryVersion} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 	const dueDate = moment.unix(data.dueDate);
 	var itemDueOn = moment(dueDate).format("MMM D, YYYY");
@@ -284,6 +282,15 @@ function CheckedOutItem(props) {
 
 	}
 
+	let allowLinkedAccountAction = true;
+	if(discoveryVersion < "22.05.00") {
+		if(data.userId !== user.id) {
+			allowLinkedAccountAction = false;
+		}
+	}
+
+	console.log(allowLinkedAccountAction);
+
 
 	// check that title ends in / first
 	if (data.title) {
@@ -301,6 +308,8 @@ function CheckedOutItem(props) {
 			var author = author.substring(0, author.lastIndexOf(','));
 		}
 	}
+
+	//console.log(data);
 
 
 
@@ -356,7 +365,7 @@ function CheckedOutItem(props) {
 						<Actionsheet.Item
 							startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
-								openGroupedWork(data.groupedWorkId);
+								openGroupedWork(data.groupedWorkId, libraryUrl);
 								onClose(onClose);
 							}}>
 							{translate('grouped_work.view_item_details')}
@@ -364,20 +373,37 @@ function CheckedOutItem(props) {
 						: null
 					}
 
-					{data.canRenew ?
+					{data.canRenew && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={renewing}
 							isLoadingText="Renewing..."
 							startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setRenew(true);
-								renewCheckout(data.barcode, data.recordId, data.source, data.itemId).then(r => {
+								renewCheckout(data.barcode, data.recordId, data.source, data.itemId, libraryUrl, data.userId).then(r => {
+									updateProfile();
 									setRenew(false);
 									onClose(onClose)
 								});
 							}}>
 							{translate('checkouts.renew')}
 						</Actionsheet.Item>
+						: null
+					}
+
+					{data.autoRenewError ? (
+							<Actionsheet.Item>
+								{data.autoRenewError}
+							</Actionsheet.Item>
+						)
+						: null
+					}
+
+					{data.renewError ? (
+							<Actionsheet.Item>
+								{data.renewError}
+							</Actionsheet.Item>
+						)
 						: null
 					}
 
@@ -388,7 +414,7 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setAccess(true);
-								viewOverDriveItem(data.userId, formatId, data.overDriveId).then(r => {
+								viewOverDriveItem(data.userId, formatId, data.overDriveId, libraryUrl).then(r => {
 									setAccess(false);
 									onClose(onClose)
 								});
@@ -404,7 +430,7 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setAccess(true);
-								viewOnlineItem(data.userId, data.recordId, data.source, data.accessOnlineUrl).then(r => {
+								viewOnlineItem(data.userId, data.recordId, data.source, data.accessOnlineUrl, libraryUrl).then(r => {
 									setAccess(false);
 									onClose(onClose);
 								});
@@ -420,7 +446,8 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setReturn(true);
-								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId).then(r => {
+								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl, discoveryVersion).then(r => {
+									updateProfile();
 									setReturn(false);
 									onClose(onClose);
 								});
@@ -429,14 +456,15 @@ function CheckedOutItem(props) {
 						</Actionsheet.Item>
 						: null}
 
-					{data.canReturnEarly ?
+					{data.canReturnEarly && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={returning}
 							isLoadingText="Returning..."
 							startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setReturn(true);
-								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId).then(r => {
+								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl, discoveryVersion).then(r => {
+									updateProfile();
 									setReturn(false);
 									onClose(onClose);
 								});

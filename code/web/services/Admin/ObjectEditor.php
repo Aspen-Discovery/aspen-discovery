@@ -291,8 +291,8 @@ abstract class ObjectEditor extends Admin_Admin
 					if ($validationResults['validatedOk']) {
 						$ret = $curObject->update();
 						if ($ret === false) {
-							if ($curObject->_lastError) {
-								$errorDescription = $curObject->_lastError->getUserInfo();
+							if ($curObject->getLastError()) {
+								$errorDescription = $curObject->getLastError();
 							} else {
 								$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 							}
@@ -398,7 +398,8 @@ abstract class ObjectEditor extends Admin_Admin
 	abstract function getDefaultSort() : string;
 
 	public function canFilter($objectStructure){
-		return ($this->getNumObjects() > 3) || (count($this->getAppliedFilters($objectStructure)) > 0);
+		$filterFields = $this->getFilterFields($objectStructure);
+		return ($this->getNumObjects() > 3) || (count($this->getAppliedFilters($filterFields)) > 0);
 	}
 
 	public function customListActions(){
@@ -595,13 +596,13 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 
 	public function getFilterFields($structure){
-		$sortFields = [];
+		$filterFields = [];
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		foreach ($structure as $fieldName => $field){
-			$this->addFieldToFilterFieldsArray($sortFields, $field);
+			$this->addFieldToFilterFieldsArray($filterFields, $field);
 		}
-		ksort($sortFields);
-		return $sortFields;
+		ksort($filterFields);
+		return $filterFields;
 	}
 
 	private function addFieldToFilterFieldsArray(&$filterFields, $field){
@@ -625,32 +626,54 @@ abstract class ObjectEditor extends Admin_Admin
 					'fieldName' => $fieldName,
 					'filterType' => $value,
 					'filterValue' => isset($_REQUEST['filterValue'][$fieldName]) ? $_REQUEST['filterValue'][$fieldName] : '',
+					'filterValue2' => isset($_REQUEST['filterValue2'][$fieldName]) ? $_REQUEST['filterValue2'][$fieldName] : '',
 					'field' => $filterFields[$fieldName]
 				];
 			}
 		}
+		if (count($appliedFilters) == 0){
+			$appliedFilters = $this->getDefaultFilters($filterFields);
+		}
 		return $appliedFilters;
 	}
 
+	function getDefaultFilters(array $filterFields) : array{
+		return [];
+	}
+
 	function applyFilters(DataObject $object){
-		$appliedFilters = $this->getAppliedFilters($object::getObjectStructure());
+		$filterFields = $this->getFilterFields($object::getObjectStructure());
+		$appliedFilters = $this->getAppliedFilters($filterFields);
 		foreach ($appliedFilters as $fieldName => $filter){
-			if ($filter['filterType'] == 'matches'){
-				$object->$fieldName = $filter['filterValue'];
-			}elseif ($filter['filterType'] == 'contains'){
-				$object->whereAdd($fieldName . ' like ' . $object->escape('%' . $filter['filterValue'] . '%'));
-			}elseif ($filter['filterType'] == 'startsWith'){
-				$object->whereAdd($fieldName . ' like ' . $object->escape($filter['filterValue'] . '%'));
-			}elseif ($filter['filterType'] == 'beforeTime'){
-				$fieldValue = strtotime($filter['filterValue']);
-				if ($fieldValue !== false) {
-					$object->whereAdd($fieldName . ' < ' . $fieldValue);
-				}
-			}elseif ($filter['filterType'] == 'afterTime'){
-				$fieldValue = strtotime($filter['filterValue']);
-				if ($fieldValue !== false) {
-					$object->whereAdd($fieldName . ' > ' . $fieldValue);
-				}
+			$this->applyFilter($object, $fieldName, $filter);
+		}
+	}
+
+	function applyFilter(DataObject $object, string $fieldName, array $filter){
+		if ($filter['filterType'] == 'matches'){
+			$object->$fieldName = $filter['filterValue'];
+		}elseif ($filter['filterType'] == 'contains'){
+			$object->whereAdd($fieldName . ' like ' . $object->escape('%' . $filter['filterValue'] . '%'));
+		}elseif ($filter['filterType'] == 'startsWith'){
+			$object->whereAdd($fieldName . ' like ' . $object->escape($filter['filterValue'] . '%'));
+		}elseif ($filter['filterType'] == 'beforeTime'){
+			$fieldValue = strtotime($filter['filterValue2']);
+			if ($fieldValue !== false) {
+				$object->whereAdd($fieldName . ' < ' . $fieldValue);
+			}
+		}elseif ($filter['filterType'] == 'afterTime'){
+			$fieldValue = strtotime($filter['filterValue']);
+			if ($fieldValue !== false) {
+				$object->whereAdd($fieldName . ' > ' . $fieldValue);
+			}
+		}elseif ($filter['filterType'] == 'betweenTimes'){
+			$fieldValue = strtotime($filter['filterValue']);
+			if ($fieldValue !== false) {
+				$object->whereAdd($fieldName . ' > ' . $fieldValue);
+			}
+			$fieldValue2 = strtotime($filter['filterValue2']);
+			if ($fieldValue2 !== false) {
+				$object->whereAdd($fieldName . ' < ' . $fieldValue2);
 			}
 		}
 	}
@@ -662,7 +685,7 @@ abstract class ObjectEditor extends Admin_Admin
 			}
 		} else {
 			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);
-			if ($canBatchUpdate && in_array($field['type'], ['checkbox', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
+			if ($canBatchUpdate && in_array($field['type'], ['checkbox', 'enum', 'currency', 'text', 'integer', 'email', 'url', 'timestamp'])) {
 				$batchFormatFields[$field['label']] = $field;
 			}
 		}

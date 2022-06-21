@@ -5,8 +5,9 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPageCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAccess.php';
+require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
 
-class BasicPage extends DataObject
+class BasicPage extends DB_LibraryLinkedObject
 {
 	public $__table = 'web_builder_basic_page';
 	public $id;
@@ -149,7 +150,7 @@ class BasicPage extends DataObject
 		return $ret;
 	}
 
-	public function getLibraries() {
+	public function getLibraries()  : ?array  {
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = array();
 			$libraryLink = new LibraryBasicPage();
@@ -291,5 +292,165 @@ class BasicPage extends DataObject
 		$link = new BasicPageAccess();
 		$link->basicPageId = $this->id;
 		return $link->delete(true);
+	}
+
+	public function getLinksForJSON() : array{
+		$links = parent::getLinksForJSON();
+		//Audiences
+		$audiencesList = WebBuilderAudience::getAudiences();
+		$audiences = $this->getAudiences();
+		$links['audiences'] = [];
+		foreach ($audiences as $audience){
+			$links['audiences'][] = $audiencesList[$audience];
+		}
+		//Categories
+		$categoriesList = WebBuilderCategory::getCategories();
+		$categories = $this->getCategories();
+		$links['categories'] = [];
+		foreach ($categories as $category){
+			$links['categories'][] = $categoriesList[$category];
+		}
+		//Allow Access
+		$patronTypeList = PType::getPatronTypeList();
+		$accessList = $this->getAccess();
+		$links['allowAccess'] = [];
+		foreach ($accessList as $accessInfo){
+			$links['allowAccess'] = $patronTypeList[$accessInfo];
+		}
+
+		return $links;
+	}
+
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
+
+		if (array_key_exists('audiences', $jsonLinks)){
+			$audiences = [];
+			$audiencesList = WebBuilderAudience::getAudiences();
+			$audiencesList = array_flip($audiencesList);
+			foreach ($jsonLinks['audiences'] as $audience){
+				if (array_key_exists($audience, $audiencesList)){
+					$audiences[] = $audiencesList[$audience];
+				}
+			}
+			$this->_audiences = $audiences;
+			$result = true;
+		}
+		if (array_key_exists('categories', $jsonLinks)){
+			$categories = [];
+			$categoriesList = WebBuilderCategory::getCategories();
+			$categoriesList = array_flip($categoriesList);
+			foreach ($jsonLinks['categories'] as $category){
+				if (array_key_exists($category, $categoriesList)){
+					$categories[] = $categoriesList[$category];
+				}
+			}
+			$this->_categories = $categories;
+			$result = true;
+		}
+		if (array_key_exists('allowAccess', $jsonLinks)){
+			$allowAccess = [];
+			$allowAccessList = PType::getPatronTypeList();
+			$allowAccessList = array_flip($allowAccessList);
+			foreach ($jsonLinks['allowAccess'] as $pType){
+				if (array_key_exists($pType, $allowAccessList)){
+					$allowAccess[] = $allowAccessList[$pType];
+				}
+			}
+			$this->_allowAccess = $allowAccess;
+			$result = true;
+		}
+		return $result;
+	}
+
+	public function canView() : bool {
+		global $locationSingleton;
+
+		$requireLogin = $this->requireLogin;
+		$allowInLibrary = $this->requireLoginUnlessInLibrary;
+
+		if($requireLogin){
+			$activeLibrary = $locationSingleton->getActiveLocation();
+			$user = UserAccount::getLoggedInUser();
+			if($allowInLibrary && $activeLibrary != null) {
+				return true;
+			}
+			if(!$user) {
+				return false;
+			} else {
+				$userPatronType = $user->patronType;
+
+				if ($userPatronType == NULL) {
+					return true;
+				} elseif (empty($this->getAccess())){
+					//No patron types defined, everyone can access
+					return true;
+				} else {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
+						$patronTypeId = $patronType->id;
+					}else{
+						return false;
+					}
+
+					$patronTypeLink = new BasicPageAccess();
+					$patronTypeLink->basicPageId = $this->id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if ($patronTypeLink->find(true)) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			}
+		} else {
+			return true;
+		}
+	}
+
+	public function getHiddenReason(): string {
+		global $locationSingleton;
+		$requireLogin = $this->requireLogin;
+		$allowInLibrary = $this->requireLoginUnlessInLibrary;
+		if($requireLogin){
+			$activeLibrary = $locationSingleton->getActiveLocation();
+			$user = UserAccount::getLoggedInUser();
+			if($allowInLibrary && $activeLibrary != null) {
+				return '';
+			}
+			if(!$user) {
+				return translate(['text'=>'You must be logged in to view this page.', 'isPublicFacing'=>true]);
+			} else {
+				$userPatronType = $user->patronType;
+
+				if ($userPatronType == NULL) {
+					return '';
+				} elseif (empty($this->getAccess())){
+					//No patron types defined, everyone can access
+					return '';
+				} else {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
+						$patronTypeId = $patronType->id;
+					}else{
+						return translate(['text'=>'Could not determine the type of user for you.', 'isPublicFacing'=>true]);
+					}
+
+					$patronTypeLink = new BasicPageAccess();
+					$patronTypeLink->basicPageId = $this->id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if ($patronTypeLink->find(true)) {
+						return '';
+					} else {
+						return translate(['text'=>"We're sorry, but it looks like you don't have access to this page..", 'isPublicFacing'=>true]);
+					}
+				}
+			}
+		} else {
+			return '';
+		}
 	}
 }

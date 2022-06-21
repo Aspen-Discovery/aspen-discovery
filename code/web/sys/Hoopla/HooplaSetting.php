@@ -14,7 +14,6 @@ class HooplaSetting extends DataObject
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
-	public /** @noinspection PhpUnused */ $excludeTitlesWithCopiesFromOtherVendors;
 
 	private $_scopes;
 
@@ -27,7 +26,6 @@ class HooplaSetting extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL to the API'),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'integer', 'label' => 'Library Id', 'description' => 'The Library Id to use with the API'),
-			'excludeTitlesWithCopiesFromOtherVendors' => array('property' => 'excludeTitlesWithCopiesFromOtherVendors', 'type' => 'checkbox', 'label' => 'Exclude Records With Copies from other eContent Vendors (OverDrive, cloudLibrary, Axis 360, etc.)', 'description' => 'Whether or not records in other collections should be included', 'default' => 0, 'forcesReindex' => true),
 			'apiUsername' => array('property' => 'apiUsername', 'type' => 'text', 'label' => 'API Username', 'description' => 'The API Username provided by Hoopla when registering'),
 			'apiPassword' => array('property' => 'apiPassword', 'type' => 'storedPassword', 'label' => 'API Password', 'description' => 'The API Password provided by Hoopla when registering', 'hideInLists' => true),
 			'regroupAllRecords' => array('property' => 'regroupAllRecords', 'type' => 'checkbox', 'label' => 'Regroup all Records', 'description' => 'Whether or not all existing records should be regrouped', 'default' => 0),

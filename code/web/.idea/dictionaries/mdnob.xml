@@ -68,6 +68,7 @@
       <w>circs</w>
       <w>clearfix</w>
       <w>cltreq</w>
+      <w>cmedm</w>
       <w>coce</w>
       <w>codabar</w>
       <w>collectiontitle</w>
@@ -104,6 +105,7 @@
       <w>ebook</w>
       <w>ebrary</w>
       <w>ebsco</w>
+      <w>ebscohost</w>
       <w>ecomic</w>
       <w>ecommerce</w>
       <w>econtent</w>
@@ -114,6 +116,7 @@
       <w>errorpageurl</w>
       <w>errorurl</w>
       <w>expirationdate</w>
+      <w>fhnd</w>
       <w>fictionprofile</w>
       <w>findagrave</w>
       <w>finesval</w>
@@ -226,6 +229,7 @@
       <w>odilo</w>
       <w>odreadauthurl</w>
       <w>officedocument</w>
+      <w>ohost</w>
       <w>oldkey</w>
       <w>omdb</w>
       <w>onephrase</w>
@@ -345,6 +349,7 @@
       <w>xfer</w>
       <w>xlsx</w>
       <w>xpixmap</w>
+      <w>xpress</w>
       <w>xwindowdump</w>
       <w>xxxx</w>
       <w>xxxxxx</w>

@@ -197,6 +197,7 @@ function getUpdates22_01_00() : array
 		'remove2FADefaultRememberMe' => [
 			'title' => 'Remove Default Remember Me from 2FA, Add to Library',
 			'description' => 'Remove "Default Remember Me" option from two-factor authentication settings, add it to library settings',
+			'continueOnError' => true,
 			'sql' => [
 				"ALTER TABLE two_factor_auth_settings DROP COLUMN defaultRememberMe",
 				"ALTER TABLE library ADD COLUMN defaultRememberMe TINYINT(1) DEFAULT 0",

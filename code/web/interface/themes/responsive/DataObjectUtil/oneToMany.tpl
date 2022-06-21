@@ -12,7 +12,9 @@
 						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
-				<th>{translate text="Actions" isAdminFacing=true}</th>
+				{if $property.canDelete !== false || ($property.editLink neq '' || $property.canEdit)}
+					<th>{translate text="Actions" isAdminFacing=true}</th>
+				{/if}
 			</tr>
 			</thead>
 			<tbody>
@@ -32,7 +34,7 @@
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
 								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}"{if $subProperty.readOnly} readonly{/if}>
 								{elseif $subProperty.type=='date'}
 									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.required == true} required{/if}">
 								{elseif $subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression'}
@@ -84,11 +86,13 @@
 						{/if}
 						{* link to delete*}
 						<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
-						{* link to delete *}
-						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
-							{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-							<i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}
-						</a>
+						{if $property.canDelete !== false}
+							{* link to delete *}
+							<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+								{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
+								<i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}
+							</a>
+                        {/if}
 						{if $property.editLink neq '' || method_exists($subObject, 'getEditLink')}</div>{/if}
 					</td>
 				</tr>
@@ -101,7 +105,9 @@
 		</table>
 	</div>
 	<div class="{$propName}Actions">
-		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
+		{if $property.canAddNew !== false}
+			<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
+		{/if}
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right" style="padding-top: 0">
 				{foreach from=$property.additionalOneToManyActions item=action}

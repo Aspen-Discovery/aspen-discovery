@@ -149,22 +149,17 @@ class UInterface extends Smarty
 		// Determine Offline Mode
 		global $offlineMode;
 		$offlineMode = false;
-		if (!empty($configArray['Catalog']['offline']) && $configArray['Catalog']['offline'] == true){
-			$offlineMode = true;
-			if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
-				$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);
-			}else{
-				$this->assign('enableLoginWhileOffline', false);
-			}
-		}else{
-			if (!empty($configArray['Catalog']['enableLoginWhileOffline'])) {
-				// unless offline login is enabled, don't check the offline mode system variable
-				$offlineModeSystemVariable = new Variable();
-				$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
-				if ($offlineModeSystemVariable && ($offlineModeSystemVariable->value == 'true' || $offlineModeSystemVariable == '1')) {
-					$this->assign('enableLoginWhileOffline', true);
-					$offlineMode = true;
-				}
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if (!empty($systemVariables)) {
+			if ($systemVariables->catalogStatus == 2) {
+				$offlineMode = true;
+				$this->assign('enableEContentWhileOffline', true);
+				$this->assign('offlineMessage', $systemVariables->offlineMessage);
+			} else if ($systemVariables->catalogStatus == 1) {
+				$offlineMode = true;
+				$this->assign('enableEContentWhileOffline', false);
+				$this->assign('offlineMessage', $systemVariables->offlineMessage);
 			}
 		}
 		$this->assign('offline', $offlineMode);
@@ -210,6 +205,13 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
+
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->libraryToUseForPayments == 1){
+				global $library;
+				$homeLibrary = $library;
+			}
+
 			if ($homeLibrary != null) {
 				$finePaymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 
@@ -324,7 +326,7 @@ class UInterface extends Smarty
 		return $this->appliedTheme;
 	}
 
-	function loadDisplayOptions(){
+	function loadDisplayOptions($fromBookCoverProcessing = false){
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -518,6 +520,8 @@ class UInterface extends Smarty
 		}
 		$this->assign('customJavascript', $customJavascript);
 
+		global $offlineMode;
+
 		$this->assign('facebookLink', $library->facebookLink);
 		$this->assign('twitterLink', $library->twitterLink);
 		$this->assign('youtubeLink', $library->youtubeLink);
@@ -526,7 +530,7 @@ class UInterface extends Smarty
 		$this->assign('goodreadsLink', $library->goodreadsLink);
 		$this->assign('tiktokLink', $library->tiktokLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
-		$this->assign('showLoginButton', $library->showLoginButton);
+		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
 		$this->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
@@ -612,6 +616,9 @@ class UInterface extends Smarty
 		if (!empty($location->headerText)){
 			$this->assign('headerText', $location->headerText);
 		}
+		if (!empty($library->footerText)){
+			$this->assign('footerText', $library->footerText);
+		}
 		$this->assign('showHoldButton', $showHoldButton);
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
 		$this->assign('showNotInterested', true);
@@ -639,92 +646,94 @@ class UInterface extends Smarty
 			$this->assign('librarySystemName', $location->displayName);
 		}
 
-		//Determine whether or not materials request functionality should be enabled
-		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
-			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-			$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
-			$materialRequestType = $library->enableMaterialsRequest;
-			$this->assign('materialRequestType', $materialRequestType);
-		}else{
-			$this->assign('enableAspenMaterialsRequest', false);
-		}
-
-		//Determine whether or not to display materials request to patrons
-		$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic);
-
-		//Determine whether or not donations functionality should be enabled
-		$enableDonationsModule = false;
-		try {
-			require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
-			$donationSettings = new DonationsSetting();
-			$donationSettings->id = $library->donationSettingId;
-			if ($donationSettings->find(true)) {
-				$enableDonationsModule = true;
-				$allowDonationsToBranch = $donationSettings->allowDonationsToBranch;
-				$this->assign('allowDonationsToBranch', $allowDonationsToBranch);
-				$allowDonationEarmark = $donationSettings->allowDonationEarmark;
-				$this->assign('allowDonationEarmark', $allowDonationEarmark);
-				$allowDonationDedication = $donationSettings->allowDonationDedication;
-				$this->assign('allowDonationDedication', $allowDonationDedication);
-				$donationsContent = $donationSettings->donationsContent;
-				$this->assign('donationsContent', $donationsContent);
-				$donationEmailTemplate = $donationSettings->donationEmailTemplate;
-				$this->assign('donationEmailTemplate', $donationEmailTemplate);
-			}
-		}catch (Exception $e){
-			//Donations are not setup yet.
-		}
-
-		$this->assign('enableDonations', $enableDonationsModule);
-
-		//Determine whether or not Rosen LevelUP functionality should be enabled
-		try {
-			require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
-			$rosenLevelUPSetting = new RosenLevelUPSetting();
-			if ($rosenLevelUPSetting->find(true)) {
-				$this->assign('enableRosenLevelUP', true);
-			} else {
-				$this->assign('enableRosenLevelUP', false);
-			}
-		} catch (PDOException $e) {
-			global $logger;
-			$logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
-		}
-
-		//Load library links
-		$links = $library->libraryLinks;
-		$libraryLinks = [];
-		$expandedLinkCategories = [];
-		/** @var LibraryLink $libraryLink */
-		foreach ($links as $libraryLink){
-			if (!$libraryLink->isValidForDisplay()){
-				continue;
+		if (!$fromBookCoverProcessing) {
+			//Determine whether or not materials request functionality should be enabled
+			if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
+				require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+				$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
+				$materialRequestType = $library->enableMaterialsRequest;
+				$this->assign('materialRequestType', $materialRequestType);
+			}else{
+				$this->assign('enableAspenMaterialsRequest', false);
 			}
 
-			if (empty($libraryLink->category)){
-				$libraryLink->category = 'none-' . $libraryLink->id;
-			}
-			if (!array_key_exists($libraryLink->category, $libraryLinks)){
-				$libraryLinks[$libraryLink->category] = array();
-			}
-			$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
-			if ($libraryLink->showExpanded){
-				$expandedLinkCategories[$libraryLink->category] = 1;
-			}
-		}
-		$this->assign('libraryLinks', $libraryLinks);
-		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+			//Determine whether or not to display materials request to patrons
+			$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic || UserAccount::isStaff());
 
-		try {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables != false) {
-				$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
-			} else {
-				$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+			//Determine whether or not donations functionality should be enabled
+			$enableDonationsModule = false;
+			try {
+				require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
+				$donationSettings = new DonationsSetting();
+				$donationSettings->id = $library->donationSettingId;
+				if ($donationSettings->find(true)) {
+					$enableDonationsModule = true;
+					$allowDonationsToBranch = $donationSettings->allowDonationsToBranch;
+					$this->assign('allowDonationsToBranch', $allowDonationsToBranch);
+					$allowDonationEarmark = $donationSettings->allowDonationEarmark;
+					$this->assign('allowDonationEarmark', $allowDonationEarmark);
+					$allowDonationDedication = $donationSettings->allowDonationDedication;
+					$this->assign('allowDonationDedication', $allowDonationDedication);
+					$donationsContent = $donationSettings->donationsContent;
+					$this->assign('donationsContent', $donationsContent);
+					$donationEmailTemplate = $donationSettings->donationEmailTemplate;
+					$this->assign('donationEmailTemplate', $donationEmailTemplate);
+				}
+			}catch (Exception $e){
+				//Donations are not setup yet.
 			}
-		}catch (Exception $e){
-			//This happens prior to the table being created
+
+			$this->assign('enableDonations', $enableDonationsModule);
+
+			//Determine whether or not Rosen LevelUP functionality should be enabled
+			try {
+				require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
+				$rosenLevelUPSetting = new RosenLevelUPSetting();
+				if ($rosenLevelUPSetting->find(true)) {
+					$this->assign('enableRosenLevelUP', true);
+				} else {
+					$this->assign('enableRosenLevelUP', false);
+				}
+			} catch (PDOException $e) {
+				global $logger;
+				$logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
+			}
+
+			//Load library links
+			$links = $library->libraryLinks;
+			$libraryLinks = [];
+			$expandedLinkCategories = [];
+			/** @var LibraryLink $libraryLink */
+			foreach ($links as $libraryLink) {
+				if (!$libraryLink->isValidForDisplay()) {
+					continue;
+				}
+
+				if (empty($libraryLink->category)) {
+					$libraryLink->category = 'none-' . $libraryLink->id;
+				}
+				if (!array_key_exists($libraryLink->category, $libraryLinks)) {
+					$libraryLinks[$libraryLink->category] = array();
+				}
+				$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+				if ($libraryLink->showExpanded) {
+					$expandedLinkCategories[$libraryLink->category] = 1;
+				}
+			}
+			$this->assign('libraryLinks', $libraryLinks);
+			$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables != false) {
+					$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
+				} else {
+					$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+				}
+			} catch (Exception $e) {
+				//This happens prior to the table being created
+			}
 		}
 	}
 

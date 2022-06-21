@@ -20,66 +20,19 @@ class Axis360_Graphs extends Admin_Admin
 		$dataSeries = [];
 		$columnLabels = [];
 
-		$dataSeries['Total Usage'] = [
-			'borderColor' => 'rgba(255, 99, 132, 1)',
-			'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Unique Users'] = [
-			'borderColor' => 'rgba(54, 162, 235, 1)',
-			'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Records Used'] = [
-			'borderColor' => 'rgba(255, 159, 64, 1)',
-			'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Holds'] = [
-			'borderColor' => 'rgba(0, 255, 55, 1)',
-			'backgroundColor' => 'rgba(0, 255, 55, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Checkouts'] = [
-			'borderColor' => 'rgba(154, 75, 244, 1)',
-			'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Renewals'] = [
-			'borderColor' => 'rgba(255, 206, 86, 1)',
-			'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Early Returns'] = [
-			'borderColor' => 'rgba(75, 192, 192, 1)',
-			'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Holds Cancelled'] = [
-			'borderColor' => 'rgba(153, 102, 255, 1)',
-			'backgroundColor' => 'rgba(153, 102, 255, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Holds Frozen'] = [
-			'borderColor' => 'rgba(165, 42, 42, 1)',
-			'backgroundColor' => 'rgba(165, 42, 42, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Holds Thawed'] = [
-			'borderColor' => 'rgba(50, 205, 50, 1)',
-			'backgroundColor' => 'rgba(50, 205, 50, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total API Errors'] = [
-			'borderColor' => 'rgba(220, 60, 20, 1)',
-			'backgroundColor' => 'rgba(220, 60, 20, 0.2)',
-			'data' => []
-		];
-		$dataSeries['Total Connection Failures'] = [
-			'borderColor' => 'rgba(255, 165, 0, 1)',
-			'backgroundColor' => 'rgba(255, 165, 0, 0.2)',
-			'data' => []
-		];
+		require_once ROOT_DIR . '/sys/Utils/GraphingUtils.php';
+		$dataSeries['Total Usage'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Unique Users'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Records Used'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Holds'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Checkouts'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Renewals'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Early Returns'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Holds Cancelled'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Holds Frozen'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Holds Thawed'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total API Errors'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total Connection Failures'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		$userUsage = new UserAxis360Usage();
 		$userUsage->groupBy('year, month');
 		if (!empty($instanceName)){

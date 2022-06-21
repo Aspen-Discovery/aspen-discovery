@@ -1,15 +1,15 @@
-import React, {useCallback, useEffect} from 'react'
+import React, {useCallback, useEffect} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Button, FlatList, HStack, Icon, Text, View} from 'native-base';
 import {create} from 'apisauce';
 import {MaterialIcons} from "@expo/vector-icons";
 import _ from "lodash";
+import * as Random from 'expo-random';
 
-import {createAuthTokens, getHeaders, postData, problemCodeMap} from "../../util/apiAuth";
-import {popToast} from "../../components/loadError";
+import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 
 const BrowseCategory = (props) => {
-	const {categoryLabel, categoryKey, renderItem, hideCategory} = props
-	const [page, setPage] = React.useState(1);
+	const {categoryLabel, categoryKey, renderItem, hideCategory, user, libraryUrl, viewAll, isHidden} = props
 	const [items, setItems] = React.useState([]);
 	const [shouldFetch, setShouldFetch] = React.useState(true);
 	const [initialLoad, setInitialLoad] = React.useState(false);
@@ -23,32 +23,29 @@ const BrowseCategory = (props) => {
 			const newItems = await getBrowseCategoryResults(categoryKey, 25, 1);
 			setShouldFetch(false);
 			setItems(newItems);
+			//sleep(1000);
+			//console.log(newItems);
 
 		};
-		setTimeout(
-			function () {
-				fetch();
-			}
-				.bind(this),
-			2000);
+		fetch();
 		setInitialLoad(true);
 	}, [fetchMore]);
 
 	if(typeof items !== 'undefined') {
-		if (items.length !== 0) {
+		if (items.length !== 0 && !isHidden) {
 			return (
 				<View pb={5} height="225">
 					<HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
 						<Text maxWidth="80%" bold mb={1} fontSize={{base: "lg", lg: "2xl"}}>{categoryLabel}</Text>
-						<Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(categoryKey)}
+						<Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(libraryUrl, categoryKey, user.id)}
 						        startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>Hide</Button>
 					</HStack>
 					<FlatList
 						horizontal
 						data={items}
-						renderItem={({item}) => renderItem(item)}
-						keyExtractor={item => categoryKey.concat("_", item.key)}
-						initialNumToRender={25}
+						renderItem={({item}) => renderItem(item, libraryUrl)}
+						keyExtractor={({item}) => categoryKey.concat("_", Random.getRandomBytes(32))}
+						initialNumToRender={5}
 					/>
 				</View>
 			)
@@ -61,38 +58,55 @@ const BrowseCategory = (props) => {
 }
 
 async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
+	let libraryUrl;
+	try {
+		libraryUrl = await AsyncStorage.getItem('@pathUrl');
+	} catch (e) {
+		console.log(e);
+	}
+
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: 60000,
+		baseURL: libraryUrl + '/API',
+		timeout: 10000,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {limit: limit, id: categoryKey, page: page}
 	});
-	const response = await api.post('/SearchAPI?method=getAppBrowseCategoryResults', postBody);
-	if (response.ok) {
-		const result = response.data;
-		const itemResult = result.result;
-		//console.log(result);
-		const records = itemResult.records;
+	if(libraryUrl) {
+		const response = await api.post('/SearchAPI?method=getAppBrowseCategoryResults', postBody);
+		if (response.ok) {
+			const result = response.data;
+			const itemResult = result.result;
+			//console.log(result);
+			const records = itemResult.records;
 
-		if (_.isArray(records) === false) {
-			let array = _.values(records);
-			return array.map(({id, title_display}) => ({
-				key: id,
-				title: title_display,
-			}));
+			if (_.isArray(records) === false) {
+				let array = _.values(records);
+				return array.map(({id, title_display}) => ({
+					key: id,
+					title: title_display,
+				}));
+			}
+			if (_.isArray(records) === true) {
+				return records.map(({id, title_display}) => ({
+					key: id,
+					title: title_display,
+				}));
+			}
+		} else {
+			console.log(response);
 		}
-		if (_.isArray(records) === true) {
-			return records.map(({id, title_display}) => ({
-				key: id,
-				title: title_display,
-			}));
-		}
-	} else {
-		const problem = problemCodeMap(response.problem);
-		popToast(problem.title, problem.message, "warning");
 	}
+
+}
+
+function sleep(milliseconds) {
+	const date = Date.now();
+	let currentDate = null;
+	do {
+		currentDate = Date.now();
+	} while (currentDate - date < milliseconds);
 }
 
 export default BrowseCategory;

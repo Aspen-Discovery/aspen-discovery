@@ -301,24 +301,17 @@ public class SideLoadingMain {
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
 			SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
+			GroupedWorkIndexer indexer = getGroupedWorkIndexer();
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = settings.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				//getGroupedWorkIndexer().loadMarcRecordFromDatabase() Ticket 95343
+				Record marcRecord = indexer.loadMarcRecordFromDatabase(settings.getName(), recordIdentifier, logEntry);
+				if (marcRecord != null) {
+					//Regroup the record
+					String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);

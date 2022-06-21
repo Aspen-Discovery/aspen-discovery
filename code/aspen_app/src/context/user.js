@@ -1,8 +1,12 @@
-import React from 'react';
+import React, {createContext} from 'react';
 
-const UserContext = React.createContext({
-	user: {},
-	setUser: () => {},
+const userContext = createContext({
+	user: [],
+	location: [],
+	library: [],
+	browseCategories: [],
+	updateUser: () => {},
+	updateBrowseCategories: () => {},
 });
 
-export { UserContext };
+export { userContext };

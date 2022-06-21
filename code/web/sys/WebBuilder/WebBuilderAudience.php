@@ -8,6 +8,11 @@ class WebBuilderAudience extends DataObject
 	public $id;
 	public $name;
 
+	public function getUniquenessFields(): array
+	{
+		return ['name'];
+	}
+
 	public static function getObjectStructure() : array {
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
@@ -25,5 +30,10 @@ class WebBuilderAudience extends DataObject
 			$audiences[$audience->id] = $audience->name;
 		}
 		return $audiences;
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		return true;
 	}
 }

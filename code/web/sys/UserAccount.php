@@ -530,9 +530,14 @@ class UserAccount
 					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
 					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
+				}elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))){
+					$disallowedMessage = empty($library->messageForPatronsOfOtherLibraries) ? 'Sorry, this catalog can only be accessed by patrons of ' . $library->displayName : $library->messageForPatronsOfOtherLibraries;
+					return new AspenError($disallowedMessage);
+				}elseif ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->preventLogin)) {
+					$disallowedMessage = empty($tempUser->getHomeLibrary()->preventLoginMessage) ? 'Sorry, patrons of ' . $library->displayName . ' cannot login at this time.' : $tempUser->getHomeLibrary()->preventLoginMessage;
+					return new AspenError($disallowedMessage);
 				}
 
-				/** @var Memcache $memCache */
 				global $memCache;
 				global $serverName;
 				global $configArray;

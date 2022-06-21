@@ -15,31 +15,38 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			//For Symphony, the status is blank if the item is on shelf
 			if (statusSubfield != null) {
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" status matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
 		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
 		if (locationSubfield == null){
-			return true;
+			suppressionNotes.append("Item ").append(itemIdentifier).append(" no location provided<br/>");
+			return new ResultWithNotes(true, suppressionNotes);
 		}else{
 			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
-				return true;
+				suppressionNotes.append("Item ").append(itemIdentifier).append(" location matched suppression pattern<br/>");
+				return new ResultWithNotes(true, suppressionNotes);
 			}
 		}
 		if (collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
 			if (collectionSubfieldValue != null){
-				return collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches();
+				boolean suppress = collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches();
+				if (suppress){
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" collection matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
+				}
 			}
 		}
-		return false;
+		return new ResultWithNotes(false, suppressionNotes);
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
@@ -78,34 +85,36 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
+	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
 		boolean available = false;
 		if (itemInfo.getStatusCode().equals("ONSHELF")) {
 			available = true;
-		}else if (this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier()).equals("On Shelf")){
-			available = true;
+		}else {
+			if (groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"))){
+				available = true;
+			}
 		}
 		return available;
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String location = translateValue("location", locationCode, identifier);
+		String location = translateValue("location", locationCode, identifier, true);
 
 		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
 			String shelvingLocation = itemInfo.getShelfLocationCode();
 			if (location == null) {
-				location = translateValue("shelf_location", shelvingLocation, identifier);
+				location = translateValue("shelf_location", shelvingLocation, identifier, true);
 			} else {
-				location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+				location += " - " + translateValue("shelf_location", shelvingLocation, identifier, true);
 			}
 		}else {
 			//In this case, the status is the current location of the item.
 			if (location == null) {
-				location = translateValue("shelf_location", status, identifier);
+				location = translateValue("shelf_location", status, identifier, true);
 			} else {
-				location += " - " + translateValue("shelf_location", status, identifier);
+				location += " - " + translateValue("shelf_location", status, identifier, true);
 			}
 		}
 		return location;
@@ -127,7 +136,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setShelfLocationCode(subfieldData);
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
 		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier())){
 			if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0) {
 				ItemInfo itemInfo = new ItemInfo();

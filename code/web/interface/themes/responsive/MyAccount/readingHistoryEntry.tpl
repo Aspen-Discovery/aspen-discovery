@@ -76,13 +76,6 @@
 					</div>
 				</div>
 
-				<div class="row">
-					<div class="result-label col-tn-3">{translate text='Times Used' isPublicFacing=true}</div>
-					<div class="result-value col-tn-9">
-						{$record.timesUsed}
-					</div>
-				</div>
-
 				{if $showRatings == 1}
 					{if $record.existsInCatalog && $record.ratingData}
 						<div class="row">

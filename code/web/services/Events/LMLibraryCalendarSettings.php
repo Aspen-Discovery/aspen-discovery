@@ -33,7 +33,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	 */
 	function getPageTitle() : string
 	{
-		return 'Library Market - Library Calendar Settings';
+		return 'LibraryMarket - LibraryCalendar Settings';
 	}
 
 	/**
@@ -87,13 +87,13 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
-		$breadcrumbs[] = new Breadcrumb('/Events/LMLibraryCalendarSettings', 'Library Market - Library Calendar Settings');
+		$breadcrumbs[] = new Breadcrumb('/Events/LMLibraryCalendarSettings', 'LibraryMarket - LibraryCalendar Settings');
 		return $breadcrumbs;
 	}
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission('Administer Library Calendar Settings');
+		return UserAccount::userHasPermission('Administer LibraryMarket LibraryCalendar Settings');
 	}
 
 	function getActiveAdminSection() : string

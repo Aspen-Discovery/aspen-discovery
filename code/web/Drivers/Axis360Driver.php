@@ -320,7 +320,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){

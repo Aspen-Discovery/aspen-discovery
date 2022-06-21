@@ -57,3 +57,9 @@
 00 22 * * *   aspen   cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename}
 
 00 01 * * *   root    certbot renew
+
+############################
+# Fix Cover Permissions    #
+############################
+*/15 * * * * root chown aspen:aspen_apache /data/aspen-discovery/{sitename}/covers/original/*
+*/15 * * * * root chmod g+rw /data/aspen-discovery/{sitename}/covers/original/*

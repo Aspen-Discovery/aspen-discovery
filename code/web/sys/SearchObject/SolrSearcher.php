@@ -597,6 +597,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
+				$currentSettings['countIsApproximate'] = false;
 
 				// Is this field a current filter?
 				if (in_array($field, array_keys($this->filterList))) {

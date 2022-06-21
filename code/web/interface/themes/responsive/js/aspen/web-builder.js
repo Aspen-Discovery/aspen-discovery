@@ -292,6 +292,11 @@ AspenDiscovery.WebBuilder = function () {
 				resourceId: id
 			};
 			// noinspection JSUnresolvedFunction
+			var newTab = window.open("", '_blank');
+			if (newTab==null) {
+				return ;
+			}
+
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
 					if(Globals.loggedIn || data.inLibrary) {
@@ -302,16 +307,16 @@ AspenDiscovery.WebBuilder = function () {
 						};
 						$.getJSON(url, params, function(usage){
 							if(data.openInNewTab) {
-								var newTab = window.open();
-								newTab.location.href = data.url;
+								newTab.location.href = data.url
 							} else {
+								newTab.close();
 								location.assign(data.url);
 							}
 						})
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
-							return AspenDiscovery.Account.getWebResource(id);
-						}, false);
+							return AspenDiscovery.WebBuilder.getWebResource(id);
+						}, true);
 					}
 				} else {
 					var params = {
@@ -321,9 +326,9 @@ AspenDiscovery.WebBuilder = function () {
 					};
 					$.getJSON(url, params, function(usage){
 						if(data.openInNewTab) {
-							var newTab = window.open();
-							newTab.location.href = data.url;
+							newTab.location.href = data.url
 						} else {
+							newTab.close();
 							location.assign(data.url);
 						}
 					})

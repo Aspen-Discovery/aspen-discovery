@@ -157,7 +157,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
+	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
 		if (orderInfoFromExport.size() > 0){
 			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier());
 			if (orderItems != null) {
@@ -212,7 +212,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
+	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
 		boolean available = false;
 		String status = itemInfo.getStatusCode();
 		String dueDate = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
@@ -222,28 +222,29 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 				available = true;
 			}
 		}
-		if (!available && this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier()).equals("On Shelf")){
+		if (!available && (groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only")))){
 			available = true;
 		}
 		return available;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
 		if (iCode2Subfield != ' '){
 			Subfield iCode2SubfieldValue = curItem.getSubfield(iCode2Subfield);
 			if (iCode2SubfieldValue != null){
 				String iCode2Value = iCode2SubfieldValue.getData();
 				if (iCode2sToSuppress != null && iCode2sToSuppress.matcher(iCode2Value).matches()){
-					return true;
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" icode2 matched suppression pattern<br/>");
+					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
-		return super.isItemSuppressed(curItem);
+		return super.isItemSuppressed(curItem, itemIdentifier, suppressionNotes);
 	}
 
-	protected boolean isBibSuppressed(Record record) {
+	protected boolean isBibSuppressed(Record record, String identifier) {
 		if (exportFieldMapping != null){
-			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationField());
+			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
 			if (sierraFixedField != null){
 				Subfield bCode3Subfield = sierraFixedField.getSubfield(exportFieldMapping.getBcode3DestinationSubfield());
 				if (bCode3Subfield != null){
@@ -252,11 +253,12 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 						if (logger.isDebugEnabled()) {
 							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
 						}
+						updateRecordSuppression(true, new StringBuilder().append("Bib record is suppressed due to BCode3 ").append(bCode3), identifier);
 						return true;
 					}
 				}
 			}
 		}
-		return super.isBibSuppressed(record);
+		return super.isBibSuppressed(record, identifier);
 	}
 }

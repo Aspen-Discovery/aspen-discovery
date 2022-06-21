@@ -39,7 +39,7 @@ class HooplaProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
+	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();

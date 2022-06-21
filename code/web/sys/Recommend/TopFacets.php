@@ -6,7 +6,6 @@ class TopFacets implements RecommendationInterface
 {
 	/** @var SearchObject_SolrSearcher searchObject */
 	private $searchObject;
-	private $facetSettings = array();
 	private $facets = array();
 
 	/* Constructor
@@ -23,8 +22,10 @@ class TopFacets implements RecommendationInterface
 		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
 
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
 		// Load the desired facet information:
-		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
+		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
 			$searchLibrary = Library::getActiveLibrary();
 			global $locationSingleton;
 			$searchLocation = $locationSingleton->getActiveLocation();
@@ -37,15 +38,14 @@ class TopFacets implements RecommendationInterface
 			foreach ($facets as &$facet) {
 				if ($facet->showAboveResults == 1) {
 					if ($solrScope) {
-						if ($facet->facetName == 'availability_toggle') {
+						if ($facet->facetName == 'availability_toggle' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'availability_toggle_' . $solrScope;
-						} else if ($facet->facetName == 'format_category') {
+						} else if ($facet->facetName == 'format_category' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'format_category_' . $solrScope;
-						} else if ($facet->facetName == 'format') {
+						} else if ($facet->facetName == 'format' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'format_' . $solrScope;
 						}
 					}
-					$this->facetSettings[$facet->facetName] = $facet;
 					$this->facets[$facet->facetName] = $facet;
 				}
 			}
@@ -64,10 +64,7 @@ class TopFacets implements RecommendationInterface
 	 */
 	public function init()
 	{
-		// Turn on top facets in the search results:
-//		foreach($this->facets as $name => $desc) {
-//			$this->searchObject->addFacet($name, $this->facetSettings[$name]);
-//		}
+
 	}
 
 	/* process
@@ -81,23 +78,19 @@ class TopFacets implements RecommendationInterface
 	public function process()
 	{
 		global $interface;
+		global $library;
+
+		//Figure out which counts to show.
+		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
+		$interface->assign('facetCountsToShow', $facetCountsToShow);
 
 		// Grab the facet set
 		$facetList = $this->searchObject->getFacetList($this->facets);
 		foreach ($facetList as $facetSetkey => $facetSet){
 			if (strpos($facetSetkey, 'format_category') === 0){
-				$validCategories = array(
-						'Books',
-						'eBook',
-						'Audio Books',
-						'eAudio',
-						'Music',
-						'Movies',
-				);
-
 				//add an image name for display in the template
 				foreach ($facetSet['list'] as $facetKey => $facet){
-					if (in_array($facetKey,$validCategories)){
+					if (!empty($facetKey) && array_key_exists($facetKey,TopFacets::$formatCategorySortOrder)){
 						$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
 						$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 						$facetSet['list'][$facetKey] = $facet;
@@ -204,19 +197,19 @@ class TopFacets implements RecommendationInterface
 	{
 		return 'Search/Recommend/TopFacets.tpl';
 	}
-}
 
-function format_category_comparator($a, $b){
-	$formatCategorySortOrder = array(
+	public static $formatCategorySortOrder = [
 		'Books' => 1,
 		'eBook' => 2,
 		'Audio Books' => 3,
 		'eAudio' => 4,
 		'Music' => 5,
 		'Movies' => 6,
-	);
+	];
+}
 
-	$a = $formatCategorySortOrder[$a];
-	$b = $formatCategorySortOrder[$b];
+function format_category_comparator($a, $b){
+	$a = TopFacets::$formatCategorySortOrder[$a];
+	$b = TopFacets::$formatCategorySortOrder[$b];
 	if ($a==$b){return 0;}else{return ($a > $b ? 1 : -1);}
 };

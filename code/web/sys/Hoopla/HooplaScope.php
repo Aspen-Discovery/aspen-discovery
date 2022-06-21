@@ -7,6 +7,7 @@ class HooplaScope extends DataObject
 	public $id;
 	public $name;
 	public $settingId;
+	public /** @noinspection PhpUnused */ $excludeTitlesWithCopiesFromOtherVendors;
 	public /** @noinspection PhpUnused */ $includeEBooks;
 	public /** @noinspection PhpUnused */ $maxCostPerCheckoutEBooks;
 	public /** @noinspection PhpUnused */ $includeEComics;
@@ -44,6 +45,7 @@ class HooplaScope extends DataObject
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $hooplaSettings, 'label' => 'Setting Id'],
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
+			'excludeTitlesWithCopiesFromOtherVendors' => array('property' => 'excludeTitlesWithCopiesFromOtherVendors', 'type' => 'enum', 'values'=>[0=>'No show all titles', 1=>'Hide Hoopla title if other copies are available', 2=>'Hide Hoopla title if other copies are owned'], 'label' => 'Exclude Records With Copies from other eContent Vendors (OverDrive, cloudLibrary, Axis 360, etc.)', 'description' => 'Whether or not records in other collections should be included', 'default' => 0, 'forcesReindex' => true),
 			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1, 'forcesReindex' => true),
 			'maxCostPerCheckoutEAudiobook' => array('property'=>'maxCostPerCheckoutEAudiobook', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Max Cost Per Checkout for eAudio books', 'description'=>'The maximum per checkout cost to include', 'default'=>5, 'forcesReindex' => true),
 			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1, 'forcesReindex' => true),
@@ -87,7 +89,7 @@ class HooplaScope extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/Hoopla/Scopes?objectAction=edit&id=' . $this->id;
 	}
 

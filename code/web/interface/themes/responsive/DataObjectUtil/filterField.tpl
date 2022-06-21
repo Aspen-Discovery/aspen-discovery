@@ -9,7 +9,7 @@
 	{else}
 		{assign var=appliedFilter value=''}
 	{/if}
-	{if $filterField.type == 'text' || $filterField.type == 'label'}
+	{if $filterField.type == 'text' || $filterField.type == 'label' || $filterField.type == 'url'}
 		<div class="col-xs-3">
 			{assign var=label value='Type of filtering for '+$filterField.label}
 			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
@@ -24,17 +24,21 @@
 	{elseif $filterField.type == 'timestamp'}
 		<div class="col-xs-3">
 			{assign var=label value='Type of filtering for '+$filterField.label}
-			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
+			<select name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}" onchange="AspenDiscovery.Admin.setDateFilterFieldVisibility('{$filterField.property}')">
 				<option value="afterTime" {if !empty($appliedFilter) && $appliedFilter.filterType == 'afterTime'}selected="selected"{/if}>{translate text="After" isAdminFacing=true}</option>
 				<option value="beforeTime" {if !empty($appliedFilter) && $appliedFilter.filterType == 'beforeTime'}selected="selected"{/if}>{translate text="Before" isAdminFacing=true}</option>
+				<option value="betweenTimes" {if !empty($appliedFilter) && $appliedFilter.filterType == 'betweenTimes'}selected="selected"{/if}>{translate text="Between" isAdminFacing=true}</option>
 			</select>
 		</div>
 		<div class="col-xs-5">
 			{assign var=label value='Filtering for '+$filterField.label}
 			<input type="text" name="filterValue[{$filterField.property}]" id="filterValue_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue|date_format:"%Y-%m-%d %H:%M"}"{/if}/>
+			<input type="text" name="filterValue2[{$filterField.property}]" id="filterValue2_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue2|date_format:"%Y-%m-%d %H:%M"}"{/if}/>
 			<script type="text/javascript">
 				$(document).ready(function(){ldelim}
 					rome(filterValue_{$filterField.property});
+					rome(filterValue2_{$filterField.property});
+					AspenDiscovery.Admin.setDateFilterFieldVisibility('{$filterField.property}');
 				{rdelim});
 			</script>
 		</div>

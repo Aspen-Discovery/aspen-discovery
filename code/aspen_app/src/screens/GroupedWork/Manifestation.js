@@ -3,12 +3,12 @@ import {Center, Text, VStack} from "native-base";
 
 // custom components and helper files
 import {translate} from '../../translations/translations';
-import DisplayRecord from "./Record";
+import DisplayRecord, {Record} from "./Record";
 
 const Manifestation = (props) => {
 
-	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user} = props;
-	const arrayToSearch = data.[`${format}`];
+	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
+	const arrayToSearch = data[format];
 
 	const locationCount = locations.length;
 
@@ -36,8 +36,16 @@ const Manifestation = (props) => {
 	}
 
 	return match.map((item, index) => {
+
+		let volumes = [];
+		let majorityOfItemsHaveVolumes = false;
+		if(discoveryVersion >= "22.06.00") {
+			volumes = item.volumes;
+			majorityOfItemsHaveVolumes = item.majorityOfItemsHaveVolumes;
+		}
+
 		return (
-			<DisplayRecord
+			<Record
 				available = {item.available}
 				availableOnline = {item.availableOnline}
 				actions = {item.action}
@@ -55,6 +63,15 @@ const Manifestation = (props) => {
 				showAlert = {showAlert}
 				itemDetails = {itemDetails}
 				user = {user}
+				groupedWorkId = {groupedWorkId}
+				library = {library}
+				linkedAccounts = {linkedAccounts}
+				openCheckouts = {openCheckouts}
+				openHolds = {openHolds}
+				majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
+				volumes = {volumes}
+				discoveryVersion = {discoveryVersion}
+				updateProfile = {updateProfile}
 			/>
 		)
 	})

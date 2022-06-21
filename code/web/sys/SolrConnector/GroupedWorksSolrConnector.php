@@ -5,6 +5,10 @@ require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher.php';
 
 class GroupedWorksSolrConnector extends Solr
 {
+	function __construct($host, $index = ''){
+		parent::__construct($host, 'grouped_works');
+	}
+
 	/**
 	 * @return string
 	 */
@@ -211,7 +215,7 @@ class GroupedWorksSolrConnector extends Solr
 	 *
 	 * @access    public
 	 *
-	 * @param string[] $ids
+	 * @param array[] $ids
 	 * @param string $fieldsToReturn
 	 * @param int $page
 	 * @param int $limit
@@ -380,9 +384,9 @@ class GroupedWorksSolrConnector extends Solr
 		if (!$solrScope) {
 			//MDN: This does happen when called within migration tools
 			if (isset($searchLocation)) {
-				$filter[] = "scope_has_related_records:{$searchLocation->code}";
+				$filter[] = "scope_has_related_records:$searchLocation->code";
 			} elseif (isset($searchLibrary)) {
-				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+				$filter[] = "scope_has_related_records:$searchLibrary->subdomain";
 			}
 		} else {
 			$filter[] = "scope_has_related_records:$solrScope";

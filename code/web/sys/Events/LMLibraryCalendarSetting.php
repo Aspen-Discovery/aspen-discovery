@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 
 /**
- * Settings for Library Market - Library Calendar integration
+ * Settings for LibraryMarket - LibraryCalendar integration
  */
 class LMLibraryCalendarSetting extends DataObject
 {
@@ -19,7 +19,7 @@ class LMLibraryCalendarSetting extends DataObject
 
 	public static function getObjectStructure() : array
 	{
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Library Calendar Settings'));
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer LibraryMarket LibraryCalendar Settings'));
 
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
@@ -27,8 +27,8 @@ class LMLibraryCalendarSetting extends DataObject
 			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'Base URL (i.e. https://yoursite.librarycalendar.com)', 'description' => 'The URL for the site'),
 			'clientId' => array('property' => 'clientId', 'type' => 'text', 'label' => 'Client ID', 'description' => 'Client ID for retrieving the staff feed', 'maxLength' => 36),
 			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client Secret for retrieving the staff feed', 'maxLength' => 36, 'hideInLists' => true),
-			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'Library Calendar Admin Username', 'description' => 'Username for retrieving the staff feed', 'default'=>'lc_feeds_staffadmin', 'maxLength' => 36),
-			'password' => array('property' => 'password', 'type' => 'storedPassword', 'label' => 'Library Calendar Admin Password', 'description' => 'Password for retrieving the staff feed', 'maxLength' => 36, 'hideInLists' => true),
+			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'LibraryCalendar Admin Username', 'description' => 'Username for retrieving the staff feed', 'default'=>'lc_feeds_staffadmin', 'maxLength' => 36),
+			'password' => array('property' => 'password', 'type' => 'storedPassword', 'label' => 'LibraryCalendar Admin Password', 'description' => 'Password for retrieving the staff feed', 'maxLength' => 36, 'hideInLists' => true),
 
 			'libraries' => array(
 				'property' => 'libraries',

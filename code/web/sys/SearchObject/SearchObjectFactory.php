@@ -15,16 +15,25 @@ class SearchObjectFactory
 	static function initSearchObject($engine = 'GroupedWork')
 	{
 		global $configArray;
-
-		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}Searcher.php";
-		if (is_readable($path)) {
-			/** @noinspection PhpIncludeInspection */
-			require_once $path;
-			$class = 'SearchObject_' . $engine . 'Searcher';
-			if (class_exists($class)) {
-				/** @var SearchObject_BaseSearcher $searchObject */
-				$searchObject = new $class();
-				return $searchObject;
+		if ($engine == 'GroupedWork'){
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->searchVersion == 1){
+				require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher.php';
+				return new SearchObject_GroupedWorkSearcher();
+			}else{
+				require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
+				return new SearchObject_GroupedWorkSearcher2();
+			}
+		}else {
+			$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}Searcher.php";
+			if (is_readable($path)) {
+				require_once $path;
+				$class = 'SearchObject_' . $engine . 'Searcher';
+				if (class_exists($class)) {
+					/** @var SearchObject_BaseSearcher $searchObject */
+					return new $class();
+				}
 			}
 		}
 
@@ -63,13 +72,18 @@ class SearchObjectFactory
 				$engine = 'EbscoEds';
 				break;
 			default:
-				$engine = 'GroupedWork';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->searchVersion == 1) {
+					$engine = 'GroupedWork';
+				}else{
+					require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
+					return new SearchObject_GroupedWorkSearcher2();
+				}
 				break;
 		}
 
 		$path = ROOT_DIR . "/sys/SearchObject/{$engine}Searcher.php";
 		if (is_readable($path)) {
-			/** @noinspection PhpIncludeInspection */
 			require_once $path;
 			$class = 'SearchObject_' . $engine . 'Searcher';
 			if (class_exists($class)) {

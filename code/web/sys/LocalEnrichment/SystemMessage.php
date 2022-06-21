@@ -1,8 +1,9 @@
 <?php
 
+require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageLocation.php';
-class SystemMessage extends DataObject
+class SystemMessage extends DB_LibraryLocationLinkedObject
 {
 	public $__table = 'system_messages';
 	public $id;
@@ -14,9 +15,9 @@ class SystemMessage extends DataObject
 	public $startDate;
 	public $endDate;
 
-	private $_libraries;
-	private $_locations;
-	private $_preFormattedMessage;
+	protected $_libraries;
+	protected $_locations;
+	protected $_preFormattedMessage;
 
 	static function getObjectStructure() : array{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
@@ -25,7 +26,7 @@ class SystemMessage extends DataObject
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title (not shown)', 'description'=>'The title of the system message'),
 			'message' => array('property'=>'message', 'type'=>'markdown', 'label'=>'Message to show', 'description'=>'The body of the system message', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true),
-			'showOn' => array('property'=>'showOn', 'type'=>'enum', 'values' => [0=>'All Pages', 1=>'All Account Pages', 2=>'Checkouts Page', 3=>'Holds Page', 4=>'Fines Page'], 'label' => 'Show On', 'description'=>'The pages this message should be shown on'),
+			'showOn' => array('property'=>'showOn', 'type'=>'enum', 'values' => [0=>'All Pages', 1=>'All Account Pages', 2=>'Checkouts Page', 3=>'Holds Page', 4=>'Fines Page', 5=>'Contact Information Page'], 'label' => 'Show On', 'description'=>'The pages this message should be shown on'),
 			'messageStyle' => array('property'=>'messageStyle', 'type'=>'enum', 'values' => [''=>'none', 'danger'=>'Danger (red)', 'warning'=>'Warning (yellow)', 'info'=>'Info (blue)', 'success'=>'Success (Green)'], 'label' => 'Message Style', 'description'=>'The default style of the message'),
 			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the system message should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
 			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the system message should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
@@ -58,30 +59,40 @@ class SystemMessage extends DataObject
 
 	public function __get($name){
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new SystemMessageLibrary();
-				$obj->systemMessageId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
-				$this->_locations = [];
-				$obj = new SystemMessageLocation();
-				$obj->systemMessageId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->getLocations();
 		}else{
 			return $this->_data[$name];
 		}
+	}
+
+	public function getLocations(): ?array
+	{
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = [];
+			$obj = new SystemMessageLocation();
+			$obj->systemMessageId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_locations[$obj->locationId] = $obj->locationId;
+			}
+		}
+		return $this->_locations;
+	}
+
+	public function getLibraries(): ?array
+	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new SystemMessageLibrary();
+			$obj->systemMessageId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
+		return $this->_libraries;
 	}
 
 	public function __set($name, $value){
@@ -236,5 +247,9 @@ class SystemMessage extends DataObject
 
 	public function setPreFormattedMessage($message){
 		$this->_preFormattedMessage = $message;
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		return parent::okToExport($selectedFilters);
 	}
 }

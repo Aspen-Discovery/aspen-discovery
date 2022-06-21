@@ -1,39 +1,49 @@
 import React from "react";
+import * as SecureStore from 'expo-secure-store';
 import moment from "moment";
 import {create} from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
 import i18n from 'i18n-js';
-
+import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {popAlert, popToast} from "../components/loadError";
-import {getCheckedOutItems, getHolds, getLinkedAccounts, getPatronBrowseCategories, getProfile} from './loadPatron';
+import {
+	getCheckedOutItems,
+	getHolds,
+	getLinkedAccounts,
+	getPatronBrowseCategories, getProfile,
+	reloadCheckedOutItems,
+	reloadHolds
+} from './loadPatron';
 import {getActiveBrowseCategories, getBrowseCategories} from "./loadLibrary";
 import {GLOBALS} from "./globals";
+import {userContext} from "../context/user";
 
 
-export async function isLoggedIn() {
+export async function isLoggedIn(pathUrl) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: pathUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=isLoggedIn', postBody);
 
 	if (response.ok) {
-		return response.data;
+		console.log(response.data);
+		return response.data.result;
 	} else {
-		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 		return response.problem;
 	}
 }
 
 /* ACTIONS ON CHECKOUTS */
-export async function renewCheckout(barcode, recordId, source, itemId) {
+export async function renewCheckout(barcode, recordId, source, itemId, libraryUrl, userId) {
 
 	let validId;
 	if (itemId == null) {
@@ -44,14 +54,15 @@ export async function renewCheckout(barcode, recordId, source, itemId) {
 
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
-		params: {itemBarcode: validId, recordId: recordId, itemSource: source},
+		params: {itemBarcode: validId, recordId: recordId, itemSource: source, userId: userId},
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=renewItem', postBody);
 
+	console.log(response);
 	if (response.ok) {
 		const fetchedData = response.data;
 		const result = fetchedData.result;
@@ -59,34 +70,31 @@ export async function renewCheckout(barcode, recordId, source, itemId) {
 		if (source === "ils") {
 			if (result.success === true) {
 				popAlert(result.title, result.message, "success");
-				const forceReload = true;
-				await getCheckedOutItems(forceReload);
-				await getProfile(true);
+				await reloadCheckedOutItems(libraryUrl);
 			} else {
 				popAlert(result.title, result.message, "error");
 			}
 		} else {
 			if (result.success === true) {
 				popAlert(result.title, result.message, "success");
-				await getCheckedOutItems(true);
-				await getProfile(true);
+				await reloadCheckedOutItems(libraryUrl);
 			} else {
 				popAlert(result.title, result.message, "error");
 			}
 		}
 
 	} else {
-		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 
 }
 
-export async function renewAllCheckouts() {
+export async function renewAllCheckouts(libraryUrl) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=renewAll', postBody);
@@ -97,59 +105,88 @@ export async function renewAllCheckouts() {
 
 		if (result.success === true) {
 			popAlert(result.title, result.renewalMessage[0], "success");
+			await reloadCheckedOutItems(libraryUrl);
 		} else {
 			popAlert(result.title, result.renewalMessage[0], "error");
 		}
 
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
-export async function returnCheckout(userId, id, source, overDriveId) {
+export async function returnCheckout(userId, id, source, overDriveId, libraryUrl, discoveryVersion) {
 	const postBody = await postData();
 
 	let itemId = id;
 	if (overDriveId != null) {
 		itemId = overDriveId;
 	}
+	if(discoveryVersion >= "22.05.00") {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutFast,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {itemId: itemId, userId: userId, itemSource: source}
+		});
+		const response = await api.post('/UserAPI?method=returnCheckout', postBody);
+		console.log(response);
 
-	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: GLOBALS.timeoutFast,
-		headers: getHeaders(),
-		auth: createAuthTokens(),
-		params: {id: itemId, patronId: userId, itemSource: source}
-	});
-	const response = await api.post('/UserAPI?method=returnCheckout', postBody);
+		if (response.ok) {
+			const fetchedData = response.data;
+			const result = fetchedData.result;
 
-	if (response.ok) {
-		const fetchedData = response.data;
-		const result = fetchedData.result;
-
-		if (result.success === true) {
-			popAlert(result.title, result.message, "success");
-			await getCheckedOutItems(true);
-			await getProfile(true);
+			if (result.success === true) {
+				popAlert(result.title, result.message, "success");
+				await reloadCheckedOutItems(libraryUrl);
+			} else {
+				popAlert(result.title, result.message, "error");
+			}
 		} else {
-			popAlert(result.title, result.message, "error");
+			popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+			console.log(response);
 		}
 	} else {
-		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutFast,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {id: itemId, userId: userId, itemSource: source}
+		});
+		const response = await api.post('/UserAPI?method=returnCheckout', postBody);
+		console.log(response);
+
+		if (response.ok) {
+			const fetchedData = response.data;
+			const result = fetchedData.result;
+
+			if (result.success === true) {
+				popAlert(result.title, result.message, "success");
+				await reloadCheckedOutItems(libraryUrl);
+			} else {
+				popAlert(result.title, result.message, "error");
+			}
+		} else {
+			popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+			console.log(response);
+		}
 	}
 
 }
 
-export async function viewOnlineItem(userId, id, source, accessOnlineUrl) {
+export async function viewOnlineItem(userId, id, source, accessOnlineUrl, libraryUrl) {
 	const postBody = await postData();
 
 	if (source === "hoopla") {
 		const api = create({
-			baseURL: global.libraryUrl + '/API',
+			baseURL: libraryUrl + '/API',
 			timeout: GLOBALS.timeoutFast,
 			headers: getHeaders(),
 			auth: createAuthTokens(),
-			params: {patronId: userId, itemId: id, itemSource: source}
+			params: {userId: userId, itemId: id, itemSource: source}
 		});
 		const response = await api.post('/UserAPI?method=viewOnlineItem', postBody);
 
@@ -213,15 +250,15 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl) {
 
 }
 
-export async function viewOverDriveItem(userId, formatId, overDriveId) {
+export async function viewOverDriveItem(userId, formatId, overDriveId, libraryUrl) {
 	const postBody = await postData();
 
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutFast,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
-		params: {patronId: userId, overDriveId: overDriveId, formatId: formatId, itemSource: "overdrive"}
+		params: {userId: userId, overDriveId: overDriveId, formatId: formatId, itemSource: "overdrive"}
 	});
 	const response = await api.post('/UserAPI?method=viewOnlineItem', postBody);
 
@@ -256,19 +293,22 @@ export async function viewOverDriveItem(userId, formatId, overDriveId) {
 
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
 /* ACTIONS ON HOLDS */
-export async function freezeHold(cancelId, recordId, source) {
+export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId, thawDate = null) {
 	const postBody = await postData();
 
-	const today = moment();
-	const reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	let reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	if(thawDate) {
+		reactivationDate = thawDate;
+	}
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutFast,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {
 			sessionId: GLOBALS.appSessionId,
@@ -276,7 +316,7 @@ export async function freezeHold(cancelId, recordId, source) {
 			recordId: recordId,
 			itemSource: source,
 			reactivationDate: reactivationDate,
-			patronId: global.patronId
+			userId: patronId
 		}
 	});
 	const response = await api.post('/UserAPI?method=freezeHold', postBody);
@@ -288,30 +328,30 @@ export async function freezeHold(cancelId, recordId, source) {
 		if (result.success === true) {
 			popAlert("Hold frozen", result.message, "success");
 			// reload patron data in the background
-			await getProfile(true);
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert("Unable to freeze hold", result.message, "error");
 		}
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
-export async function thawHold(cancelId, recordId, source) {
+export async function thawHold(cancelId, recordId, source, libraryUrl, patronId) {
 	const postBody = await postData();
 
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {
 			sessionId: GLOBALS.appSessionId,
 			holdId: cancelId,
 			recordId: recordId,
 			itemSource: source,
-			patronId: global.patronId
+			userId: patronId
 		}
 	});
 	const response = await api.post('/UserAPI?method=activateHold', postBody);
@@ -323,33 +363,34 @@ export async function thawHold(cancelId, recordId, source) {
 		if (result.success === true) {
 			popAlert("Hold thawed", result.message, "success");
 			// reload patron data in the background
-			await getProfile(true);
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert("Unable to thaw hold", result.message, "error");
 		}
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
-export async function cancelHold(cancelId, recordId, source) {
+export async function cancelHold(cancelId, recordId, source, libraryUrl, patronId) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutFast,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {
 			sessionId: GLOBALS.appSessionId,
 			cancelId: cancelId,
 			recordId: recordId,
 			itemSource: source,
-			patronId: global.patronId
+			userId: patronId
 		}
 	});
 	const response = await api.post('/UserAPI?method=cancelHold', postBody);
 
+	console.log(response);
 	if (response.ok) {
 		const fetchedData = response.data;
 		const result = fetchedData.result;
@@ -357,25 +398,27 @@ export async function cancelHold(cancelId, recordId, source) {
 		if (result.success === true) {
 			popAlert(result.title, result.message, "success");
 			// reload patron data in the background
-			await getProfile(true);
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert(result.title, result.message, "error");
 		}
 
+		await getProfile();
+
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
-export async function changeHoldPickUpLocation(holdId, newLocation) {
+export async function changeHoldPickUpLocation(holdId, newLocation, libraryUrl, userId) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutFast,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {sessionId: GLOBALS.appSessionId, holdId: holdId, newLocation: newLocation}
+		params: {sessionId: GLOBALS.appSessionId, holdId: holdId, newLocation: newLocation, userId: userId}
 	});
 	const response = await api.post('/UserAPI?method=changeHoldPickUpLocation', postBody);
 
@@ -384,30 +427,31 @@ export async function changeHoldPickUpLocation(holdId, newLocation) {
 		const result = fetchedData.result;
 
 		if (result.success === true) {
+			console.log(result);
 			popAlert(result.title, result.message, "success");
 			// reload patron data in the background
-			await getProfile(true);
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert(result.title, result.message, "error");
 		}
 
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
-export async function updateOverDriveEmail(itemId, source, patronId, overdriveEmail, promptForOverdriveEmail) {
+export async function updateOverDriveEmail(itemId, source, patronId, overdriveEmail, promptForOverdriveEmail, libraryUrl) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {
 			itemId: itemId,
 			itemSource: source,
-			patronId: patronId,
+			userId: patronId,
 			overdriveEmail: overdriveEmail,
 			promptForOverdriveEmail: promptForOverdriveEmail
 		}
@@ -418,84 +462,112 @@ export async function updateOverDriveEmail(itemId, source, patronId, overdriveEm
 		const responseData = response.data;
 		const result = responseData.result;
 		// reload patron data in the background
-		await getProfile(true);
 		return result;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
 /* ACTIONS ON BROWSE CATEGORIES */
-export async function dismissBrowseCategory(browseCategoryId, patronId) {
+export async function dismissBrowseCategory(libraryUrl, browseCategoryId, patronId, discoveryVersion) {
 	const postBody = await postData();
-
-	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(true),
-		auth: createAuthTokens(),
-		params: {patronId: patronId, browseCategoryId: browseCategoryId}
-	});
-	const response = await api.post('/UserAPI?method=dismissBrowseCategory', postBody);
-
-	if (response.ok) {
-		const fetchedData = response.data;
-		const result = fetchedData.result;
-		await getPatronBrowseCategories();
-		await getBrowseCategories();
-
-		if (result.success === false) {
-			popAlert(result.title, result.message, "error");
+	if(discoveryVersion >= "22.05.00") {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutAverage,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {browseCategoryId: browseCategoryId}
+		});
+		const response = await api.post('/UserAPI?method=dismissBrowseCategory', postBody);
+		console.log(response);
+		if (response.ok) {
+			return response.data;
+		} else {
+			const problem = problemCodeMap(response.problem);
+			popToast(problem.title, problem.message, "warning");
+			console.log(response);
 		}
 	} else {
-		const problem = problemCodeMap(response.problem);
-		popToast(problem.title, problem.message, "warning");
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutAverage,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {browseCategoryId: browseCategoryId, patronId: patronId}
+		});
+		const response = await api.post('/UserAPI?method=dismissBrowseCategory', postBody);
 		console.log(response);
+		if (response.ok) {
+			return response.data;
+		} else {
+			const problem = problemCodeMap(response.problem);
+			popToast(problem.title, problem.message, "warning");
+			console.log(response);
+		}
+	}
+
+}
+
+export async function showBrowseCategory(libraryUrl, browseCategoryId, patronId, discoveryVersion) {
+	const postBody = await postData();
+
+	if(discoveryVersion >= "22.05.00") {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutAverage,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {browseCategoryId: browseCategoryId}
+		});
+		const response = await api.post('/UserAPI?method=showBrowseCategory', postBody);
+
+		if (response.ok) {
+			await getPatronBrowseCategories(libraryUrl, patronId);
+			await getBrowseCategories(libraryUrl, discoveryVersion);
+			return response.data;
+		} else {
+			const problem = problemCodeMap(response.problem);
+			popToast(problem.title, problem.message, "warning");
+			console.log(response);
+		}
+	} else {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutAverage,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {browseCategoryId: browseCategoryId, patronId: patronId}
+		});
+		const response = await api.post('/UserAPI?method=showBrowseCategory', postBody);
+
+		if (response.ok) {
+			await getPatronBrowseCategories(libraryUrl, patronId);
+			await getBrowseCategories(libraryUrl, discoveryVersion);
+			return response.data;
+		} else {
+			const problem = problemCodeMap(response.problem);
+			popToast(problem.title, problem.message, "warning");
+			console.log(response);
+		}
 	}
 }
 
-export async function showBrowseCategory(browseCategoryId) {
-	const postBody = await postData();
-
-	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(true),
-		auth: createAuthTokens(),
-		params: {patronId: global.patronId, browseCategoryId: browseCategoryId}
-	});
-	const response = await api.post('/UserAPI?method=showBrowseCategory', postBody);
-
-	if (response.ok) {
-		const fetchedData = response.data;
-		const result = fetchedData.result;
-
-		await getPatronBrowseCategories();
-		await getBrowseCategories();
-		if (result.success === false) {
-			popAlert(result.title, result.message, "error");
-		}
-	} else {
-		const problem = problemCodeMap(response.problem);
-		popToast(problem.title, problem.message, "warning");
-		console.log(response);
-	}
-}
-
-export async function addLinkedAccount(username, password) {
+export async function addLinkedAccount(username, password, libraryUrl) {
 	let postBody = await postData();
 	postBody.append('accountToLinkUsername', username);
 	postBody.append('accountToLinkPassword', password);
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=addAccountLink', postBody);
 	if(response.ok) {
+		await getLinkedAccounts(libraryUrl);
 		if(response.data.result.success) {
-			await getLinkedAccounts();
 			popAlert(response.data.result.title, response.data.result.message, "success");
 		} else {
 			popAlert(response.data.result.title, response.data.result.message, "error");
@@ -507,18 +579,18 @@ export async function addLinkedAccount(username, password) {
 	}
 }
 
-export async function removeLinkedAccount(id) {
+export async function removeLinkedAccount(id, libraryUrl) {
 	let postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=removeAccountLink&idToRemove=' + id, postBody);
 	if(response.ok) {
+		await getLinkedAccounts(libraryUrl);
 		if(response.data.result.success) {
-			await getLinkedAccounts();
 			popAlert(response.data.result.title, response.data.result.message, "success");
 		} else {
 			popAlert(response.data.result.title, response.data.result.message, "error");
@@ -530,10 +602,10 @@ export async function removeLinkedAccount(id) {
 	}
 }
 
-export async function saveLanguage(code) {
+export async function saveLanguage(code, libraryUrl) {
 	let postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
+		baseURL: libraryUrl + '/API',
 		timeout: 10000,
 		headers: getHeaders(),
 		auth: createAuthTokens()

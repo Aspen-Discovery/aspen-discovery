@@ -166,7 +166,11 @@ abstract class SearchObject_BaseSearcher
 
 	public function clearFilters()
 	{
-		$this->filterList = array();
+		$this->filterList = [];
+	}
+
+	public function setAppliedFilters($filterList){
+		$this->filterList = $filterList;
 	}
 
 
@@ -311,12 +315,14 @@ abstract class SearchObject_BaseSearcher
 				if (is_object($facetConfig[$field])){
 					$translate = $facetConfig[$field]->translate;
 				}else{
-					$translate = in_array($field, $facetConfig['translated_facets']);
+					if (!empty($facetConfig['translated_facets'])) {
+						$translate = in_array($field, $facetConfig['translated_facets']);
+					}
 				}
 			}
 
+			$facetLabel = $this->getFacetLabel($field);
 			foreach ($values as $value) {
-				$facetLabel = $this->getFacetLabel($field);
 				if ($field == 'available_at' && $value == '*') {
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
@@ -331,7 +337,8 @@ abstract class SearchObject_BaseSearcher
 					'value' => $value,     // raw value for use with Solr
 					'display' => $display,   // version to display to user
 					'field' => $field,
-					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value"),
+					'countIsApproximate' => false
 				);
 			}
 		}
@@ -948,7 +955,7 @@ abstract class SearchObject_BaseSearcher
 		if (isset($_REQUEST['filter'])) {
 			if (is_array($_REQUEST['filter'])) {
 				foreach ($_REQUEST['filter'] as $filter) {
-					if (!is_array($filter)) {
+					if (!empty($filter) && !is_array($filter)) {
 						$this->addFilter(strip_tags($filter));
 					}
 				}
@@ -1515,7 +1522,7 @@ abstract class SearchObject_BaseSearcher
 		$this->searchType = $this->basicSearchType;
 		$this->searchId = null;
 		$this->resultsTotal = null;
-		$this->filterList = null;
+		$this->filterList = [];
 		$this->initTime = null;
 		$this->queryTime = null;
 		// An array so we don't have to initialise
@@ -1555,7 +1562,7 @@ abstract class SearchObject_BaseSearcher
 		$this->initTime = $minified->i;
 		$this->queryTime = $minified->s;
 		$this->resultsTotal = $minified->r;
-		$this->filterList = $minified->f;
+		$this->setAppliedFilters($minified->f);
 		$this->searchType = $minified->ty;
 		$this->searchSource = $minified->ss;
 		$this->sort = $minified->sr;
@@ -2024,15 +2031,15 @@ abstract class SearchObject_BaseSearcher
 		$token = strtok($input, ' ');
 		while ($token) {
 			// find bracketed tokens
-			if ($token{0} == '(') {
+			if ($token[0] == '(') {
 				$token .= ' ' . strtok(')') . ')';
 			}
 			// find double quoted tokens
-			if ($token{0} == '"') {
+			if ($token[0] == '"') {
 				$token .= ' ' . strtok('"') . '"';
 			}
 			// find single quoted tokens
-			if ($token{0} == "'") {
+			if ($token[0] == "'") {
 				$token .= ' ' . strtok("'") . "'";
 			}
 			$tokens[] = $token;

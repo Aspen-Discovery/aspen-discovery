@@ -65,8 +65,24 @@ class UserListIndexer {
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
 		updateServer.setRequestWriter(new BinaryRequestWriter());
-		HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-		groupedWorkServer = groupedWorkHttpBuilder.build();
+		//Get the search version from system variables
+		int searchVersion = 1;
+		try {
+			PreparedStatement searchVersionStmt = dbConn.prepareStatement("SELECT searchVersion from system_variables");
+			ResultSet searchVersionRS = searchVersionStmt.executeQuery();
+			if (searchVersionRS.next()){
+				searchVersion = searchVersionRS.getInt("searchVersion");
+			}
+		}catch (Exception e){
+			logger.error("Error loading search version", e);
+		}
+		if (searchVersion == 1) {
+			HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			groupedWorkServer = groupedWorkHttpBuilder.build();
+		}else{
+			HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+			groupedWorkServer = groupedWorkHttpBuilder.build();
+		}
 		HttpSolrClient.Builder openArchivesHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
 		openArchivesServer = openArchivesHttpBuilder.build();
 
@@ -110,8 +126,9 @@ class UserListIndexer {
 			}else{
 				//Get a list of all lists that were changed since the last update
 				//Have to process all lists because one could have been deleted, made private, or made non-searchable.
-				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list");
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
+				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list WHERE dateUpdated >= ?");
+				numListsStmt.setLong(1, lastReindexTime);
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated >= ?");
 				listsStmt.setLong(1, lastReindexTime);
 			}
 
@@ -277,13 +294,14 @@ class UserListIndexer {
 						indexed = true;
 					}else{
 						updateServer.deleteByQuery("id:" + listId);
-						logEntry.incDeleted();
+						logEntry.incSkipped();
 					}
 				} else {
 					updateServer.deleteByQuery("id:" + listId);
-					logEntry.incDeleted();
+					logEntry.incSkipped();
 				}
 			}catch (Exception e){
+				updateServer.deleteByQuery("id:" + listId);
 				logEntry.addNote("Could not decrypt user information for " + listId + " - " + e);
 				logEntry.incSkipped();
 			}

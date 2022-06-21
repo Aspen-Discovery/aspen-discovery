@@ -89,7 +89,14 @@ class AnodeAPI extends Action
 		}
 		//Load Similar titles (from Solr)
 		$url = $configArray['Index']['url'];
-		$db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$db = new GroupedWorksSolrConnector2($url);
+		}
 		$similar = $db->getMoreLikeThis($id);
 		if (isset($similar) && count($similar['response']['docs']) > 0) {
 			$similarTitles = array();

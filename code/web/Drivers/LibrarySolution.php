@@ -593,9 +593,10 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   User    $patron     The User to cancel the hold for
 	 * @param   string  $recordId   The id of the bib record
 	 * @param   string  $cancelId   Information about the hold to be cancelled
+	 * @param   boolean $isIll      If the hold is an ILL hold
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null){
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,

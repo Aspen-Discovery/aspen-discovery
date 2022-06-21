@@ -537,6 +537,7 @@ class Admin_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function deleteNYTList() {
 		$result = [
 			'success' => false,
@@ -546,12 +547,11 @@ class Admin_AJAX extends JSON_Action
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
-			$listId = $_REQUEST['id'];
-			$list = new UserList();
-			$list->id = $listId;
+		$listId = $_REQUEST['id'];
+		$list = new UserList();
+		$list->id = $listId;
 
-			$listName = $list->title;
-
+		if($list->find(true)) {
 			//Perform an action on the list, but verify that the user has permission to do so.
 			$userCanEdit = false;
 			$userObj = UserAccount::getActiveUserObj();
@@ -559,7 +559,6 @@ class Admin_AJAX extends JSON_Action
 				$userCanEdit = $userObj->canEditList($list);
 			}
 			if ($userCanEdit) {
-				$list->find();
 				$list->delete();
 				$result['success'] = true;
 				$result['message'] = 'List deleted successfully';
@@ -567,6 +566,8 @@ class Admin_AJAX extends JSON_Action
 				$result['success'] = false;
 				$result['message'] = 'You do not have permission to delete this list';
 			}
+		}
+
 		return $result;
 	}
 

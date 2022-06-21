@@ -100,13 +100,17 @@ class Location extends DataObject
 	private $_sideLoadScopes;
 	private $_combinedResultSections;
 	private $_cloudLibraryScopes;
+	/**
+	 * @var array|LocationHours[]|mixed|null
+	 */
+	public $ebscohostSearchSettingId;
 
 	function getNumericColumnNames() : array
 	{
 		return ['scope', 'isMainBranch', 'showInLocationsAndHoursList', 'validHoldPickupBranch', 'useScope', 'restrictSearchByLocation', 'showHoldButton',
 			'repeatInOnlineCollection', 'repeatInProspector', 'repeatInWorldCat', 'showEmailThis', 'showShareOnExternalSites', 'showFavorites',
 			'includeAllLibraryBranchesInFacets', 'includeAllRecordsInShelvingFacets', 'includeAllRecordsInDateAddedFacets', 'includeLibraryRecordsToInclude',
-			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings'];
+			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings', 'ebscohostSearchSettingId'];
 	}
 
 	static function getObjectStructure() : array
@@ -225,6 +229,16 @@ class Location extends DataObject
 		$overDriveScopes[-1] = 'Use Library Setting';
 		while ($overDriveScope->fetch()){
 			$overDriveScopes[$overDriveScope->id] = $overDriveScope->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
+		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting->orderBy('name');
+		$ebscohostSettings = [];
+		$ebscohostSetting->find();
+		$ebscohostSettings[-2] = 'None';
+		while ($ebscohostSetting->fetch()) {
+			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
 		$releaseChannels = [0 => 'Beta (Testing)', 1 => 'Production (Public)'];
@@ -366,6 +380,10 @@ class Location extends DataObject
 
 			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+			)),
+
+			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
+				'ebscohostSearchSettingId' => array('property' => 'ebscohostSearchSettingId', 'type' => 'enum', 'values' => $ebscohostSettings, 'label' => 'EBSCOhost Search Settings', 'description' => 'The EBSCOhost Search Settings to use for connection', 'hideInLists' => true, 'default' => -2),
 			)),
 
 			'hours' =>	array(
@@ -808,38 +826,27 @@ class Location extends DataObject
 			return $this->_ipLocation;
 		}
 		global $timer;
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $configArray;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = IPAddress::getActiveIp();
-		$this->_ipLocation = $memCache->get('location_for_ip_' . $activeIp);
-		$_ipId = $memCache->get('ipId_for_ip_' . $activeIp);
-		if ($_ipId == -1) {
-			$this->_ipLocation = false;
-		}
 
-		if ($this->_ipLocation == false || $_ipId == false) {
-			$timer->logTime('Starting getIPLocation');
-			//echo("Active IP is $activeIp");
-			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
-			$this->_ipLocation = null;
-			$_ipId = -1;
-			$subnet = IPAddress::getIPAddressForIP($activeIp);
-			if ($subnet != false){
-				$matchedLocation = new Location();
-				$matchedLocation->locationId = $subnet->locationid;
-				if ($matchedLocation->find(true)) {
-					//Only use the physical location regardless of where we are
-					$this->_ipLocation = clone($matchedLocation);
-					$_ipId = $subnet->id;
-				}
+		$timer->logTime('Starting getIPLocation');
+		//echo("Active IP is $activeIp");
+		require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+		$this->_ipLocation = null;
+		$_ipId = -1;
+		$subnet = IPAddress::getIPAddressForIP($activeIp);
+		if ($subnet != false){
+			$matchedLocation = new Location();
+			$matchedLocation->locationId = $subnet->locationid;
+			if ($matchedLocation->find(true)) {
+				//Only use the physical location regardless of where we are
+				$this->_ipLocation = clone($matchedLocation);
+				$_ipId = $subnet->id;
 			}
-
-			$memCache->set('ipId_for_ip_' . $activeIp, $_ipId, $configArray['Caching']['ipId_for_ip']);
-			$memCache->set('location_for_ip_' . $activeIp, $this->_ipLocation, $configArray['Caching']['location_for_ip']);
-			$timer->logTime('Finished getIPLocation');
 		}
+
+		$timer->logTime('Finished getIPLocation');
 
 		return $this->_ipLocation;
 	}
@@ -1422,6 +1429,31 @@ class Location extends DataObject
 			$locationList[$location->locationId] = $location->displayName;
 		}
 		return $locationList;
+	}
+
+	static $locationListAsObjects = null;
+	/**
+	 * @param boolean $restrictByHomeLibrary whether locations for the patron's home library should be returned
+	 * @return Location[]
+	 */
+	static function getLocationListAsObjects(bool $restrictByHomeLibrary): array
+	{
+		if (Location::$locationListAsObjects == null) {
+			$location = new Location();
+			$location->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$location->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$location->find();
+			Location::$locationListAsObjects = [];
+			while ($location->fetch()) {
+				Location::$locationListAsObjects[$location->locationId] = clone $location;
+			}
+		}
+		return Location::$locationListAsObjects;
 	}
 
 	protected $_browseCategoryGroup = null;

@@ -10,6 +10,8 @@ import {removeLinkedAccount} from "../../../../util/accountActions";
 import {loadingSpinner} from "../../../../components/loadingSpinner";
 import {getLinkedAccounts, getViewers} from "../../../../util/loadPatron";
 import {translate} from "../../../../translations/translations";
+import {ScrollView} from "react-native";
+import {userContext} from "../../../../context/user";
 
 export default class LinkedAccounts extends Component {
 	constructor(props) {
@@ -19,8 +21,8 @@ export default class LinkedAccounts extends Component {
 			linkedAccounts: [],
 			viewers: [],
 		};
-		getLinkedAccounts();
-		getViewers();
+		this._fetchLinkedAccounts();
+		this._fetchViewers();
 		this.loadLinkedAccounts();
 		this.loadViewers()
 	}
@@ -45,11 +47,27 @@ export default class LinkedAccounts extends Component {
 		})
 	}
 
+	_fetchLinkedAccounts = async () => {
+		const { navigation, route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getLinkedAccounts(libraryUrl);
+	}
+
+	_fetchViewers = async () => {
+		const { navigation, route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getViewers(libraryUrl);
+	}
+
 	componentDidMount = async () => {
 		this.setState({
 			isLoading: true,
 		});
 
+		await this._fetchLinkedAccounts();
+		await this._fetchViewers();
 		await this.loadLinkedAccounts();
 		await this.loadViewers();
 
@@ -66,11 +84,11 @@ export default class LinkedAccounts extends Component {
 		clearInterval(this.interval);
 	}
 
-	renderLinkedAccounts = (item) => {
+	renderLinkedAccounts = (item, libraryUrl) => {
 		return (
 			<HStack space={3} justifyContent="space-between" pt={2} pb={2} alignItems="center">
 				<Text bold>{item.displayName} - {item.homeLocation}</Text>
-				<Button colorScheme="warning" size="sm" onPress={() => (removeLinkedAccount(item.id))}>{translate('linked_accounts.remove')}</Button>
+				<Button colorScheme="warning" size="sm" onPress={async () => {await removeLinkedAccount(item.id, libraryUrl);}}>{translate('linked_accounts.remove')}</Button>
 			</HStack>
 		);
 	};
@@ -91,24 +109,30 @@ export default class LinkedAccounts extends Component {
 		);
 	};
 
+	static contextType = userContext;
+
 	render() {
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
 		return (
+			<ScrollView>
 			<Box flex={1} safeArea={5}>
 				<DisplayMessage type="info" message="Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc. in the main account." />
 				<Heading fontSize="lg" pb={2}>Additional accounts to manage</Heading>
 				<Text>The following accounts can be managed from this account:</Text>
 				<FlatList
 					data={this.state.linkedAccounts}
-					renderItem={({item}) => this.renderLinkedAccounts(item)}
+					renderItem={({item}) => this.renderLinkedAccounts(item, library.baseUrl)}
 					ListEmptyComponent={() => this.renderNoLinkedAccounts()}
 					keyExtractor={(item) => item.id}
 				/>
-				<AddLinkedAccount />
+				<AddLinkedAccount libraryUrl={library.baseUrl} />
 				<Divider my={4} />
 				<Heading fontSize="lg" pb={2}>Other accounts that can view this account</Heading>
 				<Text>The following accounts can view checkout and hold information from this account. If someone is viewing your account that you do not want to have access, please contact library staff.</Text>
@@ -119,6 +143,7 @@ export default class LinkedAccounts extends Component {
 					keyExtractor={(item) => item.id}
 				/>
 			</Box>
+			</ScrollView>
 		)
 	}
 }

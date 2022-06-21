@@ -194,7 +194,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('classicId', $classicId);
 			$millenniumScope = $interface->getVariable('millenniumScope');
 			if(isset($configArray['Catalog']['linking_url'])){
-				$interface->assign('classicUrl', $configArray['Catalog']['linking_url'] . "/record=$classicId&amp;searchscope={$millenniumScope}");
+				$linkingUrl = $configArray['Catalog']['linking_url'];
+				if (substr($linkingUrl, -1, 1) == '/'){
+					$linkingUrl = substr($linkingUrl, 0, -1);
+				}
+				$interface->assign('classicUrl', $linkingUrl . "/record=$classicId&amp;searchscope={$millenniumScope}");
 			}
 
 		}elseif ($configArray['Catalog']['ils'] == 'Koha'){
@@ -205,9 +209,46 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$shortId = str_replace('CARL', '', $this->id);
 			$shortId = ltrim($shortId, '0');
 			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+		}elseif ($configArray['Catalog']['ils'] == 'Evergreen'){
+			$baseUrl = $configArray['Catalog']['url'];
+			if (substr($baseUrl, -1, 1) == '/'){
+				$baseUrl = substr($baseUrl, 0, -1);
+			}
+			$interface->assign('classicId', $this->id);
+			$interface->assign('classicUrl', $baseUrl . '/eg/opac/record/' . $this->id);
 		}
 
-		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null) {
+			if ( $groupedWorkDriver->isValid()){
+				$interface->assign('hasValidGroupedWork', true);
+			}else{
+				$interface->assign('hasValidGroupedWork', false);
+			}
+			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+			$nonGroupedRecord = new NonGroupedRecord();
+			$nonGroupedRecord->source = $this->getRecordType();
+			$nonGroupedRecord->recordId = $this->getId();
+			if ($nonGroupedRecord->find(true)){
+				$interface->assign('isUngrouped', true);
+				$interface->assign('ungroupingId', $nonGroupedRecord->id);
+			}else{
+				$interface->assign('isUngrouped', false);
+			}
+		}else{
+			$interface->assign('hasValidGroupedWork', false);
+		}
+
+		//Look for an IlsRecord for this MARC
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		$ilsRecord = new IlsRecord();
+		$ilsRecord->source = $this->getRecordType();
+		$ilsRecord->ilsId = $this->getId();
+		if ($ilsRecord->find(true)){
+			$interface->assign('ilsRecord', $ilsRecord);
+		}
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -910,11 +951,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 
 				if ($showHoldButton && $interface->getVariable('offline')) {
-					// When in offline mode, only show the hold button if offline-login & offline-holds are allowed
-					global $configArray;
-					if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
-						$showHoldButton = false;
-					}
+					$showHoldButton = false;
 				}
 
 				if ($showHoldButton && $isAvailable) {
@@ -1872,7 +1909,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (!strpos($url, '://')){
 						$url = 'http://' . $url;
 					}
-					if (!strpos($url, 'http://')){
+					if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0){
+					//if (!strpos($url, 'http://')){
 						if ($field->getSubfield('y') != null) {
 							$title = $field->getSubfield('y')->getData();
 						} else if ($field->getSubfield('3') != null) {

@@ -14,6 +14,8 @@ yum -y install php-xml
 yum -y install bind-utils
 yum -y install php-intl
 yum -y install php-mbstring
+yum -y install php-pecl-ssh2
+yum -y install php-pgsql
 service httpd start
 chkconfig httpd on
 # New PHP ini file

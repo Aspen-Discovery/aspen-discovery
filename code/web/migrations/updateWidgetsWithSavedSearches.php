@@ -122,7 +122,7 @@ function importListWidgets($startTime, $exportPath)
 				if ($type == 'search'){
 					//Only update if we don't currently have search terms or filters
 					if (empty($collectionSpotlightList->searchTerm) && empty($collectionSpotlightList->defaultFilter)) {
-						/** @var SearchObject_GroupedWorkSearcher $searcher */
+						/** @var SearchObject_AbstractGroupedWorkSearcher $searcher */
 						$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
 						$savedSearch = $searcher->restoreSavedSearch($identifier, false, true);
 						if ($savedSearch !== false) {

@@ -8,212 +8,6 @@ class Evergreen extends AbstractIlsDriver
 	/** @var CurlWrapper */
 	private $apiCurlWrapper;
 
-	private $ahrFields = [
-		"status",
-		"transit",
-		"capture_time",
-		"current_copy",
-		"email_notify",
-		"expire_time",
-		"fulfillment_lib",
-		"fulfillment_staff",
-		"fulfillment_time",
-		"hold_type",
-		"holdable_formats",
-		"id",
-		"phone_notify",
-		"sms_notify",
-		"sms_carrier",
-		"pickup_lib",
-		"prev_check_time",
-		"request_lib",
-		"request_time",
-		"requestor",
-		"selection_depth",
-		"selection_ou",
-		"target",
-		"usr",
-		"cancel_time",
-		"notify_time",
-		"notify_count",
-		"notifications",
-		"bib_rec",
-		"eligible_copies",
-		"frozen",
-		"thaw_date",
-		"shelf_time",
-		"cancel_cause",
-		"cancel_note",
-		"cut_in_line",
-		"mint_condition",
-		"shelf_expire_time",
-		"notes",
-		"current_shelf_lib",
-		"behind_desk",
-		"acq_request",
-		"hopeless_date",
-	];
-	private $auFields = [
-		"addresses",
-		"cards",
-		"checkouts",
-		"hold_requests",
-		"permissions",
-		"settings",
-		"standing_penalties",
-		"stat_cat_entries",
-		"survey_responses",
-		"waiver_entries",
-		"ws_ou",
-		"wsid",
-		"active",
-		"alert_message",
-		"barred",
-		"billing_address",
-		"card",
-		"claims_returned_count",
-		"claims_never_checked_out_count",
-		"create_date",
-		"credit_forward_balance",
-		"day_phone",
-		"dob",
-		"email",
-		"evening_phone",
-		"expire_date",
-		"family_name",
-		"first_given_name",
-		"home_ou",
-		"id",
-		"ident_type",
-		"ident_type2",
-		"ident_value",
-		"ident_value2",
-		"last_xact_id",
-		"mailing_address",
-		"master_account",
-		"net_access_level",
-		"other_phone",
-		"passwd",
-		"photo_url",
-		"prefix",
-		"profile",
-		"second_given_name",
-		"standing",
-		"suffix",
-		"super_user",
-		"usrgroup",
-		"usrname",
-		"alias",
-		"juvenile",
-		"last_update_time",
-		"pref_prefix",
-		"pref_first_given_name",
-		"pref_second_given_name",
-		"pref_family_name",
-		"pref_suffix",
-		"guardian",
-		"name_keywords",
-		"name_kw_tsvector",
-		"groups",
-		"deleted",
-		"notes",
-		"demographic",
-		"billable_transactions",
-		"money_summary",
-		"open_billable_transactions_summary",
-		"checkins",
-		"performed_circulations",
-		"fund_alloc_pcts",
-		"reservations",
-		"usr_activity",
-		"usr_work_ou_map",
-	];
-	private $circFields = [
-		'checkin_lib',
-		'checkin_staff',
-		'checkin_time',
-		'circ_lib',
-		'circ_staff',
-		'desk_renewal',
-		'due_date',
-		'duration',
-		'duration_rule',
-		'fine_interval',
-		'id',
-		'max_fine',
-		'max_fine_rule',
-		'opac_renewal',
-		'phone_renewal',
-		'recurring_fine',
-		'recurring_fine_rule',
-		'renewal_remaining',
-		'grace_period',
-		'stop_fines',
-		'stop_fines_time',
-		'target_copy',
-		'usr',
-		'xact_finish',
-		'xact_start',
-		'create_time',
-		'workstation',
-		'checkin_workstation',
-		'checkin_scan_time',
-		'parent_circ',
-		'billings',
-		'payments',
-		'billable_transaction',
-		'circ_type',
-		'billing_total',
-		'payment_total',
-		'unrecovered',
-		'copy_location',
-		'aaactsc_entries',
-		'aaasc_entries',
-		'auto_renewal',
-		'auto_renewal_remaining',
-	];
-	private $mvrFields = [
-		'title',
-		'author',
-		'doc_id',
-		'doc_type',
-		'pubdate',
-		'isbn',
-		'publisher',
-		'tcn',
-		'subject',
-		'types_of_resource',
-		'call_numbers',
-		'edition',
-		'online_loc',
-		'synopsis',
-		'physical_description',
-		'toc',
-		'copy_count',
-		'series',
-	];
-	private $mousFields = [
-		'balance_owed',
-		'total_owed',
-		'total_paid',
-		'usr',
-	];
-	private $mbtsFields = [
-		'balance_owed',
-		'id',
-		'last_billing_note',
-		'last_billing_ts',
-		'last_billing_type',
-		'last_payment_note',
-		'last_payment_ts',
-		'last_payment_type',
-		'total_owed',
-		'total_paid',
-		'usr',
-		'xact_finish',
-		'xact_start',
-		'xact_type',
-	];
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -298,7 +92,7 @@ class Evergreen extends AbstractIlsDriver
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
 			if (isset($apiResponse->payload[0])) {
-				$mappedCheckout = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->circFields);
+				$mappedCheckout = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('circ'));
 				$curCheckout = new Checkout();
 				$curCheckout->type = 'ils';
 				$curCheckout->source = $this->getIndexingProfile()->name;
@@ -350,7 +144,7 @@ class Evergreen extends AbstractIlsDriver
 			$apiResponse = json_decode($apiResponse);
 			if (isset($apiResponse->payload[0])) {
 				$mods = $apiResponse->payload[0]->__p;
-				$mods = $this->mapEvergreenFields($mods, $this->mvrFields);
+				$mods = $this->mapEvergreenFields($mods, $this->fetchIdl('mvr'));
 				return $mods;
 			}
 		}
@@ -412,23 +206,23 @@ class Evergreen extends AbstractIlsDriver
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
-				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+				if (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
+					$result['message'] = translate(['text' => "Your title was renewed successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Title renewed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your title was renewed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
 					$result['message'] = $apiResponse->payload[0]->desc;
 					$result['api']['message'] = $apiResponse->payload[0]->desc;
 				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
 					$result['message'] = $apiResponse->payload[0]->result->desc;
 				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
 					$result['message'] = $apiResponse->debug;
-				}elseif (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
-					$result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
-					$result['success'] = true;
-
-					// Result for API or app use
-					$result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
-					$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
-
-					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
 				}
 			}
 
@@ -444,7 +238,7 @@ class Evergreen extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null)
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false)
 	{
 		$result = [
 			'success' => false,
@@ -499,10 +293,117 @@ class Evergreen extends AbstractIlsDriver
 	/**
 	 * @inheritDoc
 	 */
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
+		return $this->placeItemHold($patron, $recordId, $volumeId, $pickupBranch);
+	}
+
+
+	/**
+	 * @inheritDoc
+	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
-		//TODO: Determine if this is needed
-		return false;
+		$hold_result = [
+			'success' => false,
+			'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]),
+				'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true])
+			],
+		];
+
+		if (strpos($recordId, ':') !== false){
+			list(,$recordId) = explode(':', $recordId);
+		}
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null){
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers  = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			//Translate to numeric location id
+			$location = new Location();
+			$location->code = $pickupBranch;
+			if ($location->find(true)){
+				$pickupBranch = $location->historicCode;
+			}
+			if ($cancelDate == null){
+				global $library;
+				if ($library->defaultNotNeededAfterDays == 0){
+					//Default to a date 6 months (half a year) in the future.
+					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
+					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
+				}else{
+					//Default to a date 6 months (half a year) in the future.
+					if ($library->defaultNotNeededAfterDays > 0) {
+						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+						$cancelDate = date(DateTime::ISO8601, $nnaDate);
+					}
+				}
+			}
+			$namedParams = [
+				'patronid' => (int)$patron->username,
+				"pickup_lib" => (int)$pickupBranch,
+				"hold_type" => 'P',
+//				"request_lib" =>  (int)$pickupBranch,
+//				"request_time" => date( DateTime::ISO8601),
+//				"frozen" => 'f'
+			];
+			if (isset($_REQUEST['emailNotification']) && $_REQUEST['emailNotification'] == 'on'){
+				$namedParams['email_notify'] = 't';
+			}
+			if (isset($_REQUEST['phoneNotification']) && $_REQUEST['phoneNotification'] == 'on'){
+				if (isset($_REQUEST['phoneNumber']) && strlen($_REQUEST['phoneNumber']) > 0){
+					$namedParams['phone_notify'] = $_REQUEST['phoneNumber'];
+				}
+			}
+			if (isset($_REQUEST['smsNotification']) && $_REQUEST['smsNotification'] == 'on'){
+				if (isset($_REQUEST['smsNumber']) && strlen($_REQUEST['smsNumber']) > 0) {
+					if (isset($_REQUEST['smsCarrier']) && $_REQUEST['smsCarrier'] != -1){
+						$namedParams['sms_carrier'] = $_REQUEST['smsCarrier'];
+						$namedParams['sms_notify'] = $_REQUEST['smsNumber'];
+					}
+
+				}
+			}
+			if ($cancelDate != null){
+				$namedParams['expire_time'] = $cancelDate;
+			}
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . json_encode($namedParams);
+			$request .= '&param=' . json_encode([(int)$itemId]);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$hold_result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$hold_result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$hold_result['message'] = $apiResponse->debug;
+				}elseif (isset($apiResponse->payload[0]->result) &&$apiResponse->payload[0]->result > 0 ){
+					$hold_result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
+					$hold_result['success'] = true;
+
+					// Result for API or app use
+					$hold_result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
+					$hold_result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+					$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $hold_result;
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
@@ -731,7 +632,7 @@ class Evergreen extends AbstractIlsDriver
 					if ($payload->__c == 'ahr') { //class
 						$holdInfo = $payload->__p; //ahr object
 
-						$holdInfo = $this->mapEvergreenFields($holdInfo, $this->ahrFields);
+						$holdInfo = $this->mapEvergreenFields($holdInfo, $this->fetchIdl('ahr'));
 
 						$curHold = new Hold();
 						$curHold->userId = $patron->id;
@@ -739,7 +640,22 @@ class Evergreen extends AbstractIlsDriver
 						$curHold->source = $this->getIndexingProfile()->name;
 
 						$curHold->sourceId = $holdInfo['id'];
-						$curHold->recordId = $holdInfo['target'];
+						//If the hold_type is P the target will be the part so we will need to lookup the bib record based on the part
+						if ($holdInfo['hold_type'] == 'P'){
+							require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+							$volumeInfo = new IlsVolumeInfo();
+							$volumeInfo->volumeId = $holdInfo['target'];
+							if ($volumeInfo->find(true)){
+								$curHold->volume = $volumeInfo->displayLabel;
+								if (strpos($volumeInfo->recordId, ':') > 0) {
+									list (, $curHold->recordId) = explode(':', $volumeInfo->recordId);
+								}else{
+									$curHold->recordId = $volumeInfo->recordId;
+								}
+							}
+						}else{
+							$curHold->recordId = $holdInfo['target'];
+						}
 						$curHold->cancelId = $holdInfo['id'];
 
 						//TODO: Validate if these are accurate
@@ -762,11 +678,13 @@ class Evergreen extends AbstractIlsDriver
 								$curHold->status .= ' until ' . date("m/d/Y", strtotime($holdInfo['thaw_date']));
 							}
 							$curHold->locationUpdateable = true;
+						}elseif (!empty($holdInfo['shelf_time'])){
+							$curHold->cancelable = false;
+							$curHold->expirationDate = strtotime($holdInfo['shelf_expire_time']);
+							$curHold->status = "Ready to Pickup";
+							$curHold->available = true;
 						}elseif (!empty($holdInfo['transit'])){
 							$curHold->status = 'In Transit';
-						}elseif (!empty($holdInfo['capture_time'])){
-							$curHold->cancelable = false;
-							$curHold->status = "Ready to Pickup";
 						}else{
 							$curHold->status = "Pending";
 							$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
@@ -807,6 +725,10 @@ class Evergreen extends AbstractIlsDriver
 			],
 		];
 
+		if (strpos($recordId, ':') !== false){
+			list(,$recordId) = explode(':', $recordId);
+		}
+
 		$authToken = $this->getAPIAuthToken($patron);
 		if ($authToken != null){
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -829,20 +751,40 @@ class Evergreen extends AbstractIlsDriver
 					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
 				}else{
 					//Default to a date 6 months (half a year) in the future.
-					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-					$cancelDate = date( DateTime::ISO8601, $nnaDate);
+					if ($library->defaultNotNeededAfterDays > 0) {
+						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+						$cancelDate = date(DateTime::ISO8601, $nnaDate);
+					}
 				}
 			}
 			$namedParams = [
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'T',
-//				"email_notify" => $patron->email,
-//				"request_lib" =>  (int)$pickupBranch,
+				"request_lib" =>  (int)$pickupBranch,
 //				"request_time" => date( DateTime::ISO8601),
-//				"expire_time" => $cancelDate,
 //				"frozen" => 'f'
 			];
+			if (isset($_REQUEST['emailNotification']) && $_REQUEST['emailNotification'] == 'on'){
+				$namedParams['email_notify'] = 't';
+			}
+			if (isset($_REQUEST['phoneNotification']) && $_REQUEST['phoneNotification'] == 'on'){
+				if (isset($_REQUEST['phoneNumber']) && strlen($_REQUEST['phoneNumber']) > 0){
+					$namedParams['phone_notify'] = $_REQUEST['phoneNumber'];
+				}
+			}
+			if (isset($_REQUEST['smsNotification']) && $_REQUEST['smsNotification'] == 'on'){
+				if (isset($_REQUEST['smsNumber']) && strlen($_REQUEST['smsNumber']) > 0) {
+					if (isset($_REQUEST['smsCarrier']) && $_REQUEST['smsCarrier'] != -1){
+						$namedParams['sms_carrier'] = $_REQUEST['smsCarrier'];
+						$namedParams['sms_notify'] = $_REQUEST['smsNumber'];
+					}
+
+				}
+			}
+			if ($cancelDate != null){
+				$namedParams['expire_time'] = $cancelDate;
+			}
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
 			$request .= '&param=' . json_encode($authToken);
@@ -864,8 +806,39 @@ class Evergreen extends AbstractIlsDriver
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponseB = json_decode($apiResponseB);
 				if ($apiResponseB->payload[0]->success == 0){
-					$hold_result['message'] = "Holds cannot be placed on this title";
-					return $hold_result;
+					if (isset($apiResponseB->payload[0]->last_event) && ($apiResponseB->payload[0]->last_event->textcode == 'HIGH_LEVEL_HOLD_HAS_NO_COPIES')){
+						//Item/Part level holds are required
+						$getPartsRequest = 'service=open-ils.search&method=open-ils.search.biblio.record_hold_parts';
+						$namedPartsParams = [
+							'record' => (int)$recordId
+						];
+						$getPartsRequest .= '&param=' . json_encode($namedPartsParams);
+						$getPartsResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getPartsRequest);
+						if ($this->apiCurlWrapper->getResponseCode() == 200) {
+							$getPartsResponse = json_decode($getPartsResponse);
+							$items = array();
+							foreach ($getPartsResponse->payload[0] as $itemInfo){
+								$items[] = array(
+									'itemNumber' => $itemInfo->id,
+									//'location' => trim(str_replace('&nbsp;', '', $itemInfo[2][$i])),
+									'callNumber' => $itemInfo->label,
+									//'status' => trim(str_replace('&nbsp;', '', $itemInfo[4][$i])),
+								);
+							}
+							$hold_result['items'] = $items;
+							if (count($items) > 0){
+								$message = 'Please select a part to place a hold on.';
+							}else{
+								$message = 'There are no holdable items for this title.';
+							}
+							$hold_result['success'] = false;
+							$hold_result['message'] = $message;
+							return $hold_result;
+						}
+					}else {
+						$hold_result['message'] = "Holds cannot be placed on this title";
+						return $hold_result;
+					}
 				}
 			}
 
@@ -944,7 +917,7 @@ class Evergreen extends AbstractIlsDriver
 					foreach ($apiResponse->payload[0] as $transactionList){
 						foreach ($transactionList as $transactionObj){
 							$transaction = $transactionObj->__p;
-							$transactionObj = $this->mapEvergreenFields($transaction, $this->mbtsFields);
+							$transactionObj = $this->mapEvergreenFields($transaction, $this->fetchIdl('mbts'));
 							$curFine = [
 								'fineId' => $transactionObj['id'],
 								'date' => strtotime($transactionObj['xact_start']),
@@ -969,6 +942,8 @@ class Evergreen extends AbstractIlsDriver
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 		//return parent::patronLogin($username, $password, $validatedViaSSO);
+		$username = trim($username);
+		$password = trim($password);
 		$session = $this->validatePatronAndGetAuthToken($username, $password);
 		if ($session['userValid']){
 			$userData = $this->fetchSession($session['authToken']);
@@ -984,6 +959,65 @@ class Evergreen extends AbstractIlsDriver
 		}else{
 			return null;
 		}
+	}
+
+	private function getStaffUserInfo()
+	{
+		if (!array_key_exists($this->accountProfile->staffUsername, Evergreen::$accessTokensForUsers)) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+
+			$session = array(
+				'userValid' => false,
+				'authToken' => false,
+			);
+
+			$headers  = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$params = [
+				'service' => 'open-ils.auth',
+				'method' => 'open-ils.auth.login',
+				'param' => json_encode([
+					'password' => (string)$this->accountProfile->staffPassword,
+					'type' => 'persist',
+					'org' => null,
+					'identifier' => (string)$this->accountProfile->staffUsername,
+				]),
+			];
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				$session['userValid'] = true;
+				$session['authToken'] = $apiResponse->payload[0]->payload->authtoken;
+
+				Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername] = $session;
+			} else {
+				Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername] = false;
+			}
+		}
+		return Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername];
+	}
+
+	public function findNewUser($patronBarcode)
+	{
+		$sessionInfo = $this->getStaffUserInfo();
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers  = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$params = [
+			'service' => 'open-ils.auth',
+			'method' => 'open-ils.auth.session.retrieve',
+			'param' => json_encode($sessionInfo['authToken']),
+		];
+
+		//For Evergreen, this can only be called when initiating masquerade
+		return false;
 	}
 
 	private function loadPatronInformation($userData, $username, $password) {
@@ -1123,7 +1157,7 @@ class Evergreen extends AbstractIlsDriver
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
 			$getSessionResponse = json_decode($getSessionResponse);
 			if ($getSessionResponse->payload[0]->__c == 'au'){ //class
-				return $this->mapEvergreenFields($getSessionResponse->payload[0]->__p, $this->auFields); //payload
+				return $this->mapEvergreenFields($getSessionResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
 			}
 		}
 		return null;
@@ -1148,7 +1182,8 @@ class Evergreen extends AbstractIlsDriver
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/opac/extras/supercat/retrieve/atom/record/' . $recordId;
 		$superCatResult = $this->apiCurlWrapper->curlGetPage($evergreenUrl);
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
-			return simplexml_load_string($evergreenUrl);
+			$bibParsed = simplexml_load_string($superCatResult);
+			return $bibParsed;
 		}else{
 			return null;
 		}
@@ -1201,7 +1236,7 @@ class Evergreen extends AbstractIlsDriver
 				if ($this->apiCurlWrapper->getResponseCode() == 200) {
 					$apiResponse = json_decode($apiResponse);
 					if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)){
-						$moneySummary = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->mousFields);
+						$moneySummary = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('mous'));
 						$summary->totalFines = $moneySummary['balance_owed'];
 					}
 				}
@@ -1209,5 +1244,67 @@ class Evergreen extends AbstractIlsDriver
 		}
 
 		return $summary;
+	}
+
+	public function isPromptForHoldNotifications() : bool
+	{
+		return true;
+	}
+
+	public function getHoldNotificationTemplate() : ?string
+	{
+		global $interface;
+		//Get a list of SMS carriers
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$request = 'service=open-ils.pcrud&method=open-ils.pcrud.search.csc.atomic';
+		$request .= '&param=' . json_encode("ANONYMOUS");
+		$request .= '&param=' . json_encode(['active' => 1]);
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		$smsCarriers = [];
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			foreach ($apiResponse->payload[0] as $smsInfo){
+				$smsObj = $this->mapEvergreenFields($smsInfo->__p, $this->fetchIdl('csc'));
+				$smsCarriers[$smsObj['id']] = $smsObj['name'] . '(' . $smsObj['region'] . ')';
+			}
+		}
+		asort($smsCarriers,   SORT_STRING | SORT_FLAG_CASE);
+		$interface->assign('smsCarriers', $smsCarriers);
+
+		$user = UserAccount::getActiveUserObj();
+		$interface->assign('primaryEmail', $user->email);
+		$interface->assign('primaryPhone', $user->phone);
+		return 'Record/evergreenHoldNotifications.tpl';
+	}
+
+	function fetchIdl($className){
+		global $memCache;
+		$idl = $memCache->get('evergreen_idl_' . $className);
+		if ($idl == false){
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/reports/fm_IDL.xml?class=' . $className;
+			$apiResponse = $this->apiCurlWrapper->curlGetPage($evergreenUrl);
+			$idl = [];
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$idlRaw = simplexml_load_string($apiResponse);
+				$fields = $idlRaw->class->fields;
+				$index = 0;
+				foreach ($fields->field as $field){
+					$attributes = $field->attributes();
+					foreach ($attributes as $name => $value){
+						if ($name == 'name'){
+							$idl[$index++] = (string)$attributes['name'];
+						}
+					}
+				}
+			}
+			global $configArray;
+			$memCache->set('evergreen_idl_' . $className, $idl, $configArray['Caching']['evergreen_idl']);
+		}
+		return $idl;
 	}
 }

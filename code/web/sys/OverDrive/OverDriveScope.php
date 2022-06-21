@@ -76,7 +76,7 @@ class OverDriveScope extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/OverDrive/Scopes?objectAction=edit&id=' . $this->id;
 	}
 

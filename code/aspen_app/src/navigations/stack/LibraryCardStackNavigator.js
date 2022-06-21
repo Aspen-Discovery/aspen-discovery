@@ -11,7 +11,6 @@ const LibraryCardStackNavigator = () => {
 			initialRouteName="LibraryCard"
 			screenOptions={{
 				headerShown: true,
-				backBehavior: "history",
 				headerBackTitleVisible: false,
 			}}
 		>

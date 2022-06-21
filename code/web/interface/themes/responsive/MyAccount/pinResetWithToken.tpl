@@ -6,11 +6,21 @@
 				{if !empty($error)}
 					<div class="alert alert-danger">{$error}</div>
 				{/if}
+				{if $pinExpired}
+					<div class="alert alert-warning">{translate text="Your PIN has expired, enter a new PIN below." isPublicFacing=true}</div>
+				{/if}
 				{if !empty($result) && $result.success}
 					<div class="alert alert-success">{translate text='Your PIN has been reset.' isPublicFacing=true}</div>
 					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to login' isPublicFacing=true}</a> </div>
 				{else}
 					{if $tokenValid}
+						<div class="alert alert-info">
+							{if $pinValidationRules.onlyDigitsAllowed}
+								{translate text="PINs must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
+							{else}
+								{translate text="PINs must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
+							{/if}
+						</div>
 						<form method="post" role="form" action="/MyAccount/CompletePinReset" id="resetPin">
 							<input type='hidden' name='token' id='token' value='{$token}' />
 							<div class="form-group">
@@ -25,11 +35,13 @@
 										<input type="password" name="pin2" id="pin2" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 								</div>
 							</div>
-							<div class="form-group">
-								<div class="col-xs-8 col-xs-offset-4">
-									<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
+							{if !isset($showSubmitButton) || $showSubmitButton == true}
+								<div class="form-group">
+									<div class="col-xs-8 col-xs-offset-4">
+										<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
+									</div>
 								</div>
-							</div>
+							{/if}
 							<script type="text/javascript">
 								{* input classes  'required', 'digits' are validation rules for the validation plugin *}
 								{literal}

@@ -128,8 +128,6 @@ AuthorProper:
   QueryFields:
     - author_exact:
       - [exact, 2200]
-    - author_left:
-      - [text_left, 1400]
     - auth_author:
       - [onephrase, 350]
     - auth_author2:
@@ -226,8 +224,6 @@ TitleProper:
   QueryFields:
     - title_exact:
       - [localized_callnumber, 2400]
-    - title_left:
-      - [text_left, 1600]
     - title_proper:
       - [onephrase, 850]
     - series_proper:
@@ -371,12 +367,8 @@ KeywordProper:
   QueryFields:
     - title_exact:
       - [localized_callnumber, 2400]
-    - title_left:
-      - [text_left, 1600]
     - author_exact:
       - [localized_callnumber, 2200]
-    - author_left:
-      - [text_left, 1000]
     - title_proper:
       - [onephrase, 850]
     - series_proper:

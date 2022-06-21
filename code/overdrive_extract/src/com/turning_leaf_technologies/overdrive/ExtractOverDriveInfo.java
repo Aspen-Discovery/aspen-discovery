@@ -1561,6 +1561,7 @@ class ExtractOverDriveInfo {
 		if (connectToOverDriveAPI()) {
 			HashMap<String, String> headers = new HashMap<>();
 			headers.put("Authorization", overDriveAPITokenType + " " + overDriveAPIToken);
+			headers.put("User-Agent", "Aspen Discovery");
 			int numTries = 0;
 			WebServiceResponse response = null;
 			int maxTries = Math.max(1, settings.getNumRetriesOnError() + 1);

@@ -13,7 +13,6 @@ const MoreStackNavigator = () => {
 			initialRouteName="More"
 			screenOptions={{
 				headerShown: true,
-				backBehavior: "history",
 				headerBackTitleVisible: false,
 			}}
 		>

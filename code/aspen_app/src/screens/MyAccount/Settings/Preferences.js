@@ -3,8 +3,8 @@ import {Box, Divider, HStack, Pressable, Button, Text, Heading, FlatList, Avatar
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
-import {getProfile} from "../../../util/loadPatron";
 import {translate} from "../../../translations/translations";
+import {userContext} from "../../../context/user";
 
 export default class Preferences extends Component {
 	constructor(props) {
@@ -28,7 +28,7 @@ export default class Preferences extends Component {
 
 	}
 
-	renderItem = (item) => {
+	renderItem = (item, patronId, libraryUrl) => {
 		if (item.external) {
 			return (
 				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
@@ -42,7 +42,7 @@ export default class Preferences extends Component {
 		} else {
 			return (
 				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
-					this.onPressMenuItem(item.path)
+					this.onPressMenuItem(item.path, patronId, libraryUrl)
 				}}>
 					<HStack>
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
@@ -52,8 +52,8 @@ export default class Preferences extends Component {
 		}
 	};
 
-	onPressMenuItem = (item) => {
-		this.props.navigation.navigate(item, {item});
+	onPressMenuItem = (path, patronId, libraryUrl) => {
+		this.props.navigation.navigate(path, {libraryUrl: libraryUrl, patronId: patronId});
 	};
 
 
@@ -61,12 +61,18 @@ export default class Preferences extends Component {
 		WebBrowser.openBrowserAsync(url);
 	}
 
+	static contextType = userContext;
+
 	render() {
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
+
 		return (
 			<Box flex={1} safeArea={5}>
 				<FlatList
 					data={this.state.defaultMenuItems}
-					renderItem={({item}) => this.renderItem(item)}
+					renderItem={({item}) => this.renderItem(item, user.id, library.baseUrl)}
 					keyExtractor={(item, index) => index.toString()}
 				/>
 			</Box>

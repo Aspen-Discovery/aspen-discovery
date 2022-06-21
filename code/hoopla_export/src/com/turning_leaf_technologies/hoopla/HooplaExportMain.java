@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.zip.CRC32;
 
 public class HooplaExportMain {
@@ -175,7 +176,7 @@ public class HooplaExportMain {
 					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
 					try {
 						JSONObject itemDetails = new JSONObject(rawResponse);
-						String groupedWorkId = groupRecord(itemDetails, hooplaId);
+						String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(itemDetails, hooplaId);
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 
@@ -473,7 +474,7 @@ public class HooplaExportMain {
 						try {
 							addHooplaTitleToDB.executeUpdate();
 
-							String groupedWorkId = groupRecord(curTitle, hooplaId);
+							String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(curTitle, hooplaId);
 							indexRecord(groupedWorkId);
 						}catch (DataTruncation e) {
 							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
@@ -497,7 +498,7 @@ public class HooplaExportMain {
 						try {
 							updateHooplaTitleInDB.executeUpdate();
 
-							String groupedWorkId = groupRecord(curTitle, hooplaId);
+							String groupedWorkId =  getRecordGroupingProcessor().groupHooplaRecord(curTitle, hooplaId);
 							indexRecord(groupedWorkId);
 						}catch (DataTruncation e) {
 							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
@@ -515,58 +516,6 @@ public class HooplaExportMain {
 
 	private static void indexRecord(String groupedWorkId) {
 		getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-	}
-
-	private static String groupRecord(JSONObject itemDetails, long hooplaId) throws JSONException {
-		//Perform record grouping on the record
-		String title;
-		String subTitle;
-		if (itemDetails.has("titleTitle")){
-			title = itemDetails.getString("titleTitle");
-			subTitle = itemDetails.getString("title");
-		}else {
-			title = itemDetails.getString("title");
-			if (itemDetails.has("subtitle")){
-				subTitle = itemDetails.getString("subtitle");
-			}else{
-				subTitle = "";
-			}
-		}
-		String mediaType = itemDetails.getString("kind");
-		String primaryFormat;
-		switch (mediaType) {
-			case "MOVIE":
-			case "TELEVISION":
-				primaryFormat = "eVideo";
-				break;
-			case "AUDIOBOOK":
-				primaryFormat = "eAudiobook";
-				break;
-			case "EBOOK":
-				primaryFormat = "eBook";
-				break;
-			case "COMIC":
-				primaryFormat = "eComic";
-				break;
-			case "MUSIC":
-				primaryFormat = "eMusic";
-				break;
-			default:
-				logger.error("Unhandled hoopla mediaType " + mediaType);
-				primaryFormat = mediaType;
-				break;
-		}
-		String author = "";
-		if (itemDetails.has("artist")) {
-			author = itemDetails.getString("artist");
-			author = StringUtils.swapFirstLastNames(author);
-		} else if (itemDetails.has("publisher")) {
-			author = itemDetails.getString("publisher");
-		}
-
-		RecordIdentifier primaryIdentifier = new RecordIdentifier("hoopla", Long.toString(hooplaId));
-
-		return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, true);
 	}
 
 	private static String getAccessToken(String username, String password) {
@@ -669,19 +618,19 @@ public class HooplaExportMain {
 			String rawResponseString = new String(allRecordsToRegroupRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
 			JSONObject rawResponse = new JSONObject(rawResponseString);
 			//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
-			String groupedWorkId = groupRecord(rawResponse, recordIdentifier);
+			String groupedWorkId = getRecordGroupingProcessor().groupHooplaRecord(rawResponse, recordIdentifier);
 			if (!originalGroupedWorkId.equals(groupedWorkId)) {
 				logEntry.incChangedAfterGrouping();
 			}
 			//process records to regroup after every 1000 changes so we keep up with the changes.
 			if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
-				indexer.processScheduledWorks(logEntry, false);
+				indexer.processScheduledWorks(logEntry, false, -1);
 			}
 		}
 
 		//Finish reindexing anything that just changed
 		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry, false);
+			indexer.processScheduledWorks(logEntry, false, -1);
 		}
 
 		try {

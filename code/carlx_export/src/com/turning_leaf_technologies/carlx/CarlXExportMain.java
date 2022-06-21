@@ -255,7 +255,6 @@ public class CarlXExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 				Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
@@ -770,14 +769,14 @@ public class CarlXExportMain {
 									// Build Marc Object from the API data
 									Record updatedMarcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, currentBibID);
 
-									Record currentMarcRecord = loadMarc(currentBibID);
+									Record currentMarcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), currentBibID, logEntry);
 
 									//Check to see if we need to load items
 									ArrayList<ItemChangeInfo> itemsForBib = fetchItemsForBib(currentBibID, bibsNotFound);
 
 									if (currentMarcRecord != null) {
 										//Remove existing items from the bib, they will be replaced with the items we just loaded
-										List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
+										List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTagInt());
 										for (VariableField itemFieldVar : existingItemsInMarcRecord) {
 											currentMarcRecord.removeVariableField(itemFieldVar);
 										}

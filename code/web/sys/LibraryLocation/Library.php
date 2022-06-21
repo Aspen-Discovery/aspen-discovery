@@ -50,6 +50,7 @@ class Library extends DataObject
 	public $showInSelectInterface;
 	public $showDisplayNameInHeader;
 	public $headerText;
+	public $footerText;
 	public $systemMessage;
 
 	public $generateSitemap;
@@ -104,6 +105,7 @@ class Library extends DataObject
 	public $payPalSettingId;
 	public $proPaySettingId;
 	public $worldPaySettingId;
+	public $xpressPaySettingId;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -153,6 +155,8 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $showWikipediaContent;
 	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
+	public $allowNameUpdates;
+	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
 	public $allowPatronPhoneNumberUpdates;
 	public $useAllCapsWhenUpdatingProfile;
@@ -201,6 +205,11 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
 	public $loginNotes;
+	public $allowLoginToPatronsOfThisLibraryOnly;
+	public $messageForPatronsOfOtherLibraries;
+	public $preventLogin;
+	public $preventLoginMessage;
+
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
@@ -245,6 +254,7 @@ class Library extends DataObject
 
 	//EBSCO Settings
 	public $edsSettingsId;
+	public $ebscohostSearchSettingId;
 
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
@@ -276,10 +286,9 @@ class Library extends DataObject
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 
-
 	public function getNumericColumnNames() : array {
 		return [
-			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId'
+			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId', 'ebscohostSearchSettingId'
 		];
 	}
 
@@ -412,6 +421,16 @@ class Library extends DataObject
 			$worldPaySettings[$worldPaySetting->id] = $worldPaySetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/XpressPaySetting.php';
+		$xpressPaySetting = new XpressPaySetting();
+		$xpressPaySetting->orderBy('name');
+		$xpressPaySettings = [];
+		$xpressPaySetting->find();
+		$xpressPaySettings[-1] = 'none';
+		while ($xpressPaySetting->fetch()){
+			$xpressPaySettings[$xpressPaySetting->id] = $xpressPaySetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -440,6 +459,17 @@ class Library extends DataObject
 		$edsSettings[-1] = 'none';
 		while ($edsSetting->fetch()){
 			$edsSettings[$edsSetting->id] = $edsSetting->name;
+		}
+
+
+		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
+		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting->orderBy('name');
+		$ebscohostSettings = [];
+		$ebscohostSetting->find();
+		$ebscohostSettings[-1] = 'none';
+		while ($ebscohostSetting->fetch()){
+			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
 		$overDriveScopes = [];
@@ -526,6 +556,7 @@ class Library extends DataObject
 				'homeLink' => array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Aspen Discovery home location.', 'size'=>'40', 'hideInLists' => true, 'editPermissions' => ['Library Contact Settings']),
 				'additionalCss' => array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'editPermissions' => ['Library Theme Configuration']),
+				'footerText' => array('property'=>'footerText', 'type'=>'html', 'label'=>'Footer Text', 'description'=>'Optional Text to display in the footer above the footer logo if displayed.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'editPermissions' => ['Library Theme Configuration']),
 			)),
 
 			// Contact Links //
@@ -538,7 +569,7 @@ class Library extends DataObject
 				'goodreadsLink' => array('property'=>'goodreadsLink', 'type'=>'text', 'label'=>'GoodReads Link Url', 'description'=>'The url to GoodReads (leave blank if the library does not have a GoodReads account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'tiktokLink' => array('property'=>'tiktokLink', 'type'=>'text', 'label'=>'TikTok Link Url', 'description'=>'The url to TikTok (leave blank if the library does not have a TikTok account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
-				'contactEmail' => array('property'=>'contactEmail', 'type'=>'text', 'label'=>'General Email Address', 'description'=>'A general email address for the public to contact the library', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true)
+				'contactEmail' => array('property'=>'contactEmail', 'type'=>'text', 'label'=>'General Email Address', 'description'=>'A general email address for the public to contact the library', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true, 'affectsLiDA' => true)
 			)),
 
 			// ILS/Account Integration //
@@ -575,6 +606,8 @@ class Library extends DataObject
 					'patronNameDisplayStyle'               => array('property'=>'patronNameDisplayStyle', 'type'=>'enum', 'values'=>array('firstinitial_lastname'=>'First Initial. Last Name', 'lastinitial_firstname'=>'First Name Last Initial.'), 'label'=>'Patron Display Name Style', 'description'=>'How to generate the patron display name', 'permissions' => ['Library ILS Options']),
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1, 'readonly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowUsernameUpdates'                 => array('property'=>'allowUsernameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Username', 'description'=>'Whether or not the user can update their username.', 'hideInLists' => true, 'default' => 0, 'readonly' => false, 'permissions' => ['Library ILS Connection']),
+					'allowNameUpdates'            => array('property' => 'allowNameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Name (Setting applies to Koha only)', 'description'=>'Whether or not patrons should be able to update their name in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
+					'allowDateOfBirthUpdates'            => array('property' => 'allowDateOfBirthUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Date of Birth (Setting applies to Koha only)', 'description'=>'Whether or not patrons should be able to update their date of birth in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowPatronPhoneNumberUpdates'        => array('property' => 'allowPatronPhoneNumberUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Phone Number', 'description'=>'Whether or not patrons should be able to update their own phone number in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowHomeLibraryUpdates'              => array('property'=>'allowHomeLibraryUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Home Library', 'description'=>'Whether or not the user can update their home library.', 'hideInLists' => true, 'default' => 1, 'readonly' => false, 'permissions' => ['Library ILS Options']),
@@ -605,7 +638,7 @@ class Library extends DataObject
 					'showLogMeOutAfterPlacingHolds'     => array('property'=>'showLogMeOutAfterPlacingHolds', 'type'=>'checkbox', 'label'=>'Show Log Me Out After Placing Holds', 'description'=>'Whether or a checkbox should be shown that will automatically log patrons out after a hold is placed.', 'hideInLists' => true, 'default' => 1),
 					'treatBibOrItemHoldsAs'             => array('property'=>'treatBibOrItemHoldsAs', 'type'=>'enum', 'values'=>array('1'=>'Either Bib or Item Level Hold', '2'=>'Force Bib Level Hold', '3' => 'Force Item Level Hold'), 'label'=>'Treat holds for formats that allow either bib or item holds as ', 'description'=>'How to handle holds when either bib or item level holds are allowed.'),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
-					'maxDaysToFreeze'                   => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true),
+					'maxDaysToFreeze'                   => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true, 'default' => 365),
 					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
 					'showDetailedHoldNoticeInformation' => array('property' => 'showDetailedHoldNoticeInformation', 'type' => 'checkbox', 'label' => 'Show Detailed Hold Notice Information', 'description' => 'Whether or not the user should be presented with detailed hold notification information, i.e. you will receive an email/phone call to xxx when the hold is available', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 					'inSystemPickupsOnly'               => array('property'=>'inSystemPickupsOnly', 'type'=>'checkbox', 'label'=>'In System Pickups Only', 'description'=>'Restrict pickup locations to only locations within this library system.', 'hideInLists' => true, 'default' => true, 'permissions' => ['Library ILS Connection']),
@@ -618,11 +651,15 @@ class Library extends DataObject
 				)),
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true, 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
+					'preventLogin' => array('property'=>'preventLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Patrons of this Library', 'description'=>'Patrons of this library will not be allowed to login (useful in consortial catalogs to prevent access in other interfaces).', 'hideInLists' => true, 'default' => 0),
+					'preventLoginMessage' => array('property' => 'preventLoginMessage', 'type' => 'html', 'label' => 'Prevented Login Message', 'description' => 'A message to show to patrons for patrons of this library if they are prevented from logging in', 'hideInLists' => true),
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'defaultRememberMe' => array('property' => 'defaultRememberMe', 'type' => 'checkbox', 'label' => 'Check "Remember Me" by default when outside the library', 'description' => 'Whether or not to check the "Remember Me" option by default when logging in outside the library', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
+					'allowLoginToPatronsOfThisLibraryOnly' => array('property' => 'allowLoginToPatronsOfThisLibraryOnly', 'type' => 'checkbox', 'label' => 'Allow Login to Patrons of this Library Only', 'description' => 'Whether or not only patrons with a library in this system can login', 'hideInLists' => true, 'default' => 0),
+					'messageForPatronsOfOtherLibraries' => array('property' => 'messageForPatronsOfOtherLibraries', 'type' => 'html', 'label' => 'Message for Patrons of Other Libraries', 'description' => 'A message to show to patrons of other libraries if they are denied access', 'hideInLists' => true),
 				)),
 				'messagesSection' => array('property' => 'messagesSection', 'type' => 'section', 'label' => 'Messages', 'hideInLists' => true, 'permissions' => ['Library ILS Connection'], 'properties' => array(
 					'showOpacNotes' => array('property'=>'showOpacNotes', 'type'=>'checkbox', 'label'=>'Show OPAC Notes', 'description'=>'Whether or not OPAC/Web Notes from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
@@ -643,14 +680,14 @@ class Library extends DataObject
 					'selfRegistrationTemplate' => array('property'=>'selfRegistrationTemplate', 'type'=>'text', 'label'=>'Self Registration Template', 'description'=>'The ILS template to use during self registration (Sierra and Millennium).', 'hideInLists' => true, 'default' => 'default'),
 				)),
 				'masqueradeModeSection' => array('property' => 'masqueradeModeSection', 'type' => 'section', 'label' => 'Masquerade Mode', 'hideInLists' => true, 'permissions' => ['Library ILS Connection'], 'properties' => array(
-					'allowMasqueradeMode'                        => array('property'=>'allowMasqueradeMode', 'type'=>'checkbox', 'label'=>'Allow Masquerade Mode', 'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.', 'hideInLists' => true, 'default' => false),
+					'allowMasqueradeMode'                        => array('property'=>'allowMasqueradeMode', 'type'=>'checkbox', 'label'=>'Allow Masquerade Mode', 'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.', 'hideInLists' => true, 'default' => true),
 					'masqueradeAutomaticTimeoutLength'           => array('property'=>'masqueradeAutomaticTimeoutLength', 'type'=>'integer', 'label'=>'Masquerade Mode Automatic Timeout Length', 'description'=>'The length of time before an idle user\'s Masquerade session automatically ends in seconds.', 'size'=>'8', 'hideInLists' => true, 'max' => 240),
 					'allowReadingHistoryDisplayInMasqueradeMode' => array('property'=>'allowReadingHistoryDisplayInMasqueradeMode', 'type'=>'checkbox', 'label'=>'Allow Display of Reading History in Masquerade Mode', 'description'=>'This option allows Guiding Users to view the Reading History of the masqueraded user.', 'hideInLists' => true, 'default' => false),
 				)),
 			)),
 
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library eCommerce Options'], 'properties' => array(
-				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 6 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
+				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 7 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay', 6 => 'Xpress-pay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
 				'finesToPay' => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
 				'finePaymentOrder' => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLink' => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
@@ -662,6 +699,7 @@ class Library extends DataObject
 				'worldPaySettingId'  => array('property' => 'worldPaySettingId', 'type' => 'enum', 'values' => $worldPaySettings, 'label' => 'FIS World Pay Settings', 'description' => 'The FIS WolrdPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'payPalSettingId'  => array('property' => 'payPalSettingId', 'type' => 'enum', 'values' => $payPalSettings, 'label' => 'PayPal Settings', 'description' => 'The PayPal settings to use', 'hideInLists' => true, 'default' => -1),
 				'proPaySettingId'  => array('property' => 'proPaySettingId', 'type' => 'enum', 'values' => $proPaySettings, 'label' => 'ProPay Settings', 'description' => 'The ProPay settings to use', 'hideInLists' => true, 'default' => -1),
+				'xpressPaySettingId'  => array('property' => 'xpressPaySettingId', 'type' => 'enum', 'values' => $xpressPaySettings, 'label' => 'Xpress-pay Settings', 'description' => 'The Xpress-pay settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
@@ -870,8 +908,9 @@ class Library extends DataObject
 				'enableWebBuilder' => array('property' => 'enableWebBuilder', 'type' => 'checkbox', 'label' => 'Allow searching locally created web content', 'description' => 'Whether or not information from indexed local web content is shown.', 'hideInLists' => true, 'default' => 0),
 			)),
 
-			'edsSection' => array('property' => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library EDS Options'], 'properties' => array(
+			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library EDS Options'], 'properties' => array(
 				'edsSettingsId' => array('property' => 'edsSettingsId', 'type'=>'enum', 'values'=>$edsSettings, 'label' => 'EDS Settings', 'description'=>'The EDS Settings to use for connection', 'hideInLists' => true, 'default' => -1),
+				'ebscohostSearchSettingId' => array('property' => 'ebscohostSearchSettingId', 'type'=>'enum', 'values'=>$ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description'=>'The EBSCOhost SEarch Settings to use for connection', 'hideInLists' => true, 'default' => -1),
 			)),
 
 			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection'], 'properties' => array(
@@ -889,7 +928,7 @@ class Library extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Holidays',
 				'renderAsHeading' => true,
-				'description' => 'Holidays',
+				'description' => 'Holidays (automatically loaded from Koha)',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
 				'subObjectType' => 'Holiday',
@@ -989,7 +1028,6 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
 		}else{
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
-
 		}
 		if (!$configArray['CAS']['enabled']) {
 			unset($structure['casSection']);
@@ -1306,6 +1344,7 @@ class Library extends DataObject
 		// Do this last so that everything else can update even if we get an error here
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
+			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
 
@@ -1393,7 +1432,7 @@ class Library extends DataObject
 				if ($object->_deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
-						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
+						$errorString = "Cannot delete {$object->format} because Materials Request(s) are present for the format.";
 						return new AspenError($errorString);
 					}
 				}else{
@@ -1536,7 +1575,7 @@ class Library extends DataObject
 		return $this->_layoutSettings;
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
 
@@ -1560,6 +1599,31 @@ class Library extends DataObject
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 		return $libraryList;
+	}
+
+	static $libraryListAsObjects = null;
+	/**
+	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
+	 * @return Library[]
+	 */
+	static function getLibraryListAsObjects($restrictByHomeLibrary): array
+	{
+		if (Library::$libraryListAsObjects == null) {
+			$library = new Library();
+			$library->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$library->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$library->find();
+			Library::$libraryListAsObjects = [];
+			while ($library->fetch()) {
+				Library::$libraryListAsObjects[$library->libraryId] = clone $library;
+			}
+		}
+		return Library::$libraryListAsObjects;
 	}
 
 	/** @var OverDriveScope */
@@ -1678,6 +1742,7 @@ class Library extends DataObject
 	public function getApiInfo() : array
 	{
 		global $configArray;
+		global $interface;
 		$apiInfo = [
 			'libraryId' => $this->libraryId,
 			'isDefault' => $this->isDefault,
@@ -1695,6 +1760,18 @@ class Library extends DataObject
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
 			'allowLinkedAccounts' => $this->allowLinkedAccounts,
+			'allowUserLists' => $this->showFavorites,
+			'showHoldButton' => $this->showHoldButton,
+			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'maxDaysToFreeze' => $this->maxDaysToFreeze,
+			'showCardExpiration' => $this->showCardExpirationDate,
+			'showCardExpirationWarnings' => $this->showExpirationWarnings,
+			'enableReadingHistory' => $this->enableReadingHistory,
+			'enableSavedSearches' => $this->enableSavedSearches,
+			'allowPinReset' => $this->allowPinReset,
+			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'showShareOnExternalSites' => $this->showShareOnExternalSites,
+			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit')
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

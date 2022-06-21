@@ -598,7 +598,7 @@ class Millennium extends AbstractIlsDriver
 		return $millenniumHolds->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId = null){
+	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
 		return $millenniumHolds->updateHoldDetailed($patron, 'cancel', null, $cancelId, $this->getIndexingProfile(), '', '');
@@ -1492,6 +1492,8 @@ class Millennium extends AbstractIlsDriver
 	private function getListTitlesFromWebPAC($patron, $listId, ?array $currentListTitles, UserList $newList, &$results, $title)
 	{
 		//Get a list of all titles within the list to be imported
+		//Increase the timeout for the page to load large lists
+		$this->curlWrapper->setTimeout(120);
 		$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum=' . $listId);
 		//Get the table for the details
 		$listsDetailsMatches = [];
@@ -1516,7 +1518,7 @@ class Millennium extends AbstractIlsDriver
 						//Check to see if this title is already on the list.
 						$resourceOnList = false;
 						foreach ($currentListTitles as $currentTitle) {
-							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id) {
+							if (($currentTitle->source == 'GroupedWork') && ($currentTitle->sourceId == $groupedWork->permanent_id)) {
 								$resourceOnList = true;
 								break;
 							}

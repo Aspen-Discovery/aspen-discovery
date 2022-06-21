@@ -88,8 +88,14 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$this->db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$this->db = new GroupedWorksSolrConnector2($url);
+		}
 
 		//Search the database by title and author
 		if ($title && $author){
@@ -134,8 +140,14 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$this->db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$this->db = new GroupedWorksSolrConnector2($url);
+		}
 
 		//Search the database by title and author
 		if ($recordId){
@@ -237,8 +249,14 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$this->db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$this->db = new GroupedWorksSolrConnector2($url);
+		}
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
@@ -299,8 +317,14 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$this->db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$this->db = new GroupedWorksSolrConnector2($url);
+		}
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
@@ -522,8 +546,14 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1){
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$this->db = new GroupedWorksSolrConnector($url);
+		}else{
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+			$this->db = new GroupedWorksSolrConnector2($url);
+		}
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
@@ -609,10 +639,21 @@ class ItemAPI extends Action {
 						$groupedStatus = $relatedRecord->getGroupedStatus();
 						$isEContent = $relatedRecord->isEContent();
 
+						$numItemsWithVolumes = 0;
+						$numItemsWithoutVolumes = 0;
 						$items = $relatedRecord->getItems();
 						foreach ($items as $item) {
 							$shelfLocation = $item->shelfLocation;
 							$callNumber = $item->callNumber;
+
+							if (empty($item->volume)){
+								$numItemsWithoutVolumes++;
+							}else{
+								$numItemsWithVolumes++;
+							}
+
+							$hasItemsWithoutVolumes = $numItemsWithoutVolumes > 0;
+							$majorityOfItemsHaveVolumes = $numItemsWithVolumes > $numItemsWithoutVolumes;
 
 							if($item->eContentSource == "Hoopla") {
 								require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
@@ -670,6 +711,7 @@ class ItemAPI extends Action {
 							}
 						}
 
+						$recordVolumes = $relatedRecord->getVolumeData();
 
 						$holdable = $relatedRecord->isHoldable();
 						$record = array(
@@ -690,8 +732,12 @@ class ItemAPI extends Action {
 							'publicationDate' => $publicationDate,
 							'physical' => $physical,
 							'action' => $actions,
+							'hasItemsWithoutVolumes' => $hasItemsWithoutVolumes,
+							'majorityOfItemsHaveVolumes' => $majorityOfItemsHaveVolumes,
+							'volumes' => $recordVolumes,
 						);
 						$records[] = $record;
+						$itemData['language'] = $relatedRecord->language;
 
 					}
 					$variationCategoryInfo[$relatedManifestation->format] = $records;

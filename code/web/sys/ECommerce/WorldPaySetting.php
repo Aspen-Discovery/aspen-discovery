@@ -10,6 +10,8 @@ class WorldPaySetting extends DataObject
 	public $name;
 	public $merchantCode;
 	public $settleCode;
+	public $paymentSite;
+	public $useLineItems;
 
 	private $_libraries;
 
@@ -21,6 +23,8 @@ class WorldPaySetting extends DataObject
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
 			'merchantCode' => array('property' => 'merchantCode', 'type' => 'text', 'label' => 'Merchant Code', 'description' => 'The Merchant Code provided by FIS', 'maxLength' => 20),
 			'settleCode' => array('property' => 'settleCode', 'type' => 'text', 'label' => 'Settle Code', 'description' => 'The Settle Code provided by FIS', 'maxLength' => 20),
+			'paymentSite' => array('property' => 'paymentSite', 'type' => 'text', 'label' => 'Payment Site URL', 'description' => 'The Payment Site URL provided by FIS', 'maxLength' => 255),
+			'useLineItems' => array('property' => 'useLineItems', 'type' => 'checkbox', 'label' => 'Send Line Items', 'description' => 'Whether or not to send Line Items to FIS'),
 
 			'libraries' => array(
 				'property' => 'libraries',

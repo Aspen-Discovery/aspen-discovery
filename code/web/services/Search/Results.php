@@ -156,7 +156,7 @@ class Search_Results extends ResultsAction {
 
 		// Cannot use the current search globals since we may change the search term above
 		// Display of query is not right when reusing the global search object
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);
@@ -244,6 +244,9 @@ class Search_Results extends ResultsAction {
 					} elseif (strpos($term['lookfor'], 'WAITFOR') !== false) {
 						$logSearchError = false;
 						break;
+					} elseif (strpos($term['lookfor'], 'nvOpzp') !== false) {
+						$logSearchError = false;
+						break;
 					}
 				}
 			}
@@ -255,7 +258,7 @@ class Search_Results extends ResultsAction {
 					if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mailer = new Mailer();
-						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\nIP Address: " . IPAddress::getActiveIp() . "\n" . $result['error']['msg'];
 						$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing catalog search", $emailErrorDetails);
 					}
 				}catch (Exception $e){
@@ -316,14 +319,7 @@ class Search_Results extends ResultsAction {
 
         //Look for suggestions for the search (but not if facets are applied)
 		$facetSet = $searchObject->getFacetList();
-		$hasAppliedFacets = false;
-		if (isset($facetSet)){
-			foreach ($facetSet as $facet){
-				if ($facet['hasApplied']){
-					$hasAppliedFacets = true;
-				}
-			}
-		}
+		$hasAppliedFacets = $searchObject->hasAppliedFacets();
 		if (!$hasAppliedFacets && $searchObject->getResultTotal() <= 5) {
 			require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
@@ -343,7 +339,7 @@ class Search_Results extends ResultsAction {
 					if ($spellingSuggestions['correctlySpelled'] == false && $library->allowAutomaticSearchReplacements && count($spellingSuggestions['suggestions']) > 0) {
 						$firstSuggestion = reset($spellingSuggestions['suggestions']);
 						//first check to see if we will get results
-						/** @var SearchObject_GroupedWorkSearcher $replacementSearchObject */
+						/** @var SearchObject_AbstractGroupedWorkSearcher $replacementSearchObject */
 						$replacementSearchObject = SearchObjectFactory::initSearchObject();
 						$replacementSearchObject->init($searchSource, $firstSuggestion['phrase']);
 						$replacementSearchObject->setPrimarySearch(false);
@@ -469,15 +465,15 @@ class Search_Results extends ResultsAction {
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$sidebar = ($searchObject->getResultTotal() > 0 || $hasAppliedFacets) ? 'Search/results-sidebar.tpl' : '';
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	} // End launch()
 
 	/**
-	 * @param SearchObject_GroupedWorkSearcher $searchObject
+	 * @param SearchObject_AbstractGroupedWorkSearcher $searchObject
 	 * @param UInterface $interface
 	 */
-	private function getKeywordSearchResults(SearchObject_GroupedWorkSearcher $searchObject, UInterface $interface): void
+	private function getKeywordSearchResults(SearchObject_AbstractGroupedWorkSearcher $searchObject, UInterface $interface): void
 	{
 		//Check to see if we are not using a Keyword search and the Keyword search would provide results
 		if (!$searchObject->isAdvanced()) {

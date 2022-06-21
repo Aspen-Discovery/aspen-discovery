@@ -11,6 +11,10 @@ class APIUsage extends DataObject
 	public $module;
 	public $method;
 	public $numCalls;
+	public function getUniquenessFields(): array
+	{
+		return ['instance','year', 'month', 'module', 'method'];
+	}
 
 	static function incrementStat($module, $method){
 		try {
@@ -30,5 +34,14 @@ class APIUsage extends DataObject
 		}catch (PDOException $e){
 			//This happens if the table has not been created, ignore it
 		}
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->instance, $selectedFilters['instances'])){
+			$okToExport = true;
+		}
+		return $okToExport;
 	}
 }

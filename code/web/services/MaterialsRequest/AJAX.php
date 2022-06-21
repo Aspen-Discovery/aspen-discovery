@@ -39,6 +39,10 @@ class MaterialsRequest_AJAX extends Action{
 			if ($materialsRequest->find(true)){
 				//get the correct status to set based on the user's home library
 				$homeLibrary = Library::getPatronHomeLibrary();
+				if (is_null($homeLibrary)){
+					global $library;
+					$homeLibrary = $library;
+				}
 				$cancelledStatus = new MaterialsRequestStatus();
 				$cancelledStatus->isPatronCancel = 1;
 				$cancelledStatus->libraryId = $homeLibrary->libraryId;
@@ -47,6 +51,9 @@ class MaterialsRequest_AJAX extends Action{
 				$materialsRequest->dateUpdated = time();
 				$materialsRequest->status = $cancelledStatus->id;
 				if ($materialsRequest->update()){
+					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
+					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
+
 					return array('success' => true);
 				}else{
 					return array('success' => false, 'error' => 'Could not cancel the request, error during update.');
@@ -69,6 +76,10 @@ class MaterialsRequest_AJAX extends Action{
 				if (UserAccount::isLoggedIn()) {
 					$user = UserAccount::getLoggedInUser();
 					$staffLibrary = $user->getHomeLibrary(); // staff member's home library
+					if (is_null($staffLibrary)){
+						global $library;
+						$staffLibrary = $library;
+					}
 
 					if (!empty($staffLibrary)) {
 						// Material Request
@@ -118,6 +129,10 @@ class MaterialsRequest_AJAX extends Action{
 									//User can update if the home library of the requester is their library
 
 									$requestUserLibrary = $requestUser->getHomeLibrary();
+									if (is_null($requestUserLibrary)){
+										global $library;
+										$requestUserLibrary = $library;
+									}
 									$canUpdate          = $requestUserLibrary->libraryId == $staffLibrary->libraryId;
 									$isAdminUser        = true;
 								}
@@ -239,6 +254,10 @@ class MaterialsRequest_AJAX extends Action{
 			$id = $_REQUEST['id'];
 			if (!empty($id) && ctype_digit($id)) {
 				$requestLibrary = $user->getHomeLibrary(); // staff member's or patron's home library
+				if (is_null($requestLibrary)){
+					global $library;
+					$requestLibrary = $library;
+				}
 				if (!empty($requestLibrary)) {
 					$materialsRequest = new MaterialsRequest();
 					$materialsRequest->id  = $id;

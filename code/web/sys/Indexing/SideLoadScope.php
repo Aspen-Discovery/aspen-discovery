@@ -42,7 +42,7 @@ class SideLoadScope extends DataObject
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
 			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children', 'default'=>0),
 			'marcTagToMatch' => array('property'=>'marcTagToMatch', 'type'=>'text', 'label'=>'Tag To Match', 'description'=>'MARC tag(s) to match', 'maxLength' => '100', 'required' => false),
-			'marcValueToMatch' => array('property'=>'marcValueToMatch', 'type'=>'text', 'label'=>'Value To Match', 'description'=>'The value to match within the MARC tag(s) if multiple tags are specified, a match against any tag will count as a match of everything', 'maxLength' => '100', 'required' => false),
+			'marcValueToMatch' => array('property'=>'marcValueToMatch', 'type'=>'regularExpression', 'label'=>'Value To Match (Regular Expression)', 'description'=>'The value to match within the MARC tag(s) if multiple tags are specified, a match against any tag will count as a match of everything', 'maxLength' => '100', 'required' => false),
 			'includeExcludeMatches' => array('property'=>'includeExcludeMatches', 'type'=>'enum', 'values' => array('1'=>'Include Matches','0'=>'Exclude Matches'), 'label'=>'Include Matches?', 'description'=>'Whether or not matches are included or excluded', 'default'=>1),
 			'urlToMatch' => array('property'=>'urlToMatch', 'type'=>'regularExpression', 'label'=>'URL To Match (Regular Expression)', 'description'=>'URL to match when rewriting urls, supports capturing groups.', 'maxLength' => '255', 'required' => false),
 			'urlReplacement' => array('property'=>'urlReplacement', 'type'=>'regularExpression', 'label'=>'URL Replacement (Regular Expression)', 'description'=>'The replacement pattern for url rewriting, supports capturing groups: use $1, $2, etc as placeholders for the group.', 'maxLength' => '255', 'required' => false),
@@ -102,7 +102,7 @@ class SideLoadScope extends DataObject
 		);
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/SideLoads/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
@@ -160,6 +160,16 @@ class SideLoadScope extends DataObject
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+		}
+		return $ret;
+	}
+
+	public function delete($useWhere = false)
+	{
+		$ret = parent::delete($useWhere);
+		if ($ret !== FALSE) {
+			$this->clearLocations();
+			$this->clearLocations();
 		}
 		return $ret;
 	}

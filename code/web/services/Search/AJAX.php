@@ -73,7 +73,6 @@ class AJAX extends Action {
 		require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
 		$searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
@@ -113,7 +112,7 @@ class AJAX extends Action {
 		global $library;
 		global $timer;
 
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
@@ -318,7 +317,7 @@ class AJAX extends Action {
 		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		// Initialise from the current search globals
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 

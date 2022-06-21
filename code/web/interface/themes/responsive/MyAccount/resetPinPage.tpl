@@ -15,7 +15,7 @@
 
 			<h1>{translate text='Reset PIN/Password' isPublicFacing=true}</h1>
 			{if $offline}
-				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
+				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 				{if !empty($profileUpdateErrors)}
 					{foreach from=$profileUpdateErrors item=errorMsg}
@@ -27,6 +27,13 @@
 						<div class="alert alert-success">{$msg}</div>
 					{/foreach}
 				{/if}
+				<div class="alert alert-info">
+					{if $pinValidationRules.onlyDigitsAllowed}
+						{translate text="PINs must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
+					{else}
+						{translate text="PINs must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
+					{/if}
+				</div>
 
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal" id="pinForm">
