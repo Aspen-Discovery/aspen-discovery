@@ -198,3 +198,8 @@ code/cron/.idea/*
 code/web/.idea/*
 code/aspen_app/.idea/*
 install/createSite.ini
+sites/morgan.localhost/conf/config.cron.ini
+sites/morgan.localhost/conf/config.ini
+sites/morgan.localhost/conf/config.pwd.ini.template
+sites/morgan.localhost/httpd-morgan.localhost.conf
+sites/morgan.localhost/morgan.localhost.bat
