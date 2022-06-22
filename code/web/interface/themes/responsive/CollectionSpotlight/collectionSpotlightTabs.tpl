@@ -41,9 +41,10 @@
 				{assign var="wrapperId" value="$listName"}
 				{assign var="scrollerVariable" value="listScroller$listName"}
 				{assign var="fullListLink" value=$list->fullListLink()}
+				{assign var="scrollerTitle" value=$collectionSpotlight->name}
 
 				{if count($collectionSpotlight->lists) == 1}
-					{assign var="scrollerTitle" value=$list->name}
+					{assign var="scrollerTitle" value=$collectionSpotlight->name}
 				{/if}
 				{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 					{assign var="display" value="true"}
