@@ -152,7 +152,7 @@
 							<label class="control-label" for="cancelDate">{translate text="Automatically cancel this hold if not filled by" isPublicFacing=true}</label>
 							<input type="date" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}">
 							<div class="loginFormRow">
-								<i>{translate text="If this date is reached, the hold will automatically be cancelled for you." isPublicFacing=true}</i>
+								<i>{translate text="If this date is reached, the hold will automatically be cancelled for you. " isPublicFacing=true}</i>
 							</div>
 						</div>
 					{/if}
