@@ -23,7 +23,7 @@ class EBSCOhostSetting extends DataObject
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for these settings', 'required' => true),
 			'authType' => array('property'=>'authType', 'type'=>'enum', 'label'=>'Profile or IP Authentication', 'values' => array('profile' => 'Profile Authentication', 'ip' => 'IP Authentication'), 'description'=>'If using IP Authentication or Profile Authentication'),
 			'profileId' => array('property' => 'profileId', 'type' => 'text', 'label' => 'Profile Id', 'description' => 'The profile used for authentication. Required if using profile authentication.', 'hideInLists' => true),
-			'profilePwd' => array('property' => 'profilePwd', 'type' => 'text', 'label' => 'Profile Password', 'description' => 'The password used for profile authentication. Required if using profile authentication.', 'hideInLists' => true),
+			'profilePwd' => array('property' => 'profilePwd', 'type' => 'storedPassword', 'label' => 'Profile Password', 'description' => 'The password used for profile authentication. Required if using profile authentication.', 'hideInLists' => true),
 			'ipProfileId' => array('property' => 'ipProfileId', 'type' => 'text', 'label' => 'IP Profile Id', 'description' => 'The IP profile used for authenication. Required if using IP authentication.', 'hideInLists' => true),
 			'searchSettings' => array(
 				'property' => 'searchSettings',
