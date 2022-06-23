@@ -592,7 +592,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			$curlConnection = $this->getCurlConnection();
 			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
 			$infoUrl = $this->ebscohostBaseUrl . "/Search?prof={$settings->profileId}&pwd={$settings->profilePwd}&format=full";
-			$infoUrl .= "&query=$an&db=$dbId";
+			$infoUrl .= "&query=AN:$an&db=$dbId";
 			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
 			$recordInfoStr = curl_exec($curlConnection);
 			if ($recordInfoStr == false) {
@@ -889,9 +889,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 */
 	public function getRecords($ids){
 		$records = [];
-		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
 		foreach ($ids as $index => $id){
-			$records[$index] = new EbscoRecordDriver($id);
+			$records[$index] = new EbscohostRecordDriver($id);
 		}
 		return $records;
 	}

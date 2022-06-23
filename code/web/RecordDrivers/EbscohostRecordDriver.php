@@ -20,9 +20,10 @@ class EbscohostRecordDriver extends RecordInterface
 	public function __construct($recordData)
 	{
 		if (is_string($recordData)) {
-			$edsSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
+			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
 			list($dbId, $an) = explode(':', $recordData);
-			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
+			$this->recordData = $ebscohostSearcher->retrieveRecord($dbId, $an);
 		} else {
 			$this->recordData = $recordData;
 		}
