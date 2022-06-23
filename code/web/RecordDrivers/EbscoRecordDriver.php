@@ -19,6 +19,7 @@ class EbscoRecordDriver extends RecordInterface
 	public function __construct($recordData)
 	{
 		if (is_string($recordData)) {
+			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			list($dbId, $an) = explode(':', $recordData);
 			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
