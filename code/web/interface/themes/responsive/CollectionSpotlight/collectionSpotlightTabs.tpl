@@ -2,6 +2,21 @@
 <div id="collectionSpotlight{$collectionSpotlight->id}" class="{if count($collectionSpotlight->lists) > 1}ui-tabs {/if}collectionSpotlight {$collectionSpotlight->style}">
 	{if count($collectionSpotlight->lists) > 1}
 		{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
+			<div id="{$list->name|regex_replace:'/\W/':''|escape:url}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
+				{if $collectionSpotlight->showSpotlightTitle || $collectionSpotlight->showViewMoreLink}
+					<div id="list-{$list->name|regex_replace:'/\W/':''|escape:url}Header" class="titleScrollerHeader">
+						{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
+							{assign var="fullListLink" value=$list->fullListLink()}
+						{/foreach}
+						{if $collectionSpotlight->showSpotlightTitle && !empty($collectionSpotlight->name)}
+							<span class="listTitle resultInformationLabel">{if $collectionSpotlight->name}{translate text=$collectionSpotlight->name isPublicFacing=true isAdminEnteredData=true}{/if}</span>
+						{/if}
+						{if $collectionSpotlight->showViewMoreLink}
+							<div id="titleScrollerViewMore{$listName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
+						{/if}
+					</div>
+				{/if}
+			</div>
 			{* Display Tabs *}
 			<ul class="nav nav-tabs" role="tablist">
 				{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
@@ -33,8 +48,6 @@
 		{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
 			{assign var="active" value=$smarty.foreach.spotlightList.first}
 			{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-				{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
-				{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
 				{assign var="listIndex" value=$listIndex+1}
 				{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
 				{assign var="scrollerName" value="$listName"}
@@ -45,6 +58,8 @@
 
 				{if count($collectionSpotlight->lists) == 1}
 					{assign var="scrollerTitle" value=$collectionSpotlight->name}
+					{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
+					{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
 				{/if}
 				{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 					{assign var="display" value="true"}
