@@ -2514,7 +2514,7 @@ class User extends DataObject
 		if (array_key_exists('EBSCOhost', $enabledModules)) {
 			$sections['ebscohost'] = new AdminSection('EBSCOhost');
 			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCOhost Settings');
-			$sections['ebscohost']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCOhost integration.', '/EBSCO/EbscohostDashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['ebscohost']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCOhost integration.', '/EBSCOhost/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {

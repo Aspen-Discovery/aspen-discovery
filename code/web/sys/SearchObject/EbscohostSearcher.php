@@ -586,13 +586,13 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return [];
 	}
 
-	public function retrieveRecord($dbId, $an) {
+	public function retrieveRecord($dbId, $uniqueIdTag, $uniqueId) {
 		$settings = $this->getSettings();
 		if ($settings != null) {
 			$curlConnection = $this->getCurlConnection();
 			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
 			$infoUrl = $this->ebscohostBaseUrl . "/Search?prof={$settings->profileId}&pwd={$settings->profilePwd}&format=full";
-			$infoUrl .= "&query=AN:$an&db=$dbId";
+			$infoUrl .= "&query=$uniqueIdTag%20$uniqueId&db=$dbId";
 			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
 			$recordInfoStr = curl_exec($curlConnection);
 			if ($recordInfoStr == false) {
@@ -629,7 +629,8 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		}else {
 			$this->startQueryTimer();
 			$hasSearchTerm = false;
-			$searchUrl = $this->ebscohostBaseUrl . "/Search?prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=detailed";
+			$searchUrl = $this->ebscohostBaseUrl . "/Search?authType=profile&prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=detailed";
+			$searchUrl .= '&format=detailed';
 			if (is_array($this->searchTerms)) {
 				$searchUrl .= '&query=';
 				$termIndex = 1;
@@ -715,7 +716,13 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			try {
 				$searchData = simplexml_load_string($result);
 				if ($searchData->Message) {
-					return new AspenError("Error processing search in EBSCOhost: " . (string)$searchData->Message);
+					$message = (string)$searchData->Message;
+					if (strpos($message, 'name=')){
+						if (preg_match('/name="(.*?)"/', $message, $matches)){
+							$message = $matches[1];
+						}
+					}
+					return new AspenError("Error processing search in EBSCOhost: " . $message);
 				}
 				$this->stopQueryTimer();
 				if ($searchData && empty($searchData->ErrorNumber)) {
@@ -723,6 +730,8 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					$this->lastSearchResults = $searchData;
 
 					return $searchData->SearchResults->records;
+				} else if ($searchData && !empty($searchData->ErrorNumber)) {
+					return new AspenError("Error processing search in EBSCOhost: " . (string)$searchData->ErrorNumber);
 				} else {
 					global $logger;
 					if (IPAddress::showDebuggingInformation()) {
@@ -730,7 +739,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 						$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 					}
 					$this->lastSearchResults = false;
-
+					return new AspenError("Error processing search in EBSCOhost, unknown error returned.");
 				}
 			} catch (Exception $e) {
 				global $logger;

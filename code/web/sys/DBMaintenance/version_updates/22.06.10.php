@@ -53,6 +53,54 @@ function getUpdates22_06_10() : array
 				) ENGINE INNODB',
 			]
 		], //ebscohost_facets
-		//TODO: Upgrade existing settings to use new search settings
+		'ebscohost_ip_addresses' => [
+			'title' => 'EBSCOhost IP Address configuration',
+			'description' => 'Allow configuration of which IP Addresses should automatically authenticate with EBSCOhost',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ip_lookup ADD COLUMN authenticatedForEBSCOhost TINYINT DEFAULT 0',
+			]
+		], //ebscohost_ip_addresses
+
+		'track_ebscohost_user_usage' => [
+			'title' => 'EBSCOhost Usage by user',
+			'description' => 'Add a table to track how often a particular user uses EBSCOhost.',
+			'sql' => [
+				"CREATE TABLE user_ebscohost_usage (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    userId INT(11) NOT NULL,
+				    instance VARCHAR(100),
+				    month INT(2) NOT NULL,
+				    year INT(4) NOT NULL,
+				    usageCount INT(11)
+				) ENGINE = InnoDB",
+				"ALTER TABLE user_ebscohost_usage ADD INDEX (year, month, instance, userId)",
+			],
+		], //track_ebscohost_user_usage
+		'ebscohost_record_usage' => [
+			'title' => 'EBSCOhost Usage',
+			'description' => 'Add a table to track how EBSCOhost is used.',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE ebscohost_usage (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    instance VARCHAR(100),
+				    ebscohostId VARCHAR(50) NOT NULL,
+				    month INT(2) NOT NULL,
+				    year INT(4) NOT NULL,
+				    timesViewedInSearch INT(11) NOT NULL,
+				    timesUsed INT(11) NOT NULL
+				) ENGINE = InnoDB",
+				"ALTER TABLE ebscohost_usage ADD INDEX (ebscohostId, year, instance, month)",
+			],
+		], //ebscohost_record_usage
+		'aspen_usage_ebscohost' => [
+			'title' => 'Aspen Usage for EBSCOhost Searches',
+			'description' => 'Add a column to track usage of EBSCOhost searches within Aspen',
+			'continueOnError' => false,
+			'sql' => array(
+				'ALTER TABLE aspen_usage ADD COLUMN ebscohostSearches INT(11) DEFAULT 0',
+			)
+		],
 	];
 }
