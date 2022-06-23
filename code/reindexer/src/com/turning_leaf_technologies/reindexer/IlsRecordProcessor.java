@@ -1319,6 +1319,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location;
+		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
 		if (includeLocationNameInDetailedLocation) {
 			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 			location = translateValue("location", locationCode, identifier, true);
@@ -1327,6 +1328,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}else{
 			location = "";
+		}
+		if (subLocationCode != null && subLocationCode.length() > 0){
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translateValue("sub_location", subLocationCode, identifier, true);
+			}
 		}
 		String shelfLocation = null;
 		if (itemField != null) {
