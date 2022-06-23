@@ -288,10 +288,12 @@ $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db
 $updateUserStmt->execute();
 
 if ($variables['ils'] == 'Koha'){
+	// Attempt to get the system's temp directory
+	$tmp_dir = rtrim(sys_get_temp_dir(), "/");
 	echo("Loading Koha information to database\r\n");
-	copy("$installDir/install/koha_connection.sql", "/tmp/koha_connection_$sitename.sql");
-	replaceVariables("/tmp/koha_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < /tmp/koha_connection_{$sitename}.sql");
+	copy("$installDir/install/koha_connection.sql", "$tmp_dir/koha_connection_$sitename.sql");
+	replaceVariables("$tmp_dir/koha_connection_$sitename.sql", $variables);
+	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $tmp_dir/koha_connection_{$sitename}.sql");
 }
 
 $aspen_db = null;
