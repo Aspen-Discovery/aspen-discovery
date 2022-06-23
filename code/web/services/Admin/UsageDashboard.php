@@ -80,6 +80,7 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
 		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
 		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
+		$usage->selectAdd('SUM(ebscohostSearches) as totalEbscohostSearches');
 		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
 		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
 		$usage->selectAdd('SUM(timedOutSearches) as totalTimedOutSearches');
@@ -104,6 +105,7 @@ class Admin_UsageDashboard extends Admin_Dashboard
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
 			'totalEventsSearches' => $usage->totalEventsSearches,
 			'totalEbscoEdsSearches' => $usage->totalEbscoEdsSearches,
+			'totalEbscohostSearches' => $usage->totalEbscohostSearches,
 			'totalBlockedRequests' => $usage->totalBlockedRequests,
 			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 			'totalTimedOutSearches' => $usage->totalTimedOutSearches,

@@ -1,5 +1,5 @@
 <?php
-
+/** @noinspection SpellCheckingInspection */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class IPAddress extends DataObject
 {
@@ -17,6 +17,7 @@ class IPAddress extends DataObject
 	public $logAllQueries;
 	public $startIpVal;
 	public $endIpVal;
+	public $authenticatedForEBSCOhost;
 
 	function getNumericColumnNames() : array
 	{
@@ -33,14 +34,12 @@ class IPAddress extends DataObject
 		$location = new Location();
 		$location->orderBy('displayName');
 		$location->find();
-		$locationList = array();
 		$locationLookupList = array();
 		$locationLookupList[-1] = '<No Nearby Location>';
 		while ($location->fetch()){
 			$locationLookupList[$location->locationId] = $location->displayName;
-			$locationList[$location->locationId] = clone $location;
 		}
-		return array(
+		$structure = array(
 			'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask', 'serverValidation' => 'validateIPAddress'),
 			'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
 			'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
@@ -51,7 +50,14 @@ class IPAddress extends DataObject
 			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),
 			'logTimingInformation' => array('property' => 'logTimingInformation', 'type' => 'checkbox', 'label' => 'Log Timing Information', 'description' => 'Traffic from this IP will have timing information logged for it.', 'default' => false),
 			'logAllQueries' => array('property' => 'logAllQueries', 'type' => 'checkbox', 'label' => 'Log Database Queries', 'description' => 'Traffic from this IP will have database query information logged for it.', 'default' => false),
+			'authenticatedForEBSCOhost' => array('property' => 'authenticatedForEBSCOhost', 'type' => 'checkbox', 'label' => 'Authenticated For EBSCOhost', 'description' => 'Traffic from this IP will be automaticatlly authenticated in EBSCOhost.', 'default' => false),
 		);
+
+		global $enabledModules;
+		if (!array_key_exists('EBSCOhost', $enabledModules)) {
+			unset ($structure['authenticatedForEBSCOhost']);
+		}
+		return $structure;
 	}
 
 	function label(){
@@ -72,6 +78,8 @@ class IPAddress extends DataObject
 		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::update();
 	}
+
+	/** @noinspection PhpUnused This is used in validation when editing the object */
 	function validateIPAddress() : array{
 		$calcIpResult = $this->calcIpRange();
 		$errors = [];
@@ -110,7 +118,11 @@ class IPAddress extends DataObject
 		}
 	}
 
-	private function getIpRange(  $cidr) {
+	/**
+	 * @param $cidr
+	 * @return int[]
+	 */
+	private function getIpRange(  $cidr) : array {
 
 		list($ip, $mask) = explode('/', $cidr);
 
@@ -171,6 +183,7 @@ class IPAddress extends DataObject
 			$subnet->whereAdd('startIpVal <= ' . $ipVal);
 			$subnet->whereAdd('endIpVal >= ' . $ipVal);
 			$subnet->orderBy('(endIpVal - startIpVal)');
+			/** @noinspection PhpIfWithCommonPartsInspection Needs to be done after the find since that is what we are avoiding */
 			if ($subnet->find(true)) {
 				enableErrorHandler();
 				IPAddress::$ipAddressesForIP[$ipVal] = $subnet;
@@ -194,14 +207,14 @@ class IPAddress extends DataObject
 		//Make sure gets and cookies are processed in the correct order.
 		if (isset($_GET['test_ip'])) {
 			$ip = $_GET['test_ip'];
-			//Set a cookie so we don't have to transfer the ip from page to page.
+			//Set a cookie, so we don't have to transfer the ip from page to page.
 			setcookie('test_ip', $ip, 0, '/');
-//		}elseif (isset($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1' && strlen($_COOKIE['test_ip']) > 0){
 		} elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1') {
 			$ip = $_COOKIE['test_ip'];
 		} else {
 			$ip = IPAddress::getClientIP();
-			setcookie('test_ip', $ip, time() - 1000, '/');
+			setcookie('test_ip', null, time()-3600, '/');
+			unset($_COOKIE['test_ip']);
 		}
 		IPAddress::$activeIp = $ip;
 		$timer->logTime("getActiveIp");
@@ -236,7 +249,7 @@ class IPAddress extends DataObject
 		return $ip;
 	}
 
-	public static function isClientIpBlocked()
+	public static function isClientIpBlocked() : bool
 	{
 		$clientIP = IPAddress::getClientIP();
 		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
@@ -247,7 +260,7 @@ class IPAddress extends DataObject
 		}
 	}
 
-	public static function allowAPIAccessForClientIP(){
+	public static function allowAPIAccessForClientIP() : bool {
 		$clientIP = IPAddress::getClientIP();
 		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 		if (!empty($ipInfo)) {
@@ -258,7 +271,7 @@ class IPAddress extends DataObject
 	}
 
 	static $_showDebuggingInformation = null;
-	public static function showDebuggingInformation(){
+	public static function showDebuggingInformation() : bool {
 		if (IPAddress::$_showDebuggingInformation === null) {
 			$clientIP = IPAddress::getClientIP();
 			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
@@ -287,7 +300,7 @@ class IPAddress extends DataObject
 
 	static $_logAllQueries = null;
 	static $_loadingLogQueryInfo = false;
-	public static function logAllQueries(){
+	public static function logAllQueries() : ?bool {
 		if (IPAddress::$_logAllQueries === null) {
 			if (!isset($_REQUEST['logQueries'])){
 				IPAddress::$_loadingLogQueryInfo = false;
@@ -301,7 +314,7 @@ class IPAddress extends DataObject
 					$clientIP = IPAddress::getClientIP();
 					$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 					if (!empty($ipInfo)) {
-						IPAddress::$_logAllQueries = $ipInfo->logAllQueries;
+						IPAddress::$_logAllQueries = empty($ipInfo->logAllQueries) ? false : $ipInfo->logAllQueries;
 					} else {
 						IPAddress::$_logAllQueries = false;
 					}

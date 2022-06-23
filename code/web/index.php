@@ -352,11 +352,18 @@ if ($isLoggedIn) {
 				$masquerade->launch();
 				die;
 			}elseif ($_REQUEST['followupAction'] == 'MyList' && $_REQUEST['followupModule'] == 'MyAccount'){
-				echo("Redirecting to followup location");
 				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
 				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
 				if (!empty($_REQUEST['recordId'])) {
 					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				header("Location: " . $followupUrl);
+				exit();
+			}elseif ($_REQUEST['followupAction'] == 'AccessOnline' && $_REQUEST['followupModule'] == 'EBSCOhost'){
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if (!empty($_REQUEST['recordId'])) {
+					$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
 				}
 				header("Location: " . $followupUrl);
 				exit();

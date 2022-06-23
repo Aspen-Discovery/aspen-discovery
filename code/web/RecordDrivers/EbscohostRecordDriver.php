@@ -20,10 +20,14 @@ class EbscohostRecordDriver extends RecordInterface
 	public function __construct($recordData)
 	{
 		if (is_string($recordData)) {
-			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
-			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-			list($dbId, $an) = explode(':', $recordData);
-			$this->recordData = $ebscohostSearcher->retrieveRecord($dbId, $an);
+			if (!empty($recordData)) {
+				/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
+				$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+				list($dbId, $uniqueIdField, $uniqueId) = explode(':', $recordData);
+				$this->recordData = $ebscohostSearcher->retrieveRecord($dbId, $uniqueIdField, $uniqueId);
+			}else{
+				$this->recordData = null;
+			}
 		} else {
 			$this->recordData = $recordData;
 		}
@@ -78,7 +82,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 */
 	public function getLinkUrl($unscoped = false)
 	{
-		return $this->getRecordUrl();
+		return '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID();
 	}
 
 	/**
@@ -136,7 +140,7 @@ class EbscohostRecordDriver extends RecordInterface
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-			$appearsOnLists = UserList::getUserListsForRecord('EbscoEds', $this->getId());
+			$appearsOnLists = UserList::getUserListsForRecord('Ebscohost', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
@@ -145,10 +149,10 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
-		$recordUsage = new EbscoEdsRecordUsage();
+		require_once ROOT_DIR . '/sys/Ebsco/EbscohostRecordUsage.php';
+		$recordUsage = new EbscohostRecordUsage();
 		$recordUsage->instance = $_SERVER['SERVER_NAME'];
-		$recordUsage->ebscoId = $this->getUniqueID();
+		$recordUsage->ebscohostId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
 		if ($recordUsage->find(true)) {
@@ -323,7 +327,7 @@ class EbscohostRecordDriver extends RecordInterface
 	{
 		$header = $this->getChildByTagName($this->recordData, 'header');
 		if ($header != null){
-			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTerm'];
+			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTag'] . ':' . $header->attributes()['uiTerm'];
 		}
 		return "";
 	}
@@ -582,5 +586,20 @@ class EbscohostRecordDriver extends RecordInterface
 			}
 		}
 		return $publicationDates;
+	}
+
+	protected $_actions = null;
+	public function getRecordActions()
+	{
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			$this->_actions[] = array(
+				'title' => translate(['text'=>'Access Online','isPublicFacing'=>true]),
+				'url' => '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID(),
+				'requireLogin' => true,
+				'type' => 'ebscohost_access_online'
+			);
+		}
+		return $this->_actions;
 	}
 }

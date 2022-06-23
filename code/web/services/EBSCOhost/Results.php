@@ -11,7 +11,7 @@ class EBSCOhost_Results extends ResultsAction {
 			$_REQUEST['lookfor'] = '*';
 		}
 
-		$aspenUsage->ebscoEdsSearches++;
+		$aspenUsage->ebscohostSearches++;
 
 		//Include Search Engine
 		/** @var SearchObject_EbscohostSearcher $searchObject */
