@@ -27,7 +27,7 @@ class SideLoads_UploadMarc extends Admin_Admin
 				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
 					$interface->assign('error', "Error in file upload for MARC File");
 				} else {
-					//File was uploaded, need to verify it was the correct typ
+					//File was uploaded, need to verify it was the correct type
 					$fileType = $uploadedFile["type"];
 					$uploadPath = $sideload->marcPath;
 					if ($replaceExisting) {

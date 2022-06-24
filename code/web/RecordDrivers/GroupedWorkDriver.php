@@ -481,9 +481,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		//Get Rating
 		$interface->assign('ratingData', $this->getRatingData());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-		// Rating Settings
+
+        //Get cover image size
+        global $interface;
+        $appliedTheme = $interface->getAppliedTheme();
+
+        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+
+        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 0) {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+        }
+        else {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        }
+
+        // Rating Settings
 		global $library;
 		global $location;
 		if ($location) { // Try Location Setting
