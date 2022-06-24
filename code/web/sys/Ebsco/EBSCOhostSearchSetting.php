@@ -33,7 +33,7 @@ class EBSCOhostSearchSetting extends DataObject
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => true,
-				'canEdit' => false,
+				'canEdit' => true,
 				'canAddNew' => false,
 				'canDelete' => false
 			],

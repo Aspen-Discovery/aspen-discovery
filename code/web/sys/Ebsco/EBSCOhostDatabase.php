@@ -11,6 +11,7 @@ class EBSCOhostDatabase extends DataObject
 	public $searchByDefault;
 	public $showInExploreMore;
 	public $showInCombinedResults;
+	public $logo;
 
 	public function getNumericColumnNames(): array
 	{
@@ -26,6 +27,11 @@ class EBSCOhostDatabase extends DataObject
 			'searchByDefault' => array('property' => 'searchByDefault', 'type' => 'checkbox', 'label' => 'Search By Default', 'description' => 'If the database is searched by default when searching everything'),
 			'showInExploreMore' => array('property' => 'showInExploreMore', 'type' => 'checkbox', 'label' => 'Show in Explore More', 'description' => 'If the database is shown in Explore More'),
 			'showInCombinedResults' => array('property' => 'showInCombinedResults', 'type' => 'checkbox', 'label' => 'Show in Combined Results', 'description' => 'If the database is shown in Combined Results'),
+			'logo' => array('property'=>'logo', 'type'=>'image', 'label'=>'Logo', 'description'=>'A logo for the database for use in explore more (max width 400px).', 'maxWidth'=>400, 'hideInLists'=>true),
 		];
+	}
+
+	public function getEditLink(){
+		return '/EBSCO/EBSCOhostDatabases?objectAction=edit&id=' . $this->id;
 	}
 }
