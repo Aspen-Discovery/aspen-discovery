@@ -275,6 +275,7 @@ class Theme extends DataObject
 	public $deselectedBrowseCategoryBorderColor;
 	public /** @noinspection PhpUnused */ $deselectedBrowseCategoryBorderColorDefault;
 	public $capitalizeBrowseCategories;
+    public $browseCategoryImageSize;
 
 	//Panel Colors
 	public $closedPanelBackgroundColor;
@@ -454,6 +455,7 @@ class Theme extends DataObject
 				'deselectedBrowseCategoryBorderColor' => ['property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'],
 
 				'capitalizeBrowseCategories' => ['property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
+                'browseCategoryImageSize' => ['property' => 'browseCategoryImageSize', 'type' => 'enum', 'values' => [-1 => 'Medium', 0 => 'Large'], 'label' => 'Browse Category Image Size','description' => 'The size of cover images to be displayed in browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
 			]],
 
 			'badges' => ['property'=>'badgesSection', 'type' => 'section', 'label' =>'Badges', 'hideInLists' => true, 'properties' => [
@@ -1050,6 +1052,9 @@ class Theme extends DataObject
 				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
 			}
 
+            if ($interface->getVariable('browseCategoryImageSize') == null && $theme->browseCategoryImageSize != -1) {
+                $interface->assign('browseCategoryImageSize', $theme->browseCategoryImageSize);
+            }
 
 			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
 				$headerBottomBorderWidth = $theme->headerBottomBorderWidth;
