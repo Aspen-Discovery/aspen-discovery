@@ -4858,7 +4858,6 @@ var AspenDiscovery = (function(){
 		},
 
 		showMessage: function(title, body, autoClose, refreshAfterClose){
-			// if autoclose is set as number greater than 1 autoClose will be the custom timeout interval in milliseconds, otherwise
 			//	 autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
 			if (autoClose === undefined){
@@ -4876,14 +4875,14 @@ var AspenDiscovery = (function(){
 			if (autoClose) {
 				setTimeout(function(){
 					if (refreshAfterClose) {
-						window.location = window.location;
+						location.reload();
 					} else {
 						AspenDiscovery.closeLightbox();
 					}
-				}, autoClose > 1 ? autoClose : 3000);
+				}, 3000);
 			}else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
-					window.location = window.location;
+					location.reload();
 				})
 			}
 		},
@@ -5851,15 +5850,8 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.loadingMessage();
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success);
-						// automatically close when all successful
-						if (data.success || data.renewed > 0) {
-							// Refresh page on close when a item has been successfully renewed, otherwise stay
-							// noinspection JSUnusedLocalSymbols
-							$("#modalDialog").on('hidden.bs.modal', function (e) {
-								location.reload();
-							});
-						}
+						var reload = data.success || (data.renewed > 0);
+						AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
 					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
@@ -5877,8 +5869,8 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.loadingMessage();
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
-							var reload = data.success || data.renewed > 0;
-							AspenDiscovery.showMessage(data.title, data.modalBody, data.success, reload);
+							var reload = data.success || (data.renewed > 0);
+							AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
 						}).fail(AspenDiscovery.ajaxFail);
 					}
 				}

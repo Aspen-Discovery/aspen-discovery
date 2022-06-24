@@ -347,7 +347,6 @@ var AspenDiscovery = (function(){
 		},
 
 		showMessage: function(title, body, autoClose, refreshAfterClose){
-			// if autoclose is set as number greater than 1 autoClose will be the custom timeout interval in milliseconds, otherwise
 			//	 autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
 			if (autoClose === undefined){
@@ -365,14 +364,14 @@ var AspenDiscovery = (function(){
 			if (autoClose) {
 				setTimeout(function(){
 					if (refreshAfterClose) {
-						window.location = window.location;
+						location.reload();
 					} else {
 						AspenDiscovery.closeLightbox();
 					}
-				}, autoClose > 1 ? autoClose : 3000);
+				}, 3000);
 			}else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
-					window.location = window.location;
+					location.reload();
 				})
 			}
 		},
