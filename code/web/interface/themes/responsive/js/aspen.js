@@ -4514,10 +4514,10 @@ var AspenDiscovery = (function(){
 	// This provides a check to interrupt AjaxFail Calls on page redirects;
 	 window.onbeforeunload = function(){
 		Globals.LeavingPage = true;
-
-		 if (Globals.masqueradeMode) {
-			 AspenDiscovery.Account.endMasquerade()
-		 }
+		 //
+		 // if (Globals.masqueradeMode) {
+			//  AspenDiscovery.Account.endMasquerade()
+		 // }
 	};
 
 	$(document).ready(function(){
