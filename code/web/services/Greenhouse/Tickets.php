@@ -43,13 +43,22 @@ class Greenhouse_Tickets extends ObjectEditor
 	}
 
 	function getDefaultFilters(array $filterFields) : array{
-		return ['showClosedTickets' => [
-			'fieldName' => 'showClosedTickets',
-			'filterType' => 'checkbox',
-			'filterValue' => false,
-			'filterValue2' => null,
-			'field' => $filterFields['showClosedTickets']
-		]];
+		return [
+			'showClosedTickets' => [
+				'fieldName' => 'showClosedTickets',
+				'filterType' => 'checkbox',
+				'filterValue' => false,
+				'filterValue2' => null,
+				'field' => $filterFields['showClosedTickets']
+			],
+			'requestingPartner' => [
+				'fieldName' => 'requestingPartner',
+				'filterType' => 'enum',
+				'filterValue' => 'all_values',
+				'filterValue2' => null,
+				'field' => $filterFields['requestingPartner']
+			]
+		];
 	}
 
 	function getActiveAdminSection(): string

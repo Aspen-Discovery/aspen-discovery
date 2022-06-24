@@ -57,7 +57,7 @@
 			{assign var=label value='Filtering for '+$filterField.label}
 			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
 				{foreach from=$filterField.values item=propertyName key=propertyValue}
-					<option value="{$propertyValue}" {if !empty($appliedFilter) && $appliedFilter.filterValue == $propertyValue}selected="selected"{/if}>{if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}</option>
+					<option value="{$propertyValue}" {if !empty($appliedFilter) && strval($appliedFilter.filterValue) === strval($propertyValue)}selected="selected"{/if}>{if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}</option>
 				{/foreach}
 			</select>
 		</div>

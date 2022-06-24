@@ -614,6 +614,9 @@ abstract class ObjectEditor extends Admin_Admin
 			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);
 			if ($canSort && in_array($field['type'], ['checkbox', 'label', 'date', 'timestamp', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
 				$filterFields[$field['property']] = $field;
+				if ($field['type'] == 'enum'){
+					$filterFields[$field['property']]['values'] = ['all_values' => translate(['text' => 'All Values', 'isAdminFacing'=>true, 'inAttribute'=>'true'])] + $filterFields[$field['property']]['values'];
+				}
 			}
 		}
 	}
@@ -651,7 +654,15 @@ abstract class ObjectEditor extends Admin_Admin
 
 	function applyFilter(DataObject $object, string $fieldName, array $filter){
 		if ($filter['filterType'] == 'matches'){
-			$object->$fieldName = $filter['filterValue'];
+			if ($filter['field']['type'] == 'enum' && $filter['filterValue'] == 'all_values'){
+				//Skip this value
+				return;
+			}
+			if ($filter['filterValue'] == ''){
+				$object->whereAdd("$fieldName IS NULL OR $fieldName = ''" );
+			}else {
+				$object->$fieldName = $filter['filterValue'];
+			}
 		}elseif ($filter['filterType'] == 'contains'){
 			$object->whereAdd($fieldName . ' like ' . $object->escape('%' . $filter['filterValue'] . '%'));
 		}elseif ($filter['filterType'] == 'startsWith'){
