@@ -106,7 +106,7 @@
 
 		<div class="row">
 			<div class="col-xs-12">
-				{include file='EBSCO/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
+				{include file='EBSCOhost/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
 			</div>
 		</div>
 	</div>

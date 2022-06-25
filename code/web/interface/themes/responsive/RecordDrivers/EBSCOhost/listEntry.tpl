@@ -9,7 +9,7 @@
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
-					<a href="{$summUrl}" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank" aria-hidden="true">
+					<a href="{$summUrl}" target="_blank" aria-hidden="true">
 						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 					</a>
 				{/if}
@@ -20,7 +20,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
-					<a href="{$summUrl}" class="result-title notranslate" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank">
+					<a href="{$summUrl}" class="result-title notranslate" target="_blank">
 						{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					</a>
 				</div>
@@ -66,11 +66,6 @@
 				</div>
 			{/if}
 
-			<div class="row hidden-phone">
-				<div class="result-label col-sm-3">{translate text='Full Text' isPublicFacing=true}</div>
-				<div class="col-sm-9 result-value">{if $summHasFullText}{translate text="Yes" isPublicFacing=true}{else}{translate text="No" isPublicFacing=true}{/if}</div>
-			</div>
-
 			{if $listEntryNotes}
 				<div class="row">
 					<div class="result-label col-sm-3">{translate text="Notes" isPublicFacing=true} </div>
@@ -98,24 +93,22 @@
 
 			<div class="row">
 				<div class="col-xs-12">
-					{include file='EBSCO/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
+					{include file='EBSCOhost/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
 				</div>
 			</div>
 		</div> {* End of main section *}
 
-		{* List actions *}
-		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
-			{if $listEditAllowed}
+		{if $listEditAllowed}
+			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 				<div class="btn-group-vertical" role="group">
-					{if $userSort && $resultIndex != '1'}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up" isPublicFacing=true}">&#x25B2;</span>{/if}
-					<a href="/MyAccount/Edit?listEntryId={$listEntryId|escape:"url"}{if !is_null($listSelected)}&amp;listId={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit' isPublicFacing=true}</a>
+					{if $userSort && ($resultIndex != '1')}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up" isPublicFacing=true}">&#x25B2;</span>{/if}
+					<a href="#" onclick="return AspenDiscovery.Account.getEditListForm({$listEntryId},{$listSelected})" class="btn btn-default">{translate text="Edit" isPublicFacing=true}</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
-					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete' isPublicFacing=true}</a>
-					{if $userSort && ($listEntryCount != $listEntryPosition)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
+					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('{translate text="Are you sure you want to delete this?" isPublicFacing=true inAttribute=true}');" class="btn btn-danger">{translate text='Delete' isPublicFacing=true}</a>
+					{if $userSort && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
 				</div>
-
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 </div>
 {/strip}
