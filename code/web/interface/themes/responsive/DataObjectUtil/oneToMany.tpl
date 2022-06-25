@@ -40,7 +40,10 @@
 								{elseif $subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression'}
 									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control">{$subPropValue|escape}</textarea>
 								{elseif $subProperty.type=='checkbox'}
-									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if}{if $subProperty.readOnly} readonly{/if}/>
+									{if $subProperty.readOnly}
+										{if $subPropValue == 1}{translate text='Yes' isAdminFacing=true}{else}{translate text='No' isAdminFacing=true}{/if}
+									{/if}
+									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if} {if $subProperty.readOnly} style="display: none"{/if}/>
 								{else}
 									<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if $subProperty.required == true} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if}>
 										{foreach from=$subProperty.values item=propertyName key=propertyValue}

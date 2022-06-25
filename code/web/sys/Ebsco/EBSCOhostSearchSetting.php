@@ -177,8 +177,10 @@ class EBSCOhostSearchSetting extends DataObject
 				$newDatabase->displayName = $databaseInfo['longName'];
 				$newDatabase->allowSearching = true;
 				if ($databaseInfo['hasRelevancySort'] && $databaseInfo['hasDateSort']) {
+					$newDatabase->hasDateAndRelevancySorting = true;
 					$newDatabase->searchByDefault = true;
 				}else{
+					$newDatabase->hasDateAndRelevancySorting = false;
 					$newDatabase->searchByDefault = false;
 				}
 				if (in_array($shortName, ['a9h', 'bth', 'f6h', 'cmedm', 'imh', 'aph', 'buh'])){

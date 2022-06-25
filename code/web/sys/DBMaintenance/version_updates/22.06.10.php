@@ -108,5 +108,15 @@ function getUpdates22_06_10() : array
 				'ALTER TABLE ebscohost_database ADD COLUMN logo VARCHAR(512) NOT NULL'
 			]
 		], //add_image_to_ebscohost_database
+		'add_sort_info_to_ebscohost_database' => [
+			'title' => 'Add sort info to EBSCOhost Databases',
+			'description' => 'Add column to store if a database has date and relevancy sorting to EBSCOhost Databases',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ebscohost_database ADD COLUMN hasDateAndRelevancySorting TINYINT(1) DEFAULT 1',
+				'UPDATE ebscohost_database set hasDateAndRelevancySorting = searchByDefault',
+			]
+		], //add_sort_info_to_ebscohost_database
+
 	];
 }
