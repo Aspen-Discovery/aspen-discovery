@@ -655,14 +655,16 @@ a.placard-link{
       .explore-more-option{
         padding-left: 10px;
         padding-right: 10px;
-        height: 100%;
-        border: 0px !important;
+        height: 175px;
+        border: 0 !important;
+        display: inline-block;
 
         .thumbnail {
           a {
             img {
-              height: 125px;
+              max-height: 125px;
             }
+            width: 100%;
           }
           border: 0 solid white;
           position: relative;
@@ -671,10 +673,10 @@ a.placard-link{
 
           .explore-more-image {
             width: 100%;
-            position: absolute;
-            top: 62px;
-            transform: translate(-50%, -50%);
-            left: 50%;
+            height: 125px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
           }
         }
         figcaption {
@@ -684,9 +686,7 @@ a.placard-link{
           overflow-x: hidden;
           position: absolute;
           top: 130px;
-          width: 100%;
           text-align: center;
-
         }
       }
     }

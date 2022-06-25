@@ -517,12 +517,16 @@ class ExploreMore {
 
 						$numMatches = $ebscohostSearcher->getNumResults();
 						if ($numMatches > 0) {
-							$driver = $ebscohostSearcher->getRecordDriverForResult($ebscohostResults->rec[0]);
+							if (empty($database->logo)){
+								$image = '/interface/themes/responsive/images/ebscohost.png';
+							}else{
+								$image = '/files/original/' . $database->logo;
+							}
 							//Add a link to the actual title
 							$exploreMoreOptions['searchLinks'][] = array(
 								'label' => $database->displayName. " ($numMatches)",
 								'description' => $database->displayName,
-								'image' => $driver->getBookcoverUrl('medium'),
+								'image' => $image,
 								'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm) . "&filter[]=db:$database->shortName",
 								'usageCount' => 1,
 								'openInNewWindow' => false

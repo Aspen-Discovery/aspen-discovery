@@ -754,6 +754,13 @@ class MyAccount_AJAX extends JSON_Action
 								$title = $recordDriver->getTitle();
 								$userListEntry->title = substr($title, 0, 50);
 							}
+						}elseif($userListEntry->source == 'Ebscohost') {
+							require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+							$recordDriver = new EbscohostRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
 						}
 						$userListEntry->insert();
 					}
@@ -768,9 +775,9 @@ class MyAccount_AJAX extends JSON_Action
 					$userObject->update();
 				}
 				if ($existingList) {
-					$return['message'] = "Updated list {$title} successfully";
+					$return['message'] = "Updated list $list->title successfully";
 				} else {
-					$return['message'] = "Created list {$title} successfully";
+					$return['message'] = "Created list $list->title successfully";
 				}
 			}
 		} else {
@@ -4420,8 +4427,11 @@ class MyAccount_AJAX extends JSON_Action
 		if ($list->find(true)) {
 			if ($userListEntry->find(true)) {
 
-				$userListEntry->notes = strip_tags($_REQUEST['notes']);
-				$userListEntry->update();
+				if ($userListEntry->notes != strip_tags($_REQUEST['notes'])){
+					$userListEntry->notes = strip_tags($_REQUEST['notes']);
+					$userListEntry->update();
+					$result['success'] = true;
+				}
 
 				$numListEntries = count($list->getListTitles());
 

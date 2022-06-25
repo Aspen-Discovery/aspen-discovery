@@ -61,7 +61,6 @@ function getUpdates22_06_10() : array
 				'ALTER TABLE ip_lookup ADD COLUMN authenticatedForEBSCOhost TINYINT DEFAULT 0',
 			]
 		], //ebscohost_ip_addresses
-
 		'track_ebscohost_user_usage' => [
 			'title' => 'EBSCOhost Usage by user',
 			'description' => 'Add a table to track how often a particular user uses EBSCOhost.',
@@ -101,6 +100,23 @@ function getUpdates22_06_10() : array
 			'sql' => array(
 				'ALTER TABLE aspen_usage ADD COLUMN ebscohostSearches INT(11) DEFAULT 0',
 			)
-		],
+		], //aspen_usage_ebscohost
+		'add_image_to_ebscohost_database' => [
+			'title' => 'Add image to EBSCOhost Databases',
+			'description' => 'Add image to EBSCOhost Databases',
+			'sql' => [
+				'ALTER TABLE ebscohost_database ADD COLUMN logo VARCHAR(512) NOT NULL'
+			]
+		], //add_image_to_ebscohost_database
+		'add_sort_info_to_ebscohost_database' => [
+			'title' => 'Add sort info to EBSCOhost Databases',
+			'description' => 'Add column to store if a database has date and relevancy sorting to EBSCOhost Databases',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ebscohost_database ADD COLUMN hasDateAndRelevancySorting TINYINT(1) DEFAULT 1',
+				'UPDATE ebscohost_database set hasDateAndRelevancySorting = searchByDefault',
+			]
+		], //add_sort_info_to_ebscohost_database
+
 	];
 }
