@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class EBSCO_JSON extends JSON_Action
 {
 	/** @noinspection PhpUnused */
-	public function dismissResearchStarter(){
+	public function dismissResearchStarter() : array {
 		if (!isset($_REQUEST['id'])) {
 			return ['success' => false, 'message' => 'ID was not provided'];
 		}
@@ -34,7 +34,7 @@ class EBSCO_JSON extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	public function trackEdsUsage()
+	public function trackEdsUsage() : array
 	{
 		if (!isset($_REQUEST['id'])) {
 			return ['success' => false, 'message' => 'ID was not provided'];
@@ -83,7 +83,7 @@ class EBSCO_JSON extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getResearchStarters(){
+	function getResearchStarters() : array {
 		global $enabledModules;
 		if (array_key_exists('EBSCO EDS', $enabledModules)){
 			require_once ROOT_DIR . '/sys/SearchObject/EbscoEdsSearcher.php';
@@ -103,5 +103,25 @@ class EBSCO_JSON extends JSON_Action
 				'researchStarters' => ''
 			];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getTitleAuthor() : array {
+		$result = [
+			'success' => false,
+			'title' => 'Unknown',
+			'author' => 'Unknown'
+		];
+		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+		$id = $_REQUEST['id'];
+		if (!empty($id)){
+			$recordDriver = new EbscohostRecordDriver($id);
+			if ($recordDriver->isValid()){
+				$result['success'] = true;
+				$result['title'] = $recordDriver->getTitle();
+				$result['author'] = $recordDriver->getAuthor();
+			}
+		}
+		return $result;
 	}
 }

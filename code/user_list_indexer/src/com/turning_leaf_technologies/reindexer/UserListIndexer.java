@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrClient;
@@ -15,8 +16,11 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,11 +41,13 @@ class UserListIndexer {
 	private SolrClient openArchivesServer;
 	private PreparedStatement getListDisplayNameAndAuthorStmt;
 	private final String serverName;
+	private final String baseUrl;
 
 	UserListIndexer(String serverName, Ini configIni, Connection dbConn, Logger logger){
 		this.serverName = serverName;
 		this.dbConn = dbConn;
 		this.logger = logger;
+		this.baseUrl = configIni.get("Site", "url");
 		//Load a list of all list publishers
 		try {
 			PreparedStatement listPublishersStmt = dbConn.prepareStatement("SELECT userId FROM user_roles INNER JOIN roles on user_roles.roleId = roles.roleId inner join role_permissions on role_permissions.roleId = roles.roleId where permissionId = (select id from permissions where name = 'Include Lists In Search Results')");
@@ -274,6 +280,28 @@ class UserListIndexer {
 								userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), decryptedName);
 							}
 							listDisplayNameAndAuthorRS.close();
+						}else if (source.equals("EbscoEds")){
+							//Get title and author with a JSON request
+							URL getTitleAuthorUrl = new URL(baseUrl + "/EBSCO/JSON?method=getTitleAuthor&id=" + sourceId);
+							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
+							if (titleAuthorRaw instanceof InputStream) {
+								String titleAuthorJson = StringUtils.convertStreamToString((InputStream) titleAuthorRaw);
+								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
+								if (titleAuthorResult.getBoolean("success")){
+									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
+								}
+							}
+						}else if (source.equals("Ebscohost")){
+							//Get title and author with a JSON request
+							URL getTitleAuthorUrl = new URL(baseUrl + "/EBSCOhost/JSON?method=getTitleAuthor&id=" + sourceId);
+							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
+							if (titleAuthorRaw instanceof InputStream) {
+								String titleAuthorJson = StringUtils.convertStreamToString((InputStream) titleAuthorRaw);
+								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
+								if (titleAuthorResult.getBoolean("success")){
+									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
+								}
+							}
 						}else{
 							logEntry.incErrors("Unhandled source " + source);
 						}
