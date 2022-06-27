@@ -8,7 +8,7 @@
 {/if}
 
 {* Create the base form *}
-<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
+<form id='objectEditor-{$id}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
 	<div class='editor'>
 		<input type='hidden' name='objectAction' value='save' />
 		{if !empty($id)}
@@ -44,6 +44,19 @@
 			</div>
 		{/if}
 	</div>
+
+{if !empty($captcha)}
+	{literal}
+	<script type="text/javascript">
+      var onloadCallback = function() {
+          var captchas = document.getElementsByClassName("g-recaptcha");
+          for(var i = 0; i < captchas.length; i++) {
+              grecaptcha.render(captchas[i], {'sitekey' : '{/literal}{$captchaKey}{literal}'});
+          }
+      };
+    </script>
+	{/literal}
+{/if}
 
 	{literal}
 	<script type="text/javascript">

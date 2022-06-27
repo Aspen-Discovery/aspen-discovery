@@ -201,8 +201,9 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
 				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
-					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey, 'regRosen');
 					$interface->assign('captcha', $captchaCode);
+					$interface->assign('captchaKey', $recaptcha->publicKey);
 				}
 				$interface->assign('formLabel', 'Register for Rosen LevelUP');
 
