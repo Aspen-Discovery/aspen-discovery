@@ -2,6 +2,7 @@
 Aspen can run for development on Windows. We do not recommend using Windows for production environments. Prior to starting these steps you should [setup your environment](/Admin/HelpManual?page=Development-Environment). 
 
 For Windows, we also recommend using [GitHub Desktop](https://desktop.github.com/) to make working with git easier.  
+[Cygwin](https://www.cygwin.com/) will add common Linux commands to your Windows shell and is recommended for Aspen development.   
 
 ### Installation Steps
 1. Make a fork of the main Aspen Discovery Code from [https://github.com/mdnoble73/aspen-discovery](https://github.com/mdnoble73/aspen-discovery).
