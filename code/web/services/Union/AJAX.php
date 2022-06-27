@@ -111,6 +111,14 @@ class Union_AJAX extends JSON_Action {
 				'index' => $ebscohostSearcher->getDefaultIndex(),
 				'lookfor' => $searchTerm
 			));
+			$searchSettings = $ebscohostSearcher->getSearchSettings();
+			if ($searchSettings != null){
+				foreach ($searchSettings->getDatabases() as $database) {
+					if ($database->showInCombinedResults) {
+						$ebscohostSearcher->addFilter('db:' . $database->shortName);
+					}
+				}
+			}
 			$ebscohostSearcher->processSearch(true, false);
 			$summary = $ebscohostSearcher->getResultSummary();
 			$records = $ebscohostSearcher->getCombinedResultHTML();

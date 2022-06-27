@@ -463,7 +463,7 @@ class Library extends DataObject
 
 
 		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
-		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting = new EBSCOhostSearchSetting();
 		$ebscohostSetting->orderBy('name');
 		$ebscohostSettings = [];
 		$ebscohostSetting->find();

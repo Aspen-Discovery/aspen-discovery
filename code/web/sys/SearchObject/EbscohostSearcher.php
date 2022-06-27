@@ -749,7 +749,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		}
 	}
 
-	public function getDatabases(){
+	/**
+	 * @return EBSCOhostDatabase[]
+	 */
+	public function getDatabases() : array{
 		$databases = [];
 		$searchOptions = $this->getSearchOptions();
 		/** @var SimpleXMLElement $dbInfo */
