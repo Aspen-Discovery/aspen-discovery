@@ -383,6 +383,15 @@ class EbscohostRecordDriver extends RecordInterface
 					if ($ougenre != null){
 						return (string)$ougenre;
 					}
+					$pubType = $this->getChildByTagName($artInfo, 'pubtype');
+					$docType = $this->getChildByTagName($artInfo, 'doctype');
+					if ($docType != null){
+						if (!empty($pubType)){
+							return (string)$pubType . ' - ' . (string)$docType;
+						}else{
+							return (string)$docType;
+						}
+					}
 				}
 			}
 		}
