@@ -8,10 +8,8 @@ class EBSCOhostSetting extends DataObject
 	public $__table = 'ebscohost_settings';
 	public $id;
 	public $name;
-	public $authType;
 	public $profileId;
 	public $profilePwd;
-	public $ipProfileId;
 
 	private $_searchSettings;
 
@@ -21,10 +19,8 @@ class EBSCOhostSetting extends DataObject
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for these settings', 'required' => true),
-			'authType' => array('property'=>'authType', 'type'=>'enum', 'label'=>'Profile or IP Authentication', 'values' => array('profile' => 'Profile Authentication', 'ip' => 'IP Authentication'), 'description'=>'If using IP Authentication or Profile Authentication'),
 			'profileId' => array('property' => 'profileId', 'type' => 'text', 'label' => 'Profile Id', 'description' => 'The profile used for authentication. Required if using profile authentication.', 'hideInLists' => true),
 			'profilePwd' => array('property' => 'profilePwd', 'type' => 'storedPassword', 'label' => 'Profile Password', 'description' => 'The password used for profile authentication. Required if using profile authentication.', 'hideInLists' => true),
-			'ipProfileId' => array('property' => 'ipProfileId', 'type' => 'text', 'label' => 'IP Profile Id', 'description' => 'The IP profile used for authenication. Required if using IP authentication.', 'hideInLists' => true),
 			'searchSettings' => array(
 				'property' => 'searchSettings',
 				'type' => 'oneToMany',
@@ -55,7 +51,7 @@ class EBSCOhostSetting extends DataObject
 	/**
 	 * @return EBSCOhostSearchSetting[]
 	 */
-	public function getSearchSettings() : array{
+	public function getSearchSettings() : ?array{
 		if (!isset($this->_searchSettings) && $this->id){
 			$this->_searchSettings = [];
 			$obj = new EBSCOhostSearchSetting();
@@ -89,12 +85,15 @@ class EBSCOhostSetting extends DataObject
 	{
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
+			if (empty($this->_searchSettings)){
+				$searchSettings = new EBSCOhostSearchSetting();
+				$searchSettings->settingId = $this->id;
+				$searchSettings->name = 'default';
+
+
+				$this->_searchSettings[] = $searchSettings;
+			}
 			$this->saveSearchSettings();
-			//Create a default search settings
-			$searchSettings = new EBSCOhostSearchSetting();
-			$searchSettings->settingId = $this->id;
-			$searchSettings->name = 'default';
-			$searchSettings->insert();
 		}
 		return $ret;
 	}
@@ -116,6 +115,10 @@ class EBSCOhostSetting extends DataObject
 	}
 
 	public function clearSearchSettings(){
+		$searchSettings = $this->getSearchSettings();
+		foreach ($searchSettings as $searchSetting){
+			$searchSetting->delete();
+		}
 		$this->clearOneToManyOptions('EBSCOhostSearchSetting', 'settingsId');
 		$this->_searchSettings = array();
 	}

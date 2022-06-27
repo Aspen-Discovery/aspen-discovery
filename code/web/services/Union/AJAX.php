@@ -114,7 +114,7 @@ class Union_AJAX extends JSON_Action {
 			$searchSettings = $ebscohostSearcher->getSearchSettings();
 			if ($searchSettings != null){
 				foreach ($searchSettings->getDatabases() as $database) {
-					if ($database->showInCombinedResults) {
+					if ($database->allowSearching && $database->showInCombinedResults) {
 						$ebscohostSearcher->addFilter('db:' . $database->shortName);
 					}
 				}

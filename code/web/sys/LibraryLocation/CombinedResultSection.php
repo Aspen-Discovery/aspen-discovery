@@ -68,7 +68,7 @@ abstract class CombinedResultSection extends DataObject{
 				$searchSettings->id = $library->ebscohostSearchSettingId;
 				if ($searchSettings->find(true)) {
 					foreach ($searchSettings->getDatabases() as $database) {
-						if ($database->showInCombinedResults) {
+						if ($database->allowSearching && $database->showInCombinedResults) {
 							$filters .=('&filter[]=db:"' . $database->shortName . '"');
 						}
 					}
