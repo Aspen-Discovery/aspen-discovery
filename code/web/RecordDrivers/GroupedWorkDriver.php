@@ -1995,6 +1995,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$permanentId = $this->getPermanentId();
+			$alternateTitles = [];
 			if (!empty($permanentId)) {
 				$alternateTitle->permanent_id = $permanentId;
 				$alternateTitle->find();

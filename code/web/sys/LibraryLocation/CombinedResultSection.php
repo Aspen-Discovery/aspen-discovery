@@ -60,7 +60,21 @@ abstract class CombinedResultSection extends DataObject{
 		}elseif ($this->source == 'ebsco_eds'){
 			return "/EBSCO/Results?lookfor=$searchTerm&searchSource=ebsco_eds";
 		}elseif ($this->source == 'ebscohost'){
-			return "/EBSCOhost/Results?lookfor=$searchTerm&searchSource=ebscohost";
+			global $library;
+			require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSearchSetting.php';
+			$searchSettings = new EBSCOhostSearchSetting();
+			$filters = '';
+			if ($library->ebscohostSearchSettingId > 0) {
+				$searchSettings->id = $library->ebscohostSearchSettingId;
+				if ($searchSettings->find(true)) {
+					foreach ($searchSettings->getDatabases() as $database) {
+						if ($database->showInCombinedResults) {
+							$filters .=('&filter[]=db:"' . $database->shortName . '"');
+						}
+					}
+				}
+			}
+			return "/EBSCOhost/Results?lookfor=$searchTerm&searchSource=ebscohost$filters";
 		}elseif ($this->source == 'events'){
 			return "/Events/Results?lookfor=$searchTerm&searchSource=events";
 		}elseif ($this->source == 'genealogy'){
