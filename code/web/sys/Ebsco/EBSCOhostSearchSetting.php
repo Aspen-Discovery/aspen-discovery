@@ -92,17 +92,17 @@ class EBSCOhostSearchSetting extends DataObject
 	 * @return EBSCOhostDatabase[]
 	 */
 	public function getDatabases() : array{
-		if (!isset($this->_databases) && $this->id){
+		if (!isset($this->_databases)){
 			$this->_databases = [];
-			$obj = new EBSCOhostDatabase();
-			$obj->searchSettingId = $this->id;
-			$obj->orderBy('displayName');
-			$obj->find();
-			while($obj->fetch()){
-				$this->_databases[$obj->id] = clone $obj;
+			if ($this->id) {
+				$obj = new EBSCOhostDatabase();
+				$obj->searchSettingId = $this->id;
+				$obj->orderBy('displayName');
+				$obj->find();
+				while ($obj->fetch()) {
+					$this->_databases[$obj->id] = clone $obj;
+				}
 			}
-
-			//Update based on the databases available within the server
 		}
 		return $this->_databases;
 	}
@@ -143,6 +143,35 @@ class EBSCOhostSearchSetting extends DataObject
 			$this->saveDatabases();
 		}
 		return $ret;
+	}
+
+	public function delete($useWhere = false){
+		if (!$useWhere) {
+			$obj = new Library();
+			$obj->ebscohostSearchSettingId = $this->id;
+			$obj->find();
+			$libraries = [];
+			while($obj->fetch()){
+				$libraries[] = clone $obj;
+			}
+			foreach ($libraries as $library) {
+				$library->ebscohostSearchSettingId = -1;
+				$library->update();
+			}
+			$obj = new Location();
+			$obj->ebscohostSearchSettingId = $this->id;
+			$obj->find();
+			$locations = [];
+			while($obj->fetch()){
+				$locations[] = clone $obj;
+			}
+			foreach ($locations as $location) {
+				$location->ebscohostSearchSettingId = -2;
+				$location->update();
+			}
+			$this->clearOneToManyOptions('EBSCOhostDatabase', 'searchSettingId');
+		}
+		return parent::delete($useWhere);
 	}
 
 	public function updateDatabasesFromEBSCOhost(){
@@ -277,7 +306,7 @@ class EBSCOhostSearchSetting extends DataObject
 		$allDatabases = $this->getDatabases();
 		$defaultSearchDatabases = [];
 		foreach ($allDatabases as $dbInfo){
-			if ($dbInfo->searchByDefault){
+			if ($dbInfo->allowSearching && $dbInfo->searchByDefault){
 				$defaultSearchDatabases[$dbInfo->shortName] = $dbInfo->shortName;
 			}
 		}

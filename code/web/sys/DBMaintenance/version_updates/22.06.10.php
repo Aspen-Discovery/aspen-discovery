@@ -117,6 +117,21 @@ function getUpdates22_06_10() : array
 				'UPDATE ebscohost_database set hasDateAndRelevancySorting = searchByDefault',
 			]
 		], //add_sort_info_to_ebscohost_database
-
+		'ebscohost_remove_authType' => [
+			'title' => 'Remove EBSCOhost auth type',
+			'description' => 'Remove unused columns',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ebscohost_settings DROP COLUMN authType',
+				'ALTER TABLE ebscohost_settings DROP COLUMN ipProfileId',
+			]
+		], //ebscohost_remove_authType
+		'ebscohost_database_logo_default' => [
+			'title' => 'Set a default for database logo',
+			'description' => 'Set a default for database logo',
+			'sql' => [
+				"ALTER TABLE ebscohost_database CHANGE COLUMN logo logo VARCHAR(512) DEFAULT ''"
+			]
+		], //ebscohost_database_logo_default
 	];
 }
