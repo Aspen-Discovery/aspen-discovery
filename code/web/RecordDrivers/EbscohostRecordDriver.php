@@ -400,6 +400,8 @@ class EbscohostRecordDriver extends RecordInterface
 						}else{
 							return (string)$docType;
 						}
+					}elseif ($pubType != null){
+						return (string)$pubType;
 					}
 				}
 			}
