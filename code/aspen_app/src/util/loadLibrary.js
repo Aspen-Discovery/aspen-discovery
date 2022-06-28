@@ -144,31 +144,35 @@ export async function getPickupLocations(libraryUrl) {
 /**
  * Fetch active browse categories for the branch/location
  **/
-export async function getBrowseCategories(libraryUrl, discoveryVersion) {
+export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = null) {
 	if(libraryUrl) {
 		const postBody = await postData();
 		const api = create({
 			baseURL: libraryUrl + '/API',
 			timeout: GLOBALS.timeoutAverage,
 			headers: getHeaders(true),
-			auth: createAuthTokens()
+			auth: createAuthTokens(),
+			params: {maxCategories: limit, LiDARequest: true}
 		});
-		const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
 		const hiddenCategories = [];
-		if(responseHiddenCategories.ok) {
-			if(typeof responseHiddenCategories.data.result !== "undefined") {
-				const categories = responseHiddenCategories.data.result.categories;
-				if (_.isArray(categories) === true) {
-					if (categories.length > 0) {
-						categories.map(function (category, index, array) {
-							hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
-						});
+		if(discoveryVersion < "22.07.00") {
+			const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
+			if(responseHiddenCategories.ok) {
+				if(typeof responseHiddenCategories.data.result !== "undefined") {
+					const categories = responseHiddenCategories.data.result.categories;
+					if (_.isArray(categories) === true) {
+						if (categories.length > 0) {
+							categories.map(function (category, index, array) {
+								hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
+							});
+						}
 					}
 				}
 			}
 		}
-		//console.log(hiddenCategories);
-		const response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
+		let response = '';
+		response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
+		console.log(response);
 		if (response.status === 403) {
 			await removeData().then(res => {
 				console.log("Session ended.")
@@ -229,6 +233,7 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion) {
 				});
 			}
 
+			//console.log(allCategories);
 			allCategories = _.pullAllBy(allCategories, hiddenCategories, 'key');
 
 			return allCategories;

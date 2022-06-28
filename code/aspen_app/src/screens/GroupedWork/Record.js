@@ -154,7 +154,7 @@ const CheckOutEContent = (props) => {
 		)
 	} else {
 		return (
-			<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
+			<Button size="md" colorScheme="primary" variant="solid"
 			        _text={{padding: 0, textAlign: "center"}}
 			        isLoading={loading}
 			        isLoadingText="Checking out title..."
@@ -213,7 +213,7 @@ const ILS = (props) => {
 		} else {
 			return (
 				<Button
-					size={{base: "md", lg: "lg"}}
+					size="md"
 					colorScheme="primary"
 					variant="solid"
 					_text={{padding: 0, textAlign: "center"}}
@@ -238,7 +238,7 @@ const OverDriveSample = (props) => {
 
 	console.log(props);
 	return (
-		<Button size={{base: "xs", lg: "sm"}}
+		<Button size="xs"
 	        colorScheme="primary"
 	        variant="outline"
 	        _text={{padding: 0, textAlign: "center", fontSize: 12}}
@@ -259,7 +259,7 @@ const SideLoad = (props) => {
 	const [loading, setLoading] = React.useState(false);
 
 	return (
-		<Button size={{base: "md", lg: "lg"}}
+		<Button size="md"
 	        colorScheme="primary"
 	        variant="solid"
 	        _text={{padding: 0, textAlign: "center"}}
@@ -278,7 +278,7 @@ const CheckedOutToYou = (props) => {
 	const [loading, setLoading] = React.useState(false);
 
 	return (
-		<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
+		<Button size="md" colorScheme="primary" variant="solid"
 		        _text={{padding: 0, textAlign: "center"}}
 		        isLoading={loading}
 		        isLoadingText="Loading..."
@@ -293,7 +293,7 @@ const OnHoldForYou = (props) => {
 	const [loading, setLoading] = React.useState(false);
 
 	return (
-		<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
+		<Button size="md" colorScheme="primary" variant="solid"
 		        _text={{padding: 0, textAlign: "center"}}
 		        isLoading={loading}
 		        isLoadingText="Loading..."

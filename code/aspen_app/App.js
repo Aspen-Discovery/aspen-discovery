@@ -196,7 +196,13 @@ export default class AppContainer extends Component {
 
 				if(_.isEmpty(this.state.browseCategories)) {
 
-					if (discoveryVersion >= "22.05.00") {
+					if (discoveryVersion >= "22.07.00") {
+						await getBrowseCategories(libraryUrl, discoveryVersion, 10).then(response => {
+							this.setState({
+								browseCategories: response,
+							})
+						})
+					} else if(discoveryVersion >= "22.05.00") {
 						await getBrowseCategories(libraryUrl, discoveryVersion).then(response => {
 							this.setState({
 								browseCategories: response,

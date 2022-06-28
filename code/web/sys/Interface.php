@@ -735,6 +735,14 @@ class UInterface extends Smarty
 				//This happens prior to the table being created
 			}
 		}
+
+		$loadRecaptcha = false;
+		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+		$recaptcha = new RecaptchaSetting();
+		if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+			$loadRecaptcha = true;
+		}
+		$this->assign('loadRecaptcha', $loadRecaptcha);
 	}
 
 	/**

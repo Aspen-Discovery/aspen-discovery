@@ -13,7 +13,8 @@ import {
 	Avatar,
 	Pressable,
 	IconButton,
-	Icon
+	Icon,
+	Image
 } from "native-base";
 import { CommonActions } from '@react-navigation/native';
 import {MaterialIcons} from "@expo/vector-icons";
@@ -121,7 +122,7 @@ export default class Results extends Component {
 			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library)}>
 				<HStack space={3}>
 					<VStack>
-						<Avatar source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "90px", lg: "120px"}} />
+						<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "90px", lg: "120px"}} />
 						<Badge mt={1} _text={{fontSize: 10}}>{item.language}</Badge>
 					</VStack>
 					<VStack w="65%">

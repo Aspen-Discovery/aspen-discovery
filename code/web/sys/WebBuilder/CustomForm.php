@@ -214,8 +214,9 @@ class CustomForm extends DataObject
 				require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 				$recaptcha = new RecaptchaSetting();
 				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
-					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey, $this->id);
 					$interface->assign('captcha', $captchaCode);
+					$interface->assign('captchaKey', $recaptcha->publicKey);
 				}
 			}else{
 				return "<div class='alert alert-warning'>" . translate(['text'=>"You must be logged to submit this form", 'isPublicFacing'=> true]) . "</div>";
