@@ -823,14 +823,14 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		$html = array();
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
-		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
-				$current = &$this->lastSearchResults->Data->Records[$x];
+		if (isset($this->lastSearchResults->SearchResults->records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->SearchResults->records->rec); $x++) {
+				$current = &$this->lastSearchResults->SearchResults->records->rec[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
-				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
-				$record = new EbscoRecordDriver($current);
+				require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+				$record = new EbscohostRecordDriver($current);
 				if ($record->isValid()) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getBrowseResult());
@@ -845,11 +845,11 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 	public function getSpotlightResults(CollectionSpotlight $spotlight){
 		$spotlightResults = [];
-		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
-				$current = &$this->lastSearchResults->Data->Records[$x];
-				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
-				$record = new EbscoRecordDriver($current);
+		if (isset($this->lastSearchResults->SearchResults->records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->SearchResults->records->rec); $x++) {
+				$current = &$this->lastSearchResults->SearchResults->records->rec[$x];
+				require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+				$record = new EbscohostRecordDriver($current);
 				if ($record->isValid()) {
 					if (!empty($orderedListOfIDs)) {
 						$position = array_search($current['id'], $orderedListOfIDs);

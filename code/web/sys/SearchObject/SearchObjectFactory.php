@@ -132,6 +132,9 @@ class SearchObjectFactory
 			case 'ebsco_eds' :
 				$source = 'EbscoEds';
 				break;
+			case 'ebscohost' :
+				$source = 'Ebscohost';
+				break;
 			default:
 				$source = 'GroupedWork';
 				break;
