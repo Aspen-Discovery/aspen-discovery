@@ -44,6 +44,7 @@ export default class BrowseCategoryHome extends PureComponent {
 			categoriesLoaded: false,
 			prevLaunch: 0,
 			showButtons: false,
+			loadAllCategories: false,
 		};
 		//getBrowseCategories();
 	}
@@ -161,9 +162,9 @@ export default class BrowseCategoryHome extends PureComponent {
 	onRefreshCategories = async (libraryUrl, patronId) => {
 		this.setState({isLoading: true});
 
-		await getBrowseCategories(libraryUrl).then(response => {
+		await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
 			this.context.browseCategories = response;
-			console.log(response);
+			//console.log(response);
 			this.setState({
 				isLoading: false,
 			})
@@ -270,7 +271,7 @@ export default class BrowseCategoryHome extends PureComponent {
 	}
 
 	render() {
-		const {isLoading, categoriesLoaded} = this.state;
+		const {isLoading, categoriesLoaded, loadAllCategories} = this.state;
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
@@ -324,7 +325,7 @@ export default class BrowseCategoryHome extends PureComponent {
 								/>
 							);
 						})}
-						<ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={this.onPressSettings} onRefreshCategories={this.onRefreshCategories} />
+						<ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={this.onPressSettings} onRefreshCategories={this.onRefreshCategories} discoveryVersion={discoveryVersion} loadAll={loadAllCategories} />
 					</Box>
 				</ScrollView>
 			);
@@ -360,8 +361,34 @@ export default class BrowseCategoryHome extends PureComponent {
 }
 
 const ButtonOptions = (props) => {
-	const {onPressSettings, onRefreshCategories, libraryUrl, patronId} = props;
+	const {onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll} = props;
 	const [isLoading, setLoading] = React.useState(true);
+
+	if(discoveryVersion >= "22.07.00") {
+		if(loadAll) {
+			return (
+				<Box>
+					<Button size="md" colorScheme="primary" onPress={() => {
+						onPressSettings(libraryUrl, patronId)
+					}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>Manage Categories</Button>
+					<Button size="md" mt="3" colorScheme="primary" onPress={() => {
+						onRefreshCategories(libraryUrl, patronId)
+					}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
+				</Box>
+			)
+		} else {
+			return (
+				<Box>
+					<Button size="lg" colorScheme="primary" onPress={() => {
+						onRefreshCategories(libraryUrl, patronId)
+					}} startIcon={<Icon as={MaterialIcons} name="schedule" size="sm"/>}>Load All Categories</Button>
+					<Button size="md" mt="3" colorScheme="secondary" onPress={() => {
+						onRefreshCategories(libraryUrl, patronId)
+					}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
+				</Box>
+			)
+		}
+	}
 
 	return <Box>
 		<Button size="md" colorScheme="primary" onPress={() => {
