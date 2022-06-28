@@ -152,7 +152,7 @@ export default class GroupedWork extends Component {
 			return (
 				<Button
 					pt={2}
-					size={{base: "sm", lg: "md"}}
+					size="sm"
 					variant="link"
 					colorScheme="tertiary"
 					_text={{
@@ -172,7 +172,7 @@ export default class GroupedWork extends Component {
 
 			const btnVariant = this.state.format === format.format ? "solid" : "outline";
 
-			return <Button variant={btnVariant} size={{base: "sm", lg: "lg"}} mb={1}
+			return <Button variant={btnVariant} size="sm" mb={1}
 			               onPress={() => this.setState({format: format.format})}>{format.format}</Button>
 		})
 	}
@@ -183,7 +183,7 @@ export default class GroupedWork extends Component {
 
 			const btnVariant = this.state.language === language.language ? "solid" : "outline";
 
-			return <Button variant={btnVariant} size={{base: "sm", lg: "lg"}}
+			return <Button variant={btnVariant} size="sm"
 			               onPress={() => this.setState({language: language.language})}>{language.language}</Button>
 		})
 	}
