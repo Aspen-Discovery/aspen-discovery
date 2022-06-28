@@ -10100,6 +10100,14 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		clearUploadedCover: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearUploadedCover';
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage("Success", data.message, true, true);
+			});
+			return false;
+		},
+
 		getUploadCoverForm: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
 			$.getJSON(url, function (data){
@@ -10167,7 +10175,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=setRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
 			AspenDiscovery.closeLightbox();
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage(data.title, data.message, true, false);
+				AspenDiscovery.showMessage(data.title, data.message, true, true);
 			});
 			return false;
 		},
