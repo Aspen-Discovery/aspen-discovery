@@ -17,7 +17,7 @@
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
-{if !empty($fields)}
+{if !empty($details)}
 	<h4>{translate text="Solr Details" isAdminFacing="true"}</h4>
 	<table class="table-striped table table-condensed notranslate" style="display:block; overflow: auto;">
 		{foreach from=$details key='field' item='values'}
