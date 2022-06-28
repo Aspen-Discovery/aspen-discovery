@@ -504,7 +504,7 @@ class ExploreMore {
 				$hasMatches = false;
 				$exploreMoreOptions['sampleRecords']['ebscohost'] = [];
 				foreach ($databases as $database) {
-					if ($database->showInExploreMore) {
+					if ($database->allowSearching && $database->showInExploreMore) {
 						$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
 						//Find related titles
 						$ebscohostSearcher->setSearchTerms(array(
