@@ -18,7 +18,13 @@
 				{* Title includes the title section *}
 				{$recordDriver->getTitle()|removeTrailingPunctuation}
 				{if $recordDriver->getFormats()}
-					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true isPublicFacing=true})</small>
+					<br>
+					<small>
+						({implode subject=$recordDriver->getFormats() glue=", ", translate=true isPublicFacing=true})
+						{if $recordDriver->isClosedCaptioned()}
+							&nbsp;<i class="fas fa-closed-captioning"></i>
+						{/if}
+					</small>
 				{/if}
 			</h1>
 

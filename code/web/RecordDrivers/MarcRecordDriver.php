@@ -917,6 +917,15 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
+	function isClosedCaptioned() {
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($relatedRecord != null){
+			return $relatedRecord->closedCaptioned;
+		} else {
+			return false;
+		}
+	}
+
 	function getFormatCategory()
 	{
 		return $this->getGroupedWorkDriver()->getFormatCategory();
