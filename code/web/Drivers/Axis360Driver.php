@@ -263,7 +263,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)) {
 			$settings = $this->getSettings($patron);
-			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/addToHold/v2/$recordId/" . urlencode($patron->email) . "/{$patron->getBarcode()}";
+			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/addToHold/v2/$recordId/" . urlencode((empty($patron->axis360Email) ? $patron->email : $patron->axis360Email)) . "/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
 				'Library: ' . $settings->libraryPrefix,
