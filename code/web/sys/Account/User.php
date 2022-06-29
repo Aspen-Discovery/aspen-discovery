@@ -779,19 +779,6 @@ class User extends DataObject
 		$this->update();
 	}
 
-	function updateAxis360Options(){
-		if (isset($_REQUEST['promptForAxis360Email']) && ($_REQUEST['promptForAxis360Email'] == 'yes' || $_REQUEST['promptForAxis360Email'] == 'on')){
-			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-			$this->promptForAxis360Email = 1;
-		}else{
-			$this->promptForAxis360Email = 0;
-		}
-		if (isset($_REQUEST['axis360Email'])){
-			$this->axis360Email = strip_tags($_REQUEST['axis360Email']);
-		}
-		$this->update();
-	}
-
 	function updateStaffSettings(){
 		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')){
 			$this->bypassAutoLogout = 1;
