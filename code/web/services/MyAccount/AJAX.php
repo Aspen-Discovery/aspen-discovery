@@ -3236,7 +3236,7 @@ class MyAccount_AJAX extends JSON_Action
 				if ($result['success'] == false){
 					//If the payment does not complete in the ILS, add information to the payment for tracking
 					//Also send an email to admin that it was completed in paypal, but not the ILS
-					$payment->message .= 'Fine Payment was not completed within the ILS. ' . $result['message'];
+					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
 					$payment->update();
 
 					if (!empty($payPalSettings->errorEmail)){
