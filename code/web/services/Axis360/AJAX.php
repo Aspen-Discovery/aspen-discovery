@@ -79,6 +79,13 @@ class Axis360_AJAX extends JSON_Action
 		if ($user->axis360Email == 'undefined') {
 			$user->axis360Email = '';
 		}
+
+		if(strlen($user->axis360Email) == 0) {
+			if($user->email) {
+				$user->axis360Email = $user->email;
+			}
+		}
+
 		$promptForEmail = false;
 		if (strlen($user->axis360Email) == 0 || $user->promptForAxis360Email == 1) {
 			$promptForEmail = true;
