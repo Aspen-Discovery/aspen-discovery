@@ -7,7 +7,7 @@
 	{/if}
 
 	{if !empty($userPermissions)}
-		<div id="home-page-home-button" class="header-menu-option">
+		<div id="admin-home-button" class="header-menu-option">
 			<a href="/Admin/Home"><i class="fas fa-tools fa-fw"></i><span>{translate text='Aspen Administration' isAdminFacing=true}</span></a>
 		</div>
 	{/if}
