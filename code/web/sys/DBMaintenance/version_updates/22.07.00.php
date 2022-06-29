@@ -24,6 +24,14 @@ function getUpdates22_07_00() : array
                 "ALTER TABLE `themes` ADD COLUMN browseCategoryImageSize TINYINT(1) DEFAULT -1",
             ]
         ], //browse_category_image_size
-
+		'axis_360_options' => [
+			'title' => 'Add Axis 360 Options',
+			'description' => 'Add options for Axis 360 hold email',
+			'sql' => [
+				"ALTER TABLE user ADD axis360Email VARCHAR( 250 ) NOT NULL DEFAULT ''",
+				"ALTER TABLE user ADD promptForAxis360Email TINYINT DEFAULT 1",
+				"UPDATE user SET axis360Email = email WHERE axis360Email = ''"
+			]
+		], //axis_360_options
 	];
 }

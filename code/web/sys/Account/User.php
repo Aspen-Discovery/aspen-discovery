@@ -32,6 +32,8 @@ class User extends DataObject
 	public $overdriveEmail;
 	public $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
 	public $hooplaCheckOutConfirmation;
+	public $promptForAxis360Email;
+	public $axis360Email;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
     public $lockedFacets;
@@ -116,7 +118,7 @@ class User extends DataObject
 	}
 
 	function getEncryptedFieldNames() : array {
-		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField(), 'axis360Email'];
 	}
 
 	public function getUniquenessFields(): array
@@ -773,6 +775,19 @@ class User extends DataObject
 			$this->hooplaCheckOutConfirmation = 1;
 		}else{
 			$this->hooplaCheckOutConfirmation = 0;
+		}
+		$this->update();
+	}
+
+	function updateAxis360Options(){
+		if (isset($_REQUEST['promptForAxis360Email']) && ($_REQUEST['promptForAxis360Email'] == 'yes' || $_REQUEST['promptForAxis360Email'] == 'on')){
+			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
+			$this->promptForAxis360Email = 1;
+		}else{
+			$this->promptForAxis360Email = 0;
+		}
+		if (isset($_REQUEST['axis360Email'])){
+			$this->axis360Email = strip_tags($_REQUEST['axis360Email']);
 		}
 		$this->update();
 	}

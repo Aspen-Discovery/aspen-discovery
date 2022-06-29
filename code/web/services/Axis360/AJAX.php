@@ -12,6 +12,21 @@ class Axis360_AJAX extends JSON_Action
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
+				if (isset($_REQUEST['axis360Email'])) {
+					if ($_REQUEST['axis360Email'] != $patron->axis360Email) {
+						$patron->axis360Email = $_REQUEST['axis360Email'];
+						$patron->update();
+					}
+				}
+				if (isset($_REQUEST['promptForAxis360Email'])) {
+					if ($_REQUEST['promptForAxis360Email'] == 1 || $_REQUEST['promptForAxis360Email'] == 'yes' || $_REQUEST['promptForAxis360Email'] == 'on') {
+						$patron->promptForAxis360Email = 1;
+					} else {
+						$patron->promptForAxis360Email = 0;
+					}
+					$patron->update();
+				}
+
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
 				return $driver->placeHold($patron, $id);
@@ -61,26 +76,40 @@ class Axis360_AJAX extends JSON_Action
 
 		$usersWithAxis360Access = $this->getAxis360Users($user);
 
-		if (count($usersWithAxis360Access) > 1) {
-			$promptTitle = translate(['text'=>'Axis 360 Hold Options', 'isPublicFacing'=>true]);
-			return array(
-					'promptNeeded' => true,
-					'promptTitle' => $promptTitle,
-					'prompts' => $interface->fetch('Axis360/ajax-hold-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text'=>'Place Hold', 'isPublicFacing'=>true, 'inAttribute'=>true]) . '" onclick="return AspenDiscovery.Axis360.processHoldPrompts();">'
-			);
-		} elseif (count($usersWithAxis360Access) == 1) {
-			return array(
-					'patronId' => reset($usersWithAxis360Access)->id,
-					'promptNeeded' => false,
-				);
-		} else {
+		if ($user->axis360Email == 'undefined') {
+			$user->axis360Email = '';
+		}
+		$promptForEmail = false;
+		if (strlen($user->axis360Email) == 0 || $user->promptForAxis360Email == 1) {
+			$promptForEmail = true;
+		}
+
+		$interface->assign('axis360Email', $user->axis360Email);
+		$interface->assign('promptForEmail', $promptForEmail);
+
+		if(count($usersWithAxis360Access) == 0) {
 			// No Axis 360 Account Found, let the user create one if they want
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => translate(['text'=>'Error', 'isPublicFacing'=>true]),
 				'prompts' => translate(['text'=>'Your account is not valid for Axis360, please contact your local library.', 'isPublicFacing'=>true]),
 				'buttons' => ''
+			];
+		}
+		elseif ($promptForEmail || count($usersWithAxis360Access) > 1) {
+			$promptTitle = translate(['text'=>'Axis 360 Hold Options', 'isPublicFacing'=>true]);
+			return array(
+					'promptNeeded' => true,
+					'promptTitle' => translate(['text'=>$promptTitle,'isPublicFacing'=>true]),
+					'prompts' => $interface->fetch('Axis360/ajax-hold-prompt.tpl'),
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text'=>'Place Hold', 'isPublicFacing'=>true, 'inAttribute'=>true]) . '" onclick="return AspenDiscovery.Axis360.processHoldPrompts();">'
+			);
+		} else {
+			return [
+				'patronId' => reset($usersWithAxis360Access)->id,
+				'promptNeeded' => false,
+				'axis360Email' => $user->axis360Email,
+				'promptForAxis360Email' => $user->promptForAxis360Email,
 			];
 		}
 	}
