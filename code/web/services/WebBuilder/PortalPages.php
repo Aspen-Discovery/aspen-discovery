@@ -4,6 +4,13 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 
 class WebBuilder_PortalPages extends ObjectEditor
 {
+	function launch()
+	{
+		global $interface;
+		$interface->assign('inPageEditor', true);
+		parent::launch();
+	}
+
 	function getObjectType() : string
 	{
 		return 'PortalPage';

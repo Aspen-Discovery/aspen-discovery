@@ -86,7 +86,7 @@
 						{/if}
 					{literal}<style>div#customColor-cell{/literal}{$cell->id}{literal}{color: {/literal}{$foregroundColor}{literal}; background-color: {/literal}{$backgroundColor}{literal};} div#customColor-cell{/literal}{$cell->id}{literal} a:not(.btn){color: {/literal}{$foregroundColor}{literal}}</style>{/literal}
 						<div id="customColor-cell{$cell->id}" class="portal-cell col-tn-{$cell->widthTiny} col-xs-{$cell->widthXs} col-sm-{$cell->widthSm} col-md-{$cell->widthMd} col-lg-{$cell->widthLg}" style="align-self: {if $cell->verticalAlignment != ''}{$cell->verticalAlignment}{else}flex-start{/if}; {if $cell->horizontalJustification != ''}text-align:{$cell->horizontalJustification}{/if}">
-							{$cell->getContents()}
+							{$cell->getContents($inPageEditor)}
 						</div>
 					{/foreach}
 						{if $row->makeAccordion == '1'}</div>{/if}

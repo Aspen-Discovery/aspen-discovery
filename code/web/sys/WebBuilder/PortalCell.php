@@ -101,7 +101,7 @@ class PortalCell extends DataObject
 		];
 	}
 
-	function getContents(){
+	function getContents($inPageEditor){
 		global $interface;
 		global $configArray;
 		$contents = '';
@@ -151,11 +151,15 @@ class PortalCell extends DataObject
 			$customForm = new CustomForm();
 			$customForm->id = $this->sourceId;
 			if ($customForm->find(true)){
-				$oldId = $interface->getVariable("id");
-				$interface->assign("id", $customForm->id);
-				$contents .= $customForm->getFormattedFields();
+				if ($inPageEditor){
+					$contents .= "<h2>$customForm->title</h2><div>(fields not displayed while editing the page)</div>";
+				}else {
+					$oldId = $interface->getVariable("id");
+					$interface->assign("id", $customForm->id);
+					$contents .= $customForm->getFormattedFields();
+					$interface->assign("id", $oldId);
+				}
 			}
-			$interface->assign("id", $oldId);
 		}elseif ($this->sourceType == 'vimeo_video'){
 			$sourceInfo = $this->sourceInfo;
 			if (preg_match('~https://vimeo\.com/(.*?)/.*~', $sourceInfo, $matches)){

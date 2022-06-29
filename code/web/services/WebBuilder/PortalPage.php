@@ -33,6 +33,8 @@ class WebBuilder_PortalPage extends Action
 	{
 		global $interface;
 
+		$interface->assign('inPageEditor', false);
+
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
 

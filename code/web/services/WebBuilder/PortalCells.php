@@ -4,6 +4,12 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalCells extends ObjectEditor
 {
+	function launch()
+	{
+		global $interface;
+		$interface->assign('inPageEditor', true);
+		parent::launch();
+	}
 	function getObjectType() : string
 	{
 		return 'PortalCell';
