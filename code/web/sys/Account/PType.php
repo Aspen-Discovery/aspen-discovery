@@ -16,7 +16,7 @@ class PType extends DataObject
 
 	public function getNumericColumnNames(): array
 	{
-		return ['isStaff', 'maxHolds', 'restrictMasquerade'];
+		return ['isStaff', 'maxHolds', 'restrictMasquerade', 'twoFactorAuthSettingId'];
 	}
 
 	static function getObjectStructure() : array

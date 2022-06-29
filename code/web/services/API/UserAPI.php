@@ -2454,14 +2454,15 @@ class UserAPI extends Action
 		if ($offlineMode) {
 			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !($user instanceof AspenError)) {
+			$username = $_REQUEST['username'];
+			$user = new User();
+			$user->cat_username = $username;
+			if ($user->find(true)) {
 				$user->updateReadingHistoryBasedOnCurrentCheckouts();
 
 				return array('success' => true);
-			} else {
-				return array('success' => false, 'message' => 'Login unsuccessful');
+			}else{
+				return array('success' => false, 'message' => 'Could not find a user with that user name');
 			}
 		}
 	}

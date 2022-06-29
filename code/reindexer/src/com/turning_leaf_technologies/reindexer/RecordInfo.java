@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.reindexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 public class RecordInfo {
@@ -22,6 +21,7 @@ public class RecordInfo {
 	private String publisher;
 	private String publicationDate;
 	private String physicalDescription;
+	private boolean isClosedCaptioned;
 
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 
@@ -285,7 +285,7 @@ public class RecordInfo {
 	}
 
 	void clearFormats(){
-		this.formats.clear();;
+		this.formats.clear();
 	}
 
 	void addFormats(HashSet<String> translatedFormats) {
@@ -332,7 +332,7 @@ public class RecordInfo {
 		this.publisher = recordInfo.publisher;
 		this.publicationDate = recordInfo.publicationDate;
 		this.physicalDescription = recordInfo.physicalDescription;
-		//noinspection unchecked
+		this.isClosedCaptioned = recordInfo.isClosedCaptioned;
 		for (ItemInfo itemInfo : recordInfo.relatedItems) {
 			ItemInfo clonedItem = new ItemInfo();
 			addItem(clonedItem);
@@ -343,4 +343,13 @@ public class RecordInfo {
 	public String getPhysicalDescription() {
 		return physicalDescription;
 	}
+
+	public boolean isClosedCaptioned() {
+		return isClosedCaptioned;
+	}
+
+	public void setClosedCaptioned(boolean closedCaptioned) {
+		isClosedCaptioned = closedCaptioned;
+	}
+
 }

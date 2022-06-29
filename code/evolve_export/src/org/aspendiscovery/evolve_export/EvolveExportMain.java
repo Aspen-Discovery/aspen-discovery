@@ -400,6 +400,15 @@ public class EvolveExportMain {
 						numRecordsWithErrors++;
 					}
 					if (curBib != null) {
+						ArrayList<ControlField> updatedControlFields = new ArrayList<>();
+						for (ControlField controlField : curBib.getControlFields()){
+							//We're getting some extraneous separators that need to be removed, trim them off.
+							controlField.setData(controlField.getData().replaceAll("\u001F", ""));
+							updatedControlFields.add(controlField);
+						}
+						for (ControlField updatedControlField : updatedControlFields){
+							curBib.addVariableField(updatedControlField);
+						}
 						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 						if (recordIdentifier != null) {
 							String recordNumber = recordIdentifier.getIdentifier();
@@ -454,6 +463,15 @@ public class EvolveExportMain {
 					logEntry.incProducts();
 					try{
 						Record curBib = catalogReader.next();
+						ArrayList<ControlField> updatedControlFields = new ArrayList<>();
+						for (ControlField controlField : curBib.getControlFields()){
+							//We're getting some extraneous separators that need to be removed, trim them off.
+							controlField.setData(controlField.getData().replaceAll("\u001F", ""));
+							updatedControlFields.add(controlField);
+						}
+						for (ControlField updatedControlField : updatedControlFields){
+							curBib.addVariableField(updatedControlField);
+						}
 						numRecordsRead++;
 						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {

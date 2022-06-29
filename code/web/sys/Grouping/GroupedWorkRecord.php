@@ -15,4 +15,5 @@ class GroupedWorkRecord extends DataObject
 	public $publicationDateId;
 	public $physicalDescriptionId;
 	public $languageId;
+	public $isClosedCaptioned;
 }

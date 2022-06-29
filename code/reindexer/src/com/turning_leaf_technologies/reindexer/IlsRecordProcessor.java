@@ -47,7 +47,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char subLocationSubfield;
 	char iTypeSubfield;
 	private Pattern nonHoldableITypes;
-	private Pattern iTypesToSuppress;
+	protected Pattern iTypesToSuppress;
 	boolean useEContentSubfield = false;
 	char eContentSubfieldIndicator;
 	private Pattern suppressRecordsWithUrlsMatching;
@@ -88,7 +88,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	protected final HashSet<String> formatsToSuppress = new HashSet<>();
-	private final HashSet<String> statusesToSuppress = new HashSet<>();
+	protected final HashSet<String> statusesToSuppress = new HashSet<>();
 	private final HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
 	private final HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
 	private final HashSet<String> nonHoldableFormats = new HashSet<>();
@@ -428,6 +428,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
+			loadClosedCaptioning(groupedWork, record, allRelatedRecords);
 
 			if (record.getControlNumber() != null){
 				groupedWork.addKeywords(record.getControlNumber());
