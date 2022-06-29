@@ -309,6 +309,8 @@ public class HooplaExportMain {
 				//Formulate the first call depending on if we are doing a full reload or not
 				String url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content";
 				if (!doFullReload && lastUpdate > 0) {
+					//Give a 2 minute buffer for the extract
+					lastUpdate -= 120;
 					logEntry.addNote("Extracting records since " + new Date(lastUpdate * 1000).toString());
 					url += "?startTime=" + lastUpdate;
 				}

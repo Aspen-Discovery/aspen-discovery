@@ -216,10 +216,10 @@ public class GroupedWorkIndexer {
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
-			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ? where id = ?");
+			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId), isClosedCaptioned = VALUES(isClosedCaptioned)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ?, isClosedCaptioned = ? where id = ?");
 			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
 			getIdForRecordStmt = dbConn.prepareStatement("SELECT id from grouped_work_records where sourceId = ? and recordIdentifier = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -1387,6 +1387,7 @@ public class GroupedWorkIndexer {
 				addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
 				addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
 				addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
+				addRecordForWorkStmt.setBoolean(11, recordInfo.isClosedCaptioned());
 				addRecordForWorkStmt.executeUpdate();
 				ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
 				if (addRecordForWorkRS.next()) {
@@ -1410,6 +1411,7 @@ public class GroupedWorkIndexer {
 				long formatId = getFormatId(recordInfo.getPrimaryFormat());
 				long formatCategoryId = getFormatCategoryId(recordInfo.getPrimaryFormatCategory());
 				long languageId = getLanguageId(recordInfo.getPrimaryLanguage());
+				boolean isClosedCaptioned = recordInfo.isClosedCaptioned();
 				if (groupedWorkId != existingRecord.groupedWorkId) { hasChanges = true; }
 				if (editionId != existingRecord.editionId) { hasChanges = true; }
 				if (publisherId != existingRecord.publisherId) { hasChanges = true; }
@@ -1418,6 +1420,7 @@ public class GroupedWorkIndexer {
 				if (formatId != existingRecord.formatId) { hasChanges = true; }
 				if (formatCategoryId != existingRecord.formatCategoryId) { hasChanges = true; }
 				if (languageId != existingRecord.languageId) { hasChanges = true; }
+				if (isClosedCaptioned != existingRecord.isClosedCaptioned) { hasChanges = true; }
 				if (hasChanges){
 					updateRecordForWorkStmt.setLong(1, groupedWorkId);
 					updateRecordForWorkStmt.setLong(2, editionId);
@@ -1427,7 +1430,8 @@ public class GroupedWorkIndexer {
 					updateRecordForWorkStmt.setLong(6, formatId);
 					updateRecordForWorkStmt.setLong(7, formatCategoryId);
 					updateRecordForWorkStmt.setLong(8, languageId);
-					updateRecordForWorkStmt.setLong(9, existingRecord.id);
+					updateRecordForWorkStmt.setBoolean(9, isClosedCaptioned);
+					updateRecordForWorkStmt.setLong(10, existingRecord.id);
 					updateRecordForWorkStmt.executeUpdate();
 				}
 			}

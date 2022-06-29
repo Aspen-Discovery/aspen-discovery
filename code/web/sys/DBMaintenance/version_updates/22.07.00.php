@@ -33,5 +33,12 @@ function getUpdates22_07_00() : array
 				"UPDATE user SET axis360Email = email WHERE axis360Email = ''"
 			]
 		], //axis_360_options
+		'closed_captioning_in_records' => [
+			'title' => 'Closed Captioning in Records',
+			'description' => 'Store if a record is closed captioned',
+			'sql' => [
+				"ALTER TABLE grouped_work_records ADD COLUMN isClosedCaptioned TINYINT(1) DEFAULT 0",
+			]
+		], //closed_captioning_in_records
 	];
 }
