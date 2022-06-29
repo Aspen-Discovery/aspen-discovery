@@ -179,6 +179,7 @@
 			<th>{translate text="Format" isAdminFacing="true"}</th>
 			<th>{translate text="Format Category" isAdminFacing="true"}</th>
 			<th>{translate text="Language" isAdminFacing="true"}</th>
+			<th>{translate text="Closed Captioned?" isAdminFacing="true"}</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -195,6 +196,7 @@
 				<th>{$row.format}</th>
 				<th>{$row.formatCategory}</th>
 				<th>{$row.language}</th>
+				<th>{if $row.isClosedCaptioned}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
 			</tr>
         {/foreach}
 		</tbody>

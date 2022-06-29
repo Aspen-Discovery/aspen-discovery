@@ -71,8 +71,8 @@ class Grouping_Record
 			$this->publicationDate = $recordDetails['publicationDate'];
 			$this->physical = $recordDetails['physicalDescription'];
 			$this->language = $recordDetails['language'];
-			if (isset($recordDetails['closedCaptioned'])) {
-				$this->closedCaptioned = $recordDetails['closedCaptioned'];
+			if (isset($recordDetails['isClosedCaptioned'])) {
+				$this->closedCaptioned = $recordDetails['isClosedCaptioned'];
 			}
 		}else{
 			$this->format = $recordDetails[1];

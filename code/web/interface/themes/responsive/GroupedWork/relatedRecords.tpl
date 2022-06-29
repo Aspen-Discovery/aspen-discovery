@@ -48,7 +48,7 @@
 						<td style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -o-pre-wrap"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publisher}</a></td>
                     {/if}
                     {if $showRecordPhysical}
-						<td style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -o-pre-wrap"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical}</a></td>
+						<td style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -o-pre-wrap"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical} {if $relatedRecord->closedCaptioned}<i class="fas fa-closed-captioning"></i> {/if}</a></td>
                     {/if}
                     {if $showRecordLanguage}
 						<td style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -o-pre-wrap"><a href="{$relatedRecord->getUrl()}">{implode subject=$relatedRecord->language glue="," translate=true isPublicFacing=true}</a></td>

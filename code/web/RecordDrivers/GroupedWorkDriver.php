@@ -60,6 +60,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$summPhysicalDesc = null;
 		$summEdition = null;
 		$summLanguage = null;
+		$summClosedCaptioned = null;
 		$isFirst = true;
 		foreach ($relatedRecords as $relatedRecord) {
 			if ($isFirst) {
@@ -68,6 +69,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$summPhysicalDesc = $relatedRecord->physical;
 				$summEdition = $relatedRecord->edition;
 				$summLanguage = $relatedRecord->language;
+				$summClosedCaptioned = $relatedRecord->closedCaptioned;
 			} else {
 				if ($summPublisher != $relatedRecord->publisher) {
 					$summPublisher = null;
@@ -84,6 +86,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if ($summLanguage != $relatedRecord->language) {
 					$summLanguage = null;
 				}
+				if ($summClosedCaptioned != $relatedRecord->closedCaptioned){
+					$summClosedCaptioned = null;
+				}
 			}
 			$isFirst = false;
 		}
@@ -92,6 +97,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
 		$interface->assign('summEdition', $summEdition);
 		$interface->assign('summLanguage', $summLanguage);
+		$interface->assign('summClosedCaptioned', $summClosedCaptioned);
 		$interface->assign('summArInfo', $this->getAcceleratedReaderDisplayString());
 		$interface->assign('summLexileInfo', $this->getLexileDisplayString());
 		$interface->assign('summFountasPinnell', $this->getFountasPinnellLevel());
@@ -2632,7 +2638,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$records = [];
 		}else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
