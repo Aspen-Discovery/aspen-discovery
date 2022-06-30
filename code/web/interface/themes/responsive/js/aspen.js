@@ -8711,7 +8711,10 @@ AspenDiscovery.Axis360 = (function () {
 		processHoldPrompts: function () {
 			var axis360HoldPromptsForm = $("#holdPromptsForm");
 			var id = $("#id").val();
-			var patronId = $("#patronId").val();
+			var patronId = $("#patronId option:selected").val();
+			if(!patronId) {
+				patronId = $("#patronId").val();
+			}
 			var promptForAxis360Email;
 			if (axis360HoldPromptsForm.find("input[name=promptForAxis360Email]").is(":checked")){
 				promptForAxis360Email = 0;
