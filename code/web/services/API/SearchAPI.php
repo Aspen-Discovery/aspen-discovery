@@ -1366,14 +1366,14 @@ class SearchAPI extends Action
 		if ($activeLocation == null){
 			//We don't have an active location, look at the library
 			if($isLiDARequest) {
-				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories);
+				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories, $appUser);
 			} else {
 				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
 			}
 		}else{
 			//We have a location get data for that
 			if($isLiDARequest) {
-				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories);
+				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories, $appUser);
 			} else {
 				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
 			}
