@@ -113,7 +113,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		return $this->_browseCategories;
 	}
 
-	public function getBrowseCategoriesForLiDA($max = null): array
+	public function getBrowseCategoriesForLiDA($max = null, $appUser = null): array
 	{
 		if (!isset($this->_browseCategories) && $this->id) {
 			if($max) {
@@ -122,13 +122,15 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 				$browseCategory = new BrowseCategoryGroupEntry();
 				$browseCategory->browseCategoryGroupId = $this->id;
 				$browseCategory->orderBy('weight');
-				$browseCategory->find();
-				do {
-					if($browseCategory->isValidForDisplay()) {
-						$count++;
-						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
-					}
-				} while ($browseCategory->fetch() && $count < $max);
+				if($browseCategory->find()) {
+					do {
+							if ($browseCategory->isValidForDisplay($appUser)) {
+								$count++;
+								$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
+							}
+
+					} while ($browseCategory->fetch() && $count < $max);
+				}
 			} else {
 				$this->_browseCategories = array();
 				$browseCategory = new BrowseCategoryGroupEntry();
@@ -136,7 +138,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 				$browseCategory->orderBy('weight');
 				$browseCategory->find();
 				while ($browseCategory->fetch()) {
-					if($browseCategory->isValidForDisplay()) {
+					if($browseCategory->isValidForDisplay($appUser)) {
 						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
 					}
 				}
