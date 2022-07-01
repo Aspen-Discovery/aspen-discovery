@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SystemAPI', $method);
@@ -1692,6 +1692,29 @@ class SearchAPI extends Action
 			$response['id'] = $sourceList->id;
 			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
 		}
+		$response['items'] = $records;
+
+		return $response;
+	}
+
+	function getSavedSearchResults()
+	{
+		if($_REQUEST['limit']) {
+			$pageSize = $_REQUEST['limit'];
+		} else {
+			$pageSize = self::ITEMS_PER_PAGE;
+		}
+
+		if($_REQUEST['id']) {
+			$id = $_REQUEST['id'];
+		} else {
+			return array('success' => false, 'message' => 'Search id not provided');
+		}
+
+		require_once ROOT_DIR . '/services/API/ListAPI.php';
+		$listApi = new ListAPI();
+		$records = $listApi->getSavedSearchTitles($id, $pageSize);
+
 		$response['items'] = $records;
 
 		return $response;
