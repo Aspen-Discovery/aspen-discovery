@@ -78,8 +78,8 @@ AspenDiscovery.Axis360 = (function () {
 			return false;
 		},
 
-		doHold: function (patronId, id) {
-			var url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+		doHold: function (patronId, id, axis360Email, promptForAxis360Email) {
+			var url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id + "&axis360Email=" + axis360Email + "&promptForAxis360Email=" + promptForAxis360Email;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -154,7 +154,7 @@ AspenDiscovery.Axis360 = (function () {
 				var promptInfo = AspenDiscovery.Axis360.getHoldPrompts(id, 'hold');
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
-					AspenDiscovery.Axis360.doHold(promptInfo.patronId, id);
+					AspenDiscovery.Axis360.doHold(promptInfo.patronId, id, promptInfo.axis360Email, promptInfo.promptForAxis360Email);
 				}
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
@@ -173,10 +173,21 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		processHoldPrompts: function () {
+			var axis360HoldPromptsForm = $("#holdPromptsForm");
 			var id = $("#id").val();
 			var patronId = $("#patronId option:selected").val();
+			if(!patronId) {
+				patronId = $("#patronId").val();
+			}
+			var promptForAxis360Email;
+			if (axis360HoldPromptsForm.find("input[name=promptForAxis360Email]").is(":checked")){
+				promptForAxis360Email = 0;
+			}else{
+				promptForAxis360Email = 1;
+			}
+			var axis360Email = axis360HoldPromptsForm.find("input[name=axis360Email]").val();
 			AspenDiscovery.closeLightbox();
-			return AspenDiscovery.Axis360.doHold(patronId, id);
+			return AspenDiscovery.Axis360.doHold(patronId, id, axis360Email, promptForAxis360Email);
 		},
 
 		renewCheckout: function (patronId, recordId) {

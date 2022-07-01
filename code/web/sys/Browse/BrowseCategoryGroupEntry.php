@@ -129,10 +129,58 @@ class BrowseCategoryGroupEntry extends DataObject
 		return false;
 	}
 
-	public function isValidForDisplay(): bool
-	{
-		if ($this->isDismissed()){
-			return false;
+	public function isValidForDisplay($appUser = null){
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$browseCategory = new BrowseCategory();
+		$browseCategory->id = $this->browseCategoryId;
+
+		if($browseCategory->find(true)) {
+			$curTime = time();
+			if ($browseCategory->startDate != 0 && $browseCategory->startDate > $curTime){
+				return false;
+			}
+			if ($browseCategory->endDate != 0 && $browseCategory->endDate < $curTime){
+				return false;
+			}
+			if(!is_null($appUser)) {
+				$user = $appUser;
+			}
+			if ($browseCategory->textId == 'system_user_lists' || $browseCategory->textId == 'system_saved_searches' || $browseCategory->textId == 'system_recommended_for_you') {
+				if (UserAccount::isLoggedIn() || $appUser != null) {
+					if(is_null($appUser)) {
+						$user = UserAccount::getActiveUserObj();
+					}
+					if($browseCategory->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
+						if($this->isDismissed($user)) {
+							return false;
+						}
+						return true;
+					}
+					if($browseCategory->textId == 'system_user_lists' && $user->hasLists()) {
+						if($this->isDismissed($user)) {
+							return false;
+						}
+						return true;
+					}
+					if($browseCategory->textId == 'system_recommended_for_you' && $user->hasRatings()) {
+						if($this->isDismissed($user)) {
+							return false;
+						}
+						return true;
+					}
+
+				}
+				return false;
+			}
+		}
+
+		if (UserAccount::isLoggedIn() || $appUser != null) {
+			if(is_null($appUser)) {
+				$user = UserAccount::getActiveUserObj();
+			}
+			if($this->isDismissed($user)) {
+				return false;
+			}
 		}
 		return true;
 	}

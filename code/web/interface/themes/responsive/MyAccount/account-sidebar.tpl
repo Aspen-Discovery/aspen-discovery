@@ -184,6 +184,9 @@
 									{if $user->isValidForEContentSource('hoopla')}
 										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></li>
 									{/if}
+									{if $user->isValidForEContentSource('axis360')}
+                                        <li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></li>
+                                    {/if}
 									{if $userIsStaff}
 										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></li>
 									{/if}

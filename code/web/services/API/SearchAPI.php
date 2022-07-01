@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SystemAPI', $method);
@@ -1366,14 +1366,14 @@ class SearchAPI extends Action
 		if ($activeLocation == null){
 			//We don't have an active location, look at the library
 			if($isLiDARequest) {
-				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories);
+				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories, $appUser);
 			} else {
 				$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
 			}
 		}else{
 			//We have a location get data for that
 			if($isLiDARequest) {
-				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories);
+				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA($maxCategories, $appUser);
 			} else {
 				$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
 			}
@@ -1404,7 +1404,7 @@ class SearchAPI extends Action
 						$categoryResponse['subCategories'] = [];
 						foreach ($allSearches as $savedSearch) {
 							$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
-							$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser);
+							$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12);
 							$formattedSavedSearchResults = [];
 							if(count($savedSearchResults) > 0) {
 								foreach ($savedSearchResults as $savedSearchResult) {
@@ -1418,6 +1418,7 @@ class SearchAPI extends Action
 								'key' => $thisId,
 								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
 								'source' => "SavedSearch",
+								'sourceId' => $savedSearch['id'],
 								'isHidden' => false,
 								'records' => $formattedSavedSearchResults,
 							];
@@ -1441,12 +1442,48 @@ class SearchAPI extends Action
 										'key' => $thisId,
 										'title' => $categoryInformation->label . ': ' . $userList['title'],
 										'source' => "List",
+										'sourceId' => $userList['id'],
 										'isHidden' => false,
-										'records' => $this->getAppBrowseCategoryResults($thisId),
+										'records' => $this->getAppBrowseCategoryResults($thisId, null, 12),
 									];
 								}
 							}
 						}
+					} elseif($categoryInformation->source == "List" && $categoryInformation->textId != ("system_user_lists") && $categoryInformation->sourceListId != "-1" && $categoryInformation->sourceListId) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+							'listId' => $categoryInformation->sourceListId,
+							'isHidden' => false,
+							'records' => [],
+						);
+
+						require_once(ROOT_DIR . '/sys/UserLists/UserList.php');
+						require_once(ROOT_DIR . '/sys/UserLists/UserListEntry.php');
+						$list = new UserList();
+						$list->id = $categoryInformation->sourceListId;
+						if($list->find(true)) {
+							$listEntry = new UserListEntry();
+							$listEntry->listId = $list->id;
+							$listEntry->find();
+							$count = 0;
+							do {
+								if($listEntry->source == "Lists") {
+									$categoryResponse['lists']['sourceId'] = $listEntry->sourceId;
+									$count++;
+								} else {
+									if($listEntry->sourceId) {
+										$categoryResponse['records'][] = array(
+											'id' => $listEntry->sourceId,
+											'title' => $listEntry->title,
+										);
+										$count++;
+									}
+								}
+							} while ($listEntry->fetch() && $count < 12);
+						}
+
 					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
 						require_once(ROOT_DIR . '/sys/Suggestions.php');
 						$suggestions = Suggestions::getSuggestions($appUser->id);
@@ -1473,7 +1510,7 @@ class SearchAPI extends Action
 							'title' => $categoryInformation->label,
 							'source' => $categoryInformation->source,
 							'isHidden' => false,
-							'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId)
+							'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12)
 						);
 						if ($includeSubCategories) {
 							$subCategories = $categoryInformation->getSubCategories();
@@ -1500,7 +1537,7 @@ class SearchAPI extends Action
 													'title' => $displayLabel,
 													'source' => $temp->source,
 													'isHidden' => false,
-													'records' => $this->getAppBrowseCategoryResults($temp->textId)
+													'records' => $this->getAppBrowseCategoryResults($temp->textId, null, 12)
 												];
 											}
 										}
@@ -1517,13 +1554,16 @@ class SearchAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getAppBrowseCategoryResults($id = null, $appUser = null){
+	function getAppBrowseCategoryResults($id = null, $appUser = null, $pageSize = null){
 		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])) {
 			$pageToLoad = (int) $_REQUEST['page'];
 		}else{
 			$pageToLoad = 1;
 		}
-		$pageSize = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : self::ITEMS_PER_PAGE;
+
+		if(!$pageSize) {
+			$pageSize = $_REQUEST['limit'] ?? self::ITEMS_PER_PAGE;
+		}
 		if($id) {
 			$thisId = $id;
 		} else {
@@ -1620,6 +1660,62 @@ class SearchAPI extends Action
 		if($id) {
 			return $response['records'];
 		}
+
+		return $response;
+	}
+
+	function getListResults()
+	{
+		if($_REQUEST['page']) {
+			$pageToLoad = $_REQUEST['page'];
+		} else {
+			$pageToLoad = 1;
+		}
+
+		if($_REQUEST['limit']) {
+			$pageSize = $_REQUEST['limit'];
+		} else {
+			$pageSize = self::ITEMS_PER_PAGE;
+		}
+
+		if($_REQUEST['id']) {
+			$id = $_REQUEST['id'];
+		} else {
+			return array('success' => false, 'message' => 'List id not provided');
+		}
+
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$sourceList = new UserList();
+		$sourceList->id = $id;
+		if ($sourceList->find(true)) {
+			$response['title'] = $sourceList->title;
+			$response['id'] = $sourceList->id;
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+		}
+		$response['items'] = $records;
+
+		return $response;
+	}
+
+	function getSavedSearchResults()
+	{
+		if($_REQUEST['limit']) {
+			$pageSize = $_REQUEST['limit'];
+		} else {
+			$pageSize = self::ITEMS_PER_PAGE;
+		}
+
+		if($_REQUEST['id']) {
+			$id = $_REQUEST['id'];
+		} else {
+			return array('success' => false, 'message' => 'Search id not provided');
+		}
+
+		require_once ROOT_DIR . '/services/API/ListAPI.php';
+		$listApi = new ListAPI();
+		$records = $listApi->getSavedSearchTitles($id, $pageSize);
+
+		$response['items'] = $records;
 
 		return $response;
 	}

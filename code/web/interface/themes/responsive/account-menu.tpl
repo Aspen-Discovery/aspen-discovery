@@ -80,6 +80,9 @@
 			{if $user->isValidForEContentSource('hoopla')}
 				<div class="header-menu-option" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>
 			{/if}
+			{if $user->isValidForEContentSource('axis360')}
+                <div class="header-menu-option" ><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
+            {/if}
 			{if $userIsStaff}
 				<div class="header-menu-option" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
 			{/if}
