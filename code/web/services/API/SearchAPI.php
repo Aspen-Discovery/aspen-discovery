@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SystemAPI', $method);
@@ -1660,6 +1660,39 @@ class SearchAPI extends Action
 		if($id) {
 			return $response['records'];
 		}
+
+		return $response;
+	}
+
+	function getListResults()
+	{
+		if($_REQUEST['page']) {
+			$pageToLoad = $_REQUEST['page'];
+		} else {
+			$pageToLoad = 1;
+		}
+
+		if($_REQUEST['limit']) {
+			$pageSize = $_REQUEST['limit'];
+		} else {
+			$pageSize = self::ITEMS_PER_PAGE;
+		}
+
+		if($_REQUEST['id']) {
+			$id = $_REQUEST['id'];
+		} else {
+			return array('success' => false, 'message' => 'List id not provided');
+		}
+
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$sourceList = new UserList();
+		$sourceList->id = $id;
+		if ($sourceList->find(true)) {
+			$response['title'] = $sourceList->title;
+			$response['id'] = $sourceList->id;
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+		}
+		$response['items'] = $records;
 
 		return $response;
 	}
