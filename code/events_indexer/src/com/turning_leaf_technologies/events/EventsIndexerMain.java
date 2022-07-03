@@ -10,7 +10,9 @@ import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.ini4j.Ini;
 
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class EventsIndexerMain {
 	private static Logger logger;
@@ -31,6 +33,7 @@ public class EventsIndexerMain {
 
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			Date startTime = new Date();
@@ -85,6 +88,14 @@ public class EventsIndexerMain {
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+			//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
+			GregorianCalendar nowAsCalendar = new GregorianCalendar();
+			Date now = new Date();
+			nowAsCalendar.setTime(now);
+			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
+				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
 				break;
 			}
 
