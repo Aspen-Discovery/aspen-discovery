@@ -59,7 +59,7 @@ class SiteMemoryUsage extends Admin_Admin
 		}
 
 
-		$this->display('siteCpu.tpl', 'Aspen Site CPU Dashboard');
+		$this->display('siteMemory.tpl', 'Aspen Site Memory Dashboard');
 	}
 
 	function getBreadcrumbs(): array
