@@ -45,7 +45,7 @@ class SiteCpuUsage extends Admin_Admin
 			while ($aspenSiteCpuStats->fetch()){
 				$columnLabel = date('m/d/y h:i', $aspenSiteCpuStats->timestamp);
 				$columnLabels[] = $columnLabel;
-				$dataSeries['Records Used']['data'][$aspenSiteCpuStats->timestamp] = $aspenSiteCpuStats->loadPerCpu * 100;
+				$dataSeries['CPU Usage']['data'][$aspenSiteCpuStats->timestamp] = $aspenSiteCpuStats->loadPerCpu * 100;
 			}
 
 			$interface->assign('columnLabels', $columnLabels);
