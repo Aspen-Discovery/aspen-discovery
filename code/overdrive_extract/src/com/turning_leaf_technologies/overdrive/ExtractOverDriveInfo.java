@@ -36,6 +36,7 @@ class ExtractOverDriveInfo {
 	private Connection dbConn;
 	private OverDriveExtractLogEntry logEntry;
 
+	private Date lastExtractDate;
 	private String lastUpdateTimeParam = "";
 
 	//Overdrive API information
@@ -129,6 +130,11 @@ class ExtractOverDriveInfo {
 					//availability and/or metadata updated
 					logger.info("Loading products with any changes (to get availability)");
 					loadProductsFromAPI(LOAD_PRODUCTS_WITH_ANY_CHANGES, extractStartTime);
+
+					//Look for any records that are new
+					if (!settings.isRunFullUpdate()) {
+						loadNewProducts(extractStartTime);
+					}
 
 					//Remove any products owned only by libraries that are not connected to Aspen
 					HashSet <String> idsToRemove = new HashSet<>();
@@ -554,7 +560,7 @@ class ExtractOverDriveInfo {
 
 		//Load last extract time regardless of if we are doing full index or partial index
 		if (!settings.isRunFullUpdate()) {
-			Date lastExtractDate = new Date(settings.getLastUpdateOfChangedRecords() * 1000);
+			lastExtractDate = new Date(settings.getLastUpdateOfChangedRecords() * 1000);
 			@SuppressWarnings("SpellCheckingInspection")
 			SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 			//lastUpdateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -697,8 +703,40 @@ class ExtractOverDriveInfo {
 		return databaseId;
 	}
 
+	private void loadNewProducts(long startTime) throws SocketTimeoutException {
+		int daysToLoad = (int)Math.ceil((double)(new Date().getTime() - lastExtractDate.getTime()) / (double)(24 * 60 * 60 * 1000));
+
+		for (AdvantageCollectionInfo collectionInfo : allAdvantageCollections){
+			String newProductsUrl = "https://api.overdrive.com/v1/collections/" + collectionInfo.getCollectionToken() + "/products/?daysSinceAdded=" + daysToLoad;
+			loadProductsFromUrl(collectionInfo, newProductsUrl, LOAD_NEW_PRODUCTS, startTime);
+		}
+
+//		WebServiceResponse newProductsResponse = callOverDriveURL("overdriveExtract.loadProducts", newProductsUrl);
+//		if (newProductsResponse.getResponseCode() == 200) {
+//			JSONObject productInfo = newProductsResponse.getJSONResponse();
+//			if (productInfo == null) {
+//				return;
+//			}
+//			long numProducts = productInfo.getLong("totalItems");
+//			for (int i = 0; i < numProducts; i += batchSize) {
+//				String newProductsBatchUrl = newProductsUrl + "&offset=" + i;
+//				int maxTries = Math.max(1, settings.getNumRetriesOnError() + 1);
+//				for (int tries = 0; tries < maxTries; tries++){
+//
+//				}
+//			}
+//		}
+//		for (int i = 0; i < numProducts; i += batchSize) {
+//			WebServiceResponse newProductsResponse = callOverDriveURL("overdriveExtract.loadProducts", newProductsUrl);
+//			if (newProductsResponse.getResponseCode() == 200 && newProductsResponse.getMessage() != null) {
+//
+//			}
+//		}
+	}
+
 	private final int LOAD_ALL_PRODUCTS = 0;
 	private final int LOAD_PRODUCTS_WITH_ANY_CHANGES = 2;
+	private final int LOAD_NEW_PRODUCTS = 3;
 
 	/**
 	 * Get all products that are currently in OverDrive to determine what needs to be deleted.
@@ -1006,7 +1044,7 @@ class ExtractOverDriveInfo {
 							if (loadType == LOAD_ALL_PRODUCTS) {
 								logEntry.setNumProducts(totalProductsInCollection);
 								logEntry.saveResults();
-							}else{
+							}else if (loadType == LOAD_PRODUCTS_WITH_ANY_CHANGES || loadType == LOAD_NEW_PRODUCTS) {
 								logEntry.setNumProducts(allProductsInOverDrive.size());
 								logEntry.saveResults();
 							}
