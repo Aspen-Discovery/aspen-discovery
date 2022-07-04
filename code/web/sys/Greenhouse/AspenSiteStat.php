@@ -1,11 +1,11 @@
 <?php
 
 
-class AspenSiteStat
+class AspenSiteStat extends DataObject
 {
 	public $__table = 'aspen_site_stats';
 	public $id;
-	public $siteId;
+	public $aspenSiteId;
 	public $year;
 	public $month;
 	public $day;
