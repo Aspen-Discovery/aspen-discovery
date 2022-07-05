@@ -1470,7 +1470,10 @@ class SearchAPI extends Action
 							$count = 0;
 							do {
 								if($listEntry->source == "Lists") {
-									$categoryResponse['lists']['sourceId'] = $listEntry->sourceId;
+									$categoryResponse['lists'][] = array(
+										'sourceId' => $listEntry->sourceId,
+										'title' => $listEntry->title,
+									);
 									$count++;
 								} else {
 									if($listEntry->sourceId) {
