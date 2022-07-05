@@ -76,6 +76,14 @@ function getUpdates22_07_00() : array
 					UNIQUE (aspenSiteId, year, month, day)
 				) ENGINE INNODB',
 			]
-		],
+		],//greenhouse cpu and monitoring
+        'remove_detailed_hold_notice_configuration' => array(
+            'title' => 'Remove Detailed Hold Notice Configuration',
+            'description' => 'Remove Detailed Hold Notice Configuration',
+            'sql' => array(
+                "ALTER TABLE library DROP COLUMN showDetailedHoldNoticeInformation",
+                "ALTER TABLE library DROP COLUMN treatPrintNoticesAsPhoneNotices",
+            )
+        ), //remove_detailed_hold_notice_configuration
 	];
 }

@@ -2262,14 +2262,7 @@ class MyAccount_AJAX extends JSON_Action
 					}
 				}
 
-				if (!$library->showDetailedHoldNoticeInformation) {
-					$notification_method = '';
-				} else {
-					$notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
-					if ($notification_method == 'Mail' && $library->treatPrintNoticesAsPhoneNotices) {
-						$notification_method = 'Telephone';
-					}
-				}
+                $notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
 				$interface->assign('notification_method', strtolower($notification_method));
 				$interface->assign('userId', $user->id);
 

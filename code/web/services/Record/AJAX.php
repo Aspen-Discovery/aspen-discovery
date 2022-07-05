@@ -467,8 +467,6 @@ class Record_AJAX extends Action
 						// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
 						$interface->assign('canUpdate', $canUpdateContactInfo);
 						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
-						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
-						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 						$interface->assign('profile', $patron);
 
 						//Get the grouped work for the record
@@ -1066,8 +1064,6 @@ class Record_AJAX extends Action
 
 		$interface->assign('showHoldCancelDate', $library->showHoldCancelDate);
 		$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
-		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation && !$promptForHoldNotifications);
 		$interface->assign('showLogMeOut', $library->showLogMeOutAfterPlacingHolds);
 
@@ -1122,9 +1118,6 @@ class Record_AJAX extends Action
 		$interface->assign('id', $shortId);
 		$interface->assign('patronId', $patron->id);
 		if (!empty($_REQUEST['autologout'])) $interface->assign('autologout', $_REQUEST['autologout']); // carry user selection to Item Hold Form
-
-		$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
-		$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 
 		// Need to place item level holds.
 		return array(
