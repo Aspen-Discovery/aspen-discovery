@@ -27,15 +27,7 @@
 					{else}
 						{translate text="Holds allow you to request that a title be delivered to your home library." isPublicFacing=true}&nbsp;
 					{/if}
-					{if $showDetailedHoldNoticeInformation && $profile->_noticePreferenceLabel == 'Mail' && !$treatPrintNoticesAsPhoneNotices}
-						{translate text="Once the title arrives at your library you will be mailed a notification informing you that the title is ready for you." isPublicFacing=true}&nbsp;
-					{elseif $showDetailedHoldNoticeInformation && ($profile->_noticePreferenceLabel == 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices))}
-						{translate text="Once the title arrives at your library you will receive a phone call informing you that the title is ready for you." isPublicFacing=true}&nbsp;
-					{elseif $showDetailedHoldNoticeInformation && $profile->_noticePreferenceLabel == 'Email'}
-						{translate text="Once the title arrives at your library you will be emailed a notification informing you that the title is ready for you." isPublicFacing=true}&nbsp;
-					{else}
 						{translate text="Once the title arrives at your library you will receive a notification informing you that the title is ready for you." isPublicFacing=true}&nbsp;
-					{/if}
 					{if $mustPickupAtHoldingBranch}
 						{translate text="You will then have 7 days to pick up the title at the library." isPublicFacing=true}&nbsp;
 					{else}
