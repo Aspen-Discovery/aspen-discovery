@@ -85,5 +85,12 @@ function getUpdates22_07_00() : array
                 "ALTER TABLE library DROP COLUMN treatPrintNoticesAsPhoneNotices",
             )
         ), //remove_detailed_hold_notice_configuration
+        'remove_empty_MyFavorites_lists' => [
+            'title' => 'Remove Empty My Favorites Lists',
+            'description' => 'Remove empty My Favorites lists to cleanup past bug where duplicate empty My Favorites lists were created',
+            'sql' => [
+                "DELETE FROM user_list WHERE id NOT IN (SELECT l.listId FROM user_list_entry l) AND title='My Favorites'",
+            ]
+        ], //remove empty My Favorites lists
 	];
 }
