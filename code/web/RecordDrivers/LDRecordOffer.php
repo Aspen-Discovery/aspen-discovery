@@ -89,7 +89,8 @@ class LDRecordOffer {
 		global $library;
 		$locations = new Location();
 		$locations->libraryId = $library->libraryId;
-		$locations->whereAdd("LEFT('$locationCode', LENGTH(code)) = code");
+		$escapedCode = $locations->escape($locationCode);
+		$locations->whereAdd("LEFT($escapedCode, LENGTH(code)) = code");
 		if ($subLocation){
 			$locations->subLocation = $subLocation;
 		}
