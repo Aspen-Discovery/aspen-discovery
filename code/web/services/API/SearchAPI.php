@@ -1635,7 +1635,7 @@ class SearchAPI extends Action
 						}
 
 						//Get titles for the list
-						$searchObject->setFieldsToReturn('id,title_display');
+						$searchObject->setFieldsToReturn('id,title_display,author_display,format,language');
 						$searchObject->clearFacets();
 						$searchObject->disableSpelling();
 						$searchObject->disableLogging();
