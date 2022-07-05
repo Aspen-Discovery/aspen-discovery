@@ -2380,7 +2380,7 @@ public class GroupedWorkIndexer {
 				}
 				getRecordForIdentifierRS.close();
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading MARC record from database", e);
+				logEntry.incErrors("Error loading MARC record " + source + " " + identifier + " from database", e);
 			}
 		}
 		return marcRecord;
