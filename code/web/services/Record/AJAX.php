@@ -943,7 +943,7 @@ class Record_AJAX extends Action
 				'staffView' => $interface->fetch($recordDriver->getStaffView())
 			];
 		}else{
-			$result['message'] = 'Could not find that record';
+			$result['message'] = translate(['text'=>'Could not find that record', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}

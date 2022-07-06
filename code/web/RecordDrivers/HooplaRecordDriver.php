@@ -72,7 +72,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	public function getStaffView()
 	{
 		global $interface;
-		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null) {
+			if ($groupedWorkDriver->isValid()) {
+				$interface->assign('hasValidGroupedWork', true);
+			} else {
+				$interface->assign('hasValidGroupedWork', false);
+			}
+			$groupedWorkDriver->assignGroupedWorkStaffView();
+		}
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
