@@ -1656,10 +1656,10 @@ abstract class MarcRecordProcessor {
 		} else if (!value.contains("compatible")) {
 			if (value.contains("xbox one")) {
 				return "XboxOne";
-			} else if (value.contains("xbox")) {
-				return "Xbox360";
 			} else if ((value.contains("xbox series x") || value.contains("xbox x"))) {
-				return "XBox Series X";
+				return "XBoxSeriesX";
+			} else if (value.contains("xbox")) { //Make sure this is the last XBox listing
+				return "Xbox360";
 			} else if (playStation5Pattern.matcher(value).matches()) {
 				return "PlayStation5";
 			} else if (playStationVitaPattern.matcher(value).matches()) {

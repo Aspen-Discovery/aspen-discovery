@@ -292,6 +292,7 @@ public class SideLoadingMain {
 			}
 
 			processRecordsToReload(settings, logEntry);
+			getGroupedWorkIndexer().commitChanges();
 
 			try {
 				PreparedStatement updateSideloadStmt;

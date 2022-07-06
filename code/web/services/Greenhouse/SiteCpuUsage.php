@@ -53,7 +53,7 @@ class SiteCpuUsage extends Admin_Admin
 		}
 
 
-		$this->display('siteCpu.tpl', 'Aspen Site CPU Dashboard');
+		$this->display('siteCpu.tpl', 'Aspen Site CPU Dashboard', '');
 	}
 
 	function getBreadcrumbs(): array

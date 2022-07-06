@@ -73,7 +73,7 @@
 			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
 		$(document).ready(function(){
-			var objectEditorObject = $('#objectEditor');
+			var objectEditorObject = $('#objectEditor-{/literal}{$id}{literal}');
 
 			objectEditorObject.validate();
 
@@ -93,7 +93,7 @@
 			$(window).bind('beforeunload', function(e){
 				if (!savingForm) {
 					// if form state change show warning box, else don't show it.
-					var objectEditorObject = $('#objectEditor');
+					var objectEditorObject = $('#objectEditor-{/literal}{$id}{literal}');
 					if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
 						return "{/literal}{translate text="You have made changes to the configuration, would you like to save them before continuing?" isAdminFacing=true inAttribute=true}{literal}";
 					} else {
