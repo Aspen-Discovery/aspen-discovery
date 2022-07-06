@@ -98,6 +98,7 @@ function removeV1GroupedWorkCore(&$update){
 }
 
 function fixListEntriesForGroupedWorksWithLanguage(&$update){
+	ini_set('memory_limit', '3G');
 	$systemVariables = SystemVariables::getSystemVariables();
 	if ($systemVariables->searchVersion == 2) {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -114,9 +115,11 @@ function fixListEntriesForGroupedWorksWithLanguage(&$update){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$oldIds[$listEntry->sourceId] = $listEntry->relatedIds;
 		}
+		$listEntry->__destruct();
+		$listEntry = null;
 		$numUpdated = 0;
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		foreach ($oldIds as $oldId => $relatedIds) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$groupedWork->whereAdd("permanent_id LIKE '$oldId-%'");
 			$groupedWork->find();
@@ -166,8 +169,12 @@ function fixListEntriesForGroupedWorksWithLanguage(&$update){
 						$listEntry->update();
 						$numUpdated++;
 					}
+					$listEntry->__destruct();
+					$listEntry = null;
 				}
 			}
+			$groupedWork->__destruct();
+			$groupedWork = null;
 		}
 		$numOldWorks = count($oldIds);
 		$update['status'] = "Updated $numUpdated of $numOldWorks works from old to new user grouped work id<br/>";
