@@ -166,6 +166,10 @@ class HooplaProcessor {
 										groupedWork.addTargetAudience("Young Adult");
 										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 										foundAudience = true;
+									}else if (genres.getString(i).startsWith("Young Adult")){
+										groupedWork.addTargetAudience("Young Adult");
+										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+										foundAudience = true;
 									}else if (genres.getString(i).equals("Children's")){
 										groupedWork.addTargetAudience("Juvenile");
 										groupedWork.addTargetAudienceFull("Juvenile");
@@ -184,8 +188,6 @@ class HooplaProcessor {
 										case "NR":
 										case "NRA":
 										case "NRM":
-										case "NRC":
-										case "NRT":
 										case "NC-17":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
@@ -195,6 +197,7 @@ class HooplaProcessor {
 										case "PG":
 										case "TVPG":
 										case "TV14":
+										case "NRT":
 											groupedWork.addTargetAudience("Young Adult");
 											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 											groupedWork.addTargetAudience("Adult");
@@ -202,6 +205,7 @@ class HooplaProcessor {
 											break;
 										case "TVY":
 										case "TVY7":
+										case "NRC":
 											groupedWork.addTargetAudience("Juvenile");
 											groupedWork.addTargetAudienceFull("Juvenile");
 											break;
