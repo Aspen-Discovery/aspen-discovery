@@ -276,6 +276,7 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $deselectedBrowseCategoryBorderColorDefault;
 	public $capitalizeBrowseCategories;
     public $browseCategoryImageSize;
+    public $browseImageLayout;
 
 	//Panel Colors
 	public $closedPanelBackgroundColor;
@@ -456,6 +457,7 @@ class Theme extends DataObject
 
 				'capitalizeBrowseCategories' => ['property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
                 'browseCategoryImageSize' => ['property' => 'browseCategoryImageSize', 'type' => 'enum', 'values' => [-1 => 'Medium', 0 => 'Large'], 'label' => 'Browse Category Image Size','description' => 'The size of cover images to be displayed in browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
+                'browseImageLayout' => ['property' => 'browseImageLayout', 'type' => 'enum', 'values' => [0 => 'Masonry', 1 => 'Grid'], 'label' => 'Browse Image Layout', 'description' => 'The layout of cover images in browse categories', 'required' => false, 'hidInLists' => true, 'default' => '0'],
 			]],
 
 			'badges' => ['property'=>'badgesSection', 'type' => 'section', 'label' =>'Badges', 'hideInLists' => true, 'properties' => [
@@ -1054,6 +1056,10 @@ class Theme extends DataObject
 
             if ($interface->getVariable('browseCategoryImageSize') == null && $theme->browseCategoryImageSize != -1) {
                 $interface->assign('browseCategoryImageSize', $theme->browseCategoryImageSize);
+            }
+
+            if ($interface->getVariable('browseImageLayout') == null && $theme->browseImageLayout != -1) {
+                $interface->assign('browseImageLayout', $theme->browseImageLayout);
             }
 
 			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
