@@ -252,10 +252,10 @@ body .container, #home-page-browse-content{ldelim}
     flex-wrap:wrap;
     justify-content: center;
     align-items: flex-end;
-    {if !empty($browseCategoryImageSize)}
-    max-height: 250px;
-    {else}
+    {if $browseCategoryImageSize}
     max-height: 350px;
+    {else}
+    max-height: 250px;
     {/if}
 {rdelim}
 {/if}
