@@ -5,7 +5,6 @@
 			<p class="alert alert-success">{$message}</p>
 			<div class="alert">
 					{translate text="Once the title arrives at your library you will receive a notification informing you that the title is ready for you." isPublicFacing=true}&nbsp;
-				{/if}
 			</div>
 
 			{if count($whileYouWaitTitles) > 0}
