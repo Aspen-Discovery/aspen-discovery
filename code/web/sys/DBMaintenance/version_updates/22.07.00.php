@@ -21,7 +21,7 @@ function getUpdates22_07_00() : array
             'title' => 'Theme - browse category image size',
             'description' => 'Define cover image size for browse categories',
             'sql' => [
-                "ALTER TABLE `themes` ADD COLUMN browseCategoryImageSize TINYINT(1) DEFAULT -1",
+                "ALTER TABLE `themes` ADD COLUMN browseCategoryImageSize TINYINT(1) DEFAULT 0",
             ]
         ], //browse_category_image_size
 		'axis_360_options' => [
@@ -92,5 +92,12 @@ function getUpdates22_07_00() : array
                 "DELETE FROM user_list WHERE id NOT IN (SELECT l.listId FROM user_list_entry l) AND title='My Favorites'",
             ]
         ], //remove empty My Favorites lists
+        'themes_browse_image_layout' => [
+            'title' => 'Theme - browse image layout',
+            'description' => 'Choose layout of cover images for browse categories (masonry or grid)',
+            'sql' => [
+                "ALTER TABLE `themes` ADD COLUMN browseImageLayout TINYINT(1) DEFAULT -1",
+            ]
+        ], //browse image layout theme
 	];
 }

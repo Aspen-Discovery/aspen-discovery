@@ -100,7 +100,7 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 
         $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 
-        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 0) {
+        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
             $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
         }
         else {
