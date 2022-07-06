@@ -99,5 +99,12 @@ function getUpdates22_07_00() : array
                 "ALTER TABLE `themes` ADD COLUMN browseImageLayout TINYINT(1) DEFAULT -1",
             ]
         ], //browse image layout theme
+		'remove_list_entries_for_deleted_lists' => [
+			'title' => 'Remove list entries for deleted lists',
+			'description' => 'Remove any list entires for lists that were previously deleted.',
+			'sql' => [
+				"DELETE e FROM user_list_entry e left join user_list l on e.listId = l.id where l.id is NULL",
+			]
+		]
 	];
 }
