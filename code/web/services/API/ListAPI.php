@@ -373,6 +373,8 @@ class ListAPI extends Action
 					'length' => $title['length'],
 					'publisher' => $title['publisher'],
 					'ratingData' => $title['ratingData'],
+					'format' => $title['format'],
+					'language' => $title['language']
 				);
 			}
 			return array('success' => true, 'listTitle' => $list->title, 'listDescription' => $list->description, 'titles' => $listTitles);
