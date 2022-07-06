@@ -387,7 +387,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								}
 							}
 							if (scopingInfo.isLibraryOwned()) {
-								addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								if (curScope.isLocationScope() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+									addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								}
 								if (curItem.isAvailable()) {
 									addAllOwningLocationsToAvailableAt = true;
 								}
