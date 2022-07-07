@@ -620,6 +620,7 @@ class UserList extends DataObject
 						if($groupedWorkDriver->isValid()){
 							$browseRecords[$key]['id'] = $groupedWorkDriver->getPermanentId();
 							$browseRecords[$key]['title_display'] = $groupedWorkDriver->getShortTitle();
+							$browseRecords[$key]['language'] = $groupedWorkDriver->getLanguage();
 						} else {
 							$browseRecords[$key] = $record;
 						}

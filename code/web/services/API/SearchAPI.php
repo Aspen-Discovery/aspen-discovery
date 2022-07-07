@@ -1669,19 +1669,19 @@ class SearchAPI extends Action
 
 	function getListResults()
 	{
-		if($_REQUEST['page']) {
+		if(!empty($_REQUEST['page'])) {
 			$pageToLoad = $_REQUEST['page'];
 		} else {
 			$pageToLoad = 1;
 		}
 
-		if($_REQUEST['limit']) {
+		if(!empty($_REQUEST['limit'])) {
 			$pageSize = $_REQUEST['limit'];
 		} else {
 			$pageSize = self::ITEMS_PER_PAGE;
 		}
 
-		if($_REQUEST['id']) {
+		if(!empty($_REQUEST['id'])) {
 			$id = $_REQUEST['id'];
 		} else {
 			return array('success' => false, 'message' => 'List id not provided');
