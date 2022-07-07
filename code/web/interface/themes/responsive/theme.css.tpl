@@ -247,6 +247,11 @@ body .container, #home-page-browse-content{ldelim}
     {rdelim}
 {rdelim}
 
+#home-page-browse-results.HideBorder .browse-thumbnail{ldelim}
+    border: none;
+    align-items: center;
+{rdelim}
+
 #home-page-browse-results .browse-thumbnail{ldelim}
     display: inline-flex;
     flex-wrap:wrap;
