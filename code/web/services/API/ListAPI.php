@@ -373,6 +373,8 @@ class ListAPI extends Action
 					'length' => $title['length'],
 					'publisher' => $title['publisher'],
 					'ratingData' => $title['ratingData'],
+					'format' => $title['format'],
+					'language' => $title['language']
 				);
 			}
 			return array('success' => true, 'listTitle' => $list->title, 'listDescription' => $list->description, 'titles' => $listTitles);
@@ -789,7 +791,7 @@ class ListAPI extends Action
 					$list->description = strip_tags($_REQUEST['description']);
 				}
 				if(isset($_REQUEST['public'])) {
-					if($_REQUEST['public'] == false) {
+					if($_REQUEST['public'] === "false") {
 						$list->public = 0;
 					} else {
 						$list->public = 1;

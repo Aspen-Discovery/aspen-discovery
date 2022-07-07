@@ -22,6 +22,7 @@ class AspenUsage extends DataObject
 	public $websiteSearches;
 	public $eventsSearches;
 	public $ebscoEdsSearches;
+	public $ebscohostSearches;
 	public $blockedRequests;
 	public $blockedApiRequests;
 	public $timedOutSearches;
@@ -52,7 +53,8 @@ class AspenUsage extends DataObject
 			'eventsSearches',
 			'timedOutSearches',
 			'timedOutSearchesWithHighLoad',
-			'searchesWithErrors'
+			'searchesWithErrors',
+			'ebscohostSearches',
 		];
 	}
 

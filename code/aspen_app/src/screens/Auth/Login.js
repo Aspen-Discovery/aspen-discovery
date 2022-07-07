@@ -217,7 +217,7 @@ export default class Login extends Component {
 				</Modal>
 
 				{showSelectLibrary ?
-					<Button colorScheme="primary" m={5} onPress={this.handleModal} size={{base: "md", lg: "lg"}}
+					<Button colorScheme="primary" m={5} onPress={this.handleModal} size="md"
 					        startIcon={<Icon as={MaterialIcons} name="place" size={5}/>}>
 						{this.state.libraryName ? this.state.libraryName : translate('login.select_your_library')}
 					</Button>
@@ -322,7 +322,7 @@ export default class Login extends Component {
 		// TODO: Get library logo, fallback on LiDA
 		return (
 			<Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
-				<Image source={{ uri: logo }} rounded={25} size={{base: "xl", lg: "2xl"}}
+				<Image source={{ uri: logo }} rounded={25} size="xl"
 				       alt={translate('app.name')} />
 
 				{this.showLibraries()}
@@ -347,7 +347,7 @@ export default class Login extends Component {
 						<Button
 							onPress={this.makeGreenhouseRequest}
 							mt={8}
-							size={{base: "xs", lg: "md"}}
+							size="xs"
 							variant="ghost"
 							colorScheme="secondary"
 							startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5}/>}
@@ -357,7 +357,7 @@ export default class Login extends Component {
 					: null }
 					<Center>{isBeta ? <Badge rounded={5}
 					                         mt={5}>{translate('app.beta')}</Badge> : null}</Center>
-					<Center><Text mt={5} fontSize={{base: "xs", lg: "sm"}} color="coolGray.600">v{Constants.manifest.version} b[{Constants.nativeAppVersion}] p[{GLOBALS.appPatch}]</Text></Center>
+					<Center><Text mt={5} fontSize="xs" color="coolGray.600">v{Constants.manifest.version} b[{Constants.nativeAppVersion}] p[{GLOBALS.appPatch}]</Text></Center>
 				</KeyboardAvoidingView>
 			</Box>
 		);
@@ -449,7 +449,7 @@ const GetLoginForm = (props) => {
 			<Center>
 				<Button
 					mt={3}
-					size={{base: "md", lg: "lg"}}
+					size="md"
 					color="#30373b"
 					isLoading={loading}
 					isLoadingText="Logging in..."

@@ -15,6 +15,7 @@ import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
@@ -24,9 +25,8 @@ import org.marc4j.marc.Record;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.zip.CRC32;
 
 public class HooplaExportMain {
@@ -72,6 +72,7 @@ public class HooplaExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			//Hoopla only needs to run once a day so just run it in cron
@@ -131,6 +132,21 @@ public class HooplaExportMain {
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
 				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+			//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
+			GregorianCalendar nowAsCalendar = new GregorianCalendar();
+			Date now = new Date();
+			nowAsCalendar.setTime(now);
+			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
+				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
+				disconnectDatabase(aspenConn);
+				break;
+			}
+			//Check memory to see if we should close
+			if (SystemUtils.hasLowMemory(configIni, logger)){
+				logger.info("Ending because we have low memory available");
 				disconnectDatabase(aspenConn);
 				break;
 			}
@@ -309,6 +325,8 @@ public class HooplaExportMain {
 				//Formulate the first call depending on if we are doing a full reload or not
 				String url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content";
 				if (!doFullReload && lastUpdate > 0) {
+					//Give a 2 minute buffer for the extract
+					lastUpdate -= 120;
 					logEntry.addNote("Extracting records since " + new Date(lastUpdate * 1000).toString());
 					url += "?startTime=" + lastUpdate;
 				}

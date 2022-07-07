@@ -197,6 +197,27 @@ class Hoopla_AJAX extends Action
 		);
 	}
 
+	function getStaffView(){
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown error loading staff view', 'isPublicFacing'=>true])
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+		$recordDriver = new HooplaRecordDriver($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = translate(['text'=>'Could not find that record', 'isPublicFacing'=>true]);
+		}
+		return $result;
+	}
+
 	function getBreadcrumbs() : array
 	{
 		return [];

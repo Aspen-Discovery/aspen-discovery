@@ -8329,6 +8329,7 @@ a.placard-link {
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail .explore-more-image {
   width: 100%;
+  height: 125px;
   position: absolute;
   top: 62px;
   transform: translate(-50%, -50%);
@@ -9896,6 +9897,13 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestation.grouped .col-sm-12 .row.displayed.striped-odd {
   background: #f8f8ff;
+  padding-top: 1em;
+}
+.striped-odd {
+  background: #f8f8ff;
+  padding-top: 1em;
+}
+.striped-even {
   padding-top: 1em;
 }
 .related-manifestations-header {

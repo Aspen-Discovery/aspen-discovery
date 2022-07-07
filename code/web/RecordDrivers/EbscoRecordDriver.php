@@ -19,6 +19,7 @@ class EbscoRecordDriver extends RecordInterface
 	public function __construct($recordData)
 	{
 		if (is_string($recordData)) {
+			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			list($dbId, $an) = explode(':', $recordData);
 			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
@@ -166,8 +167,18 @@ class EbscoRecordDriver extends RecordInterface
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summTitle', $this->getTitle());
 
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        //Get cover image size
+        global $interface;
+        $appliedTheme = $interface->getAppliedTheme();
+
+        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+
+        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+        }
+        else {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        }
 
 		return 'RecordDrivers/EBSCO/browse_result.tpl';
 	}

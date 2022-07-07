@@ -5,12 +5,13 @@ class EBSCOhost_Results extends ResultsAction {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
+		global $library;
 
 		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
 			$_REQUEST['lookfor'] = '*';
 		}
 
-		$aspenUsage->ebscoEdsSearches++;
+		$aspenUsage->ebscohostSearches++;
 
 		//Include Search Engine
 		/** @var SearchObject_EbscohostSearcher $searchObject */
@@ -73,6 +74,10 @@ class EBSCOhost_Results extends ResultsAction {
 		$facetSet = $searchObject->getFacetSet();
 		$interface->assign('sideFacetSet', $facetSet);
 
+		//Figure out which counts to show.
+		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
+		$interface->assign('facetCountsToShow', $facetCountsToShow);
+
 		if ($summary['resultTotal'] > 0){
 			$link    = $searchObject->renderLinkPageTemplate();
 			$options = array('totalItems' => $summary['resultTotal'],
@@ -98,14 +103,14 @@ class EBSCOhost_Results extends ResultsAction {
 		}
 		$exploreMore = new ExploreMore();
 		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
-		$interface->assign('exploreMoreSection', 'ebsco_eds');
+		$interface->assign('exploreMoreSection', 'ebscohost');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
 		$interface->assign('subpage', $displayTemplate);
 		$interface->assign('sectionLabel', 'EBSCOhost Databases');
-		$sidebar = $searchObject->getResultTotal() > 0 ? 'EBSCO/results-sidebar.tpl' : '';
+		$sidebar = ($searchObject->getResultTotal() > 0 || $searchObject->hasAppliedFacets()) ? 'EBSCOhost/results-sidebar.tpl' : '';
 		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	}
 

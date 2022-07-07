@@ -38,6 +38,7 @@ abstract class MarcRecordProcessor {
 	int specifiedFormatBoost;
 	String treatUnknownLanguageAs = null;
 	String treatUndeterminedLanguageAs = null;
+	String customMarcFieldsToIndexAsKeyword = null;
 
 	PreparedStatement addRecordToDBStmt;
 	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
@@ -440,6 +441,7 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+		groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
 	}
 
 	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
@@ -845,6 +847,24 @@ abstract class MarcRecordProcessor {
 			map.put(elementToAdd, map.get(elementToAdd) + numberToAdd);
 		}else{
 			map.put(elementToAdd, numberToAdd);
+		}
+	}
+
+	Pattern closedCaptioningPattern = Pattern.compile("video recordings for the hearing impaired|video recordings for the visually impaired", Pattern.CASE_INSENSITIVE);
+	void loadClosedCaptioning(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords){
+		//Based on the 655 fields determine if the record is closed captioned
+		Set<String> subjectFields = MarcUtil.getFieldList(record, "655a");
+		boolean isClosedCaptioned = false;
+		for (String subjectField : subjectFields){
+			if (closedCaptioningPattern.matcher(subjectField).lookingAt()){
+				isClosedCaptioned = true;
+				break;
+			}
+		}
+		if (isClosedCaptioned){
+			for (RecordInfo ilsRecord : ilsRecords){
+				ilsRecord.setClosedCaptioned(true);
+			}
 		}
 	}
 
@@ -1638,10 +1658,10 @@ abstract class MarcRecordProcessor {
 		} else if (!value.contains("compatible")) {
 			if (value.contains("xbox one")) {
 				return "XboxOne";
-			} else if (value.contains("xbox")) {
-				return "Xbox360";
 			} else if ((value.contains("xbox series x") || value.contains("xbox x"))) {
-				return "XBox Series X";
+				return "XBoxSeriesX";
+			} else if (value.contains("xbox")) { //Make sure this is the last XBox listing
+				return "Xbox360";
 			} else if (playStation5Pattern.matcher(value).matches()) {
 				return "PlayStation5";
 			} else if (playStationVitaPattern.matcher(value).matches()) {

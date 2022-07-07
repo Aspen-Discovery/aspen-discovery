@@ -20,9 +20,14 @@ class EbscohostRecordDriver extends RecordInterface
 	public function __construct($recordData)
 	{
 		if (is_string($recordData)) {
-			$edsSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-			list($dbId, $an) = explode(':', $recordData);
-			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
+			if (!empty($recordData)) {
+				/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
+				$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+				list($dbId, $uniqueIdField, $uniqueId) = explode(':', $recordData);
+				$this->recordData = $ebscohostSearcher->retrieveRecord($dbId, $uniqueIdField, $uniqueId);
+			}else{
+				$this->recordData = null;
+			}
 		} else {
 			$this->recordData = $recordData;
 		}
@@ -77,7 +82,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 */
 	public function getLinkUrl($unscoped = false)
 	{
-		return $this->getRecordUrl();
+		return '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID();
 	}
 
 	/**
@@ -128,12 +133,14 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getAuthor());
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
-		$interface->assign('summHasFullText', $this->hasFullText());
+		$interface->assign('summPublishers', $this->getPublishers());
+		$interface->assign('summPublicationDates', $this->getPublicationDates());
+		$interface->assign('summPublicationPlaces', $this->getPublicationPlaces());
 
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-			$appearsOnLists = UserList::getUserListsForRecord('EbscoEds', $this->getId());
+			$appearsOnLists = UserList::getUserListsForRecord('Ebscohost', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
@@ -142,10 +149,10 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
-		$recordUsage = new EbscoEdsRecordUsage();
+		require_once ROOT_DIR . '/sys/Ebsco/EbscohostRecordUsage.php';
+		$recordUsage = new EbscohostRecordUsage();
 		$recordUsage->instance = $_SERVER['SERVER_NAME'];
-		$recordUsage->ebscoId = $this->getUniqueID();
+		$recordUsage->ebscohostId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
 		if ($recordUsage->find(true)) {
@@ -171,9 +178,18 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summTitle', $this->getTitle());
 
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        //Get cover image size
+        global $interface;
+        $appliedTheme = $interface->getAppliedTheme();
 
+        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+
+        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+        }
+        else {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        }
 		return 'RecordDrivers/EBSCOhost/browse_result.tpl';
 	}
 
@@ -320,7 +336,7 @@ class EbscohostRecordDriver extends RecordInterface
 	{
 		$header = $this->getChildByTagName($this->recordData, 'header');
 		if ($header != null){
-			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTerm'];
+			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTag'] . ':' . $header->attributes()['uiTerm'];
 		}
 		return "";
 	}
@@ -328,28 +344,6 @@ class EbscohostRecordDriver extends RecordInterface
 	public function getId()
 	{
 		return $this->getUniqueID();
-	}
-
-	/**
-	 * Does this record have searchable full text in the index?
-	 *
-	 * Note: As of this writing, searchable full text is not a VuFind feature,
-	 *       but this method will be useful if/when it is eventually added.
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasFullText()
-	{
-		return false;
-	}
-
-	public function getFullText()
-	{
-		$fullText = (string)$this->recordData->FullText->Text->Value;
-		$fullText = html_entity_decode($fullText);
-		$fullText = preg_replace('/<anid>.*?<\/anid>/', '', $fullText);
-		return $fullText;
 	}
 
 	/**
@@ -394,15 +388,21 @@ class EbscohostRecordDriver extends RecordInterface
 			if ($controlInfo != null){
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
 				if ($artInfo != null){
-					$tig = $this->getChildByTagName($artInfo, 'aug');
-					if ($tig != null){
-						$atl = $this->getChildByTagName($tig, 'au');
-						return (string)$atl;
+					$ougenre = $this->getChildByTagName($artInfo, 'ougenre');
+					if ($ougenre != null){
+						return (string)$ougenre;
 					}
-				}
-				$illusInfo = $this->getChildByTagName($controlInfo, 'illusinfo');
-				if ($illusInfo != null){
-					return $illusInfo->attributes()['type'];
+					$pubType = $this->getChildByTagName($artInfo, 'pubtype');
+					$docType = $this->getChildByTagName($artInfo, 'doctype');
+					if ($docType != null){
+						if (!empty($pubType)){
+							return (string)$pubType . ' - ' . (string)$docType;
+						}else{
+							return (string)$docType;
+						}
+					}elseif ($pubType != null){
+						return (string)$pubType;
+					}
 				}
 			}
 		}
@@ -436,13 +436,19 @@ class EbscohostRecordDriver extends RecordInterface
 			if ($controlInfo != null){
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
 				if ($artInfo != null){
-					$ougenre = $this->getChildByTagName($artInfo, 'ougenre');
-					if ($ougenre != null){
-						return (string)$ougenre;
+					$tig = $this->getChildByTagName($artInfo, 'aug');
+					if ($tig != null){
+						$atl = $this->getChildByTagName($tig, 'au');
+						return (string)$atl;
 					}
+				}
+				$illusInfo = $this->getChildByTagName($controlInfo, 'illusinfo');
+				if ($illusInfo != null){
+					return $illusInfo->attributes()['type'];
 				}
 			}
 		}
+
 		return "";
 	}
 
@@ -544,5 +550,76 @@ class EbscohostRecordDriver extends RecordInterface
 				return $citation->getMLA();
 		}
 		return '';
+	}
+
+	private function getPublishers()
+	{
+		$publishers = array();
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
+				if ($pubInfo != null){
+					$publisher = $this->getChildByTagName($pubInfo, 'pub');
+					if ($publisher != null){
+						$publishers[] = (string)$publisher;
+					}
+				}
+			}
+		}
+		return $publishers;
+	}
+
+	private function getPublicationPlaces()
+	{
+		$publicationPlaces = array();
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
+				if ($pubInfo != null){
+					$place = $this->getChildByTagName($pubInfo, 'place');
+					if ($place != null){
+						$publicationPlaces[] = (string)$place;
+					}
+				}
+			}
+		}
+		return $publicationPlaces;
+	}
+	private function getPublicationDates()
+	{
+		$publicationDates = array();
+		$header = $this->getChildByTagName($this->recordData, 'header');
+		if ($header != null){
+			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
+			if ($controlInfo != null){
+				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
+				if ($pubInfo != null){
+					$dt = $this->getChildByTagName($pubInfo, 'dt');
+					if ($dt != null){
+						$publicationDates[] = $dt->attributes()['day'] . '/' . $dt->attributes()['month'] . '/' . $dt->attributes()['year'];
+					}
+				}
+			}
+		}
+		return $publicationDates;
+	}
+
+	protected $_actions = null;
+	public function getRecordActions()
+	{
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			$this->_actions[] = array(
+				'title' => translate(['text'=>'Access Online','isPublicFacing'=>true]),
+				'url' => '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID(),
+				'requireLogin' => true,
+				'type' => 'ebscohost_access_online'
+			);
+		}
+		return $this->_actions;
 	}
 }

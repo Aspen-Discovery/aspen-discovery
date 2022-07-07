@@ -25,6 +25,7 @@ public class BaseIndexingSettings {
 	boolean runFullUpdate;
 	boolean regroupAllRecords;
 	String treatUnknownLanguageAs;
+	String customMarcFieldsToIndexAsKeyword;
 
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
 		char result = ' ';
@@ -130,4 +131,6 @@ public class BaseIndexingSettings {
 	public String getTreatUnknownLanguageAs() {
 		return treatUnknownLanguageAs;
 	}
+
+	public String getCustomMarcFieldsToIndexAsKeyword() { return customMarcFieldsToIndexAsKeyword; }
 }

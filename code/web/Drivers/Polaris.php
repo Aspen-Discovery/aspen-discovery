@@ -165,6 +165,8 @@ class Polaris extends AbstractIlsDriver
 
 		$readingHistoryTitles = [];
 		if ($readingHistoryEnabled) {
+			ini_set('memory_limit','2G');
+
 			$readingHistoryTitles = array();
 			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/readinghistory?rowsperpage=5&page=0";
 			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());

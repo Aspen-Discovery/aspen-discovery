@@ -210,8 +210,6 @@ class Library extends DataObject
 	public $preventLogin;
 	public $preventLoginMessage;
 
-	public $showDetailedHoldNoticeInformation;
-	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
 	public $showWhileYouWait;
 
@@ -254,7 +252,7 @@ class Library extends DataObject
 
 	//EBSCO Settings
 	public $edsSettingsId;
-	public $ebscohostSettingId;
+	public $ebscohostSearchSettingId;
 
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
@@ -288,7 +286,7 @@ class Library extends DataObject
 
 	public function getNumericColumnNames() : array {
 		return [
-			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId', 'ebscohostSettingId'
+			'compriseSettingId', 'proPaySettingId', 'worldPaySettingId', 'payPalSettingId', 'ebscohostSearchSettingId'
 		];
 	}
 
@@ -463,7 +461,7 @@ class Library extends DataObject
 
 
 		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
-		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting = new EBSCOhostSearchSetting();
 		$ebscohostSetting->orderBy('name');
 		$ebscohostSettings = [];
 		$ebscohostSetting->find();
@@ -525,7 +523,7 @@ class Library extends DataObject
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'maxLength'=>80, 'editPermissions' => ['Library Domain Settings']),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Theme Configuration']),
 			'isConsortialCatalog' => array('property' => 'isConsortialCatalog', 'type'=>'checkbox', 'label' => 'Consortial Interface?', 'description' => 'If this library is a consortial view', 'hideInLists' => true, 'permissions' => ['Library Domain Settings'], 'forcesReindex' => true),
-			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
+			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows do not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Library will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
@@ -617,7 +615,6 @@ class Library extends DataObject
 					'enableForgotPasswordLink'             => array('property'=>'enableForgotPasswordLink', 'type'=>'checkbox', 'label'=>'Enable Forgot Password Link', 'description'=>'Whether or not the user can click a link to reset their password.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 					'showAlternateLibraryOptionsInProfile' => array('property' => 'showAlternateLibraryOptionsInProfile', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update their Alternate Libraries', 'description'=>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 					'showWorkPhoneInProfile'               => array('property' => 'showWorkPhoneInProfile', 'type'=>'checkbox', 'label'=>'Show Work Phone in Profile', 'description'=>'Whether or not patrons should be able to change a secondary/work phone number in their profile.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
-					'treatPrintNoticesAsPhoneNotices'      => array('property' => 'treatPrintNoticesAsPhoneNotices', 'type' => 'checkbox', 'label' => 'Treat Print Notices As Phone Notices', 'description' => 'When showing detailed information about hold notices, treat print notices as if they are phone calls', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'showNoticeTypeInProfile'              => array('property' => 'showNoticeTypeInProfile', 'type'=>'checkbox', 'label'=>'Show Notice Type in Profile', 'description'=>'Whether or not patrons should be able to change how they receive notices in their profile.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'addSMSIndicatorToPhone'               => array('property' => 'addSMSIndicatorToPhone', 'type'=>'checkbox', 'label'=>'Add SMS Indicator to Primary Phone', 'description'=>'Whether or not add ### TEXT ONLY to the user\'s primary phone number when they opt in to SMS notices.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'maxFinesToAllowAccountUpdates'        => array('property' => 'maxFinesToAllowAccountUpdates', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Maximum Fine Amount to Allow Account Updates', 'description'=>'The maximum amount that a patron can owe and still update their account. Any value <= 0 will disable this functionality.', 'hideInLists' => true, 'default' => 10, 'permissions' => ['Library ILS Options'])
@@ -640,7 +637,6 @@ class Library extends DataObject
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
 					'maxDaysToFreeze'                   => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true, 'default' => 365),
 					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
-					'showDetailedHoldNoticeInformation' => array('property' => 'showDetailedHoldNoticeInformation', 'type' => 'checkbox', 'label' => 'Show Detailed Hold Notice Information', 'description' => 'Whether or not the user should be presented with detailed hold notification information, i.e. you will receive an email/phone call to xxx when the hold is available', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 					'inSystemPickupsOnly'               => array('property'=>'inSystemPickupsOnly', 'type'=>'checkbox', 'label'=>'In System Pickups Only', 'description'=>'Restrict pickup locations to only locations within this library system.', 'hideInLists' => true, 'default' => true, 'permissions' => ['Library ILS Connection']),
 					'validPickupSystems'                => array('property'=>'validPickupSystems', 'type'=>'text', 'label'=>'Valid Pickup Library Systems', 'description'=>'Additional Library Systems that can be used as pickup locations if the &quot;In System Pickups Only&quot; is on. List the libraries\' subdomains separated by pipes |', 'size'=>'20', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 					'holdDisclaimer'                    => array('property'=>'holdDisclaimer', 'type'=>'textarea', 'label'=>'Hold Disclaimer', 'description'=>'A disclaimer to display to patrons when they are placing a hold on items letting them know that their information may be available to other libraries.  Leave blank to not show a disclaimer.', 'hideInLists' => true,),
@@ -724,7 +720,7 @@ class Library extends DataObject
 				'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
 					'facetLabel' => array('property' => 'facetLabel', 'type' => 'text', 'label' => 'Library System Facet Label', 'description' => 'The label for the library system in the Library System Facet.', 'size' => '40', 'hideInLists' => true, 'maxLength' => 75, 'forcesReindex' => true),
 					'restrictOwningBranchesAndSystems' => array('property' => 'restrictOwningBranchesAndSystems', 'type' => 'checkbox', 'label' => 'Restrict Library System and Branch Facets to this library', 'description' => 'Restrict Owning Library and Owning Branches Facets to this library', 'default' => 1, 'forcesReindex' => true),
-					'showAvailableAtAnyLocation' => array('property' => 'showAvailableAtAnyLocation', 'type' => 'checkbox', 'label' => 'Show Available At Any Location?', 'description' => 'Whether or not to show any Marmot Location within the Available At facet', 'hideInLists' => true),
+					'showAvailableAtAnyLocation' => array('property' => 'showAvailableAtAnyLocation', 'type' => 'checkbox', 'label' => 'Show Available At Any Location?', 'description' => 'Whether or not to show any library Location within the Available At facet', 'hideInLists' => true),
 					'additionalLocationsToShowAvailabilityFor' => array('property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' => '20', 'hideInLists' => true,),
 				)),
 			)),
@@ -764,7 +760,7 @@ class Library extends DataObject
 			// Full Record Display //
 			'fullRecordSection' => array('property'=>'fullRecordSection', 'type' => 'section', 'label' =>'Full Record Display', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'], 'properties' => array(
 					'showEmailThis'            => array('property'=>'showEmailThis',            'type'=>'checkbox', 'label'=>'Show Email This',                   'description'=>'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
-					'showShareOnExternalSites' => array('property'=>'showShareOnExternalSites', 'type'=>'checkbox', 'label'=>'Show Sharing To External Sites',    'description'=>'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
+					'showShareOnExternalSites' => array('property'=>'showShareOnExternalSites', 'type'=>'checkbox', 'label'=>'Show Sharing To External Sites',    'description'=>'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc.) is shown', 'hideInLists' => true, 'default' => 1),
 				)
 			),
 
@@ -773,7 +769,7 @@ class Library extends DataObject
 			'holdingsSummarySection' => array('property'=>'holdingsSummarySection', 'type' => 'section', 'label' =>'Holdings Summary', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'], 'properties' => array(
 				'showItsHere' => array('property'=>'showItsHere', 'type'=>'checkbox', 'label'=>'Show It\'s Here', 'description'=>'Whether or not the holdings summary should show It\'s here based on IP and the currently logged in patron\'s location.', 'hideInLists' => true, 'default' => 1),
 				'showGroupedHoldCopiesCount' => array('property'=>'showGroupedHoldCopiesCount', 'type'=>'checkbox', 'label'=>'Show Hold and Copy Counts', 'description'=>'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.', 'hideInLists' => true, 'default' => 1),
-				'showOnOrderCounts' => array('property'=>'showOnOrderCounts', 'type'=>'checkbox', 'label'=>'Show On Order Counts', 'description'=>'Whether or not counts of Order Items should be shown .', 'hideInLists' => true, 'default' => 1),
+				'showOnOrderCounts' => array('property'=>'showOnOrderCounts', 'type'=>'checkbox', 'label'=>'Show On Order Counts', 'description'=>'Whether or not counts of On Order Items should be shown.', 'hideInLists' => true, 'default' => 1),
 			)),
 
 			'materialsRequestSection'=> array('property'=>'materialsRequestSection', 'type' => 'section', 'label' =>'Materials Request', 'hideInLists' => true, 'permissions' => ['Library Materials Request Options'], 'properties' => array(
@@ -910,7 +906,7 @@ class Library extends DataObject
 
 			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library EDS Options'], 'properties' => array(
 				'edsSettingsId' => array('property' => 'edsSettingsId', 'type'=>'enum', 'values'=>$edsSettings, 'label' => 'EDS Settings', 'description'=>'The EDS Settings to use for connection', 'hideInLists' => true, 'default' => -1),
-				'ebscohostSettingId' => array('property' => 'ebscohostSettingId', 'type'=>'enum', 'values'=>$ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description'=>'The EBSCOhost Settings to use for connection', 'hideInLists' => true, 'default' => -1),
+				'ebscohostSearchSettingId' => array('property' => 'ebscohostSearchSettingId', 'type'=>'enum', 'values'=>$ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description'=>'The EBSCOhost SEarch Settings to use for connection', 'hideInLists' => true, 'default' => -1),
 			)),
 
 			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection'], 'properties' => array(
@@ -1020,7 +1016,6 @@ class Library extends DataObject
 		}
 		if ($ils == 'Koha') {
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showWorkPhoneInProfile']);
-			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['treatPrintNoticesAsPhoneNotices']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showNoticeTypeInProfile']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['addSMSIndicatorToPhone']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['maxFinesToAllowAccountUpdates']);
@@ -1315,7 +1310,6 @@ class Library extends DataObject
 		$ils = $configArray['Catalog']['ils'];
 		if ($ils == 'Koha') {
 			$this->showWorkPhoneInProfile = 0;
-			$this->treatPrintNoticesAsPhoneNotices = 0;
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
@@ -1575,7 +1569,7 @@ class Library extends DataObject
 		return $this->_layoutSettings;
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
 
@@ -1763,6 +1757,7 @@ class Library extends DataObject
 			'allowUserLists' => $this->showFavorites,
 			'showHoldButton' => $this->showHoldButton,
 			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'maxDaysToFreeze' => $this->maxDaysToFreeze,
 			'showCardExpiration' => $this->showCardExpirationDate,
 			'showCardExpirationWarnings' => $this->showExpirationWarnings,
 			'enableReadingHistory' => $this->enableReadingHistory,

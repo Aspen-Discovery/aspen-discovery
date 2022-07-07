@@ -36,7 +36,7 @@ class AspenSite extends DataObject
 	public static $_siteTypes = [0 => 'Library Partner', 1 => 'Library Partner Test', 2 => 'Demo', 3 => 'Test'];
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
 	public static $_appAccess = [0 => 'None', 1 => 'LiDA Only', 2 => 'Whitelabel Only', 3 => 'LiDA + Whitelabel'];
-	public static $_validIls = [0 => 'Not Set', 1 => 'Koha', 2 => 'CARL.X', 3 => 'Evergreen', 4 => 'Millennium', 5=>'Polaris',6 => 'Sierra', 7 => 'Symphony'];
+	public static $_validIls = [0 => 'Not Set', 1 => 'Koha', 2 => 'CARL.X', 3 => 'Evergreen', 8=>'Evolve', 4 => 'Millennium', 5=>'Polaris',6 => 'Sierra', 7 => 'Symphony'];
 	public static $_contactFrequency = [0 => 'Weekly', 1 => 'Bi-Monthly', 2=>'Monthly', 3=> 'Quarterly', 4 => 'Every 6 Months', 5=>'Yearly'];
 	public static $_timezones = [0=> 'Unknown', 10 => 'Eastern', 12 => 'Central', 14=>'Mountain', 16=> 'Arizona', 18 => 'Pacific'];
 
@@ -82,6 +82,91 @@ class AspenSite extends DataObject
 					$statusJson = json_decode($statusRaw, true);
 					$status['alive'] = true;
 					$status = array_merge($status, $statusJson['result']);
+
+					//Update logging for CPU usage, memory usage, and general site stats
+					$now = time();
+					$twoWeeksAgo = $now - 2 * 7 * 24 * 60 * 60;
+					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCpuUsage.php';
+					$cpuUsage = new AspenSiteCpuUsage();
+					//delete anything more than 2 weeks old
+					$cpuUsage->whereAdd();
+					$cpuUsage->aspenSiteId = $this->id;
+					$cpuUsage->whereAdd('timestamp < ' . $twoWeeksAgo);
+					$cpuUsage->delete(true);
+					$cpuUsage = new AspenSiteCpuUsage();
+					$cpuUsage->aspenSiteId = $this->id;
+					$cpuUsage->timestamp = $now;
+					$loadPerCpu = (float)$status['serverStats']['load_per_cpu']['value'];
+					$cpuUsage->loadPerCpu = $loadPerCpu;
+					$cpuUsage->insert();
+
+					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteMemoryUsage.php';
+					$memoryUsage = new AspenSiteMemoryUsage();
+					//delete anything more than 2 weeks old
+					$memoryUsage->whereAdd();
+					$memoryUsage->aspenSiteId = $this->id;
+					$memoryUsage->whereAdd('timestamp < ' . $twoWeeksAgo);
+					$memoryUsage->delete(true);
+					$memoryUsage = new AspenSiteMemoryUsage();
+					$memoryUsage->aspenSiteId = $this->id;
+					$memoryUsage->timestamp = $now;
+					$memoryUsage->percentMemoryUsage = $status['serverStats']['percent_memory_in_use']['value'];
+					$totalMemory = (float)str_replace(' GB', '', $status['serverStats']['total_memory']['value']);
+					$memoryUsage->totalMemory = $totalMemory;
+					$availableMemory = (float)str_replace(' GB', '', $status['serverStats']['available_memory']['value']);
+					$memoryUsage->availableMemory = $availableMemory;
+					$memoryUsage->insert();
+
+					//Update daily stats
+					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteStat.php';
+					$aspenSiteStat = new AspenSiteStat();
+					$aspenSiteStat->year = date('Y');
+					$aspenSiteStat->month = date('n');
+					$aspenSiteStat->day = date('j');
+					$aspenSiteStat->aspenSiteId = $this->id;
+					if ($aspenSiteStat->find(true)){
+						$foundStats = true;
+					}else{
+						$foundStats = false;
+					}
+					$statsChanged = false;
+					$dataDiskSpace = (float)str_replace(' GB', '', $status['serverStats']['data_disk_space']['value']);
+					if (!$foundStats || $dataDiskSpace < $aspenSiteStat->minDataDiskSpace){
+						$aspenSiteStat->minDataDiskSpace = $dataDiskSpace;
+						$statsChanged = true;
+					}
+					$usrDiskSpace = (float)str_replace(' GB', '', $status['serverStats']['usr_disk_space']['value']);
+					if (!$foundStats || $usrDiskSpace < $aspenSiteStat->minUsrDiskSpace){
+						$aspenSiteStat->minUsrDiskSpace = $usrDiskSpace;
+						$statsChanged = true;
+					}
+					if (!$foundStats || $availableMemory < $aspenSiteStat->minAvailableMemory){
+						$aspenSiteStat->minAvailableMemory = $availableMemory;
+						$statsChanged = true;
+					}
+					if (!$foundStats || $availableMemory > $aspenSiteStat->maxAvailableMemory){
+						$aspenSiteStat->maxAvailableMemory = $availableMemory;
+						$statsChanged = true;
+					}
+					if (!$foundStats || $loadPerCpu < $aspenSiteStat->minLoadPerCPU){
+						$aspenSiteStat->minLoadPerCPU = $loadPerCpu;
+						$statsChanged = true;
+					}
+					if (!$foundStats || $loadPerCpu > $aspenSiteStat->maxLoadPerCPU){
+						$aspenSiteStat->maxLoadPerCPU = $loadPerCpu;
+						$statsChanged = true;
+					}
+					$waitTime = (float)$status['serverStats']['wait_time']['value'];
+					if (!$foundStats || $waitTime > $aspenSiteStat->maxWaitTime){
+						$aspenSiteStat->maxWaitTime = $waitTime;
+						$statsChanged = true;
+					}
+
+					if (!$foundStats){
+						$aspenSiteStat->insert();
+					}else if ($statsChanged){
+						$aspenSiteStat->update();
+					}
 				}else {
 					$status['alive'] = false;
 					$status['checks'] = [];

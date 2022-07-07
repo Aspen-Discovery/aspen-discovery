@@ -217,6 +217,54 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 {/if}
 
+{if !empty($browseImageLayout)}
+#home-page-browse-results .grid-col{ldelim}
+    display: inline-grid;
+    grid-auto-rows: 1fr;
+{rdelim}
+
+@media (max-width: 479px){ldelim}
+    #home-page-browse-results .grid-col--3{ldelim}
+        display: none;
+    {rdelim}
+{rdelim}
+
+@media (max-width: 991px){ldelim}
+    #home-page-browse-results .grid-col--4{ldelim}
+        display: none;
+    {rdelim}
+{rdelim}
+
+@media (max-width: 1199px){ldelim}
+#home-page-browse-results .grid-col--5{ldelim}
+    display: none;
+    {rdelim}
+{rdelim}
+
+@media (max-width: 1199px){ldelim}
+#home-page-browse-results .grid-col--6{ldelim}
+    display: none;
+    {rdelim}
+{rdelim}
+
+#home-page-browse-results.HideBorder .browse-thumbnail{ldelim}
+    border: none;
+    align-items: center;
+{rdelim}
+
+#home-page-browse-results .browse-thumbnail{ldelim}
+    display: inline-flex;
+    flex-wrap:wrap;
+    justify-content: center;
+    align-items: flex-end;
+    {if $browseCategoryImageSize}
+    max-height: 350px;
+    {else}
+    max-height: 250px;
+    {/if}
+{rdelim}
+{/if}
+
 {if !empty($buttonRadius)}
 .btn{ldelim}
     border-radius: {$buttonRadius};

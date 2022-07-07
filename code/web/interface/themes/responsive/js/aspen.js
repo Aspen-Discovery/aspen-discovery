@@ -4513,7 +4513,11 @@ var AspenDiscovery = (function(){
 
 	// This provides a check to interrupt AjaxFail Calls on page redirects;
 	 window.onbeforeunload = function(){
-		Globals.LeavingPage = true
+		Globals.LeavingPage = true;
+		 //
+		 // if (Globals.masqueradeMode) {
+			//  AspenDiscovery.Account.endMasquerade()
+		 // }
 	};
 
 	$(document).ready(function(){
@@ -4854,7 +4858,6 @@ var AspenDiscovery = (function(){
 		},
 
 		showMessage: function(title, body, autoClose, refreshAfterClose){
-			// if autoclose is set as number greater than 1 autoClose will be the custom timeout interval in milliseconds, otherwise
 			//	 autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
 			if (autoClose === undefined){
@@ -4872,14 +4875,14 @@ var AspenDiscovery = (function(){
 			if (autoClose) {
 				setTimeout(function(){
 					if (refreshAfterClose) {
-						window.location = window.location;
+						location.reload();
 					} else {
 						AspenDiscovery.closeLightbox();
 					}
-				}, autoClose > 1 ? autoClose : 3000);
+				}, 3000);
 			}else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
-					window.location = window.location;
+					location.reload();
 				})
 			}
 		},
@@ -5847,15 +5850,8 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.loadingMessage();
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success);
-						// automatically close when all successful
-						if (data.success || data.renewed > 0) {
-							// Refresh page on close when a item has been successfully renewed, otherwise stay
-							// noinspection JSUnusedLocalSymbols
-							$("#modalDialog").on('hidden.bs.modal', function (e) {
-								location.reload();
-							});
-						}
+						var reload = data.success || (data.renewed > 0);
+						AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
 					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
@@ -5873,8 +5869,8 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.loadingMessage();
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
-							var reload = data.success || data.renewed > 0;
-							AspenDiscovery.showMessage(data.title, data.modalBody, data.success, reload);
+							var reload = data.success || (data.renewed > 0);
+							AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
 						}).fail(AspenDiscovery.ajaxFail);
 					}
 				}
@@ -8618,8 +8614,8 @@ AspenDiscovery.Axis360 = (function () {
 			return false;
 		},
 
-		doHold: function (patronId, id) {
-			var url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+		doHold: function (patronId, id, axis360Email, promptForAxis360Email) {
+			var url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id + "&axis360Email=" + axis360Email + "&promptForAxis360Email=" + promptForAxis360Email;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -8694,7 +8690,7 @@ AspenDiscovery.Axis360 = (function () {
 				var promptInfo = AspenDiscovery.Axis360.getHoldPrompts(id, 'hold');
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
-					AspenDiscovery.Axis360.doHold(promptInfo.patronId, id);
+					AspenDiscovery.Axis360.doHold(promptInfo.patronId, id, promptInfo.axis360Email, promptInfo.promptForAxis360Email);
 				}
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
@@ -8713,10 +8709,21 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		processHoldPrompts: function () {
+			var axis360HoldPromptsForm = $("#holdPromptsForm");
 			var id = $("#id").val();
 			var patronId = $("#patronId option:selected").val();
+			if(!patronId) {
+				patronId = $("#patronId").val();
+			}
+			var promptForAxis360Email;
+			if (axis360HoldPromptsForm.find("input[name=promptForAxis360Email]").is(":checked")){
+				promptForAxis360Email = 0;
+			}else{
+				promptForAxis360Email = 1;
+			}
+			var axis360Email = axis360HoldPromptsForm.find("input[name=axis360Email]").val();
 			AspenDiscovery.closeLightbox();
-			return AspenDiscovery.Axis360.doHold(patronId, id);
+			return AspenDiscovery.Axis360.doHold(patronId, id, axis360Email, promptForAxis360Email);
 		},
 
 		renewCheckout: function (patronId, recordId) {
@@ -9039,6 +9046,7 @@ AspenDiscovery.Browse = (function(){
 							$('.grid-item').remove();
 							AspenDiscovery.Browse.colcade.append($(data.records));
 							resultsPanel.fadeIn('slow');
+							AspenDiscovery.Ratings.initializeRaters();
 						});
 
 						$('#selected-browse-search-link').attr('href', data.searchUrl); // set the Label's link
@@ -9177,7 +9185,8 @@ AspenDiscovery.Browse = (function(){
 					if (data.subCategoryTextId) AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 
 					AspenDiscovery.Browse.colcade.append($(data.records));
-
+					AspenDiscovery.Ratings.initializeRaters();
+					
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
 
 					if (data.lastPage){
@@ -9267,6 +9276,7 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
 					AspenDiscovery.Browse.colcade.append($(data.records));
+					AspenDiscovery.Ratings.initializeRaters();
 					if (data.lastPage){
 						$('#more-browse-results').hide(); // hide the load more results TODO: implement server side
 					}
@@ -10101,6 +10111,14 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		clearUploadedCover: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearUploadedCover';
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage("Success", data.message, true, true);
+			});
+			return false;
+		},
+
 		getUploadCoverForm: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
 			$.getJSON(url, function (data){
@@ -10168,7 +10186,7 @@ AspenDiscovery.GroupedWork = (function(){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=setRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
 			AspenDiscovery.closeLightbox();
 			$.getJSON(url, function (data){
-				AspenDiscovery.showMessage(data.title, data.message, true, false);
+				AspenDiscovery.showMessage(data.title, data.message, true, true);
 			});
 			return false;
 		},
@@ -12170,6 +12188,13 @@ AspenDiscovery.Searches = (function(){
 					});
 				}
 			}
+			return false;
+		},
+
+		changeDropDownFacet: function (facetId) {
+			var selectedFacetDropdown = $('#' + facetId + ' option:selected');
+			var destination = selectedFacetDropdown.data('destination');
+			window.location = destination;
 			return false;
 		},
 

@@ -94,7 +94,7 @@ class CloudLibraryScope extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/CloudLibrary/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
@@ -141,6 +141,9 @@ class CloudLibraryScope extends DataObject
 		}
 	}
 
+	/**
+	 * @return int|bool
+	 */
 	public function update()
 	{
 		$ret = parent::update();
@@ -148,7 +151,7 @@ class CloudLibraryScope extends DataObject
 			$this->saveLibraries();
 			$this->saveLocations();
 		}
-		return true;
+		return $ret;
 	}
 
 	public function insert()

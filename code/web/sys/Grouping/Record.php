@@ -15,6 +15,7 @@ class Grouping_Record
 	public $publisher;
 	public $publicationDate;
 	public $physical;
+	public $closedCaptioned;
 
 	public $_driver;
 	public $_url;
@@ -70,6 +71,9 @@ class Grouping_Record
 			$this->publicationDate = $recordDetails['publicationDate'];
 			$this->physical = $recordDetails['physicalDescription'];
 			$this->language = $recordDetails['language'];
+			if (isset($recordDetails['isClosedCaptioned'])) {
+				$this->closedCaptioned = $recordDetails['isClosedCaptioned'];
+			}
 		}else{
 			$this->format = $recordDetails[1];
 			$this->formatCategory = $recordDetails[2];

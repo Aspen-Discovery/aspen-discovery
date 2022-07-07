@@ -1,7 +1,7 @@
 @echo off
 if "%1"=="" goto usage
 
-cp -r solr7 c:/data/aspen-discovery/%1
+robocopy solr7 c:/data/aspen-discovery/%1/solr7 /s
 
 cd ../sites/%1
 call %1.bat restart

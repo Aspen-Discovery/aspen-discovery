@@ -4,11 +4,14 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class UserListIndexerMain {
 	private static Logger logger;
@@ -46,9 +49,13 @@ public class UserListIndexerMain {
 
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			startTime = new Date().getTime();
+
+			// Read the base INI file to get information about the server (current directory/cron/config.ini)
+			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 			ListIndexingLogEntry logEntry = initializeIndexer(serverName);
 
@@ -83,6 +90,20 @@ public class UserListIndexerMain {
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
 				break;
 			}
+			//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
+			GregorianCalendar nowAsCalendar = new GregorianCalendar();
+			Date now = new Date();
+			nowAsCalendar.setTime(now);
+			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
+				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
+				break;
+			}
+			//Check memory to see if we should close
+			if (SystemUtils.hasLowMemory(configIni, logger)){
+				logger.info("Ending because we have low memory available");
+				break;
+			}
+
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			System.gc();
 			try {

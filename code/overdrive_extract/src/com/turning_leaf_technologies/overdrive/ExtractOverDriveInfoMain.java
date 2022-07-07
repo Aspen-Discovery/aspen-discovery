@@ -1,7 +1,9 @@
 package com.turning_leaf_technologies.overdrive;
 
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,6 +14,7 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
@@ -50,18 +53,19 @@ public class ExtractOverDriveInfoMain {
 		String processName = "overdrive_extract";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long timeAtStart = new Date().getTime();
 
 		//Start an infinite loop to do continual indexing.  We will just kill the process as needed to restart, but
 		//otherwise it should always run
 		while (true) {
 
 			Date startTime = new Date();
-			logger.info(startTime.toString() + ": Starting OverDrive Extract");
+			logger.info(startTime + ": Starting OverDrive Extract");
 
-					// Read the base INI file to get information about the server (current directory/cron/config.ini)
+			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
@@ -155,6 +159,20 @@ public class ExtractOverDriveInfoMain {
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
 				break;
 			}
+			//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
+			GregorianCalendar nowAsCalendar = new GregorianCalendar();
+			Date now = new Date();
+			nowAsCalendar.setTime(now);
+			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
+				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
+				break;
+			}
+			//Check memory to see if we should close
+			if (SystemUtils.hasLowMemory(configIni, logger)){
+				logger.info("Ending because we have low memory available");
+				break;
+			}
+
 			if (extractSingleWork) {
 				break;
 			}
@@ -170,7 +188,7 @@ public class ExtractOverDriveInfoMain {
 				//Quit and we will restart after if finishes
 				System.exit(0);
 			}else {
-				//Based on number of changes, pause for a little while and then continue on so we are running continuously
+				//Based on number of changes, pause for a little while and then continue such that we are running continuously
 				try {
 					System.gc();
 					int maxChanges = 0;

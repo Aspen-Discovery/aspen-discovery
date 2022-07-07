@@ -110,6 +110,10 @@ function resizeImage($originalPath, $newPath, $maxWidth, $maxHeight)
 				}
 
 				$tmp_img = imagecreatetruecolor( $new_width, $new_height );
+				imagealphablending($tmp_img, false);
+				imagesavealpha($tmp_img, true);
+				$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
+				imagefilledrectangle($tmp_img, 0, 0, $new_width, $new_height, $transparent);
 
 				if (!imagecopyresampled( $tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height )){
 					$logger->log("Could not resize image $originalPath to $newPath", Logger::LOG_ERROR);

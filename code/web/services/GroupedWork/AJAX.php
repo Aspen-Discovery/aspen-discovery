@@ -1573,11 +1573,6 @@ class GroupedWork_AJAX extends JSON_Action
 
 	/** @noinspection PhpUnused */
 	function setRelatedCover(){
-		$result = [
-			'success' => false,
-			'title' => translate(['text'=>'Previewing cover from related work', 'isAdminFacing'=>true]),
-			'message' => translate(['text'=>'Sorry the cover could not be set.', 'isAdminFacing'=>true])
-		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
@@ -1587,21 +1582,14 @@ class GroupedWork_AJAX extends JSON_Action
 			$groupedWork->permanent_id = $groupedWorkId;
 
 			if ($groupedWork->find(true)) {
+				$this->clearUploadedCover();
 				$groupedWork->referenceCover = $recordType . ':' . $recordId;
-				if ($groupedWork->update()) {
-					$result['success'] = true;
-				}else{
-					$result['message'] .= translate(['text'=>" Could not update the related cover.", 'isAdminFacing'=>true]);
-				}
+				$groupedWork->update();
+				return array('success' => true, 'message' => translate(['text'=>'Your cover has been set successfully', 'isAdminFacing'=>true]), 'title' => translate(['text'=>'Previewing cover from related work', 'isAdminFacing'=>true]));
 			}else{
-				$result['message'] .= translate(['text'=>" Could not find the work to update.", 'isAdminFacing'=>true]);
+				return array('success' => false, 'message' => translate(['text'=>'Could not find the grouped work to update.', 'isAdminFacing'=>true]), 'title' => translate(['text'=>'Previewing cover from related work', 'isAdminFacing'=>true]));
 			}
 		}
-		if ($result['success']){
-			$this->reloadCover();
-			$result['message'] = translate(['text'=>'Your cover has been set successfully', 'isAdminFacing'=>true]);
-		}
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1615,7 +1603,46 @@ class GroupedWork_AJAX extends JSON_Action
 			$groupedWork->referenceCover = '';
 			$groupedWork->update();
 			$this->reloadCover();
+			return array('success' => true, 'message' => translate(['text'=>'The cover has been reset', 'isAdminFacing'=>true]));
+		}else{
+			return array('success' => false, 'message' => translate(['text'=>'Unable to reset the cover', 'isAdminFacing'=>true]));
+		}
+	}
 
+	/** @noinspection PhpUnused */
+	function clearUploadedCover(){
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookcoverInfo = new BookCoverInfo();
+
+		$id = $_REQUEST['id'];
+		$bookcoverInfo->recordId = $id;
+		if ($bookcoverInfo->find(true)){
+			global $configArray;
+			$bookCoverPath = $configArray['Site']['coverPath'];
+			$permanentId = $bookcoverInfo->recordId;
+
+			$originalUploadedImage = $bookCoverPath . '/original/' . $permanentId . '.png';
+			if (file_exists($originalUploadedImage)){
+				unlink($originalUploadedImage);
+			}
+
+			$smallUploadedImage = $bookCoverPath . '/small/' . $permanentId . '.png';
+			if (file_exists($smallUploadedImage)){
+				unlink($smallUploadedImage);
+			}
+
+			$mediumUploadedImage = $bookCoverPath . '/medium/' . $permanentId . '.png';
+			if (file_exists($mediumUploadedImage)){
+				unlink($mediumUploadedImage);
+			}
+
+			$largeUploadedImage = $bookCoverPath . '/large/' . $permanentId . '.png';
+			if (file_exists($largeUploadedImage)){
+				unlink($largeUploadedImage);
+			}
+
+			$bookcoverInfo->imageSource = 'default';
+			$bookcoverInfo->update();
 			return array('success' => true, 'message' => translate(['text'=>'The cover has been reset', 'isAdminFacing'=>true]));
 		}else{
 			return array('success' => false, 'message' => translate(['text'=>'Unable to reset the cover', 'isAdminFacing'=>true]));

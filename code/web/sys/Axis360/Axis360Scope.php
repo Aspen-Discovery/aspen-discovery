@@ -52,7 +52,7 @@ class Axis360Scope extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink(){
+	public function getEditLink() : string{
 		return '/Axis360/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
@@ -94,6 +94,9 @@ class Axis360Scope extends DataObject
 		}
 	}
 
+	/**
+	 * @return int|bool
+	 */
 	public function update()
 	{
 		$ret = parent::update();
@@ -101,7 +104,7 @@ class Axis360Scope extends DataObject
 			$this->saveLibraries();
 			$this->saveLocations();
 		}
-		return true;
+		return $ret;
 	}
 
 	public function insert()

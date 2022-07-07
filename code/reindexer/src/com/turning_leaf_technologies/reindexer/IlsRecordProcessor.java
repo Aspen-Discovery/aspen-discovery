@@ -47,7 +47,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char subLocationSubfield;
 	char iTypeSubfield;
 	private Pattern nonHoldableITypes;
-	private Pattern iTypesToSuppress;
+	protected Pattern iTypesToSuppress;
 	boolean useEContentSubfield = false;
 	char eContentSubfieldIndicator;
 	private Pattern suppressRecordsWithUrlsMatching;
@@ -88,7 +88,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	protected final HashSet<String> formatsToSuppress = new HashSet<>();
-	private final HashSet<String> statusesToSuppress = new HashSet<>();
+	protected final HashSet<String> statusesToSuppress = new HashSet<>();
 	private final HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
 	private final HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
 	private final HashSet<String> nonHoldableFormats = new HashSet<>();
@@ -252,6 +252,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
+			customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
 
 			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
 			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
@@ -428,6 +429,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
+			loadClosedCaptioning(groupedWork, record, allRelatedRecords);
 
 			if (record.getControlNumber() != null){
 				groupedWork.addKeywords(record.getControlNumber());
@@ -1319,6 +1321,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location;
+		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
 		if (includeLocationNameInDetailedLocation) {
 			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 			location = translateValue("location", locationCode, identifier, true);
@@ -1327,6 +1330,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}else{
 			location = "";
+		}
+		if (subLocationCode != null && subLocationCode.length() > 0){
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translateValue("sub_location", subLocationCode, identifier, true);
+			}
 		}
 		String shelfLocation = null;
 		if (itemField != null) {
@@ -1705,10 +1717,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				translatedAudiences.add(treatUnknownAudienceAs);
 			}
 			if (translatedAudiences.size() == 0){
-				translatedAudiences.add("Other");
+				//We didn't get anything from the items (including Unknown), check the bib record
+				super.loadTargetAudiences(groupedWork, record, printItems, identifier, treatUnknownAudienceAs);
+			}else {
+				groupedWork.addTargetAudiences(translatedAudiences);
+				groupedWork.addTargetAudiencesFull(translatedAudiences);
 			}
-			groupedWork.addTargetAudiences(translatedAudiences);
-			groupedWork.addTargetAudiencesFull(translatedAudiences);
 		}
 	}
 

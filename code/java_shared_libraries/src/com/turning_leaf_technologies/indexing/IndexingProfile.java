@@ -59,6 +59,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private long lastChangeProcessed;
 	private Pattern suppressRecordsWithUrlsMatching;
 	private String fallbackFormatField;
+	private String customMarcFieldsToIndexAsKeyword;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -140,6 +141,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
 
 		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
+		this.customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {

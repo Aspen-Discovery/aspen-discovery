@@ -62,6 +62,7 @@ public class GroupedWorkIndexer {
 	private final boolean fullReindex;
 	private final boolean clearIndex;
 	private boolean regroupAllRecords;
+	private boolean processEmptyGroupedWorks;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
@@ -179,13 +180,16 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 				this.indexVersion = systemVariablesRS.getInt("indexVersion");
 				this.searchVersion = systemVariablesRS.getInt("searchVersion");
+				if (fullReindex) {
+					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
+				}
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -212,10 +216,10 @@ public class GroupedWorkIndexer {
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
-			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ? where id = ?");
+			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId), isClosedCaptioned = VALUES(isClosedCaptioned)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ?, isClosedCaptioned = ? where id = ?");
 			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
 			getIdForRecordStmt = dbConn.prepareStatement("SELECT id from grouped_work_records where sourceId = ? and recordIdentifier = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -355,6 +359,9 @@ public class GroupedWorkIndexer {
 						case "Evergreen":
 							ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Evolve":
+							ilsRecordProcessors.put(curType, new EvolveRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
 						case "Folio":
 							ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
@@ -376,7 +383,9 @@ public class GroupedWorkIndexer {
 					if (getSideLoadSettingsRS.next()){
 						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex));
+							SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
+							sideLoadProcessors.put(curType, sideloadProcessor);
+							sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							getSideLoadSettings.close();
@@ -676,6 +685,14 @@ public class GroupedWorkIndexer {
 					logEntry.incErrors("Error turning off regroupAllRecords", e);
 				}
 			}
+			if (processEmptyGroupedWorks){
+				try {
+					logEntry.addNote("Turning off processEmptyGroupedWorks");
+					dbConn.prepareStatement("UPDATE system_variables set processEmptyGroupedWorks = 0").executeUpdate();
+				} catch (Exception e) {
+					logEntry.incErrors("Error turning off processEmptyGroupedWorks", e);
+				}
+			}
 
 			updateLastReindexTime();
 		}else {
@@ -774,6 +791,27 @@ public class GroupedWorkIndexer {
 			groupedWorks.close();
 			setLastUpdatedTime.close();
 
+			if (processEmptyGroupedWorks){
+				PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				logEntry.addNote("Starting to process grouped works with no records attached to them.");
+
+				ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery();
+				int numDeleted = 0;
+				while (emptyGroupedWorksRS.next()) {
+					String permanentId = emptyGroupedWorksRS.getString("permanent_id");
+					deleteRecord(permanentId);
+					numDeleted++;
+					if (numDeleted % 10000 == 0) {
+						try {
+							updateServer.commit(false, false, true);
+						} catch (Exception e) {
+							logger.warn("Error committing changes", e);
+						}
+					}
+				}
+				logEntry.addNote("Finished processing " + numDeleted + " grouped works with no records attached to them.");
+			}
+
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
@@ -832,7 +870,7 @@ public class GroupedWorkIndexer {
 		HashSet<String> regroupedIdsToProcess = new HashSet<>();
 		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
 
-		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||")){
+		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||") || permanentId.endsWith("   ")){
 			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
 				String type = recordIdentifier.getType();
 				String identifier = recordIdentifier.getIdentifier();
@@ -1349,6 +1387,7 @@ public class GroupedWorkIndexer {
 				addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
 				addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
 				addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
+				addRecordForWorkStmt.setBoolean(11, recordInfo.isClosedCaptioned());
 				addRecordForWorkStmt.executeUpdate();
 				ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
 				if (addRecordForWorkRS.next()) {
@@ -1372,6 +1411,7 @@ public class GroupedWorkIndexer {
 				long formatId = getFormatId(recordInfo.getPrimaryFormat());
 				long formatCategoryId = getFormatCategoryId(recordInfo.getPrimaryFormatCategory());
 				long languageId = getLanguageId(recordInfo.getPrimaryLanguage());
+				boolean isClosedCaptioned = recordInfo.isClosedCaptioned();
 				if (groupedWorkId != existingRecord.groupedWorkId) { hasChanges = true; }
 				if (editionId != existingRecord.editionId) { hasChanges = true; }
 				if (publisherId != existingRecord.publisherId) { hasChanges = true; }
@@ -1380,6 +1420,7 @@ public class GroupedWorkIndexer {
 				if (formatId != existingRecord.formatId) { hasChanges = true; }
 				if (formatCategoryId != existingRecord.formatCategoryId) { hasChanges = true; }
 				if (languageId != existingRecord.languageId) { hasChanges = true; }
+				if (isClosedCaptioned != existingRecord.isClosedCaptioned) { hasChanges = true; }
 				if (hasChanges){
 					updateRecordForWorkStmt.setLong(1, groupedWorkId);
 					updateRecordForWorkStmt.setLong(2, editionId);
@@ -1389,7 +1430,8 @@ public class GroupedWorkIndexer {
 					updateRecordForWorkStmt.setLong(6, formatId);
 					updateRecordForWorkStmt.setLong(7, formatCategoryId);
 					updateRecordForWorkStmt.setLong(8, languageId);
-					updateRecordForWorkStmt.setLong(9, existingRecord.id);
+					updateRecordForWorkStmt.setBoolean(9, isClosedCaptioned);
+					updateRecordForWorkStmt.setLong(10, existingRecord.id);
 					updateRecordForWorkStmt.executeUpdate();
 				}
 			}
@@ -2338,7 +2380,7 @@ public class GroupedWorkIndexer {
 				}
 				getRecordForIdentifierRS.close();
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading MARC record from database", e);
+				logEntry.incErrors("Error loading MARC record " + source + " " + identifier + " from database", e);
 			}
 		}
 		return marcRecord;

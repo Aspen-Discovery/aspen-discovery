@@ -35,6 +35,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $recordNumberTag;
 	public /** @noinspection PhpUnused */ $recordNumberSubfield;
 	public /** @noinspection PhpUnused */ $recordNumberPrefix;
+    public /** @noinspection PhpUnused */ $customMarcFieldsToIndexAsKeyword;
 	public /** @noinspection PhpUnused */ $suppressItemlessBibs;
 	public $itemTag;
 	public /** @noinspection PhpUnused */ $itemRecordNumber;
@@ -143,6 +144,7 @@ class IndexingProfile extends DataObject
 			'recordNumberTag' => array('property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true, 'forcesReindex' => true),
 			'recordNumberSubfield' => array('property' => 'recordNumberSubfield', 'type' => 'text', 'label' => 'Record Number Subfield', 'maxLength' => 1, 'description' => 'The subfield where the record number is stored', 'required' => true, 'default' => 'a', 'forcesReindex' => true),
 			'recordNumberPrefix' => array('property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist', 'forcesReindex' => true),
+            'customMarcFieldsToIndexAsKeyword' => array('property' => 'customMarcFieldsToIndexAsKeyword', 'type' => 'text', 'label' => 'MARC 0XX and 9XX Fields to Index as Keyword', 'maxLength' => 255, 'description' => 'This is a series of marc tags (3 chars identifying a marc field, e.g., 099), optionally followed by characters identifying which subfields to use. Separator of colon indicates a separate value, rather than concatenation (e.g., 901a:902ab is different than 901a:902a:902b). 008[5-7] denotes bytes 5-7 of the 008 field (0 based counting), 100[a-cf-z] denotes the bracket pattern is a regular expression indicating which subfields to include. Note: if the characters in the brackets are digits, it will be interpreted as particular bytes, NOT a pattern. 100abcd denotes subfields a, b, c, d are desired. MARC tags 100-899 are automatically included in the keyword index.', 'forcesReindex' => true),
 
 			'treatUnknownLanguageAs' => ['property' => 'treatUnknownLanguageAs', 'type'=>'text', 'label' => 'Treat Unknown Language As', 'maxLength' => 50, 'description' => 'Records with an Unknown Language will use this language instead.  Leave blank for Unknown', 'default' => 'English', 'forcesReindex' => true],
 			'treatUndeterminedLanguageAs' => ['property' => 'treatUndeterminedLanguageAs', 'type'=>'text', 'label' => 'Treat Undetermined Language As', 'maxLength' => 50, 'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown', 'default' => 'English', 'forcesReindex' => true],

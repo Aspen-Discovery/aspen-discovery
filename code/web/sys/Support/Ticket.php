@@ -50,7 +50,7 @@ class Ticket extends DataObject
 		$aspenSite = new AspenSite();
 		$aspenSite->orderBy('name');
 		$aspenSites = $aspenSite->fetchAll('id', 'name');
-		$aspenSites[0] = 'None';
+		$aspenSites[null] = 'None';
 
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),

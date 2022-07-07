@@ -298,11 +298,19 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, libraryUr
 }
 
 /* ACTIONS ON HOLDS */
-export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId) {
+export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId, selectedReactivationDate = null) {
 	const postBody = await postData();
 
-	const today = moment();
-	const reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	let reactivationDate = null;
+	if(selectedReactivationDate) {
+		reactivationDate = moment(selectedReactivationDate).format('YYYY-MM-DD');
+		if(reactivationDate === "Invalid date") {
+			reactivationDate = null;
+		}
+	} else {
+		reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	}
+
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutFast,
@@ -320,6 +328,7 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl, patronI
 	const response = await api.post('/UserAPI?method=freezeHold', postBody);
 
 	if (response.ok) {
+		//console.log(response);
 		const fetchedData = response.data;
 		const result = fetchedData.result;
 
@@ -334,6 +343,68 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl, patronI
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);
 	}
+}
+
+export async function freezeHolds(data, libraryUrl, selectedReactivationDate = null) {
+	const postBody = await postData();
+
+	let reactivationDate = null;
+	if(selectedReactivationDate) {
+		reactivationDate = moment(selectedReactivationDate).format('YYYY-MM-DD');
+		if(reactivationDate === "Invalid date") {
+			reactivationDate = null;
+		}
+	} else {
+		reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
+	}
+
+	let numSuccess = 0;
+	let numFailed = 0;
+
+	const holdsToFreeze = data.map(async (hold, index) => {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutFast,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {
+				sessionId: GLOBALS.appSessionId,
+				holdId: hold.cancelId,
+				recordId: hold.recordId,
+				itemSource: hold.source,
+				reactivationDate: reactivationDate,
+				userId: hold.patronId
+			}
+		});
+		const response = await api.post('/UserAPI?method=freezeHold', postBody);
+		if (response.ok) {
+			const fetchedData = response.data;
+			const result = fetchedData.result;
+
+			if (result.success === true) {
+				numSuccess = numSuccess + 1;
+			} else {
+				numFailed = numFailed + 1;
+			}
+		} else {
+			popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+			console.log(response);
+		}
+	})
+
+	await reloadHolds(libraryUrl)
+
+	let message = "";
+	let status = "success";
+	if(numSuccess > 0) {
+		message = message.concat(numSuccess + " holds frozen successfully.");
+	}
+
+	if(numFailed > 0) {
+		status = "warning";
+		message = message.concat(" Unable to freeze " + numFailed + " holds.")
+	}
+	popAlert("Holds frozen", message, status)
 }
 
 export async function thawHold(cancelId, recordId, source, libraryUrl, patronId) {
@@ -369,6 +440,57 @@ export async function thawHold(cancelId, recordId, source, libraryUrl, patronId)
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);
 	}
+}
+
+export async function thawHolds(data, libraryUrl) {
+	const postBody = await postData();
+
+	let numSuccess = 0;
+	let numFailed = 0;
+
+	const holdsToThaw = data.map(async (hold, index) => {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutFast,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {
+				sessionId: GLOBALS.appSessionId,
+				holdId: hold.cancelId,
+				recordId: hold.recordId,
+				itemSource: hold.source,
+				userId: hold.patronId,
+			}
+		});
+		const response = await api.post('/UserAPI?method=activateHold', postBody);
+		if (response.ok) {
+			const fetchedData = response.data;
+			const result = fetchedData.result;
+
+			if (result.success === true) {
+				numSuccess = numSuccess + 1;
+			} else {
+				numFailed = numFailed + 1;
+			}
+		} else {
+			popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+			console.log(response);
+		}
+	})
+
+	await reloadHolds(libraryUrl)
+
+	let message = "";
+	let status = "success";
+	if(numSuccess > 0) {
+		message = message.concat(numSuccess + " holds thawed successfully.");
+	}
+
+	if(numFailed > 0) {
+		status = "warning";
+		message = message.concat(" Unable to thaw " + numFailed + " holds.")
+	}
+	popAlert("Holds thawed", message, status)
 }
 
 export async function cancelHold(cancelId, recordId, source, libraryUrl, patronId) {
@@ -407,6 +529,58 @@ export async function cancelHold(cancelId, recordId, source, libraryUrl, patronI
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);
 	}
+}
+
+export async function cancelHolds(data, libraryUrl) {
+	const postBody = await postData();
+
+	let numSuccess = 0;
+	let numFailed = 0;
+
+	const holdsToCancel = data.map(async (hold, index) => {
+		const api = create({
+			baseURL: libraryUrl + '/API',
+			timeout: GLOBALS.timeoutFast,
+			headers: getHeaders(true),
+			auth: createAuthTokens(),
+			params: {
+				sessionId: GLOBALS.appSessionId,
+				cancelId: hold.cancelId,
+				recordId: hold.recordId,
+				itemSource: hold.source,
+				userId: hold.patronId,
+			}
+		});
+		const response = await api.post('/UserAPI?method=cancelHold', postBody);
+		if (response.ok) {
+			const fetchedData = response.data;
+			const result = fetchedData.result;
+
+			if (result.success === true) {
+				numSuccess = numSuccess + 1;
+			} else {
+				console.log(response);
+				numFailed = numFailed + 1;
+			}
+		} else {
+			popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+			console.log(response);
+		}
+	})
+
+	await reloadHolds(libraryUrl)
+
+	let message = "";
+	let status = "success";
+	if(numSuccess > 0) {
+		message = message.concat(numSuccess + " holds cancelled successfully.");
+	}
+
+	if(numFailed > 0) {
+		status = "warning";
+		message = message.concat(" Unable to cancel " + numFailed + " holds.")
+	}
+	popAlert("Holds cancelled", message, status)
 }
 
 export async function changeHoldPickUpLocation(holdId, newLocation, libraryUrl, userId) {

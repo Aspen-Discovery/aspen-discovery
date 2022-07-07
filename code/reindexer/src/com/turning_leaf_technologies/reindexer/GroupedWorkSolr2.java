@@ -387,7 +387,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								}
 							}
 							if (scopingInfo.isLibraryOwned()) {
-								addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								if (curScope.isLocationScope() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+									addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								}
 								if (curItem.isAvailable()) {
 									addAllOwningLocationsToAvailableAt = true;
 								}
@@ -411,16 +413,14 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 
 							if (!curScope.isRestrictOwningLibraryAndLocationFacets() || curScope.isConsortialCatalog()) {
 								for (String libraryOwnedName : curItem.getLibraryOwnedNames()) {
-									owningLocations.add(scopePrefix + libraryOwnedName);
+									owningLibraries.add(scopePrefix + libraryOwnedName);
 								}
 								addAllOwningLocations = true;
 							}
 						}
 
 						if (addAllOwningLocations){
-							for (String locationOwnedName : curItem.getLocationOwnedNames()) {
-								owningLocations.add(scopePrefix + locationOwnedName);
-							}
+							addAllWithPrefix(owningLocations, scopePrefix, curItem.getLocationOwnedNames());
 						}
 						if (addAllOwningLocationsToAvailableAt){
 							availableAtForItem.addAll(curItem.getLocationOwnedNames());
@@ -553,15 +553,15 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		logger.info("Work " + id + " processed " + relatedScopes.size() + " scopes");
 	}
 
+	private void addAllWithPrefix(HashSet<String> fieldValues, String scopePrefix, HashSet<String> valuesToAdd) {
+		for (String valueToAdd : valuesToAdd){
+			fieldValues.add(scopePrefix + valueToAdd);
+		}
+	}
+
 	protected void addAvailabilityToggle(boolean local, boolean available, boolean availableOnline, AvailabilityToggleInfo availabilityToggleForItem){
 		availabilityToggleForItem.local = availabilityToggleForItem.local || local;
 		availabilityToggleForItem.available = availabilityToggleForItem.available || available;
 		availabilityToggleForItem.availableOnline = availabilityToggleForItem.availableOnline || availableOnline;
 	}
-
-	protected void addAvailableAt(String location, HashSet<String> availableAtForScope){
-		availableAtForScope.add(location);
-	}
-
-
 }

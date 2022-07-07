@@ -597,15 +597,8 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.loadingMessage();
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success);
-						// automatically close when all successful
-						if (data.success || data.renewed > 0) {
-							// Refresh page on close when a item has been successfully renewed, otherwise stay
-							// noinspection JSUnusedLocalSymbols
-							$("#modalDialog").on('hidden.bs.modal', function (e) {
-								location.reload();
-							});
-						}
+						var reload = data.success || (data.renewed > 0);
+						AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
 					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
@@ -623,8 +616,8 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.loadingMessage();
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
-							var reload = data.success || data.renewed > 0;
-							AspenDiscovery.showMessage(data.title, data.modalBody, data.success, reload);
+							var reload = data.success || (data.renewed > 0);
+							AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
 						}).fail(AspenDiscovery.ajaxFail);
 					}
 				}

@@ -25,14 +25,6 @@
 						</div>
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
-								<a href="/Greenhouse/SiteStatus" title="{translate text="Site Status" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
-							</div>
-							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
-								<div class="adminActionLabel"><a href="/Greenhouse/SiteStatus">{translate text="Site Status"  isAdminFacing=true}</a></div>
-							</div>
-						</div>
-						<div class="adminAction row">
-							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/UpdateCenter" title="{translate text="Update Center" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
 							</div>
 							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
@@ -65,6 +57,30 @@
 				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Stats/Reports" isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
 					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/SiteStatus" title="{translate text="Site Status" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/SiteStatus">{translate text="Site Status"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/SiteCpuUsage" title="{translate text="Site CPU Usage" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/SiteCpuUsage">{translate text="Site CPU Usage"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/SiteMemoryUsage" title="{translate text="Site Memory Usage" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/SiteMemoryUsage">{translate text="Site Memory Usage"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/SitesByLocation" title="{translate text="Sites By Location" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>

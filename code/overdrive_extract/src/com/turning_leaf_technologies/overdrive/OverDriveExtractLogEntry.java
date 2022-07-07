@@ -152,6 +152,9 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	void setNumProducts(int size) {
 		numProducts = size;
 	}
+	void incNumProducts(int size) {
+		numProducts += size;
+	}
 
 	boolean hasErrors() {
 		return numErrors > 0;

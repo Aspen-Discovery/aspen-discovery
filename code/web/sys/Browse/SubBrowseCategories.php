@@ -52,7 +52,7 @@ class SubBrowseCategories extends DataObject {
 		return $browseCategoryList;
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->subCategoryId;
 	}
 

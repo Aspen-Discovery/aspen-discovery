@@ -121,7 +121,7 @@ class CurbsidePickupSetting extends DataObject
 		}
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/CurbsidePickup/Settings?objectAction=edit&id=' . $this->id;
 	}
 }

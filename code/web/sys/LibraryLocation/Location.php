@@ -103,14 +103,14 @@ class Location extends DataObject
 	/**
 	 * @var array|LocationHours[]|mixed|null
 	 */
-	public $ebscohostSettingId;
+	public $ebscohostSearchSettingId;
 
 	function getNumericColumnNames() : array
 	{
 		return ['scope', 'isMainBranch', 'showInLocationsAndHoursList', 'validHoldPickupBranch', 'useScope', 'restrictSearchByLocation', 'showHoldButton',
 			'repeatInOnlineCollection', 'repeatInProspector', 'repeatInWorldCat', 'showEmailThis', 'showShareOnExternalSites', 'showFavorites',
 			'includeAllLibraryBranchesInFacets', 'includeAllRecordsInShelvingFacets', 'includeAllRecordsInDateAddedFacets', 'includeLibraryRecordsToInclude',
-			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings', 'ebscohostSettingId'];
+			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings', 'ebscohostSearchSettingId'];
 	}
 
 	static function getObjectStructure() : array
@@ -232,7 +232,7 @@ class Location extends DataObject
 		}
 
 		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSetting.php';
-		$ebscohostSetting = new EBSCOhostSetting();
+		$ebscohostSetting = new EBSCOhostSearchSetting();
 		$ebscohostSetting->orderBy('name');
 		$ebscohostSettings = [];
 		$ebscohostSetting->find();
@@ -383,7 +383,7 @@ class Location extends DataObject
 			)),
 
 			'ebscoSection' => array('property' => 'ebscoSection', 'type' => 'section', 'label' => 'EBSCO', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
-				'ebscohostSettingId' => array('property' => 'ebscohostSettingId', 'type' => 'enum', 'values' => $ebscohostSettings, 'label' => 'EBSCOhost Settings', 'description' => 'The EBSCOhost Settings to use for connection', 'hideInLists' => true, 'default' => -2),
+				'ebscohostSearchSettingId' => array('property' => 'ebscohostSearchSettingId', 'type' => 'enum', 'values' => $ebscohostSettings, 'label' => 'EBSCOhost Search Settings', 'description' => 'The EBSCOhost Search Settings to use for connection', 'hideInLists' => true, 'default' => -2),
 			)),
 
 			'hours' =>	array(

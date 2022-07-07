@@ -29,8 +29,3 @@ excerpts        =
 ;id              =
 ;apiKey          =
 
-
-[ReCaptcha]
-;  https://www.google.com/recaptcha/admin/create
-publicKey =
-privateKey =

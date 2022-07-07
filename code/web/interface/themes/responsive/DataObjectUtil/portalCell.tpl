@@ -12,7 +12,7 @@
 	</div>
 	<div class="row">
 		<div class="col-xs-12">
-			{$portalCell->getContents()}
+			{$portalCell->getContents($inPageEditor)}
 		</div>
 	</div>
 </div>

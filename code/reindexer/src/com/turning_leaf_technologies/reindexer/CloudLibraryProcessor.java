@@ -121,7 +121,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 
 					itemInfo.setDetailedStatus("Available Online");
 
-					boolean isChildrens = groupedWork.getTargetAudiences().contains("Children");
+					boolean isChildrens = groupedWork.getTargetAudiences().contains("Juvenile");
 
 					int totalCopies = availabilityRS.getInt("totalCopies");
 					itemInfo.setNumCopies(totalCopies);

@@ -6,7 +6,6 @@ class TopFacets implements RecommendationInterface
 {
 	/** @var SearchObject_SolrSearcher searchObject */
 	private $searchObject;
-	private $facetSettings = array();
 	private $facets = array();
 
 	/* Constructor
@@ -47,7 +46,6 @@ class TopFacets implements RecommendationInterface
 							$facet->facetName = 'format_' . $solrScope;
 						}
 					}
-					$this->facetSettings[$facet->facetName] = $facet;
 					$this->facets[$facet->facetName] = $facet;
 				}
 			}
@@ -66,10 +64,7 @@ class TopFacets implements RecommendationInterface
 	 */
 	public function init()
 	{
-		// Turn on top facets in the search results:
-//		foreach($this->facets as $name => $desc) {
-//			$this->searchObject->addFacet($name, $this->facetSettings[$name]);
-//		}
+
 	}
 
 	/* process
@@ -83,6 +78,11 @@ class TopFacets implements RecommendationInterface
 	public function process()
 	{
 		global $interface;
+		global $library;
+
+		//Figure out which counts to show.
+		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
+		$interface->assign('facetCountsToShow', $facetCountsToShow);
 
 		// Grab the facet set
 		$facetList = $this->searchObject->getFacetList($this->facets);

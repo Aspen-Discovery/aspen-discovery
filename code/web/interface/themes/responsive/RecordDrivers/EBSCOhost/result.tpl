@@ -39,7 +39,7 @@
 
 				<div class="result-label col-tn-3">{translate text='Published' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">
-					{$summPublicationPlaces.0|escape}{$summPublishers.0|escape}{$summPublicationDates.0|escape}
+					{$summPublicationPlaces.0|escape} {$summPublishers.0|escape} {$summPublicationDates.0|escape}
 				</div>
 			</div>
 		{/if}
@@ -59,11 +59,6 @@
 				<div class="col-tn-9 result-value">{$summPhysical.0|escape}</div>
 			</div>
 		{/if}
-
-		<div class="row hidden-phone">
-			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}{translate text="Yes" isPublicFacing=true}{else}{translate text="No" isPublicFacing=true}{/if}</div>
-		</div>
 
 		{if count($appearsOnLists) > 0}
 			<div class="row">
@@ -111,7 +106,7 @@
 
 		<div class="row">
 			<div class="col-xs-12">
-				{include file='EBSCO/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
+				{include file='EBSCOhost/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
 			</div>
 		</div>
 	</div>

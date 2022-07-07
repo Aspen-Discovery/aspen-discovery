@@ -31,11 +31,10 @@ if (isset($_REQUEST['test_role'])){
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
-/** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 20);
+$interface->assign('cssJsCacheCounter', 21);
 
 // Setup Translator
 global $language;
@@ -137,7 +136,7 @@ try {
 				if (strlen($linkedProperties) > 0) {
 					$linkedProperties .= ', ';
 				}
-				$linkedProperties .= "'{$linkedProperty}'";
+				$linkedProperties .= "'$linkedProperty'";
 			}
 		}
 		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
@@ -186,6 +185,10 @@ if ($action == 'trackback'){
 if ($action == 'SimilarTitles'){
 	$action = 'Home';
 }
+//Don't show DBMaintenance warning on the DB Maintenance page
+if ($action == 'DBMaintenance'){
+	$interface->assign('hasSqlUpdates', false);
+}
 //Set these initially in case user login fails, we will need the module to be set.
 $interface->assign('module', $module);
 $interface->assign('action', $action);
@@ -226,14 +229,21 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);
 
-//Look for spammy searches and kill them
 if (isset($_REQUEST['lookfor'])) {
 	// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
+			if ( isSpammySearchTerm($searchTerm)){
+				global $interface;
+				$interface->assign('module','Error');
+				$interface->assign('action','Handle404');
+				$module = 'Error';
+				$action = 'Handle404';
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+			}
 			if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
 				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
-				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+				$_GET['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			$cleanedSearchTerm = strip_tags($searchTerm);
 			if ($cleanedSearchTerm != $searchTerm){
@@ -249,6 +259,14 @@ if (isset($_REQUEST['lookfor'])) {
 			}
 		}
 	} else {
+		if ( isSpammySearchTerm($_REQUEST['lookfor'])){
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			$module = 'Error';
+			$action = 'Handle404';
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		}
 		// Basic Search
 		$searchTerm = trim($_REQUEST['lookfor']);
 		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
@@ -334,11 +352,18 @@ if ($isLoggedIn) {
 				$masquerade->launch();
 				die;
 			}elseif ($_REQUEST['followupAction'] == 'MyList' && $_REQUEST['followupModule'] == 'MyAccount'){
-				echo("Redirecting to followup location");
 				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
 				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
 				if (!empty($_REQUEST['recordId'])) {
 					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				header("Location: " . $followupUrl);
+				exit();
+			}elseif ($_REQUEST['followupAction'] == 'AccessOnline' && $_REQUEST['followupModule'] == 'EBSCOhost'){
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if (!empty($_REQUEST['recordId'])) {
+					$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
 				}
 				header("Location: " . $followupUrl);
 				exit();
@@ -456,20 +481,6 @@ $timer->logTime('Assign module and action');
 require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
 $searchSources = new SearchSources();
 list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
-
-$interface->assign('curFormatCategory', 'Everything');
-if (isset($_REQUEST['filter'])){
-	foreach ($_REQUEST['filter'] as $curFilter){
-		if (!is_array($curFilter)){
-			$filterInfo = explode(":", $curFilter);
-			if ($filterInfo[0] == 'format_category'){
-				$curFormatCategory = str_replace('"', '', $filterInfo[1]);
-				$interface->assign('curFormatCategory', $curFormatCategory);
-				break;
-			}
-		}
-	}
-}
 
 $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
@@ -695,7 +706,6 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }else if (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
-	/** @noinspection PhpIncludeInspection */
 	require_once $actionFile;
 	$moduleActionClass = "{$module}_{$action}";
 	if (class_exists($moduleActionClass, false)) {
@@ -883,18 +893,14 @@ function aspen_autoloader($class) {
 	try{
 		if (file_exists('sys/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/' . $class . '.php';
-            /** @noinspection PhpIncludeInspection */
-			require_once $className;
+            require_once $className;
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
-            /** @noinspection PhpIncludeInspection */
-			require_once $className;
+            require_once $className;
 		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
 			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
-            /** @noinspection PhpIncludeInspection */
-			require_once $className;
+            require_once $className;
 		}else{
-            /** @noinspection PhpIncludeInspection */
             require_once $nameSpaceClass;
 		}
 	}catch (Exception $e){
@@ -1116,12 +1122,32 @@ function initializeSession(){
 	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
 	//register_shutdown_function('session_write_close');
 	$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-    /** @noinspection PhpIncludeInspection */
-	require_once $sessionClass;
+    require_once $sessionClass;
 	if (class_exists($session_type)) {
 		/** @var SessionInterface $session */
 		$session = new $session_type();
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}
 	$timer->logTime('Session initialization ' . $session_type);
+}
+
+//Look for spammy searches and kill them
+function isSpammySearchTerm($lookfor) : bool
+{
+	if (strpos($lookfor, 'DBMS_PIPE.RECEIVE_MESSAGE') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'PG_SLEEP') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'SELECT') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'SLEEP') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'ORDER BY') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'WAITFOR') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'nvOpzp') !== false) {
+		return true;
+	}
+	return false;
 }

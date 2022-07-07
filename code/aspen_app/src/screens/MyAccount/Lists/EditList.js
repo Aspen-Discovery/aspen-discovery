@@ -11,12 +11,16 @@ const EditList = (props) => {
 	const [loading, setLoading] = useState(false);
 	const [title, setTitle] = useState(null);
 	const [description, setDescription] = useState(null);
-	const [access, setAccess] = useState(null);
+	const [access, setAccess] = useState(data.public);
 
-	let isPrivate = "1";
+	let isPublic = "false";
 	if(data.public === true) {
-		isPrivate = "0";
+		isPublic = "true";
 	}
+	console.log("isPublic: " + isPublic);
+	console.log("dataPublic: " + data.public);
+	console.log("access: " + access);
+
 	return (
 		<Center>
 			<Button.Group size="sm" justifyContent="center" pb={5}>
@@ -38,7 +42,7 @@ const EditList = (props) => {
 							<FormControl.Label>Name</FormControl.Label>
 							<Input
 								id="title"
-								placeholder={data.title}
+								value={data.title}
 								onChangeText={text => setTitle(text)}
 							/>
 						</FormControl>
@@ -46,16 +50,16 @@ const EditList = (props) => {
 							<FormControl.Label>Description</FormControl.Label>
 							<TextArea
 								id="description"
-								placeholder={data.description}
+								value={data.description}
 								onChangeText={text => setDescription(text)}
 							/>
 						</FormControl>
 						<FormControl>
 							<FormControl.Label>Access</FormControl.Label>
-							<Radio.Group defaultValue={isPrivate}>
-								<Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px" onChange={nextValue => {setAccess(nextValue)}}>
-									<Radio value="1" my={1}>Private</Radio>
-									<Radio value="0" my={1}>Public</Radio>
+							<Radio.Group defaultValue={isPublic} onChange={nextValue => {setAccess(nextValue)}}>
+								<Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px">
+									<Radio value="false" my={1}>Private</Radio>
+									<Radio value="true" my={1}>Public</Radio>
 								</Stack>
 							</Radio.Group>
 						</FormControl>

@@ -3,6 +3,7 @@
 {if $loggedIn && in_array('Upload Covers', $userPermissions)}
 	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover from Computer" isAdminFacing=true}</button>
 	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
+	<button onclick="return AspenDiscovery.GroupedWork.clearUploadedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Clear Uploaded Cover" isAdminFacing=true}</button>
 {/if}
 <button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Enrichment" isAdminFacing=true}</button>
 {if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
@@ -17,7 +18,7 @@
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
-{if !empty($fields)}
+{if !empty($details)}
 	<h4>{translate text="Solr Details" isAdminFacing="true"}</h4>
 	<table class="table-striped table table-condensed notranslate" style="display:block; overflow: auto;">
 		{foreach from=$details key='field' item='values'}
@@ -178,6 +179,7 @@
 			<th>{translate text="Format" isAdminFacing="true"}</th>
 			<th>{translate text="Format Category" isAdminFacing="true"}</th>
 			<th>{translate text="Language" isAdminFacing="true"}</th>
+			<th>{translate text="Closed Captioned?" isAdminFacing="true"}</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -194,6 +196,7 @@
 				<th>{$row.format}</th>
 				<th>{$row.formatCategory}</th>
 				<th>{$row.language}</th>
+				<th>{if $row.isClosedCaptioned}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
 			</tr>
         {/foreach}
 		</tbody>

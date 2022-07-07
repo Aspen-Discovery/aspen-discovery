@@ -490,45 +490,67 @@ class ExploreMore {
 	public function loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
 		global $enabledModules;
-		if (!empty($searchTerm) && array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSettingId != -1 && $activeSection != 'ebscohost') {
-			//Load EDS options
-			/** @var SearchObject_EbscohostSearcher $edsSearcher */
-			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-			//Find related titles
-			$ebscohostSearcher->setSearchTerms(array(
-				'lookfor' => $searchTerm,
-				'index' => 'TX'
-			));
-			$ebscohostSearcher->setLimit($this->numEntriesToAdd + 1);
-			$ebscohostResults = $ebscohostSearcher->processSearch(true, false);
+		if (!empty($searchTerm) && array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSearchSettingId != -1 && $activeSection != 'ebscohost') {
+			//Get a list of databases to sort through
 
-			$exploreMoreOptions['sampleRecords']['ebscohost'] = [];
-			$numMatches = $ebscohostSearcher->getNumResults();
-			if ($numMatches > 0) {
-				if ($numMatches > 1) {
+			//Load EDS options
+			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
+			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+
+			//Get a list of databases to check
+			$searchSettings = $ebscohostSearcher->getSearchSettings();
+			if ($searchSettings != null) {
+				$databases = $searchSettings->getDatabases();
+				$hasMatches = false;
+				$exploreMoreOptions['sampleRecords']['ebscohost'] = [];
+				foreach ($databases as $database) {
+					if ($database->allowSearching && $database->showInExploreMore) {
+						$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+						//Find related titles
+						$ebscohostSearcher->setSearchTerms(array(
+							'lookfor' => $searchTerm,
+							'index' => 'TX'
+						));
+						$ebscohostSearcher->setLimit($this->numEntriesToAdd + 1);
+						$ebscohostSearcher->addFilter("db:$database->shortName");
+						$ebscohostResults = $ebscohostSearcher->processSearch(true, false);
+
+						$numMatches = $ebscohostSearcher->getNumResults();
+						if ($numMatches > 0) {
+							if (empty($database->logo)){
+								$image = '/interface/themes/responsive/images/ebscohost.png';
+							}else{
+								$image = '/files/original/' . $database->logo;
+							}
+							//Add a link to the actual title
+							$exploreMoreOptions['searchLinks'][] = array(
+								'label' => $database->displayName. " ($numMatches)",
+								'description' => $database->displayName,
+								'image' => $image,
+								'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm) . "&filter[]=db:$database->shortName",
+								'usageCount' => 1,
+								'openInNewWindow' => false
+							);
+							$hasMatches = true;
+						}
+					}
+				}
+				if ($hasMatches) {
+					$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
+					//Find related titles
+					$ebscohostSearcher->setSearchTerms(array(
+						'lookfor' => $searchTerm,
+						'index' => 'TX'
+					));
+					$ebscohostSearcher->processSearch(true, false);
+					$numMatches = $ebscohostSearcher->getNumResults();
 					$exploreMoreOptions['searchLinks'][] = array(
-						'label' => translate(['text'=>"All EBSCOhost Results (%1%)", 1=>$numMatches, 'isPublicFacing'=>true]),
-						'description' => translate(['text'=>"All Results in EBSCOhost related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						'label' => translate(['text' => "All EBSCOhost Results (%1%)", 1 => $numMatches, 'isPublicFacing' => true]),
+						'description' => translate(['text' => "All Results in EBSCOhost related to %1%", 1 => $searchTerm, 'isPublicFacing' => true]),
 						'image' => '/interface/themes/responsive/images/ebscohost.png',
 						'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false
 					);
-				}
-				$numResultsAdded = 0;
-				foreach ($ebscohostResults->rec as $result){
-					/** @var EbscohostRecordDriver $driver */
-					$driver = $ebscohostSearcher->getRecordDriverForResult($result);
-					if ($numResultsAdded < $this->numEntriesToAdd) {
-						//Add a link to the actual title
-						$exploreMoreOptions['sampleRecords']['ebscohost'][] = array(
-							'label' => $driver->getTitle(),
-							'description' => $driver->getTitle(),
-							'image' => $driver->getBookcoverUrl('medium'),
-							'link' => $driver->getLinkUrl(),
-							'usageCount' => 1,
-							'openInNewWindow' => false
-						);
-					}
 				}
 			}
 		}

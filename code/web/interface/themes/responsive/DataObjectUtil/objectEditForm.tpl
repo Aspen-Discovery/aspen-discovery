@@ -8,7 +8,7 @@
 {/if}
 
 {* Create the base form *}
-<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
+<form id='objectEditor-{$id}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
 	<div class='editor'>
 		<input type='hidden' name='objectAction' value='save' />
 		{if !empty($id)}
@@ -45,6 +45,19 @@
 		{/if}
 	</div>
 
+{if !empty($captcha)}
+	{literal}
+	<script type="text/javascript">
+      var onloadCallback = function() {
+          var captchas = document.getElementsByClassName("g-recaptcha");
+          for(var i = 0; i < captchas.length; i++) {
+              grecaptcha.render(captchas[i], {'sitekey' : '{/literal}{$captchaKey}{literal}'});
+          }
+      };
+    </script>
+	{/literal}
+{/if}
+
 	{literal}
 	<script type="text/javascript">
 		var savingForm = false;
@@ -60,7 +73,7 @@
 			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
 		$(document).ready(function(){
-			var objectEditorObject = $('#objectEditor');
+			var objectEditorObject = $('#objectEditor-{/literal}{$id}{literal}');
 
 			objectEditorObject.validate();
 
@@ -80,7 +93,7 @@
 			$(window).bind('beforeunload', function(e){
 				if (!savingForm) {
 					// if form state change show warning box, else don't show it.
-					var objectEditorObject = $('#objectEditor');
+					var objectEditorObject = $('#objectEditor-{/literal}{$id}{literal}');
 					if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
 						return "{/literal}{translate text="You have made changes to the configuration, would you like to save them before continuing?" isAdminFacing=true inAttribute=true}{literal}";
 					} else {

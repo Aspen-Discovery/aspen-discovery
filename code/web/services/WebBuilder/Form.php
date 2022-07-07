@@ -28,8 +28,9 @@ class WebBuilder_Form extends Action{
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
 				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
-					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey, $this->form->id);
 					$interface->assign('captcha', $captchaCode);
+					$interface->assign('captchaKey', $recaptcha->publicKey);
 				}
 			}else{
 				//Display a message that the user must be logged in

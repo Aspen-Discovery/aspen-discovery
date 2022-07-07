@@ -754,6 +754,13 @@ class MyAccount_AJAX extends JSON_Action
 								$title = $recordDriver->getTitle();
 								$userListEntry->title = substr($title, 0, 50);
 							}
+						}elseif($userListEntry->source == 'Ebscohost') {
+							require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
+							$recordDriver = new EbscohostRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
 						}
 						$userListEntry->insert();
 					}
@@ -768,9 +775,9 @@ class MyAccount_AJAX extends JSON_Action
 					$userObject->update();
 				}
 				if ($existingList) {
-					$return['message'] = "Updated list {$title} successfully";
+					$return['message'] = "Updated list $list->title successfully";
 				} else {
-					$return['message'] = "Created list {$title} successfully";
+					$return['message'] = "Created list $list->title successfully";
 				}
 			}
 		} else {
@@ -2255,14 +2262,7 @@ class MyAccount_AJAX extends JSON_Action
 					}
 				}
 
-				if (!$library->showDetailedHoldNoticeInformation) {
-					$notification_method = '';
-				} else {
-					$notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
-					if ($notification_method == 'Mail' && $library->treatPrintNoticesAsPhoneNotices) {
-						$notification_method = 'Telephone';
-					}
-				}
+                $notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
 				$interface->assign('notification_method', strtolower($notification_method));
 				$interface->assign('userId', $user->id);
 
@@ -3229,7 +3229,7 @@ class MyAccount_AJAX extends JSON_Action
 				if ($result['success'] == false){
 					//If the payment does not complete in the ILS, add information to the payment for tracking
 					//Also send an email to admin that it was completed in paypal, but not the ILS
-					$payment->message .= 'Fine Payment was not completed within the ILS. ' . $result['message'];
+					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
 					$payment->update();
 
 					if (!empty($payPalSettings->errorEmail)){
@@ -4420,8 +4420,11 @@ class MyAccount_AJAX extends JSON_Action
 		if ($list->find(true)) {
 			if ($userListEntry->find(true)) {
 
-				$userListEntry->notes = strip_tags($_REQUEST['notes']);
-				$userListEntry->update();
+				if ($userListEntry->notes != strip_tags($_REQUEST['notes'])){
+					$userListEntry->notes = strip_tags($_REQUEST['notes']);
+					$userListEntry->update();
+					$result['success'] = true;
+				}
 
 				$numListEntries = count($list->getListTitles());
 

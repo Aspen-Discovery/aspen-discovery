@@ -124,9 +124,18 @@ class UserList extends DataObject
 		return $result;
 	}
 	function delete($useWhere = false){
-		$this->deleted = 1;
-		$this->dateUpdated = time();
-		$ret = parent::update();
+		if (!$useWhere && $this->id >= 1) {
+			$this->deleted = 1;
+			$this->dateUpdated = time();
+			$ret = parent::update();
+
+			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+			$listEntry = new UserListEntry();
+			$listEntry->listId = $this->id;
+			$listEntry->delete(true);
+		}else{
+			parent::delete($useWhere);
+		}
 
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
@@ -611,6 +620,9 @@ class UserList extends DataObject
 						if($groupedWorkDriver->isValid()){
 							$browseRecords[$key]['id'] = $groupedWorkDriver->getPermanentId();
 							$browseRecords[$key]['title_display'] = $groupedWorkDriver->getShortTitle();
+							$browseRecords[$key]['author_display'] = $groupedWorkDriver->getPrimaryAuthor();
+							$browseRecords[$key]['format'] = $groupedWorkDriver->getFormatsArray();
+							$browseRecords[$key]['language'] = $groupedWorkDriver->getLanguage();
 						} else {
 							$browseRecords[$key] = $record;
 						}

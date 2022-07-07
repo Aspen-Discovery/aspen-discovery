@@ -354,11 +354,21 @@ public class CloudLibraryExporter {
 					RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
 
 					Record cloudLibraryRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase("cloud_library", cloudLibraryId, logEntry);
-					String primaryLanguage = getRecordGroupingProcessor().getLanguageBasedOnMarcRecord(cloudLibraryRecord);
+					if (cloudLibraryRecord != null) {
+						String primaryLanguage = getRecordGroupingProcessor().getLanguageBasedOnMarcRecord(cloudLibraryRecord);
 
-					String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, primaryLanguage, true);
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+						String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, primaryLanguage, true);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					}else{
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("cloud_library", cloudLibraryId);
+						if (result.reindexWork) {
+							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						}
+					}
 
 					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
 					markRecordToReloadAsProcessedStmt.executeUpdate();

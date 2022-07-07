@@ -32,6 +32,8 @@ class User extends DataObject
 	public $overdriveEmail;
 	public $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
 	public $hooplaCheckOutConfirmation;
+	public $promptForAxis360Email;
+	public $axis360Email;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
     public $lockedFacets;
@@ -116,7 +118,7 @@ class User extends DataObject
 	}
 
 	function getEncryptedFieldNames() : array {
-		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField(), 'axis360Email'];
 	}
 
 	public function getUniquenessFields(): array
@@ -626,7 +628,9 @@ class User extends DataObject
 		return false;
 	}
 
-
+	/**
+	 * @return int|bool
+	 */
 	function update(){
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
@@ -771,6 +775,19 @@ class User extends DataObject
 			$this->hooplaCheckOutConfirmation = 1;
 		}else{
 			$this->hooplaCheckOutConfirmation = 0;
+		}
+		$this->update();
+	}
+
+	function updateAxis360Options(){
+		if (isset($_REQUEST['promptForAxis360Email']) && ($_REQUEST['promptForAxis360Email'] == 'yes' || $_REQUEST['promptForAxis360Email'] == 'on')){
+			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
+			$this->promptForAxis360Email = 1;
+		}else{
+			$this->promptForAxis360Email = 0;
+		}
+		if (isset($_REQUEST['axis360Email'])){
+			$this->axis360Email = strip_tags($_REQUEST['axis360Email']);
 		}
 		$this->update();
 	}
@@ -2511,7 +2528,8 @@ class User extends DataObject
 
 		if (array_key_exists('EBSCOhost', $enabledModules)) {
 			$sections['ebscohost'] = new AdminSection('EBSCOhost');
-			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCO EDS');
+			$sections['ebscohost']->addAction(new AdminAction('Settings', 'Define connection information between EBSCOhost and Aspen Discovery.', '/EBSCO/EBSCOhostSettings'), 'Administer EBSCOhost Settings');
+			$sections['ebscohost']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCOhost integration.', '/EBSCOhost/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {

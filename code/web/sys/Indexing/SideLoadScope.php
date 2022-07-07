@@ -102,7 +102,7 @@ class SideLoadScope extends DataObject
 		);
 	}
 
-	function getEditLink(){
+	function getEditLink() : string{
 		return '/SideLoads/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
@@ -160,6 +160,16 @@ class SideLoadScope extends DataObject
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
+		}
+		return $ret;
+	}
+
+	public function delete($useWhere = false)
+	{
+		$ret = parent::delete($useWhere);
+		if ($ret !== FALSE) {
+			$this->clearLocations();
+			$this->clearLocations();
 		}
 		return $ret;
 	}

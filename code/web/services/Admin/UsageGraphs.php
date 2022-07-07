@@ -162,6 +162,14 @@ class Admin_UsageGraphs extends Admin_Admin
 			];
 			$userUsage->selectAdd('SUM(ebscoEdsSearches) as sumEbscoEdsSearches');
 		}
+		if (array_key_exists('EBSCOhost', $enabledModules) && ($stat == 'ebscohostSearches' || $stat == 'searches')) {
+			$dataSeries['EBSCOhost Searches'] = [
+				'borderColor' => 'rgba(255, 206, 86, 1)',
+				'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(ebscohostSearches) as sumEbscohostSearches');
+		}
 		if (array_key_exists('Events', $enabledModules) && ($stat == 'eventSearches' || $stat == 'searches')) {
 			$dataSeries['Events Searches'] = [
 				'borderColor' => 'rgba(75, 192, 192, 1)',
@@ -260,9 +268,13 @@ class Admin_UsageGraphs extends Admin_Admin
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['List Searches']['data'][$curPeriod] = $userUsage->sumUserListSearches;
 			}
-			if (array_key_exists('EBSCO EDS', $enabledModules) && ($stat == 'groupedWorksSearches' || $stat == 'searches')) {
+			if (array_key_exists('EBSCO EDS', $enabledModules) && ($stat == 'EbscoEdsSearches' || $stat == 'searches')) {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['EDS Searches']['data'][$curPeriod] = $userUsage->sumEbscoEdsSearches;
+			}
+			if (array_key_exists('EBSCOhost', $enabledModules) && ($stat == 'ebscohostSearches' || $stat == 'searches')) {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['EBSCOhost Searches']['data'][$curPeriod] = $userUsage->sumEbscohostSearches;
 			}
 			if (array_key_exists('Events', $enabledModules) && ($stat == 'eventSearches' || $stat == 'searches')) {
 				/** @noinspection PhpUndefinedFieldInspection */

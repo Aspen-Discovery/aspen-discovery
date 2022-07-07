@@ -349,8 +349,18 @@ abstract class IndexRecordDriver extends RecordInterface
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        //Get cover image size
+        global $interface;
+        $appliedTheme = $interface->getAppliedTheme();
+
+        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+
+        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+        }
+        else {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        }
 
 		return 'RecordDrivers/Index/browse_result.tpl';
 	}

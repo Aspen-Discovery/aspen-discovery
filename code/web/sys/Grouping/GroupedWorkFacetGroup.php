@@ -15,7 +15,7 @@ class GroupedWorkFacetGroup extends DataObject
 		unset($facetSettingStructure['facetGroupId']);
 		unset($facetSettingStructure['showAsDropDown']);
 
-		$structure = [
+		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The name of the settings', 'size' => '40', 'maxLength'=>255),
 			'facets' => array(
@@ -33,7 +33,6 @@ class GroupedWorkFacetGroup extends DataObject
 				'canEdit' => false,
 			),
 		];
-		return $structure;
 	}
 
 	function setupDefaultFacets($type){
@@ -42,7 +41,7 @@ class GroupedWorkFacetGroup extends DataObject
 		$facet = new GroupedWorkFacet();
 		$facet->setupTopFacet('format_category', 'Format Category');
 		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
+		$facet->weight = 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
@@ -51,6 +50,7 @@ class GroupedWorkFacetGroup extends DataObject
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
+		/** @noinspection PhpIfWithCommonPartsInspection */
 		if ($type == 'academic'){
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('literary_form', 'Literary Form', true);
@@ -131,6 +131,7 @@ class GroupedWorkFacetGroup extends DataObject
 			$defaultFacets[] = $facet;
 		}
 
+		/** @noinspection PhpIfWithCommonPartsInspection */
 		if ($type == 'academic') {
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('topic_facet', 'Subject', true);
@@ -271,7 +272,7 @@ class GroupedWorkFacetGroup extends DataObject
 	}
 
 	/** @return GroupedWorkFacet[] */
-	public function getFacets(){
+	public function getFacets() : array{
 		if (!isset($this->_facets) && $this->id){
 			$this->_facets = array();
 			$facet = new GroupedWorkFacet();
@@ -285,7 +286,7 @@ class GroupedWorkFacetGroup extends DataObject
 		return $this->_facets;
 	}
 
-	public function getFacetByIndex($index){
+	public function getFacetByIndex($index) : ? GroupedWorkFacet{
 		$facets = $this->getFacets();
 
 		$i=0;

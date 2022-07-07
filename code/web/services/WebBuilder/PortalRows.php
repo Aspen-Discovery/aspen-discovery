@@ -4,6 +4,13 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalRows extends ObjectEditor
 {
+	function launch()
+	{
+		global $interface;
+		$interface->assign('inPageEditor', true);
+		parent::launch();
+	}
+
 	function getInitializationJs() : string
 	{
 		return 'return AspenDiscovery.Admin.updateMakeRowAccordion();';

@@ -83,7 +83,7 @@
 
 						<div class="col-xs-12">
 							<p class="text-muted"><small>{translate text='Created on' isPublicFacing=true} {$list->created|date_format:"%B %e, %Y %l:%M %p"}<br>
-									{translate text='Last Updated'} {$list->dateUpdated|date_format:"%B %e, %Y %l:%M %p"}</small></p>
+									{translate text='Last Updated' isPublicFacing=true} {$list->dateUpdated|date_format:"%B %e, %Y %l:%M %p"}</small></p>
 						</div>
 					</div>
 

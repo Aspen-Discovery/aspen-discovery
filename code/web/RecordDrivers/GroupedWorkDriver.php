@@ -60,6 +60,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$summPhysicalDesc = null;
 		$summEdition = null;
 		$summLanguage = null;
+		$summClosedCaptioned = null;
 		$isFirst = true;
 		foreach ($relatedRecords as $relatedRecord) {
 			if ($isFirst) {
@@ -68,6 +69,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$summPhysicalDesc = $relatedRecord->physical;
 				$summEdition = $relatedRecord->edition;
 				$summLanguage = $relatedRecord->language;
+				$summClosedCaptioned = $relatedRecord->closedCaptioned;
 			} else {
 				if ($summPublisher != $relatedRecord->publisher) {
 					$summPublisher = null;
@@ -84,6 +86,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if ($summLanguage != $relatedRecord->language) {
 					$summLanguage = null;
 				}
+				if ($summClosedCaptioned != $relatedRecord->closedCaptioned){
+					$summClosedCaptioned = null;
+				}
 			}
 			$isFirst = false;
 		}
@@ -92,6 +97,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summPhysicalDesc', $summPhysicalDesc);
 		$interface->assign('summEdition', $summEdition);
 		$interface->assign('summLanguage', $summLanguage);
+		$interface->assign('summClosedCaptioned', $summClosedCaptioned);
 		$interface->assign('summArInfo', $this->getAcceleratedReaderDisplayString());
 		$interface->assign('summLexileInfo', $this->getLexileDisplayString());
 		$interface->assign('summFountasPinnell', $this->getFountasPinnellLevel());
@@ -323,7 +329,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 										} else {
 											return 1;
 										}
-									} elseif ($a->getHoldRatio() > $b->getHoldRatio()) {
+									} elseif ($a->getHoldRatio() < $b->getHoldRatio()) {
 										return -1;
 									} else {
 										return 1;
@@ -481,9 +487,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		//Get Rating
 		$interface->assign('ratingData', $this->getRatingData());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-		// Rating Settings
+
+        //Get cover image size
+        global $interface;
+        $appliedTheme = $interface->getAppliedTheme();
+
+        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+
+        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+        }
+        else {
+            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+        }
+
+        // Rating Settings
 		global $library;
 		global $location;
 		if ($location) { // Try Location Setting
@@ -907,11 +925,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 	public function getFormatCategory()
 	{
 		global $solrScope;
-		if (isset($this->fields['format_category_' . $solrScope])) {
-			if (is_array($this->fields['format_category_' . $solrScope])) {
-				return reset($this->fields['format_category_' . $solrScope]);
-			} else {
-				return $this->fields['format_category_' . $solrScope];
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->searchVersion == 1) {
+			if (isset($this->fields['format_category_' . $solrScope])) {
+				if (is_array($this->fields['format_category_' . $solrScope])) {
+					return reset($this->fields['format_category_' . $solrScope]);
+				} else {
+					return $this->fields['format_category_' . $solrScope];
+				}
+			}
+		}else{
+			if (isset($this->fields['format_category'])) {
+				if (is_array($this->fields['format_category'])) {
+					return reset($this->fields['format_category']);
+				} else {
+					return $this->fields['format_category'];
+				}
 			}
 		}
 		return "";
@@ -1272,6 +1302,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'length' => '',
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
+			'format' => $this->getFormats(),
+			'language' => $this->getLanguage()
 		);
 	}
 
@@ -1971,6 +2003,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$permanentId = $this->getPermanentId();
+			$alternateTitles = [];
 			if (!empty($permanentId)) {
 				$alternateTitle->permanent_id = $permanentId;
 				$alternateTitle->find();
@@ -2607,7 +2640,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$records = [];
 		}else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id

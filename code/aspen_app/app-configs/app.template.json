@@ -9,7 +9,7 @@
       "android"
     ],
     "version": "22.02.00",
-    "sdkVersion": "44.0.0",
+    "sdkVersion": "45.0.0",
     "orientation": "default",
     "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
     "splash": {

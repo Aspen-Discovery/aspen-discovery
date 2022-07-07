@@ -147,7 +147,7 @@
 								{elseif $record->getDaysUntilDue() == 0}
 									&nbsp;<span class="label label-warning">({translate text="Due today" isPublicFacing=true})</span>
 								{elseif $record->getDaysUntilDue() == 1}
-									&nbsp;<span class="label label-warning"> {translate text="Due tomorrow" isPublicFacing=true})</span>
+									&nbsp;<span class="label label-warning">({translate text="Due tomorrow" isPublicFacing=true})</span>
 								{elseif $record->getDaysUntilDue() <= 7}
 									&nbsp;<span class="label label-warning">({translate text="Due in %1% days" 1=$record->getDaysUntilDue() isPublicFacing=true})</span>
 								{/if}

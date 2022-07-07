@@ -102,13 +102,13 @@ function _recaptcha_http_post($host, $path, $data, $port = 443) {
  * @param string $pubkey A public key for reCAPTCHA
  * @return string - The HTML to be embedded in the user's form.
  */
-function recaptcha_get_html($pubkey) {
+function recaptcha_get_html($pubkey, $formId = null) {
 	if ($pubkey == null || $pubkey == '') {
 		die ("To use reCAPTCHA you must get an API key from <a href='https://www.google.com/recaptcha/admin/create'>https://www.google.com/recaptcha/admin/create</a>");
 	}
 
-	return '<script src="'. RECAPTCHA_API_SECURE_SERVER .'" async defer></script>' .
-		'<div class="g-recaptcha" data-sitekey="'. $pubkey .'">';
+	return
+		'<div id="recaptcha-'. $formId .'" class="g-recaptcha" data-sitekey="'. $pubkey .'"></div>';
 }
 
 

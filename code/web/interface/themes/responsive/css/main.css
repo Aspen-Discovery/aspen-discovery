@@ -8316,8 +8316,9 @@ a.placard-link {
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option {
   padding-left: 10px;
   padding-right: 10px;
-  height: 100%;
-  border: 0px !important;
+  height: 175px;
+  border: 0 !important;
+  display: inline-block;
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail {
   border: 0 solid white;
@@ -8325,15 +8326,18 @@ a.placard-link {
   display: block;
   background-color: transparent !important;
 }
+.exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail a {
+  width: 100%;
+}
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail a img {
-  height: 125px;
+  max-height: 125px;
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail .explore-more-image {
   width: 100%;
-  position: absolute;
-  top: 62px;
-  transform: translate(-50%, -50%);
-  left: 50%;
+  height: 125px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option figcaption {
   margin-top: 4px;
@@ -8342,7 +8346,6 @@ a.placard-link {
   overflow-x: hidden;
   position: absolute;
   top: 130px;
-  width: 100%;
   text-align: center;
 }
 #explore-more-body .jcarousel .thumbnail,
@@ -9949,6 +9952,13 @@ a.browse-thumbnail-sorted.active {
 }
 .related-manifestation.grouped .col-sm-12 .row.displayed.striped-odd {
   background: #f8f8ff;
+  padding-top: 1em;
+}
+.striped-odd {
+  background: #f8f8ff;
+  padding-top: 1em;
+}
+.striped-even {
   padding-top: 1em;
 }
 .related-manifestations-header {

@@ -16,7 +16,8 @@ import {
 	useDisclose,
 	HStack,
 	VStack,
-	IconButton
+	IconButton,
+	Image
 } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -317,7 +318,7 @@ function CheckedOutItem(props) {
 		<>
 			<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3}>
-					<Avatar source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
+					<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
 					<VStack maxW="75%">
 						<Text bold mb={1} fontSize={{base: "sm", lg: "lg"}}>{title}</Text>
 							{data.overdue ? <Text><Badge colorScheme="danger" rounded="4px"
