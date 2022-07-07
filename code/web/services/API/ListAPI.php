@@ -980,6 +980,10 @@ class ListAPI extends Action
 						$numRemoved++;
 					}
 				}
+				if($user->lastListUsed != $list->id) {
+					$user->lastListUsed = $list->id;
+					$user->update();
+				}
 				return array('success' => true, 'listId' => $list->id, 'numRemoved' => $numRemoved);
 			}
 
