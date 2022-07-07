@@ -40,8 +40,10 @@ class Search_Home extends Action {
 		/** @var BrowseCategory[] $browseCategories */
 		if ($activeLocation != null){
 			$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
+			$interface->assign('browseCategoryRatingsMode', $activeLocation->getBrowseCategoryGroup()->browseCategoryRatingsMode);
 		}else{
 			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
+			$interface->assign('browseCategoryRatingsMode', $library->getBrowseCategoryGroup()->browseCategoryRatingsMode);
 		}
 
 		$interface->assign('showBrowseContent', true);
