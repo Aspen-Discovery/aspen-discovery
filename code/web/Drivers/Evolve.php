@@ -243,6 +243,17 @@ class Evolve extends AbstractIlsDriver
 
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
+		//Get the token
+		$apiToken = $this->accountProfile->oAuthClientSecret;
+		$this->apiCurlWrapper->addCustomHeaders([
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+		], true);
+		$postParams = "Token=$apiToken|AppType=Catalog&Login=$username@&Pwd=$password";
+		$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
+		ExternalRequestLogEntry::logRequest('evolve.updateHomeLibrary', 'PUT', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
 		return null;
 	}
 
