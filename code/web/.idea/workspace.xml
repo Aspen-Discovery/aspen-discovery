@@ -3,8 +3,15 @@
   <component name="AnalysisUIOptions">
     <option name="SCOPE_TYPE" value="3" />
   </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../cron/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/marc/MarcUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/marc/MarcUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/release_notes/22.07.00.MD" beforeDir="false" afterPath="$PROJECT_DIR$/release_notes/22.07.00.MD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/version_updates/22.07.00.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/version_updates/22.07.00.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,22 +42,22 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/Drivers/Koha.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/Account/User.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/ConfigArray.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sys/SearchObject/SearchObjectFactory.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/AbstractIlsDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/AbstractDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/Grouping/GroupedWorkMoreDetails.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/User/Hold.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/cancelHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Account/User.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Grouping/GroupedWorkMoreDetails.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/ilsHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/HooplaDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sys/Grouping/Item.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/ConfigArray.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/HooplaDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractIlsDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/User/Hold.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Drivers/AbstractEContentDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/Koha.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/services/MyAccount/AJAX.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="JsBowerSettings">
     <node-interpreter value="project" />
@@ -98,7 +105,6 @@
         </path_mappings>
       </server>
       <server host="wasatch.basinlibraries.localhost" id="914e1869-abd0-42ed-b365-d8c234bb5e4e" name="wasatch.basinlibraries.localhost" />
-      <server host="nederland.aspencat.localhost" id="f9c9d3e1-29cc-4bc6-86ef-a7a330a42b6e" name="nederland.aspencat.localhost" />
       <server host="nederland.aspencat.localhost" id="f9c9d3e1-29cc-4bc6-86ef-a7a330a42b6e" name="nederland.aspencat.localhost" />
       <server host="arlington.koha.local" id="88213282-7667-4f99-9209-81efc10079fa" name="arlington.koha.local" />
       <server host="swan.localhost" id="2c1357ff-4245-40e6-9077-d348d472ed00" name="swan.localhost" />
@@ -311,6 +317,10 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+      <created>1657161671148</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1657161671148</updated>
     </task>
     <servers />
   </component>
@@ -327,12 +337,6 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-    </breakpoint-manager>
-    <watches-manager>
-    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
