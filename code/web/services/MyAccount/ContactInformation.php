@@ -34,7 +34,6 @@ class MyAccount_ContactInformation extends MyAccount
 				$canUpdatePhoneNumber = false;
 				$showWorkPhoneInProfile = false;
 				$showNoticeTypeInProfile = false;
-				$treatPrintNoticesAsPhoneNotices = false;
 				$allowPinReset = false;
 				$showAlternateLibraryOptionsInProfile = false;
 				$allowAccountLinking = true;
@@ -45,7 +44,6 @@ class MyAccount_ContactInformation extends MyAccount
 				$canUpdatePhoneNumber = ($patronHomeLibrary->allowPatronPhoneNumberUpdates == 1);
 				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
 				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
-				$treatPrintNoticesAsPhoneNotices = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
 				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowAccountLinking = ($patronHomeLibrary->allowLinkedAccounts == 1);
