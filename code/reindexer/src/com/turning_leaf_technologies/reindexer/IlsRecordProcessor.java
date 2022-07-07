@@ -252,6 +252,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
+			customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
 
 			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
 			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");

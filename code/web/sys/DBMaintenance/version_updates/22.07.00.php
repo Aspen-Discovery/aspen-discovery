@@ -105,6 +105,13 @@ function getUpdates22_07_00() : array
 			'sql' => [
 				"DELETE e FROM user_list_entry e left join user_list l on e.listId = l.id where l.id is NULL",
 			]
-		]
+		], //remove list entries for deleted lists
+        'custom_marc_fields_to_index_as_keyword' => [
+            'title' => 'Adds custom MARC fields to index as keyword',
+            'description' => 'Allows Indexing Profile to include custom 0XX and 9XX MARC field values in the keyword index',
+            'sql' => [
+                "ALTER TABLE indexing_profiles ADD COLUMN customMarcFieldsToIndexAsKeyword VARCHAR(255) DEFAULT ''"
+            ]
+        ], //custom_marc_fields_to_index_as_keyword
 	];
 }
