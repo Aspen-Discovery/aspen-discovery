@@ -441,7 +441,9 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
-		groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
+		if (customMarcFieldsToIndexAsKeyword.length() > 0) {
+			groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
+		}
 	}
 
 	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
