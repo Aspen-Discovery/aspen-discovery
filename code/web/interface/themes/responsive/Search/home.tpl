@@ -65,7 +65,7 @@
 				</div>
 			</div>
 
-			<div id="home-page-browse-results" {if !$showRatings}class="HideBorder"{/if}>
+			<div id="home-page-browse-results" {if !$browseCategoryRatingsMode}class="HideBorder"{/if}>
 				<div class="grid">
 					<!-- columns -->
 					<div class="grid-col grid-col--1"></div>
