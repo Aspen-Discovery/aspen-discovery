@@ -1,9 +1,7 @@
 package com.turning_leaf_technologies.marc;
 
-import com.mysql.cj.util.LRUCache;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.*;
@@ -403,7 +401,6 @@ public class MarcUtil {
 	 */
 	public static String getAllSearchableFields(Record record, int lowerBound, int upperBound) {
 		StringBuilder buffer = new StringBuilder("");
-
 		List<DataField> fields = record.getDataFields();
 		for (DataField field : fields) {
 			// Get all fields starting with the 100 and ending with the 839
@@ -419,8 +416,11 @@ public class MarcUtil {
 				}
 			}
 		}
-
 		return buffer.toString();
+	}
+
+	public static String getCustomSearchableFields(Record record, String customMarcFieldsToIndexAsKeyword) {
+			return String.join(" ", MarcUtil.getFieldList(record, customMarcFieldsToIndexAsKeyword));
 	}
 
 	public static String getFirstFieldVal(Record record, String fieldSpec) {
