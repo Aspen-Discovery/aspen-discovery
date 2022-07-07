@@ -676,6 +676,10 @@ class ListAPI extends Action
 			$list->public = isset($_REQUEST['public']) ? (($_REQUEST['public'] == true || $_REQUEST['public'] == 1) ? 1 : 0) : 0;
 			$list->user_id = $user->id;
 			$list->insert();
+			if($user->lastListUsed != $list->id) {
+				$user->lastListUsed = $list->id;
+				$user->update();
+			}
 			$list->find();
 			if (isset($_REQUEST['recordIds'])) {
 				$_REQUEST['listId'] = $list->id;
@@ -798,6 +802,10 @@ class ListAPI extends Action
 					}
 				}
 				$list->update();
+				if($user->lastListUsed != $list->id) {
+					$user->lastListUsed = $list->id;
+					$user->update();
+				}
 				return array('success' => true, 'title' => 'Success', 'message' => "Edited list {$list->title} successfully");
 			}else{
 				return array('success' => false, 'listId' => $list->id, 'listTitle' => $list->title, 'title' => 'Error', 'message' => "List {$list->title} not found");
@@ -887,6 +895,10 @@ class ListAPI extends Action
 						} else {
 							$userListEntry->insert();
 						}
+						if($user->lastListUsed != $list->id) {
+							$user->lastListUsed = $list->id;
+							$user->update();
+						}
 						$numAdded++;
 					}
 				}
@@ -967,6 +979,10 @@ class ListAPI extends Action
 
 						$numRemoved++;
 					}
+				}
+				if($user->lastListUsed != $list->id) {
+					$user->lastListUsed = $list->id;
+					$user->update();
 				}
 				return array('success' => true, 'listId' => $list->id, 'numRemoved' => $numRemoved);
 			}
