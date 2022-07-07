@@ -9899,6 +9899,13 @@ a.browse-thumbnail-sorted.active {
   background: #f8f8ff;
   padding-top: 1em;
 }
+.striped-odd {
+  background: #f8f8ff;
+  padding-top: 1em;
+}
+.striped-even {
+  padding-top: 1em;
+}
 .related-manifestations-header {
   border-bottom: 1px solid #d3d3d3;
 }
