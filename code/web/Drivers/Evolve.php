@@ -251,8 +251,15 @@ class Evolve extends AbstractIlsDriver
 			'Cache-Control: no-cache',
 			'Content-Type: application/json;charset=UTF-8',
 		], true);
-		$postParams = "Token=$apiToken|AppType=Catalog&Login=$username@&Pwd=$password";
-		$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
+		$postParams = "Token=$apiToken|AppType=Catalog|Login=$username|Pwd=$password";
+//		$postParams = [
+//			"Token" => $apiToken,
+//			"AppType" => "Catalog",
+//			"Login"=>$username,
+//			"Pwd"=>$password
+//
+//		];
+		$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
 		ExternalRequestLogEntry::logRequest('evolve.updateHomeLibrary', 'PUT', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
 		return null;
 	}
