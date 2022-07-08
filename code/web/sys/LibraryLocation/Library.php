@@ -36,6 +36,8 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 }
 
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
+
 class Library extends DataObject
 {
 	public $__table = 'library';    // table name
@@ -259,6 +261,27 @@ class Library extends DataObject
 	public $edsSettingsId;
 	public $ebscohostSearchSettingId;
 
+	//SSO
+	public /** @noinspection PhpUnused */ $ssoName;
+	public /** @noinspection PhpUnused */ $ssoXmlUrl;
+	public /** @noinspection PhpUnused */ $ssoUniqueAttribute;
+	public /** @noinspection PhpUnused */ $ssoMetadataFilename;
+	public /** @noinspection PhpUnused */ $ssoIdAttr;
+	public /** @noinspection PhpUnused */ $ssoUsernameAttr;
+	public /** @noinspection PhpUnused */ $ssoFirstnameAttr;
+	public /** @noinspection PhpUnused */ $ssoLastnameAttr;
+	public /** @noinspection PhpUnused */ $ssoEmailAttr;
+	public /** @noinspection PhpUnused */ $ssoDisplayNameAttr;
+	public /** @noinspection PhpUnused */ $ssoPhoneAttr;
+	public /** @noinspection PhpUnused */ $ssoPatronTypeAttr;
+	public /** @noinspection PhpUnused */ $ssoPatronTypeFallback;
+	public /** @noinspection PhpUnused */ $ssoAddressAttr;
+	public /** @noinspection PhpUnused */ $ssoCityAttr;
+	public /** @noinspection PhpUnused */ $ssoLibraryIdAttr;
+	public /** @noinspection PhpUnused */ $ssoLibraryIdFallback;
+	public /** @noinspection PhpUnused */ $ssoCategoryIdAttr;
+	public /** @noinspection PhpUnused */ $ssoCategoryIdFallback;
+
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
 	public /** @noinspection PhpUnused */ $combinedResultsLabel;
@@ -292,6 +315,7 @@ class Library extends DataObject
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
+	private $curlWrapper;
 
 	public function getNumericColumnNames() : array {
 		return [
@@ -574,6 +598,32 @@ class Library extends DataObject
 				'tiktokLink' => array('property'=>'tiktokLink', 'type'=>'text', 'label'=>'TikTok Link Url', 'description'=>'The url to TikTok (leave blank if the library does not have a TikTok account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'contactEmail' => array('property'=>'contactEmail', 'type'=>'text', 'label'=>'General Email Address (LiDA only)', 'description'=>'A general email address for the public to contact the library', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true, 'affectsLiDA' => true)
+			)),
+			'ssoSection' => array('property'=>'ssoSection', 'type' => 'section', 'label' =>'Single Sign-on', 'hideInLists' => true, 'properties' => array(
+				'ssoName' => array('property'=>'ssoName', 'type'=>'text', 'label'=>'Name of service', 'description'=>'The name to be displayed when referring to the authentication service', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoXmlUrl' => array('property'=>'ssoXmlUrl', 'type'=>'text', 'label'=>'URL of service metadata XML', 'description'=>'The URL at which the metadata XML document for this identity provider can be obtained', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoUniqueAttribute' => array('property'=>'ssoUniqueAttribute', 'type'=>'text', 'label'=>'Name of the identity provider attribute that uniquely identifies a user', 'description'=>'This should be unique to each user', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoIdAttr' => array('property'=>'ssoIdAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user ID', 'description'=>'This should be unique to each user', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoUsernameAttr' => array('property'=>'ssoUsernameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s username', 'description'=>'The user\'s username', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoFirstnameAttr' => array('property'=>'ssoFirstnameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s first name', 'description'=>'The user\'s first name', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoLastnameAttr' => array('property'=>'ssoLastnameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s last name', 'description'=>'The user\'s last name', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoEmailAttr' => array('property'=>'ssoEmailAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s email address', 'description'=>'The user\'s email address', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoDisplayNameAttr' => array('property'=>'ssoDisplayNameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s display name', 'description'=>'The user\'s display name, if one is not supplied, a name for display will be assembled from first and last names', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoPhoneAttr' => array('property'=>'ssoPhoneAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s phone number', 'description'=>'The user\'s phone number', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoAddressAttr' => array('property'=>'ssoAddressAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s address', 'description'=>'The user\'s address', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoCityAttr' => array('property'=>'ssoCityAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s city', 'description'=>'The user\'s city', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoPatronTypeSection' => array('property' => 'ssoPatronTypeSection', 'type' => 'section', 'label' => 'Patron type', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
+					'ssoPatronTypeAttr' => array('property'=>'ssoPatronTypeAttr', 'validationGroupName' => 'patronType', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron type', 'description'=>'The user\'s patron type, this should be a value that is recognised by Aspen. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoPatronTypeFallback' => array('property'=>'ssoPatronTypeFallback', 'validationGroupName' => 'patronType','type'=>'text', 'label'=>'A fallback value for patron type', 'description'=>'A value to be used in the event the identity provider does not supply a patron type attribute, this should be a value that is recognised by Aspen.', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				)),
+				'ssoLibraryIdSection' => array('property' => 'ssoLibraryIdSection', 'type' => 'section', 'label' => 'Library ID', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
+					'ssoLibraryIdAttr' => array('property'=>'ssoLibraryIdAttr', 'validationGroupName' => 'libraryId', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s library ID', 'description'=>'The user\'s library ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoLibraryIdFallback' => array('property'=>'ssoLibraryIdFallback', 'validationGroupName' => 'libraryId', 'type'=>'text', 'label'=>'A fallback value for library ID', 'description'=>'A value to be used in the event the identity provider does not supply a library ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				)),
+				'ssoCategoryIdSection' => array('property' => 'ssoCategoryIdSection', 'type' => 'section', 'label' => 'Patron category ID', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
+					'ssoCategoryIdAttr' => array('property'=>'ssoCategoryIdAttr', 'validationGroupName' => 'categoryId','type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron category ID', 'description'=>'The user\'s patron category ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoCategoryIdFallback' => array('property'=>'ssoCategoryIdFallback', 'validationGroupName' => 'categoryId','type'=>'text', 'label'=>'A fallback value for category ID', 'description'=>'A value to be used in the event the identity provider does not supply a category ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				)),
 			)),
 
 			// ILS/Account Integration //
@@ -1325,7 +1375,15 @@ class Library extends DataObject
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
-		$ret = parent::update();
+		$ret = false;
+		// We process the SSO additional work before the DB is updated because we set
+		// a value on this object which needs to be persisted to the DB
+		$ssoOk = $this->processSso();
+		if ($ssoOk instanceof AspenError) {
+			$this->setLastError($ssoOk->getMessage());
+		} else {
+			$ret = parent::update();
+		}
 		if ($ret !== FALSE ){
 			$this->saveHolidays();
 			$this->saveRecordsOwned();
@@ -1392,6 +1450,7 @@ class Library extends DataObject
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			//$this->saveQuickSearches();
+			$this->processSso();
 		}
 		return $ret;
 	}
@@ -1749,7 +1808,74 @@ class Library extends DataObject
 		return $lidaNotifications;
 	}
 
-	public function getApiInfo() : array
+// If the URL of the XML metadata has changed in any way, and is populated,
+// we need to use it to fetch the metadata and store the metadata's filename
+// in the DB, otherwise we delete the file
+	public function processSso(){
+		if (in_array('ssoXmlUrl', $this->_changedFields)) {
+			global $logger;
+			global $configArray;
+			global $serverName;
+			$dataPath = '/data/aspen-discovery/' . $serverName . '/sso_metadata/';
+			$fileName = md5($serverName) . '.xml';
+			$filePath = $dataPath . $fileName;
+			$url = trim($this->ssoXmlUrl);
+			if (strlen($url) > 0) {
+				// We've got a new or updated URL
+				// First try and retrieve the metadata
+				$this->curlWrapper = new CurlWrapper();
+				$this->curlWrapper->setTimeout(10);
+				$xml = $this->curlWrapper->curlGetPage($url);
+				if (strlen($xml) > 0) {
+					// Check it's a valid SAML message
+					try {
+						\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
+					} catch(Exception $e) {
+						$logger->log($e, Logger::LOG_ERROR);
+						return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');
+					}
+					$written = file_put_contents($filePath, $xml);
+					if ($written === false) {
+						$logger->log(
+							'Failed to write SSO metadata to ' . $filePath . ' for site ' .
+							$configArray['Site']['title'],
+							Logger::LOG_ERROR
+						);
+						return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
+					}
+				} else {
+					$logger->log(
+						'Failed to retrieve any SSO metadata from ' . $url . ' for site ' .
+						$configArray['Site']['title'],
+						Logger::LOG_ERROR
+					);
+					return new AspenError('Unable to use SSO IdP metadata, did not receive any metadata, please check "URL of service metadata XML"');
+				}
+				// Update the ssoMetadataFilename in the DB
+				$this->ssoMetadataFilename = $fileName;
+			} else {
+				// The URL has been removed, so let's remove the
+				// metadata file
+				$deleted = false;
+				if (file_exists($filePath)) {
+					$deleted = unlink($filePath);
+				}
+				// If we failed to delete the file, it's not the end of the world
+				// but it might be indicative of a larger problem
+				if (!$deleted) {
+					$logger->log(
+						'Tried and failed to delete ' . $filePath . ' for site ' .
+						$configArray['Site']['title'],
+						Logger::LOG_ERROR
+					);
+				}
+				// Update the ssoMetadataFilename in the DB
+				$this->ssoMetadataFilename = '';
+			}
+		}
+	}
+
+    public function getApiInfo() : array
 	{
 		global $configArray;
 		global $interface;
