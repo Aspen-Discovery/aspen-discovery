@@ -11,7 +11,7 @@ class Admin_AlternateTitles extends ObjectEditor
 		return 'AlternateTitles';
 	}
 	function getPageTitle() : string{
-		return 'Title / Author Authorities';
+		return 'Manual Grouping Authorities';
 	}
 	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new GroupedWorkAlternateTitle();
@@ -40,7 +40,7 @@ class Admin_AlternateTitles extends ObjectEditor
 		return 'id';
 	}
 	function getInstructions() : string{
-		return '';
+		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
 	}
 
 	function getBreadcrumbs() : array

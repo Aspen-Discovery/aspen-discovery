@@ -21,7 +21,7 @@ class WebBuilder_WebResources extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'Library Resources';
+		return 'Web Resources';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
@@ -70,7 +70,7 @@ class WebBuilder_WebResources extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/webresources';
 	}
 
 	function getBreadcrumbs() : array

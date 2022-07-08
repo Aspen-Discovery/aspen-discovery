@@ -15,7 +15,7 @@ class OpenArchives_Collections extends ObjectEditor {
         return 'OpenArchives';
     }
 	function getPageTitle() : string{
-		return 'Open Archives collections to include';
+		return 'Open Archives Collections';
 	}
 	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
@@ -45,7 +45,9 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getIdKeyColumn() : string{
 		return 'id';
 	}
-
+    function getInstructions() : string{
+        return 'https://help.aspendiscovery.org/help/integration/openarchives';
+    }
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];

@@ -21,7 +21,7 @@ class WebBuilder_BasicPages extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'Basic WebBuilder Pages';
+		return 'Basic Web Builder Pages';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
@@ -76,7 +76,7 @@ class WebBuilder_BasicPages extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/pages';
 	}
 
 	function getInitializationJs() : string

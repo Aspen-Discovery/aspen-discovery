@@ -40,7 +40,7 @@ class Admin_AuthorAuthorities extends ObjectEditor
 		return 'id';
 	}
 	function getInstructions() : string{
-		return '';
+		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
 	}
 
 	function getBreadcrumbs() : array

@@ -21,7 +21,7 @@ class WebBuilder_PortalPages extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'WebBuilder Custom Pages';
+		return 'Custom Web Builder Pages';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
@@ -78,7 +78,7 @@ class WebBuilder_PortalPages extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/pages';
 	}
 
 	function getInitializationJs() : string
