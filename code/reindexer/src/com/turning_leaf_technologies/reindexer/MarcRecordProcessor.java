@@ -441,10 +441,18 @@ abstract class MarcRecordProcessor {
 		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
-		if (customMarcFieldsToIndexAsKeyword.length() > 0) {
-			groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
+		if (customMarcFieldsToIndexAsKeyword != null && customMarcFieldsToIndexAsKeyword.length() > 0) {
+			try {
+				groupedWork.addKeywords(MarcUtil.getCustomSearchableFields(record, customMarcFieldsToIndexAsKeyword));
+			}catch (Exception e){
+				if (!loggedCustomMarcError) {
+					indexer.getLogEntry().incErrors("Error processing custom marc fields to index as keyword", e);
+					loggedCustomMarcError = true;
+				}
+			}
 		}
 	}
+	private static boolean loggedCustomMarcError = false;
 
 	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
 	private void loadLexileScore(AbstractGroupedWorkSolr groupedWork, Record record) {
