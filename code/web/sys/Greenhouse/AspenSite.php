@@ -73,6 +73,7 @@ class AspenSite extends DataObject
 	}
 
 	public function updateStatus() {
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$status = $this->toArray();
 		if (!empty($this->baseUrl)){
 			$statusUrl = $this->baseUrl . '/API/SearchAPI?method=getIndexStatus';
@@ -111,9 +112,9 @@ class AspenSite extends DataObject
 					$memoryUsage->aspenSiteId = $this->id;
 					$memoryUsage->timestamp = $now;
 					$memoryUsage->percentMemoryUsage = $status['serverStats']['percent_memory_in_use']['value'];
-					$totalMemory = (float)str_replace(' GB', '', $status['serverStats']['total_memory']['value']);
+					$totalMemory = StringUtils::unformatBytes($status['serverStats']['total_memory']['value']) / (1024 * 1024 * 1024);
 					$memoryUsage->totalMemory = $totalMemory;
-					$availableMemory = (float)str_replace(' GB', '', $status['serverStats']['available_memory']['value']);
+					$availableMemory = StringUtils::unformatBytes($status['serverStats']['available_memory']['value']) / (1024 * 1024 * 1024);
 					$memoryUsage->availableMemory = $availableMemory;
 					$memoryUsage->insert();
 
@@ -130,12 +131,12 @@ class AspenSite extends DataObject
 						$foundStats = false;
 					}
 					$statsChanged = false;
-					$dataDiskSpace = (float)str_replace(' GB', '', $status['serverStats']['data_disk_space']['value']);
+					$dataDiskSpace = StringUtils::unformatBytes($status['serverStats']['data_disk_space']['value']) / (1024 * 1024 * 1024);
 					if (!$foundStats || $dataDiskSpace < $aspenSiteStat->minDataDiskSpace){
 						$aspenSiteStat->minDataDiskSpace = $dataDiskSpace;
 						$statsChanged = true;
 					}
-					$usrDiskSpace = (float)str_replace(' GB', '', $status['serverStats']['usr_disk_space']['value']);
+					$usrDiskSpace = StringUtils::unformatBytes($status['serverStats']['usr_disk_space']['value']) / (1024 * 1024 * 1024);
 					if (!$foundStats || $usrDiskSpace < $aspenSiteStat->minUsrDiskSpace){
 						$aspenSiteStat->minUsrDiskSpace = $usrDiskSpace;
 						$statsChanged = true;

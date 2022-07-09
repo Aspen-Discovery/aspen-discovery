@@ -153,6 +153,18 @@ class StringUtils
 		return round($bytes, $precision) . ' ' . $units[$pow];
 	}
 
+	static function unformatBytes($formattedBytes) {
+
+		$units = array('B' => 0, 'KB' =>1, 'MB'=>2, 'GB'=>3, 'TB'=>4);
+
+		list($value, $unit) = explode(' ', $formattedBytes);
+
+		$bytes = (float)$value;
+		$bytes *= pow(1024, $units[$unit]);
+
+		return $bytes;
+	}
+
 	static function startsWith( $haystack, $needle ) {
 		$length = strlen( $needle );
 		return substr( $haystack, 0, $length ) === $needle;
