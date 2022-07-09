@@ -117,7 +117,7 @@ function getUpdates22_07_00() : array
 			'title' => 'Fix incorrect available memory',
 			'description' => 'Fix cases where aspen site memory usage has available memory greater than total',
 			'sql'=> [
-				'update aspen_site_memory_usage set availableMemory = totalMemory - (totalMemory * percentMemoryUsage / 100)) where availableMemory > totalMemory'
+				'update aspen_site_memory_usage set availableMemory = (totalMemory - (totalMemory * percentMemoryUsage / 100)) where availableMemory > totalMemory'
 			]
 		]
 	];
