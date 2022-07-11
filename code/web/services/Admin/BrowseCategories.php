@@ -50,7 +50,7 @@ class Admin_BrowseCategories extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		return '';
+		return 'https://help.aspendiscovery.org/help/promote/browsecategories';
 	}
 
 	function getInitializationJs() : string {

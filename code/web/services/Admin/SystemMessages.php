@@ -14,7 +14,7 @@ class Admin_SystemMessages extends ObjectEditor
 		return 'SystemMessages';
 	}
 	function getPageTitle() : string{
-		return 'SystemMessages';
+		return 'System Messages';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
@@ -66,7 +66,7 @@ class Admin_SystemMessages extends ObjectEditor
 	}
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/admin/systemmessages';
 	}
 	function getBreadcrumbs() : array
 	{

@@ -49,8 +49,7 @@ class Admin_Themes extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		//return 'For more information on themes see TBD';
-		return '';
+		return 'https://help.aspendiscovery.org/help/admin/theme';
 	}
 
 	function getExistingObjectById($id) : ?DataObject {

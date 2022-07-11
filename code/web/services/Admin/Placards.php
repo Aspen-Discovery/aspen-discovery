@@ -66,7 +66,7 @@ class Admin_Placards extends ObjectEditor
 	}
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=Placards';
+		return 'https://help.aspendiscovery.org/help/promote/placards';
 	}
 	function getBreadcrumbs() : array
 	{
