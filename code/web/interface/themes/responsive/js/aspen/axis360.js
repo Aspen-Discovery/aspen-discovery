@@ -98,6 +98,7 @@ AspenDiscovery.Axis360 = (function () {
 					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
 				}
 			});
+			return true;
 		},
 
 		getCheckOutPrompts: function (id) {
@@ -174,6 +175,9 @@ AspenDiscovery.Axis360 = (function () {
 
 		processHoldPrompts: function () {
 			var axis360HoldPromptsForm = $("#holdPromptsForm");
+			if (!axis360HoldPromptsForm.valid()){
+				return false;
+			}
 			var id = $("#id").val();
 			var patronId = $("#patronId option:selected").val();
 			if(!patronId) {

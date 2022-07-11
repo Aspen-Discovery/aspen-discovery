@@ -1303,6 +1303,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
 			'format' => $this->getFormats(),
+			'language' => $this->getLanguage()
 		);
 	}
 

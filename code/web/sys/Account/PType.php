@@ -29,6 +29,14 @@ class PType extends DataObject
 		while ($role->fetch()){
 			$roles[$role->roleId] = $role->name;
 		}
+		$twoFactorAuthSettings = [];
+		$twoFactorAuthSettings[-1] = 'None';
+		$twoFactorAuthSetting = new TwoFactorAuthSetting();
+		$twoFactorAuthSetting->orderBy('name');
+		$twoFactorAuthSetting->find();
+		while ($twoFactorAuthSetting->fetch()){
+			$twoFactorAuthSettings[$twoFactorAuthSetting->id] = $twoFactorAuthSetting->name;
+		}
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the p-type within the database', 'hideInLists' => false),
 			'pType' => array('property' => 'pType', 'type' => 'text', 'label' => 'P-Type', 'description' => 'The P-Type for the patron'),
@@ -37,7 +45,7 @@ class PType extends DataObject
 			'assignedRoleId' => array('property' => 'assignedRoleId', 'type' => 'enum', 'values' => $roles, 'label' => 'Assigned Role', 'description' => 'Automatically assign a role to a user based on patron type', 'default' => '-1'),
 			'isStaff' => array('property' => 'isStaff', 'type' => 'checkbox', 'label' => 'Treat as staff', 'description' => 'Treat the user as staff, but without specific permissions in Aspen','default' => 0),
 			'restrictMasquerade' => array('property' => 'restrictMasquerade', 'type' => 'checkbox', 'label' => 'Restrict masquerade from accessing patrons of this type', 'description' => 'Users without the ability to masquerade as restricted patrons will not be able to masquerade as this type','default' => 0),
-			'twoFactorAuthSettingId' => array('property' => 'twoFactorAuthSettingId', 'type' => 'text', 'label' => 'Two-factor authentication setting', 'description' => 'The unique id of the two-factor authentication setting tied to this patron type','readonly'=>true)
+			'twoFactorAuthSettingId' => array('property' => 'twoFactorAuthSettingId', 'type' => 'enum', 'values'=>$twoFactorAuthSettings, 'label' => 'Two-factor authentication setting', 'description' => 'The unique id of the two-factor authentication setting tied to this patron type','default' => -1)
 		);
 		if (!UserAccount::userHasPermission('Administer Permissions')){
 			unset($structure['assignedRoleId']);

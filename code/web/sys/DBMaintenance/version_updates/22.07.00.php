@@ -60,23 +60,13 @@ function getUpdates22_07_00() : array
 					timestamp INT(11),
 					UNIQUE (aspenSiteId, timestamp)
 				) ENGINE INNODB',
-				'CREATE TABLE IF NOT EXISTS aspen_site_stats (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					aspenSiteId INT(11) NOT NULL,
-					year INT(4) NOT NULL,
-					month INT(2) NOT NULL,
-					day INT(2) NOT NULL,
-					minDataDiskSpace FLOAT NOT NULL,
-					minUsrDiskSpace FLOAT NOT NULL,
-					minAvailableMemory FLOAT NOT NULL,
-					maxAvailableMemory FLOAT NOT NULL,
-					minLoadPerCPU FLOAT NOT NULL,
-					maxLoadPerCPU FLOAT NOT NULL,
-					maxWaitTime FLOAT NOT NULL,
-					UNIQUE (aspenSiteId, year, month, day)
-				) ENGINE INNODB',
 			]
 		],//greenhouse cpu and monitoring
+		'update_aspen_site_stats' => [
+			'title' => 'Update aspen_sites_stats table',
+			'description' => 'Fix site id column',
+			'ALTER TABLE aspen_site_stats CHANGE COLUMN siteId aspenSiteId INT(11) NOT NULL'
+		], //update_aspen_site_stats
         'remove_detailed_hold_notice_configuration' => array(
             'title' => 'Remove Detailed Hold Notice Configuration',
             'description' => 'Remove Detailed Hold Notice Configuration',
@@ -113,5 +103,12 @@ function getUpdates22_07_00() : array
                 "ALTER TABLE indexing_profiles ADD COLUMN customMarcFieldsToIndexAsKeyword VARCHAR(255) DEFAULT ''"
             ]
         ], //custom_marc_fields_to_index_as_keyword
+		'fix_incorrect_available_memory' => [
+			'title' => 'Fix incorrect available memory',
+			'description' => 'Fix cases where aspen site memory usage has available memory greater than total',
+			'sql'=> [
+				'update aspen_site_memory_usage set availableMemory = (totalMemory - (totalMemory * percentMemoryUsage / 100)) where availableMemory > totalMemory'
+			]
+		]
 	];
 }
