@@ -3,7 +3,7 @@
 		<h1>{translate text="Aspen Site Stats Dashboard" isAdminFacing=true}</h1>
         {include file="Greenhouse/selectSiteForm.tpl"}
 
-		<h2>{translate text="General Usage" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=generalUsage&instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+		<h2>{translate text="General Usage" isAdminFacing=true}</h2>
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
