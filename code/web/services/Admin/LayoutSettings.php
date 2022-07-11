@@ -48,7 +48,9 @@ class Admin_LayoutSettings extends ObjectEditor
 	function getIdKeyColumn() : string{
 		return 'id';
 	}
-
+    function getInstructions() : string{
+        return 'https://help.aspendiscovery.org/help/admin/theme';
+    }
 	function getInitializationJs() : string
 	{
 		return 'return AspenDiscovery.Admin.updateLayoutSettingsFields();';

@@ -69,7 +69,7 @@ class WebBuilder_StaffMembers extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/staff';
 	}
 
 	function getBreadcrumbs() : array

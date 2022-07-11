@@ -65,5 +65,5 @@
 	{/if}
 {/if}
 {if ($statusInformation->getNumHolds() > 0 || $statusInformation->getOnOrderCopies() > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
-	<div>{$statusInformation->getNumberOfCopiesMessage()}</div>
+	<div class="related-manifestation-copies-message {if $statusInformation->getNumberOfCopiesMessage()|strstr:'wait list'} has-waitlist{/if}">{$statusInformation->getNumberOfCopiesMessage()}</div>
 {/if}

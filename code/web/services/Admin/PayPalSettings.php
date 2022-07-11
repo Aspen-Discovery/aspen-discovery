@@ -42,7 +42,9 @@ class Admin_PayPalSettings extends ObjectEditor {
 	function getIdKeyColumn() : string{
 		return 'id';
 	}
-
+    function getInstructions() : string{
+        return 'https://help.aspendiscovery.org/help/admin/ecommerce';
+    }
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];

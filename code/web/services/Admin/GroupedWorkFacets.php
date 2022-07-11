@@ -48,8 +48,7 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		//return 'For more information on themes see TBD';
-		return '/Admin/HelpManual?page=Grouped-Work-Facets';
+		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
 	}
 
 	function getBreadcrumbs() : array

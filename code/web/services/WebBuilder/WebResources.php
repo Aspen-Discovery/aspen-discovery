@@ -21,7 +21,7 @@ class WebBuilder_WebResources extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'Library Resources';
+		return 'Web Resources';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array

@@ -2,6 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
+require_once ROOT_DIR . '/sys/Theming/Theme.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 
 class Admin_CollectionSpotlightLists extends ObjectEditor
@@ -44,7 +45,7 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		return '';
+		return 'https://help.aspendiscovery.org/help/promote/spotlights';
 	}
 
 	function getInitializationJs() : string {
