@@ -860,13 +860,12 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	Pattern closedCaptioningPattern = Pattern.compile("video recordings for the hearing impaired|video recordings for the visually impaired", Pattern.CASE_INSENSITIVE);
 	void loadClosedCaptioning(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords){
 		//Based on the 655 fields determine if the record is closed captioned
-		Set<String> subjectFields = MarcUtil.getFieldList(record, "655a");
+		Set<String> subjectFields = MarcUtil.getFieldList(record, "655a:650a");
 		boolean isClosedCaptioned = false;
 		for (String subjectField : subjectFields){
-			if (closedCaptioningPattern.matcher(subjectField).lookingAt()){
+			if (subjectField.toLowerCase(Locale.ROOT).startsWith("video recordings for the hearing impaired")){
 				isClosedCaptioned = true;
 				break;
 			}
