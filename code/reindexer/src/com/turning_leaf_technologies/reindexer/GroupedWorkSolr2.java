@@ -371,7 +371,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							}
 						} else { //physical materials
 							if (scopingInfo.isLocallyOwned()) {
-								addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								addAvailabilityToggle(scopingInfo.isLocallyOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
 								if (curItem.isAvailable()) {
 									availableAtForItem.add(curScope.getFacetLabel());
 								}
@@ -387,8 +387,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								}
 							}
 							if (scopingInfo.isLibraryOwned()) {
-								if (curScope.isLocationScope() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-									addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
+								if (curScope.isLocationScope() && !curScope.isLibraryScope() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+									addAvailabilityToggle(scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForItem);
 								}
 								if (curItem.isAvailable()) {
 									addAllOwningLocationsToAvailableAt = true;
