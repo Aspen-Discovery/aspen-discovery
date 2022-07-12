@@ -1806,7 +1806,7 @@ class Library extends DataObject
 			global $logger;
 			global $configArray;
 			global $serverName;
-			$dataPath = '/data/aspen-discovery/' . $serverName . '/sso_metadata/';
+			$dataPath = '/data/aspen-discovery/sso_metadata/';
 			$fileName = md5($serverName) . '.xml';
 			$filePath = $dataPath . $fileName;
 			$url = trim($this->ssoXmlUrl);
@@ -1844,21 +1844,9 @@ class Library extends DataObject
 				// Update the ssoMetadataFilename in the DB
 				$this->ssoMetadataFilename = $fileName;
 			} else {
-				// The URL has been removed, so let's remove the
-				// metadata file
-				$deleted = false;
-				if (file_exists($filePath)) {
-					$deleted = unlink($filePath);
-				}
-				// If we failed to delete the file, it's not the end of the world
-				// but it might be indicative of a larger problem
-				if (!$deleted) {
-					$logger->log(
-						'Tried and failed to delete ' . $filePath . ' for site ' .
-						$configArray['Site']['title'],
-						Logger::LOG_ERROR
-					);
-				}
+				// The URL has been removed
+				// We don't remove the metadata file because
+				// another site may use it
 				// Update the ssoMetadataFilename in the DB
 				$this->ssoMetadataFilename = '';
 			}
