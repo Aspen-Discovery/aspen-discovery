@@ -101,7 +101,7 @@
 		{rdelim}
 
 		{if $showDplaLink}
-		AspenDiscovery.DPLA.getDPLAResults('{$lookfor}');
+		AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escape:css}");
 		{/if}
 
 		{if !$onInternalIP}

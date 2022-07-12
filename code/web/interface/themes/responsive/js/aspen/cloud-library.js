@@ -126,7 +126,7 @@ AspenDiscovery.CloudLibrary = (function () {
 
 		getHoldPrompts: function (id) {
 			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getHoldPrompts";
-			var result = true;
+			var result = false;
 			$.ajax({
 				url: url,
 				cache: false,
