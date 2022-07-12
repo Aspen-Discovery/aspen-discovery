@@ -80,7 +80,7 @@
 <script type="text/javascript">
 	$(function(){ldelim}
 		{if $showDplaLink}
-		AspenDiscovery.DPLA.getDPLAResults('{$lookfor}');
+		AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escape:css}");
 		{/if}
 		{rdelim});
 </script>
