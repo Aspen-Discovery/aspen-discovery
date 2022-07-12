@@ -96,7 +96,7 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		return '/Admin/HelpManual?page=Library-Systems';
+		return 'https://help.aspendiscovery.org/help/admin/systemslocations';
 	}
 
 	function getInitializationJs() : string {

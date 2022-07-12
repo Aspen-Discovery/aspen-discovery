@@ -45,9 +45,9 @@
 					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio" style="display: flex;align-items: center;justify-content: center;">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 							{if $thisFacet.isApplied}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary btn-wrap" name="availabilityControls">{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0}{if $facetCountsToShow == 0 || ($facetCountsToShow == 1 && !$thisFacet.countIsApproximate)} ({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format:0:".":","}){/if}{/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary btn-wrap" name="availabilityControls">{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)} ({$thisFacet.count|number_format:0:".":","}){/if}{/if}</button>
 							{else}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default btn-wrap" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)} ({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format:0:".":","}){/if}{/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default btn-wrap" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)} ({$thisFacet.count|number_format:0:".":","}){/if}{/if}</button>
 							{/if}
 						{/foreach}
 					</div>

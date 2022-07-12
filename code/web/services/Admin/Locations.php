@@ -70,7 +70,7 @@ class Admin_Locations extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		return '/Admin/HelpManual?page=Library-Systems-Locations';
+		return 'https://help.aspendiscovery.org/help/admin/systemslocations';
 	}
 
 	function getBreadcrumbs() : array

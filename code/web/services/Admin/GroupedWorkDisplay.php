@@ -58,7 +58,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=Grouped-Work-Display-Settings';
+		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
 	}
 
 	/** @noinspection PhpUnused */

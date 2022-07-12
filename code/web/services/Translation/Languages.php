@@ -23,7 +23,7 @@ class Translation_Languages extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'User Languages';
+		return 'Interface Languages';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
@@ -67,7 +67,7 @@ class Translation_Languages extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/admin/translate';
 	}
 
 	function getBreadcrumbs() : array

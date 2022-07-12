@@ -65,7 +65,9 @@ function getUpdates22_07_00() : array
 		'update_aspen_site_stats' => [
 			'title' => 'Update aspen_sites_stats table',
 			'description' => 'Fix site id column',
-			'ALTER TABLE aspen_site_stats CHANGE COLUMN siteId aspenSiteId INT(11) NOT NULL'
+			'sql' => [
+				'ALTER TABLE aspen_site_stats CHANGE COLUMN siteId aspenSiteId INT(11) NOT NULL'
+			],
 		], //update_aspen_site_stats
         'remove_detailed_hold_notice_configuration' => array(
             'title' => 'Remove Detailed Hold Notice Configuration',

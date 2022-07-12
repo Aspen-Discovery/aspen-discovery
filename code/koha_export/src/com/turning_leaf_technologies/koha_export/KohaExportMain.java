@@ -150,6 +150,8 @@ public class KohaExportMain {
 				//Update works that have changed since the last index
 				numChanges = updateRecords(dbConn, kohaConn, singleWorkId);
 
+				kohaConn.close();
+
 				logEntry.setFinished();
 
 				Date currentTime = new Date();

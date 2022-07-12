@@ -42,7 +42,7 @@ class Admin_IPAddresses extends ObjectEditor
 	}
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=Location-IP-Addresses';
+		return 'https://help.aspendiscovery.org/ipaddresses';
 	}
 	function getBreadcrumbs() : array
 	{
