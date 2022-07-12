@@ -8588,11 +8588,12 @@ AspenDiscovery.Axis360 = (function () {
 						} else {
 							// noinspection JSUnresolvedVariable
 							if (data.noCopies === true) {
-								AspenDiscovery.closeLightbox();
-								var ret = confirm(data.message);
-								if (ret === true) {
-									AspenDiscovery.Axis360.doHold(patronId, id);
-								}
+								AspenDiscovery.closeLightbox(function (){
+									var ret = confirm(data.message);
+									if (ret === true) {
+										AspenDiscovery.Axis360.doHold(patronId, id);
+									}
+								});
 							} else {
 								AspenDiscovery.showMessage(data.title, data.message, false);
 							}
@@ -8620,13 +8621,15 @@ AspenDiscovery.Axis360 = (function () {
 				url: url,
 				cache: false,
 				success: function (data) {
-					// noinspection JSUnresolvedVariable
-					if (data.availableForCheckout) {
-						AspenDiscovery.Axis360.doCheckOut(patronId, id);
-					} else {
-						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
-						AspenDiscovery.Account.loadMenuData();
-					}
+					AspenDiscovery.closeLightbox(function (){
+						// noinspection JSUnresolvedVariable
+						if (data.availableForCheckout) {
+							AspenDiscovery.Axis360.doCheckOut(patronId, id);
+						} else {
+							AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+							AspenDiscovery.Account.loadMenuData();
+						}
+					});
 				},
 				dataType: 'json',
 				async: false,
@@ -8639,7 +8642,7 @@ AspenDiscovery.Axis360 = (function () {
 
 		getCheckOutPrompts: function (id) {
 			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getCheckOutPrompts";
-			var result = true;
+			var result = false;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -8663,7 +8666,7 @@ AspenDiscovery.Axis360 = (function () {
 
 		getHoldPrompts: function (id) {
 			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getHoldPrompts";
-			var result = true;
+			var result = false;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -9420,7 +9423,7 @@ AspenDiscovery.CloudLibrary = (function () {
 
 		getHoldPrompts: function (id) {
 			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getHoldPrompts";
-			var result = true;
+			var result = false;
 			$.ajax({
 				url: url,
 				cache: false,
