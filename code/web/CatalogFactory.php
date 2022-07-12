@@ -50,9 +50,13 @@ class CatalogFactory {
 	}
 
 	public static function closeCatalogConnections(){
-		foreach (CatalogFactory::$catalogConnections as $driver){
-			$driver->__destruct();
-			$driver = null;
+		if (CatalogFactory::$catalogConnections != null) {
+			foreach (CatalogFactory::$catalogConnections as $driver) {
+				if ($driver != null) {
+					$driver->__destruct();
+					$driver = null;
+				}
+			}
 		}
 		CatalogFactory::$catalogConnections = null;
 	}
