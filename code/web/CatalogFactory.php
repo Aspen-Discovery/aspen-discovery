@@ -48,4 +48,12 @@ class CatalogFactory {
 			return CatalogFactory::$catalogConnections[$driver];
 		}
 	}
+
+	public static function closeCatalogConnections(){
+		foreach (CatalogFactory::$catalogConnections as $driver){
+			$driver->__destruct();
+			$driver = null;
+		}
+		CatalogFactory::$catalogConnections = null;
+	}
 }

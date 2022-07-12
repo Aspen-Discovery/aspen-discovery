@@ -807,6 +807,11 @@ try{
 	$logger->log("Exception updating aspen usage/slow pages/usage by IP: " . $e, Logger::LOG_DEBUG);
 }
 
+if (class_exists('CatalogFactory')){
+	CatalogFactory::closeCatalogConnections();
+}
+
+
 // Check for the various stages of functionality
 function checkAvailabilityMode() {
 	global $configArray;
