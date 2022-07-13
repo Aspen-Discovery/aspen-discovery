@@ -141,7 +141,7 @@ export default class GroupedWork extends Component {
 		await getLinkedAccounts(libraryUrl).then(response => {
 			this.setState({
 				linkedAccounts: response,
-				numLinkedAccounts:  Object.keys(response).length,
+				//numLinkedAccounts:  Object.keys(response).length,
 			})
 		});
 	}
@@ -300,11 +300,13 @@ export default class GroupedWork extends Component {
 			ratingAverage = this.state.ratingData.average;
 		}
 
-		let discoveryVersion = "22.04.00";
+		let discoveryVersion;
 		if(library.discoveryVersion) {
 			let version = library.discoveryVersion;
 			version = version.split(" ");
 			discoveryVersion = version[0];
+		} else {
+			discoveryVersion = "22.06.00";
 		}
 
 		//console.log(this.state.data);

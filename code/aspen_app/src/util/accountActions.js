@@ -301,11 +301,14 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, libraryUr
 export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId, selectedReactivationDate = null) {
 	const postBody = await postData();
 
+	const today = moment().format('YYYY-MM-DD');
 	let reactivationDate = null;
 	if(selectedReactivationDate) {
 		reactivationDate = moment(selectedReactivationDate).format('YYYY-MM-DD');
 		if(reactivationDate === "Invalid date") {
 			reactivationDate = null;
+		} else if (reactivationDate === today) {
+			reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
 		}
 	} else {
 		reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
@@ -348,11 +351,14 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl, patronI
 export async function freezeHolds(data, libraryUrl, selectedReactivationDate = null) {
 	const postBody = await postData();
 
+	const today = moment().format('YYYY-MM-DD');
 	let reactivationDate = null;
 	if(selectedReactivationDate) {
 		reactivationDate = moment(selectedReactivationDate).format('YYYY-MM-DD');
 		if(reactivationDate === "Invalid date") {
 			reactivationDate = null;
+		} else if (reactivationDate === today) {
+			reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');
 		}
 	} else {
 		reactivationDate = moment().add(30, 'days').format('YYYY-MM-DD');

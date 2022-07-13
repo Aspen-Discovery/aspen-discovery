@@ -64,17 +64,20 @@ export default class CheckedOut extends Component {
 	}
 
 	componentDidMount = async () => {
-		let discoveryVersion = "22.04.00";
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
-			discoveryVersion = version[0];
+			this.setState({
+				discoveryVersion: version[0],
+			});
+		} else {
+			this.setState({
+				discoveryVersion: "22.06.00",
+			});
 		}
-
 
 		this.setState({
 			isLoading: false,
-			discoveryVersion: discoveryVersion,
 		});
 
 		await this._fetchCheckouts();

@@ -124,6 +124,8 @@ export default class Results extends Component {
 					<VStack>
 						<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "90px", lg: "120px"}} />
 						<Badge mt={1} _text={{fontSize: 10}}>{item.language}</Badge>
+						<AddToList item={item.key} libraryUrl={library.baseUrl} lastListUsed={user.lastListUsed}/>
+
 					</VStack>
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "md", lg: "lg"}}>{item.title}</Text>
@@ -134,7 +136,6 @@ export default class Results extends Component {
 							})}
 						</Stack>
 					</VStack>
-					<AddToList item={item.key} libraryUrl={library.baseUrl} lastListUsed={user.lastListUsed}/>
 				</HStack>
 			</Pressable>
 		)

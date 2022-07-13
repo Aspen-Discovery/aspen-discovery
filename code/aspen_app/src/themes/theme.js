@@ -27,14 +27,26 @@ async function getThemeInfo() {
 	});
 	if (response.ok) {
 		const result = response.data.result.theme;
-		const COLOR_SCHEMES = [
-			result.primaryBackgroundColor,
-			result.secondaryBackgroundColor,
-			result.tertiaryBackgroundColor
-		];
-		const palettes = COLOR_SCHEMES.map(generateSwatches);
-		console.log("Theme downloaded and swatches generated from <" + Constants.manifest.extra.apiUrl + "> from theme used for library #" + Constants.manifest.extra.mainLibrary + ".");
-		return palettes;
+		if(typeof result !== "undefined") {
+			const COLOR_SCHEMES = [
+				result.primaryBackgroundColor,
+				result.secondaryBackgroundColor,
+				result.tertiaryBackgroundColor
+			];
+			const palettes = COLOR_SCHEMES.map(generateSwatches);
+			console.log("Theme downloaded and swatches generated from <" + Constants.manifest.extra.apiUrl + "> from theme used for library #" + Constants.manifest.extra.mainLibrary + ".");
+			return palettes;
+		} else {
+			const COLOR_SCHEMES = [
+				'#3dbdd6',
+				'#9acf87',
+				'#c1adcc'
+			];
+			const palettes = COLOR_SCHEMES.map(generateSwatches);
+			console.log("Backup theme loaded.");
+			console.log(response);
+			return palettes;
+		}
 	} else {
 		const COLOR_SCHEMES = [
 			'#3dbdd6',
