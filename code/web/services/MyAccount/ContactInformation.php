@@ -59,7 +59,6 @@ class MyAccount_ContactInformation extends MyAccount
 			$interface->assign('canUpdatePhoneNumber', $canUpdatePhoneNumber);
 			$interface->assign('showWorkPhoneInProfile', $showWorkPhoneInProfile);
 			$interface->assign('showNoticeTypeInProfile', $showNoticeTypeInProfile);
-			$interface->assign('treatPrintNoticesAsPhoneNotices', $treatPrintNoticesAsPhoneNotices);
 			$interface->assign('allowPinReset', $allowPinReset);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
 			$interface->assign('allowAccountLinking', $allowAccountLinking);
