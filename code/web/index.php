@@ -34,7 +34,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 22);
+$interface->assign('cssJsCacheCounter', 23);
 
 // Setup Translator
 global $language;
@@ -806,6 +806,11 @@ try{
 	global $logger;
 	$logger->log("Exception updating aspen usage/slow pages/usage by IP: " . $e, Logger::LOG_DEBUG);
 }
+
+if (class_exists('CatalogFactory')){
+	CatalogFactory::closeCatalogConnections();
+}
+
 
 // Check for the various stages of functionality
 function checkAvailabilityMode() {

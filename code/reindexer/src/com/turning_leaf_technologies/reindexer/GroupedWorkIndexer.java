@@ -1783,6 +1783,9 @@ public class GroupedWorkIndexer {
 		if (callNumber == null){
 			return -1;
 		}
+		if (callNumber.length() > 255){
+			callNumber = callNumber.substring(0, 255);
+		}
 		Long id = callNumberIds.get(callNumber);
 		if (id == null){
 			try {
