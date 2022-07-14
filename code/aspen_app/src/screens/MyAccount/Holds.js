@@ -1,6 +1,5 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ScrollView} from "react-native";
 import {
 	Actionsheet,
 	Avatar,
@@ -21,7 +20,8 @@ import {
 	Select,
 	CheckIcon,
 	Checkbox,
-	Image
+	Image,
+	ScrollView
 } from "native-base";
 import {Ionicons, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -30,7 +30,7 @@ import _ from "lodash";
 // custom components and helper files
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {getHolds, getProfile} from '../../util/loadPatron';
+import {getHolds, getProfile, reloadHolds} from '../../util/loadPatron';
 import {
 	cancelHold, cancelHolds,
 	changeHoldPickUpLocation,
@@ -120,14 +120,23 @@ export default class Holds extends Component {
 	}
 
 	_fetchHolds = async () => {
+		this.setState({
+			isLoading: true,
+		})
+
 		const { route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getHolds(libraryUrl).then(r => {
-			//console.log(r);
-			this.loadHolds()
+		await reloadHolds(libraryUrl).then(r => {
+			this.setState({
+				holds: r['holds'],
+				holdsNotReady: r['holdsNotReady'],
+				holdsReady: r['holdsReady'],
+				isLoading: false,
+			})
 		});
 	}
+
 
 	loadPickupLocations = async () => {
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
@@ -150,16 +159,20 @@ export default class Holds extends Component {
 	}
 
 	componentDidMount = async () => {
-		let discoveryVersion = "22.04.00";
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
-			discoveryVersion = version[0];
+			this.setState({
+				discoveryVersion: version[0],
+			});
+		} else {
+			this.setState({
+				discoveryVersion: "22.06.00",
+			});
 		}
 
 		this.setState({
 			isLoading: true,
-			discoveryVersion: discoveryVersion,
 		})
 
 		await this._fetchHolds();
@@ -193,6 +206,7 @@ export default class Holds extends Component {
 	clearGroupValue = () => {
 		this.setState({
 			groupValues: [],
+			groupValue: [],
 		})
 	}
 
@@ -549,12 +563,15 @@ function HoldItem(props) {
 }
 
 const SelectThawDate = (props) => {
-	const {handleOnDateChange, onClose, freezeId, recordId, source, libraryUrl, userId, _fetchHolds, data, count, updateProfile} = props;
-	const minDate = new Date(); // Today
+	const {handleOnDateChange, onClose, freezeId, recordId, source, libraryUrl, userId, _fetchHolds, data, count, updateProfile, clearGroupValue} = props;
+	//const minDate = new Date(); // Today
 	//const maxDate = new Date(2017, 6, 3);
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 
+	const todaysDate = new Date();
+	const minDate = todaysDate.setDate(todaysDate.getDate() + 7);
+	//console.log(defaultDate);
 	const [date, setDate] = useState(new Date());
 	const [mode, setMode] = useState('date');
 	const [show, setShow] = useState(false);
@@ -599,7 +616,6 @@ const SelectThawDate = (props) => {
 						/>
 
 					</Box>
-					<DisplayMessage type="info" message="If a date is not selected, the hold will be frozen for 30 days." />
 				</Modal.Body>
 				<Modal.Footer>
 					<Button.Group space={2} size="md">
@@ -612,6 +628,7 @@ const SelectThawDate = (props) => {
 								onPress={() => {
 									setLoading(true);
 									freezeHolds(data, libraryUrl, date).then(r => {
+											clearGroupValue();
 											setShowModal(false);
 											updateProfile();
 											_fetchHolds();
@@ -630,6 +647,7 @@ const SelectThawDate = (props) => {
 								onPress={() => {
 									setLoading(true);
 									freezeHold(freezeId, recordId, source, libraryUrl, userId, date).then(r => {
+											clearGroupValue();
 											setShowModal(false);
 											updateProfile();
 											_fetchHolds();
@@ -790,16 +808,24 @@ const ManageSelectedHolds = (props) => {
 					{numToCancel > 0 ? <Actionsheet.Item isLoading={cancelling} isLoadingText="Cancelling..." onPress={() => {
 						startCancelling(true);
 						cancelHolds(titlesToCancel, libraryUrl).then(r => {
+							clearGroupValue();
+							numToThaw = [];
+							numToCancel = [];
+							numToFreeze = [];
 							updateProfile();
 							_fetchHolds();
 							onClose(onClose);
 							startCancelling(false);
 						})
 					}}><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item>}
-					{numToFreeze > 0 ? <SelectThawDate count={numToFreeze} data={titlesToFreeze} handleOnDateChange={onAllDateChange} libraryUrl={libraryUrl} reactivationDate={selectedReactivationDate} _fetchHolds={_fetchHolds} onClose={onClose} updateProfile={updateProfile} /> : <Actionsheet.Item isDisabled><Text>Freeze holds ({numToFreeze})</Text></Actionsheet.Item>}
+					{numToFreeze > 0 ? <SelectThawDate count={numToFreeze} data={titlesToFreeze} handleOnDateChange={onAllDateChange} libraryUrl={libraryUrl} reactivationDate={selectedReactivationDate} _fetchHolds={_fetchHolds} onClose={onClose} updateProfile={updateProfile} clearGroupValue={clearGroupValue} /> : <Actionsheet.Item isDisabled><Text>Freeze holds ({numToFreeze})</Text></Actionsheet.Item>}
 					{numToThaw > 0 ? <Actionsheet.Item isLoading={thawing} isLoadingText="Thawing..." onPress={() => {
 						startThawing(true);
 						thawHolds(titlesToThaw, libraryUrl).then(r => {
+							clearGroupValue();
+							numToThaw = [];
+							numToCancel = [];
+							numToFreeze = [];
 							updateProfile();
 							_fetchHolds();
 							onClose(onClose);

@@ -102,6 +102,7 @@ export default function TabNavigator() {
 				component={Login}
 				options={{
 					tabBarButton: () => null,
+					lazy: true
 				}}
 			/>
 			<Tab.Screen

@@ -57,16 +57,15 @@ export default class LibraryCard extends Component {
 
 		let barcodeStyle = _.toString(library.barcodeStyle);
 
-		console.log(library);
-
 		let doesNotExpire = false;
-		if(user.expired && user.expired === 0) {
+		if(user.expired === 0) {
 			const now = moment().format("MMM D, YYYY");
 			const isExpired = moment(user.expires).isBefore(now);
 			if(isExpired) {
 				doesNotExpire = true;
 			}
 		}
+
 
 		let icon;
 		if(library.logoApp) {

@@ -172,20 +172,71 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 		}
 		let response = '';
 		response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
-		console.log(response);
+		//console.log(response);
 		if (response.status === 403) {
 			await removeData().then(res => {
 				console.log("Session ended.")
 			});
 		}
 		if (response.ok) {
+			//console.log(response.data);
 			const items = response.data.result;
 			let allCategories = [];
 			if(typeof items !== "undefined") {
 				items.map(function (category, index, array) {
 					const subCategories = category['subCategories'];
+					const listOfLists = category['lists'];
+					const items = category['records'];
+					const lists = [];
 
-					if(discoveryVersion >= "22.05.00") {
+					if(discoveryVersion >= "22.07.00") {
+						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
+							subCategories.forEach(item => allCategories.push({
+								'key': item.key,
+								'title': item.title,
+								'source': item.source,
+								'records': item.records,
+							}))
+						} else {
+							if (typeof subCategories !== "undefined" || typeof listOfLists !== "undefined" || typeof items !== "undefined") {
+								if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
+									subCategories.forEach(item => allCategories.push({
+										'key': item.key,
+										'title': item.title,
+										'source': item.source,
+										'records': item.records,
+									}))
+								} else {
+									if(typeof listOfLists !== "undefined" && listOfLists.length !== 0) {
+										let array = _.values(listOfLists);
+										//console.log(category);
+										//console.log(array);
+										listOfLists.forEach(item => lists.push({
+											'id': item.sourceId,
+											'source': 'List',
+											'title_display': item.title,
+										}))
+									}
+
+									let id = category.key;
+									if(lists.length !== 0) {
+										if(typeof category.listId !== "undefined") {
+											id = category.listId;
+										}
+										allCategories.push({'key': id, 'title': category.title, 'source': category.source, 'records': lists});
+									} else {
+										if(typeof category.listId !== "undefined") {
+											id = category.listId;
+										}
+										allCategories.push({'key': id, 'title': category.title, 'source': category.source, 'records': category.records});
+									}
+								}
+
+							}
+						}
+
+
+					} else if(discoveryVersion >= "22.05.00" || discoveryVersion <= "22.06.10") {
 						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
 							subCategories.forEach(item => allCategories.push({
 								'key': item.key,
@@ -193,7 +244,7 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 								'records': item.records,
 							}))
 						} else {
-							allCategories.push({'key': category.key, 'title': category.title});
+							//allCategories.push({'key': category.key, 'title': category.title});
 
 							if (typeof subCategories != "undefined") {
 								if (subCategories.length !== 0) {

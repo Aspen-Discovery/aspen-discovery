@@ -1,4 +1,5 @@
 import React, {Component, useRef} from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Platform} from "react-native";
 import {
 	Avatar,
@@ -49,6 +50,7 @@ export default class Login extends Component {
 			listen: null,
 			error: false,
 			isBeta: false,
+			fullData: [],
 			locationNum: -1
 		};
 
@@ -69,17 +71,27 @@ export default class Login extends Component {
 		// store the values into the state
 		this.setState({
 			isLoading: false,
-			isFetching: true,
 		});
 
-		// fetch global variables set in App.js
-		await setGlobalVariables();
+		let userToken;
+		try {
+			userToken = await AsyncStorage.getItem('@userToken');
+		} catch (e) {
+			console.log(e);
+		}
 
-		await this.makeGreenhouseRequest();
+		if(!userToken) {
+			await setGlobalVariables();
 
-		if(Constants.manifest.slug === "aspen-lida") {
-			// fetch greenhouse data to populate libraries for community app
-			await this.makeFullGreenhouseRequest();
+			if(this.state.libraryData.length === 0) {
+				await this.makeGreenhouseRequest();
+			}
+
+			if(Constants.manifest.slug === "aspen-lida") {
+				// fetch greenhouse data to populate libraries for community app
+				await this.makeFullGreenhouseRequest();
+			}
+
 		}
 
 	};
@@ -93,61 +105,70 @@ export default class Login extends Component {
 
 	// fetch the list of libraries based on distance and initial population of showLibraries modal
 	makeGreenhouseRequest = async () => {
-		// set state to fetching to display spinner
-		this.setState({isFetching: true});
-		let method;
-		let baseApiUrl;
-		if(Constants.manifest.slug === "aspen-lida") { method = "getLibraries"; } else { method = "getLibrary"; }
-		if(Constants.manifest.slug === "aspen-lida") { baseApiUrl = Constants.manifest.extra.greenhouse; } else { baseApiUrl = Constants.manifest.extra.apiUrl; }
+				// set state to fetching to display spinner
+				this.setState({isFetching: true});
+				let method;
+				let baseApiUrl;
+				if (Constants.manifest.slug === "aspen-lida") {
+					method = "getLibraries";
+				} else {
+					method = "getLibrary";
+				}
+				if (Constants.manifest.slug === "aspen-lida") {
+					baseApiUrl = Constants.manifest.extra.greenhouse;
+				} else {
+					baseApiUrl = Constants.manifest.extra.apiUrl;
+				}
 
-		let latitude = 0;
-		let longitude = 0;
-		try {
-			latitude = await SecureStore.getItemAsync("latitude");
-			longitude = await SecureStore.getItemAsync("longitude");
-		} catch(e) {
-			console.log(e);
-		}
-		const api = create({
-			baseURL: baseApiUrl + '/API',
-			timeout: 100000,
-			headers: getHeaders(),
-		});
-		const response = await api.get('/GreenhouseAPI?method=' + method, {
-			latitude: latitude,
-			longitude: longitude,
-			release_channel: Updates.releaseChannel
-		});
-		//console.log(response);
-		if (response.ok) {
-			let res = response.data;
-			if(Constants.manifest.slug === "aspen-lida") {
-				this.filteredLibraries = [];
-				this.setState({
-					libraryData: res.libraries,
-					isFetching: false,
-					value: "",
+				let latitude = 0;
+				let longitude = 0;
+				try {
+					latitude = await SecureStore.getItemAsync("latitude");
+					longitude = await SecureStore.getItemAsync("longitude");
+				} catch (e) {
+					console.log(e);
+				}
+				const api = create({
+					baseURL: baseApiUrl + '/API',
+					timeout: 100000,
+					headers: getHeaders(),
 				});
-
-				this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.libraryId].join());
-			} else {
-				this.filteredLibraries = [];
-				this.setState({
-					locationNum: res.count,
-					libraryData: res.library,
-					isFetching: false,
-					value: "",
+				const response = await api.get('/GreenhouseAPI?method=' + method, {
+					latitude: latitude,
+					longitude: longitude,
+					release_channel: Updates.releaseChannel
 				});
+				//console.log(response);
+				if (response.ok) {
+					let res = response.data;
+					if (Constants.manifest.slug === "aspen-lida") {
+						this.filteredLibraries = [];
+						this.setState({
+							libraryData: res.libraries,
+							isFetching: false,
+							value: "",
+						});
 
-				this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.name].join());
-			}
-		} else {
-			this.setState({error: true});
-			console.log(response);
-			const problem = problemCodeMap(response.problem);
-			popToast(problem.title, problem.message, "warning");
-		}
-		console.log("Greenhouse request completed.");
+						this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.libraryId].join());
+					} else {
+						this.filteredLibraries = [];
+						this.setState({
+							locationNum: res.count,
+							libraryData: res.library,
+							isFetching: false,
+							value: "",
+						});
+
+						this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.name].join());
+					}
+				} else {
+					this.setState({error: true});
+					console.log(response);
+					const problem = problemCodeMap(response.problem);
+					popToast(problem.title, problem.message, "warning");
+				}
+				console.log("Greenhouse request completed.");
+
 	};
 
 	// fetch the entire list of available libraries to search from showLibraries modal search box
