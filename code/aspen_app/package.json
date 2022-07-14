@@ -44,7 +44,7 @@
         "expo-updates": "~0.13.2",
         "expo-web-browser": "~10.2.1",
         "i18n-js": "^3.8.0",
-        "moment": "^2.29.2",
+        "moment": "^2.29.4",
         "native-base": "^3.3.12",
         "next": "^12.1.0",
         "react": "17.0.2",
