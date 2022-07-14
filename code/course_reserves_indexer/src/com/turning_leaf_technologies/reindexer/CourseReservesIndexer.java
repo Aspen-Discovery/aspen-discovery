@@ -47,7 +47,7 @@ class CourseReservesIndexer {
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
 		updateServer.setRequestWriter(new BinaryRequestWriter());
-		HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
 		groupedWorkServer = groupedWorkHttpBuilder.build();
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
