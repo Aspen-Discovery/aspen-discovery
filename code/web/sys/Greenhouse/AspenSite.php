@@ -118,6 +118,20 @@ class AspenSite extends DataObject
 					$memoryUsage->availableMemory = $availableMemory;
 					$memoryUsage->insert();
 
+					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteWaitTime.php';
+					$waitTime = new AspenSiteWaitTime();
+					//delete anything more than 2 weeks old
+					$waitTime->whereAdd();
+					$waitTime->aspenSiteId = $this->id;
+					$waitTime->whereAdd('timestamp < ' . $twoWeeksAgo);
+					$waitTime->delete(true);
+					$waitTime = new AspenSiteWaitTime();
+					$waitTime->aspenSiteId = $this->id;
+					$waitTime->timestamp = $now;
+					$waitTimeVal = (float)$status['serverStats']['wait_time']['value'];
+					$waitTime->waitTime = $waitTimeVal;
+					$waitTime->insert();
+
 					//Update daily stats
 					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteStat.php';
 					$aspenSiteStat = new AspenSiteStat();
