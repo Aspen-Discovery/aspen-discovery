@@ -38,8 +38,54 @@ export async function categorySearchResults(category, limit = 25, page, libraryU
 	});
 	const response = await api.post('/SearchAPI?method=getAppBrowseCategoryResults', postBody);
 	if (response.ok) {
-		console.log(response.data);
+		return response;
 	} else {
 		console.log(response);
+		return response;
+	}
+}
+
+export async function listofListSearchResults(searchId, limit = 25, page, libraryUrl) {
+	console.log(searchId);
+	const myArray = searchId.split("_");
+	let id = myArray[myArray.length - 1];
+
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutSlow,
+		headers: getHeaders(true),
+		params: {limit: limit, id: id, page: page},
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/SearchAPI?method=getListResults', postBody);
+	if (response.ok) {
+		//console.log(response);
+		return response.data.result;
+	} else {
+		console.log(response);
+		return response;
+	}
+}
+
+export async function savedSearchResults(searchId, limit = 25, page, libraryUrl) {
+	const myArray = searchId.split("_");
+	let id = myArray[3];
+
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutSlow,
+		headers: getHeaders(true),
+		params: {limit: limit, id: id, page: page},
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/SearchAPI?method=getSavedSearchResults', postBody);
+	if (response.ok) {
+		console.log(response);
+		return response;
+	} else {
+		console.log(response);
+		return response;
 	}
 }

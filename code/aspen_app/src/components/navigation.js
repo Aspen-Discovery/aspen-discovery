@@ -28,12 +28,9 @@ const Stack = createNativeStackNavigator();
 
 export const AuthContext = React.createContext();
 
-// Construct a new instrumentation instance. This is needed to communicate between the integration and React
-const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
-
 Sentry.init({
 	dsn: Constants.manifest.extra.sentryDSN,
-	enableInExpoDevelopment: true,
+	enableInExpoDevelopment: false,
 	enableAutoSessionTracking: true,
 	debug: false,
 	tracesSampleRate: 1.0,
@@ -43,7 +40,7 @@ Sentry.init({
 });
 
 
-export default function App() {
+export function App() {
 
 	const primaryColor = useToken("colors", "primary.base");
 	const primaryColorContrast = useToken("colors", useContrastText(primaryColor));
@@ -198,7 +195,7 @@ export default function App() {
 								console.log("at Login: " + userToken);
 								//await AsyncStorage.setItem('@userToken', userToken);
 
-								//console.log(patronsLibrary);
+								console.log(patronsLibrary);
 								try {
 									await AsyncStorage.setItem('@userToken', userToken);
 									await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
@@ -348,3 +345,5 @@ async function setAppDetails() {
 		console.log("Error setting release channel variable.")
 	}
 }
+
+export default Sentry.Native.wrap(App);

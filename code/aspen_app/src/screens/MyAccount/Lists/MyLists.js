@@ -19,7 +19,6 @@ export default class MyLists extends Component {
 			libraryUrl: '',
 			lists: []
 		};
-		this._fetchLists();
 	}
 
 	_fetchLists = async () => {
@@ -89,7 +88,7 @@ export default class MyLists extends Component {
 		return (
 			<Center mt={5} mb={5}>
 				<Text bold fontSize="lg">
-					You have no lists
+					You have no lists. Why not create one?
 				</Text>
 			</Center>
 		);
