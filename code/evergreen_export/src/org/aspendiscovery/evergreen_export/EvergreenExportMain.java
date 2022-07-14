@@ -1280,11 +1280,13 @@ public class EvergreenExportMain {
 					Document getBibsDocument = createXMLDocumentForWebServiceResponse(getBibsResponse);
 					Element collectionsResult = (Element) getBibsDocument.getFirstChild();
 
-					NodeList recordNotes = collectionsResult.getElementsByTagName("record");
-					for (int i = 0; i < recordNotes.getLength(); i++){
+					NodeList recordNodes = collectionsResult.getElementsByTagName("record");
+					for (int i = 0; i < recordNodes.getLength(); i++){
+						boolean hasInvalidData = false;
+
 						Record marcRecord = marcFactory.newRecord();
 
-						Node curRecordNode = recordNotes.item(i);
+						Node curRecordNode = recordNodes.item(i);
 						for (int j = 0; j < curRecordNode.getChildNodes().getLength(); j++){
 							Node curChild = curRecordNode.getChildNodes().item(j);
 							if (curChild instanceof Element){
@@ -1292,7 +1294,12 @@ public class EvergreenExportMain {
 								switch (curElement.getTagName()) {
 									case "leader":
 										String leader = curElement.getTextContent();
-										marcRecord.setLeader(marcFactory.newLeader(leader));
+										try {
+											marcRecord.setLeader(marcFactory.newLeader(leader));
+										}catch (RuntimeException e){
+											//Just ignore this and the leader will be built from the data as best as we can.
+											hasInvalidData = true;
+										}
 										break;
 									case "controlfield": {
 										String tag = curElement.getAttribute("tag");
@@ -1304,20 +1311,24 @@ public class EvergreenExportMain {
 										String tag = curElement.getAttribute("tag");
 										String ind1 = curElement.getAttribute("ind1");
 										String ind2 = curElement.getAttribute("ind2");
-										DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
-										for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
-											Node curChild2 = curElement.getChildNodes().item(k);
-											if (curChild2 instanceof Element) {
-												Element curElement2 = (Element) curChild2;
-												if (curElement2.getTagName().equals("subfield")) {
-													String code = curElement2.getAttribute("code");
-													String data = curElement2.getTextContent();
-													Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
-													curField.addSubfield(curSubField);
+										if (StringUtils.isNumeric(tag)) {
+											DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
+											for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
+												Node curChild2 = curElement.getChildNodes().item(k);
+												if (curChild2 instanceof Element) {
+													Element curElement2 = (Element) curChild2;
+													if (curElement2.getTagName().equals("subfield")) {
+														String code = curElement2.getAttribute("code");
+														String data = curElement2.getTextContent();
+														Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
+														curField.addSubfield(curSubField);
+													}
 												}
 											}
+											marcRecord.addVariableField(curField);
+										}else{
+											hasInvalidData = true;
 										}
-										marcRecord.addVariableField(curField);
 										break;
 									}
 									case "holdings":
@@ -1406,7 +1417,9 @@ public class EvergreenExportMain {
 						//Save the MARC record
 						RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 						if (bibliographicRecordId != null) {
-
+							if (hasInvalidData){
+								logEntry.incRecordsWithInvalidMarc("Record " + bibliographicRecordId.getIdentifier() + " had an invalid data");
+							}
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
 							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
@@ -1419,6 +1432,10 @@ public class EvergreenExportMain {
 							if (groupedWorkId != null) {
 								//Reindex the record
 								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+							}
+						}else{
+							if (hasInvalidData){
+								logEntry.incRecordsWithInvalidMarc("Unparseable record had an invalid data");
 							}
 						}
 						if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
