@@ -1320,8 +1320,12 @@ public class EvergreenExportMain {
 													if (curElement2.getTagName().equals("subfield")) {
 														String code = curElement2.getAttribute("code");
 														String data = curElement2.getTextContent();
-														Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
-														curField.addSubfield(curSubField);
+														if (code.length() == 1) {
+															Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
+															curField.addSubfield(curSubField);
+														}else{
+															hasInvalidData = true;
+														}
 													}
 												}
 											}
