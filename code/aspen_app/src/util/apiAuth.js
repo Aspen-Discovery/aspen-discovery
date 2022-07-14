@@ -57,7 +57,7 @@ export function getHeaders(isPost = false) {
 	headers['User-Agent'] = 'Aspen LiDA ' + Device.modelName + ' ' + Device.osName + '/' + Device.osVersion;
 	headers['Version'] = 'v' + GLOBALS.appVersion + ' [b' + GLOBALS.appBuild + '] p' + GLOBALS.appPatch ;
 	headers['LiDA-SessionID'] = GLOBALS.appSessionId;
-	headers['Cache-Control'] = 'max-age=10800';
+	headers['Cache-Control'] = 'no-cache';
 
 	if (isPost) {
 		headers['Content-Type'] = 'application/x-www-form-urlencoded';

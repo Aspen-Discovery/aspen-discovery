@@ -28,16 +28,20 @@ export default class Settings_HomeScreen extends Component {
 
 	// store the values into the state
 	componentDidMount = async () => {
-		let discoveryVersion = "22.04.00";
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
-			discoveryVersion = version[0];
+			this.setState({
+				discoveryVersion: version[0],
+			});
+		} else {
+			this.setState({
+				discoveryVersion: "22.06.00",
+			});
 		}
 
 		this.setState({
 			isLoading: true,
-			discoveryVersion: discoveryVersion,
 		})
 
 		await this.loadBrowseCategories().then(r => {
@@ -102,8 +106,8 @@ export default class Settings_HomeScreen extends Component {
 			<Box borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
 					<Text isTruncated bold maxW="80%" fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
-					{item.isHidden ? <Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)}/> :
-						<Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)} defaultIsChecked/>}
+					{item.isHidden ? <Switch size="md" onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)}/> :
+						<Switch size="md" onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)} defaultIsChecked/>}
 				</HStack>
 			</Box>
 		);

@@ -10,6 +10,7 @@ import {userContext} from "./src/context/user";
 import {create} from 'apisauce';
 import * as SplashScreen from "expo-splash-screen";
 import _ from "lodash";
+import * as Sentry from 'sentry-expo';
 
 import { LogBox } from 'react-native';
 import {createAuthTokens, getHeaders, postData} from "./src/util/apiAuth";
@@ -70,17 +71,8 @@ export default class AppContainer extends Component {
 			if(userToken) {
 				console.log("USER TOKEN FOUND");
 				if(_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
-					console.log("Trying to run async login...");
-					await this.login(userToken);
-				}
-			} else {
-				if(!_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
-					this.setState({
-						user: [],
-						library: [],
-						location: [],
-						browseCategories: [],
-					})
+					//console.log("Trying to run async login...");
+					//await this.login(userToken);
 				}
 			}
 		}, 5000);
@@ -129,6 +121,7 @@ export default class AppContainer extends Component {
 						if (response.data.result.profile) {
 							data = response.data.result.profile;
 							this.setState({user: data});
+							await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
 							//console.log("patron loaded into context");
 						}
 					}
@@ -184,20 +177,20 @@ export default class AppContainer extends Component {
 					}
 				}
 
-
-				let discoveryVersion = "22.04.00";
+				let discoveryVersion;
 				if (this.state.library.discoveryVersion) {
 					let version = this.state.library.discoveryVersion;
 					version = version.split(" ");
 					discoveryVersion = version[0];
+				} else {
+					discoveryVersion = "22.06.00";
 				}
 
-				console.log(discoveryVersion);
 
 				if(_.isEmpty(this.state.browseCategories)) {
 
 					if (discoveryVersion >= "22.07.00") {
-						await getBrowseCategories(libraryUrl, discoveryVersion, 10).then(response => {
+						await getBrowseCategories(libraryUrl, discoveryVersion, 5).then(response => {
 							this.setState({
 								browseCategories: response,
 							})
@@ -209,7 +202,8 @@ export default class AppContainer extends Component {
 							})
 						})
 					} else {
-						await getPatronBrowseCategories(libraryUrl, this.state.user.id).then(response => {
+						const user = this.state;
+						await getPatronBrowseCategories(libraryUrl, user.id).then(response => {
 							this.setState({
 								browseCategories: response,
 							})
@@ -217,8 +211,7 @@ export default class AppContainer extends Component {
 					}
 				}
 
-
-				await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
+				//await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
 				await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
 				await AsyncStorage.setItem('@locationInfo', JSON.stringify(this.state.location));
 

@@ -12,7 +12,7 @@ import {
 	VStack,
 	Avatar,
 	Pressable,
-	IconButton,
+	Image,
 	Icon
 } from "native-base";
 import { CommonActions } from '@react-navigation/native';
@@ -22,13 +22,13 @@ import {MaterialIcons} from "@expo/vector-icons";
 import { translate } from '../../translations/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
-import {categorySearchResults, searchResults} from "../../util/search";
+import {categorySearchResults, savedSearchResults, searchResults} from "../../util/search";
 import _ from "lodash";
 import {getLists, removeTitlesFromList} from "../../util/loadPatron";
-import AddToList from "../Search/AddToList";
+import AddToList from "./AddToList";
 import {userContext} from "../../context/user";
 
-export default class SearchByCategory extends Component {
+export default class SearchBySavedSearch extends Component {
 	constructor() {
 		super();
 		this.state = {
@@ -53,7 +53,6 @@ export default class SearchByCategory extends Component {
 		const { navigation, route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? '';
 
-		await getLists(libraryUrl);
 		await this._fetchResults();
 	};
 
@@ -63,17 +62,17 @@ export default class SearchByCategory extends Component {
 		const category = route.params?.category ?? '';
 		const libraryUrl = route.params?.libraryUrl ?? '';
 
-		await categorySearchResults(category, 25, page, libraryUrl).then(response => {
+		await savedSearchResults(category, 25, page, libraryUrl).then(response => {
 			if(response.ok) {
-				let records = response.data.result.records;
+				let records = Object.values(response.data.result.items);
 
-				console.log(records.length);
+				//console.log(records.length);
 				if(records.length > 0) {
 					this.setState((prevState, nextProps) => ({
 						data:
 							page === 1
-								? Array.from(response.data.result.records)
-								: [...this.state.data, ...response.data.result.records],
+								? Array.from(response.data.result.items)
+								: [...this.state.data, ...response.data.result.items],
 						isLoading: false,
 						isLoadingMore: false,
 						refreshing: false
@@ -118,23 +117,46 @@ export default class SearchByCategory extends Component {
 	};
 
 	renderItem = (item, library) => {
+		//console.log(item);
+		const imageUrl = library.baseUrl + item.image;
+		let formats = [];
+		if(item.format) {
+			formats = this.getFormats(item.format);
+		}
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library)}>
 				<HStack space={3}>
-					<Avatar source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "80px", lg: "120px"}} />
+					<VStack>
+						<Image source={{ uri: imageUrl }} alt={item.title} borderRadius="md" size={{base: "80px", lg: "120px"}} />
+						<Badge mt={1} _text={{fontSize: 10}}>{item.language}</Badge>
+						<AddToList item={item.id} libraryUrl={library.baseUrl}/>
+					</VStack>
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "md", lg: "lg"}}>{item.title}</Text>
 						{item.author ? <Text _dark={{ color: "warmGray.50" }} color="coolGray.800">{translate('grouped_work.by')} {item.author}</Text> : null }
-						<Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-							{item.itemList.map((item, i) => {
-								return <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>{item.name}</Badge>;
+						{item.format ? <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+							{formats.map((format, i) => {
+								return <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px"
+								              _text={{fontSize: 12}}>{format}</Badge>;
 							})}
-						</Stack>
+						</Stack>: null}
 					</VStack>
-					<AddToList item={item.key} libraryUrl={library.baseUrl}/>
 				</HStack>
 			</Pressable>
 		)
+	}
+
+	getFormats = (data) => {
+		let formats = [];
+
+		data.map((item) => {
+			let thisFormat = item.split("#");
+			thisFormat = thisFormat[thisFormat.length - 1];
+			formats.push(thisFormat);
+		});
+
+		formats = _.uniq(formats);
+		return formats;
 	}
 
 	// handles the on press action
@@ -142,7 +164,7 @@ export default class SearchByCategory extends Component {
 		const { navigation, route } = this.props;
 		const libraryUrl = library.baseUrl;
 		navigation.dispatch(CommonActions.navigate({
-			name: 'GroupedWork',
+			name: 'GroupedWorkScreen',
 			params: {
 				item: item,
 				libraryUrl: libraryUrl,
@@ -175,6 +197,8 @@ export default class SearchByCategory extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
+
+		console.log(this.state.data);
 
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );

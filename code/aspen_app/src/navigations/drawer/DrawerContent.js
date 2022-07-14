@@ -149,7 +149,9 @@ export class DrawerContent extends Component {
 	displayILSMessages = (messages) => {
 		return (
 			messages.map((item) => {
-				return showILSMessage(item.messageStyle, item.message);
+				if(item.message) {
+					return showILSMessage(item.messageStyle, item.message);
+				}
 			})
 		)
 	}
@@ -182,6 +184,50 @@ export class DrawerContent extends Component {
 			icon = library.logoApp;
 		} else {
 			icon = library.favicon;
+		}
+
+		let numOverdue;
+		if(typeof user.numOverdue !== "undefined") {
+			if(user.numOverdue !== null) {
+				numOverdue = user.numOverdue;
+			} else {
+				numOverdue = 0;
+			}
+		} else {
+			numOverdue = 0;
+		}
+
+		let numCheckedOut;
+		if(typeof user.numCheckedOut !== "undefined") {
+			if(user.numCheckedOut !== null) {
+				numCheckedOut = user.numCheckedOut;
+			} else {
+				numCheckedOut = 0;
+			}
+		} else {
+			numCheckedOut = 0;
+		}
+
+		let numHolds;
+		if(typeof user.numHolds !== "undefined") {
+			if(user.numHolds !== null) {
+				numHolds = user.numHolds;
+			} else {
+				numHolds = 0;
+			}
+		} else {
+			numHolds = 0;
+		}
+
+		let numHoldsAvailable;
+		if(typeof user.numHoldsAvailable !== "undefined") {
+			if(user.numHoldsAvailable !== null) {
+				numHoldsAvailable = user.numHoldsAvailable;
+			} else {
+				numHoldsAvailable = 0;
+			}
+		} else {
+			numHoldsAvailable = 0;
 		}
 
 		return (
@@ -222,13 +268,13 @@ export class DrawerContent extends Component {
 									<Icon as={MaterialIcons} name="chevron-right" size="7"/>
 									<VStack w="100%">
 										<Text fontWeight="500">{translate('checkouts.title')} {user ? (
-											<Text bold>({user.numCheckedOut})</Text>) : null}</Text>
+											<Text bold>({numCheckedOut})</Text>) : null}</Text>
 									</VStack>
 								</HStack>
-								{user.numOverdue !== null && user.numOverdue > 0 ? (
+								{numOverdue > 0 ? (
 									<Container>
 										<Badge colorScheme="error" ml={10} rounded="4px"
-										       _text={{fontSize: "xs"}}>{translate('checkouts.overdue_summary', {count: user.numOverdue})}</Badge>
+										       _text={{fontSize: "xs"}}>{translate('checkouts.overdue_summary', {count: numOverdue})}</Badge>
 									</Container>
 								) : null}
 
@@ -241,13 +287,13 @@ export class DrawerContent extends Component {
 									<Icon as={MaterialIcons} name="chevron-right" size="7"/>
 									<VStack w="100%">
 										<Text fontWeight="500">{translate('holds.title')} {user ? (
-											<Text bold>({user.numHolds})</Text>) : null}</Text>
+											<Text bold>({numHolds})</Text>) : null}</Text>
 									</VStack>
 								</HStack>
-								{user.numHoldsAvailable !== null && user.numHoldsAvailable > 0 ? (
+								{numHoldsAvailable > 0 ? (
 									<Container>
 										<Badge colorScheme="success" ml={10} rounded="4px"
-										       _text={{fontSize: "xs"}}>{translate('holds.ready_for_pickup', {count: user.numHoldsAvailable})}</Badge>
+										       _text={{fontSize: "xs"}}>{translate('holds.ready_for_pickup', {count: numHoldsAvailable})}</Badge>
 									</Container>
 								) : null}
 							</Pressable>
@@ -287,16 +333,14 @@ export class DrawerContent extends Component {
 										</HStack>
 									</Pressable>
 								) : null}
-								{library.allowUserLists ? (
-									<Pressable px="2" py="3" onPress={() => {this.handleNavigation('AccountScreenTab', 'Preferences', library.baseUrl)}}>
-										<HStack space="1" alignItems="center">
-											<Icon as={MaterialIcons} name="chevron-right" size="7"/>
-											<Text fontWeight="500">
-												{translate('user_profile.preferences')}
-											</Text>
-										</HStack>
-									</Pressable>
-								): null}
+								<Pressable px="2" py="3" onPress={() => {this.handleNavigation('AccountScreenTab', 'Preferences', library.baseUrl)}}>
+									<HStack space="1" alignItems="center">
+										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
+										<Text fontWeight="500">
+											{translate('user_profile.preferences')}
+										</Text>
+									</HStack>
+								</Pressable>
 							</VStack>
 						</VStack>
 					</VStack>

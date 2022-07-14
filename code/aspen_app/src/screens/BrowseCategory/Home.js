@@ -1,8 +1,6 @@
 import React, {Component, PureComponent} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Box, Button, Icon, Pressable, ScrollView, Image, HStack, Text, FlatList, Center} from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
-//import ExpoFastImage from 'expo-fast-image';
 import CachedImage from 'expo-cached-image'
 import _ from "lodash";
 
@@ -68,17 +66,21 @@ export default class BrowseCategoryHome extends PureComponent {
 	}
 
 	componentDidMount = async () => {
-		let discoveryVersion = "22.04.00";
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
-			discoveryVersion = version[0];
+			this.setState({
+				discoveryVersion: version[0],
+			})
+		} else {
+			this.setState({
+				discoveryVersion: "22.06.00",
+			})
 		}
 
 		this.setState({
 			categoriesLoaded: false,
 			isLoading: false,
-			discoveryVersion: discoveryVersion,
 		})
 
 
@@ -140,7 +142,7 @@ export default class BrowseCategoryHome extends PureComponent {
 			})
 		}, 10000)*/
 
-		console.log(this.state.discoveryVersion);
+		//console.log(this.state.discoveryVersion);
 	}
 
 	componentWillUnmount() {
@@ -159,7 +161,7 @@ export default class BrowseCategoryHome extends PureComponent {
 		});
 	};
 
-	onRefreshCategories = async (libraryUrl, patronId) => {
+	onRefreshCategories = async (libraryUrl) => {
 		this.setState({isLoading: true});
 
 		await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
@@ -171,14 +173,37 @@ export default class BrowseCategoryHome extends PureComponent {
 		})
 	}
 
+	onLoadAllCategories = async (libraryUrl, patronId) => {
+		this.setState({isLoading: true});
+
+		await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
+			this.context.browseCategories = response;
+			//console.log(response);
+			this.setState({
+				isLoading: false,
+				loadAllCategories: true,
+			})
+		})
+	}
+
 	handleRefreshProfile = async () => {
 		await getProfile(true).then(response => {
 			this.context.user = response;
 		})
 	}
 
-	onPressItem = (item, libraryUrl) => {
-		this.props.navigation.navigate("GroupedWorkScreen", {item: item, libraryUrl: libraryUrl});
+	onPressItem = (item, libraryUrl, type, title, discoveryVersion) => {
+		if(discoveryVersion >= "22.07.00") {
+			if(type === "List") {
+				this.props.navigation.navigate("SearchByList", {category: item, libraryUrl: libraryUrl, categoryLabel: title});
+			} else if (type === "SavedSearch") {
+				this.props.navigation.navigate("SearchBySavedSearch", {category: item, libraryUrl: libraryUrl, categoryLabel: title});
+			} else {
+				this.props.navigation.navigate("GroupedWorkScreen", {item: item, libraryUrl: libraryUrl});
+			}
+		} else {
+			this.props.navigation.navigate("GroupedWorkScreen", {item: item, libraryUrl: libraryUrl})
+		}
 	};
 
 	onLoadMore = (item) => {
@@ -189,11 +214,12 @@ export default class BrowseCategoryHome extends PureComponent {
 		this.props.navigation.navigate("AccountScreenTab", {screen: "SettingsHomeScreen", params: {libraryUrl: libraryUrl, patronId: patronId}});
 	};
 
+	// for discovery older than 22.05
 	_renderNativeItem = (data, libraryUrl) => {
 		if(typeof libraryUrl !== "undefined") {
 			try {
 				//const Image = createImageProgress(ExpoFastImage);
-				const imageUrl = libraryUrl + "/bookcover.php?id=" + data.key + "&size=medium&type=grouped_work";
+				const imageUrl = libraryUrl + "/bookcover.php?id=" + data.key + "&size=large&type=grouped_work";
 				return (
 					<Pressable mr={1.5} onPress={() => this.onPressItem(data.key, libraryUrl)}
 					           width={{base: 100, lg: 200}}
@@ -224,50 +250,67 @@ export default class BrowseCategoryHome extends PureComponent {
 		)
 	};
 
-	_renderRecords = (data, user, libraryUrl) => {
+	_renderRecords = (data, user, libraryUrl, discoveryVersion) => {
 		const title = data.title_display;
-		const imageUrl = libraryUrl + "/bookcover.php?id=" + data.id + "&size=small&type=grouped_work";
+		let type = "grouped_work";
+		if(data.source) {
+			type = data.source;
+		}
+		const imageUrl = libraryUrl + "/bookcover.php?id=" + data.id + "&size=small&type=" + type.toLowerCase();
+
+		let reloadCache = "259_200";
+		if(__DEV__){
+			reloadCache = "1";
+		}
 		return (
-			<Pressable mr={1.5} onPress={() => this.onPressItem(data.id, libraryUrl)}
+			<Pressable mr={1.5} onPress={() => this.onPressItem(data.id, libraryUrl, type, title, discoveryVersion)}
 			           width={{base: 100, lg: 200}}
 			           height={{base: 150, lg: 250}}>
 				<CachedImage
 					cacheKey={data.id}
 					alt={title}
-					source={{ uri:  `${imageUrl}` }}
+					source={{
+						uri:  `${imageUrl}`,
+						expiresIn: `${reloadCache}`
+				}}
 					style={{width: '100%', height: '100%'}}
 				/>
 			</Pressable>
 		);
 	}
 
-	_renderSubCategories = (category, user, libraryUrl) => {
-		const subCategory = category.subCategories;
-
-		return (
-			<FlatList
-				horizontal
-				data={subCategory}
-				renderItem={({item}) => this._renderRecords(item, libraryUrl)}
-				initialNumToRender={5}
-				ListHeaderComponent={({item}) => this._renderHeader(item.title, item.key, user, libraryUrl)}
-			/>
-		)
-	}
-
-	_renderViewAll = (categoryLabel, categoryKey, libraryUrl) => {
+	_renderLoadMore = (categoryLabel, categoryKey, libraryUrl, categorySource, recordCount, discoveryVersion) => {
 		const { navigation } = this.props;
-		return (
-			<Box flex={1} alignItems="center">
-				<Button size="md" colorScheme="tertiary" variant="ghost" onPress={() => {
-					navigation.navigate("SearchByCategory", {
-						categoryLabel: categoryLabel,
-						category: categoryKey,
-						libraryUrl: libraryUrl,
-					})
-				}}>View More</Button>
-			</Box>
-		)
+
+		let searchBy = "SearchByCategory";
+		if(categorySource === "List") {
+			searchBy = "SearchByList";
+		} else if (categorySource === "SavedSearch") {
+			searchBy = "SearchBySavedSearch";
+		} else {
+			searchBy = "SearchByCategory";
+		}
+		if(recordCount >= 5 && discoveryVersion >= "22.07.00") {
+			return (
+				<Box alignItems="center">
+					<Pressable width={{base: 100, lg: 200}}
+					           height={{base: 150, lg: 250}}
+					           onPress={
+						           () => {
+							           navigation.navigate(searchBy, {
+								           categoryLabel: categoryLabel,
+								           category: categoryKey,
+								           libraryUrl: libraryUrl,
+							           })}
+					           }>
+						<Box width={{base: 100, lg: 200}} height={{base: 150, lg: 250}} bg="secondary.200" borderRadius="4" p="5" alignItems="center" justifyContent="center">
+							<Center><Text bold fontSize="md">Load More</Text></Center>
+						</Box>
+					</Pressable>
+
+				</Box>
+			)
+		}
 	}
 
 	render() {
@@ -277,13 +320,15 @@ export default class BrowseCategoryHome extends PureComponent {
 		const library = this.context.library;
 		const browseCategories = this.context.browseCategories;
 
-		console.log(browseCategories);
+		//console.log(browseCategories);
 
-		let discoveryVersion = "22.04.00";
+		let discoveryVersion;
 		if(library.discoveryVersion) {
 			let version = library.discoveryVersion;
 			version = version.split(" ");
 			discoveryVersion = version[0];
+		} else {
+			discoveryVersion = "22.06.00";
 		}
 
 /*
@@ -306,6 +351,7 @@ export default class BrowseCategoryHome extends PureComponent {
 		}
 
 		if(discoveryVersion >= "22.05.00") {
+			//console.log(browseCategories);
 			//console.log(discoveryVersion + " is newer than or equal to 22.05.00");
 			return (
 				<ScrollView>
@@ -317,15 +363,18 @@ export default class BrowseCategoryHome extends PureComponent {
 									categoryKey={category.key}
 									records={category.records}
 									isHidden={category.isHidden}
+									categorySource={category.source}
 									renderRecords={this._renderRecords}
 									header={this._renderHeader}
 									hideCategory={this.onHideCategory}
 									user={user}
 									libraryUrl={library.baseUrl}
+									loadMore={this._renderLoadMore}
+									discoveryVersion={discoveryVersion}
 								/>
 							);
 						})}
-						<ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={this.onPressSettings} onRefreshCategories={this.onRefreshCategories} discoveryVersion={discoveryVersion} loadAll={loadAllCategories} />
+						<ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={this.onPressSettings} onRefreshCategories={this.onRefreshCategories} discoveryVersion={discoveryVersion} loadAll={loadAllCategories} onLoadAllCategories={this.onLoadAllCategories}/>
 					</Box>
 				</ScrollView>
 			);
@@ -344,7 +393,6 @@ export default class BrowseCategoryHome extends PureComponent {
 									renderItem={this._renderNativeItem}
 									loadMore={this.onLoadMore}
 									hideCategory={this.onHideCategory}
-									viewAll={this._renderViewAll}
 									user={user}
 									libraryUrl={library.baseUrl}
 								/>
@@ -361,7 +409,7 @@ export default class BrowseCategoryHome extends PureComponent {
 }
 
 const ButtonOptions = (props) => {
-	const {onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll} = props;
+	const {onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories} = props;
 	const [isLoading, setLoading] = React.useState(true);
 
 	if(discoveryVersion >= "22.07.00") {
@@ -372,19 +420,16 @@ const ButtonOptions = (props) => {
 						onPressSettings(libraryUrl, patronId)
 					}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>Manage Categories</Button>
 					<Button size="md" mt="3" colorScheme="primary" onPress={() => {
-						onRefreshCategories(libraryUrl, patronId)
+						onRefreshCategories(libraryUrl)
 					}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
 				</Box>
 			)
 		} else {
 			return (
 				<Box>
-					<Button size="lg" colorScheme="primary" onPress={() => {
-						onRefreshCategories(libraryUrl, patronId)
+					<Button size="md" colorScheme="primary" onPress={() => {
+						onLoadAllCategories(libraryUrl, patronId)
 					}} startIcon={<Icon as={MaterialIcons} name="schedule" size="sm"/>}>Load All Categories</Button>
-					<Button size="md" mt="3" colorScheme="secondary" onPress={() => {
-						onRefreshCategories(libraryUrl, patronId)
-					}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
 				</Box>
 			)
 		}
@@ -395,7 +440,7 @@ const ButtonOptions = (props) => {
 			onPressSettings(libraryUrl, patronId)
 		}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>Manage Categories</Button>
 		<Button size="md" mt="3" colorScheme="primary" onPress={() => {
-			onRefreshCategories(libraryUrl, patronId)
+			onRefreshCategories(libraryUrl)
 		}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
 	</Box>
 }

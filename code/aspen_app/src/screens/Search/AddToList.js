@@ -20,14 +20,15 @@ export const AddToList = (props) => {
 
 	return (
 		<Center>
-			<IconButton onPress={
+			<Button onPress={
 				async () => {
 					await getLists(libraryUrl).then(response => {
 						setLists(response);
 						setShowUseExistingModal(true);
 					});
 				}
-			} icon={<Icon as={MaterialIcons} name="bookmark"/>} _icon={{size: "xs", color: "gray.600"}} style={{ justifyContent: "flex-end", textAlign: "right" }}/>
+			} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1"/>} size="sm" variant="ghost">
+				Add to list</Button>
 			<Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full">
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
