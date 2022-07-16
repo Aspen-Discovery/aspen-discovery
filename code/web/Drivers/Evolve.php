@@ -2,6 +2,8 @@
 
 class Evolve extends AbstractIlsDriver
 {
+	//Caching of sessionIds by patron for performance
+	private static $accessTokensForUsers = [];
 
 	/** @var CurlWrapper */
 	private $apiCurlWrapper;
@@ -243,25 +245,156 @@ class Evolve extends AbstractIlsDriver
 
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
-		//Get the token
-		$apiToken = $this->accountProfile->oAuthClientSecret;
-		$this->apiCurlWrapper->addCustomHeaders([
-			'User-Agent: Aspen Discovery',
-			'Accept: */*',
-			'Cache-Control: no-cache',
-			'Content-Type: application/json;charset=UTF-8',
-		], true);
-		$postParams = "Token=$apiToken|AppType=Catalog|Login=$username|Pwd=$password";
-//		$postParams = json_encode([
-//			"Token" => $apiToken,
-//			"AppType" => "Catalog",
-//			"Login"=>$username,
-//			"Pwd"=>$password
-//
-//		]);
-		$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
-		ExternalRequestLogEntry::logRequest('evolve.patronLogin', 'POST', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+		//Remove any spaces from the barcode
+		$username = trim($username);
+		$password = trim($password);
+
+		$barcodesToTest = array();
+		$barcodesToTest[] = $username;
+		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
+		//Special processing to allow users to login with short barcodes
+		global $library;
+		if ($library) {
+			if ($library->barcodePrefix) {
+				if (strpos($username, $library->barcodePrefix) !== 0) {
+					//Add the barcode prefix to the barcode
+					$barcodesToTest[] = $library->barcodePrefix . $username;
+				}
+			}
+		}
+
+		foreach ($barcodesToTest as $i => $barcode) {
+			$sessionInfo = $this->loginViaWebService($barcode, $password);
+			if ($sessionInfo instanceof AspenError){
+				return $sessionInfo;
+			}
+
+			if ($sessionInfo['userValid']){
+				//Load user data
+				return $this->loadPatronBasicData($username, $barcode, $sessionInfo);
+			}
+		}
 		return null;
+	}
+
+	private function loadPatronBasicData(string $patronBarcode, string $password, array $sessionInfo)
+	{
+		$accountDetails = $this->getAccountDetails($sessionInfo['accessToken']);
+		if ($accountDetails != null){
+			$userExistsInDB = false;
+			$user = new User();
+			$user->source = $this->accountProfile->name;
+			$user->username = $sessionInfo['patronId'];
+			if ($user->find(true)) {
+				$userExistsInDB = true;
+			}
+			$user->cat_username = $patronBarcode;
+			if (!empty($password)) {
+				$user->cat_password = $password;
+			}
+
+			$forceDisplayNameUpdate = false;
+			$name = $accountDetails->Name;
+			list($firstName, $lastName) = explode(' ', $name);
+			if ($user->firstname != $firstName) {
+				$user->firstname = $firstName;
+				$forceDisplayNameUpdate = true;
+			}
+			if ($user->lastname != $lastName) {
+				$user->lastname = isset($lastName) ? $lastName : '';
+				$forceDisplayNameUpdate = true;
+			}
+			$user->_fullname = $name;
+			if ($forceDisplayNameUpdate) {
+				$user->displayName = '';
+			}
+			$user->phone = $accountDetails->Phone;
+			$user->email = $accountDetails->Email;
+
+			//TODO: Figure out home library
+
+
+			if ($userExistsInDB) {
+				$user->update();
+			} else {
+				$user->created = date('Y-m-d');
+				$user->insert();
+			}
+		}else{
+			return null;
+		}
+	}
+
+	/**
+	 * @param string $accessToken
+	 * @return stdClass|null
+	 */
+	private function getAccountDetails(string $accessToken){
+		$evolveUrl = $this->accountProfile->patronApiUrl . '/AccountDetails/Token=' . $accessToken;
+		$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
+		ExternalRequestLogEntry::logRequest('evolve.getAccountDetails', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
+		if ($response && $this->apiCurlWrapper->getResponseCode() == 200){
+			$jsonResponse = json_decode($response);
+			return $jsonResponse[0];
+		}else{
+			return null;
+		}
+	}
+
+	/**
+	 * @param $username
+	 * @param $password
+	 *
+	 * @return array|AspenError
+	 */
+	protected function loginViaWebService(&$username, $password, $fromMasquerade = false)
+	{
+		if (array_key_exists($username, Evolve::$accessTokensForUsers)) {
+			return Evolve::$accessTokensForUsers[$username];
+		} else {
+			$session = array(
+				'userValid' => false,
+				'accessToken' => false,
+				'patronId' => false
+			);
+
+			//Get the token
+			$apiToken = $this->accountProfile->oAuthClientSecret;
+			$this->apiCurlWrapper->addCustomHeaders([
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+			], true);
+
+			$params = new stdClass();
+			$params->APPTYPE = "CATALOG";
+			$params->Token = $apiToken;
+			$params->Login = $username;
+			$params->Pwd = $password;
+			$postParams = json_encode($params);
+
+			$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
+			ExternalRequestLogEntry::logRequest('evolve.patronLogin', 'POST', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$jsonData = json_decode($response);
+				if (is_array($jsonData)){
+					$jsonData = $jsonData[0];
+				}
+				if ($jsonData->Status == 'Success'){
+					$session = array(
+						'userValid' => true,
+						'accessToken' => $jsonData->LoginToken,
+						'patronId' => $jsonData->AccountId
+					);
+				}else{
+					return new AspenError($jsonData->Status . ' ' . $jsonData->Message);
+				}
+			}
+
+			Evolve::$accessTokensForUsers[$username] = $session;
+			return $session;
+		}
 	}
 
 	private function getStaffUserInfo()

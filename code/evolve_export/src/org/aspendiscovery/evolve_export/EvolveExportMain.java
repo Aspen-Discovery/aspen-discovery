@@ -6,17 +6,22 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.net.NetworkUtils;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -30,6 +35,7 @@ public class EvolveExportMain {
 	private static Ini configIni;
 	private static Connection dbConn;
 	private static String serverName;
+	private static String baseUrl;
 
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
@@ -97,6 +103,7 @@ public class EvolveExportMain {
 				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'evolve'");
 				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 				if (accountProfileRS.next()){
+					baseUrl = accountProfileRS.getString("patronApiUrl");
 					profileToLoad = accountProfileRS.getString("recordSource");
 				}else{
 					logEntry.incErrors("Could not load Evolve account profile");
@@ -126,9 +133,9 @@ public class EvolveExportMain {
 						//Update works that have changed since the last index
 						numChanges = updateRecords();
 					}else{
-						//MarcFactory marcFactory = MarcFactory.newInstance();
+						MarcFactory marcFactory = MarcFactory.newInstance();
 						//TODO: API to update an individual record?
-						//numChanges = updateBibFromEvolve(singleWorkId, marcFactory, true);
+						numChanges = updateBibFromEvolve(singleWorkId, marcFactory, true);
 					}
 				}
 
@@ -231,6 +238,42 @@ public class EvolveExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static int updateBibFromEvolve(String singleWorkId, MarcFactory marcFactory, boolean incrementProductsInLog) {
+		String getBibUrl = baseUrl + "/CatalogSearch/Token={Token}|ModifiedFromDTM=05012022|Marc=Yes";
+		//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
+
+		HashMap<String, String> headers = new HashMap<>();
+		headers.put("Content-type", "application/json");
+		headers.put("Accept", "application/json");
+		WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
+		if (getBibsResponse.isSuccess()) {
+			JSONArray responseAsArray = getBibsResponse.getJSONResponseAsArray();
+			for (int i = 0; i < responseAsArray.length(); i++){
+				JSONObject curRow = responseAsArray.getJSONObject(i);
+				String rawMarc = curRow.getString("MARC");
+				try {
+					//Get the holdings for the record
+//					String holdingsUrl = baseUrl + "/Holding/Token={Token}|CatalogItem=CA010139507";
+//					WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
+//					if (getBibsResponse.isSuccess()) {
+//
+//					}
+					//rawMarc = rawMarc.replaceAll("(u00[0-9a-f]{4})", "/$1");
+					MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+					if (reader.hasNext()) {
+						Record marcRecord = reader.next();
+						logger.info("Got marc data");
+					}
+				}catch (Exception e){
+					logEntry.incErrors("Error parsing marc record", e);
+				}
+			}
+		}
+
+		return 0;
+
 	}
 
 	private static void disconnectDatabase() {
