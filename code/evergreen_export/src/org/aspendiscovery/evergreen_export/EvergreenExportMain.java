@@ -1046,16 +1046,30 @@ public class EvergreenExportMain {
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
+			//Check errors to see if we should stop processing
+			int numExistingRecordsInAspen = recordGroupingProcessor.getNumExistingTitles(logEntry);
 			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0003) {
 				logEntry.incErrors("More than .03% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath() + ". The file had " + numRecordsWithErrors + " errors out of " + numRecordsRead + " records.");
+				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
+				}
 				return totalChanges;
 			} else if (numRecordsWithErrors > 0) {
 				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");
 				logEntry.saveResults();
 			}
+			//Make sure we have about the right number of records (we're ok losing up to 10% at a time)
+			if (numRecordsRead < (numExistingRecordsInAspen * .9)){
+				logEntry.incErrors("Fewer than 90% of the records in Aspen still for " + indexingProfile.getName() + " in file " + fullExportFile.getAbsolutePath() + ". The file had " + numRecordsRead + "titles and Aspen has " + numExistingRecordsInAspen);
+				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
+				}
+				return totalChanges;
+			}
 			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
 			logEntry.saveResults();
 
+			//Check that the file is not truncated.
 			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()) {
 				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
 				logEntry.addNote("Not processing the full export");
