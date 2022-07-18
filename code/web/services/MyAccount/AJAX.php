@@ -179,7 +179,7 @@ class MyAccount_AJAX extends JSON_Action
 					$search->title = $title;
 					if($search->update() !== FALSE) {
 						$result['success'] = true;
-						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.", 'isPublicFacing'=>true]);
+						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Your Searches within the Account Menu.", 'isPublicFacing'=>true]);
 						$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
 					} else {
 						$result['message'] = translate(['text' => "Sorry, we could not save that search for you.  It may have expired.", 'isPublicFacing'=>true]);

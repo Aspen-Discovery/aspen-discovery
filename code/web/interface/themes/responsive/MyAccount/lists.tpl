@@ -27,6 +27,9 @@
 					{if count($lists) > 0}
 						<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists" isPublicFacing=true}</button>
 					{/if}
+					{if $showConvertListsFromClassic}
+						<a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
+					{/if}
 				</div>
 			</div>
 		</div>
