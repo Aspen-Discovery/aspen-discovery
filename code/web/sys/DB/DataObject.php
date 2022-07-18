@@ -885,7 +885,9 @@ abstract class DataObject
 			$this->$propertyName = $newValue;
 			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])){
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				global $logger;
 				SystemVariables::forceNightlyIndex();
+				$logger->log("Forcing Nightly Index because $propertyName on " . get_class($this) . ' - ' . $this->getPrimaryKeyValue() . " was changed to $newValue by user " . UserAccount::getActiveUserId(), Logger::LOG_ALERT);
 			}
 			//Add the change to the history unless tracking the history is off (passwords)
 			if ($propertyStructure['type'] != 'password' && $propertyStructure['type'] != 'storedPassword') {
