@@ -62,7 +62,8 @@
     "preferences": "Preferences",
     "linked_accounts": "Linked Accounts",
     "profile": "Profile",
-    "my_lists": "Lists"
+    "my_lists": "Lists",
+    "saved_searches": "Saved Searches"
   },
   "linked_accounts": {
     "account_to_manage": "Account to Manage",

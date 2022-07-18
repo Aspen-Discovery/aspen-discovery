@@ -610,6 +610,28 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public int getNumExistingTitles(BaseLogEntry logEntry) {
+		try {
+			//Clear previous records if we load multiple times
+			existingRecords = new HashMap<>();
+			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT count(*) FROM ils_records where source = ? AND deleted = 0;");
+			getAllExistingRecordsStmt.setString(1, baseSettings.getName());
+			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();
+			int numExistingTitles = 0;
+			if (allRecordsRS.next()) {
+				numExistingTitles = allRecordsRS.getInt(1);
+			}
+			allRecordsRS.close();
+			getAllExistingRecordsStmt.close();
+			return numExistingTitles;
+		}catch (SQLException e) {
+			logEntry.incErrors("Error getting number of existing titles for " + baseSettings.getName(), e);
+			logEntry.addNote("Error getting number of existing titles for " + baseSettings.getName() + " " + e);
+			return 0;
+		}
+	}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
 			//Clear previous records if we load multiple times

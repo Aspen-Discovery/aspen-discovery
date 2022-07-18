@@ -3231,6 +3231,7 @@ class MyAccount_AJAX extends JSON_Action
 					//Also send an email to admin that it was completed in paypal, but not the ILS
 					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
 					$payment->update();
+					$result['message'] = $payment->message;
 
 					if (!empty($payPalSettings->errorEmail)){
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
