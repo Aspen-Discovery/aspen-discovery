@@ -14,7 +14,7 @@ class ListAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getUserLists', 'getListTitles', 'createList', 'deleteList', 'editList', 'addTitlesToList', 'removeTitlesFromList', 'clearListTitles'))) {
+				if (in_array($method, array('getUserLists', 'getListTitles', 'createList', 'deleteList', 'editList', 'addTitlesToList', 'removeTitlesFromList', 'clearListTitles', 'getSavedSearchesForLiDA', 'getSavedSearchTitles'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -629,6 +629,42 @@ class ListAPI extends Action
 		}
 
 		return $listTitles;
+	}
+
+	function getSavedSearchesForLiDA() : array
+	{
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if(!empty($username)) {
+			$user = UserAccount::validateAccount($username, $password);
+		} else {
+			$user = UserAccount::getLoggedInUser();
+		}
+
+		if ($user && !($user instanceof AspenError)) {
+			$result = [];
+			$SearchEntry = new SearchEntry();
+			$SearchEntry->user_id = $user->id;
+			$SearchEntry->saved = "1";
+			$SearchEntry->orderBy('created desc');
+			$SearchEntry->find();
+
+			while($SearchEntry->fetch()) {
+				if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+					$savedSearch = array(
+						'id' => $SearchEntry->id,
+						'title' => $SearchEntry->title,
+						'created' => $SearchEntry->created,
+						'searchUrl' => $SearchEntry->searchUrl,
+					);
+					$result[] = $savedSearch;
+				}
+			}
+			return array('success' => true, 'searches' => $result);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+
 	}
 
 	/**
