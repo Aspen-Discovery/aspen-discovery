@@ -174,6 +174,7 @@ class ListAPI extends Action
 		global $configArray;
 		$userId = $user->id;
 
+		$count = 0;
 		$list = new UserList();
 		$list->user_id = $userId;
 		$list->deleted = 0;
@@ -182,6 +183,7 @@ class ListAPI extends Action
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
 				if($list->isValidForDisplay()) {
+					$count = $count + 1;
 					$results[] = array(
 						'id' => $list->id,
 						'title' => $list->title,
@@ -210,7 +212,7 @@ class ListAPI extends Action
 				);
 			}
 		}
-		return array('success' => true, 'lists' => $results);
+		return array('success' => true, 'lists' => $results, 'count' => $count);
 	}
 
 	/**
@@ -595,8 +597,10 @@ class ListAPI extends Action
 		$SearchEntry->orderBy('created desc');
 		$SearchEntry->find();
 
+		$count = 0;
 		while($SearchEntry->fetch()) {
 			if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+				$count = $count + 1;
 				$savedSearch = array(
 					'id' => $SearchEntry->id,
 					'title' => $SearchEntry->title,
@@ -606,10 +610,11 @@ class ListAPI extends Action
 				$result[] = $savedSearch;
 			}
 		}
-		return array('success' => true, 'searches' => $result);
+
+		return array('success' => true, 'searches' => $result, 'count' => $count);
 	}
 
-	function getSavedSearchTitles($searchId, $numTitlesToShow)
+	function getSavedSearchTitles($searchId = null, $numTitlesToShow = null)
 	{
 		if (!$searchId) {
 			if (!isset($_REQUEST['searchId'])) {
@@ -660,9 +665,11 @@ class ListAPI extends Action
 			$SearchEntry->saved = "1";
 			$SearchEntry->orderBy('created desc');
 			$SearchEntry->find();
+			$count = 0;
 
 			while($SearchEntry->fetch()) {
 				if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+					$count = $count + 1;
 					$savedSearch = array(
 						'id' => $SearchEntry->id,
 						'title' => $SearchEntry->title,
@@ -672,7 +679,7 @@ class ListAPI extends Action
 					$result[] = $savedSearch;
 				}
 			}
-			return array('success' => true, 'searches' => $result);
+			return array('success' => true, 'searches' => $result, 'count' => $count);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
