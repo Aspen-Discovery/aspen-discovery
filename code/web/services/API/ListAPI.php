@@ -14,7 +14,7 @@ class ListAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getUserLists', 'getListTitles', 'createList', 'deleteList', 'editList', 'addTitlesToList', 'removeTitlesFromList', 'clearListTitles'))) {
+				if (in_array($method, array('getUserLists', 'getListTitles', 'createList', 'deleteList', 'editList', 'addTitlesToList', 'removeTitlesFromList', 'clearListTitles', 'getSavedSearchesForLiDA', 'getSavedSearchTitles'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -611,17 +611,29 @@ class ListAPI extends Action
 
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
 	{
+		if (!$searchId) {
+			if (!isset($_REQUEST['searchId'])) {
+				return array('success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.');
+			} else {
+				$searchId = $_REQUEST['searchId'];
+			}
+		}
+
+		if (!$numTitlesToShow) {
+			if (!isset($_REQUEST['numTitles'])) {
+				$numTitlesToShow = 30;
+			} else {
+				$numTitlesToShow = $_REQUEST['numTitles'];
+			}
+		}
+
 		//return a random selection of 30 titles from the list.
 		/** @var SearchObject_AbstractGroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
 		$searchObj = SearchObjectFactory::initSearchObject();
 		$searchObj->init();
 		$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
 		if ($searchObj) { // check that the saved search was retrieved successfully
-			if (isset($_REQUEST['numTitles'])) {
-				$searchObj->setLimit($_REQUEST['numTitles']);
-			} else {
-				$searchObj->setLimit($numTitlesToShow);
-			}
+			$searchObj->setLimit($numTitlesToShow);
 			$searchObj->processSearch(false, false);
 			$listTitles = $searchObj->getTitleSummaryInformation();
 		}else{
@@ -629,6 +641,42 @@ class ListAPI extends Action
 		}
 
 		return $listTitles;
+	}
+
+	function getSavedSearchesForLiDA() : array
+	{
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if(!empty($username)) {
+			$user = UserAccount::validateAccount($username, $password);
+		} else {
+			$user = UserAccount::getLoggedInUser();
+		}
+
+		if ($user && !($user instanceof AspenError)) {
+			$result = [];
+			$SearchEntry = new SearchEntry();
+			$SearchEntry->user_id = $user->id;
+			$SearchEntry->saved = "1";
+			$SearchEntry->orderBy('created desc');
+			$SearchEntry->find();
+
+			while($SearchEntry->fetch()) {
+				if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+					$savedSearch = array(
+						'id' => $SearchEntry->id,
+						'title' => $SearchEntry->title,
+						'created' => $SearchEntry->created,
+						'searchUrl' => $SearchEntry->searchUrl,
+					);
+					$result[] = $savedSearch;
+				}
+			}
+			return array('success' => true, 'searches' => $result);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+
 	}
 
 	/**
