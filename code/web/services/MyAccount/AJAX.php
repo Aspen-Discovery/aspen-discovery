@@ -179,7 +179,7 @@ class MyAccount_AJAX extends JSON_Action
 					$search->title = $title;
 					if($search->update() !== FALSE) {
 						$result['success'] = true;
-						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.", 'isPublicFacing'=>true]);
+						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Your Searches within the Account Menu.", 'isPublicFacing'=>true]);
 						$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
 					} else {
 						$result['message'] = translate(['text' => "Sorry, we could not save that search for you.  It may have expired.", 'isPublicFacing'=>true]);
@@ -3231,6 +3231,7 @@ class MyAccount_AJAX extends JSON_Action
 					//Also send an email to admin that it was completed in paypal, but not the ILS
 					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
 					$payment->update();
+					$result['message'] = $payment->message;
 
 					if (!empty($payPalSettings->errorEmail)){
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';

@@ -4,22 +4,22 @@
 		<!--suppress HtmlUnknownTarget -->
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
-				{* My Account *}
+				{* Your Account *}
 				{if $module == 'MyAccount' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
 				{/if}
 
-				<div class="panel{if $curSection} active{/if}">
+				<div class="panel active">
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
-					{* Clickable header for my account section *}
-					<a data-toggle="collapse" href="#myAccountPanel" aria-label="{translate text="My Account Menu" inAttribute="true" isPublicFacing=true}">
+					{* Clickable header for your account section *}
+					<a data-toggle="collapse" href="#myAccountPanel" aria-label="{translate text="Your Account Menu" inAttribute="true" isPublicFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
-								{*MY ACCOUNT*}
-								{translate text="My Account" isPublicFacing=true}
+								{*Your ACCOUNT*}
+								{translate text="Your Account" isPublicFacing=true}
 							</div>
 						</div>
 					</a>
@@ -119,22 +119,14 @@
 								</ul>
 
 								{if !$offline}
-									{if $enableReadingHistory}
-										<div class="myAccountLink">
-											<a href="/MyAccount/ReadingHistory">
-												{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
-											</a>
-										</div>
-									{/if}
 									{if $showCurbsidePickups}
 										<div class="myAccountLink" title="Curbside Pickups">
 											<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
 										</div>
 									{/if}
 									{if $showFines}
-										<hr class="menu">
-										<div class="myAccountLink" title="Fines and account messages">
-											<a href="/MyAccount/Fines">{translate text='Fines and Messages' isPublicFacing=true}</a>
+										<div class="myAccountLink" title="Fines">
+											<a href="/MyAccount/Fines">{translate text='Fines' isPublicFacing=true}</a>
 										</div>
 									{/if}
 								{/if}
@@ -149,97 +141,99 @@
 										<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
 									</div>
 								{/if}
+							{/if}
+							{if $userHasCatalogConnection}
+								<div class="myAccountLink libraryCardLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
+									<a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a>
+								</div>
+							{/if}
 
-								{if $showRatings}
+							{if !$offline}
+								{if $showRatings || $enableSavedSearches || $enableReadingHistory | showFavorites}
 									<hr class="menu">
-									<div class="myAccountLink"><a href="/MyAccount/MyRatings">{translate text='Titles You Rated' isPublicFacing=true} <span class="badge"><span class="ratings-placeholder">??</span></span></a></div>
+								{/if}
+								{if $showRatings}
+									<div class="myAccountLink"><a href="/MyAccount/SuggestedTitles">{translate text='Recommended For You' isPublicFacing=true}</span></a></div>
 									<ul class="account-submenu">
 									{if $user->disableRecommendations == 0}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/SuggestedTitles">{translate text='Recommended For You' isPublicFacing=true}</span></a></li>
+										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/MyRatings">{translate text='Titles You Rated' isPublicFacing=true} <span class="badge"><span class="ratings-placeholder">??</span></span></a></li>
 									{/if}
 									</ul>
 								{/if}
-								<hr class="menu">
-								<div class="myAccountLink">{translate text='Account Settings' isPublicFacing=true}</div>
-								<ul class="account-submenu">
-									{if $userHasCatalogConnection}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)' isPublicFacing=true}{else}{translate text='My Library Card' isPublicFacing=true}{/if}</a></li>
-									{/if}
-									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/MyPreferences">{translate text='My Preferences' isPublicFacing=true}</a></li>
-									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></li>
-									{if $user->showMessagingSettings()}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></li>
-									{/if}
-									{if $allowAccountLinking}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></li>
-									{/if}
-									{if $twoFactorEnabled}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></li>
-	                                {elseif $allowPinReset && !$offline}
-										<li class="myAccountLink" >&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></li>
-	                                {/if}
-									{if $user->isValidForEContentSource('overdrive')}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></li>
-									{/if}
-									{if $user->isValidForEContentSource('hoopla')}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></li>
-									{/if}
-									{if $user->isValidForEContentSource('axis360')}
-                                        <li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></li>
-                                    {/if}
-									{if $userIsStaff}
-										<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></li>
-									{/if}
-								</ul>
+								{if $showFavorites == 1}
+									<div class="myAccountLink"><a href="/MyAccount/Lists">{translate text='Your Lists' isPublicFacing=true}</a></div>
+								{/if}
 								{if $enableSavedSearches}
 									{* Only highlight saved searches as active if user is logged in: *}
-									<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a></div>
 								{/if}
-							{/if}
-
-							{if $allowMasqueradeMode && !$masqueradeMode}
-								{if $canMasquerade}
-									<hr class="menu">
-									<div class="myAccountLink"><a onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">{translate text="Masquerade" isPublicFacing=true}</a></div>
+								{if $enableReadingHistory}
+									<div class="myAccountLink">
+										<a href="/MyAccount/ReadingHistory">
+											{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
+										</a>
+									</div>
 								{/if}
 							{/if}
 						</div>
 					</div>
 				</div>
-
-				{* My Lists*}
-				{if !$offline}
-					{if $action == 'MyList'}
-						{assign var="curSection" value=true}
-					{else}
-						{assign var="curSection" value=false}
-					{/if}
-					<div class="panel{if $curSection} active{/if}">
-						<a data-toggle="collapse" href="#myListsPanel">
-							<div class="panel-heading">
-								<div class="panel-title">
-									{translate text='My Lists' isPublicFacing=true}
-								</div>
-							</div>
-						</a>
-						<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'} in{/if}">
-							<div class="panel-body">
-								<div id="lists-placeholder"><img src="/images/loading.gif" alt="loading"></div>
-
-								<div class="myAccountLink">
-									<a href="#" onclick="return AspenDiscovery.Account.showCreateListForm();" class="btn btn-sm btn-primary">{translate text='Create a New List' isPublicFacing=true}</a>
-								</div>
-								{if $showConvertListsFromClassic}
-									<br>
-									<div class="myAccountLink">
-										<a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
-									</div>
-								{/if}
+				{if $action=='MyPreferences' || $action=='ContactInformation' || $action=='MessagingSettings' || $action=='LinkedAccounts' || $action=='Security' || $action=='ResetPinPage' || $action=='OverDriveOptions' || $action=='HooplaOptions' || $action=='Axis360Options' || $action=='StaffSettings'}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel {if $curSection}active{/if}">
+					{* Clickable header for account settings section *}
+					<a data-toggle="collapse" href="#mySettingsPanel" aria-label="{translate text="Account Settings Menu" inAttribute="true" isPublicFacing=true}">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Account Settings" isPublicFacing=true}
 							</div>
 						</div>
+					</a>
+					<div id="mySettingsPanel" class="panel-collapse collapse{if  $curSection} in{/if}">
+						<div class="panel-body">
+							{if !$offline}
+								<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>
+								<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>
+								{if $user->showMessagingSettings()}
+									<div class="myAccountLink"><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
+								{/if}
+								{if $allowAccountLinking}
+									<div class="myAccountLink"><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></div>
+								{/if}
+								{if $twoFactorEnabled}
+									<div class="myAccountLink"><a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></div>
+								{/if}
+								{if $allowPinReset}
+									<div class="myAccountLink" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
+								{/if}
+								{if $user->isValidForEContentSource('overdrive')}
+									<div class="myAccountLink"><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
+								{/if}
+								{if $user->isValidForEContentSource('hoopla')}
+									<div class="myAccountLink"><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>
+								{/if}
+								{if $user->isValidForEContentSource('axis360')}
+									<div class="myAccountLink"><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
+								{/if}
+								{if $userIsStaff}
+									<div class="myAccountLink"><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
+								{/if}
+							{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{if $allowMasqueradeMode && !$masqueradeMode}
+				{if $canMasquerade}
+					<div>
+						<div class="myAccountLink btn btn-default btn-sm btn-block"><a onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">{translate text="Masquerade" isPublicFacing=true}</a></div>
 					</div>
 				{/if}
-			</div>
+			{/if}
 		</div>
 	{/if}
 	<script type="text/javascript">
