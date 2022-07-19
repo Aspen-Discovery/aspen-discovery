@@ -611,17 +611,29 @@ class ListAPI extends Action
 
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
 	{
+		if (!$searchId) {
+			if (!isset($_REQUEST['searchId'])) {
+				return array('success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.');
+			} else {
+				$searchId = $_REQUEST['searchId'];
+			}
+		}
+
+		if (!$numTitlesToShow) {
+			if (!isset($_REQUEST['numTitles'])) {
+				$numTitlesToShow = 30;
+			} else {
+				$numTitlesToShow = $_REQUEST['numTitles'];
+			}
+		}
+
 		//return a random selection of 30 titles from the list.
 		/** @var SearchObject_AbstractGroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
 		$searchObj = SearchObjectFactory::initSearchObject();
 		$searchObj->init();
 		$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
 		if ($searchObj) { // check that the saved search was retrieved successfully
-			if (isset($_REQUEST['numTitles'])) {
-				$searchObj->setLimit($_REQUEST['numTitles']);
-			} else {
-				$searchObj->setLimit($numTitlesToShow);
-			}
+			$searchObj->setLimit($numTitlesToShow);
 			$searchObj->processSearch(false, false);
 			$listTitles = $searchObj->getTitleSummaryInformation();
 		}else{
