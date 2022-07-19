@@ -284,7 +284,11 @@ class Evolve extends AbstractIlsDriver
 			$userExistsInDB = false;
 			$user = new User();
 			$user->source = $this->accountProfile->name;
-			$user->username = $sessionInfo['patronId'];
+			if (empty($sessionInfo['patronId'])) {
+				$user->username = $patronBarcode;
+			}else{
+				$user->username = $sessionInfo['patronId'];
+			}
 			if ($user->find(true)) {
 				$userExistsInDB = true;
 			}
@@ -320,6 +324,7 @@ class Evolve extends AbstractIlsDriver
 				$user->created = date('Y-m-d');
 				$user->insert();
 			}
+			return $user;
 		}else{
 			return null;
 		}
@@ -332,7 +337,7 @@ class Evolve extends AbstractIlsDriver
 	private function getAccountDetails(string $accessToken){
 		$evolveUrl = $this->accountProfile->patronApiUrl . '/AccountDetails/Token=' . $accessToken;
 		$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
-		ExternalRequestLogEntry::logRequest('evolve.getAccountDetails', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
+		ExternalRequestLogEntry::logRequest('evolve.getAccountDetails', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
 		if ($response && $this->apiCurlWrapper->getResponseCode() == 200){
 			$jsonResponse = json_decode($response);
 			return $jsonResponse[0];
@@ -385,7 +390,7 @@ class Evolve extends AbstractIlsDriver
 					$session = array(
 						'userValid' => true,
 						'accessToken' => $jsonData->LoginToken,
-						'patronId' => $jsonData->AccountId
+						'patronId' => $jsonData->AccountID
 					);
 				}else{
 					return new AspenError($jsonData->Status . ' ' . $jsonData->Message);
