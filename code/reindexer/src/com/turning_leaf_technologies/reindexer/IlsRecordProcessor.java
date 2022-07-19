@@ -1238,6 +1238,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 				}
 			}
+			if (callNumber == null) {
+				DataField deweyCallNumberField = record.getDataField(82);
+				if (deweyCallNumberField != null) {
+					callNumber = new StringBuilder();
+					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
+						callNumber.append(" ").append(curSubfield.getData().trim());
+					}
+				}
+			}
 			if (callNumber != null) {
 				if (volume != null && volume.length() > 0 && !callNumber.toString().endsWith(volume)){
 					if (callNumber.length() > 0 && callNumber.charAt(callNumber.length() - 1) != ' '){
