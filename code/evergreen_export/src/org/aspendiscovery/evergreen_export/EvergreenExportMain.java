@@ -732,8 +732,18 @@ public class EvergreenExportMain {
 			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
 		}
 
+		//Process Incremental ID Files
+		File[] incrementalIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && (name.startsWith("incremental_changes") || name.startsWith("incremental_new"))));
+		if (incrementalIdFiles != null && incrementalIdFiles.length > 0){
+			//Sort from newest to oldest
+			Arrays.sort(incrementalIdFiles, Comparator.comparingLong(File::lastModified));
+			//Just process the newest 1 file.
+			for (File incrementalIdFile : incrementalIdFiles) {
+				totalChanges += updateChangedBibsBasedOnIds(incrementalIdFile, lastUpdateFromMarc, dbConn);
+			}
+		}
 
-		//Process ID Files
+		//Process All ID Files
 		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("all")));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
 			//Sort from newest to oldest
@@ -749,10 +759,10 @@ public class EvergreenExportMain {
 
 		File[] exportedDeletedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("incremental_deleted")));
 		if (exportedDeletedIdFiles != null && exportedDeletedIdFiles.length > 0){
-			//For now we don't care about these since we process the all ids file, just delete them.
-			for (int i = 1; i < exportedDeletedIdFiles.length; i++) {
-				if (!exportedDeletedIdFiles[i].delete()) {
-					logEntry.incErrors("Could not delete old ids file " + exportedDeletedIdFiles[i]);
+			//For now, we don't care about these since we process the all ids file, just delete them.
+			for (File exportedDeletedIdFile : exportedDeletedIdFiles) {
+				if (!exportedDeletedIdFile.delete()) {
+					logEntry.incErrors("Could not delete old ids file " + exportedDeletedIdFile);
 				}
 			}
 		}
@@ -760,9 +770,42 @@ public class EvergreenExportMain {
 		return totalChanges;
 	}
 
+	private static int updateChangedBibsBasedOnIds(File idsFile, long lastUpdateFromMarc, Connection dbConn) {
+		int numUpdates = 0;
+		logEntry.addNote("Processing incremental change ids file " + idsFile);
+		try {
+			//Read the file to see what has been added or deleted
+			BufferedReader reader = new BufferedReader(new FileReader(idsFile));
+			String id = reader.readLine();
+			HashSet<String> idsToProcess = new HashSet<>();
+			while (id != null){
+				idsToProcess.add(id);
+				id = reader.readLine();
+			}
+			reader.close();
+			logEntry.addNote("There are " + idsToProcess.size() + " records to process");
+
+			logEntry.addNote("Processing updated ids");
+			logEntry.saveResults();
+			MarcFactory marcFactory = MarcFactory.newInstance();
+			for (String idToProcess : idsToProcess) {
+				updateBibFromEvergreen(idToProcess, marcFactory, true);
+				numUpdates++;
+			}
+
+			//After the file has been processed, delete it
+			if (!idsFile.delete()){
+				logEntry.incErrors("Could not delete incremental ids file " + idsFile + " after processing.");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error reading IDs file " + idsFile, e);
+		}
+		return numUpdates;
+	}
+
 	private static int updateItemsBasedOnIds(File idsFile, long lastUpdateFromMarc, Connection dbConn) {
 		int numUpdates = 0;
-		logEntry.addNote("Processing ids file " + idsFile);
+		logEntry.addNote("Processing all ids file " + idsFile);
 		try {
 			//Get all existing ids in the database
 			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, deleted FROM ils_records where source = ?;");
@@ -852,7 +895,7 @@ public class EvergreenExportMain {
 
 			//After the file has been processed, delete it
 			if (!idsFile.delete()){
-				logEntry.incErrors("Could not delete ids file " + idsFile + " after processing.");
+				logEntry.incErrors("Could not delete all ids file " + idsFile + " after processing.");
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error reading IDs file " + idsFile, e);
