@@ -37,5 +37,12 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE library ADD COLUMN displayHoldsOnCheckout TINYINT(1) DEFAULT 0"
 			]
 		],//add_displayHoldsOnCheckout
+		'aspen_site_lastOfflineTime' => [
+			'title' => 'Offline site monitoring in Greenhouse',
+			'description' => 'Add tracking of when Greenhouse is unable to connect to an Aspen site',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN lastOfflineTime INT",
+			]
+		],//aspen_site_lastOfflineTime
 	];
 }
