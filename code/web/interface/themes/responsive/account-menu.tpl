@@ -57,7 +57,7 @@
 				{* Only highlight saved searches as active if user is logged in: *}
 				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a></div>
 			{/if}
-			{if $userHasCatalogConnection && enableReadingHistory}
+			{if $userHasCatalogConnection && $enableReadingHistory}
 				<div class="header-menu-option" >
 					<a href="/MyAccount/ReadingHistory">
 						{translate text="Reading History" isPublicFacing=true}
