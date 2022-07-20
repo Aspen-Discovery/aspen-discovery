@@ -30,5 +30,12 @@ function getUpdates22_08_00() : array
 				) ENGINE INNODB',
 			]
 		],//greenhouse wait time monitoring
+		'add_displayHoldsOnCheckout' => [
+			'title' => 'Add displayHoldsOnCheckout option to library systems',
+			'description' => 'Add option to show if patron checkouts have holds on them',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN displayHoldsOnCheckout TINYINT(1) DEFAULT 0"
+			]
+		],//add_displayHoldsOnCheckout
 	];
 }
