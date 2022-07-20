@@ -15,6 +15,8 @@ class Koha extends AbstractIlsDriver
 	private $opacCurlWrapper;
 	/** @var CurlWrapper */
 	private $delApiCurlWrapper;
+	/** @var CurlWrapper */
+	private $renewalsCurlWrapper;
 
 	static $fineTypeTranslations = [
 		'A' => 'Account management fee',
@@ -472,6 +474,15 @@ class Koha extends AbstractIlsDriver
 //				$curCheckout->canRenew = "0";
 //				$curCheckout->renewError = translate(['text' => 'On hold for another user','isPublicFacing'=>true]);
 //			}
+
+			$library = $patron->getHomeLibrary();
+			if($library->displayHoldsOnCheckout) {
+				$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
+				if ($allowRenewals['success'] == true) {
+					$curCheckout->canRenew = false;
+					$curCheckout->renewError = $allowRenewals['error'];
+				}
+			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
@@ -967,6 +978,8 @@ class Koha extends AbstractIlsDriver
 		$this->apiCurlWrapper->setTimeout(30);
 		$this->delApiCurlWrapper = new CurlWrapper();
 		$this->delApiCurlWrapper->setTimeout(30);
+		$this->renewalsCurlWrapper = new CurlWrapper();
+		$this->renewalsCurlWrapper->setTimeout(30);
 	}
 
 	function __destruct()
@@ -974,6 +987,7 @@ class Koha extends AbstractIlsDriver
 		$this->curlWrapper = null;
 		$this->apiCurlWrapper = null;
 		$this->delApiCurlWrapper = null;
+		$this->renewalsCurlWrapper = null;
 
 		//Cleanup any connections we have to other systems
 		$this->closeDatabaseConnection();
@@ -5119,5 +5133,40 @@ class Koha extends AbstractIlsDriver
 				$user->update();
 			}
 		}
+	}
+
+	public function checkAllowRenewals($issueId) {
+		$result = [
+			'success' => false,
+			'error' => null,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+		} else {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/checkouts/" . $issueId . "/allows_renewal/";
+
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
+			ExternalRequestLogEntry::logRequest('koha.checkouts_allowRenewals', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+			$response = json_decode($response);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				if($response->error == "on_reserve") {
+					$result['success'] = true;
+					$result['error'] = "On hold for another patron";
+				}
+			}
+		}
+		return $result;
 	}
 }

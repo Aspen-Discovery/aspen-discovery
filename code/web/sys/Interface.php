@@ -546,6 +546,7 @@ class UInterface extends Smarty
 		$this->assign('showItsHere', $library->showItsHere);
 
 		$this->assign('displayItemBarcode', $library->displayItemBarcode);
+		$this->assign('displayHoldsOnCheckout', $library->displayHoldsOnCheckout);
 
 		$this->assign('allowMaxDaysToFreeze', $library->maxDaysToFreeze);
 		if($library->maxDaysToFreeze > -1) {
