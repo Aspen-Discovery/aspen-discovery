@@ -932,9 +932,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (formatSource.equals("item") && formatSubfield != ' '){
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			if (format != null) {
-				itemInfo.setFormat(translateValue("format", format, recordInfo.getRecordIdentifier()));
-				itemInfo.setFormatCategory(translateValue("format_category", format, recordInfo.getRecordIdentifier()));
-				String formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+				if (hasTranslation("format", format)) {
+					itemInfo.setFormat(translateValue("format", format, recordInfo.getRecordIdentifier()));
+				}
+				if (hasTranslation("format_category", format)) {
+					itemInfo.setFormatCategory(translateValue("format_category", format, recordInfo.getRecordIdentifier()));
+				}
+				String formatBoost = null;
+				if (hasTranslation("format_boost", format)) {
+					formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+				}
 				try {
 					if (formatBoost != null && formatBoost.length() > 0) {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
