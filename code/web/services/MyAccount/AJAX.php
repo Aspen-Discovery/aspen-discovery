@@ -2178,8 +2178,12 @@ class MyAccount_AJAX extends JSON_Action
 			if (UserAccount::isLoggedIn() == false || empty($user)){
 				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else {
-				$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
-				if($allowFreezeHolds) {
+				if ($user->getHomeLibrary() != null) {
+					$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
+				}else{
+					$allowFreezeHolds = $library->allowFreezeHolds;
+				}
+				if ($allowFreezeHolds) {
 					$interface->assign('allowFreezeAllHolds', true);
 				} else {
 					$interface->assign('allowFreezeAllHolds', false);

@@ -39,6 +39,15 @@ class Evolve extends AbstractIlsDriver
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']){
+			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnLoan=YES';
+			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
+			ExternalRequestLogEntry::logRequest('evolve.getCheckouts', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200){
+				$jsonData = json_decode($response);
+			}
+		}
 
 
 		return $checkedOutTitles;
@@ -194,6 +203,52 @@ class Evolve extends AbstractIlsDriver
 			'available' => $availableHolds,
 			'unavailable' => $unavailableHolds
 		);
+
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']){
+			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnReserve=YES';
+			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
+			ExternalRequestLogEntry::logRequest('evolve.getHolds', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200){
+				$holdsList = json_decode($response);
+				foreach ($holdsList as $holdInfo){
+					$curHold = new Hold();
+					$curHold->userId = $patron->id;
+					$curHold->type = 'ils';
+					$curHold->source = $this->getIndexingProfile()->name;
+					$curHold->sourceId = $holdInfo->HoldingID;
+					$curHold->recordId = substr($holdInfo->HoldingID, 0, strpos($holdInfo->HoldingID, '.'));
+					$curHold->cancelId = $holdInfo->HoldingID;
+					$curHold->frozen = false;
+					$curHold->locationUpdateable = true;
+					$curHold->cancelable = true;
+					$curHold->status = $holdInfo->ReserveStatus;
+					if ($holdInfo->ReserveStatus == 'Hold Shelf'){
+						$isAvailable = true;
+					}else{
+						$isAvailable = false;
+					}
+					//TODO: Hold positions within hold queue
+					if (!$isAvailable) {
+						$curHold->holdQueueLength   = $holdInfo->QueueTotal;
+						$curHold->position          = $holdInfo->QueuePosition;
+					}
+					$curHold->canFreeze = false;
+					$curHold->title = $holdInfo->Title;
+					$curHold->author = $holdInfo->Author;
+					$curHold->callNumber = $holdInfo->CallNumber;
+					$curHold->format = $holdInfo->Form;
+					//TODO: Pickup location id
+					$curHold->pickupLocationName = $holdInfo->Location;
+					$curHold->available = $isAvailable;
+					if ($curHold->available) {
+						$holds['available'][] = $curHold;
+					} else {
+						$holds['unavailable'][] = $curHold;
+					}
+				}
+			}
+		}
 		return $holds;
 	}
 
@@ -239,6 +294,15 @@ class Evolve extends AbstractIlsDriver
 		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
 
 		$fines = [];
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']) {
+			$evolveUrl = $this->accountProfile->patronApiUrl . '/AccountFinancial/Token=' . $sessionInfo['accessToken'];
+			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
+			ExternalRequestLogEntry::logRequest('evolve.getFines', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
+				$finesList = json_decode($response);
+			}
+		}
 
 		return $fines;
 	}
@@ -271,7 +335,7 @@ class Evolve extends AbstractIlsDriver
 
 			if ($sessionInfo['userValid']){
 				//Load user data
-				return $this->loadPatronBasicData($username, $barcode, $sessionInfo);
+				return $this->loadPatronBasicData($username, $password, $sessionInfo);
 			}
 		}
 		return null;
