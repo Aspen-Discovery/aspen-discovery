@@ -8,7 +8,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/services/MyAccount/StaffSettings.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/MyAccount/StaffSettings.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -341,29 +340,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/version_updates/22.07.00.php</url>
-          <line>87</line>
-          <option name="timeStamp" value="2568" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Browse/BaseBrowsable.php</url>
-          <line>64</line>
-          <option name="timeStamp" value="2571" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Browse/BaseBrowsable.php</url>
-          <line>74</line>
-          <option name="timeStamp" value="2572" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/Greenhouse/AspenSite.php</url>
           <line>99</line>
           <option name="timeStamp" value="2578" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Polaris.php</url>
-          <line>866</line>
-          <option name="timeStamp" value="2580" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/Evolve.php</url>
