@@ -106,17 +106,19 @@ public class ItemInfo{
 	}
 
 	String getItemIdentifier() {
-		if (itemIdentifier == null || itemIdentifier.length() == 0) {
-			return recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
-		}else {
-			if (itemIdentifier.length() > 255){
-				itemIdentifier = itemIdentifier.substring(0, 255).trim();
-			}
-			return itemIdentifier;
+		if (itemIdentifier == null) {
+			itemIdentifier = recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
 		}
+		return itemIdentifier;
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
+		if (itemIdentifier.length() > 255){
+			itemIdentifier = itemIdentifier.substring(0, 255).trim();
+		}else if (itemIdentifier.length() == 0){
+			//Don't use empty identifiers
+			itemIdentifier = null;
+		}
 		this.itemIdentifier = itemIdentifier;
 	}
 
@@ -311,11 +313,12 @@ public class ItemInfo{
 
 	ScopingInfo addScope(Scope scope) {
 		ScopingInfo scopeInfo;
-		if (scopingInfo.containsKey(scope.getScopeName())){
-			scopeInfo = scopingInfo.get(scope.getScopeName());
+		String scopeName = scope.getScopeName();
+		if (scopingInfo.containsKey(scopeName)){
+			scopeInfo = scopingInfo.get(scopeName);
 		}else{
 			scopeInfo = new ScopingInfo(scope, this);
-			scopingInfo.put(scope.getScopeName(), scopeInfo);
+			scopingInfo.put(scopeName, scopeInfo);
 		}
 		return scopeInfo;
 	}

@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.indexing;
 
 import com.sun.istack.internal.NotNull;
+import com.turning_leaf_technologies.util.MaxSizeHashMap;
 
 import java.util.HashMap;
 import java.util.regex.Pattern;

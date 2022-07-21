@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.indexing;
 
 import com.sun.istack.internal.NotNull;
+import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.marc4j.marc.Record;
 
 import java.util.HashMap;
@@ -69,7 +70,12 @@ public class Scope implements Comparable<Scope>{
 		this.facetLabel = facetLabel.trim();
 	}
 
+	private static InclusionResult  includedOwnedResult = new InclusionResult(true, true, null);
+	private static InclusionResult  includedNonOwnedResult = new InclusionResult(true, false, null);
+	private static InclusionResult  nonIncludedNonOwnedResult = new InclusionResult(false, false, null);
+
 	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
+	private final MaxSizeHashMap<String, Boolean> inclusionResults = new MaxSizeHashMap<>(500);
 	/**
 	 * Determine if the item is part of the current scope based on location code and other information
 	 *
@@ -79,32 +85,48 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-		String fullKey = recordType + locationCode + subLocationCode;
-		Boolean isOwned = ownershipResults.get(fullKey);
-		if (isOwned == null) {
-			for (OwnershipRule curRule : ownershipRules) {
-				if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)) {
-					ownershipResults.put(fullKey, true);
-					return new InclusionResult(true, true, econtentUrl);
-				}
-			}
-			ownershipResults.put(fullKey, false);
-		}else if (isOwned){
-			return new InclusionResult(true, true, econtentUrl);
-		}
-
-		for(InclusionRule curRule: inclusionRules){
-			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)){
-				if (econtentUrl != null) {
-					econtentUrl = curRule.getLocalUrl(econtentUrl);
-				}
-				return new InclusionResult(true, false, econtentUrl);
+	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String fullKey, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+		if (isItemOwnedByScope(itemIdentifier, fullKey, recordType, locationCode, subLocationCode)){
+			if (econtentUrl == null){
+				return includedOwnedResult;
+			}else {
+				return new InclusionResult(true, true, econtentUrl);
 			}
 		}
 
-		//If we got this far, it isn't included
-		return new InclusionResult(false, false, econtentUrl);
+		Boolean cachedInclusion;
+		if (econtentUrl == null) {
+			cachedInclusion = inclusionResults.get(itemIdentifier);
+		}else{
+			cachedInclusion = null;
+		}
+		if (cachedInclusion != null){
+			if (cachedInclusion == Boolean.TRUE){
+				return includedNonOwnedResult;
+			}else{
+				return nonIncludedNonOwnedResult;
+			}
+		}else {
+			for (InclusionRule curRule : inclusionRules) {
+				if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)) {
+					inclusionResults.put(itemIdentifier, Boolean.TRUE);
+					if (econtentUrl == null) {
+						return includedNonOwnedResult;
+					} else {
+						econtentUrl = curRule.getLocalUrl(econtentUrl);
+						return new InclusionResult(true, false, econtentUrl);
+					}
+				}
+			}
+
+			//If we got this far, it isn't included
+			inclusionResults.put(itemIdentifier, Boolean.FALSE);
+			if (econtentUrl == null) {
+				return nonIncludedNonOwnedResult;
+			} else {
+				return new InclusionResult(false, false, econtentUrl);
+			}
+		}
 	}
 
 	/**
@@ -118,15 +140,20 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public boolean isItemOwnedByScope(String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
-		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
-				return true;
+	public boolean isItemOwnedByScope(String itemIdentifier, String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+		Boolean isOwned = ownershipResults.get(fullKey);
+		if (isOwned == null) {
+			for(OwnershipRule curRule: ownershipRules){
+				if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
+					ownershipResults.put(fullKey, Boolean.TRUE);
+					return true;
+				}
 			}
+			ownershipResults.put(fullKey, Boolean.FALSE);
+			return false;
+		}else {
+			return isOwned;
 		}
-
-		//If we got this far, it isn't owned
-		return false;
 	}
 
 	public String getFacetLabel() {

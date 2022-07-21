@@ -642,8 +642,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		boolean hasSystemBasedShelfLocation = false;
 		String originalUrl = itemInfo.geteContentUrl();
 		String fullKey = profileType + location;
+
 		for (Scope scope: indexer.getScopes()){
-			Scope.InclusionResult result = scope.isItemPartOfScope(profileType, location, "", null, audiences, audiencesAsString, format, true, true, false, record, originalUrl);
+			Scope.InclusionResult result = scope.isItemPartOfScope(itemInfo.getItemIdentifier(), fullKey, profileType, location, "", null, audiences, audiencesAsString, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(scope);
 				if (scopingInfo == null){
@@ -652,7 +653,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 				groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 				if (scope.isLocationScope()) { //Either a location scope or both library and location scope
-					boolean itemIsOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
+					boolean itemIsOwned = scope.isItemOwnedByScope(itemInfo.getItemIdentifier(), fullKey, profileType, location, "");
 					scopingInfo.setLocallyOwned(itemIsOwned);
 					if (scope.isLibraryScope()){
 						scopingInfo.setLibraryOwned(itemIsOwned);
@@ -662,7 +663,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						}
 					}
 				}else if (scope.isLibraryScope()) {
-					boolean libraryOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
+					boolean libraryOwned = scope.isItemOwnedByScope(itemInfo.getItemIdentifier(), fullKey, profileType, location, "");
 					scopingInfo.setLibraryOwned(libraryOwned);
 					//TODO: Should this be here or should this only happen for consortia?
 					if (libraryOwned && itemInfo.getShelfLocation().equals("On Order")){
@@ -1009,18 +1010,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (format == null){
 				format = itemInfo.getRecordInfo().getPrimaryFormat();
 			}
-			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, false, false, true, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), fullKey, profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
-					boolean itemIsOwned = curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, "");
+					boolean itemIsOwned = curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), fullKey, profileType, itemLocation, "");
 					scopingInfo.setLocallyOwned(itemIsOwned);
 					if (curScope.isLibraryScope()){
 						scopingInfo.setLibraryOwned(itemIsOwned);
 					}
 				}else if (curScope.isLibraryScope()) {
-					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
+					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), fullKey, profileType, itemLocation, ""));
 				}
 				//Check to see if we need to do url rewriting
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
@@ -1060,8 +1061,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String primaryFormat = recordInfo.getPrimaryFormat();
 		String fullKey = profileType + itemLocation + itemSublocation;
 		for (Scope curScope : indexer.getScopes()) {
-
-			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), fullKey, profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
@@ -1072,7 +1072,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (curScope.isLocationScope()) {
 					scopingInfo.setLocallyOwned(result.isOwned);
 					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(fullKey, profileType, itemLocation, itemSublocation));
+						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(itemInfo.getItemIdentifier(), fullKey, profileType, itemLocation, itemSublocation));
 					}
 				}
 				if (curScope.isLibraryScope()) {
