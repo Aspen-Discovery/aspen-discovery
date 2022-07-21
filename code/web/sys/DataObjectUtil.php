@@ -99,6 +99,13 @@ class DataObjectUtil
 
 		//Do the validation
 		foreach ($structure as $property){
+			if ($property['type'] == 'section') {
+				$sectionResults = DataObjectUtil::validateObject($property['properties'], $object);
+				if ($sectionResults['validatedOk'] == false) {
+					$validationResults['errors'] = array_merge($validationResults['errors'], $sectionResults['errors']);
+				}
+				continue;
+			}
 			$value = isset($_REQUEST[$property['property']]) ? $_REQUEST[$property['property']] : null;
 			if (isset($property['required']) && $property['required'] == true){
 				if ($value == null && strlen($value) > 0){

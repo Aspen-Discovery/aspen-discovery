@@ -20,6 +20,7 @@ function AccountDrawer() {
 				drawerPosition: "left",
 				headerShown: false,
 				backBehavior: "none",
+				lazy: true,
 				drawerStyle: {
 					backgroundColor: screenBackgroundColor,
 				},
@@ -30,7 +31,8 @@ function AccountDrawer() {
 				name="Tabs"
 				component={TabNavigator}
 				screenOptions={{
-					headerShown: false
+					headerShown: false,
+					lazy: true,
 				}}
 			/>
 			<Drawer.Screen

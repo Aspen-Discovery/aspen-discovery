@@ -203,7 +203,7 @@ public class FolioExportMain {
 			//Check memory to see if we should close
 			if (SystemUtils.hasLowMemory(configIni, logger)){
 				logger.info("Ending because we have low memory available");
-				disconnectDatabase(aspenConn);
+				disconnectDatabase();
 				break;
 			}
 

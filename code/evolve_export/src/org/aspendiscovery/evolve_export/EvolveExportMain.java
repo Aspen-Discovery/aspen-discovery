@@ -6,17 +6,22 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.net.NetworkUtils;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -30,6 +35,11 @@ public class EvolveExportMain {
 	private static Ini configIni;
 	private static Connection dbConn;
 	private static String serverName;
+	private static String baseUrl;
+	private static String integrationToken;
+	private static String accessToken;
+	private static String staffUsername;
+	private static String staffPassword;
 
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
@@ -97,7 +107,11 @@ public class EvolveExportMain {
 				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'evolve'");
 				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 				if (accountProfileRS.next()){
+					baseUrl = accountProfileRS.getString("patronApiUrl");
 					profileToLoad = accountProfileRS.getString("recordSource");
+					integrationToken = accountProfileRS.getString("oAuthClientSecret");
+					staffUsername = accountProfileRS.getString("staffUsername");
+					staffPassword = accountProfileRS.getString("staffPassword");
 				}else{
 					logEntry.incErrors("Could not load Evolve account profile");
 					accountProfileRS.close();
@@ -126,9 +140,9 @@ public class EvolveExportMain {
 						//Update works that have changed since the last index
 						numChanges = updateRecords();
 					}else{
-						//MarcFactory marcFactory = MarcFactory.newInstance();
+						MarcFactory marcFactory = MarcFactory.newInstance();
 						//TODO: API to update an individual record?
-						//numChanges = updateBibFromEvolve(singleWorkId, marcFactory, true);
+						numChanges = updateBibFromEvolve(singleWorkId, marcFactory, true);
 					}
 				}
 
@@ -231,6 +245,119 @@ public class EvolveExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static int updateBibFromEvolve(String singleWorkId, MarcFactory marcFactory, boolean incrementProductsInLog) {
+		//The integration token does not allow catalog search so we need to login with a patron.
+		String patronLoginUrl = baseUrl + "/Authenticate";
+		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername  + "\",\"Pwd\":\"" + staffPassword +"\"}";
+		WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
+		int numProcessed = 0;
+		if (loginResponse.isSuccess()){
+			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
+			JSONObject firstResponse = loginResponseData.getJSONObject(0);
+			String accessToken = firstResponse.getString("LoginToken");
+			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=05052022|Marc=Yes";
+			//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
+
+			HashMap<String, String> headers = new HashMap<>();
+			headers.put("Content-type", "application/json");
+			headers.put("Accept", "application/json");
+			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
+			if (getBibsResponse.isSuccess()) {
+				String rawMessage = getBibsResponse.getMessage();
+				rawMessage = rawMessage.replaceAll("u001e", "\u001e");
+				rawMessage = rawMessage.replaceAll("u001f", "\u001f");
+				rawMessage = rawMessage.replaceAll("u001d", "\u001d");
+
+				JSONArray responseAsArray = new JSONArray(rawMessage);
+				for (int i = 0; i < responseAsArray.length(); i++){
+					numProcessed++;
+					JSONObject curRow = responseAsArray.getJSONObject(i);
+					String rawMarc = curRow.getString("MARC");
+					try {
+						MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+						if (reader.hasNext()) {
+							String bibId = curRow.getString("ID");
+							Record marcRecord = reader.next();
+
+							List<ControlField> controlFields = marcRecord.getControlFields();
+							ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
+							for (ControlField controlField : controlFieldsCopy){
+								if (controlField.getData().startsWith("\u001f")){
+									marcRecord.removeVariableField(controlField);
+									controlField.setData(controlField.getData().replaceAll("\u001f", ""));
+									marcRecord.addVariableField(controlField);
+								}
+							}
+							//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
+							DataField field950 = marcFactory.newDataField("950", ' ', ' ');
+							field950.addSubfield(marcFactory.newSubfield('a', bibId));
+							field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
+							marcRecord.addVariableField(field950);
+							//Also load holdings from the API
+							String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
+							WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
+							if (getHoldingsResponse.isSuccess()) {
+								JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
+								if (holdingsData != null) {
+									for (int j = 0; j < holdingsData.length(); j++) {
+										JSONObject holding = holdingsData.getJSONObject(j);
+										DataField field852 = marcFactory.newDataField("852", ' ', ' ');
+										double holdingId = holding.getDouble("HoldingID");
+										String formattedHoldingId = Double.toString(holdingId);
+										if (formattedHoldingId.indexOf('.') > 0) {
+											formattedHoldingId = formattedHoldingId.substring(0, formattedHoldingId.indexOf('.'));
+										}
+										field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
+										field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
+										field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
+										field852.addSubfield(marcFactory.newSubfield('b', holding.getString("Collection")));
+										if (!holding.isNull("DueDate")) {
+											field852.addSubfield(marcFactory.newSubfield('k', holding.getString("DueDate")));
+										}
+										field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
+										//TODO: Would like barcode, but not available
+										//TODO: Would like Date Created but not available
+
+										marcRecord.addVariableField(field852);
+									}
+								}
+							}
+
+							//Save the MARC record
+							RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+							if (bibliographicRecordId != null) {
+								GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
+								if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+									logEntry.incAdded();
+								}else {
+									logEntry.incUpdated();
+								}
+
+								//Regroup the record
+								String groupedWorkId =  getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+								if (groupedWorkId != null) {
+									//Reindex the record
+									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+								}
+							}
+							if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
+								getGroupedWorkIndexer().commitChanges();
+								logEntry.saveResults();
+							}
+						}
+					}catch (Exception e){
+						logEntry.incErrors("Error parsing marc record", e);
+					}
+				}
+			}
+		}else{
+			logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
+		}
+
+		return numProcessed;
+
 	}
 
 	private static void disconnectDatabase() {

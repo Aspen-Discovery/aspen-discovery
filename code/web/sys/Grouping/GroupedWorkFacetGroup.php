@@ -272,7 +272,7 @@ class GroupedWorkFacetGroup extends DataObject
 	}
 
 	/** @return GroupedWorkFacet[] */
-	public function getFacets() : array{
+	public function getFacets() : ?array{
 		if (!isset($this->_facets) && $this->id){
 			$this->_facets = array();
 			$facet = new GroupedWorkFacet();

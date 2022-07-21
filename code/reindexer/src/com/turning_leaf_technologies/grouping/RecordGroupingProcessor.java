@@ -428,7 +428,7 @@ public class RecordGroupingProcessor {
 						updateReadingHistoryStmt.setString(2, oldPermanentId);
 						numUpdatedReadingHistory = updateReadingHistoryStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving reading history", e);
+						logEntry.incErrors("Error moving reading history from " + oldPermanentId + " to " + newPermanentId, e);
 					}
 
 					//Update list entries

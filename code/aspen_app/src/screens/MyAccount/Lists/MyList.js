@@ -15,7 +15,8 @@ import {
 	Text,
 	Container,
 	HStack,
-	VStack
+	VStack,
+	Image
 } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -87,7 +88,7 @@ export default class MyList extends Component {
 		return (
 			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, this.state.libraryUrl)}>
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
-					<Avatar source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "80px", lg: "120px"}} />
+					<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "sm", lg: "md"}}>{item.title}</Text>
 						{item.author ? <Text _dark={{ color: "warmGray.50" }} color="coolGray.800" fontSize="xs">{translate('grouped_work.by')} {item.author}</Text> : null }

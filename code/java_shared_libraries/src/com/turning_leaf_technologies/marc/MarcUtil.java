@@ -84,8 +84,7 @@ public class MarcUtil {
 					// if bracket expression is digits, expression is treated as character
 					// positions
 					int substart = Integer.parseInt(sub[0]);
-					subend = (sub.length > 1) ? Integer.parseInt(sub[1]) + 1
-							: substart + 1;
+					subend = (sub.length > 1) ? Integer.parseInt(sub[1]) + 1 : substart + 1;
 					String subfieldWObracket = subfield.substring(0, bracket - 3);
 					result.addAll(getSubfieldDataAsSet(record, tag, subfieldWObracket, substart, subend));
 				} catch (NumberFormatException e) {
@@ -97,8 +96,7 @@ public class MarcUtil {
 			{
 				String separator = null;
 				if (subfield.indexOf('\'') != -1) {
-					separator = subfield.substring(subfield.indexOf('\'') + 1,
-							subfield.length() - 1);
+					separator = subfield.substring(subfield.indexOf('\'') + 1, subfield.length() - 1);
 					subfield = subfield.substring(0, subfield.indexOf('\''));
 				}
 

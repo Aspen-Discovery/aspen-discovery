@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.indexing;
 
 import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.marc4j.marc.Record;
 
 import java.util.HashMap;
@@ -92,17 +93,28 @@ class InclusionRule {
 		this.urlReplacement = urlReplacement;
 	}
 
+	MaxSizeHashMap<String, Boolean> includedItemResults = new MaxSizeHashMap<>(500);
 	//private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
 	HashMap<String, Boolean> inclusionCache = new HashMap<>();
-	boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+
+	boolean isItemIncluded(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+		Boolean includedItemResult = includedItemResults.get(itemIdentifier);
+		if (includedItemResult != null){
+			return includedItemResult;
+		}
+
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
+			includedItemResults.put(itemIdentifier, Boolean.FALSE);
 			return false;
 		}else if (!includeItemsOnOrder && isOnOrder){
+			includedItemResults.put(itemIdentifier, Boolean.FALSE);
 			return  false;
 		}else if (!includeEContent && isEContent){
+			includedItemResults.put(itemIdentifier, Boolean.FALSE);
 			return  false;
 		}else if (!this.recordType.equals(recordType)){
+			includedItemResults.put(itemIdentifier, Boolean.FALSE);
 			return  false;
 		}
 
@@ -112,6 +124,7 @@ class InclusionRule {
 			if (matchAllLocations){
 				locationCode = "null";
 			}else {
+				includedItemResults.put(itemIdentifier, Boolean.FALSE);
 				return false;
 			}
 		}
@@ -209,6 +222,7 @@ class InclusionRule {
 		if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
 			isIncluded = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 		}
+		includedItemResults.put(itemIdentifier, isIncluded);
 		return isIncluded;
 	}
 

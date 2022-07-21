@@ -28,6 +28,7 @@ class AspenSite extends DataObject
 	public $nextMeetingDate;
 	public $nextMeetingPerson;
 	public $activeTicketFeed;
+	public $lastOfflineTime;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
 
@@ -69,6 +70,7 @@ class AspenSite extends DataObject
 			'nextMeetingPerson' => ['property' => 'nextMeetingPerson', 'type'=>'text', 'label'=>'Next meeting person', 'description'=>'Who will meet with the library next.', 'hideInLists' => false],
 			'notes' => ['property' => 'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes on the site.', 'hideInLists' => true],
 			'lastNotificationTime' => ['property' => 'lastNotificationTime', 'type'=>'timestamp', 'label'=>'Last Notification Time', 'description'=>'When the last alert was sent.', 'hideInLists' => false],
+			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline TIme', 'description' => 'When the last time the site was offline.', 'hideInLists' => false],
 		];
 	}
 
@@ -117,6 +119,20 @@ class AspenSite extends DataObject
 					$availableMemory = StringUtils::unformatBytes($status['serverStats']['available_memory']['value']) / (1024 * 1024 * 1024);
 					$memoryUsage->availableMemory = $availableMemory;
 					$memoryUsage->insert();
+
+					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteWaitTime.php';
+					$waitTime = new AspenSiteWaitTime();
+					//delete anything more than 2 weeks old
+					$waitTime->whereAdd();
+					$waitTime->aspenSiteId = $this->id;
+					$waitTime->whereAdd('timestamp < ' . $twoWeeksAgo);
+					$waitTime->delete(true);
+					$waitTime = new AspenSiteWaitTime();
+					$waitTime->aspenSiteId = $this->id;
+					$waitTime->timestamp = $now;
+					$waitTimeVal = (float)$status['serverStats']['wait_time']['value'];
+					$waitTime->waitTime = $waitTimeVal;
+					$waitTime->insert();
 
 					//Update daily stats
 					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteStat.php';
@@ -171,14 +187,26 @@ class AspenSite extends DataObject
 				}else {
 					$status['alive'] = false;
 					$status['checks'] = [];
+					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+						$this->lastOfflineTime = time();
+						$this->update();
+					}
 				}
 			}catch (Exception $e) {
 				$status['alive'] = false;
 				$status['checks'] = [];
+				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+					$this->lastOfflineTime = time();
+					$this->update();
+				}
 			}
 		}else{
 			$status['alive'] = false;
 			$status['checks'] = [];
+			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+				$this->lastOfflineTime = time();
+				$this->update();
+			}
 		}
 
 		return $status;

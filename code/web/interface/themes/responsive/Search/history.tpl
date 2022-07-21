@@ -6,9 +6,10 @@
 			</div>
 		{/if}
 
+		<h1>{translate text="Your Searches" isPublicFacing=true}</h1>
 		{if !$noHistory}
 			{if $saved}
-				<h1>{translate text="Search History" isPublicFacing=true}</h1>
+				<div class="resultHead"><h2>{translate text="Saved Searches" isPublicFacing=true}</h2></div>
 				<table class="table table-bordered table-striped" width="100%">
 					<tr>
 						<th width="4%">{translate text="Id" isPublicFacing=true}</th>
@@ -39,7 +40,7 @@
 			{/if}
 
 			{if $links}
-				<div class="resultHead"><h1>{translate text="Your Recent Searches" isPublicFacing=true}</h1></div>
+				<div class="resultHead"><h2>{translate text="Recent Searches" isPublicFacing=true}</h2></div>
 				<table class="table table-bordered table-striped" width="100%">
 					<tr>
 						<th width="15%">{translate text="Time" isPublicFacing=true}</th>
@@ -69,7 +70,7 @@
 			{/if}
 
 		{else}
-			<h1>{translate text="Your Recent Searches" isPublicFacing=true}</h1>
+			<h1>{translate text="Recent Searches" isPublicFacing=true}</h1>
 			{translate text="There are currently no searches in your history." isPublicFacing=true}
 		{/if}
 	</div>

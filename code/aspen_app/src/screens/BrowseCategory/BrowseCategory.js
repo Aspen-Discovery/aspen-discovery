@@ -9,7 +9,7 @@ import * as Random from 'expo-random';
 import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 
 const BrowseCategory = (props) => {
-	const {categoryLabel, categoryKey, renderItem, hideCategory, user, libraryUrl, viewAll, isHidden} = props
+	const {categoryLabel, categoryKey, renderItem, hideCategory, user, libraryUrl, isHidden} = props
 	const [items, setItems] = React.useState([]);
 	const [shouldFetch, setShouldFetch] = React.useState(true);
 	const [initialLoad, setInitialLoad] = React.useState(false);

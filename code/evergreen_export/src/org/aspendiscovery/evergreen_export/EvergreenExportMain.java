@@ -732,8 +732,18 @@ public class EvergreenExportMain {
 			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
 		}
 
+		//Process Incremental ID Files
+		File[] incrementalIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && (name.startsWith("incremental_changes") || name.startsWith("incremental_new"))));
+		if (incrementalIdFiles != null && incrementalIdFiles.length > 0){
+			//Sort from newest to oldest
+			Arrays.sort(incrementalIdFiles, Comparator.comparingLong(File::lastModified));
+			//Just process the newest 1 file.
+			for (File incrementalIdFile : incrementalIdFiles) {
+				totalChanges += updateChangedBibsBasedOnIds(incrementalIdFile, lastUpdateFromMarc, dbConn);
+			}
+		}
 
-		//Process ID Files
+		//Process All ID Files
 		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("all")));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
 			//Sort from newest to oldest
@@ -749,10 +759,10 @@ public class EvergreenExportMain {
 
 		File[] exportedDeletedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("incremental_deleted")));
 		if (exportedDeletedIdFiles != null && exportedDeletedIdFiles.length > 0){
-			//For now we don't care about these since we process the all ids file, just delete them.
-			for (int i = 1; i < exportedDeletedIdFiles.length; i++) {
-				if (!exportedDeletedIdFiles[i].delete()) {
-					logEntry.incErrors("Could not delete old ids file " + exportedDeletedIdFiles[i]);
+			//For now, we don't care about these since we process the all ids file, just delete them.
+			for (File exportedDeletedIdFile : exportedDeletedIdFiles) {
+				if (!exportedDeletedIdFile.delete()) {
+					logEntry.incErrors("Could not delete old ids file " + exportedDeletedIdFile);
 				}
 			}
 		}
@@ -760,9 +770,42 @@ public class EvergreenExportMain {
 		return totalChanges;
 	}
 
+	private static int updateChangedBibsBasedOnIds(File idsFile, long lastUpdateFromMarc, Connection dbConn) {
+		int numUpdates = 0;
+		logEntry.addNote("Processing incremental change ids file " + idsFile);
+		try {
+			//Read the file to see what has been added or deleted
+			BufferedReader reader = new BufferedReader(new FileReader(idsFile));
+			String id = reader.readLine();
+			HashSet<String> idsToProcess = new HashSet<>();
+			while (id != null){
+				idsToProcess.add(id);
+				id = reader.readLine();
+			}
+			reader.close();
+			logEntry.addNote("There are " + idsToProcess.size() + " records to process");
+
+			logEntry.addNote("Processing updated ids");
+			logEntry.saveResults();
+			MarcFactory marcFactory = MarcFactory.newInstance();
+			for (String idToProcess : idsToProcess) {
+				updateBibFromEvergreen(idToProcess, marcFactory, true);
+				numUpdates++;
+			}
+
+			//After the file has been processed, delete it
+			if (!idsFile.delete()){
+				logEntry.incErrors("Could not delete incremental ids file " + idsFile + " after processing.");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error reading IDs file " + idsFile, e);
+		}
+		return numUpdates;
+	}
+
 	private static int updateItemsBasedOnIds(File idsFile, long lastUpdateFromMarc, Connection dbConn) {
 		int numUpdates = 0;
-		logEntry.addNote("Processing ids file " + idsFile);
+		logEntry.addNote("Processing all ids file " + idsFile);
 		try {
 			//Get all existing ids in the database
 			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, deleted FROM ils_records where source = ?;");
@@ -852,7 +895,7 @@ public class EvergreenExportMain {
 
 			//After the file has been processed, delete it
 			if (!idsFile.delete()){
-				logEntry.incErrors("Could not delete ids file " + idsFile + " after processing.");
+				logEntry.incErrors("Could not delete all ids file " + idsFile + " after processing.");
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error reading IDs file " + idsFile, e);
@@ -1046,16 +1089,30 @@ public class EvergreenExportMain {
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
-			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0001) {
-				logEntry.incErrors("More than .1% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
+			//Check errors to see if we should stop processing
+			int numExistingRecordsInAspen = recordGroupingProcessor.getNumExistingTitles(logEntry);
+			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0003) {
+				logEntry.incErrors("More than .03% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath() + ". The file had " + numRecordsWithErrors + " errors out of " + numRecordsRead + " records.");
+				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
+				}
 				return totalChanges;
 			} else if (numRecordsWithErrors > 0) {
 				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");
 				logEntry.saveResults();
 			}
+			//Make sure we have about the right number of records (we're ok losing up to 10% at a time)
+			if (numRecordsRead < (numExistingRecordsInAspen * .9)){
+				logEntry.incErrors("Fewer than 90% of the records in Aspen still for " + indexingProfile.getName() + " in file " + fullExportFile.getAbsolutePath() + ". The file had " + numRecordsRead + "titles and Aspen has " + numExistingRecordsInAspen);
+				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
+				}
+				return totalChanges;
+			}
 			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
 			logEntry.saveResults();
 
+			//Check that the file is not truncated.
 			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()) {
 				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
 				logEntry.addNote("Not processing the full export");
@@ -1280,11 +1337,13 @@ public class EvergreenExportMain {
 					Document getBibsDocument = createXMLDocumentForWebServiceResponse(getBibsResponse);
 					Element collectionsResult = (Element) getBibsDocument.getFirstChild();
 
-					NodeList recordNotes = collectionsResult.getElementsByTagName("record");
-					for (int i = 0; i < recordNotes.getLength(); i++){
+					NodeList recordNodes = collectionsResult.getElementsByTagName("record");
+					for (int i = 0; i < recordNodes.getLength(); i++){
+						boolean hasInvalidData = false;
+
 						Record marcRecord = marcFactory.newRecord();
 
-						Node curRecordNode = recordNotes.item(i);
+						Node curRecordNode = recordNodes.item(i);
 						for (int j = 0; j < curRecordNode.getChildNodes().getLength(); j++){
 							Node curChild = curRecordNode.getChildNodes().item(j);
 							if (curChild instanceof Element){
@@ -1292,7 +1351,12 @@ public class EvergreenExportMain {
 								switch (curElement.getTagName()) {
 									case "leader":
 										String leader = curElement.getTextContent();
-										marcRecord.setLeader(marcFactory.newLeader(leader));
+										try {
+											marcRecord.setLeader(marcFactory.newLeader(leader));
+										}catch (RuntimeException e){
+											//Just ignore this and the leader will be built from the data as best as we can.
+											hasInvalidData = true;
+										}
 										break;
 									case "controlfield": {
 										String tag = curElement.getAttribute("tag");
@@ -1304,20 +1368,28 @@ public class EvergreenExportMain {
 										String tag = curElement.getAttribute("tag");
 										String ind1 = curElement.getAttribute("ind1");
 										String ind2 = curElement.getAttribute("ind2");
-										DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
-										for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
-											Node curChild2 = curElement.getChildNodes().item(k);
-											if (curChild2 instanceof Element) {
-												Element curElement2 = (Element) curChild2;
-												if (curElement2.getTagName().equals("subfield")) {
-													String code = curElement2.getAttribute("code");
-													String data = curElement2.getTextContent();
-													Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
-													curField.addSubfield(curSubField);
+										if (StringUtils.isNumeric(tag)) {
+											DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
+											for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
+												Node curChild2 = curElement.getChildNodes().item(k);
+												if (curChild2 instanceof Element) {
+													Element curElement2 = (Element) curChild2;
+													if (curElement2.getTagName().equals("subfield")) {
+														String code = curElement2.getAttribute("code");
+														String data = curElement2.getTextContent();
+														if (code.length() == 1) {
+															Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
+															curField.addSubfield(curSubField);
+														}else{
+															hasInvalidData = true;
+														}
+													}
 												}
 											}
+											marcRecord.addVariableField(curField);
+										}else{
+											hasInvalidData = true;
 										}
-										marcRecord.addVariableField(curField);
 										break;
 									}
 									case "holdings":
@@ -1406,7 +1478,9 @@ public class EvergreenExportMain {
 						//Save the MARC record
 						RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 						if (bibliographicRecordId != null) {
-
+							if (hasInvalidData){
+								logEntry.incRecordsWithInvalidMarc("Record " + bibliographicRecordId.getIdentifier() + " had an invalid data");
+							}
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
 							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
@@ -1419,6 +1493,10 @@ public class EvergreenExportMain {
 							if (groupedWorkId != null) {
 								//Reindex the record
 								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+							}
+						}else{
+							if (hasInvalidData){
+								logEntry.incRecordsWithInvalidMarc("Unparseable record had an invalid data");
 							}
 						}
 						if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {

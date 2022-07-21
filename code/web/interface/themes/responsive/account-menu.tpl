@@ -15,14 +15,6 @@
 						{translate text="Titles On Hold" isPublicFacing=true}
 					</a>
 				</div>
-
-				{if $enableReadingHistory}
-					<div class="header-menu-option" >
-						<a href="/MyAccount/ReadingHistory">
-							{translate text="Reading History" isPublicFacing=true}
-						</a>
-					</div>
-				{/if}
 				{if $showCurbsidePickups}
 					<div class="header-menu-option">
 						<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
@@ -43,25 +35,36 @@
 					<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
 				</div>
 			{/if}
+			{if $userHasCatalogConnection}
+				<div class="header-menu-option" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a></div>
+			{/if}
 			{if $showRatings}
-				<div class="header-menu-option" >
-					<a href="/MyAccount/MyRatings">{translate text='Titles You Rated' isPublicFacing=true}</a>
-				</div>
 				{if $user->disableRecommendations == 0}
 					<div class="header-menu-option" >
 						<a href="/MyAccount/SuggestedTitles">{translate text='Recommended For You' isPublicFacing=true}</a>
 					</div>
 				{/if}
+				<div class="header-menu-option" >
+					<a href="/MyAccount/MyRatings">{translate text='Titles You Rated' isPublicFacing=true}</a>
+				</div>
 			{/if}
 			{if $showFavorites == 1}
 				<div class="header-menu-option" >
-					<a href="/MyAccount/Lists">{translate text='Lists' isPublicFacing=true}</a>
+					<a href="/MyAccount/Lists">{translate text='Your Lists' isPublicFacing=true}</a>
 				</div>
 			{/if}
-			{if $userHasCatalogConnection}
-				<div class="header-menu-option" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)' isPublicFacing=true}{else}{translate text='My Library Card' isPublicFacing=true}{/if}</a></div>
+			{if $enableSavedSearches}
+				{* Only highlight saved searches as active if user is logged in: *}
+				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a></div>
 			{/if}
-			<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='My Preferences' isPublicFacing=true}</a></div>
+			{if $userHasCatalogConnection && $enableReadingHistory}
+				<div class="header-menu-option" >
+					<a href="/MyAccount/ReadingHistory">
+						{translate text="Reading History" isPublicFacing=true}
+					</a>
+				</div>
+			{/if}
+			<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>
 			<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>
 			{if $user->showMessagingSettings()}
 				<div class="header-menu-option" ><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
@@ -69,11 +72,11 @@
 			{if $allowAccountLinking}
 				<div class="header-menu-option" ><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></div>
 			{/if}
-            {if $twoFactorEnabled}
+			{if $twoFactorEnabled}
 				<div class="header-menu-option"><a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></div>
-            {elseif $allowPinReset && !$offline}
+			{elseif $allowPinReset && !$offline}
 				<div class="header-menu-option" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
-            {/if}
+			{/if}
 			{if $user->isValidForEContentSource('overdrive')}
 				<div class="header-menu-option" ><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
 			{/if}
@@ -81,14 +84,10 @@
 				<div class="header-menu-option" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>
 			{/if}
 			{if $user->isValidForEContentSource('axis360')}
-                <div class="header-menu-option" ><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
-            {/if}
+				<div class="header-menu-option" ><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
+			{/if}
 			{if $userIsStaff}
 				<div class="header-menu-option" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
-			{/if}
-			{if $enableSavedSearches}
-				{* Only highlight saved searches as active if user is logged in: *}
-				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
 			{/if}
 
 			{if $allowMasqueradeMode && !$masqueradeMode}

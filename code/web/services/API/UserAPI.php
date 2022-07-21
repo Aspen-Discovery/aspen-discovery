@@ -522,6 +522,29 @@ class UserAPI extends Action
 			$userData->numHolds = $numHolds;
 			$userData->numHoldsAvailable = $numHoldsAvailable;
 
+			require_once ROOT_DIR . '/services/API/ListAPI.php';
+
+			$numLists = 0;
+			$numSavedSearches = 0;
+
+			// get list count
+			$userLists = new ListAPI();
+			$lists = $userLists->getUserLists();
+			if($lists['count']) {
+				$numLists = $lists['count'];
+			}
+
+			// get saved search count
+			$savedSearches = new ListAPI(true);
+			$searches = $savedSearches->getSavedSearches($user->id);
+			if($searches['count']) {
+				$numSavedSearches = $searches['count'];
+			}
+
+			$userData->numLists = $numLists;
+			$userData->numSavedSearches = $numSavedSearches;
+
+
 			return array('success' => true, 'profile' => $userData);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');

@@ -1124,7 +1124,7 @@ class Record_AJAX extends Action
 			'success' => true,
 			'needsItemLevelHold' => true,
 			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
-			'title' => $return['title'] ?? '',
+			'title' => translate(['text' => 'Select an Item', 'isPublicFacing'=>true]),
 			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}

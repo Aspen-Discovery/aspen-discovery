@@ -6544,7 +6544,13 @@ AspenDiscovery.Account = (function(){
 					if(data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCancelled?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
-						AspenDiscovery.showMessage('Error', 'Unable to process your payment, please visit the library with your receipt', false);
+						var message;
+						if (data.message){
+							message = data.message;
+						}else{
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
 					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);

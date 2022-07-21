@@ -2,8 +2,11 @@ package com.turning_leaf_technologies.net;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.nio.charset.StandardCharsets;
 
 public class WebServiceResponse {
 	private static Logger logger = LogManager.getLogger("WebServiceResponse");
@@ -38,6 +41,14 @@ public class WebServiceResponse {
 	public JSONObject getJSONResponse() {
 		try {
 			return new JSONObject(message);
+		} catch (JSONException e) {
+			logger.error("Error parsing json from webservice response", e);
+			return null;
+		}
+	}
+	public JSONArray getJSONResponseAsArray() {
+		try {
+			return new JSONArray(new String(message.getBytes(StandardCharsets.UTF_8)));
 		} catch (JSONException e) {
 			logger.error("Error parsing json from webservice response", e);
 			return null;
