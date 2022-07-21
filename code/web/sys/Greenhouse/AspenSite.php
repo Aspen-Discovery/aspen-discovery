@@ -187,20 +187,26 @@ class AspenSite extends DataObject
 				}else {
 					$status['alive'] = false;
 					$status['checks'] = [];
-					$this->lastOfflineTime = time();
-					$this->update();
+					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+						$this->lastOfflineTime = time();
+						$this->update();
+					}
 				}
 			}catch (Exception $e) {
 				$status['alive'] = false;
 				$status['checks'] = [];
-				$this->lastOfflineTime = time();
-				$this->update();
+				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+					$this->lastOfflineTime = time();
+					$this->update();
+				}
 			}
 		}else{
 			$status['alive'] = false;
 			$status['checks'] = [];
-			$this->lastOfflineTime = time();
-			$this->update();
+			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+				$this->lastOfflineTime = time();
+				$this->update();
+			}
 		}
 
 		return $status;
