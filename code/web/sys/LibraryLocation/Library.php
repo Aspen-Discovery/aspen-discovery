@@ -613,16 +613,16 @@ class Library extends DataObject
 				'ssoAddressAttr' => array('property'=>'ssoAddressAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s address', 'description'=>'The user\'s address', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				'ssoCityAttr' => array('property'=>'ssoCityAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s city', 'description'=>'The user\'s city', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				'ssoPatronTypeSection' => array('property' => 'ssoPatronTypeSection', 'type' => 'section', 'label' => 'Patron type', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
-					'ssoPatronTypeAttr' => array('property'=>'ssoPatronTypeAttr', 'validationGroupName' => 'patronType', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron type', 'description'=>'The user\'s patron type, this should be a value that is recognised by Aspen. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
-					'ssoPatronTypeFallback' => array('property'=>'ssoPatronTypeFallback', 'validationGroupName' => 'patronType','type'=>'text', 'label'=>'A fallback value for patron type', 'description'=>'A value to be used in the event the identity provider does not supply a patron type attribute, this should be a value that is recognised by Aspen.', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoPatronTypeAttr' => array('property'=>'ssoPatronTypeAttr', 'serverValidation' => 'validatePatronType', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron type', 'description'=>'The user\'s patron type, this should be a value that is recognised by Aspen. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoPatronTypeFallback' => array('property'=>'ssoPatronTypeFallback', 'type'=>'text', 'label'=>'A fallback value for patron type', 'description'=>'A value to be used in the event the identity provider does not supply a patron type attribute, this should be a value that is recognised by Aspen.', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				)),
 				'ssoLibraryIdSection' => array('property' => 'ssoLibraryIdSection', 'type' => 'section', 'label' => 'Library ID', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
-					'ssoLibraryIdAttr' => array('property'=>'ssoLibraryIdAttr', 'validationGroupName' => 'libraryId', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s library ID', 'description'=>'The user\'s library ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
-					'ssoLibraryIdFallback' => array('property'=>'ssoLibraryIdFallback', 'validationGroupName' => 'libraryId', 'type'=>'text', 'label'=>'A fallback value for library ID', 'description'=>'A value to be used in the event the identity provider does not supply a library ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoLibraryIdAttr' => array('property'=>'ssoLibraryIdAttr', 'serverValidation' => 'validateLibraryId', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s library ID', 'description'=>'The user\'s library ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoLibraryIdFallback' => array('property'=>'ssoLibraryIdFallback', 'type'=>'text', 'label'=>'A fallback value for library ID', 'description'=>'A value to be used in the event the identity provider does not supply a library ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				)),
 				'ssoCategoryIdSection' => array('property' => 'ssoCategoryIdSection', 'type' => 'section', 'label' => 'Patron category ID', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
-					'ssoCategoryIdAttr' => array('property'=>'ssoCategoryIdAttr', 'validationGroupName' => 'categoryId','type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron category ID', 'description'=>'The user\'s patron category ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
-					'ssoCategoryIdFallback' => array('property'=>'ssoCategoryIdFallback', 'validationGroupName' => 'categoryId','type'=>'text', 'label'=>'A fallback value for category ID', 'description'=>'A value to be used in the event the identity provider does not supply a category ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoCategoryIdAttr' => array('property'=>'ssoCategoryIdAttr', 'serverValidation' => 'validateCategoryId','type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron category ID', 'description'=>'The user\'s patron category ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoCategoryIdFallback' => array('property'=>'ssoCategoryIdFallback', 'type'=>'text', 'label'=>'A fallback value for category ID', 'description'=>'A value to be used in the event the identity provider does not supply a category ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				)),
 			)),
 
@@ -1228,6 +1228,51 @@ class Library extends DataObject
 		return null;
 	}
 
+	public function validateSso($attrField, $fallbackField, $errorMessage) {
+		$validationResults = array(
+			'validatedOk' => true,
+			'errors' => array(),
+		);
+		// Only proceed if we have a populated SSO IdP URL (we infer SSO auth usage
+		// from this)
+		if (!$this->ssoXmlUrl || strlen($this->ssoXmlUrl) == 0) {
+			return $validationResults;
+		}
+		if (
+			(!$this->$attrField || strlen($this->$attrField) == 0 ) &&
+			(!$this->$fallbackField || strlen($this->$fallbackField) == 0)
+		) {
+			$validationResults['errors'][] = $errorMessage;
+			$validationResults['validatedOk'] = false;
+		}
+		return $validationResults;
+
+	}
+
+	public function validatePatronType() {
+		return $this->validateSso(
+			'ssoPatronTypeAttr',
+			'ssoPatronTypeFallback',
+			'Single sign-on patron type: You must enter either an identity provider attribute name or fallback value'
+		);
+	}
+
+	public function validateLibraryId() {
+		return $this->validateSso(
+			'ssoLibraryIdAttr',
+			'ssoLibraryIdFallback',
+			'Single sign-on library ID: You must enter either an identity provider attribute name or fallback value'
+		);
+	}
+
+	public function validateCategoryId() {
+		return $this->validateSso(
+			'ssoCategoryIdAttr',
+			'ssoCategoryIdFallback',
+			'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value'
+		);
+	}
+
 	public function __get($name){
 		if ($name == "holidays") {
 			if (!isset($this->holidays) && $this->libraryId){
@@ -1812,7 +1857,7 @@ class Library extends DataObject
 // we need to use it to fetch the metadata and store the metadata's filename
 // in the DB, otherwise we delete the file
 	public function processSso(){
-		if (in_array('ssoXmlUrl', $this->_changedFields)) {
+		if (is_array($this->_changedFields) && in_array('ssoXmlUrl', $this->_changedFields)) {
 			global $logger;
 			global $configArray;
 			global $serverName;
