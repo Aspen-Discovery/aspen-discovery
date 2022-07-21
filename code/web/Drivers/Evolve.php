@@ -266,6 +266,25 @@ class Evolve extends AbstractIlsDriver
 			],
 		];
 
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']) {
+			$params = new stdClass();
+			$params->Token = $sessionInfo['accessToken'];
+			$params->CatalogItem  = str_replace('CA010', '', $recordId);
+			$params->Action = "Create";
+			$postParams = json_encode($params);
+			$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Action=Create';
+
+			$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			ExternalRequestLogEntry::logRequest('evolve.placeHold', 'POST', $this->accountProfile->patronApiUrl . '/AccountReserve', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
+				$jsonData = json_decode($response);
+				if (is_array($jsonData)){
+					$jsonData = $jsonData[0];
+				}
+			}
+		}
+
 		return $hold_result;
 	}
 
@@ -380,7 +399,10 @@ class Evolve extends AbstractIlsDriver
 			$user->email = $accountDetails->Email;
 
 			//TODO: Figure out home library
-
+			//While we figure this out, we need to set the home library to the main library
+			global $library;
+			$locationsForLibrary = $library->getLocations();
+			$user->homeLocationId = reset($locationsForLibrary)->locationId;
 
 			if ($userExistsInDB) {
 				$user->update();
