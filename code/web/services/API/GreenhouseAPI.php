@@ -90,7 +90,7 @@ class GreenhouseAPI extends Action
 			$sendAlert = false;
 
 			if ($siteStatus['alive'] == false) {
-				if ((($start - $sites->lastOfflineTime) > 4 * 60 * 60) && ($sites->lastOfflineTime > $sites->lastNotificationTime)) {
+				if ((($start - $sites->lastOfflineTime) > 4 * 60 * 60) || ($sites->lastOfflineTime > $sites->lastNotificationTime)) {
 					$sendAlert = true;
 				}
 
