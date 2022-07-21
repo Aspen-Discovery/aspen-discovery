@@ -88,6 +88,16 @@ class GreenhouseAPI extends Action
 			$alertText = "";
 			$notification = "";
 			$sendAlert = false;
+
+			if ($siteStatus['alive'] == false) {
+				if ((($start - $sites->lastOfflineTime) > 4 * 60 * 60) && ($sites->lastOfflineTime > $sites->lastNotificationTime)) {
+					$sendAlert = true;
+				}
+
+				$alertText .= "- :fire: Greenhouse unable to connect to server\n";
+				$notification = "<!here>";
+			}
+
 			foreach ($siteStatus['checks'] as $key => $check){
 				$aspenSiteCheck = new AspenSiteCheck();
 				$aspenSiteCheck->siteId = $sites->id;
