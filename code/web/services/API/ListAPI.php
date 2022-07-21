@@ -727,16 +727,31 @@ class ListAPI extends Action
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
-			$list->title = $_REQUEST['title'];
-			$list->description = strip_tags(isset($_REQUEST['description']) ? $_REQUEST['description'] : '');
-			$list->public = isset($_REQUEST['public']) ? (($_REQUEST['public'] == true || $_REQUEST['public'] == 1) ? 1 : 0) : 0;
+			$list->title = strip_tags($_REQUEST['title']);
 			$list->user_id = $user->id;
-			$list->insert();
+			$list->deleted = "0";
+			//Check to see if there is already a list with this id and title
+			$existingList = false;
+			if($list->find(true)) {
+				$existingList = true;
+			}
+
+			$list->description = strip_tags($_REQUEST['description'] ?? '');
+			$list->public = isset($_REQUEST['public']) ? (($_REQUEST['public'] == true || $_REQUEST['public'] == 1) ? 1 : 0) : 0;
+
+			if($existingList) {
+				$list->update();
+			} else {
+				$list->insert();
+			}
+
 			if($user->lastListUsed != $list->id) {
 				$user->lastListUsed = $list->id;
 				$user->update();
 			}
+
 			$list->find();
+
 			if (isset($_REQUEST['recordIds'])) {
 				$_REQUEST['listId'] = $list->id;
 				return $this->addTitlesToList();
