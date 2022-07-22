@@ -67,7 +67,7 @@ class Evolve extends AbstractIlsDriver
 					$curCheckout->callNumber = $itemOut->CallNumber;
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+					$recordDriver = new MarcRecordDriver($curCheckout->recordId);
 					if ($recordDriver->isValid()){
 						$curCheckout->updateFromRecordDriver($recordDriver);
 					}
@@ -245,9 +245,9 @@ class Evolve extends AbstractIlsDriver
 					$curHold->userId = $patron->id;
 					$curHold->type = 'ils';
 					$curHold->source = $this->getIndexingProfile()->name;
-					$curHold->sourceId = $holdInfo->HoldingID;
-					$curHold->recordId = substr($holdInfo->HoldingID, 0, strpos($holdInfo->HoldingID, '.'));
-					$curHold->cancelId = $holdInfo->HoldingID;
+					$curHold->sourceId = $holdInfo->ID;
+					$curHold->recordId = $holdInfo->ID;
+					$curHold->cancelId = $holdInfo->ID;
 					$curHold->frozen = false;
 					$curHold->locationUpdateable = true;
 					$curHold->cancelable = true;
@@ -270,6 +270,13 @@ class Evolve extends AbstractIlsDriver
 					$curHold->format = $holdInfo->Form;
 					//TODO: Pickup location id
 					$curHold->pickupLocationName = $holdInfo->Location;
+
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($curHold->recordId);
+					if ($recordDriver->isValid()){
+						$curHold->updateFromRecordDriver($recordDriver);
+					}
+
 					$curHold->available = $isAvailable;
 					if ($curHold->available) {
 						$holds['available'][] = $curHold;
