@@ -1298,12 +1298,13 @@ class Evergreen extends AbstractIlsDriver
 					foreach ($attributes as $name => $value){
 						if ($name == 'name'){
 							$idl[$index++] = (string)$attributes['name'];
+							break;
 						}
 					}
 				}
+				global $configArray;
+				$memCache->set('evergreen_idl_' . $className, $idl, $configArray['Caching']['evergreen_idl']);
 			}
-			global $configArray;
-			$memCache->set('evergreen_idl_' . $className, $idl, $configArray['Caching']['evergreen_idl']);
 		}
 		return $idl;
 	}
