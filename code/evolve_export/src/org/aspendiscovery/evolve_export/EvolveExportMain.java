@@ -312,13 +312,18 @@ public class EvolveExportMain {
 										field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
 										field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
 										field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
-										field852.addSubfield(marcFactory.newSubfield('b', holding.getString("Collection")));
+										field852.addSubfield(marcFactory.newSubfield('k', holding.getString("Collection")));
 										if (!holding.isNull("DueDate")) {
-											field852.addSubfield(marcFactory.newSubfield('k', holding.getString("DueDate")));
+											field852.addSubfield(marcFactory.newSubfield('e', holding.getString("DueDate")));
 										}
 										field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
-										//TODO: Would like barcode, but not available
-										//TODO: Would like Date Created but not available
+										field852.addSubfield(marcFactory.newSubfield('d', holding.getString("Status")));
+
+										//TODO: Add these once the API returns them
+										//p - barcode
+										//q - Cost
+										//f - Created date time
+										//g - Last scan date
 
 										marcRecord.addVariableField(field852);
 									}
@@ -352,6 +357,9 @@ public class EvolveExportMain {
 					}
 				}
 			}
+
+			//Also ask for holdings modified from a specific date
+
 		}else{
 			logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
 		}

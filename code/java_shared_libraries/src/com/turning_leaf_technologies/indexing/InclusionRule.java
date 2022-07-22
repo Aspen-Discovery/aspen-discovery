@@ -35,7 +35,7 @@ class InclusionRule {
 	private final String urlToMatch;
 	private final String urlReplacement;
 
-	private static Pattern isRegexPattern = Pattern.compile("[.*?{}\\\\^\\[\\]]");
+	private static Pattern isRegexPattern = Pattern.compile("[.*?{}\\\\^\\[\\]|$]");
 	InclusionRule(String recordType, String locationCode, String subLocationCode, @NotNull String locationsToExclude, @NotNull String subLocationsToExclude, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
 		this.recordType = recordType;
 		this.includeHoldableOnly = includeHoldableOnly;
@@ -51,6 +51,7 @@ class InclusionRule {
 				this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
 			}else{
 				this.locationCodeToMatch = locationCode;
+				isLocationExactMatch = true;
 			}
 		}
 
@@ -194,9 +195,21 @@ class InclusionRule {
 					}
 				}
 			}
-			if (isIncluded && !matchAllSubLocations && subLocationCode.length() > 0){
-				if (!subLocationCodePattern.matcher(subLocationCode).matches()){
+			if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
+				if (locationsToExcludePattern.matcher(locationCode).matches()) {
 					isIncluded = false;
+				}
+			}
+			if (isIncluded && subLocationCode.length() > 0){
+				if (!matchAllSubLocations) {
+					if (!subLocationCodePattern.matcher(subLocationCode).matches()) {
+						isIncluded = false;
+					}
+				}
+				if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
+					if (!subLocationsToExcludePattern.matcher(subLocationCode).matches()){
+						isIncluded = false;
+					}
 				}
 			}
 			if (isIncluded && !matchAllFormats && format.length() > 0){
@@ -237,13 +250,6 @@ class InclusionRule {
 				}
 			}
 			isIncluded = hasMatch && includeExcludeMatches;
-		}
-		//Make sure that we are not excluding the result
-		if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
-			isIncluded = !locationsToExcludePattern.matcher(locationCode).matches();
-		}
-		if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
-			isIncluded = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 		}
 		includedItemResults.put(itemIdentifier, isIncluded);
 		return isIncluded;
