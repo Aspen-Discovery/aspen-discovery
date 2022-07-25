@@ -374,13 +374,14 @@ class UserPayment extends DataObject
 		return $result;
 	}
 
-	public static function completeWorldPayPayment($queryParams, $paymentId){
+	public static function completeWorldPayPayment($queryParams){
 		$success = false;
 		$error = '';
 		$message = '';
-		if (empty($paymentId)) {
+		if (empty($queryParams['PaymentID'])) {
 			$error = 'No Payment ID was provided, could not complete the payment';
 		}else{
+			$paymentId = $queryParams['PaymentID'];
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
