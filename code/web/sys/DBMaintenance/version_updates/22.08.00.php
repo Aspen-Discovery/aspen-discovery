@@ -44,5 +44,13 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE aspen_sites ADD COLUMN lastOfflineTime INT",
 			]
 		],//aspen_site_lastOfflineTime
+		'hoopla_bingepass' => [
+			'title' => 'Add scoping info for Hoopla Binge Pass',
+			'description' => 'Add scoping info for Hoopla Binge Pass',
+			'sql' => [
+				"ALTER TABLE hoopla_scopes ADD COLUMN includeBingePass TINYINT DEFAULT 1",
+				"ALTER TABLE hoopla_scopes ADD COLUMN maxCostPerCheckoutBingePass FLOAT DEFAULT 5",
+			]
+		],//hoopla_bingepass
 	];
 }

@@ -643,8 +643,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String originalUrl = itemInfo.geteContentUrl();
 		String fullKey = profileType + location;
 
+		String itemIdentifier = itemInfo.getItemIdentifier();
 		for (Scope scope: indexer.getScopes()){
-			Scope.InclusionResult result = scope.isItemPartOfScope(itemInfo.getItemIdentifier(), fullKey, profileType, location, "", null, audiences, audiencesAsString, format, true, true, false, record, originalUrl);
+			Scope.InclusionResult result = scope.isItemPartOfScope(itemIdentifier, fullKey, profileType, location, "", null, audiences, audiencesAsString, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(scope);
 				if (scopingInfo == null){
@@ -1033,8 +1034,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void loadScopeInfoForPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, Record record) {
 		//Determine status, need to do this before determining if it is available since that is part of the check.
-		String displayStatus = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
-		String groupedDisplayStatus = getDisplayGroupedStatus(itemInfo, recordInfo.getRecordIdentifier());
+		String recordIdentifier = recordInfo.getRecordIdentifier();
+		String displayStatus = getDisplayStatus(itemInfo, recordIdentifier);
+		String groupedDisplayStatus = getDisplayGroupedStatus(itemInfo, recordIdentifier);
 
 		//Determine Availability
 		boolean available = isItemAvailable(itemInfo, displayStatus, groupedDisplayStatus);
@@ -1060,8 +1062,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String originalUrl = itemInfo.geteContentUrl();
 		String primaryFormat = recordInfo.getPrimaryFormat();
 		String fullKey = profileType + itemLocation + itemSublocation;
+		String itemIdentifier = itemInfo.getItemIdentifier();
 		for (Scope curScope : indexer.getScopes()) {
-			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), fullKey, profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(itemIdentifier, fullKey, profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
@@ -1291,35 +1294,38 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean isItemHoldableUnscoped(ItemInfo itemInfo){
 		String itemItypeCode =  itemInfo.getITypeCode();
 		if (nonHoldableITypes != null && itemItypeCode != null && itemItypeCode.length() > 0){
-			if (!iTypesThatHaveHoldabilityChecked.containsKey(itemItypeCode)){
-				iTypesThatHaveHoldabilityChecked.put(itemItypeCode, !nonHoldableITypes.matcher(itemItypeCode).matches());
+			Boolean cachedValue = iTypesThatHaveHoldabilityChecked.get(itemItypeCode);
+			if (cachedValue == null){
+				cachedValue = !nonHoldableITypes.matcher(itemItypeCode).matches();
+				iTypesThatHaveHoldabilityChecked.put(itemItypeCode, cachedValue);
 			}
-			if (!iTypesThatHaveHoldabilityChecked.get(itemItypeCode)){
+			if (!cachedValue){
 				return false;
 			}
 		}
 		String itemLocationCode =  itemInfo.getLocationCode();
 		if (nonHoldableLocations != null && itemLocationCode != null && itemLocationCode.length() > 0){
-			if (!locationsThatHaveHoldabilityChecked.containsKey(itemLocationCode)){
-				locationsThatHaveHoldabilityChecked.put(itemLocationCode, !nonHoldableLocations.matcher(itemLocationCode).matches());
+			Boolean cachedValue = locationsThatHaveHoldabilityChecked.get(itemLocationCode);
+			if (cachedValue == null){
+				cachedValue = !nonHoldableLocations.matcher(itemLocationCode).matches();
+				locationsThatHaveHoldabilityChecked.put(itemLocationCode, cachedValue);
 			}
-			if (!locationsThatHaveHoldabilityChecked.get(itemLocationCode)){
+			if (!cachedValue){
 				return false;
 			}
 		}
 		String itemStatusCode = itemInfo.getStatusCode();
 		if (nonHoldableStatuses != null && itemStatusCode != null && itemStatusCode.length() > 0){
-			if (!statusesThatHaveHoldabilityChecked.containsKey(itemStatusCode)){
-				statusesThatHaveHoldabilityChecked.put(itemStatusCode, !nonHoldableStatuses.matcher(itemStatusCode).matches());
+			Boolean cachedValue = statusesThatHaveHoldabilityChecked.get(itemStatusCode);
+			if (cachedValue == null){
+				cachedValue = !nonHoldableStatuses.matcher(itemStatusCode).matches();
+				statusesThatHaveHoldabilityChecked.put(itemStatusCode, cachedValue);
 			}
-			if (!statusesThatHaveHoldabilityChecked.get(itemStatusCode)){
+			if (!cachedValue){
 				return false;
 			}
 		}
-		String format = itemInfo.getFormat();
-		if (format == null){
-			format = itemInfo.getRecordInfo().getPrimaryFormat();
-		}
+		String format = itemInfo.getPrimaryFormatUppercase();
 		return !nonHoldableFormats.contains(format.toUpperCase());
 	}
 

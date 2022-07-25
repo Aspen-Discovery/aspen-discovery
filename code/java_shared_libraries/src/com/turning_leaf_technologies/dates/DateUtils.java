@@ -25,35 +25,54 @@ public class DateUtils {
 		return getTimeSinceAdded(timeDifferenceDays);
 	}
 
+	static LinkedHashSet<String> timeSinceAddedOnOrder = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedDay = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedWeek = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedMonth = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAdded2Months = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedQuarter = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedSixMonths = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedYear = new LinkedHashSet<>();
+	static LinkedHashSet<String> timeSinceAddedNone = new LinkedHashSet<>();
+	static {
+		timeSinceAddedOnOrder.add("On Order");
+		timeSinceAddedYear.add("Year");
+		timeSinceAddedSixMonths.add("Six Months");
+		timeSinceAddedSixMonths.addAll(timeSinceAddedYear);
+		timeSinceAddedQuarter.add("Quarter");
+		timeSinceAddedQuarter.addAll(timeSinceAddedSixMonths);
+		timeSinceAdded2Months.add("2 Months");
+		timeSinceAdded2Months.addAll(timeSinceAddedQuarter);
+		timeSinceAddedMonth.add("Month");
+		timeSinceAddedMonth.addAll(timeSinceAdded2Months);
+		timeSinceAddedWeek.add("Week");
+		timeSinceAddedWeek.addAll(timeSinceAddedMonth);
+		timeSinceAddedDay.add("Day");
+		timeSinceAddedDay.addAll(timeSinceAddedWeek);
+	}
 	public static LinkedHashSet<String> getTimeSinceAdded(long timeDifferenceDays) {
 		// System.out.println("Time Difference Days: " + timeDifferenceDays);
-		LinkedHashSet<String> result = new LinkedHashSet<>();
 		if (timeDifferenceDays < 0) {
-			result.add("On Order");
+			return timeSinceAddedOnOrder;
 		}else {
 			if (timeDifferenceDays <= 1) {
-				result.add("Day");
-			}
-			if (timeDifferenceDays <= 7) {
-				result.add("Week");
-			}
-			if (timeDifferenceDays <= 30) {
-				result.add("Month");
-			}
-			if (timeDifferenceDays <= 60) {
-				result.add("2 Months");
-			}
-			if (timeDifferenceDays <= 90) {
-				result.add("Quarter");
-			}
-			if (timeDifferenceDays <= 180) {
-				result.add("Six Months");
-			}
-			if (timeDifferenceDays <= 365) {
-				result.add("Year");
+				return timeSinceAddedDay;
+			}else if (timeDifferenceDays <= 7) {
+				return timeSinceAddedWeek;
+			}else if (timeDifferenceDays <= 30) {
+				return timeSinceAddedMonth;
+			}else if (timeDifferenceDays <= 60) {
+				return timeSinceAdded2Months;
+			}else if (timeDifferenceDays <= 90) {
+				return timeSinceAddedQuarter;
+			}else if (timeDifferenceDays <= 180) {
+				return timeSinceAddedSixMonths;
+			}else if (timeDifferenceDays <= 365) {
+				return timeSinceAddedYear;
+			}else{
+				return timeSinceAddedNone;
 			}
 		}
-		return result;
 	}
 
 	private final static Pattern FOUR_DIGIT_PATTERN_BRACES = Pattern.compile("\\[[12]\\d{3}\\]");

@@ -20,6 +20,8 @@ class HooplaScope extends DataObject
 	public /** @noinspection PhpUnused */ $maxCostPerCheckoutMusic;
 	public /** @noinspection PhpUnused */ $includeTelevision;
 	public /** @noinspection PhpUnused */ $maxCostPerCheckoutTelevision;
+	public /** @noinspection PhpUnused */ $includeBingePass;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutBingePass;
 	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
 	public /** @noinspection PhpUnused */ $ratingsToExclude;
 	public /** @noinspection PhpUnused */ $excludeAbridged;
@@ -58,6 +60,8 @@ class HooplaScope extends DataObject
 			'maxCostPerCheckoutMusic' => array('property'=>'maxCostPerCheckoutMusic', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Max Cost Per Checkout for Music', 'description'=>'The maximum per checkout cost to include', 'default'=>5, 'forcesReindex' => true),
 			'includeTelevision' => array('property'=>'includeTelevision', 'type'=>'checkbox', 'label'=>'Include Television', 'description'=>'Whether or not Television is included', 'default'=>1, 'forcesReindex' => true),
 			'maxCostPerCheckoutTelevision' => array('property'=>'maxCostPerCheckoutTelevision', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Max Cost Per Checkout for Television', 'description'=>'The maximum per checkout cost to include', 'default'=>5, 'forcesReindex' => true),
+			'includeBingePass' => array('property'=>'includeBingePass', 'type'=>'checkbox', 'label'=>'Include Binge Pass', 'description'=>'Whether or not Binge Pass is included', 'default'=>1, 'forcesReindex' => true),
+			'maxCostPerCheckoutBingePass' => array('property'=>'maxCostPerCheckoutBingePass', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Max Cost Per Checkout for Binge Pass', 'description'=>'The maximum per checkout cost to include', 'default'=>5, 'forcesReindex' => true),
 			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by Hoopla', 'default'=>0, 'forcesReindex' => true),
 			'ratingsToExclude' => array('property'=>'ratingsToExclude', 'type'=>'text', 'label'=>'Ratings to Exclude (separate with pipes)', 'description'=>'A pipe separated list of ratings that should not be included in the index', 'forcesReindex' => true),
 			'excludeAbridged' => array('property' => 'excludeAbridged', 'type' => 'checkbox', 'label' => 'Exclude Abridged Records', 'description'=>'Whether or not records marked as abridged should be included', 'default'=>0, 'forcesReindex' => true),

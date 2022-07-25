@@ -277,6 +277,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 
 
 		doc.setField("scope_has_related_records", relatedScopes.keySet());
+		AvailabilityToggleInfo availabilityToggleForScope = new AvailabilityToggleInfo();
 		for (String scopeName : relatedScopes.keySet()){
 			try{
 				HashSet<String> scopingDetailsForScope = new HashSet<>();
@@ -290,7 +291,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 				HashSet<String> localCallNumbersForScope = new HashSet<>();
 				HashSet<String> owningLibrariesForScope = new HashSet<>();
 				HashSet<String> owningLocationsForScope = new HashSet<>();
-				AvailabilityToggleInfo availabilityToggleForScope = new AvailabilityToggleInfo();
+				availabilityToggleForScope.reset();
 				HashMap<String, AvailabilityToggleInfo> availabilityToggleByFormatForScope = new HashMap<>();
 				HashSet<String> availableAtForScope = new HashSet<>();
 				HashMap<String, HashSet<String>> availableAtByFormatForScope = new HashMap<>();
@@ -371,9 +372,10 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 
 					if (curItem.isEContent()){
 						addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && curItem.isAvailable(), curItem.isAvailable(), availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
-						owningLibrariesForScope.add(curItem.getTrimmedEContentSource());
+						String trimmedEContentSource = curItem.getTrimmedEContentSource();
+						owningLibrariesForScope.add(trimmedEContentSource);
 						if (curItem.isAvailable()){
-							addAvailableAt(curItem.getTrimmedEContentSource(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
+							addAvailableAt(trimmedEContentSource, availableAtForScope, availableAtByFormatForScope, formatsForItem);
 						}
 					}else{ //physical materials
 						if (scopingInfo.isLocallyOwned()) {

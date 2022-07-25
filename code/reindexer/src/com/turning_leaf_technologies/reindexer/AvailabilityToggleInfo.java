@@ -82,4 +82,10 @@ public class AvailabilityToggleInfo {
 		globalOnline.add(globalStr);
 		globalOnline.add(availableOnlineStr);
 	}
+
+	public void reset() {
+		local = false;
+		available = false;
+		availableOnline = false;
+	}
 }
