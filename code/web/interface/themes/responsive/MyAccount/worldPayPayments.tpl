@@ -14,9 +14,10 @@
 	<input type="hidden" name="ReturnUrl" id="{$userId}ReturnUrl" value="{$aspenUrl}/MyAccount/WorldPayCompleted?payment=" />
 	<input type="hidden" name="CancelUrl" id="{$userId}CancelUrl" value="{$aspenUrl}/MyAccount/WorldPayCancel?payment=" />
 	<input type="hidden" name="PostUrl" id="{$userId}PostUrl" value="{$aspenUrl}/WorldPay/Complete?payment=" />
-	<input type="hidden" name="UserPart1" value="{$profile->firstname}" />
-	<input type="hidden" name="UserPart2" value="{$profile->lastname}" />
-	<input type="hidden" name="UserPart3" value="{$profile->cat_username}" />
+	<input type="hidden" name="UserPart1" id="PaymentId" value="0" />
+	<input type="hidden" name="UserPart2" value="{$profile->firstname}" />
+	<input type="hidden" name="UserPart3" value="{$profile->lastname}" />
+	<input type="hidden" name="UserPart4" value="{$profile->cat_username}" />
 	{if $useLineItems}
 		<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>
 	{/if}
@@ -80,6 +81,7 @@
 				document.getElementById("{$userId}CancelUrl").value = cancelUrl;
 				document.getElementById("{$userId}ReturnUrl").value = returnUrl;
 				document.getElementById("{$userId}PostUrl").value = postUrl;
+				document.getElementById("PaymentId").value = paymentId;
 
                 {rdelim});
 		</script>
