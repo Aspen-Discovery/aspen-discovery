@@ -153,9 +153,31 @@ public class ItemInfo{
 		return format;
 	}
 
+	private String primaryFormat;
+	private String primaryFormatUppercase;
+	public String getPrimaryFormat(){
+		if (primaryFormat == null) {
+			if (format != null) {
+				primaryFormat = format;
+			} else {
+				primaryFormat = recordInfo.getPrimaryFormat();
+			}
+			primaryFormatUppercase = primaryFormat.toUpperCase();
+		}
+		return primaryFormat;
+	}
+
+	public String getPrimaryFormatUppercase(){
+		if (primaryFormat == null) {
+			getPrimaryFormat();
+		}
+		return primaryFormatUppercase;
+	}
+
 	public void setFormat(String format) {
 		this.format = format;
 		this.trimmedFormat = StringUtils.trimTrailingPunctuation(format);
+		primaryFormat = null;
 	}
 
 	void setSubFormats(String subFormats){
@@ -312,11 +334,9 @@ public class ItemInfo{
 	}
 
 	ScopingInfo addScope(Scope scope) {
-		ScopingInfo scopeInfo;
 		String scopeName = scope.getScopeName();
-		if (scopingInfo.containsKey(scopeName)){
-			scopeInfo = scopingInfo.get(scopeName);
-		}else{
+		ScopingInfo scopeInfo = scopingInfo.get(scopeName);
+		if (scopeInfo == null){
 			scopeInfo = new ScopingInfo(scope, this);
 			scopingInfo.put(scopeName, scopeInfo);
 		}
@@ -539,18 +559,42 @@ public class ItemInfo{
 		locationOwnedNames = new HashSet<>();
 		libraryOwnedNames = new HashSet<>();
 		for (ScopingInfo scope : scopingInfo.values()){
+			Scope curScope = scope.getScope();
 			if (scope.isLocallyOwned()){
-				locationOwnedScopes.append(scope.getScope().getId()).append("~");
-				locationOwnedNames.add(scope.getScope().getFacetLabel());
+				locationOwnedScopes.append(curScope.getId()).append("~");
+				locationOwnedNames.add(curScope.getFacetLabel());
 			}else if (scope.isLibraryOwned()){
-				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
-				libraryOwnedNames.add(scope.getScope().getFacetLabel());
+				libraryOwnedScopes.append(curScope.getId()).append("~");
+				libraryOwnedNames.add(curScope.getFacetLabel());
 			}else {
-				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
+				recordsIncludedScopes.append(curScope.getId()).append("~");
 			}
 		}
 	}
 
+	private HashSet<String> formatsForIndexing = null;
+	public HashSet<String> getFormatsForIndexing() {
+		if (formatsForIndexing == null){
+			formatsForIndexing = new HashSet<>();
+			if (format != null){
+				formatsForIndexing.add(format);
+			}else{
+				formatsForIndexing.addAll(recordInfo.getFormats());
+			}
+		}
+		return formatsForIndexing;
+	}
 
-
+	private HashSet<String> formatCategoriesForIndexing = null;
+	public HashSet<String> getFormatCategoriesForIndexing() {
+		if (formatCategoriesForIndexing == null){
+			formatCategoriesForIndexing = new HashSet<>();
+			if (formatCategory != null){
+				formatCategoriesForIndexing.add(formatCategory);
+			}else{
+				formatCategoriesForIndexing.addAll(recordInfo.getFormatCategories());
+			}
+		}
+		return formatCategoriesForIndexing;
+	}
 }

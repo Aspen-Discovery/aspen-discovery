@@ -1,5 +1,8 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.turning_leaf_technologies.util.MaxSizeHashMap;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashMap;
 
 public class HooplaScope {
@@ -18,6 +21,8 @@ public class HooplaScope {
 	private float maxCostPerCheckoutMusic;
 	private boolean includeTelevision;
 	private float maxCostPerCheckoutTelevision;
+	private boolean includeBingePass;
+	private float maxCostPerCheckoutBingePass;
 	private boolean restrictToChildrensMaterial;
 	private String[] ratingsToExclude;
 	private boolean excludeAbridged;
@@ -136,6 +141,22 @@ public class HooplaScope {
 		this.maxCostPerCheckoutTelevision = maxCostPerCheckoutTelevision;
 	}
 
+	public boolean isIncludeBingePass() {
+		return includeBingePass;
+	}
+
+	public void setIncludeBingePass(boolean includeBingePass) {
+		this.includeBingePass = includeBingePass;
+	}
+
+	public float getMaxCostPerCheckoutBingePass() {
+		return maxCostPerCheckoutBingePass;
+	}
+
+	public void setMaxCostPerCheckoutBingePass(float maxCostPerCheckoutBingePass) {
+		this.maxCostPerCheckoutBingePass = maxCostPerCheckoutBingePass;
+	}
+
 	public boolean isRestrictToChildrensMaterial() {
 		return restrictToChildrensMaterial;
 	}
@@ -202,5 +223,57 @@ public class HooplaScope {
 
 	public int getExcludeTitlesWithCopiesFromOtherVendors() {
 		return excludeTitlesWithCopiesFromOtherVendors;
+	}
+
+	private MaxSizeHashMap<String, Boolean> cachedOkToAdd = new MaxSizeHashMap<>(50);
+	public boolean isOkToAdd(String identifier, String kind, float price, boolean abridged, boolean pa, boolean profanity, boolean children, String rating, Logger logger) {
+		Boolean cachedValue = cachedOkToAdd.get(identifier);
+		if (cachedValue != null){
+			return cachedValue;
+		}
+		//Filter by kind and price
+		boolean okToAdd = true;
+		switch (kind) {
+			case "MOVIE":
+				okToAdd = (includeMovies && price <= maxCostPerCheckoutMovies);
+				break;
+			case "TELEVISION":
+				okToAdd = (includeTelevision && price <= maxCostPerCheckoutTelevision);
+				break;
+			case "AUDIOBOOK":
+				okToAdd = (includeEAudiobook && price <= maxCostPerCheckoutEAudiobook);
+				break;
+			case "EBOOK":
+				okToAdd = (includeEBooks && price <= maxCostPerCheckoutEBooks);
+				break;
+			case "COMIC":
+				okToAdd = (includeEComics && price <= maxCostPerCheckoutEComics);
+				break;
+			case "MUSIC":
+				okToAdd = (includeMusic && price <= maxCostPerCheckoutMusic);
+				break;
+			case "BINGEPASS":
+				okToAdd = (includeBingePass && price <= maxCostPerCheckoutBingePass);
+				break;
+			default:
+				logger.error("Unknown kind " + kind);
+		}
+		if (okToAdd && excludeAbridged && abridged) {
+			okToAdd = false;
+		}
+		if (okToAdd && excludeParentalAdvisory && pa) {
+			okToAdd = false;
+		}
+		if (okToAdd && excludeProfanity && profanity) {
+			okToAdd = false;
+		}
+		if (okToAdd &&restrictToChildrensMaterial && !children) {
+			okToAdd = false;
+		}
+		if (okToAdd && isRatingExcluded(rating)) {
+			okToAdd = false;
+		}
+		cachedOkToAdd.put(identifier, okToAdd);
+		return okToAdd;
 	}
 }

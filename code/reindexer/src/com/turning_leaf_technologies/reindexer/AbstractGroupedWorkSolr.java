@@ -1295,8 +1295,8 @@ public abstract class AbstractGroupedWorkSolr {
 									case 1:
 										//Remove if there is an available copy for the scope
 										for (ItemInfo curItem2 : record2.getRelatedItems()){
-											if (curItem2.getScopingInfo().containsKey(item1ScopeName)){
-												if (curItem2.isAvailable()){
+											if (curItem2.isAvailable()){
+												if (curItem2.getScopingInfo().containsKey(item1ScopeName)){
 													scopesToRemove.add(item1ScopeName);
 													break;
 												}

@@ -89,6 +89,10 @@ class HooplaProcessor {
 						formatCategory = "Music";
 						primaryFormat = "eMusic";
 						break;
+					case "BINGEPASS":
+						formatCategory = "Other";
+						primaryFormat = "Binge Pass";
+						break;
 					default:
 						logger.error("Unhandled hoopla kind " + kind);
 						formatCategory = kind;
@@ -373,44 +377,7 @@ class HooplaProcessor {
 					boolean okToAdd = true;
 					HooplaScope hooplaScope = scope.getHooplaScope();
 					if (hooplaScope != null){
-						//Filter by kind and price
-						switch (kind){
-							case "MOVIE":
-								okToAdd = (hooplaScope.isIncludeMovies() && price <= hooplaScope.getMaxCostPerCheckoutMovies());
-								break;
-							case "TELEVISION":
-								okToAdd = (hooplaScope.isIncludeTelevision() && price <= hooplaScope.getMaxCostPerCheckoutTelevision());
-								break;
-							case "AUDIOBOOK":
-								okToAdd = (hooplaScope.isIncludeEAudiobook() && price <= hooplaScope.getMaxCostPerCheckoutEAudiobook());
-								break;
-							case "EBOOK":
-								okToAdd = (hooplaScope.isIncludeEBooks() && price <= hooplaScope.getMaxCostPerCheckoutEBooks());
-								break;
-							case "COMIC":
-								okToAdd = (hooplaScope.isIncludeEComics() && price <= hooplaScope.getMaxCostPerCheckoutEComics());
-								break;
-							case "MUSIC":
-								okToAdd = (hooplaScope.isIncludeMusic() && price <= hooplaScope.getMaxCostPerCheckoutMusic());
-								break;
-							default:
-								logger.error("Unknown kind " + kind);
-						}
-						if (okToAdd && hooplaScope.isExcludeAbridged() && abridged){
-							okToAdd = false;
-						}
-						if (okToAdd && hooplaScope.isExcludeParentalAdvisory() && pa){
-							okToAdd = false;
-						}
-						if (okToAdd && hooplaScope.isExcludeProfanity() && profanity){
-							okToAdd = false;
-						}
-						if (okToAdd && hooplaScope.isRestrictToChildrensMaterial() && !children){
-							okToAdd = false;
-						}
-						if (okToAdd && hooplaScope.isRatingExcluded(rating)){
-							okToAdd = false;
-						}
+						okToAdd = hooplaScope.isOkToAdd(identifier, kind, price, abridged, pa, profanity, children, rating, logger);
 					}else{
 						okToAdd = false;
 					}

@@ -86,6 +86,8 @@ public class IndexingUtils {
 				hooplaScope.setMaxCostPerCheckoutMusic(hooplaScopesRS.getFloat("maxCostPerCheckoutMusic"));
 				hooplaScope.setIncludeTelevision(hooplaScopesRS.getBoolean("includeTelevision"));
 				hooplaScope.setMaxCostPerCheckoutTelevision(hooplaScopesRS.getFloat("maxCostPerCheckoutTelevision"));
+				hooplaScope.setIncludeBingePass(hooplaScopesRS.getBoolean("includeBingePass"));
+				hooplaScope.setMaxCostPerCheckoutBingePass(hooplaScopesRS.getFloat("maxCostPerCheckoutBingePass"));
 				hooplaScope.setRestrictToChildrensMaterial(hooplaScopesRS.getBoolean("restrictToChildrensMaterial"));
 				hooplaScope.setRatingsToExclude(hooplaScopesRS.getString("ratingsToExclude"));
 				hooplaScope.setExcludeAbridged(hooplaScopesRS.getBoolean("excludeAbridged"));
