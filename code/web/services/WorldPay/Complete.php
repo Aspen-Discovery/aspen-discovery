@@ -8,7 +8,7 @@ class WorldPay_Complete extends Action
 		$logger->log("Completing FIS WorldPay Payment", Logger::LOG_ERROR);
 
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-		$result = UserPayment::completeWorldPayPayment($_POST, $_REQUEST['payment']);
+		$result = UserPayment::completeWorldPayPayment($_POST);
 
 		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
