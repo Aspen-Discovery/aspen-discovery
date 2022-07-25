@@ -13,7 +13,9 @@ import java.util.regex.Pattern;
 class InclusionRule {
 	private final String recordType;
 	private final boolean matchAllLocations;
-	private final Pattern locationCodePattern;
+	private boolean isLocationExactMatch;
+	private String locationCodeToMatch;
+	private Pattern locationCodePattern;
 	private Pattern locationsToExcludePattern = null;
 	private final boolean matchAllSubLocations;
 	private final Pattern subLocationCodePattern;
@@ -33,6 +35,7 @@ class InclusionRule {
 	private final String urlToMatch;
 	private final String urlReplacement;
 
+	private static Pattern isRegexPattern = Pattern.compile("[.*?{}\\\\^\\[\\]|$]");
 	InclusionRule(String recordType, String locationCode, String subLocationCode, @NotNull String locationsToExclude, @NotNull String subLocationsToExclude, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
 		this.recordType = recordType;
 		this.includeHoldableOnly = includeHoldableOnly;
@@ -43,7 +46,14 @@ class InclusionRule {
 			locationCode = ".*";
 		}
 		matchAllLocations = locationCode.equals(".*");
-		this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
+		if (!matchAllLocations){
+			if (isRegexPattern.matcher(locationCode).find()) {
+				this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
+			}else{
+				this.locationCodeToMatch = locationCode;
+				isLocationExactMatch = true;
+			}
+		}
 
 		if (subLocationCode.length() == 0){
 			subLocationCode = ".*";
@@ -173,30 +183,56 @@ class InclusionRule {
 		boolean isIncluded;
 
 		if (!hasCachedValue){
-			if (locationCodePattern.matcher(locationCode).matches() &&
-					(subLocationCode == "" || matchAllSubLocations || subLocationCodePattern.matcher(subLocationCode).matches()) &&
-					(matchAllFormats || format == "" || formatPattern.matcher(format).matches())
-					){
-
-				//We got a match based on location check formats iTypes etc
-				if (!matchAlliTypes && iType != null && !iTypePattern.matcher(iType).matches()){
-					isIncluded =  false;
-				}else{
-					boolean audienceMatched = false;
-					if (matchAllAudiences){
-						audienceMatched = true;
-					}else {
-						for (String audience : audiences) {
-							if (audiencePattern.matcher(audience).matches()) {
-								audienceMatched = true;
-								break;
-							}
-						}
+			isIncluded = true;
+			if (!matchAllLocations) {
+				if (isLocationExactMatch){
+					if (!locationCodeToMatch.equalsIgnoreCase(locationCode)){
+						isIncluded = false;
 					}
-					isIncluded = audienceMatched;
+				}else{
+					if (!locationCodePattern.matcher(locationCode).matches()){
+						isIncluded = false;
+					}
 				}
-			}else{
-				isIncluded = false;
+			}
+			if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
+				if (locationsToExcludePattern.matcher(locationCode).matches()) {
+					isIncluded = false;
+				}
+			}
+			if (isIncluded && subLocationCode.length() > 0){
+				if (!matchAllSubLocations) {
+					if (!subLocationCodePattern.matcher(subLocationCode).matches()) {
+						isIncluded = false;
+					}
+				}
+				if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
+					if (!subLocationsToExcludePattern.matcher(subLocationCode).matches()){
+						isIncluded = false;
+					}
+				}
+			}
+			if (isIncluded && !matchAllFormats && format.length() > 0){
+				if (!formatPattern.matcher(format).matches()){
+					isIncluded = false;
+				}
+			}
+			if (isIncluded && !matchAlliTypes && iType != null){
+				if (!iTypePattern.matcher(iType).matches()){
+					isIncluded = false;
+				}
+			}
+			if (isIncluded && !matchAllAudiences){
+				boolean audienceMatched = false;
+				for (String audience : audiences) {
+					if (audiencePattern.matcher(audience).matches()) {
+						audienceMatched = true;
+						break;
+					}
+				}
+				if (!audienceMatched){
+					isIncluded = false;
+				}
 			}
 			//Make sure not to cache marc tag determination
 			inclusionCache.put(inclusionCacheKey, isIncluded);
@@ -214,13 +250,6 @@ class InclusionRule {
 				}
 			}
 			isIncluded = hasMatch && includeExcludeMatches;
-		}
-		//Make sure that we are not excluding the result
-		if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
-			isIncluded = !locationsToExcludePattern.matcher(locationCode).matches();
-		}
-		if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
-			isIncluded = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 		}
 		includedItemResults.put(itemIdentifier, isIncluded);
 		return isIncluded;

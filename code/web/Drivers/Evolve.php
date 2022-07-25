@@ -46,6 +46,35 @@ class Evolve extends AbstractIlsDriver
 			ExternalRequestLogEntry::logRequest('evolve.getCheckouts', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			if ($response && $this->apiCurlWrapper->getResponseCode() == 200){
 				$jsonData = json_decode($response);
+				foreach ($jsonData as $index => $itemOut){
+					$curCheckout = new Checkout();
+					$curCheckout->type = 'ils';
+					$curCheckout->source = $this->getIndexingProfile()->name;
+
+					$curCheckout->recordId = $itemOut->ID;
+					$curCheckout->itemId = (int)$itemOut->HoldingID;
+
+					$curCheckout->dueDate = strtotime($itemOut->DueDate);
+					//$curCheckout->checkoutDate = strtotime($itemOut->CheckOutDate);
+
+					$curCheckout->renewCount = (int)$itemOut->CircRenewed;
+					$curCheckout->canRenew = true;
+
+					$curCheckout->renewalId = (int)$itemOut->HoldingID;
+					$curCheckout->title = $itemOut->Title;
+					$curCheckout->author = $itemOut->Author;
+					$curCheckout->formats = [$itemOut->Form];
+					$curCheckout->callNumber = $itemOut->CallNumber;
+
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($curCheckout->recordId);
+					if ($recordDriver->isValid()){
+						$curCheckout->updateFromRecordDriver($recordDriver);
+					}
+
+					$sortKey = "{$curCheckout->source}_{$curCheckout->sourceId}_$index";
+					$checkedOutTitles[$sortKey] = $curCheckout;
+				}
 			}
 		}
 
@@ -216,9 +245,9 @@ class Evolve extends AbstractIlsDriver
 					$curHold->userId = $patron->id;
 					$curHold->type = 'ils';
 					$curHold->source = $this->getIndexingProfile()->name;
-					$curHold->sourceId = $holdInfo->HoldingID;
-					$curHold->recordId = substr($holdInfo->HoldingID, 0, strpos($holdInfo->HoldingID, '.'));
-					$curHold->cancelId = $holdInfo->HoldingID;
+					$curHold->sourceId = $holdInfo->ID;
+					$curHold->recordId = $holdInfo->ID;
+					$curHold->cancelId = $holdInfo->ID;
 					$curHold->frozen = false;
 					$curHold->locationUpdateable = true;
 					$curHold->cancelable = true;
@@ -230,8 +259,9 @@ class Evolve extends AbstractIlsDriver
 					}
 					//TODO: Hold positions within hold queue
 					if (!$isAvailable) {
-						$curHold->holdQueueLength   = $holdInfo->QueueTotal;
-						$curHold->position          = $holdInfo->QueuePosition;
+						if (isset($holdInfo->Priority)) {
+							$curHold->position = $holdInfo->Priority;
+						}
 					}
 					$curHold->canFreeze = false;
 					$curHold->title = $holdInfo->Title;
@@ -240,6 +270,13 @@ class Evolve extends AbstractIlsDriver
 					$curHold->format = $holdInfo->Form;
 					//TODO: Pickup location id
 					$curHold->pickupLocationName = $holdInfo->Location;
+
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($curHold->recordId);
+					if ($recordDriver->isValid()){
+						$curHold->updateFromRecordDriver($recordDriver);
+					}
+
 					$curHold->available = $isAvailable;
 					if ($curHold->available) {
 						$holds['available'][] = $curHold;
@@ -268,6 +305,13 @@ class Evolve extends AbstractIlsDriver
 
 		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
 		if ($sessionInfo['userValid']) {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+			], true);
+
 			$params = new stdClass();
 			$params->Token = $sessionInfo['accessToken'];
 			$params->CatalogItem  = str_replace('CA010', '', $recordId);
@@ -275,7 +319,8 @@ class Evolve extends AbstractIlsDriver
 			$postParams = json_encode($params);
 			$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Action=Create';
 
-			$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			//$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
 			ExternalRequestLogEntry::logRequest('evolve.placeHold', 'POST', $this->accountProfile->patronApiUrl . '/AccountReserve', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonData = json_decode($response);
@@ -319,7 +364,21 @@ class Evolve extends AbstractIlsDriver
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
 			ExternalRequestLogEntry::logRequest('evolve.getFines', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
-				$finesList = json_decode($response);
+				$finesRows = json_decode($response);
+				foreach ($finesRows as $index => $fineRow){
+					$curFine = [
+						'fineId' => $index,
+						'date' => strtotime($fineRow->ItemDate),
+						'type' => $fineRow->ItemType,
+						'reason' => $fineRow->ItemType,
+						'message' => $fineRow->ItemComment,
+						'amountVal' => floatval(str_replace('$', '', $fineRow->ItemAmount)),
+						'amountOutstandingVal' => floatval(str_replace('$', '', $fineRow->UnpaidAmount)),
+						'amount' => $fineRow->ItemAmount,
+						'amountOutstanding' => $fineRow->UnpaidAmount,
+					];
+					$fines[] = $curFine;
+				}
 			}
 		}
 
