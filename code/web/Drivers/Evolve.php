@@ -669,7 +669,12 @@ class Evolve extends AbstractIlsDriver
 		$summary->numUnavailableHolds = count($holds['unavailable']);
 
 		//Get additional information
-
+		$fines = $this->getFines($patron);
+		$totalfines = 0;
+		foreach ($fines as $fine) {
+			$totalfines += $fine['amountOutstandingVal'];
+		}
+		$summary->totalFines = $totalfines;
 
 		return $summary;
 	}
