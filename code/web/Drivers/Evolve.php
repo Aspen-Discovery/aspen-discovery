@@ -317,7 +317,7 @@ class Evolve extends AbstractIlsDriver
 			$params->CatalogItem  = str_replace('CA010', '', $recordId);
 			$params->Action = "Create";
 			$postParams = json_encode($params);
-			$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Action=Create';
+			$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Location=' . $pickupBranch .  '|Action=Create';
 
 			//$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
 			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
@@ -326,6 +326,20 @@ class Evolve extends AbstractIlsDriver
 				$jsonData = json_decode($response);
 				if (is_array($jsonData)){
 					$jsonData = $jsonData[0];
+					if ($jsonData->Status == 'Success'){
+						$hold_result = [
+							'success' => true,
+							'message' => $jsonData->Message,
+							'api' => [
+								'title' => translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]),
+								'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
+								'action' => translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]),
+							],
+						];
+					}else{
+						$hold_result['message'] = $jsonData->Message;
+						$hold_result['api']['message'] = $jsonData->Message;
+					}
 				}
 			}
 		}
