@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -175,11 +175,11 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		HashSet<String> translatedFormatCategories = translateCollection("format_category", selectedPrintFormats, ilsRecord.getRecordIdentifier());
 		ilsRecord.addFormats(translatedFormats);
 		ilsRecord.addFormatCategories(translatedFormatCategories);
-		Long formatBoost = 0L;
+		long formatBoost = 0L;
 		HashSet<String> formatBoosts = translateCollection("format_boost", selectedPrintFormats, ilsRecord.getRecordIdentifier());
 		for (String tmpFormatBoost : formatBoosts){
-			if (StringUtils.isNumeric(tmpFormatBoost)) {
-				Long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
+			if (AspenStringUtils.isNumeric(tmpFormatBoost)) {
+				long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
 				if (tmpFormatBoostLong > formatBoost) {
 					formatBoost = tmpFormatBoostLong;
 				}

@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -99,7 +99,7 @@ public class SavedItemInfo {
 		if (this.variationId != variationId) {
 			return true;
 		}
-		if (!StringUtils.compareStrings(itemId, this.itemId)){
+		if (!AspenStringUtils.compareStrings(itemId, this.itemId)){
 			return true;
 		}
 		if (this.shelfLocationId != shelfLocationId){
@@ -156,12 +156,12 @@ public class SavedItemInfo {
 		if (this.inLibraryUseOnly != inLibraryUseOnly){
 			return true;
 		}
-		if (!StringUtils.compareStrings(locationOwnedScopes, this.locationOwnedScopes)){
+		if (!AspenStringUtils.compareStrings(locationOwnedScopes, this.locationOwnedScopes)){
 			return true;
 		}
-		if (!StringUtils.compareStrings(libraryOwnedScopes, this.libraryOwnedScopes)){
+		if (!AspenStringUtils.compareStrings(libraryOwnedScopes, this.libraryOwnedScopes)){
 			return true;
 		}
-		return !StringUtils.compareStrings(recordIncludedScopes, this.recordIncludedScopes);
+		return !AspenStringUtils.compareStrings(recordIncludedScopes, this.recordIncludedScopes);
 	}
 }

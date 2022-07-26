@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -190,16 +190,16 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 				doc.addField("lexile_score", lexileScore);
 			}
 			if (lexileCode.length() > 0) {
-				doc.addField("lexile_code", StringUtils.trimTrailingPunctuation(lexileCode));
+				doc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
 			}
 			if (fountasPinnell.length() > 0) {
 				doc.addField("fountas_pinnell", fountasPinnell);
 			}
-			doc.addField("accelerated_reader_interest_level", StringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
-			if (StringUtils.isNumeric(acceleratedReaderReadingLevel)) {
+			doc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+			if (AspenStringUtils.isNumeric(acceleratedReaderReadingLevel)) {
 				doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 			}
-			if (StringUtils.isNumeric(acceleratedReaderPointValue)) {
+			if (AspenStringUtils.isNumeric(acceleratedReaderPointValue)) {
 				doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 			}
 			HashSet<String> eContentSources = getAllEContentSources();
@@ -523,7 +523,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 	public String toLowerCaseNoSpecialChars(String format){
 		String lowerCaseNoSpecialCharFormat = lowerCaseNoSpecialCharFormats.get(format);
 		if (lowerCaseNoSpecialCharFormat == null){
-			lowerCaseNoSpecialCharFormat = StringUtils.toLowerCaseNoSpecialChars(format);
+			lowerCaseNoSpecialCharFormat = AspenStringUtils.toLowerCaseNoSpecialChars(format);
 			lowerCaseNoSpecialCharFormats.put(format, lowerCaseNoSpecialCharFormat);
 		}
 		return lowerCaseNoSpecialCharFormat;

@@ -1,9 +1,10 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.dates.DateUtils;
+import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -191,16 +192,16 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				doc.addField("lexile_score", lexileScore);
 			}
 			if (lexileCode.length() > 0) {
-				doc.addField("lexile_code", StringUtils.trimTrailingPunctuation(lexileCode));
+				doc.addField("lexile_code", AspenStringUtils.trimTrailingPunctuation(lexileCode));
 			}
 			if (fountasPinnell.length() > 0) {
 				doc.addField("fountas_pinnell", fountasPinnell);
 			}
-			doc.addField("accelerated_reader_interest_level", StringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
-			if (StringUtils.isNumeric(acceleratedReaderReadingLevel)) {
+			doc.addField("accelerated_reader_interest_level", AspenStringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+			if (AspenStringUtils.isNumeric(acceleratedReaderReadingLevel)) {
 				doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 			}
-			if (StringUtils.isNumeric(acceleratedReaderPointValue)) {
+			if (AspenStringUtils.isNumeric(acceleratedReaderPointValue)) {
 				doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 			}
 			HashSet<String> eContentSources = getAllEContentSources();
@@ -263,8 +264,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 	protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseLogEntry logEntry) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
+		boolean storeRecordDetailsInSolr = groupedWorkIndexer.isStoreRecordDetailsInSolr();
 		try {
-			if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
+			if (storeRecordDetailsInSolr) {
 				for (RecordInfo curRecord : relatedRecords.values()) {
 					doc.addField("record_details", curRecord.getDetails());
 					for (ItemInfo curItem : curRecord.getRelatedItems()) {
@@ -308,17 +310,21 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				String scopePrefix = scopeName + "#";
 				Scope curScope = null;
 				String scopeFacetLabel = null;
+				GroupedWorkDisplaySettings scopeDisplaySettings = null;
 				if (itemsWithScopingInfoForActiveScope.size() > 0) {
 					curScope = itemsWithScopingInfoForActiveScope.get(0).getScope();
 					scopeFacetLabel = curScope.getFacetLabel();
+					scopeDisplaySettings  = curScope.getGroupedWorkDisplaySettings();
 				}
+
+				//Process all items for the scope
 				for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
-					if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
+					if (storeRecordDetailsInSolr) {
 						scopingDetailsForScope.add(scopingInfo.getScopingDetails());
 					}
 
-					HashSet<String> formatsForItem = new HashSet<>();
-					HashSet<String> formatsCategoriesForItem = new HashSet<>();
+					HashSet<String> formatsForItem;
+					HashSet<String> formatsCategoriesForItem;
 					HashSet<String> availableAtForItem = new HashSet<>();
 					availabilityToggleForItem.reset();
 
@@ -333,13 +339,15 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						boolean locallyOwned = scopingInfo.isLocallyOwned();
 						boolean libraryOwned = scopingInfo.isLibraryOwned();
 						boolean isAvailable = curItem.isAvailable();
-						if (curItem.isEContent()) {
+						boolean isEContent = curItem.isEContent();
+						if (isEContent) {
 							String trimmedEContentSource = curItem.getTrimmedEContentSource();
-							addAvailabilityToggle(locallyOwned || libraryOwned, curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && isAvailable, isAvailable, availabilityToggleForItem);
+							addAvailabilityToggle(locallyOwned || libraryOwned, scopeDisplaySettings.isIncludeOnlineMaterialsInAvailableToggle() && isAvailable, isAvailable, availabilityToggleForItem);
 							owningLibraries.add(scopePrefix + trimmedEContentSource);
 							if (isAvailable) {
 								availableAtForItem.add(trimmedEContentSource);
 							}
+							eContentSources.add(scopePrefix + trimmedEContentSource);
 						} else { //physical materials
 							if (locallyOwned) {
 								addAvailabilityToggle(locallyOwned, isAvailable, false, availabilityToggleForItem);
@@ -358,7 +366,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								}
 							}
 							if (libraryOwned) {
-								if (curScope.isLibraryScope() || (curScope.isLocationScope() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly())) {
+								if (curScope.isLibraryScope() || (curScope.isLocationScope() && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly())) {
 									addAvailabilityToggle(libraryOwned, isAvailable, false, availabilityToggleForItem);
 								}
 								if (isAvailable) {
@@ -369,7 +377,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								addAllOwningLocations = true;
 							}
 							//If it is not library or location owned, we might still add to the availability toggles
-							if (!locallyOwned && !libraryOwned && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+							if (!locallyOwned && !libraryOwned && !scopeDisplaySettings.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 								addAvailabilityToggle(false, isAvailable, false, availabilityToggleForItem);
 								if (isAvailable) {
 									addAllOwningLocationsToAvailableAt = true;
@@ -408,7 +416,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						loadScopedEditionInformation(editionInfo, scopePrefix, formatsForItem, formatsCategoriesForItem, availableAtForItem, availabilityToggleForItem);
 
 
-						if (locallyOwned || libraryOwned || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
+						if (locallyOwned || libraryOwned || scopeDisplaySettings.isIncludeAllRecordsInShelvingFacets()) {
 							if (curItem.getCollection() != null) {
 								collections.add(scopePrefix + curItem.getCollection());
 							}
@@ -419,7 +427,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 								shelfLocations.add(scopePrefix + curItem.getShelfLocation());
 							}
 						}
-						if (curItem.isEContent() || locallyOwned || libraryOwned || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
+						if (isEContent || locallyOwned || libraryOwned || scopeDisplaySettings.isIncludeAllRecordsInDateAddedFacets()) {
 							Long daysSinceAdded = loadScopedDaysAdded(curItem);
 							if (daysSinceAddedForScope == null || daysSinceAdded > daysSinceAddedForScope) {
 								daysSinceAddedForScope = daysSinceAdded;
@@ -443,9 +451,6 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 							iTypes.add(scopePrefix + trimmedIType);
 						}
 
-						if (curItem.isEContent()) {
-							eContentSources.add(scopePrefix + curItem.getTrimmedEContentSource());
-						}
 						if (locallyOwned || libraryOwned || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
 							localCallNumbersForScope.add(curItem.getCallNumber());
 							if (sortableCallNumberForScope == null) {
@@ -523,7 +528,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					String baseEditionStmt = scopeFormatCategoryFormat + "#" + availabilityToggle;
 					for (String availableAtLocation : availableAtForItem) {
 						String editionStmt = baseEditionStmt + "#" + availableAtLocation + "#";
-						editionStmt = StringUtils.replace(editionStmt," ", "_");
+						editionStmt = editionStmt.replace(' ', '_');
 						editionInfo.add(editionStmt);
 					}
 				}

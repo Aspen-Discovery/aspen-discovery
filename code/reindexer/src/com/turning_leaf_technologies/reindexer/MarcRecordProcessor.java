@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -390,7 +390,7 @@ abstract class MarcRecordProcessor {
 
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, 830);
 		for (DataField seriesField : seriesFields){
-			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
+			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
 			//Remove anything in parenthesis since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
@@ -404,7 +404,7 @@ abstract class MarcRecordProcessor {
 		}
 		seriesFields = MarcUtil.getDataFields(record, 800);
 		for (DataField seriesField : seriesFields){
-			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","")).toString();
+			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","")).toString();
 			//Remove anything in parenthesis since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
@@ -466,7 +466,7 @@ abstract class MarcRecordProcessor {
 					if (lexileValue.endsWith("L")){
 						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
 					}
-					if (StringUtils.isNumeric(lexileValue)) {
+					if (AspenStringUtils.isNumeric(lexileValue)) {
 						groupedWork.setLexileScore(lexileValue);
 					}else{
 						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
@@ -717,7 +717,7 @@ abstract class MarcRecordProcessor {
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
 		for(String subjectForm : subjectFormData){
-			subjectForm = StringUtils.trimTrailingPunctuation(subjectForm);
+			subjectForm = AspenStringUtils.trimTrailingPunctuation(subjectForm);
 			if (subjectForm.equalsIgnoreCase("Fiction")
 					|| subjectForm.equalsIgnoreCase("Young adult fiction" )
 					|| subjectForm.equalsIgnoreCase("Juvenile fiction" )
@@ -830,7 +830,7 @@ abstract class MarcRecordProcessor {
 		//Check the subjects
 		Set<String> subjectGenreData = MarcUtil.getFieldList(record, "655a");
 		for(String subjectForm : subjectGenreData) {
-			subjectForm = StringUtils.trimTrailingPunctuation(subjectForm).toLowerCase();
+			subjectForm = AspenStringUtils.trimTrailingPunctuation(subjectForm).toLowerCase();
 			if (subjectForm.startsWith("instructional film")
 					|| subjectForm.startsWith("educational film")
 					) {
@@ -918,11 +918,11 @@ abstract class MarcRecordProcessor {
 		}
 		//Try to get from 260
 		if (publicationDates.size() ==0) {
-			publicationDates.addAll(StringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260c")));
+			publicationDates.addAll(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260c")));
 		}
 		//Try to get from 008, but only need to do if we don't have anything else
 		if (publicationDates.size() == 0) {
-			publicationDates.add(StringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[7-10]")));
+			publicationDates.add(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[7-10]")));
 		}
 
 		return publicationDates;
@@ -937,12 +937,12 @@ abstract class MarcRecordProcessor {
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
 					if (subFieldB != null){
-						publisher.add(StringUtils.trimTrailingPunctuation(subFieldB.getData()));
+						publisher.add(AspenStringUtils.trimTrailingPunctuation(subFieldB.getData()));
 					}
 				}
 			}
 		}
-		publisher.addAll(StringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260b")));
+		publisher.addAll(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260b")));
 		return publisher;
 	}
 

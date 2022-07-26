@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.cron.reading_history;
 
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
 import com.turning_leaf_technologies.encryption.EncryptionUtils;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,7 +60,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 				conn.addRequestProperty("Accept", "*/*");
 				conn.addRequestProperty("Cache-Control", "no-cache");
 				if (conn.getResponseCode() == 200) {
-					String patronDataJson = StringUtils.convertStreamToString(conn.getInputStream());
+					String patronDataJson = AspenStringUtils.convertStreamToString(conn.getInputStream());
 					//logger.debug(patronApiUrl.toString());
 					//logger.debug("Json for patron reading history " + patronDataJson);
 					logger.debug("Got results for " + cat_username);
@@ -87,7 +87,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 					}
 				} else {
 					//Received an error
-					String errorResponse = StringUtils.convertStreamToString(conn.getErrorStream());
+					String errorResponse = AspenStringUtils.convertStreamToString(conn.getErrorStream());
 					if (numTries < 3){
 						retry = true;
 					}else{

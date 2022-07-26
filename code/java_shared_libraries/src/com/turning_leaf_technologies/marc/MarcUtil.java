@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.marc;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.marc4j.*;
 import org.marc4j.marc.*;
 
@@ -282,7 +282,7 @@ public class MarcUtil {
 					}
 				}
 				if (buf.length() > 0) {
-					result.add(StringUtils.cleanDataForSolr(buf.toString()));
+					result.add(AspenStringUtils.cleanDataForSolr(buf.toString()));
 				}
 			}
 		}
@@ -324,7 +324,7 @@ public class MarcUtil {
 
 					StringBuilder buffer = getSpecifiedSubfieldsAsString(marcField, subfldTags, separator);
 					if (buffer.length() > 0) {
-						result.add(StringUtils.cleanDataForSolr(buffer.toString()));
+						result.add(AspenStringUtils.cleanDataForSolr(buffer.toString()));
 					}
 				}
 			}

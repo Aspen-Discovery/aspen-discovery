@@ -11,7 +11,7 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
@@ -44,12 +44,12 @@ public class FolioExportMain {
 		boolean extractSingleWork = false;
 		String singleWorkId = null;
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleWork = true;
 			}
@@ -62,7 +62,7 @@ public class FolioExportMain {
 			}
 		}
 		if (extractSingleWork) {
-			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String profileToLoad = "ils";
 

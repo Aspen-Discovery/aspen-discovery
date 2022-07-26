@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.oai;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import javax.security.auth.Subject;
@@ -70,7 +70,7 @@ class OAISolrRecord {
 
 	void addDates(String[] dates) {
 		for (String date : dates) {
-			if (StringUtils.isNumeric(date)) {
+			if (AspenStringUtils.isNumeric(date)) {
 				this.date.add(date);
 			} else if (datePattern.matcher(date).matches()) {
 				this.date.add(date);

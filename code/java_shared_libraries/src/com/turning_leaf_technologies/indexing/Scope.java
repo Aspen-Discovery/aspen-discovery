@@ -75,7 +75,7 @@ public class Scope implements Comparable<Scope>{
 	private static InclusionResult  nonIncludedNonOwnedResult = new InclusionResult(false, false, null);
 
 	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
-	private final MaxSizeHashMap<String, Boolean> inclusionResults = new MaxSizeHashMap<>(500);
+
 	/**
 	 * Determine if the item is part of the current scope based on location code and other information
 	 *
@@ -94,38 +94,21 @@ public class Scope implements Comparable<Scope>{
 			}
 		}
 
-		Boolean cachedInclusion;
-		if (econtentUrl == null) {
-			cachedInclusion = inclusionResults.get(itemIdentifier);
-		}else{
-			cachedInclusion = null;
-		}
-		if (cachedInclusion != null){
-			if (cachedInclusion == Boolean.TRUE){
-				return includedNonOwnedResult;
-			}else{
-				return nonIncludedNonOwnedResult;
-			}
-		}else {
-			for (InclusionRule curRule : inclusionRules) {
-				if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)) {
-					inclusionResults.put(itemIdentifier, Boolean.TRUE);
-					if (econtentUrl == null) {
-						return includedNonOwnedResult;
-					} else {
-						econtentUrl = curRule.getLocalUrl(econtentUrl);
-						return new InclusionResult(true, false, econtentUrl);
-					}
+		for (InclusionRule curRule : inclusionRules) {
+			if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)) {
+				if (econtentUrl == null) {
+					return includedNonOwnedResult;
+				} else {
+					econtentUrl = curRule.getLocalUrl(econtentUrl);
+					return new InclusionResult(true, false, econtentUrl);
 				}
 			}
+		}
 
-			//If we got this far, it isn't included
-			inclusionResults.put(itemIdentifier, Boolean.FALSE);
-			if (econtentUrl == null) {
-				return nonIncludedNonOwnedResult;
-			} else {
-				return new InclusionResult(false, false, econtentUrl);
-			}
+		if (econtentUrl == null) {
+			return nonIncludedNonOwnedResult;
+		} else {
+			return new InclusionResult(false, false, econtentUrl);
 		}
 	}
 

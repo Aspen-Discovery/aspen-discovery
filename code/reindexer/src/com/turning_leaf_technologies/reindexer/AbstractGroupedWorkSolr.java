@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -403,7 +403,7 @@ public abstract class AbstractGroupedWorkSolr {
 
 	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory, boolean forceUpdate) {
 		if (shortTitle != null) {
-			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
+			shortTitle = AspenStringUtils.trimTrailingPunctuation(shortTitle);
 
 			//Figure out if we want to use this title or if the one we have is better.
 			boolean updateTitle = false;
@@ -464,7 +464,7 @@ public abstract class AbstractGroupedWorkSolr {
 				//remove punctuation from the sortable title
 				sortableTitle = punctuationPattern.matcher(sortableTitle).replaceAll("");
 				this.titleSort = sortableTitle.trim();
-				displayTitle = StringUtils.trimTrailingPunctuation(displayTitle);
+				displayTitle = AspenStringUtils.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
 				if (tmpTitle.length() > 0) {
@@ -501,7 +501,7 @@ public abstract class AbstractGroupedWorkSolr {
 
 	private void setSubTitle(String subTitle) {
 		if (subTitle != null) {
-			subTitle = StringUtils.trimTrailingPunctuation(subTitle);
+			subTitle = AspenStringUtils.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
@@ -539,7 +539,7 @@ public abstract class AbstractGroupedWorkSolr {
 
 	void setAuthor(String author) {
 		if (author != null) {
-			author = StringUtils.trimTrailingPunctuation(author);
+			author = AspenStringUtils.trimTrailingPunctuation(author);
 			if (primaryAuthors.containsKey(author)) {
 				primaryAuthors.put(author, primaryAuthors.get(author) + 1);
 			} else {
@@ -560,11 +560,11 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void setAuthorDisplay(String newAuthor) {
-		this.authorDisplay = StringUtils.trimTrailingPunctuation(newAuthor);
+		this.authorDisplay = AspenStringUtils.trimTrailingPunctuation(newAuthor);
 	}
 
 	void setAuthAuthor(String author) {
-		this.authAuthor = StringUtils.trimTrailingPunctuation(author);
+		this.authAuthor = AspenStringUtils.trimTrailingPunctuation(author);
 		keywords.add(this.authAuthor);
 	}
 
@@ -636,19 +636,19 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
-		this.authAuthor2.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.authAuthor2.addAll(AspenStringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2(Set<String> fieldList) {
-		this.author2.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.author2.addAll(AspenStringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2Role(Set<String> fieldList) {
-		this.author2Role.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.author2Role.addAll(AspenStringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addAuthorAdditional(Set<String> fieldList) {
-		this.authorAdditional.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.authorAdditional.addAll(AspenStringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addHoldings(int recordHoldings) {
@@ -664,23 +664,23 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addTopic(Set<String> fieldList) {
-		this.topics.addAll(StringUtils.normalizeSubjects(fieldList));
+		this.topics.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addTopic(String fieldValue) {
-		this.topics.add(StringUtils.normalizeSubject(fieldValue));
+		this.topics.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addTopicFacet(Set<String> fieldList) {
-		this.topicFacets.addAll(StringUtils.normalizeSubjects(fieldList));
+		this.topicFacets.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addTopicFacet(String fieldValue) {
-		this.topicFacets.add(StringUtils.normalizeSubject(fieldValue));
+		this.topicFacets.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addSubjects(Set<String> fieldList) {
-		this.subjects.addAll(StringUtils.normalizeSubjects(fieldList));
+		this.subjects.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addSeries(Set<String> fieldList) {
@@ -790,7 +790,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	private String getNormalizedSeriesVolume(String volume) {
-		volume = StringUtils.trimTrailingPunctuation(volume);
+		volume = AspenStringUtils.trimTrailingPunctuation(volume);
 		volume = volume.replaceAll("(bk\\.?|book)", "");
 		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
 		volume = volume.replaceAll("libro", "");
@@ -804,12 +804,12 @@ public abstract class AbstractGroupedWorkSolr {
 		volume = volume.replaceAll("eight", "8");
 		volume = volume.replaceAll("nine", "9");
 		volume = volume.replaceAll("[\\[\\]#]", "");
-		volume = StringUtils.trimTrailingPunctuation(volume.trim());
+		volume = AspenStringUtils.trimTrailingPunctuation(volume.trim());
 		return volume;
 	}
 
 	private String getNormalizedSeries(String series) {
-		series = StringUtils.trimTrailingPunctuation(series);
+		series = AspenStringUtils.trimTrailingPunctuation(series);
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
 
 		//Remove anything in parentheses since it's normally just the format
@@ -821,7 +821,7 @@ public abstract class AbstractGroupedWorkSolr {
 		//Remove the word series at the end since this gets cataloged inconsistently
 		series = series.replaceAll("(?i)\\s+series$", "");
 
-		return StringUtils.trimTrailingPunctuation(series).trim();
+		return AspenStringUtils.trimTrailingPunctuation(series).trim();
 	}
 
 
@@ -846,31 +846,31 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addGenre(Set<String> fieldList) {
-		this.genres.addAll(StringUtils.normalizeSubjects(fieldList));
+		this.genres.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addGenre(String fieldValue) {
-		this.genres.add(StringUtils.normalizeSubject(fieldValue));
+		this.genres.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addGenreFacet(Set<String> fieldList) {
-		this.genreFacets.addAll(StringUtils.normalizeSubjects(fieldList));
+		this.genreFacets.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addGenreFacet(String fieldValue) {
-		this.genreFacets.add(StringUtils.normalizeSubject(fieldValue));
+		this.genreFacets.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addGeographic(String fieldValue) {
-		this.geographic.add(StringUtils.normalizeSubject(fieldValue));
+		this.geographic.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addGeographicFacet(String fieldValue) {
-		this.geographicFacets.add(StringUtils.normalizeSubject(fieldValue));
+		this.geographicFacets.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addEra(String fieldValue) {
-		this.eras.add(StringUtils.normalizeSubject(fieldValue));
+		this.eras.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void setLanguageBoost(Long languageBoost) {
@@ -1117,7 +1117,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addAwards(Set<String> awards) {
-		this.awards.addAll(StringUtils.trimTrailingPunctuation(awards));
+		this.awards.addAll(AspenStringUtils.trimTrailingPunctuation(awards));
 	}
 
 	void setAcceleratedReaderInterestLevel(String acceleratedReaderInterestLevel) {
@@ -1227,11 +1227,11 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addLCSubject(String lcSubject) {
-		this.lcSubjects.add(StringUtils.normalizeSubject(lcSubject));
+		this.lcSubjects.add(AspenStringUtils.normalizeSubject(lcSubject));
 	}
 
 	void addBisacSubject(String bisacSubject) {
-		this.bisacSubjects.add(StringUtils.normalizeSubject(bisacSubject));
+		this.bisacSubjects.add(AspenStringUtils.normalizeSubject(bisacSubject));
 	}
 
 	void removeRelatedRecord(RecordInfo recordInfo) {

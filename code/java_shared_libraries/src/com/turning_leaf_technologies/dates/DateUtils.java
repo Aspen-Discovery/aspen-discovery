@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.dates;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -100,7 +100,7 @@ public class DateUtils {
 
 		if (matcher_braces.find()) {
 			cleanDate = matcher_braces.group();
-			cleanDate = StringUtils.removeOuterBrackets(cleanDate);
+			cleanDate = AspenStringUtils.removeOuterBrackets(cleanDate);
 		} else {
 			Matcher matcher_ie_date = FOUR_DIGIT_PATTERN_OTHER_4.matcher(date);
 			if (matcher_ie_date.find()) {
@@ -109,7 +109,7 @@ public class DateUtils {
 				Matcher matcher_one_brace = FOUR_DIGIT_PATTERN_ONE_BRACE.matcher(date);
 				if (matcher_one_brace.find()) {
 					cleanDate = matcher_one_brace.group();
-					cleanDate = StringUtils.removeOuterBrackets(cleanDate);
+					cleanDate = AspenStringUtils.removeOuterBrackets(cleanDate);
 				} else {
 					Matcher matcher_bc_date = BC_DATE_PATTERN.matcher(date);
 					if (matcher_bc_date.find()) {

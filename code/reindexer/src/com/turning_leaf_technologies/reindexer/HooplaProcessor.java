@@ -3,7 +3,8 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -131,7 +132,7 @@ class HooplaProcessor {
 					primaryAuthor = rawResponse.getString("artist");
 					//Don't swap artist names for music since these are typically group names.
 					if (!kind.equals("MUSIC")) {
-						primaryAuthor = StringUtils.swapFirstLastNames(primaryAuthor);
+						primaryAuthor = AspenStringUtils.swapFirstLastNames(primaryAuthor);
 					}
 				}else if (rawResponse.has("publisher")){
 					primaryAuthor = rawResponse.getString("publisher");
@@ -261,7 +262,7 @@ class HooplaProcessor {
 				}
 
 				String language = rawResponse.getString("language");
-				language = org.apache.commons.lang3.StringUtils.capitalize(language.toLowerCase());
+				language = StringUtils.capitalize(language.toLowerCase());
 				hooplaRecord.setPrimaryLanguage(language);
 				groupedWork.addLanguage(language);
 				if (language.equalsIgnoreCase("English")){
@@ -282,9 +283,9 @@ class HooplaProcessor {
 					HashSet<String> artistsWithRoleToAdd = new HashSet<>();
 					for (int i = 0; i < artists.length(); i++) {
 						JSONObject curArtist = artists.getJSONObject(i);
-						String artistName = StringUtils.swapFirstLastNames(curArtist.getString("name"));
+						String artistName = AspenStringUtils.swapFirstLastNames(curArtist.getString("name"));
 						artistsToAdd.add(artistName);
-						artistsWithRoleToAdd.add(artistName + "|" + org.apache.commons.lang3.StringUtils.capitalize(curArtist.getString("relationship").toLowerCase()));
+						artistsWithRoleToAdd.add(artistName + "|" + StringUtils.capitalize(curArtist.getString("relationship").toLowerCase()));
 					}
 					groupedWork.addAuthor2(artistsToAdd);
 					groupedWork.addAuthor2Role(artistsWithRoleToAdd);

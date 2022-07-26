@@ -12,7 +12,7 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -57,12 +57,12 @@ public class EvergreenExportMain {
 		boolean extractSingleWork = false;
 		String singleWorkId = null;
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleWork = true;
 			}
@@ -75,7 +75,7 @@ public class EvergreenExportMain {
 			}
 		}
 		if (extractSingleWork) {
-			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String profileToLoad = "ils";
 
@@ -561,7 +561,7 @@ public class EvergreenExportMain {
 				ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
 				if (!existingLocationRS.next()){
 					addAspenLocationStmt.setLong(1, parentId);
-					addAspenLocationStmt.setString(2, StringUtils.trimTo(60, (String)mappedOrgUnitField.get("name")));
+					addAspenLocationStmt.setString(2, AspenStringUtils.trimTo(60, (String)mappedOrgUnitField.get("name")));
 					addAspenLocationStmt.setString(3, shortName);
 					addAspenLocationStmt.setInt(4, branchId);
 
@@ -1368,7 +1368,7 @@ public class EvergreenExportMain {
 										String tag = curElement.getAttribute("tag");
 										String ind1 = curElement.getAttribute("ind1");
 										String ind2 = curElement.getAttribute("ind2");
-										if (StringUtils.isNumeric(tag)) {
+										if (AspenStringUtils.isNumeric(tag)) {
 											DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
 											for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
 												Node curChild2 = curElement.getChildNodes().item(k);

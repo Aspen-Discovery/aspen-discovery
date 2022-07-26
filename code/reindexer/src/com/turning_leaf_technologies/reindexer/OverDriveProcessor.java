@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -142,7 +142,7 @@ class OverDriveProcessor {
 								String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
 							} else if (rawMetadataDecoded.has("publishDateText")) {
 								String publishDateText = rawMetadataDecoded.getString("publishDateText");
-								if (publishDateText.length() == 4 && StringUtils.isNumeric(publishDateText)) {
+								if (publishDateText.length() == 4 && AspenStringUtils.isNumeric(publishDateText)) {
 									GregorianCalendar publishCal = new GregorianCalendar();
 									publishCal.set(Integer.parseInt(publishDateText), Calendar.JANUARY, 1);
 									publishDate = publishCal.getTime();
@@ -368,7 +368,7 @@ class OverDriveProcessor {
 							}
 						}
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
-						overDriveRecord.setPublisher(StringUtils.trimTrailingPunctuation(metadata.get("publisher")));
+						overDriveRecord.setPublisher(AspenStringUtils.trimTrailingPunctuation(metadata.get("publisher")));
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
 						overDriveRecord.setPhysicalDescription("");
 

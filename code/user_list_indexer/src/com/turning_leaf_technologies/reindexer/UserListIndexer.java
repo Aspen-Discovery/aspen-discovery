@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrClient;
@@ -285,7 +285,7 @@ class UserListIndexer {
 							URL getTitleAuthorUrl = new URL(baseUrl + "/EBSCO/JSON?method=getTitleAuthor&id=" + sourceId);
 							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
 							if (titleAuthorRaw instanceof InputStream) {
-								String titleAuthorJson = StringUtils.convertStreamToString((InputStream) titleAuthorRaw);
+								String titleAuthorJson = AspenStringUtils.convertStreamToString((InputStream) titleAuthorRaw);
 								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
 								if (titleAuthorResult.getBoolean("success")){
 									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));
@@ -296,7 +296,7 @@ class UserListIndexer {
 							URL getTitleAuthorUrl = new URL(baseUrl + "/EBSCOhost/JSON?method=getTitleAuthor&id=" + sourceId);
 							Object titleAuthorRaw = getTitleAuthorUrl.getContent();
 							if (titleAuthorRaw instanceof InputStream) {
-								String titleAuthorJson = StringUtils.convertStreamToString((InputStream) titleAuthorRaw);
+								String titleAuthorJson = AspenStringUtils.convertStreamToString((InputStream) titleAuthorRaw);
 								JSONObject titleAuthorResult = new JSONObject(titleAuthorJson);
 								if (titleAuthorResult.getBoolean("success")){
 									userListSolr.addListTitle(source, sourceId, titleAuthorResult.getString("title"), titleAuthorResult.getString("author"));

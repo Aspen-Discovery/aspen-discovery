@@ -8,7 +8,7 @@ import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -40,7 +40,7 @@ public class SymphonyExportMain {
 
 	public static void main(String[] args){
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
