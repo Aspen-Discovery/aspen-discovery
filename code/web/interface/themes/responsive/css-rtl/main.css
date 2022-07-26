@@ -8505,6 +8505,22 @@ a.placard-link {
 .radio-toolbar input[type="radio"]:focus + label {
   border: 2px dashed #444;
 }
+#FloatingSave {
+  position: fixed;
+  bottom: 10%;
+  right: 0;
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  margin: 0 3em 3em 0;
+  z-index: 9999999;
+}
+#FloatingSave .btn-primary {
+  border-radius: 50%;
+  height: 60px;
+  width: 60px;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
