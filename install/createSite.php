@@ -128,9 +128,13 @@ if (!$foundConfig) {
 		while (empty($variables['ilsDBHost'])) {
 			$variables['ilsDBHost'] = readline("Database host for Koha > ");
 		}
+		$variables['ilsDBPort'] = '';
+		while (empty($variables['ilsDBPort'])) {
+			$variables['ilsDBPort'] = readline("Database port for Koha > ");
+		}
 		$variables['ilsDBName'] = '';
 		while (empty($variables['ilsDBName'])) {
-			$variables['ilsDBName'] = readline("Database name for Koha > ");
+			$variables['ilsDBName'] = readline("Database schema name for Koha > ");
 		}
 		$variables['ilsDBUser'] = '';
 		while (empty($variables['ilsDBUser'])) {
@@ -139,10 +143,6 @@ if (!$foundConfig) {
 		$variables['ilsDBPwd'] = '';
 		while (empty($variables['ilsDBPwd'])) {
 			$variables['ilsDBPwd'] = readline("Database password for {$variables['ilsDBUser']} for Koha > ");
-		}
-		$variables['ilsDBPort'] = '';
-		while (empty($variables['ilsDBPort'])) {
-			$variables['ilsDBPort'] = readline("Database port for Koha > ");
 		}
 		$variables['ilsDBTimezone'] = readline("Database timezone for Koha (e.g., US/Central) > ");
 		if (empty($variables['ilsDBTimezone'])){
