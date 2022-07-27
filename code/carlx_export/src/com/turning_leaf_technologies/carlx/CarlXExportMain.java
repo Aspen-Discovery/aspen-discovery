@@ -76,6 +76,9 @@ public class CarlXExportMain {
 			if (args.length > 1){
 				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
 					extractSingleWork = true;
+					if (args.length > 2) {
+						singleWorkId = args[2];
+					}
 				}
 			}
 		}
