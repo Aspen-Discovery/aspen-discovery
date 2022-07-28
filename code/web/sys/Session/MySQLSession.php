@@ -77,8 +77,17 @@ class MySQLSession extends SessionInterface
 			$logger->log("Updating session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->last_used = time();
-			if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] == true || $_REQUEST['rememberMe'] === "true")) {
-				$s->remember_me = 1;
+			if (empty($s->remember_me)) {
+				if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] == true || $_REQUEST['rememberMe'] === "true")) {
+					$s->remember_me = 1;
+				} else {
+					$activeUser = UserAccount::getActiveUserObj();
+					if (!empty($activeUser)) {
+						if ($activeUser->bypassAutoLogout) {
+							$s->remember_me = 1;
+						}
+					}
+				}
 			}
 			$result = $s->update();
 		}else{

@@ -70,7 +70,7 @@
 					{if !$isOpac}
 						<label for="rememberMe" class="checkbox">
 							<input type="checkbox" id="rememberMe" name="rememberMe">
-							{translate text="Remember Me" isPublicFacing=true}
+							{translate text="Keep Me Signed In" isPublicFacing=true}
 						</label>
 					{/if}
 				</div>
