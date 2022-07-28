@@ -7,6 +7,7 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.reindexer.AppendItemsToRecordResult;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
@@ -790,7 +791,7 @@ public class SymphonyExportMain {
 			return totalChanges;
 		}
 
-		logEntry.addNote("Processing " + exportedMarcFiles.size());
+		logEntry.addNote("Processing " + exportedMarcFiles.size() + " MARC files");
 		logEntry.saveResults();
 		//The files are sorted by date, we just need to make sure the last is not changing
 		if (exportedMarcFiles.size() > 0){
@@ -878,7 +879,10 @@ public class SymphonyExportMain {
 					try{
 						Record curBib = catalogReader.next();
 						numRecordsRead++;
-						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+						DataField marc245 = curBib.getDataField(245);
+						boolean has245 = marc245 != null;
+						if (hasFullExportFile && curBibFile.equals(fullExportFile) && has245 && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							//We're skipping this record because we are doing a full export that got paused part way through
 							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
@@ -897,33 +901,38 @@ public class SymphonyExportMain {
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									AppendItemsToRecordResult appendItemsToRecordResult = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									marcStatus = appendItemsToRecordResult.getMarcStatus();
+									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 
-								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
-									if (permanentId == null) {
-										//Delete the record since it is suppressed
-										deleteRecord = true;
-									} else {
-										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
-											logEntry.incAdded();
+								marc245 = curBib.getDataField(245);
+								if (marc245 != null) {
+									if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+										String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+										if (permanentId == null) {
+											//Delete the record since it is suppressed
+											deleteRecord = true;
 										} else {
-											logEntry.incUpdated();
+											if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
+												logEntry.incAdded();
+											} else {
+												logEntry.incUpdated();
+											}
+											getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+											totalChanges++;
 										}
-										getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-										totalChanges++;
+									} else {
+										logEntry.incSkipped();
 									}
-								} else {
-									logEntry.incSkipped();
+									if (totalChanges > 0 && totalChanges % 5000 == 0) {
+										getGroupedWorkIndexer(dbConn).commitChanges();
+									}
+									//Mark that the record was processed
+									recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 								}
-								if (totalChanges > 0 && totalChanges % 5000 == 0) {
-									getGroupedWorkIndexer(dbConn).commitChanges();
-								}
-								//Mark that the record was processed
-								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 								lastRecordProcessed = recordNumber;
 							} else {
 								//Delete the record since it is suppressed
@@ -962,6 +971,8 @@ public class SymphonyExportMain {
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
+			logEntry.addNote("  Read " + numRecordsRead + " records in the file");
+			logEntry.saveResults();
 		}
 
 		//Loop through remaining records and delete them
