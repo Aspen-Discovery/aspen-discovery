@@ -39,7 +39,7 @@ public class SystemUtils {
 				//These mimic what we alert for in getIndexStatus with an additional buffer to prevent the alert
 				if (freeMem < 1500000000){
 					return true;
-				}else if (percentMemoryAvialable < .075){
+				}else if (percentMemoryAvialable < .075 && freeMem < 3000000000L){
 					return true;
 				}else{
 					return false;
