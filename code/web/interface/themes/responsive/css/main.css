@@ -8104,6 +8104,12 @@ hr.menu {
   font-size: 10px;
   text-indent: 0;
 }
+.badge-primary {
+  background-color: #3174AF !important;
+}
+.badge-success {
+  background-color: #2e7d32 !important;
+}
 ul.account-submenu {
   list-style: none;
   margin-left: 0;
@@ -9165,6 +9171,7 @@ a.placard-link {
   -webkit-column-break-inside: avoid;
   display: inline-block;
   text-align: center;
+  position: relative;
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {
@@ -9275,6 +9282,24 @@ a.browse-thumbnail-sorted.active {
 }
 .selected-browse-sub-category-label-search-text::before {
   content: ' \00bb \00a0';
+}
+.cover-badge {
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  font-size: larger;
+  border-radius: 0;
+}
+.cover-badge::before {
+  top: 100%;
+  left: 0;
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #3d4364;
+  border-left: 10px solid transparent;
 }
 #account-settings-accordion .panel-group .panel + .panel {
   margin-top: 0;
@@ -10150,6 +10175,28 @@ a.browse-thumbnail-sorted.active {
   border-radius: 3px;
   border: 1px solid #ababab;
   font-size: 12px;
+}
+.listResultImage {
+  position: relative;
+  margin-top: 5px;
+}
+.list-cover-badge {
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  font-size: larger;
+  border-radius: 0;
+}
+.list-cover-badge::before {
+  top: 100%;
+  left: 0;
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #3d4364;
+  border-left: 10px solid transparent;
 }
 .graph-bar {
   background-color: #088ec6;

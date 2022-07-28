@@ -594,6 +594,21 @@ abstract class SearchObject_BaseSearcher
 			'index' => $type,
 			'lookfor' => $searchTerm
 		);
+
+		if (isset($_REQUEST['searchId']) && is_numeric($_REQUEST['searchId'])){
+			$searchEntry = new SearchEntry();
+			$searchEntry->id = $_REQUEST['searchId'];
+			if ($searchEntry->find(true)){
+				$activeUserId = UserAccount::getActiveUserId();
+				if ($activeUserId && ($activeUserId == $searchEntry->user_id)){
+					$this->searchId = $searchEntry->id;
+					$this->savedSearch = $searchEntry->saved;
+				}elseif ($searchEntry->session_id == session_id()){
+					$this->searchId = $searchEntry->id;
+					$this->savedSearch = $searchEntry->saved;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -1049,6 +1064,20 @@ abstract class SearchObject_BaseSearcher
 
 		if ($this->searchSource) {
 			$params[] = "searchSource=" . $this->searchSource;
+		}
+
+		if (!empty($this->searchId)){
+			//Make sure the search belongs to the user or is part of the active session
+			$searchEntry = new SearchEntry();
+			$searchEntry->id = $this->searchId;
+			if ($searchEntry->find(true)){
+				$activeUserId = UserAccount::getActiveUserId();
+				if ($activeUserId && ($activeUserId == $searchEntry->user_id)){
+					$params[] = "searchId=" . $this->searchId;
+				}elseif ($searchEntry->session_id == session_id()){
+					$params[] = "searchId=" . $this->searchId;
+				}
+			}
 		}
 
 		// Join all parameters with an escaped ampersand,
@@ -1750,7 +1779,8 @@ abstract class SearchObject_BaseSearcher
 					// the current session.  (We want all searches to be
 					// persistent and able to be bookmarked).
 					if ($redirect) {
-						header('Location: ' . $savedSearch->renderSearchUrl());
+						$newUrl = $savedSearch->renderSearchUrl();
+						header('Location: ' . $newUrl);
 						die();
 					} else {
 						return $savedSearch;

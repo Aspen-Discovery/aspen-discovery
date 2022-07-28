@@ -52,5 +52,35 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE hoopla_scopes ADD COLUMN maxCostPerCheckoutBingePass FLOAT DEFAULT 5",
 			]
 		],//hoopla_bingepass
+		'saved_search_log' => [
+			'title' => 'Create Log for Updating Saved Searches',
+			'description' => 'Create Log for Updating Saved Searches',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS search_update_log (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					startTime INT(11) NOT NULL, 
+					endTime INT(11) NULL, 
+					lastUpdate INT(11) NULL, 
+					numErrors INT(11) NOT NULL DEFAULT 0,
+					numSearches INT(11) NOT NULL DEFAULT 0,
+					numUpdated INT(11) NOT NULL DEFAULT 0,
+					notes TEXT
+				) ENGINE = InnoDB'
+			]
+		],//saved_search_log
+		'saved_search_hasNewResults' => [
+			'title' => 'Store if a saved search has new results',
+			'description' => 'Store if a saved search has new results',
+			'sql' => [
+				"ALTER TABLE search ADD COLUMN hasNewResults TINYINT DEFAULT 0",
+			]
+		],//saved_search_hasNewResults
+		'account_summary_hasUpdatedSavedSearches' => [
+			'title' => 'Store if a user has saved searches with updates in account summary',
+			'description' => 'Store if a user has saved searches with updates in account summary',
+			'sql' => [
+				"ALTER TABLE user_account_summary ADD COLUMN hasUpdatedSavedSearches TINYINT DEFAULT 0",
+			]
+		],//account_summary_hasUpdatedSavedSearches
 	];
 }

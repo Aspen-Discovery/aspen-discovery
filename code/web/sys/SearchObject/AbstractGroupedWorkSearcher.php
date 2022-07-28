@@ -298,6 +298,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		global $interface;
 		global $memoryWatcher;
 		global $timer;
+		global $solrScope;
 		$html = array();
 		if (isset($this->indexResult['response'])) {
 			$allWorkIds = array();
@@ -315,6 +316,15 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				if (!empty($this->searchId) && $this->savedSearch) {
+					if (isset($current["local_time_since_added_$solrScope"])) {
+						$interface->assign('isNew', in_array('Week', $current["local_time_since_added_$solrScope"]));
+					} else {
+						$interface->assign('isNew', false);
+					}
+				} else {
+					$interface->assign('isNew', false);
+				}
 				/** @var GroupedWorkDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
 				if (!($record instanceof AspenError)) {

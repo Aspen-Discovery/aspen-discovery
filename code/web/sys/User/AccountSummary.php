@@ -15,13 +15,14 @@ class AccountSummary extends DataObject
 	public $totalFines;
 	public $expirationDate;
 	public $lastLoaded;
+	public $hasUpdatedSavedSearches;
 
 	protected $_materialsRequests;
 	protected $_readingHistory;
 
 	public function getNumericColumnNames() : array
 	{
-		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','totalFines','expirationDate','lastLoaded'];
+		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','totalFines','expirationDate','lastLoaded', 'hasUpdatedSavedSearches'];
 	}
 
 	/**

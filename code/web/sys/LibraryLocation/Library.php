@@ -568,7 +568,7 @@ class Library extends DataObject
 				'goodreadsLink' => array('property'=>'goodreadsLink', 'type'=>'text', 'label'=>'GoodReads Link Url', 'description'=>'The url to GoodReads (leave blank if the library does not have a GoodReads account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'tiktokLink' => array('property'=>'tiktokLink', 'type'=>'text', 'label'=>'TikTok Link Url', 'description'=>'The url to TikTok (leave blank if the library does not have a TikTok account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
-				'contactEmail' => array('property'=>'contactEmail', 'type'=>'text', 'label'=>'General Email Address', 'description'=>'A general email address for the public to contact the library', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true, 'affectsLiDA' => true)
+				'contactEmail' => array('property'=>'contactEmail', 'type'=>'text', 'label'=>'General Email Address (LiDA only)', 'description'=>'A general email address for the public to contact the library', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true, 'affectsLiDA' => true)
 			)),
 
 			// ILS/Account Integration //

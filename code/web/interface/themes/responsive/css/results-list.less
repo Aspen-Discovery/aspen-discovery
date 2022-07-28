@@ -365,4 +365,26 @@
   border: 1px solid #ababab;
   font-size: 12px;
 }
+.listResultImage{
+  position: relative;
+  margin-top: 5px;
+}
+.list-cover-badge{
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  font-size: larger;
+  border-radius: 0;
+}
 
+.list-cover-badge::before {
+  top: 100%;
+  left: 0;
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #3d4364;
+  border-left: 10px solid transparent;
+}

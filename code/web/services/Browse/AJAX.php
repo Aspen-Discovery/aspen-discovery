@@ -469,17 +469,14 @@ class Browse_AJAX extends Action {
 					// Search Browse Category //
 				} else {
 					if(strpos($this->textId,"system_saved_searches_") !== false) {
-						$label = explode('_', $this->textId);
-						$id = $label[3];
+						$id = str_replace('system_saved_searches_', '', $this->textId);
 						require_once ROOT_DIR . '/services/Search/History.php';
 						$savedSearch = History::getSavedSearchObject($id);
 						SearchObjectFactory::initSearchObject();
-						$size = strlen($savedSearch['search_object']);
 						$minSO = unserialize($savedSearch['search_object']);
 						$searchObject = SearchObjectFactory::deminify($minSO);
 						$searchObject->getFilterList();
 						$searchObject->displayQuery();
-
 					} else {
 						$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 						$defaultFilterInfo  = $browseCategory->defaultFilter;

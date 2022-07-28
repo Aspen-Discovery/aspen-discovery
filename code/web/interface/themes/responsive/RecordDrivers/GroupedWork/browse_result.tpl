@@ -7,13 +7,14 @@
 		<div class="browse-list grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
 				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
-				<div><strong>{$summTitle}</strong><br>{$vSummAuthor}</br></div>
+				<div>{if $isNew}<span class="badge badge-success">{translate text="New Title!" isPublicFacing=true}</span><br/>{/if}<strong>{$summTitle}</strong><br>{$vSummAuthor}</div>
 			</a>
 		</div>
 
 	{else}{*Default Browse Mode (covers) *}
 		<div class="browse-thumbnail grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
+				{if $isNew}<span class="badge cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
 				<div>
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
 				</div>

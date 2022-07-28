@@ -1358,6 +1358,13 @@ class MyAccount_AJAX extends JSON_Action
 
 				$ilsSummary->setReadingHistory($user->getReadingHistorySize());
 
+				$searchEntry = new SearchEntry();
+				$searchEntry->user_id = $user->id;
+				$searchEntry->saved = 1;
+				$searchEntry->hasNewResults = 1;
+				$searchEntry->find();
+				$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
+
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);
 				$interface->setFinesRelatedTemplateVariables();
@@ -2880,9 +2887,13 @@ class MyAccount_AJAX extends JSON_Action
 						$finesPaid .= '|' . $fineAmount;
 					}
 
+					$name = StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true);
+					if (empty($name)){
+						$name = StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true);
+					}
 					$purchaseUnits['items'][] = [
 						'custom_id' => $paymentLibrary->subdomain,
-						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
+						'name' => $name,
 						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
 							'currency_code' => $currencyCode,

@@ -72,8 +72,15 @@ class History extends Action {
 					'speed'       => round($searchObject->getQuerySpeed(), 2)."s",
 					// Size is purely for debugging. Not currently displayed in the template.
 					// It's the size of the serialized, minified search in the database.
-					'size'        => round($size/1024, 3)."kb"
+					'size'        => round($size/1024, 3)."kb",
+					'hasNewResults' => $search->hasNewResults,
+
 				);
+
+				if ($search->hasNewResults){
+					$searchObject->addFilter('time_since_added:Week');
+					$newItem['newTitlesUrl'] = $searchObject->renderSearchUrl();
+				}
 
 				// Saved searches
 				if ($search->saved == 1) {
@@ -168,32 +175,25 @@ class History extends Action {
 	public static function getSavedSearchObject($searchId) {
 		// Retrieve search history
 		$s = new SearchEntry();
-		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
-		$thisSearch = [];
-		if (count($searchHistory) > 0) {
-			// Loop through the history to find the one we want
-			foreach($searchHistory as $search) {
-				if($search->id == $searchId) {
-					$searchObject = SearchObjectFactory::initSearchObject();
-					$size = strlen($search->search_object);
-					$minSO = unserialize($search->search_object);
-					$searchObject = SearchObjectFactory::deminify($minSO);
+		$s->id = $searchId;
+		if ($s->find(true)) {
+			SearchObjectFactory::initSearchObject();
+			$minSO = unserialize($s->search_object);
 
-					$searchObject->activateAllFacets();
+			$searchObject = SearchObjectFactory::deminify($minSO);
 
-					$searchSourceLabel = $searchObject->getSearchSource();
-					if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)) {
-						$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
-					}
-
-					$thisSearch = array(
-						'id'            => $search->id,
-						'url'           => $search->searchUrl,
-						'search_object' => $search->search_object,
-						'source'        => $searchSourceLabel,
-					);
-				}
+			$searchSourceLabel = $searchObject->getSearchSource();
+			if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)) {
+				$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
 			}
+
+			$thisSearch = array(
+				'id' => $s->id,
+				'url' => $s->searchUrl,
+				'search_object' => $s->search_object,
+				'source' => $searchSourceLabel,
+				'hasNewResults' => $s->hasNewResults,
+			);
 		}
 		return $thisSearch;
 	}

@@ -14,6 +14,7 @@ class SearchEntry extends DataObject
 	public $searchSource;
 	public $searchUrl;
 	public $title;
+	public $hasNewResults;
 
 	/**
 	 * Get an array of SearchEntry objects for the specified user.
