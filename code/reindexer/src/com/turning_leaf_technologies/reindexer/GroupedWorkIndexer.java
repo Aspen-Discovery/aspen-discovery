@@ -2277,14 +2277,30 @@ public class GroupedWorkIndexer {
 		UNCHANGED, CHANGED, NEW
 	}
 
-	public MarcStatus appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber) {
+	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber) {
 		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
 		//Copy the record to the individual marc path
+		Record mergedRecord = recordWithAdditionalItems;
 		if (recordNumber != null) {
-			Record mergedRecord = loadMarcRecordFromDatabase(indexingSettings.getName(), recordNumber, logEntry);
+			mergedRecord = loadMarcRecordFromDatabase(indexingSettings.getName(), recordNumber, logEntry);
 
 			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTagInt());
 			for (DataField additionalItem : additionalItems) {
+				mergedRecord.addVariableField(additionalItem);
+			}
+
+			List<DataField> additional852s = recordWithAdditionalItems.getDataFields(852);
+			for (DataField additionalItem : additional852s) {
+				mergedRecord.addVariableField(additionalItem);
+			}
+
+			List<DataField> additional853s = recordWithAdditionalItems.getDataFields(853);
+			for (DataField additionalItem : additional853s) {
+				mergedRecord.addVariableField(additionalItem);
+			}
+
+			List<DataField> additional866s = recordWithAdditionalItems.getDataFields(866);
+			for (DataField additionalItem : additional866s) {
 				mergedRecord.addVariableField(additionalItem);
 			}
 
@@ -2293,7 +2309,7 @@ public class GroupedWorkIndexer {
 		} else {
 			logEntry.incErrors("Error did not find record number for MARC record");
 		}
-		return marcRecordStatus;
+		return new AppendItemsToRecordResult(marcRecordStatus, mergedRecord);
 	}
 
 	/**

@@ -11,6 +11,7 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
+import com.turning_leaf_technologies.reindexer.AppendItemsToRecordResult;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
@@ -1170,7 +1171,9 @@ public class EvergreenExportMain {
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = indexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									AppendItemsToRecordResult appendItemsToRecordResult =  indexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									marcStatus = appendItemsToRecordResult.getMarcStatus();
+									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
 									marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
