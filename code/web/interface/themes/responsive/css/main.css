@@ -9283,14 +9283,18 @@ a.browse-thumbnail-sorted.active {
 .selected-browse-sub-category-label-search-text::before {
   content: ' \00bb \00a0';
 }
-.cover-badge {
+.browse-cover-badge {
   position: absolute;
   top: -15px;
   left: -10px;
-  font-size: larger;
+  font-size: medium;
+  font-weight: bold;
   border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
 }
-.cover-badge::before {
+.browse-cover-badge::before {
   top: 100%;
   left: 0;
   content: " ";
@@ -10182,10 +10186,14 @@ a.browse-thumbnail-sorted.active {
 }
 .list-cover-badge {
   position: absolute;
-  top: -15px;
+  top: -12px;
   left: -10px;
-  font-size: larger;
+  font-size: medium;
+  font-weight: bold;
   border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
 }
 .list-cover-badge::before {
   top: 100%;

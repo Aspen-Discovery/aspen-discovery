@@ -14,7 +14,7 @@
 	{else}{*Default Browse Mode (covers) *}
 		<div class="browse-thumbnail grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
-				{if $isNew}<span class="badge cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
+				{if $isNew}<span class="browse-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
 				<div>
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
 				</div>

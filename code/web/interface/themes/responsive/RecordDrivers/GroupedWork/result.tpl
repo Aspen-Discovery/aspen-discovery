@@ -11,7 +11,7 @@
 					{if $disableCoverArt != 1}
 						<div class="listResultImage img-thumbnail">
 							<a href="{$summUrl}" tabindex="-1">
-								{if $isNew}<span class="badge list-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
+								{if $isNew}<span class="list-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
 								<img src="{$bookCoverUrlMedium}" alt="{$summTitle|removeTrailingPunctuation|escape:css}">
 							</a>
 						</div>

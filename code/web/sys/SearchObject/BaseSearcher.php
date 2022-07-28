@@ -1550,6 +1550,7 @@ abstract class SearchObject_BaseSearcher
 	{
 		$this->searchType = $this->basicSearchType;
 		$this->searchId = null;
+		$this->savedSearch = false;
 		$this->resultsTotal = null;
 		$this->filterList = [];
 		$this->initTime = null;
@@ -1578,7 +1579,7 @@ abstract class SearchObject_BaseSearcher
 	 * @access  public
 	 * @param object $minified A minSO object
 	 */
-	public function deminify($minified)
+	public function deminify($minified, ?SearchEntry $searchEntry = null)
 	{
 		// Clean the object
 		$this->purge();
@@ -1586,6 +1587,9 @@ abstract class SearchObject_BaseSearcher
 		// Most values will transfer without changes
 		if (isset($minified->q)) {
 			$this->query = $minified->q;
+		}
+		if ($searchEntry != null){
+			$this->savedSearch = $searchEntry->saved;
 		}
 		$this->searchId = $minified->id;
 		$this->initTime = $minified->i;
@@ -1733,7 +1737,7 @@ abstract class SearchObject_BaseSearcher
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
 				$minSO = unserialize($search->search_object);
-				return SearchObjectFactory::deminify($minSO);
+				return SearchObjectFactory::deminify($minSO, $search);
 			} else {
 				// Just get out, we don't need to show an error
 				return null;
