@@ -1774,7 +1774,7 @@ abstract class SearchObject_BaseSearcher
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())) {
 					// They do, deminify it to a new object.
 					$minSO = unserialize($search->search_object);
-					$savedSearch = SearchObjectFactory::deminify($minSO);
+					$savedSearch = SearchObjectFactory::deminify($minSO, $search);
 
 					// Now redirect to the URL associated with the saved search;
 					// this simplifies problems caused by mixing different classes

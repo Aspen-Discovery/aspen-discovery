@@ -231,19 +231,30 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function getTitleSummaryInformation($orderedListOfIDs = array())
 	{
+		global $solrScope;
 		$titleSummaries = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
 			/** @var GroupedWorkDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!($record instanceof AspenError)) {
+				$isNew = false;
+				if (!empty($this->searchId) && $this->savedSearch) {
+					if (isset($current["local_time_since_added_$solrScope"])) {
+						$isNew = in_array('Week', $current["local_time_since_added_$solrScope"]);
+					}
+				}
 				if (!empty($orderedListOfIDs)) {
 					$position = array_search($current['id'], $orderedListOfIDs);
 					if ($position !== false) {
-						$titleSummaries[$position] = $record->getSummaryInformation();
+						$summary = $record->getSummaryInformation();
+						$summary['isNew'] = $isNew;
+						$titleSummaries[$position] = $summary;
 					}
 				} else {
-					$titleSummaries[] = $record->getSummaryInformation();
+					$summary = $record->getSummaryInformation();
+					$summary['isNew'] = $isNew;
+					$titleSummaries[] = $summary;
 				}
 			} else {
 				$titleSummaries[] = "Unable to find record";

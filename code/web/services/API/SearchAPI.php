@@ -1702,13 +1702,13 @@ class SearchAPI extends Action
 
 	function getSavedSearchResults()
 	{
-		if($_REQUEST['limit']) {
+		if(isset($_REQUEST['limit'])) {
 			$pageSize = $_REQUEST['limit'];
 		} else {
 			$pageSize = self::ITEMS_PER_PAGE;
 		}
 
-		if($_REQUEST['id']) {
+		if(isset($_REQUEST['id'])) {
 			$id = $_REQUEST['id'];
 		} else {
 			return array('success' => false, 'message' => 'Search id not provided');
