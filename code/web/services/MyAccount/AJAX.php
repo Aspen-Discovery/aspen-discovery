@@ -2876,9 +2876,13 @@ class MyAccount_AJAX extends JSON_Action
 						$finesPaid .= '|' . $fineAmount;
 					}
 
+					$name = StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true);
+					if (empty($name)){
+						$name = StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true);
+					}
 					$purchaseUnits['items'][] = [
 						'custom_id' => $paymentLibrary->subdomain,
-						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
+						'name' => $name,
 						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
 							'currency_code' => $currencyCode,
