@@ -842,10 +842,12 @@ public class SymphonyExportMain {
 		GroupedWorkIndexer reindexer = getGroupedWorkIndexer(dbConn);
 		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+			logEntry.saveResults();
 
 			String lastRecordProcessed = "";
 			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+				logEntry.saveResults();
 			}
 			int numRecordsRead = 0;
 			try {
