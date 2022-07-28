@@ -82,5 +82,12 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE user_account_summary ADD COLUMN hasUpdatedSavedSearches TINYINT DEFAULT 0",
 			]
 		],//account_summary_hasUpdatedSavedSearches
+		'overdrive_enable_allow_large_deletes' => [
+			'title' => 'OverDrive - Enable Allow Large Deletes',
+			'description' => 'Allow the OverDrive process to delete more than 500 records or 5% of the collection',
+			'sql' => [
+				'ALTER TABLE overdrive_settings CHANGE COLUMN allowLargeDeletes allowLargeDeletes TINYINT(1) DEFAULT 1'
+			]
+		],
 	];
 }
