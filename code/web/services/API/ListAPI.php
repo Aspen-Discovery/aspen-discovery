@@ -171,7 +171,7 @@ class ListAPI extends Action
 			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 		}
 
-		$checkIfValid = true;
+		$checkIfValid = "true";
 		if(isset($_REQUEST['checkIfValid'])) {
 			$checkIfValid = $_REQUEST['checkIfValid'];
 		}
@@ -187,7 +187,7 @@ class ListAPI extends Action
 		$results = array();
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
-				if($checkIfValid) {
+				if($checkIfValid == "true") {
 					if($list->isValidForDisplay()) {
 						$count = $count + 1;
 						$results[] = array(
@@ -609,7 +609,7 @@ class ListAPI extends Action
 			$id = UserAccount::getActiveUserId();
 		}
 
-		$checkIfValid = true;
+		$checkIfValid = "true";
 		if(isset($_REQUEST['checkIfValid'])) {
 			$checkIfValid = $_REQUEST['checkIfValid'];
 		}
@@ -624,7 +624,7 @@ class ListAPI extends Action
 		$count = 0;
 		$countNewResults = 0;
 		while($SearchEntry->fetch()) {
-			if($checkIfValid) {
+			if($checkIfValid == "true") {
 				if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 					$count = $count + 1;
 					$savedSearch = array(
@@ -709,7 +709,7 @@ class ListAPI extends Action
 		}
 
 		if ($user && !($user instanceof AspenError)) {
-			$checkIfValid = true;
+			$checkIfValid = "true";
 			if(isset($_REQUEST['checkIfValid'])) {
 				$checkIfValid = $_REQUEST['checkIfValid'];
 			}
@@ -724,7 +724,7 @@ class ListAPI extends Action
 			$countNewResults = 0;
 
 			while($SearchEntry->fetch()) {
-				if($checkIfValid) {
+				if($checkIfValid == "true") {
 					if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 						$count = $count + 1;
 						$savedSearch = array(
