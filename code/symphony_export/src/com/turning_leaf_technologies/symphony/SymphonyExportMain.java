@@ -754,6 +754,8 @@ public class SymphonyExportMain {
 					}
 				}
 			}
+			//Sort the files to process by date
+			Arrays.sort(exportedMarcDeltaFiles, Comparator.comparingLong(File::lastModified));
 		}
 
 		if (filesToProcess.size() > 0){
@@ -788,21 +790,23 @@ public class SymphonyExportMain {
 			return totalChanges;
 		}
 
-		//Make sure that none of the files are still changing
-		for (File curBibFile : exportedMarcFiles) {
-			//Make sure the file is not currently changing.
+		logEntry.addNote("Processing " + exportedMarcFiles.size());
+		logEntry.saveResults();
+		//The files are sorted by date, we just need to make sure the last is not changing
+		if (exportedMarcFiles.size() > 0){
+			File lastFile = exportedMarcFiles.get(exportedMarcFiles.size() -1);
 			boolean isFileChanging = true;
-			long lastSizeCheck = curBibFile.length();
+			long lastSizeCheck = lastFile.length();
 			while (isFileChanging) {
 				try {
 					Thread.sleep(5000); //Wait 5 seconds
 				} catch (InterruptedException e) {
 					logEntry.incErrors("Error checking if a file is still changing", e);
 				}
-				if (lastSizeCheck == curBibFile.length()) {
+				if (lastSizeCheck == lastFile.length()) {
 					isFileChanging = false;
 				} else {
-					lastSizeCheck = curBibFile.length();
+					lastSizeCheck = lastFile.length();
 				}
 			}
 		}
