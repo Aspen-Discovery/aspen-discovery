@@ -203,6 +203,7 @@ public class SymphonyExportMain {
 			if (courseReservesFile != newestFile){
 				if (courseReservesFile.delete()){
 					logEntry.addNote("Deleted old course reserves file " + courseReservesFile.getAbsolutePath());
+					logEntry.saveResults();
 				}
 			}
 		}
@@ -222,6 +223,7 @@ public class SymphonyExportMain {
 
 		//Process the file
 		logEntry.addNote("Processing course reserves file " + newestFile.getAbsolutePath());
+		logEntry.saveResults();
 		try {
 			//Setup statements
 			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM course_reserve", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -385,6 +387,8 @@ public class SymphonyExportMain {
 				logEntry.incErrors("Could not delete course reserves file " + newestFile.getAbsolutePath());
 			}
 
+			logEntry.addNote("Done processing course reserves");
+			logEntry.saveResults();
 		} catch (IOException | SQLException e) {
 			logEntry.incErrors("Error processing course reserves file", e);
 		}
@@ -447,6 +451,7 @@ public class SymphonyExportMain {
 			//Holds file exists and isn't changing, import it.
 			try {
 				logEntry.addNote("Starting export of holds " + dateTimeFormatter.format(new Date()));
+				logEntry.saveResults();
 
 				//Start a transaction so we can rebuild an entire table
 				dbConn.setAutoCommit(false);
@@ -482,8 +487,10 @@ public class SymphonyExportMain {
 				logEntry.incErrors("Error reading and writing from database while loading holds", e);
 			}
 			logEntry.addNote("Finished export of hold information " + dateTimeFormatter.format(new Date()));
+			logEntry.saveResults();
 		}else{
 			logEntry.addNote("Hold export file (Holds.csv) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
+			logEntry.saveResults();
 		}
 	}
 
@@ -641,9 +648,11 @@ public class SymphonyExportMain {
 				logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 			}else{
 				logEntry.addNote("Volumes File has not changed");
+				logEntry.saveResults();
 			}
 		}else{
 			logEntry.addNote("Volume export file (volumes.txt) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
+			logEntry.saveResults();
 		}
 	}
 
@@ -712,6 +721,7 @@ public class SymphonyExportMain {
 				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
 					if (exportedMarcFile.delete()){
 						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
+						logEntry.saveResults();
 					}
 				}else{
 					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
@@ -736,6 +746,7 @@ public class SymphonyExportMain {
 				if (exportedMarcDeltaFile.lastModified() / 1000 < lastUpdateFromMarc){
 					if (exportedMarcDeltaFile.delete()){
 						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
+						logEntry.saveResults();
 					}
 				}else{
 					if (exportedMarcDeltaFile.lastModified() > latestMarcFile){
@@ -748,6 +759,7 @@ public class SymphonyExportMain {
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
+			logEntry.saveResults();
 			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
 		}else{
 			//TODO: See if we can get more runtime info from SirsiDynix APIs;
