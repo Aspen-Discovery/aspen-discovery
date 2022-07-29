@@ -1401,6 +1401,7 @@ class SearchAPI extends Action
 						);
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
+						$categoryResponse['numNewTitles'] = $savedSearches['countNewResults'];
 						$categoryResponse['subCategories'] = [];
 						foreach ($allSearches as $savedSearch) {
 							$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
@@ -1411,6 +1412,7 @@ class SearchAPI extends Action
 									$formattedSavedSearchResults[] = [
 										'id' => $savedSearchResult['id'],
 										'title_display' => $savedSearchResult['title'],
+										'isNew' => $savedSearchResult['isNew'],
 									];
 								}
 							}
