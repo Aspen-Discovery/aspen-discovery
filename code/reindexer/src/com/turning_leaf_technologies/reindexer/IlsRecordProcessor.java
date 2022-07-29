@@ -934,6 +934,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (formatSource.equals("item") && formatSubfield != ' '){
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			if (format != null) {
+				format = format.toLowerCase(Locale.ROOT);
 				if (hasTranslation("format", format)) {
 					itemInfo.setFormat(translateValue("format", format, recordInfo.getRecordIdentifier()));
 				}
