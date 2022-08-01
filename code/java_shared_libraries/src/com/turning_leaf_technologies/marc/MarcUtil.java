@@ -132,8 +132,12 @@ public class MarcUtil {
 	 * @return the result set of strings
 	 */
 	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfield, int beginIx, int endIx) {
-		int fldTagInt = Integer.parseInt(fldTag);
-		return getSubfieldDataAsSet(record, fldTagInt, subfield, beginIx, endIx);
+		if (AspenStringUtils.isNumeric(fldTag)) {
+			int fldTagInt = Integer.parseInt(fldTag);
+			return getSubfieldDataAsSet(record, fldTagInt, subfield, beginIx, endIx);
+		}else{
+			return new LinkedHashSet<>();
+		}
 	}
 
 	private static Set<String> getSubfieldDataAsSet(Record record, int fldTag, String subfield, int beginIx, int endIx) {
