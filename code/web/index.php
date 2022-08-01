@@ -1157,6 +1157,10 @@ function isSpammySearchTerm($lookfor) : bool
 	} elseif (strpos($lookfor, 'nvOpzp') !== false) {
 		return true;
 	}
+	$termWithoutTags = strip_tags($lookfor);
+	if ($termWithoutTags != $lookfor){
+		return true;
+	}
 	return false;
 }
 
@@ -1184,6 +1188,32 @@ function checkForMaliciouslyFormattedParameters(): void
 	if (isset($_REQUEST['method'])) {
 		if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['method'])){
 			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['lookfor'])){
+		if (is_array($_REQUEST['lookfor'])){
+			foreach ($_REQUEST['lookfor'] as $searchTerm){
+				if (isSpammySearchTerm($searchTerm)){
+					$isMaliciousUrl = true;
+				}
+			}
+		}else{
+			if (isSpammySearchTerm($_REQUEST['lookfor'])){
+				$isMaliciousUrl = true;
+			}
+		}
+	}
+	if (isset($_REQUEST['filter'])){
+		if (is_array($_REQUEST['filter'])){
+			foreach ($_REQUEST['filter'] as $searchTerm){
+				if (isSpammySearchTerm($searchTerm)){
+					$isMaliciousUrl = true;
+				}
+			}
+		}else{
+			if (isSpammySearchTerm($_REQUEST['filter'])){
+				$isMaliciousUrl = true;
+			}
 		}
 	}
 	if ($isMaliciousUrl) {
