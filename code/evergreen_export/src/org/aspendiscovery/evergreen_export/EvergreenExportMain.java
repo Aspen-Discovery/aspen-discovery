@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
+import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -686,10 +687,14 @@ public class EvergreenExportMain {
 		//These are all the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		File[] largeXmlFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("xml"));
 		ArrayList<File> filesToProcess = new ArrayList<>();
 		File latestFile = null;
 		long latestMarcFile = 0;
 		boolean hasFullExportFile = false;
+		File latestXmlFile = null;
+		long latestXmlFileTime = 0;
+		boolean hasLargeXmlFile = false;
 		File fullExportFile = null;
 		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
 			for (File exportedMarcFile : exportedMarcFiles) {
@@ -713,6 +718,26 @@ public class EvergreenExportMain {
 			fullExportFile = latestFile;
 		}
 
+		if (largeXmlFiles != null && largeXmlFiles.length > 0){
+			for (File largeXmlFile : largeXmlFiles) {
+				//Remove any files that are older than the last time we processed files.
+				if (largeXmlFile.lastModified() / 1000 < lastUpdateFromMarc){
+					if (largeXmlFile.delete()){
+						logEntry.addNote("Removed old file " + largeXmlFile.getAbsolutePath());
+					}
+				}else{
+					if (largeXmlFile.lastModified() / 1000 > latestXmlFileTime){
+						latestXmlFileTime = largeXmlFile.lastModified();
+						latestXmlFile = largeXmlFile;
+					}
+				}
+			}
+		}
+
+		if (latestXmlFile != null) {
+			filesToProcess.add(latestXmlFile);
+		}
+
 		//Get a list of marc deltas since the last marc record, we will actually process all of these since the full export takes so long
 		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
@@ -722,10 +747,15 @@ public class EvergreenExportMain {
 			filesToProcess.addAll(Arrays.asList(exportedMarcDeltaFiles));
 		}
 
+		if (hasFullExportFile && latestXmlFile == null){
+			//Wait until we get both the large XML file and the full export.
+			return 0;
+		}
+
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
-			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
+			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, latestXmlFile, dbConn);
 		}
 
 		//Process CSV Files
@@ -1023,10 +1053,11 @@ public class EvergreenExportMain {
 	 * @param exportedMarcFiles - An array of files to process
 	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
 	 * @param fullExportFile
+	 * @param largeBibXmlFile
 	 * @param dbConn            - Connection to the Aspen database
 	 * @return - total number of changes that were found
 	 */
-	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, Connection dbConn) {
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, File largeBibXmlFile, Connection dbConn) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
 		if (!recordGroupingProcessor.isValid()) {
@@ -1093,12 +1124,47 @@ public class EvergreenExportMain {
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
+			int numRecordsInXmlFile = 0;
+			if (largeBibXmlFile != null){
+				try {
+					MarcXmlReader marcXmlReader = new MarcXmlReader(new FileInputStream(largeBibXmlFile));
+					while (marcXmlReader.hasNext()){
+						numRecordsRead++;
+						numRecordsInXmlFile++;
+						Record curBib = null;
+						try {
+							curBib = marcXmlReader.next();
+						} catch (Exception e) {
+							numRecordsWithErrors++;
+						}
+						if (curBib != null) {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							if (recordIdentifier != null) {
+								String recordNumber = recordIdentifier.getIdentifier();
+								lastRecordProcessed = recordNumber;
+								recordNumber = recordNumber.replaceAll("[^\\d]", "");
+								long recordNumberDigits = Long.parseLong(recordNumber);
+								if (recordNumberDigits > maxIdInExport) {
+									maxIdInExport = recordNumberDigits;
+								}
+							}
+						}
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Error loading Evergreen bibs from large bib xml file" + numRecordsInXmlFile + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + largeBibXmlFile.getAbsolutePath(), e);
+					logEntry.addNote("Not processing MARC export due to error reading large bib xml files.");
+					return totalChanges;
+				}
+			}
 			//Check errors to see if we should stop processing
 			int numExistingRecordsInAspen = recordGroupingProcessor.getNumExistingTitles(logEntry);
 			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0003) {
 				logEntry.incErrors("More than .03% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath() + ". The file had " + numRecordsWithErrors + " errors out of " + numRecordsRead + " records.");
-				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
-					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
+				if (!fullExportFile.renameTo(new File(fullExportFile.getAbsolutePath() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.getAbsolutePath() + ".err");
+				}
+				if (largeBibXmlFile != null && !largeBibXmlFile.renameTo(new File(largeBibXmlFile.getAbsolutePath() + ".err"))){
+					logEntry.incErrors("Could not rename large bib xml file to error file "+ largeBibXmlFile.getAbsolutePath() + ".err");
 				}
 				return totalChanges;
 			} else if (numRecordsWithErrors > 0) {
@@ -1111,6 +1177,9 @@ public class EvergreenExportMain {
 				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
 					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
 				}
+				if (largeBibXmlFile != null && !largeBibXmlFile.renameTo(new File(largeBibXmlFile.getAbsolutePath() + ".err"))){
+					logEntry.incErrors("Could not rename large bib xml file to error file "+ largeBibXmlFile.getAbsolutePath() + ".err");
+				}
 				return totalChanges;
 			}
 			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
@@ -1120,7 +1189,14 @@ public class EvergreenExportMain {
 			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()) {
 				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
 				logEntry.addNote("Not processing the full export");
+				if (!fullExportFile.renameTo(new File(fullExportFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ fullExportFile.toString() + ".err");
+				}
+				if (largeBibXmlFile != null && !largeBibXmlFile.renameTo(new File(largeBibXmlFile.getAbsolutePath() + ".err"))){
+					logEntry.incErrors("Could not rename large bib xml file to error file "+ largeBibXmlFile.getAbsolutePath() + ".err");
+				}
 				exportedMarcFiles.remove(fullExportFile);
+				exportedMarcFiles.remove(largeBibXmlFile);
 				hasFullExportFile = false;
 			} else {
 				logEntry.addNote("The full export is the correct size.");
@@ -1139,7 +1215,12 @@ public class EvergreenExportMain {
 			int numRecordsRead = 0;
 			try {
 				FileInputStream marcFileStream = new FileInputStream(curBibFile);
-				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				MarcReader catalogReader;
+				if (curBibFile.getName().endsWith(".xml")){
+					catalogReader = new MarcXmlReader(marcFileStream);
+				}else{
+					catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				}
 				//Evergreen handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
 				//To solve this, we need to track which id we processed last and if the record has already been processed, we will need to append items from the new
 				//record to the old record and then reprocess it.
