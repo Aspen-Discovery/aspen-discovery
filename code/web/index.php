@@ -193,6 +193,9 @@ if ($action == 'DBMaintenance'){
 $interface->assign('module', $module);
 $interface->assign('action', $action);
 
+//Check for maliciously formatted parameters
+checkForMaliciouslyFormattedParameters();
+
 global $solrScope;
 global $scopeType;
 global $isGlobalScope;
@@ -1155,4 +1158,36 @@ function isSpammySearchTerm($lookfor) : bool
 		return true;
 	}
 	return false;
+}
+
+/**
+ * @return void
+ */
+function checkForMaliciouslyFormattedParameters(): void
+{
+	$isMaliciousUrl = false;
+	if (isset($_REQUEST['page'])) {
+		if (!is_numeric($_REQUEST['page'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['recordIndex'])) {
+		if (!is_numeric($_REQUEST['recordIndex'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['searchId'])) {
+		if (!is_numeric($_REQUEST['searchId'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['method'])) {
+		if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['method'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if ($isMaliciousUrl) {
+		header("Location: /Error/Handle404");
+		exit();
+	}
 }
