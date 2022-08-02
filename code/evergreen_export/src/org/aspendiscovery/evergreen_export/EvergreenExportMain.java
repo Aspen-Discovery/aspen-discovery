@@ -1127,25 +1127,27 @@ public class EvergreenExportMain {
 			int numRecordsInXmlFile = 0;
 			if (largeBibXmlFile != null){
 				try {
-					MarcXmlReader marcXmlReader = new MarcXmlReader(new FileInputStream(largeBibXmlFile));
-					while (marcXmlReader.hasNext()){
-						numRecordsRead++;
-						numRecordsInXmlFile++;
-						Record curBib = null;
-						try {
-							curBib = marcXmlReader.next();
-						} catch (Exception e) {
-							numRecordsWithErrors++;
-						}
-						if (curBib != null) {
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
-							if (recordIdentifier != null) {
-								String recordNumber = recordIdentifier.getIdentifier();
-								lastRecordProcessed = recordNumber;
-								recordNumber = recordNumber.replaceAll("[^\\d]", "");
-								long recordNumberDigits = Long.parseLong(recordNumber);
-								if (recordNumberDigits > maxIdInExport) {
-									maxIdInExport = recordNumberDigits;
+					if (largeBibXmlFile.length() > 0) {
+						MarcXmlReader marcXmlReader = new MarcXmlReader(new FileInputStream(largeBibXmlFile));
+						while (marcXmlReader.hasNext()) {
+							numRecordsRead++;
+							numRecordsInXmlFile++;
+							Record curBib = null;
+							try {
+								curBib = marcXmlReader.next();
+							} catch (Exception e) {
+								numRecordsWithErrors++;
+							}
+							if (curBib != null) {
+								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+								if (recordIdentifier != null) {
+									String recordNumber = recordIdentifier.getIdentifier();
+									lastRecordProcessed = recordNumber;
+									recordNumber = recordNumber.replaceAll("[^\\d]", "");
+									long recordNumberDigits = Long.parseLong(recordNumber);
+									if (recordNumberDigits > maxIdInExport) {
+										maxIdInExport = recordNumberDigits;
+									}
 								}
 							}
 						}
