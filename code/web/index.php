@@ -1198,28 +1198,28 @@ function checkForMaliciouslyFormattedParameters(): void
 	if (isset($_REQUEST['method'])) {
 		if (is_array($_REQUEST['method'])){
 			$isMaliciousUrl = true;
-		}else if (!preg_match('/[a-zA-Z0-9]*/', $_REQUEST['method'])){
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['method'])){
 			$isMaliciousUrl = true;
 		}
 	}
 	if (isset($_REQUEST['followupAction'])) {
 		if (is_array($_REQUEST['followupAction'])){
 			$isMaliciousUrl = true;
-		}else if (!preg_match('/[a-zA-Z0-9]*/', $_REQUEST['followupAction'])){
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['followupAction'])){
 			$isMaliciousUrl = true;
 		}
 	}
 	if (isset($_REQUEST['followupModule'])) {
 		if (is_array($_REQUEST['followupModule'])){
 			$isMaliciousUrl = true;
-		}else if (!preg_match('/[a-zA-Z0-9]*/', $_REQUEST['followupModule'])){
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['followupModule'])){
 			$isMaliciousUrl = true;
 		}
 	}
 	if (isset($_REQUEST['borrower_branchcode'])) {
 		if (is_array($_REQUEST['borrower_branchcode'])){
 			$isMaliciousUrl = true;
-		}else if (!preg_match('/[a-zA-Z0-9]*/', $_REQUEST['borrower_branchcode'])){
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['borrower_branchcode'])){
 			$isMaliciousUrl = true;
 		}
 	}
