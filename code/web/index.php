@@ -1174,21 +1174,21 @@ function isSpammySearchTerm($lookfor) : bool
 function checkForMaliciouslyFormattedParameters(): void
 {
 	$isMaliciousUrl = false;
-	if (isset($_REQUEST['page'])) {
+	if (isset($_REQUEST['page']) && !empty($_REQUEST['page'])) {
 		if (is_array($_REQUEST['page'])){
 			$isMaliciousUrl = true;
 		}else if (!is_numeric($_REQUEST['page'])) {
 			$isMaliciousUrl = true;
 		}
 	}
-	if (isset($_REQUEST['recordIndex'])) {
+	if (isset($_REQUEST['recordIndex']) && !empty($_REQUEST['recordIndex'])) {
 		if (is_array($_REQUEST['recordIndex'])){
 			$isMaliciousUrl = true;
 		}else if (!is_numeric($_REQUEST['recordIndex'])) {
 			$isMaliciousUrl = true;
 		}
 	}
-	if (isset($_REQUEST['searchId'])) {
+	if (isset($_REQUEST['searchId']) && !empty($_REQUEST['searchId'])) {
 		if (is_array($_REQUEST['searchId'])){
 			$isMaliciousUrl = true;
 		}else if (!is_numeric($_REQUEST['searchId'])) {
