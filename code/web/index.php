@@ -1196,7 +1196,7 @@ function checkForMaliciouslyFormattedParameters(): void
 		}
 	}
 	if (isset($_REQUEST['method'])) {
-		if (is_array($_REQUEST['page'])){
+		if (is_array($_REQUEST['method'])){
 			$isMaliciousUrl = true;
 		}else if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['method'])){
 			$isMaliciousUrl = true;
