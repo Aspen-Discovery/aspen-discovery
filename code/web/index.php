@@ -1156,6 +1156,10 @@ function isSpammySearchTerm($lookfor) : bool
 		return true;
 	} elseif (strpos($lookfor, 'nvOpzp') !== false) {
 		return true;
+	} elseif (strpos($lookfor, 'window.location') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'window.top') !== false) {
+		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);
 	if ($termWithoutTags != $lookfor){
@@ -1171,22 +1175,58 @@ function checkForMaliciouslyFormattedParameters(): void
 {
 	$isMaliciousUrl = false;
 	if (isset($_REQUEST['page'])) {
-		if (!is_numeric($_REQUEST['page'])) {
+		if (is_array($_REQUEST['page'])){
+			$isMaliciousUrl = true;
+		}else if (!is_numeric($_REQUEST['page'])) {
 			$isMaliciousUrl = true;
 		}
 	}
 	if (isset($_REQUEST['recordIndex'])) {
-		if (!is_numeric($_REQUEST['recordIndex'])) {
+		if (is_array($_REQUEST['recordIndex'])){
+			$isMaliciousUrl = true;
+		}else if (!is_numeric($_REQUEST['recordIndex'])) {
 			$isMaliciousUrl = true;
 		}
 	}
 	if (isset($_REQUEST['searchId'])) {
-		if (!is_numeric($_REQUEST['searchId'])) {
+		if (is_array($_REQUEST['searchId'])){
+			$isMaliciousUrl = true;
+		}else if (!is_numeric($_REQUEST['searchId'])) {
 			$isMaliciousUrl = true;
 		}
 	}
 	if (isset($_REQUEST['method'])) {
-		if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['method'])){
+		if (is_array($_REQUEST['page'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['method'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['followupAction'])) {
+		if (is_array($_REQUEST['followupAction'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['followupAction'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['followupModule'])) {
+		if (is_array($_REQUEST['followupModule'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['followupModule'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['borrower_branchcode'])) {
+		if (is_array($_REQUEST['borrower_branchcode'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match('/[a-zA-Z0-9]/', $_REQUEST['borrower_branchcode'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['author'])) {
+		if (is_array($_REQUEST['author'])){
+			$isMaliciousUrl = true;
+		}else if (isSpammySearchTerm($_REQUEST['author'])){
 			$isMaliciousUrl = true;
 		}
 	}
