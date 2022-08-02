@@ -120,11 +120,11 @@ class ExploreMore {
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
-		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1) {
 			$exploreMoreOptions = $this->loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
-		if (array_key_exists('EBSCOhost', $enabledModules)) {
+		else if (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
 			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
