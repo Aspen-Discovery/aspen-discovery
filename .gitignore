@@ -203,3 +203,8 @@ sites/morgan.localhost/conf/config.ini
 sites/morgan.localhost/conf/config.pwd.ini.template
 sites/morgan.localhost/httpd-morgan.localhost.conf
 sites/morgan.localhost/morgan.localhost.bat
+.idea/scopes/_less_files.xml
+sites/kodidev.localhost/conf/config.cron.ini
+sites/kodidev.localhost/conf/config.ini
+sites/kodidev.localhost/httpd-kodidev.localhost.conf
+sites/kodidev.localhost/kodidev.localhost.bat

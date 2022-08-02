@@ -189,7 +189,7 @@ class SearchSources{
 			);
 		}
 
-		if ($searchEbscohost){
+		else if ($searchEbscohost){
 			$searchOptions['ebscohost'] = array(
 				'name' => 'Articles & Databases',
 				'description' => 'EBSCOhost - Articles and Database',
