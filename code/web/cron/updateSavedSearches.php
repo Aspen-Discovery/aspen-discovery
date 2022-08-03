@@ -17,6 +17,10 @@ $search = new SearchEntry();
 $search->saved = 1;
 $search->searchSource = 'local';
 $search->find();
+
+global $library;
+global $solrScope;
+$defaultSolrScope = $solrScope;
 if ($search->getNumResults() > 0){
 	$searchUpdateLogEntry->numSearches = $search->getNumResults();
 	$searchUpdateLogEntry->update();
@@ -26,26 +30,41 @@ if ($search->getNumResults() > 0){
 		$searchEntry = new SearchEntry();
 		$searchEntry->id = $searchId;
 		if ($searchEntry->find(true)) {
+			//Get the home library of the user
+			$userForSearch = new User();
+			$userForSearch->id = $searchEntry->user_id;
+
+			if ($userForSearch->find(true)){
+				$homeLibrary = $userForSearch->getHomeLibrary();
+				if ($homeLibrary == null){
+					$solrScope = $defaultSolrScope;
+				}else{
+					$solrScope = $homeLibrary->subdomain;
+				}
+			}else{
+				continue;
+			}
 
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$size = strlen($searchEntry->search_object);
 			$minSO = unserialize($searchEntry->search_object);
 			$searchObject = SearchObjectFactory::deminify($minSO);
 
-			$searchObject->addFilter('time_since_added:Week');
+			$searchObject->removeFilterByPrefix('time_since_added');
+			$searchObject->addFilter('time_since_added:(Week OR "On Order"');
 			$searchObject->setFieldsToReturn('id');
-			$searchObject->setLimit(100);
+			$searchObject->setLimit(10);
 
 			$searchResult = $searchObject->processSearch(false,false);
 			if (!$searchResult instanceof AspenError && empty($searchResult['error'])) {
 				$numResults = $searchObject->getResultTotal();
 				$hasNewResults = $numResults > 0;
 				$searchEntry->hasNewResults = $hasNewResults;
-				$searchEntry->update();
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
 					if ($hasNewResults){
 						//TODO: Trigger notification here
+
 					}
 				}
 			}else{
