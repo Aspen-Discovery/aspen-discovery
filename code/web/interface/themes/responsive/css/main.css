@@ -10214,6 +10214,16 @@ a.browse-thumbnail-sorted.active {
   color: white;
   padding: 1px 8px;
 }
+.account-updated-search-badge {
+  display: inline-block;
+  font-size: 75%;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+  vertical-align: baseline;
+}
 .graph-bar {
   background-color: #088ec6;
 }
