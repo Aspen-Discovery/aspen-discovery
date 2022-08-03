@@ -95,12 +95,12 @@ class GreenhouseAPI extends Action
 					$alertText .= "- :fire: Greenhouse unable to connect to server: {$sites->lastOfflineNote}\n";
 					$notification = "<!here>";
 				}
-			} else {
+			}
+
+			if($siteStatus['wasOffline']) {
 				// send offline recovery message
-				if ($sites->lastOfflineTime && (($sites->lastOnlineTime > $sites->lastOfflineTime)) && ($sites->lastOnlineTime > $sites->lastNotificationTime)) {
-					$sendAlert = true;
-					$alertText .= "- ~Greenhouse connectivity recovered!~\n";
-				}
+				$sendAlert = true;
+				$alertText .= "- ~Greenhouse connectivity recovered!~\n";
 			}
 
 			foreach ($siteStatus['checks'] as $key => $check){
