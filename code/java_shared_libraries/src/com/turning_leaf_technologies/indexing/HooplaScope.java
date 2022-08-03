@@ -225,29 +225,29 @@ public class HooplaScope {
 		return excludeTitlesWithCopiesFromOtherVendors;
 	}
 
-	private MaxSizeHashMap<String, Boolean> cachedOkToAdd = new MaxSizeHashMap<>(50);
+	private String lastIdentifier = null;
+	private boolean lastIdentifierResult = false;
 	public boolean isOkToAdd(String identifier, String kind, float price, boolean abridged, boolean pa, boolean profanity, boolean children, String rating, Logger logger) {
-		Boolean cachedValue = cachedOkToAdd.get(identifier);
-		if (cachedValue != null){
-			return cachedValue;
+		if (lastIdentifier != null && lastIdentifier.equals(identifier)){
+			return lastIdentifierResult;
 		}
 		//Filter by kind and price
 		boolean okToAdd = true;
 		switch (kind) {
+			case "EBOOK":
+				okToAdd = (includeEBooks && price <= maxCostPerCheckoutEBooks);
+				break;
+			case "AUDIOBOOK":
+				okToAdd = (includeEAudiobook && price <= maxCostPerCheckoutEAudiobook);
+				break;
+			case "COMIC":
+				okToAdd = (includeEComics && price <= maxCostPerCheckoutEComics);
+				break;
 			case "MOVIE":
 				okToAdd = (includeMovies && price <= maxCostPerCheckoutMovies);
 				break;
 			case "TELEVISION":
 				okToAdd = (includeTelevision && price <= maxCostPerCheckoutTelevision);
-				break;
-			case "AUDIOBOOK":
-				okToAdd = (includeEAudiobook && price <= maxCostPerCheckoutEAudiobook);
-				break;
-			case "EBOOK":
-				okToAdd = (includeEBooks && price <= maxCostPerCheckoutEBooks);
-				break;
-			case "COMIC":
-				okToAdd = (includeEComics && price <= maxCostPerCheckoutEComics);
 				break;
 			case "MUSIC":
 				okToAdd = (includeMusic && price <= maxCostPerCheckoutMusic);
@@ -273,7 +273,8 @@ public class HooplaScope {
 		if (okToAdd && isRatingExcluded(rating)) {
 			okToAdd = false;
 		}
-		cachedOkToAdd.put(identifier, okToAdd);
+		lastIdentifier = identifier;
+		lastIdentifierResult = okToAdd;
 		return okToAdd;
 	}
 }
