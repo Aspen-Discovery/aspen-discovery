@@ -384,11 +384,18 @@ class Evergreen extends AbstractIlsDriver
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
 					$hold_result['message'] = $apiResponse->payload[0]->desc;
+					$hold_result['api']['message'] = $apiResponse->payload[0]->desc;
 				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
 					$hold_result['message'] = $apiResponse->payload[0]->result->desc;
+					$hold_result['api']['message'] = $apiResponse->payload[0]->result->desc;
 				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
 					$hold_result['message'] = $apiResponse->debug;
-				}elseif (isset($apiResponse->payload[0]->result) &&$apiResponse->payload[0]->result > 0 ){
+					$hold_result['api']['message'] = $apiResponse->debug;
+				}elseif (isset($apiResponse->payload[0]->result) && is_object($apiResponse->payload[0]->result)){
+					$apiHoldResult = $apiResponse->payload[0]->result;
+					$hold_result['message'] = $apiHoldResult->last_event->desc;
+					$hold_result['api']['message'] = $apiHoldResult->last_event->desc;
+				}elseif (isset($apiResponse->payload[0]->result) && $apiResponse->payload[0]->result > 0 ){
 					$hold_result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
 					$hold_result['success'] = true;
 
