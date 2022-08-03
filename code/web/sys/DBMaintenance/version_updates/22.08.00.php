@@ -100,13 +100,13 @@ function getUpdates22_08_00() : array
 }
 
 function enableUpdatingSavedSearches(){
-	global $sitename;
+	global $serverName;
 	global $configArray;
 	if ($configArray['System']['operatingSystem'] == 'linux'){
-		$fhnd = fopen("/usr/local/aspen-discovery/sites/$sitename/conf/crontab_settings.txt", 'a+');
+		$fhnd = fopen("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", 'a+');
 		fwrite($fhnd, "\n#########################\n");
 		fwrite($fhnd, "# Update Saved Searches #\n");
 		fwrite($fhnd, "#########################\n");
-		fwrite($fhnd, "0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php $sitename\n");
+		fwrite($fhnd, "0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php $serverName\n");
 	}
 }
