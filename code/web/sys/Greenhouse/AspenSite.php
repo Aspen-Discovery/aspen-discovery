@@ -29,6 +29,8 @@ class AspenSite extends DataObject
 	public $nextMeetingPerson;
 	public $activeTicketFeed;
 	public $lastOfflineTime;
+	public $lastOnlineTime;
+	public $lastOfflineNote;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
 
@@ -70,7 +72,9 @@ class AspenSite extends DataObject
 			'nextMeetingPerson' => ['property' => 'nextMeetingPerson', 'type'=>'text', 'label'=>'Next meeting person', 'description'=>'Who will meet with the library next.', 'hideInLists' => false],
 			'notes' => ['property' => 'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes on the site.', 'hideInLists' => true],
 			'lastNotificationTime' => ['property' => 'lastNotificationTime', 'type'=>'timestamp', 'label'=>'Last Notification Time', 'description'=>'When the last alert was sent.', 'hideInLists' => false],
-			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline TIme', 'description' => 'When the last time the site was offline.', 'hideInLists' => false],
+			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline Time', 'description' => 'When the last time the site was offline.', 'hideInLists' => false],
+			'lastOfflineNote' => ['property' => 'lastOfflineNote', 'type' => 'textarea', 'label' => 'Last Offline Note', 'description' => 'Note for when the site was last offline.', 'hideInLists' => false],
+			'lastOnlineTime' => ['property' => 'lastOnlineTime', 'type' => 'timestamp', 'label' => 'Last Online Time', 'description' => 'When the last time the site was online.', 'hideInLists' => false],
 		];
 	}
 
@@ -184,10 +188,14 @@ class AspenSite extends DataObject
 					}else if ($statsChanged){
 						$aspenSiteStat->update();
 					}
+
+					$this->lastOnlineTime = time();
+					$this->update();
 				}else {
 					$status['alive'] = false;
 					$status['checks'] = [];
 					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+						$this->lastOfflineNote = "Unable to read JSON data";
 						$this->lastOfflineTime = time();
 						$this->update();
 					}
@@ -196,6 +204,7 @@ class AspenSite extends DataObject
 				$status['alive'] = false;
 				$status['checks'] = [];
 				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+					$this->lastOfflineNote = "Unable to connect to API";
 					$this->lastOfflineTime = time();
 					$this->update();
 				}
@@ -204,6 +213,7 @@ class AspenSite extends DataObject
 			$status['alive'] = false;
 			$status['checks'] = [];
 			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+				$this->lastOfflineNote = "Base URL not set";
 				$this->lastOfflineTime = time();
 				$this->update();
 			}
