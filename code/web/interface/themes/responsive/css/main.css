@@ -10206,6 +10206,14 @@ a.browse-thumbnail-sorted.active {
   border-top: 10px solid #3d4364;
   border-left: 10px solid transparent;
 }
+.new-result-badge {
+  display: inline-block;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+}
 .graph-bar {
   background-color: #088ec6;
 }
