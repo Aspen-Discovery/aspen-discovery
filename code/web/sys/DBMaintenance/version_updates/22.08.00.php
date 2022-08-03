@@ -89,5 +89,13 @@ function getUpdates22_08_00() : array
 				'ALTER TABLE overdrive_settings CHANGE COLUMN allowLargeDeletes allowLargeDeletes TINYINT(1) DEFAULT 1'
 			]
 		],//overdrive_enable_allow_large_deletes
+		'aspen_site_lastOfflineTracking' => [
+			'title' => 'More offline site monitoring data in Greenhouse',
+			'description' => 'Add tracking of why Greenhouse is unable to connect to an Aspen site and when it reconnects',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN lastOfflineNote VARCHAR(255)",
+				"ALTER TABLE aspen_sites ADD COLUMN lastOnlineTime INT",
+			]
+		],//aspen_site_lastOfflineTracking
 	];
 }
