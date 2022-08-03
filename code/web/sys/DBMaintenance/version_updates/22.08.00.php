@@ -88,6 +88,25 @@ function getUpdates22_08_00() : array
 			'sql' => [
 				'ALTER TABLE overdrive_settings CHANGE COLUMN allowLargeDeletes allowLargeDeletes TINYINT(1) DEFAULT 1'
 			]
-		],
+		],//overdrive_enable_allow_large_deletes
+		'cron_enable_updating_saved_searches' => [
+			'title' => 'Cron - Enable Updating Saved Searches',
+			'description' => 'Cron - Enable Updating Saved Searches',
+			'sql' => [
+				'enableUpdatingSavedSearches'
+			]
+		],//cron_enable_updating_saved_searches
 	];
+}
+
+function enableUpdatingSavedSearches(){
+	global $sitename;
+	global $configArray;
+	if ($configArray['System']['operatingSystem'] == 'linux'){
+		$fhnd = fopen("/usr/local/aspen-discovery/sites/$sitename/conf/crontab_settings.txt", 'a+');
+		fwrite($fhnd, "\n#########################\n");
+		fwrite($fhnd, "# Update Saved Searches #\n");
+		fwrite($fhnd, "#########################\n");
+		fwrite($fhnd, "0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php $sitename\n");
+	}
 }
