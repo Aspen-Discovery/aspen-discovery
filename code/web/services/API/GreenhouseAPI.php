@@ -97,7 +97,7 @@ class GreenhouseAPI extends Action
 				}
 			} else {
 				// send offline recovery message
-				if ((($sites->lastOnlineTime - $sites->lastOfflineTime) > 4 * 60 * 60) && ($sites->lastOnlineTime > $sites->lastNotificationTime)) {
+				if ($sites->lastOfflineTime && (($sites->lastOnlineTime > $sites->lastOfflineTime)) && ($sites->lastOnlineTime > $sites->lastNotificationTime)) {
 					$sendAlert = true;
 					$alertText .= "- ~Greenhouse connectivity recovered!~\n";
 				}
