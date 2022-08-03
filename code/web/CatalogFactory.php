@@ -16,7 +16,7 @@ class CatalogFactory {
 			if ($activeRecordProfile == null || strlen($activeRecordProfile->catalogDriver) == 0){
 				global $configArray;
 				$driver = $configArray['Catalog']['driver'];
-				if ($driver == 'Symphony'){
+				if ($driver == 'Symphony' || $driver == 'SirsiDynix'){
 					$driver = 'SirsiDynixROA';
 				}
 				if ($accountProfile == null && !empty($driver)) {

@@ -161,6 +161,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$availabilityToggleId = null;
 		foreach ($this->filterList as $field => $filter) {
 			$multiSelect = false;
+			$fieldPrefix = '';
 			if (isset($facetConfig[$field])) {
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
