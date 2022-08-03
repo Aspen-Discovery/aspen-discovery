@@ -97,5 +97,12 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE aspen_sites ADD COLUMN lastOnlineTime INT",
 			]
 		],//aspen_site_lastOfflineTracking
+		'aspen_site_isOnline' => [
+			'title' => 'Add isOnline to aspen_sites',
+			'description' => 'Add isOnline for if a site is online or not',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN isOnline TINYINT(1) DEFAULT 1",
+			]
+		],//aspen_site_isOnline
 	];
 }
