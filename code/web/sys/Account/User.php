@@ -1551,7 +1551,7 @@ class User extends DataObject
 	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
-		if ($result['success']){
+		if ($result['success']) {
 			$this->clearCache();
 		}
 		return $result;
