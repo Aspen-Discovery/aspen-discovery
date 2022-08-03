@@ -6,20 +6,23 @@ require_once ROOT_DIR . '/sys/Session/Session.php';
 class MySQLSession extends SessionInterface
 {
 	public function open($sess_path, $sess_name) {
-		global $logger;
-		$logger->log("Opening session ({$_SERVER['REQUEST_URI']})", Logger::LOG_DEBUG);
-		//Delete any sessions where remember me was false
-		$s = new Session();
-		$earliestValidSession = time() - self::$lifetime;
-		$s->remember_me = '0';
-		$s->whereAdd('last_used < ' . $earliestValidSession);
-		$s->delete(true);
-		//Delete any sessions where remember me was true
-		$s2 = new Session();
-		$earliestValidRememberMeSession = time() - self::$rememberMeLifetime;
-		$s2->remember_me = '1';
-		$s2->whereAdd('last_used < ' . $earliestValidRememberMeSession);
-		$numRememberMeDeleted = $s2->delete(true);
+		$rand = rand(0, 1000);
+		if ($rand == 53) {
+			global $logger;
+			$logger->log("Opening session ({$_SERVER['REQUEST_URI']})", Logger::LOG_DEBUG);
+			//Delete any sessions where remember me was false
+			$s = new Session();
+			$earliestValidSession = time() - self::$lifetime;
+			$s->remember_me = '0';
+			$s->whereAdd('last_used < ' . $earliestValidSession);
+			$s->delete(true);
+			//Delete any sessions where remember me was true
+			$s2 = new Session();
+			$earliestValidRememberMeSession = time() - self::$rememberMeLifetime;
+			$s2->remember_me = '1';
+			$s2->whereAdd('last_used < ' . $earliestValidRememberMeSession);
+			$numRememberMeDeleted = $s2->delete(true);
+		}
 		return true;
 	}
 
