@@ -1364,6 +1364,7 @@ class MyAccount_AJAX extends JSON_Action
 				$searchEntry->hasNewResults = 1;
 				$searchEntry->find();
 				$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
+				$ilsSummary->setNumUpdatedSearches($searchEntry->getNumResults());
 
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);
