@@ -1265,7 +1265,7 @@ public abstract class AbstractGroupedWorkSolr {
 			for (RecordInfo relatedRecord : relatedRecords.values()) {
 				if (relatedRecord.getSource().equals("hoopla")) {
 					hooplaRecordsAsArray.add(relatedRecord);
-				} else if (relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("axis36") || relatedRecord.getSource().equals("cloud_library")) {
+				} else if (relatedRecord.getNumEContentCopies() > 0) {
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}
@@ -1276,10 +1276,12 @@ public abstract class AbstractGroupedWorkSolr {
 			// record 2 is not a hoopla record.
 
 			for (RecordInfo record1 : hooplaRecordsAsArray) {
+				String record1PrimaryFormat = record1.getPrimaryFormat();
 				//This is a candidate for removal
 				for (RecordInfo record2 : otherRecordsAsArray) {
+					String record2PrimaryFormat = record2.getPrimaryFormat();
 					//Make sure we have the same format
-					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat()) && record1.getPrimaryLanguage().equals(record2.getPrimaryLanguage())) {
+					if (record1PrimaryFormat.equals(record2PrimaryFormat)) {
 
 						//Loop through all the scopes to see if we should remove the hoopla record from that scope.
 						for (ItemInfo curItem1 : record1.getRelatedItems()){

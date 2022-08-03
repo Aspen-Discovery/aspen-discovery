@@ -242,6 +242,16 @@ abstract class SearchObject_BaseSearcher
 		}
 	}
 
+	public function removeFilterByPrefix($fieldName)
+	{
+		// Make sure the field exists
+		$scopedName = $this->getScopedFieldName($fieldName);
+		if (isset($this->filterList[$scopedName])) {
+			// If so remove it.
+			unset($this->filterList[$scopedName]);
+		}
+	}
+
 	public function clearHiddenFilters()
 	{
 		$this->hiddenFilters = array();

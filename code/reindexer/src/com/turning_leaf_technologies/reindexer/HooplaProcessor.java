@@ -375,7 +375,7 @@ class HooplaProcessor {
 				String rating = productRS.getString("rating");
 
 				for (Scope scope : indexer.getScopes()) {
-					boolean okToAdd = true;
+					boolean okToAdd;
 					HooplaScope hooplaScope = scope.getHooplaScope();
 					if (hooplaScope != null){
 						okToAdd = hooplaScope.isOkToAdd(identifier, kind, price, abridged, pa, profanity, children, rating, logger);
