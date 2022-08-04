@@ -365,7 +365,7 @@ AspenDiscovery.Account = (function(){
 							$(".saved-searches-placeholder").html(summary.savedSearches);
 							$(".newSavedSearchBadge").show();
 						}else{
-							$(".newSavedSearchBadge").show();
+							$(".newSavedSearchBadge").hide();
 						}
 
 						$(".materialsRequests-placeholder").html(summary.materialsRequests);
