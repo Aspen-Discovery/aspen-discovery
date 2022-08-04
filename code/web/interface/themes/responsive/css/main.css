@@ -10184,6 +10184,9 @@ a.browse-thumbnail-sorted.active {
   position: relative;
   margin-top: 5px;
 }
+.listResultImage a > img {
+  max-width: 100%;
+}
 .list-cover-badge {
   position: absolute;
   top: -12px;

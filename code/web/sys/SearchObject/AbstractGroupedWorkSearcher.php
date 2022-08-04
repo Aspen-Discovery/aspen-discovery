@@ -317,6 +317,14 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		if ($searchEntry != null){
 			$isSaved = $searchEntry->saved;
 		}
+		global $library;
+		$location = Location::getSearchLocation(null);
+		if ($location != null){
+			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
+		}else{
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		}
+		$alwaysFlagNewTitles = $groupedWorkDisplaySettings->alwaysFlagNewTitles;
 		$html = array();
 		if (isset($this->indexResult['response'])) {
 			$allWorkIds = array();
@@ -334,7 +342,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				if ($isSaved) {
+				if ($isSaved || $alwaysFlagNewTitles) {
 					if (isset($current["local_time_since_added_$solrScope"])) {
 						$interface->assign('isNew', in_array('Week', $current["local_time_since_added_$solrScope"]));
 					} else {

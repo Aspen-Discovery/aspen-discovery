@@ -104,5 +104,12 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE aspen_sites ADD COLUMN isOnline TINYINT(1) DEFAULT 1",
 			]
 		],//aspen_site_isOnline
+		'alwaysFlagNewTitlesInSearchResults' => [
+			'title' => 'Always Flag New Titles in Search Results',
+			'description' => 'Add an option to Grouped Work Display Settings to always Flag New Titles',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN alwaysFlagNewTitles TINYINT(1) DEFAULT 0",
+			]
+		],//alwaysFlagNewTitlesInSearchResults
 	];
 }
