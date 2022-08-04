@@ -1264,9 +1264,10 @@ class Sierra extends Millennium{
 			$result['success'] = true;
 		}else{
 			$result['success'] = false;
-			$result['message'] = 'Could not record fine payment.';
 			if (isset($makePaymentResponse->description)){
-				$result['message'] .= ' '. $makePaymentResponse->description;
+				$result['message'] = $makePaymentResponse->description;
+			}else{
+				$result['message'] = 'Could not record fine payment.';
 			}
 		}
 

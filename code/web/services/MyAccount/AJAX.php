@@ -3083,7 +3083,7 @@ class MyAccount_AJAX extends JSON_Action
 				'application_context' => [
 					'brand_name' => $paymentLibrary->displayName,
 					'locale' => 'en-US',
-					'shipping_preferences' => 'NO_SHIPPING',
+					'shipping_preference' => 'NO_SHIPPING',
 					'user_action' => 'PAY_NOW',
 					'return_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
 					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
