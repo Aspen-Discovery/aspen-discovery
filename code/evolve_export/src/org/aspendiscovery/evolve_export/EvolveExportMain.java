@@ -615,8 +615,8 @@ public class EvolveExportMain {
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
-			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0001) {
-				logEntry.incErrors("More than .1% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
+			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.00025) {
+				logEntry.incErrors("More than .025% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
 				return totalChanges;
 			} else if (numRecordsWithErrors > 0) {
 				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");
