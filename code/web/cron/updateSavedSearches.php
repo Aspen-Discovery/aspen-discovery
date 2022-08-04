@@ -51,7 +51,7 @@ if ($search->getNumResults() > 0){
 			$searchObject = SearchObjectFactory::deminify($minSO);
 
 			$searchObject->removeFilterByPrefix('time_since_added');
-			$searchObject->addFilter('time_since_added:(Week OR "On Order"');
+			$searchObject->addFilter('time_since_added:Week');
 			$searchObject->setFieldsToReturn('id');
 			$searchObject->setLimit(10);
 
