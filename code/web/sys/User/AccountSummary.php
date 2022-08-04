@@ -129,7 +129,7 @@ class AccountSummary extends DataObject
 		$return['expirationFinesNotice'] = $this->_expirationFinesNotice;
 		$return['numHolds'] = $this->getNumHolds();
 		if ($this->_numUpdatedSearches > 0){
-			$return['savedSearches'] = translate(['text'=> '%1% Updated', 1=>$this->_numUpdatedSearches]);
+			$return['savedSearches'] = translate(['text'=> '%1% Updated', 1=>$this->_numUpdatedSearches, 'isPublicFacing' => true]);
 		}else{
 			$return['savedSearches'] = '';
 		}
