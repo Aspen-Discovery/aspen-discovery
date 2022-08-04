@@ -158,7 +158,7 @@
 								{/if}
 								{if $enableSavedSearches}
 									{* Only highlight saved searches as active if user is logged in: *}
-									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a> <span class="account-updated-search-badge newSavedSearchBadge" style="display: none"><span class="saved-searches-placeholder">??</span></span></div>
+									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a> <span class="label label-warning newSavedSearchBadge" style="display: none"><span class="saved-searches-placeholder">??</span></span></div>
 								{/if}
 								{if $enableReadingHistory && $userHasCatalogConnection}
 									<div class="myAccountLink">

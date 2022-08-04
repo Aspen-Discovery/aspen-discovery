@@ -265,6 +265,11 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 {/if}
 
+.browse-cover-badge{ldelim}
+    background-color: {$warningButtonBackgroundColor};
+    color: {$warningButtonForegroundColor};
+{rdelim}
+
 {if !empty($buttonRadius)}
 .btn{ldelim}
     border-radius: {$buttonRadius};
