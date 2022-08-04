@@ -26,6 +26,10 @@ if (count($files) > 0) {
 	$latestIdsFile = null;
 	$latestIdsFileModificationTime = 0;
 	$latestIdsFileSize = 0;
+
+	$latestLargeBibXmlFile = null;
+	$latestLargeBibXmlFileModificationTime = 0;
+	$latestLargeBibXmlFileSize = 0;
 	foreach ($files as $file) {
 		if ($file != '.' && $file != '..' && is_file($marcDirName . $file)) {
 			if (strpos($file, ".mrc") > 0) {
@@ -44,6 +48,16 @@ if (count($files) > 0) {
 					$latestIdsFileModificationTime = $lastModificationTime;
 					$latestIdsFileSize = filesize($marcDirName . $file);
 					$latestIdsFile = [
+						'fullPath' => $marcDirName . $file,
+						'name' => $file
+					];
+				}
+			}elseif (strpos($file, ".xml") > 0) {
+				$lastModificationTime = filemtime($marcDirName . $file);
+				if ($lastModificationTime > $latestLargeBibXmlFileModificationTime) {
+					$latestLargeBibXmlFileModificationTime = $lastModificationTime;
+					$latestLargeBibXmlFileSize = filesize($marcDirName . $file);
+					$latestLargeBibXmlFile = [
 						'fullPath' => $marcDirName . $file,
 						'name' => $file
 					];
@@ -102,6 +116,31 @@ if (count($files) > 0) {
 			}
 		}else{
 			echo(date('Y-m-d H:i:s') . " all ids export is still changing\n");
+		}
+	}
+
+	if ($latestLargeBibXmlFile != null){
+		echo(date('Y-m-d H:i:s') . "Found large bib xml export " . $latestLargeBibXmlFile['fullPath'] . "\n");
+		sleep(2);
+		if (filemtime($latestLargeBibXmlFile['fullPath']) == $latestLargeBibXmlFileModificationTime && $latestLargeBibXmlFileSize == filesize($latestLargeBibXmlFile['fullPath'])){
+			//File is not changing, we can move it.
+			if (rename($latestLargeBibXmlFile['fullPath'], $marcDestDirName . $latestLargeBibXmlFile['name'])){
+				echo(date('Y-m-d H:i:s') . " moved large bib xml file to dest dir\n");
+			}else{
+				echo(date('Y-m-d H:i:s') . " ERROR could not move large bib xml file to dest dir $marcDestDirName\n");
+			}
+
+			//Delete any other files that were in the directory since they are just old files.
+			$files = scandir($marcDirName);
+			foreach ($files as $file) {
+				if ($file != '.' && $file != '..' && strpos($file, ".xml") > 0){
+					if (unlink($marcDirName . $file)){
+						echo(date('Y-m-d H:i:s') . "Deleted large bib xml file " . $marcDirName . $file . " that was older than the latest\n") ;
+					}
+				}
+			}
+		}else{
+			echo(date('Y-m-d H:i:s') . " large bib xml export is still changing\n");
 		}
 	}
 }

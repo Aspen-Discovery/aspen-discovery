@@ -18,7 +18,7 @@ import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -66,12 +66,12 @@ public class SierraExportAPIMain {
 	public static void main(String[] args){
 		boolean extractSingleRecord = false;
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleRecord = true;
 			}
@@ -85,7 +85,7 @@ public class SierraExportAPIMain {
 		}
 
 		if (extractSingleRecord){
-			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, can optionally include the .b or the check digit for Sierra/Millennium systems");
+			String recordToExtract = AspenStringUtils.getInputFromCommandLine("Enter the id of the record to extract, can optionally include the .b or the check digit for Sierra/Millennium systems");
 			if (recordToExtract.startsWith(".b")){
 				recordToExtract = recordToExtract.substring(2, recordToExtract.length() -1);
 			}
@@ -1110,7 +1110,7 @@ public class SierraExportAPIMain {
 							if (subfields != null){
 								for (int k = 0; k < subfields.length(); k++){
 									JSONObject subfield = subfields.getJSONObject(k);
-									char tag = StringUtils.convertStringToChar(subfield.getString("tag"));
+									char tag = AspenStringUtils.convertStringToChar(subfield.getString("tag"));
 									String content = subfield.getString("content");
 									if (tag == sierraExportFieldMapping.getCallNumberPrestampExportSubfield()){
 										itemField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getCallNumberPrestampExportSubfield(), content));

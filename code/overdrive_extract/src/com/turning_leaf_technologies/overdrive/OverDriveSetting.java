@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.overdrive;
 
 import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

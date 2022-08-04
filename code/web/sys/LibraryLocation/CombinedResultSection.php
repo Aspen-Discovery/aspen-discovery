@@ -11,6 +11,7 @@ abstract class CombinedResultSection extends DataObject{
 	static function getObjectStructure() : array {
 		global $configArray;
 		global $enabledModules;
+        global $library;
 		$validResultSources = array();
 		$validResultSources['catalog'] = 'Catalog Results';
 		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
@@ -18,10 +19,10 @@ abstract class CombinedResultSection extends DataObject{
 		if ($dplaSetting->find(true)){
 			$validResultSources['dpla'] = 'DP.LA';
 		}
-		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1) {
 			$validResultSources['ebsco_eds'] = 'EBSCO EDS';
 		}
-		if (array_key_exists('EBSCOhost', $enabledModules)) {
+		else if (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
 			$validResultSources['ebscohost'] = 'EBSCOhost';
 		}
 		if (array_key_exists('Events', $enabledModules)){

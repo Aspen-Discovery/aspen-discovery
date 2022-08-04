@@ -25,7 +25,7 @@
 					<tr>
 						<td>{$info.id}</td>
 						<td>{$info.time}</td>
-						<td>{$info.title}</td>
+						<td>{$info.title}{if $info.hasNewResults}<a href="{$info.newTitlesUrl|escape}"><span class="new-result-badge">{translate text="Updated" isPublicFacing=true}</span></a>{/if}</td>
 						<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="Anything (Empty Search)" isPublicFacing=true}{else}{$info.description|escape}{/if}</a></td>
 						<td>{foreach from=$info.filters item=filters key=field}{foreach from=$filters item=filter}
 							<b>{translate text=$field|escape isPublicFacing=true}</b>: {$filter.display|escape}<br/>

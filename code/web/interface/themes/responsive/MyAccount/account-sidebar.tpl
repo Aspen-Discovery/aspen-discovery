@@ -4,13 +4,6 @@
 		<!--suppress HtmlUnknownTarget -->
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
-				{* Your Account *}
-				{if $module == 'MyAccount' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
-					{assign var="curSection" value=true}
-				{else}
-					{assign var="curSection" value=false}
-				{/if}
-
 				<div class="panel active">
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
@@ -24,7 +17,7 @@
 						</div>
 					</a>
 					{*  This content is duplicated in MyAccount/mobilePageHeader.tpl; Update any changes there as well *}
-					<div id="myAccountPanel" class="panel-collapse collapse{if  $curSection} in{/if}">
+					<div id="myAccountPanel" class="panel-collapse collapse in">
 						<div class="panel-body">
 							{if !$offline}
 								<span class="expirationFinesNotice-placeholder"></span>
@@ -131,7 +124,7 @@
 									{/if}
 								{/if}
 							{/if}
-							{if !$offline}
+							{if !$offline && $userHasCatalogConnection}
 								{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
 									<div class="myAccountLink materialsRequestLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
 										<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
@@ -143,13 +136,13 @@
 								{/if}
 							{/if}
 							{if $userHasCatalogConnection}
-								<div class="myAccountLink libraryCardLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
+								<div class="myAccountLink libraryCardLink" title="{translate text='Your Library Card(s)' inAttribute=true isPublicFacing=true}">
 									<a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a>
 								</div>
 							{/if}
 
 							{if !$offline}
-								{if $showRatings || $enableSavedSearches || $enableReadingHistory | showFavorites}
+								{if $showRatings || $enableSavedSearches || ($enableReadingHistory && $userHasCatalogConnection) | $showFavorites}
 									<hr class="menu">
 								{/if}
 								{if $showRatings}
@@ -165,9 +158,9 @@
 								{/if}
 								{if $enableSavedSearches}
 									{* Only highlight saved searches as active if user is logged in: *}
-									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a></div>
+									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a> <span class="account-updated-search-badge newSavedSearchBadge" style="display: none"><span class="saved-searches-placeholder">??</span></span></div>
 								{/if}
-								{if $enableReadingHistory}
+								{if $enableReadingHistory && $userHasCatalogConnection}
 									<div class="myAccountLink">
 										<a href="/MyAccount/ReadingHistory">
 											{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}

@@ -13,5 +13,14 @@
     <orderEntry type="library" name="mysql-connector-java-8.0.15" level="project" />
     <orderEntry type="module" module-name="reindexer" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../java_shared_libraries/commons-lang3-3.8.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

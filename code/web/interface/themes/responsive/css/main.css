@@ -8104,6 +8104,12 @@ hr.menu {
   font-size: 10px;
   text-indent: 0;
 }
+.badge-primary {
+  background-color: #3174AF !important;
+}
+.badge-success {
+  background-color: #2e7d32 !important;
+}
 ul.account-submenu {
   list-style: none;
   margin-left: 0;
@@ -8520,6 +8526,22 @@ a.placard-link {
 }
 .radio-toolbar label:hover {
   background-color: #dfd;
+}
+#FloatingSave {
+  position: fixed;
+  bottom: 10%;
+  right: 0;
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  margin: 0 3em 3em 0;
+  z-index: 9999999;
+}
+#FloatingSave .btn-primary {
+  border-radius: 50%;
+  height: 60px;
+  width: 60px;
 }
 #home-page-search {
   background-color: #00a4e3;
@@ -9149,6 +9171,7 @@ a.placard-link {
   -webkit-column-break-inside: avoid;
   display: inline-block;
   text-align: center;
+  position: relative;
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {
@@ -9259,6 +9282,28 @@ a.browse-thumbnail-sorted.active {
 }
 .selected-browse-sub-category-label-search-text::before {
   content: ' \00bb \00a0';
+}
+.browse-cover-badge {
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  font-size: medium;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+}
+.browse-cover-badge::before {
+  top: 100%;
+  left: 0;
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #3d4364;
+  border-left: 10px solid transparent;
 }
 #account-settings-accordion .panel-group .panel + .panel {
   margin-top: 0;
@@ -10134,6 +10179,53 @@ a.browse-thumbnail-sorted.active {
   border-radius: 3px;
   border: 1px solid #ababab;
   font-size: 12px;
+}
+.listResultImage {
+  position: relative;
+  margin-top: 5px;
+}
+.listResultImage a > img {
+  max-width: 100%;
+}
+.list-cover-badge {
+  position: absolute;
+  top: -12px;
+  left: -10px;
+  font-size: medium;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+}
+.list-cover-badge::before {
+  top: 100%;
+  left: 0;
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #3d4364;
+  border-left: 10px solid transparent;
+}
+.new-result-badge {
+  display: inline-block;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+}
+.account-updated-search-badge {
+  display: inline-block;
+  font-size: 75%;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+  vertical-align: baseline;
 }
 .graph-bar {
   background-color: #088ec6;

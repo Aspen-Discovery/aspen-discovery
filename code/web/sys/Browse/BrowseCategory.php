@@ -324,14 +324,17 @@ class BrowseCategory extends BaseBrowsable
 		if ($this->endDate != 0 && $this->endDate < $curTime){
 			return false;
 		}
-		if(!is_null($appUser)) {
+		if(!empty($appUser)) {
 			$user = $appUser;
+		}else {
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+			}else{
+				$user = null;
+			}
 		}
 		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you') {
-			if (UserAccount::isLoggedIn() || $appUser != null) {
-				if(is_null($appUser)) {
-					$user = UserAccount::getActiveUserObj();
-				}
+			if (UserAccount::isLoggedIn() || !empty($appUser)) {
 				if($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
 					if($this->isDismissed($user)) {
 						return false;
@@ -355,10 +358,7 @@ class BrowseCategory extends BaseBrowsable
 			return false;
 		}
 
-		if (UserAccount::isLoggedIn() || $appUser != null) {
-			if(is_null($appUser)) {
-				$user = UserAccount::getActiveUserObj();
-			}
+		if (!empty($user)) {
 			if($this->isDismissed($user)) {
 				return false;
 			}

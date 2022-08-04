@@ -10,7 +10,7 @@ import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -47,12 +47,12 @@ public class KohaExportMain {
 	public static void main(String[] args) {
 		String singleWorkId = null;
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleWork = true;
 			}
@@ -61,11 +61,14 @@ public class KohaExportMain {
 			if (args.length > 1){
 				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
 					extractSingleWork = true;
+					if (args.length > 2) {
+						singleWorkId = args[2];
+					}
 				}
 			}
 		}
-		if (extractSingleWork) {
-			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+		if (extractSingleWork && singleWorkId == null) {
+			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String profileToLoad = "ils";
 
@@ -821,8 +824,8 @@ public class KohaExportMain {
 					kohaLibraryGroupForBranchCodeRS.close();
 
 					libraryCode = libraryCode.toLowerCase();
-					libraryCode = StringUtils.trimTo(25, libraryCode);
-					libraryDisplayName = StringUtils.trimTo(50, libraryDisplayName);
+					libraryCode = AspenStringUtils.trimTo(25, libraryCode);
+					libraryDisplayName = AspenStringUtils.trimTo(50, libraryDisplayName);
 
 					existingAspenLibraryStmt.setString(1, libraryCode);
 					ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
@@ -841,7 +844,7 @@ public class KohaExportMain {
 
 					if (libraryId != 0){
 						addAspenLocationStmt.setLong(1, libraryId);
-						addAspenLocationStmt.setString(2, StringUtils.trimTo(60, branchDisplayName));
+						addAspenLocationStmt.setString(2, AspenStringUtils.trimTo(60, branchDisplayName));
 						addAspenLocationStmt.setString(3, ilsCode);
 						addAspenLocationStmt.executeUpdate();
 						ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
@@ -1263,7 +1266,7 @@ public class KohaExportMain {
 			ResultSet baseMarcRecordRS = getBaseMarcRecordStmt.executeQuery();
 			if (baseMarcRecordRS.next()) {
 				String marcXML = baseMarcRecordRS.getString("metadata");
-				marcXML = StringUtils.stripNonValidXMLCharacters(marcXML);
+				marcXML = AspenStringUtils.stripNonValidXMLCharacters(marcXML);
 				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(StandardCharsets.UTF_8)));
 
 				//This record has all the basic bib data

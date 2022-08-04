@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 public class CronLogEntry implements BaseLogEntry {
@@ -53,8 +54,8 @@ public class CronLogEntry implements BaseLogEntry {
 		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
 		for (String curNote : notes){
 			String cleanedNote = curNote;
-			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
-			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
+			cleanedNote = StringUtils.replace(cleanedNote, "<pre>", "<code>");
+			cleanedNote = StringUtils.replace(cleanedNote,"</pre>", "</code>");
 			//Replace multiple line breaks
 			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
 			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");

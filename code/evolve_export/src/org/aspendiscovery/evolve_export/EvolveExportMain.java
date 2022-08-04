@@ -9,7 +9,7 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -23,6 +23,7 @@ import org.marc4j.marc.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
@@ -49,26 +50,28 @@ public class EvolveExportMain {
 		@SuppressWarnings("unused")
 		String singleWorkId = null;
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
-			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
-				extractSingleWork = true;
-			}
+//			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+//			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+//				extractSingleWork = true;
+//			}
 		} else {
 			serverName = args[0];
 			if (args.length > 1) {
 				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")) {
 					extractSingleWork = true;
+					if (args.length > 2) {
+						singleWorkId = args[2];
+					}
 				}
 			}
 		}
-		if (extractSingleWork) {
-			//noinspection UnusedAssignment
-			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+		if (extractSingleWork && singleWorkId == null) {
+			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String profileToLoad;
 
@@ -135,7 +138,6 @@ public class EvolveExportMain {
 				}else {
 					logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
-					//noinspection StatementWithEmptyBody
 					if (!extractSingleWork) {
 						//Update works that have changed since the last index
 						numChanges = updateRecords();
@@ -248,6 +250,24 @@ public class EvolveExportMain {
 	}
 
 	private static int updateBibFromEvolve(String singleWorkId, MarcFactory marcFactory, boolean incrementProductsInLog) {
+		logEntry.incErrors("Cannot extract Single Works from Evolve.");
+		return 0;
+	}
+
+	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory, boolean incrementProductsInLog) {
+		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyHHmmss");
+		long lastExtractTime = 0;
+		lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords() * 1000;
+		if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
+			//Give a small buffer (5 minute to account for server time differences)
+			lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 5 * 60 * 1000 ;
+		}
+		long sixtyDaysAgo = new Date().getTime() - (60 * 24 * 60 * 60 * 1000L);
+		if (lastExtractTime < sixtyDaysAgo){
+			lastExtractTime = sixtyDaysAgo;
+		}
+		String formattedExtractTime = lastExtractTimeFormatter.format(new Date(lastExtractTime));
+
 		//The integration token does not allow catalog search so we need to login with a patron.
 		String patronLoginUrl = baseUrl + "/Authenticate";
 		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername  + "\",\"Pwd\":\"" + staffPassword +"\"}";
@@ -257,7 +277,7 @@ public class EvolveExportMain {
 			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
 			JSONObject firstResponse = loginResponseData.getJSONObject(0);
 			String accessToken = firstResponse.getString("LoginToken");
-			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=05052022|Marc=Yes";
+			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
 			//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
 
 			HashMap<String, String> headers = new HashMap<>();
@@ -362,6 +382,18 @@ public class EvolveExportMain {
 
 		}else{
 			logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
+		}
+
+		try {
+			if (!logEntry.hasErrors()) {
+				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+				updateVariableStmt.setLong(1, startTimeForLogging);
+				updateVariableStmt.setLong(2, indexingProfile.getId());
+				updateVariableStmt.executeUpdate();
+				updateVariableStmt.close();
+			}
+		}catch (SQLException e){
+			logEntry.incErrors("Error updating when the records were last indexed", e);
 		}
 
 		return numProcessed;
@@ -488,6 +520,10 @@ public class EvolveExportMain {
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
 			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
+		}else{
+			MarcFactory marcFactory = MarcFactory.newInstance();
+			//Update records based on the last change date
+			totalChanges = updateLastChangedBibsFromEvolve(marcFactory, true);
 		}
 
 		return totalChanges;
@@ -579,8 +615,8 @@ public class EvolveExportMain {
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
-			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0001) {
-				logEntry.incErrors("More than .1% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
+			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.00025) {
+				logEntry.incErrors("More than .025% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
 				return totalChanges;
 			} else if (numRecordsWithErrors > 0) {
 				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");

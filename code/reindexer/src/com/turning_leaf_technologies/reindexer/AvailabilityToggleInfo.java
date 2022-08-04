@@ -65,9 +65,9 @@ public class AvailabilityToggleInfo {
 		globalLocalAvailable.add(localStr);
 		globalLocalAvailable.add(availableStr);
 
-		globalLocalAvailableOnline.add(globalStr);
-		globalLocalAvailableOnline.add(localStr);
-		globalLocalAvailableOnline.add(availableOnlineStr);
+		globalLocalOnline.add(globalStr);
+		globalLocalOnline.add(localStr);
+		globalLocalOnline.add(availableOnlineStr);
 
 		globalLocal.add(globalStr);
 		globalLocal.add(localStr);

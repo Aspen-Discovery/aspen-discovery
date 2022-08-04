@@ -526,6 +526,7 @@ class UserAPI extends Action
 
 			$numLists = 0;
 			$numSavedSearches = 0;
+			$numSavedSearchesNew = 0;
 
 			// get list count
 			$userLists = new ListAPI();
@@ -541,8 +542,13 @@ class UserAPI extends Action
 				$numSavedSearches = $searches['count'];
 			}
 
+			if($searches['countNewResults']) {
+				$numSavedSearchesNew = $searches['countNewResults'];
+			}
+
 			$userData->numLists = $numLists;
 			$userData->numSavedSearches = $numSavedSearches;
+			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
 
 			return array('success' => true, 'profile' => $userData);

@@ -4,7 +4,7 @@ import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -760,7 +760,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				//Remaining fields have variable definitions based on content that has been loaded over the past year or so
 				if (eContentFields.length >= 4){
 					//If the 4th field is numeric, it is the number of copies that can be checked out.
-					if (StringUtils.isNumeric(eContentFields[3].trim())){
+					if (AspenStringUtils.isNumeric(eContentFields[3].trim())){
 						//ilsEContentItem.setNumberOfCopies(eContentFields[3].trim());
 						if (eContentFields.length >= 5){
 							itemInfo.seteContentFilename(eContentFields[4].trim());
@@ -934,6 +934,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (formatSource.equals("item") && formatSubfield != ' '){
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			if (format != null) {
+				format = format.toLowerCase(Locale.ROOT);
 				if (hasTranslation("format", format)) {
 					itemInfo.setFormat(translateValue("format", format, recordInfo.getRecordIdentifier()));
 				}
@@ -1613,7 +1614,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private char getSubfieldIndicatorFromConfig(ResultSet indexingProfileRS, String subfieldName) throws SQLException{
 		String subfieldString = indexingProfileRS.getString(subfieldName);
-		return StringUtils.convertStringToChar(subfieldString);
+		return AspenStringUtils.convertStringToChar(subfieldString);
 	}
 
 	public String translateValue(String mapName, String value, String identifier){

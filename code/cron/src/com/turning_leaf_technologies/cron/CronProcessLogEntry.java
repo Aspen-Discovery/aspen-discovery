@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 public class CronProcessLogEntry implements BaseLogEntry {
@@ -79,8 +80,8 @@ public class CronProcessLogEntry implements BaseLogEntry {
 		}
 		Date date = new Date();
 		String cleanedNote = note;
-		cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
-		cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
+		cleanedNote = StringUtils.replace(cleanedNote,"<pre>", "<code>");
+		cleanedNote = StringUtils.replace(cleanedNote,"</pre>", "</code>");
 		//Replace multiple line breaks
 		cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
 		cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");

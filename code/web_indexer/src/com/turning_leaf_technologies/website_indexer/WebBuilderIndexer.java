@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.website_indexer;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -134,7 +134,7 @@ class WebBuilderIndexer {
 				String title = getResourcesRS.getString("name");
 				solrDocument.addField("title", title);
 				solrDocument.addField("title_display", title);
-				solrDocument.addField("title_sort", StringUtils.makeValueSortable(title));
+				solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 
 				//Load libraries to scope to
 				getLibrariesForResourceStmt.setString(1, id);
@@ -150,7 +150,7 @@ class WebBuilderIndexer {
 				String teaser = getResourcesRS.getString("teaser");
 				String description = getResourcesRS.getString("description");
 				if (teaser == null || teaser.length() == 0){
-					teaser = StringUtils.trimTo(250, description);
+					teaser = AspenStringUtils.trimTo(250, description);
 				}
 				solrDocument.addField("description", teaser);
 				solrDocument.addField("keywords", description);
@@ -209,11 +209,11 @@ class WebBuilderIndexer {
 				String title = getBasicPagesRS.getString("title");
 				solrDocument.addField("title", title);
 				solrDocument.addField("title_display", title);
-				solrDocument.addField("title_sort", StringUtils.makeValueSortable(title));
+				solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 				String teaser = getBasicPagesRS.getString("teaser");
 				String contents = getBasicPagesRS.getString("contents");
 				if (teaser == null || teaser.length() == 0){
-					teaser = StringUtils.trimTo(250, contents);
+					teaser = AspenStringUtils.trimTo(250, contents);
 				}
 				solrDocument.addField("description", teaser);
 				solrDocument.addField("keywords", contents);
@@ -277,7 +277,7 @@ class WebBuilderIndexer {
 				String title = getPortalPagesRS.getString("title");
 				solrDocument.addField("title", title);
 				solrDocument.addField("title_display", title);
-				solrDocument.addField("title_sort", StringUtils.makeValueSortable(title));
+				solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 
 				//Load libraries to scope to
 				getLibrariesForPortalPageStmt.setString(1, id);
@@ -304,7 +304,7 @@ class WebBuilderIndexer {
 					String contents = pageDoc.title();
 					String body = pageDoc.body().text();
 
-					String teaser = StringUtils.trimTo(250, body);
+					String teaser = AspenStringUtils.trimTo(250, body);
 
 					solrDocument.addField("description", teaser);
 					solrDocument.addField("keywords", contents + body);

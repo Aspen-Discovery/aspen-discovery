@@ -171,6 +171,11 @@ class ListAPI extends Action
 			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 		}
 
+		$checkIfValid = "true";
+		if(isset($_REQUEST['checkIfValid'])) {
+			$checkIfValid = $_REQUEST['checkIfValid'];
+		}
+
 		global $configArray;
 		$userId = $user->id;
 
@@ -182,7 +187,21 @@ class ListAPI extends Action
 		$results = array();
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
-				if($list->isValidForDisplay()) {
+				if($checkIfValid == "true") {
+					if($list->isValidForDisplay()) {
+						$count = $count + 1;
+						$results[] = array(
+							'id' => $list->id,
+							'title' => $list->title,
+							'description' => $list->description,
+							'numTitles' => $list->numValidListItems(),
+							'public' => $list->public == 1,
+							'created' => $list->created,
+							'dateUpdated' => $list->dateUpdated,
+							'cover' => $configArray['Site']['url']  . "/bookcover.php?type=list&id={$list->id}&size=medium"
+						);
+					}
+				} else {
 					$count = $count + 1;
 					$results[] = array(
 						'id' => $list->id,
@@ -590,6 +609,11 @@ class ListAPI extends Action
 			$id = UserAccount::getActiveUserId();
 		}
 
+		$checkIfValid = "true";
+		if(isset($_REQUEST['checkIfValid'])) {
+			$checkIfValid = $_REQUEST['checkIfValid'];
+		}
+
 		$result = [];
 		$SearchEntry = new SearchEntry();
 		$SearchEntry->user_id = $id;
@@ -598,20 +622,46 @@ class ListAPI extends Action
 		$SearchEntry->find();
 
 		$count = 0;
+		$countNewResults = 0;
 		while($SearchEntry->fetch()) {
-			if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
-				$count = $count + 1;
-				$savedSearch = array(
-					'id' => $SearchEntry->id,
-					'title' => $SearchEntry->title,
-					'created' => $SearchEntry->created,
-					'searchUrl' => $SearchEntry->searchUrl,
-				);
-				$result[] = $savedSearch;
+			if($checkIfValid == "true") {
+				if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+					$count = $count + 1;
+					$savedSearch = array(
+						'id' => $SearchEntry->id,
+						'title' => $SearchEntry->title,
+						'created' => $SearchEntry->created,
+						'searchUrl' => $SearchEntry->searchUrl,
+						'hasNewResults' => $SearchEntry->hasNewResults,
+					);
+
+					if($SearchEntry->hasNewResults == 1) {
+						$countNewResults = $countNewResults + 1;
+					}
+
+					$result[] = $savedSearch;
+				}
+			} else {
+				if($SearchEntry->title) {
+					$count = $count + 1;
+					$savedSearch = array(
+						'id' => $SearchEntry->id,
+						'title' => $SearchEntry->title,
+						'created' => $SearchEntry->created,
+						'searchUrl' => $SearchEntry->searchUrl,
+						'hasNewResults' => $SearchEntry->hasNewResults,
+					);
+
+					if($SearchEntry->hasNewResults == 1) {
+						$countNewResults = $countNewResults + 1;
+					}
+
+					$result[] = $savedSearch;
+				}
 			}
 		}
 
-		return array('success' => true, 'searches' => $result, 'count' => $count);
+		return array('success' => true, 'searches' => $result, 'count' => $count, 'countNewResults' => $countNewResults);
 	}
 
 	function getSavedSearchTitles($searchId = null, $numTitlesToShow = null)
@@ -659,6 +709,11 @@ class ListAPI extends Action
 		}
 
 		if ($user && !($user instanceof AspenError)) {
+			$checkIfValid = "true";
+			if(isset($_REQUEST['checkIfValid'])) {
+				$checkIfValid = $_REQUEST['checkIfValid'];
+			}
+
 			$result = [];
 			$SearchEntry = new SearchEntry();
 			$SearchEntry->user_id = $user->id;
@@ -666,20 +721,46 @@ class ListAPI extends Action
 			$SearchEntry->orderBy('created desc');
 			$SearchEntry->find();
 			$count = 0;
+			$countNewResults = 0;
 
 			while($SearchEntry->fetch()) {
-				if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
-					$count = $count + 1;
-					$savedSearch = array(
-						'id' => $SearchEntry->id,
-						'title' => $SearchEntry->title,
-						'created' => $SearchEntry->created,
-						'searchUrl' => $SearchEntry->searchUrl,
-					);
-					$result[] = $savedSearch;
+				if($checkIfValid == "true") {
+					if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+						$count = $count + 1;
+						$savedSearch = array(
+							'id' => $SearchEntry->id,
+							'title' => $SearchEntry->title,
+							'created' => $SearchEntry->created,
+							'searchUrl' => $SearchEntry->searchUrl,
+							'hasNewResults' => $SearchEntry->hasNewResults,
+						);
+
+						if($SearchEntry->hasNewResults == 1) {
+							$countNewResults = $countNewResults + 1;
+						}
+
+						$result[] = $savedSearch;
+					}
+				} else {
+					if($SearchEntry->title) {
+						$count = $count + 1;
+						$savedSearch = array(
+							'id' => $SearchEntry->id,
+							'title' => $SearchEntry->title,
+							'created' => $SearchEntry->created,
+							'searchUrl' => $SearchEntry->searchUrl,
+							'hasNewResults' => $SearchEntry->hasNewResults,
+						);
+
+						if($SearchEntry->hasNewResults == 1) {
+							$countNewResults = $countNewResults + 1;
+						}
+
+						$result[] = $savedSearch;
+					}
 				}
 			}
-			return array('success' => true, 'searches' => $result, 'count' => $count);
+			return array('success' => true, 'searches' => $result, 'count' => $count, 'countNewResults' => $countNewResults);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -741,8 +822,14 @@ class ListAPI extends Action
 
 			if($existingList) {
 				$list->update();
+				$success = false;
+				$title = 'Error creating list';
+				$message = 'You already have a list with this title.';
 			} else {
 				$list->insert();
+				$success = true;
+				$title = 'Success';
+				$message = "List {$list->title} created successfully.";
 			}
 
 			if($user->lastListUsed != $list->id) {
@@ -754,10 +841,10 @@ class ListAPI extends Action
 
 			if (isset($_REQUEST['recordIds'])) {
 				$_REQUEST['listId'] = $list->id;
-				return $this->addTitlesToList();
+				return $this->addTitlesToList($existingList);
 			}else{
 				//There wasn't anything to add so it worked
-				return array('success' => true, 'title' => 'Success', 'message' => "List {$list->title} created successfully", 'listId' => $list->id);
+				return array('success' => $success, 'title' => $title, 'message' => $message, 'listId' => $list->id);
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -918,7 +1005,7 @@ class ListAPI extends Action
 	 * {"result":{"success":true,"listId":"1688","numAdded":"1"}}
 	 * </code>
 	 */
-	function addTitlesToList()
+	function addTitlesToList($existingList = false)
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
@@ -973,7 +1060,14 @@ class ListAPI extends Action
 						$numAdded++;
 					}
 				}
-				return array('success' => true, 'listId' => $list->id, 'numAdded' => $numAdded);
+
+				if($existingList) {
+					$message = $numAdded . " added to list.";
+				} else {
+					$message = $numAdded . " added to " . $list->title;
+				}
+
+				return array('success' => true, 'listId' => $list->id, 'numAdded' => $numAdded, 'existingList' => $existingList, 'message' => $message);
 			}
 
 

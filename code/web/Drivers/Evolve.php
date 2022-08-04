@@ -50,6 +50,8 @@ class Evolve extends AbstractIlsDriver
 					$curCheckout = new Checkout();
 					$curCheckout->type = 'ils';
 					$curCheckout->source = $this->getIndexingProfile()->name;
+					$curCheckout->sourceId = $itemOut->ID;
+					$curCheckout->userId = $patron->id;
 
 					$curCheckout->recordId = $itemOut->ID;
 					$curCheckout->itemId = (int)$itemOut->HoldingID;
@@ -60,7 +62,7 @@ class Evolve extends AbstractIlsDriver
 					$curCheckout->renewCount = (int)$itemOut->CircRenewed;
 					$curCheckout->canRenew = true;
 
-					$curCheckout->renewalId = (int)$itemOut->HoldingID;
+					$curCheckout->renewalId = $itemOut->ID;
 					$curCheckout->title = $itemOut->Title;
 					$curCheckout->author = $itemOut->Author;
 					$curCheckout->formats = [$itemOut->Form];
@@ -112,6 +114,52 @@ class Evolve extends AbstractIlsDriver
 				'message' => translate(['text' => 'Unknown Error renewing checkout', 'isPublicFacing' => true]),
 			]
 		];
+
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']) {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+			], true);
+
+			$params = new stdClass();
+			$params->Token = $sessionInfo['accessToken'];
+			$params->CatalogItem  = $recordId;
+			$params->Action = "Renew Item";
+			$postParams = json_encode($params);
+//			$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Action=Renew Item';
+
+			//$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams, false);
+			ExternalRequestLogEntry::logRequest('evolve.renewCheckout', 'POST', $this->accountProfile->patronApiUrl . '/AccountReserve', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
+				$jsonData = json_decode($response);
+				if (is_array($jsonData)){
+					$jsonData = $jsonData[0];
+					if ($jsonData->Status == 'Success'){
+						$result['success'] = true;
+						$result['message'] = translate(['text' => 'Your item was successfully renewed', 'isPublicFacing' => true]);
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text'=>'Title renewed successfully', 'isPublicFacing'=>true]);
+						$result['api']['message'] = translate(['text' => 'Your item was renewed', 'isPublicFacing' => true]);
+					}else{
+						$message = "The item could not be renewed. {$jsonData->Message}";
+
+						$result['itemId'] = $itemIndex;
+						$result['success'] = false;
+						$result['message'] = $message;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+						$result['api']['message'] = $jsonData->Message;
+					}
+				}
+			}
+		}
+
 		return $result;
 	}
 
@@ -133,6 +181,52 @@ class Evolve extends AbstractIlsDriver
 				'message' => translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true])
 			]
 		];
+
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']) {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+			], true);
+
+			$params = new stdClass();
+			$params->Token = $sessionInfo['accessToken'];
+			$params->CatalogItem  = $recordId;
+			$params->Action = "Cancel";
+			$postParams = json_encode($params);
+			//$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Action=Cancel';
+
+			//$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams, false);
+			ExternalRequestLogEntry::logRequest('evolve.cancelHold', 'POST', $this->accountProfile->patronApiUrl . '/AccountReserve', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
+				$jsonData = json_decode($response);
+				if (is_array($jsonData)){
+					$jsonData = $jsonData[0];
+					if ($jsonData->Status == 'Success'){
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfHolds();
+						$result['success'] = true;
+						$result['message'] = translate(['text' => 'The hold has been cancelled.', 'isPublicFacing' => true]);;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing' => true]);
+						$result['api']['message'] = translate(['text' => 'Your hold has been cancelled.', 'isPublicFacing' => true]);
+					}else{
+						$message = "The hold could not be cancelled. {$jsonData->Message}";
+						$result['success'] = false;
+						$result['message'] = $message;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing' => true]);
+						$result['api']['message'] = $jsonData->Message;
+					}
+				}
+			}
+		}
+
 		return $result;
 	}
 
@@ -206,6 +300,52 @@ class Evolve extends AbstractIlsDriver
 				'message' => translate(['text'=>'The pickup location for the hold could not be changed.', 'isPublicFacing'=>true])
 			]
 		];
+
+		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if ($sessionInfo['userValid']) {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+			], true);
+
+			$params = new stdClass();
+			$params->Token = $sessionInfo['accessToken'];
+			$params->CatalogItem  = $itemToUpdateId;
+			$params->Location  = $newPickupLocation;
+			$params->Action = "Change Location";
+			$postParams = json_encode($params);
+			//$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $itemToUpdateId . '|Location=' . $newPickupLocation . '|Action=Change Location';
+
+			//$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams, false);
+			ExternalRequestLogEntry::logRequest('evolve.changePickupLocation', 'POST', $this->accountProfile->patronApiUrl . '/AccountReserve', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
+				$jsonData = json_decode($response);
+				if (is_array($jsonData)){
+					$jsonData = $jsonData[0];
+					if ($jsonData->Status == 'Success'){
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfHolds();
+						$result['success'] = true;
+						$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text'=>'Pickup location updated', 'isPublicFacing'=>true]);
+						$result['api']['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+					}else{
+						$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$jsonData->Message}";
+						$result['success'] = false;
+						$result['message'] = $message;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text'=>'Unable to update pickup location', 'isPublicFacing'=>true]);
+						$result['api']['message'] = $jsonData->Message;
+					}
+				}
+			}
+		}
 
 		return $result;
 	}
@@ -317,15 +457,26 @@ class Evolve extends AbstractIlsDriver
 			$params->CatalogItem  = str_replace('CA010', '', $recordId);
 			$params->Action = "Create";
 			$postParams = json_encode($params);
-			$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Action=Create';
+			//$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Location=' . $pickupBranch .  '|Action=Create';
 
 			//$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
-			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams);
+			$response = $this->apiCurlWrapper->curlPostBodyData($this->accountProfile->patronApiUrl . '/AccountReserve', $postParams, false);
 			ExternalRequestLogEntry::logRequest('evolve.placeHold', 'POST', $this->accountProfile->patronApiUrl . '/AccountReserve', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			if ($response && $this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonData = json_decode($response);
 				if (is_array($jsonData)){
 					$jsonData = $jsonData[0];
+					if ($jsonData->Status == 'Success'){
+						$hold_result['success'] = true;
+						$hold_result['message'] = empty($jsonData->Message) ? translate(['text' => "Your hold was placed successfully.", 'isPublicFacing'=>true]) : $jsonData->Message;
+						// Result for API or app use
+						$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+						$hold_result['api']['message'] = empty($jsonData->Message) ? "" : $jsonData->Message;
+						$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);;
+					}else{
+						$hold_result['message'] = $jsonData->Message;
+						$hold_result['api']['message'] = $jsonData->Message;
+					}
 				}
 			}
 		}
@@ -669,7 +820,12 @@ class Evolve extends AbstractIlsDriver
 		$summary->numUnavailableHolds = count($holds['unavailable']);
 
 		//Get additional information
-
+		$fines = $this->getFines($patron);
+		$totalfines = 0;
+		foreach ($fines as $fine) {
+			$totalfines += $fine['amountOutstandingVal'];
+		}
+		$summary->totalFines = $totalfines;
 
 		return $summary;
 	}

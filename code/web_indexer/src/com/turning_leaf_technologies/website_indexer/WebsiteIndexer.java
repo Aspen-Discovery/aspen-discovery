@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.website_indexer;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -380,7 +380,7 @@ class WebsiteIndexer {
 							solrDocument.addField("source_url", pageToProcess);
 							solrDocument.addField("title", page.getTitle());
 							solrDocument.addField("title_display", page.getTitle());
-							solrDocument.addField("title_sort", StringUtils.makeValueSortable(page.getTitle()));
+							solrDocument.addField("title_sort", AspenStringUtils.makeValueSortable(page.getTitle()));
 							//TODO: Make table of contents from header tags
 							//Strip tags from body to get the text of the page, this is done using Solr to remove tags.
 							solrDocument.addField("keywords", response);

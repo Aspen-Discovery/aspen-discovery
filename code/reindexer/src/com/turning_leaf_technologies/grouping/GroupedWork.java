@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.grouping;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -137,7 +137,7 @@ class GroupedWork implements Cloneable {
 		}
 
 		groupingTitle = normalizeDiacritics(groupingTitle);
-		groupingTitle = StringUtils.makeValueSortable(groupingTitle);
+		groupingTitle = AspenStringUtils.makeValueSortable(groupingTitle);
 
 		//Remove any bracketed parts of the title
 		groupingTitle = removeBracketedPartOfTitle(groupingTitle);

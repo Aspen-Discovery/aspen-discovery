@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ class SavedScopeDetails {
 	}
 
 	boolean hasChanged(long groupedStatusId, long statusId, ScopingInfo scopingInfo) {
-		if (!StringUtils.compareStrings(scopingInfo.getLocalUrl(), localUrl)) {
+		if (!AspenStringUtils.compareStrings(scopingInfo.getLocalUrl(), localUrl)) {
 			return true;
 		}
 		if (scopingInfo.isLocallyOwned() != locallyOwned){
@@ -62,7 +62,7 @@ class SavedScopeDetails {
 			SavedScopeDetails tmpObj = (SavedScopeDetails)obj;
 			return (this.locallyOwned == tmpObj.locallyOwned &&
 					this.libraryOwned == tmpObj.libraryOwned &&
-					StringUtils.compareStrings(this.localUrl, tmpObj.localUrl)
+					AspenStringUtils.compareStrings(this.localUrl, tmpObj.localUrl)
 					);
 		}else{
 			return false;

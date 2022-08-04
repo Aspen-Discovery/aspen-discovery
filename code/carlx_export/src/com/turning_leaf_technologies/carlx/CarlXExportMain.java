@@ -18,8 +18,9 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.*;
@@ -61,12 +62,12 @@ public class CarlXExportMain {
 		boolean extractSingleWork = false;
 		String singleWorkId = null;
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleWork = true;
 			}
@@ -75,12 +76,15 @@ public class CarlXExportMain {
 			if (args.length > 1){
 				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
 					extractSingleWork = true;
+					if (args.length > 2) {
+						singleWorkId = args[2];
+					}
 				}
 			}
 		}
-		if (extractSingleWork) {
-			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
-			singleWorkId = singleWorkId.replace("CARL", "");
+		if (extractSingleWork && singleWorkId == null) {
+			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+			singleWorkId = StringUtils.replace(singleWorkId,"CARL", "");
 			singleWorkId = Integer.toString(Integer.parseInt(singleWorkId));
 		}
 

@@ -24,6 +24,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	public $showQuickCopy;
 	public $showInSearchResultsMainDetails;
 	public $alwaysShowSearchResultsMainDetails;
+	public $alwaysFlagNewTitles;
 
 	//Contents of search
 	public $includeOutOfSystemExternalLinks;
@@ -131,6 +132,7 @@ class GroupedWorkDisplaySetting extends DataObject
 						'showQuickCopy'                          => array('property' => 'showQuickCopy',                      'type' => 'checkbox',    'label' => 'Show Quick Copy',                                            'description' => 'Turn on to to show Quick Copy Link in search results.', 'hideInLists' => true),
 						'showInSearchResultsMainDetails'         => array('property' => 'showInSearchResultsMainDetails',     'type' => 'multiSelect', 'label' => 'Optional details to show for a record in search results : ', 'description' => 'Selected details will be shown in the main details section of a record on a search results page.', 'listStyle' => 'checkboxSimple', 'values' => self::$searchResultsMainDetailsOptions),
 						'alwaysShowSearchResultsMainDetails'     => array('property' => 'alwaysShowSearchResultsMainDetails', 'type' => 'checkbox',    'label' => 'Always Show Selected Search Results Main Details',           'description' => 'Turn on to always show the selected details even when there is no info supplied for a detail, or the detail varies due to multiple formats and/or editions). Does not apply to Series & Language', 'hideInLists' => true),
+						'alwaysFlagNewTitles'                    => array('property' => 'alwaysFlagNewTitles', 'type' => 'checkbox',    'label' => 'Always Flag New Titles',           'description' => 'Turn on to add a flag to any title that has been added to the catalog in the last week', 'hideInLists' => true),
 					)),
 					'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => array(
 						'availabilityToggleLabelSuperScope'        => array('property' => 'availabilityToggleLabelSuperScope',        'type' => 'text',     'label' => 'Entire Collection Toggle Label',                                  'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if super scope is not enabled.', 'default' => 'Entire Collection'),

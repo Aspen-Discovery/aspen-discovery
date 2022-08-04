@@ -5,7 +5,7 @@ import com.turning_leaf_technologies.cron.CronProcessLogEntry;
 import com.turning_leaf_technologies.cron.IProcessHandler;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
@@ -95,7 +95,7 @@ public class OfflineCirculation implements IProcessHandler {
 
 			Object placeHoldDataRaw = placeHoldUrl.getContent();
 			if (placeHoldDataRaw instanceof InputStream) {
-				String placeHoldDataJson = StringUtils.convertStreamToString((InputStream) placeHoldDataRaw);
+				String placeHoldDataJson = AspenStringUtils.convertStreamToString((InputStream) placeHoldDataRaw);
 				processLog.addNote("Result = " + placeHoldDataJson);
 				JSONObject placeHoldData = new JSONObject(placeHoldDataJson);
 				JSONObject result = placeHoldData.getJSONObject("result");

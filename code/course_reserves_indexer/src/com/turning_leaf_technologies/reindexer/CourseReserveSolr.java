@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.util.Date;
@@ -36,7 +36,7 @@ class CourseReserveSolr {
 		doc.addField("title", title);
 		doc.addField("title_display", title);
 		
-		doc.addField("title_sort", StringUtils.makeValueSortable(title));
+		doc.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 
 		doc.addField("library", displayLibrary);
 

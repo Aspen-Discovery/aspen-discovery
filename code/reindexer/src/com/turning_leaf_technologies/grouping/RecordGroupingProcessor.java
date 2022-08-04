@@ -4,7 +4,7 @@ import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1046,7 +1046,7 @@ public class RecordGroupingProcessor {
 		String author = "";
 		if (itemDetails.has("artist")) {
 			author = itemDetails.getString("artist");
-			author = StringUtils.swapFirstLastNames(author);
+			author = AspenStringUtils.swapFirstLastNames(author);
 		} else if (itemDetails.has("publisher")) {
 			author = itemDetails.getString("publisher");
 		}

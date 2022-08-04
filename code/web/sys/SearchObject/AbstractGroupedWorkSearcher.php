@@ -231,19 +231,30 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function getTitleSummaryInformation($orderedListOfIDs = array())
 	{
+		global $solrScope;
 		$titleSummaries = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
 			/** @var GroupedWorkDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!($record instanceof AspenError)) {
+				$isNew = false;
+				if (!empty($this->searchId) && $this->savedSearch) {
+					if (isset($current["local_time_since_added_$solrScope"])) {
+						$isNew = in_array('Week', $current["local_time_since_added_$solrScope"]);
+					}
+				}
 				if (!empty($orderedListOfIDs)) {
 					$position = array_search($current['id'], $orderedListOfIDs);
 					if ($position !== false) {
-						$titleSummaries[$position] = $record->getSummaryInformation();
+						$summary = $record->getSummaryInformation();
+						$summary['isNew'] = $isNew;
+						$titleSummaries[$position] = $summary;
 					}
 				} else {
-					$titleSummaries[] = $record->getSummaryInformation();
+					$summary = $record->getSummaryInformation();
+					$summary['isNew'] = $isNew;
+					$titleSummaries[] = $summary;
 				}
 			} else {
 				$titleSummaries[] = "Unable to find record";
@@ -298,6 +309,22 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		global $interface;
 		global $memoryWatcher;
 		global $timer;
+		global $solrScope;
+
+		$searchEntry = new SearchEntry();
+		$searchEntry = $searchEntry->getSavedSearchByUrl($this->renderSearchUrl(), session_id(), UserAccount::getActiveUserId());
+		$isSaved = false;
+		if ($searchEntry != null){
+			$isSaved = $searchEntry->saved;
+		}
+		global $library;
+		$location = Location::getSearchLocation(null);
+		if ($location != null){
+			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
+		}else{
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		}
+		$alwaysFlagNewTitles = $groupedWorkDisplaySettings->alwaysFlagNewTitles;
 		$html = array();
 		if (isset($this->indexResult['response'])) {
 			$allWorkIds = array();
@@ -315,6 +342,15 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				if ($isSaved || $alwaysFlagNewTitles) {
+					if (isset($current["local_time_since_added_$solrScope"])) {
+						$interface->assign('isNew', in_array('Week', $current["local_time_since_added_$solrScope"]));
+					} else {
+						$interface->assign('isNew', false);
+					}
+				} else {
+					$interface->assign('isNew', false);
+				}
 				/** @var GroupedWorkDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
 				if (!($record instanceof AspenError)) {

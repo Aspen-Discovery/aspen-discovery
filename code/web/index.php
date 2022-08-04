@@ -34,7 +34,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 23);
+$interface->assign('cssJsCacheCounter', 24);
 
 // Setup Translator
 global $language;
@@ -192,6 +192,9 @@ if ($action == 'DBMaintenance'){
 //Set these initially in case user login fails, we will need the module to be set.
 $interface->assign('module', $module);
 $interface->assign('action', $action);
+
+//Check for maliciously formatted parameters
+checkForMaliciouslyFormattedParameters();
 
 global $solrScope;
 global $scopeType;
@@ -1153,6 +1156,108 @@ function isSpammySearchTerm($lookfor) : bool
 		return true;
 	} elseif (strpos($lookfor, 'nvOpzp') !== false) {
 		return true;
+	} elseif (strpos($lookfor, 'window.location') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'window.top') !== false) {
+		return true;
+	}
+	$termWithoutTags = strip_tags($lookfor);
+	if ($termWithoutTags != $lookfor){
+		return true;
 	}
 	return false;
+}
+
+/**
+ * @return void
+ */
+function checkForMaliciouslyFormattedParameters(): void
+{
+	$isMaliciousUrl = false;
+	if (isset($_REQUEST['page']) && !empty($_REQUEST['page'])) {
+		if (is_array($_REQUEST['page'])){
+			$isMaliciousUrl = true;
+		}else if (!is_numeric($_REQUEST['page'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['recordIndex']) && !empty($_REQUEST['recordIndex'])) {
+		if (is_array($_REQUEST['recordIndex'])){
+			$isMaliciousUrl = true;
+		}else if (!is_numeric($_REQUEST['recordIndex'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['searchId']) && !empty($_REQUEST['searchId'])) {
+		if (is_array($_REQUEST['searchId'])){
+			$isMaliciousUrl = true;
+		}else if (!is_numeric($_REQUEST['searchId'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['method'])) {
+		if (is_array($_REQUEST['method'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['method'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['followupAction'])) {
+		if (is_array($_REQUEST['followupAction'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['followupAction'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['followupModule'])) {
+		if (is_array($_REQUEST['followupModule'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['followupModule'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['borrower_branchcode'])) {
+		if (is_array($_REQUEST['borrower_branchcode'])){
+			$isMaliciousUrl = true;
+		}else if (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['borrower_branchcode'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['author'])) {
+		if (is_array($_REQUEST['author'])){
+			$isMaliciousUrl = true;
+		}else if (isSpammySearchTerm($_REQUEST['author'])){
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['lookfor'])){
+		if (is_array($_REQUEST['lookfor'])){
+			foreach ($_REQUEST['lookfor'] as $searchTerm){
+				if (isSpammySearchTerm($searchTerm)){
+					$isMaliciousUrl = true;
+				}
+			}
+		}else{
+			if (isSpammySearchTerm($_REQUEST['lookfor'])){
+				$isMaliciousUrl = true;
+			}
+		}
+	}
+	if (isset($_REQUEST['filter'])){
+		if (is_array($_REQUEST['filter'])){
+			foreach ($_REQUEST['filter'] as $searchTerm){
+				if (isSpammySearchTerm($searchTerm)){
+					$isMaliciousUrl = true;
+				}
+			}
+		}else{
+			if (isSpammySearchTerm($_REQUEST['filter'])){
+				$isMaliciousUrl = true;
+			}
+		}
+	}
+	if ($isMaliciousUrl) {
+		header("Location: /Error/Handle404");
+		exit();
+	}
 }

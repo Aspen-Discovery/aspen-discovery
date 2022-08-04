@@ -266,6 +266,7 @@
   -webkit-column-break-inside: avoid;
   display: inline-block;
   .text-center();
+  position: relative;
   img{
     width:100%;
     min-height: 158px;
@@ -335,4 +336,26 @@
     content: ' \00bb \00a0'; // html entity &#187; &nbsp;
   }
 }
+.browse-cover-badge{
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  font-size: medium;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #f5bb59;
+  color: white;
+  padding: 1px 8px;
+}
 
+.browse-cover-badge::before {
+  top: 100%;
+  left: 0;
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #3d4364;
+  border-left: 10px solid transparent;
+}

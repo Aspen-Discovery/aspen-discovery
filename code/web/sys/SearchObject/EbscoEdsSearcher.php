@@ -131,7 +131,7 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 		if (SearchObject_EbscoEdsSearcher::$authenticationToken == null){
 			global $library;
 			$settings = $this->getSettings();
-			if ($settings->edsApiProfile){
+			if ($settings != null && $settings->edsApiProfile){
 				$curlConnection = $this->getCurlConnection();
 				curl_setopt($curlConnection, CURLOPT_URL, "https://eds-api.ebscohost.com/authservice/rest/uidauth");
 				$isGuest = UserAccount::isLoggedIn() ? 'N' : 'Y';

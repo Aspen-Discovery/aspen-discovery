@@ -7,8 +7,9 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.reindexer.AppendItemsToRecordResult;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -40,7 +41,7 @@ public class SymphonyExportMain {
 
 	public static void main(String[] args){
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
@@ -203,6 +204,7 @@ public class SymphonyExportMain {
 			if (courseReservesFile != newestFile){
 				if (courseReservesFile.delete()){
 					logEntry.addNote("Deleted old course reserves file " + courseReservesFile.getAbsolutePath());
+					logEntry.saveResults();
 				}
 			}
 		}
@@ -222,6 +224,7 @@ public class SymphonyExportMain {
 
 		//Process the file
 		logEntry.addNote("Processing course reserves file " + newestFile.getAbsolutePath());
+		logEntry.saveResults();
 		try {
 			//Setup statements
 			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM course_reserve", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -385,6 +388,8 @@ public class SymphonyExportMain {
 				logEntry.incErrors("Could not delete course reserves file " + newestFile.getAbsolutePath());
 			}
 
+			logEntry.addNote("Done processing course reserves");
+			logEntry.saveResults();
 		} catch (IOException | SQLException e) {
 			logEntry.incErrors("Error processing course reserves file", e);
 		}
@@ -447,6 +452,7 @@ public class SymphonyExportMain {
 			//Holds file exists and isn't changing, import it.
 			try {
 				logEntry.addNote("Starting export of holds " + dateTimeFormatter.format(new Date()));
+				logEntry.saveResults();
 
 				//Start a transaction so we can rebuild an entire table
 				dbConn.setAutoCommit(false);
@@ -482,8 +488,10 @@ public class SymphonyExportMain {
 				logEntry.incErrors("Error reading and writing from database while loading holds", e);
 			}
 			logEntry.addNote("Finished export of hold information " + dateTimeFormatter.format(new Date()));
+			logEntry.saveResults();
 		}else{
 			logEntry.addNote("Hold export file (Holds.csv) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
+			logEntry.saveResults();
 		}
 	}
 
@@ -641,9 +649,11 @@ public class SymphonyExportMain {
 				logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 			}else{
 				logEntry.addNote("Volumes File has not changed");
+				logEntry.saveResults();
 			}
 		}else{
 			logEntry.addNote("Volume export file (volumes.txt) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
+			logEntry.saveResults();
 		}
 	}
 
@@ -712,6 +722,7 @@ public class SymphonyExportMain {
 				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
 					if (exportedMarcFile.delete()){
 						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
+						logEntry.saveResults();
 					}
 				}else{
 					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
@@ -736,6 +747,7 @@ public class SymphonyExportMain {
 				if (exportedMarcDeltaFile.lastModified() / 1000 < lastUpdateFromMarc){
 					if (exportedMarcDeltaFile.delete()){
 						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
+						logEntry.saveResults();
 					}
 				}else{
 					if (exportedMarcDeltaFile.lastModified() > latestMarcFile){
@@ -743,11 +755,14 @@ public class SymphonyExportMain {
 					}
 				}
 			}
+			//Sort the files to process by date
+			Arrays.sort(exportedMarcDeltaFiles, Comparator.comparingLong(File::lastModified));
 		}
 
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
+			logEntry.saveResults();
 			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
 		}else{
 			//TODO: See if we can get more runtime info from SirsiDynix APIs;
@@ -776,21 +791,23 @@ public class SymphonyExportMain {
 			return totalChanges;
 		}
 
-		//Make sure that none of the files are still changing
-		for (File curBibFile : exportedMarcFiles) {
-			//Make sure the file is not currently changing.
+		logEntry.addNote("Processing " + exportedMarcFiles.size() + " MARC files");
+		logEntry.saveResults();
+		//The files are sorted by date, we just need to make sure the last is not changing
+		if (exportedMarcFiles.size() > 0){
+			File lastFile = exportedMarcFiles.get(exportedMarcFiles.size() -1);
 			boolean isFileChanging = true;
-			long lastSizeCheck = curBibFile.length();
+			long lastSizeCheck = lastFile.length();
 			while (isFileChanging) {
 				try {
 					Thread.sleep(5000); //Wait 5 seconds
 				} catch (InterruptedException e) {
 					logEntry.incErrors("Error checking if a file is still changing", e);
 				}
-				if (lastSizeCheck == curBibFile.length()) {
+				if (lastSizeCheck == lastFile.length()) {
 					isFileChanging = false;
 				} else {
-					lastSizeCheck = curBibFile.length();
+					lastSizeCheck = lastFile.length();
 				}
 			}
 		}
@@ -842,10 +859,12 @@ public class SymphonyExportMain {
 		GroupedWorkIndexer reindexer = getGroupedWorkIndexer(dbConn);
 		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+			logEntry.saveResults();
 
 			String lastRecordProcessed = "";
 			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+				logEntry.saveResults();
 			}
 			int numRecordsRead = 0;
 			try {
@@ -860,7 +879,10 @@ public class SymphonyExportMain {
 					try{
 						Record curBib = catalogReader.next();
 						numRecordsRead++;
-						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+						DataField marc245 = curBib.getDataField(245);
+						boolean has245 = marc245 != null;
+						if (hasFullExportFile && curBibFile.equals(fullExportFile) && has245 && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							//We're skipping this record because we are doing a full export that got paused part way through
 							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
@@ -879,33 +901,38 @@ public class SymphonyExportMain {
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									AppendItemsToRecordResult appendItemsToRecordResult = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									marcStatus = appendItemsToRecordResult.getMarcStatus();
+									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 
-								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
-									if (permanentId == null) {
-										//Delete the record since it is suppressed
-										deleteRecord = true;
-									} else {
-										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
-											logEntry.incAdded();
+								marc245 = curBib.getDataField(245);
+								if (marc245 != null) {
+									if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+										String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+										if (permanentId == null) {
+											//Delete the record since it is suppressed
+											deleteRecord = true;
 										} else {
-											logEntry.incUpdated();
+											if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
+												logEntry.incAdded();
+											} else {
+												logEntry.incUpdated();
+											}
+											getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+											totalChanges++;
 										}
-										getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-										totalChanges++;
+									} else {
+										logEntry.incSkipped();
 									}
-								} else {
-									logEntry.incSkipped();
+									if (totalChanges > 0 && totalChanges % 5000 == 0) {
+										getGroupedWorkIndexer(dbConn).commitChanges();
+									}
+									//Mark that the record was processed
+									recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 								}
-								if (totalChanges > 0 && totalChanges % 5000 == 0) {
-									getGroupedWorkIndexer(dbConn).commitChanges();
-								}
-								//Mark that the record was processed
-								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 								lastRecordProcessed = recordNumber;
 							} else {
 								//Delete the record since it is suppressed
@@ -944,6 +971,8 @@ public class SymphonyExportMain {
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
+			logEntry.addNote("  Read " + numRecordsRead + " records in the file");
+			logEntry.saveResults();
 		}
 
 		//Loop through remaining records and delete them

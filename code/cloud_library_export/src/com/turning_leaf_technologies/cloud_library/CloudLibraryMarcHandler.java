@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.MarcWriter;
@@ -242,9 +242,9 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			try {
 				//Update the database
 				updateCloudLibraryItemStmt.setString(1, cloudLibraryId);
-				updateCloudLibraryItemStmt.setString(2, StringUtils.trimTo(255, title));
-				updateCloudLibraryItemStmt.setString(3, StringUtils.trimTo(255, subtitle));
-				updateCloudLibraryItemStmt.setString(4, StringUtils.trimTo(255, author));
+				updateCloudLibraryItemStmt.setString(2, AspenStringUtils.trimTo(255, title));
+				updateCloudLibraryItemStmt.setString(3, AspenStringUtils.trimTo(255, subtitle));
+				updateCloudLibraryItemStmt.setString(4, AspenStringUtils.trimTo(255, author));
 				updateCloudLibraryItemStmt.setString(5, format);
 				updateCloudLibraryItemStmt.setLong(6, itemChecksum);
 				updateCloudLibraryItemStmt.setString(7, marcAsString);

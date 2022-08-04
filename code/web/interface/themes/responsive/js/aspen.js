@@ -5593,27 +5593,36 @@ AspenDiscovery.Account = (function(){
 				var ilsUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataIls&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 				$.getJSON(ilsUrl, function (data) {
 					if (data.success) {
-						$(".ils-checkouts-placeholder").html(data.summary.numCheckedOut);
-						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						// noinspection JSDeprecatedSymbols
+						var summary = data.summary;
+						$(".ils-checkouts-placeholder").html(summary.numCheckedOut);
+						totalCheckouts += parseInt(summary.numCheckedOut);
 						$(".checkouts-placeholder").html(totalCheckouts);
-						if (data.summary.numOverdue > 0) {
-							$(".ils-overdue-placeholder").html(data.summary.numOverdue);
+						if (summary.numOverdue > 0) {
+							$(".ils-overdue-placeholder").html(summary.numOverdue);
 							$(".ils-overdue").show();
 						}else{
 							$(".ils-overdue-placeholder").html("0");
 						}
-						$(".ils-holds-placeholder").html(data.summary.numHolds);
-						totalHolds += parseInt(data.summary.numHolds);
+						$(".ils-holds-placeholder").html(summary.numHolds);
+						totalHolds += parseInt(summary.numHolds);
 						$(".holds-placeholder").html(totalHolds);
-						if (data.summary.numAvailableHolds > 0) {
-							$(".ils-available-holds-placeholder").html(data.summary.numAvailableHolds);
+						if (summary.numAvailableHolds > 0) {
+							$(".ils-available-holds-placeholder").html(summary.numAvailableHolds);
 							$(".ils-available-holds").show();
 						}else{
 							$(".ils-available-holds-placeholder").html("0");
 						}
-						$(".readingHistory-placeholder").html(data.summary.readingHistory);
-						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
-						$(".expirationFinesNotice-placeholder").html(data.summary.expirationFinesNotice);
+						$(".readingHistory-placeholder").html(summary.readingHistory);
+						if (summary.hasUpdatedSavedSearches){
+							$(".saved-searches-placeholder").html(summary.savedSearches);
+							$(".newSavedSearchBadge").show();
+						}else{
+							$(".newSavedSearchBadge").show();
+						}
+
+						$(".materialsRequests-placeholder").html(summary.materialsRequests);
+						$(".expirationFinesNotice-placeholder").html(summary.expirationFinesNotice);
 					}
 				});
 			}

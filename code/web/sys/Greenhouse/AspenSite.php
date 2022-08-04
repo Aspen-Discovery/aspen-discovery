@@ -29,6 +29,9 @@ class AspenSite extends DataObject
 	public $nextMeetingPerson;
 	public $activeTicketFeed;
 	public $lastOfflineTime;
+	public $lastOnlineTime;
+	public $lastOfflineNote;
+	public $isOnline;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
 
@@ -70,7 +73,10 @@ class AspenSite extends DataObject
 			'nextMeetingPerson' => ['property' => 'nextMeetingPerson', 'type'=>'text', 'label'=>'Next meeting person', 'description'=>'Who will meet with the library next.', 'hideInLists' => false],
 			'notes' => ['property' => 'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes on the site.', 'hideInLists' => true],
 			'lastNotificationTime' => ['property' => 'lastNotificationTime', 'type'=>'timestamp', 'label'=>'Last Notification Time', 'description'=>'When the last alert was sent.', 'hideInLists' => false],
-			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline TIme', 'description' => 'When the last time the site was offline.', 'hideInLists' => false],
+			'isOnline' => ['property'=>'isOnline', 'type'=>'label', 'label'=>'Server is online', 'description'=>'Whether or not the server is online.', 'hideInLists' => false],
+			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline Time', 'description' => 'When the last time the site was offline.'],
+			'lastOfflineNote' => ['property' => 'lastOfflineNote', 'type' => 'textarea', 'label' => 'Last Offline Note', 'description' => 'Note for when the site was last offline.'],
+			'lastOnlineTime' => ['property' => 'lastOnlineTime', 'type' => 'timestamp', 'label' => 'Last Online Time', 'description' => 'When the last time the site was online.'],
 		];
 	}
 
@@ -184,18 +190,39 @@ class AspenSite extends DataObject
 					}else if ($statsChanged){
 						$aspenSiteStat->update();
 					}
+
+					if($this->isOnline == 0) {
+						$status['wasOffline'] = true;
+					} else {
+						$status['wasOffline'] = false;
+					}
+
+					$this->isOnline = 1;
+					$this->lastOnlineTime = time();
+					$this->update();
 				}else {
 					$status['alive'] = false;
 					$status['checks'] = [];
+					$status['wasOffline'] = false;
+					$this->isOnline = 0;
+					$this->update();
+
 					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+						$this->lastOfflineNote = "Unable to read JSON data or connect to server";
 						$this->lastOfflineTime = time();
+						$status['wasOffline'] = false;
+						$this->isOnline = 0;
 						$this->update();
 					}
 				}
 			}catch (Exception $e) {
 				$status['alive'] = false;
 				$status['checks'] = [];
+				$status['wasOffline'] = false;
+				$this->isOnline = 0;
+				$this->update();
 				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+					$this->lastOfflineNote = "Unable to connect to server";
 					$this->lastOfflineTime = time();
 					$this->update();
 				}
@@ -203,7 +230,11 @@ class AspenSite extends DataObject
 		}else{
 			$status['alive'] = false;
 			$status['checks'] = [];
+			$status['wasOffline'] = false;
+			$this->isOnline = 0;
+			$this->update();
 			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+				$this->lastOfflineNote = "Base URL not set";
 				$this->lastOfflineTime = time();
 				$this->update();
 			}

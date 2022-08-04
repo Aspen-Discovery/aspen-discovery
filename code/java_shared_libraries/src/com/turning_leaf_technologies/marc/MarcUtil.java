@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.marc;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.marc4j.*;
 import org.marc4j.marc.*;
 
@@ -132,8 +132,12 @@ public class MarcUtil {
 	 * @return the result set of strings
 	 */
 	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfield, int beginIx, int endIx) {
-		int fldTagInt = Integer.parseInt(fldTag);
-		return getSubfieldDataAsSet(record, fldTagInt, subfield, beginIx, endIx);
+		if (AspenStringUtils.isNumeric(fldTag)) {
+			int fldTagInt = Integer.parseInt(fldTag);
+			return getSubfieldDataAsSet(record, fldTagInt, subfield, beginIx, endIx);
+		}else{
+			return new LinkedHashSet<>();
+		}
 	}
 
 	private static Set<String> getSubfieldDataAsSet(Record record, int fldTag, String subfield, int beginIx, int endIx) {
@@ -282,7 +286,7 @@ public class MarcUtil {
 					}
 				}
 				if (buf.length() > 0) {
-					result.add(StringUtils.cleanDataForSolr(buf.toString()));
+					result.add(AspenStringUtils.cleanDataForSolr(buf.toString()));
 				}
 			}
 		}
@@ -324,7 +328,7 @@ public class MarcUtil {
 
 					StringBuilder buffer = getSpecifiedSubfieldsAsString(marcField, subfldTags, separator);
 					if (buffer.length() > 0) {
-						result.add(StringUtils.cleanDataForSolr(buffer.toString()));
+						result.add(AspenStringUtils.cleanDataForSolr(buffer.toString()));
 					}
 				}
 			}

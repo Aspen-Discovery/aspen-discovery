@@ -52,5 +52,64 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE hoopla_scopes ADD COLUMN maxCostPerCheckoutBingePass FLOAT DEFAULT 5",
 			]
 		],//hoopla_bingepass
+		'saved_search_log' => [
+			'title' => 'Create Log for Updating Saved Searches',
+			'description' => 'Create Log for Updating Saved Searches',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS search_update_log (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					startTime INT(11) NOT NULL, 
+					endTime INT(11) NULL, 
+					lastUpdate INT(11) NULL, 
+					numErrors INT(11) NOT NULL DEFAULT 0,
+					numSearches INT(11) NOT NULL DEFAULT 0,
+					numUpdated INT(11) NOT NULL DEFAULT 0,
+					notes TEXT
+				) ENGINE = InnoDB'
+			]
+		],//saved_search_log
+		'saved_search_hasNewResults' => [
+			'title' => 'Store if a saved search has new results',
+			'description' => 'Store if a saved search has new results',
+			'sql' => [
+				"ALTER TABLE search ADD COLUMN hasNewResults TINYINT DEFAULT 0",
+			]
+		],//saved_search_hasNewResults
+		'account_summary_hasUpdatedSavedSearches' => [
+			'title' => 'Store if a user has saved searches with updates in account summary',
+			'description' => 'Store if a user has saved searches with updates in account summary',
+			'sql' => [
+				"ALTER TABLE user_account_summary ADD COLUMN hasUpdatedSavedSearches TINYINT DEFAULT 0",
+			]
+		],//account_summary_hasUpdatedSavedSearches
+		'overdrive_enable_allow_large_deletes' => [
+			'title' => 'OverDrive - Enable Allow Large Deletes',
+			'description' => 'Allow the OverDrive process to delete more than 500 records or 5% of the collection',
+			'sql' => [
+				'ALTER TABLE overdrive_settings CHANGE COLUMN allowLargeDeletes allowLargeDeletes TINYINT(1) DEFAULT 1'
+			]
+		],//overdrive_enable_allow_large_deletes
+		'aspen_site_lastOfflineTracking' => [
+			'title' => 'More offline site monitoring data in Greenhouse',
+			'description' => 'Add tracking of why Greenhouse is unable to connect to an Aspen site and when it reconnects',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN lastOfflineNote VARCHAR(255)",
+				"ALTER TABLE aspen_sites ADD COLUMN lastOnlineTime INT",
+			]
+		],//aspen_site_lastOfflineTracking
+		'aspen_site_isOnline' => [
+			'title' => 'Add isOnline to aspen_sites',
+			'description' => 'Add isOnline for if a site is online or not',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN isOnline TINYINT(1) DEFAULT 1",
+			]
+		],//aspen_site_isOnline
+		'alwaysFlagNewTitlesInSearchResults' => [
+			'title' => 'Always Flag New Titles in Search Results',
+			'description' => 'Add an option to Grouped Work Display Settings to always Flag New Titles',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN alwaysFlagNewTitles TINYINT(1) DEFAULT 0",
+			]
+		],//alwaysFlagNewTitlesInSearchResults
 	];
 }

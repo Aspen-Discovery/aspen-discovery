@@ -11,7 +11,7 @@ import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -46,12 +46,12 @@ public class SideLoadingMain {
 	public static void main(String[] args) {
 		String profileToLoad = "";
 		if (args.length == 0) {
-			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			profileToLoad = StringUtils.getInputFromCommandLine("Enter the name or id of the profile to run (empty to run all)");
+			profileToLoad = AspenStringUtils.getInputFromCommandLine("Enter the name or id of the profile to run (empty to run all)");
 		} else {
 			serverName = args[0];
 		}

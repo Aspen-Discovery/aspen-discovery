@@ -105,7 +105,7 @@ class SearchObjectFactory
 	 * @param object $minSO The MinSO object to use as the base.
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function deminify($minSO)
+	static function deminify($minSO, ?SearchEntry $searchEntry = null)
 	{
 		// To avoid excessive constructor calls, we'll keep a static cache of
 		// objects to use for the deminification process:
@@ -146,7 +146,7 @@ class SearchObjectFactory
 		}
 
 		// Populate and return the expanded object:
-		$objectCache[$source]->deminify($minSO);
+		$objectCache[$source]->deminify($minSO, $searchEntry);
 		//MDN 1/5/2015 return a clone of the search object since we may deminify several search objects in a single page load. 
 		return clone $objectCache[$source];
 	}

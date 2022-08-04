@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.events;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
@@ -50,8 +51,8 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
 		for (String curNote : notes) {
 			String cleanedNote = curNote;
-			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
-			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
+			cleanedNote = StringUtils.replace(cleanedNote, "<pre>", "<code>");
+			cleanedNote = StringUtils.replace(cleanedNote,"</pre>", "</code>");
 			//Replace multiple line breaks
 			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
 			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");

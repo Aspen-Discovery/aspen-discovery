@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.config;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
@@ -96,7 +96,7 @@ public class ConfigUtil {
 
     public static char getSubfieldIndicatorFromConfig(Ini configIni, String subfieldName) {
         String subfieldString = configIni.get("Reindex", subfieldName);
-        return StringUtils.convertStringToChar(subfieldString);
+        return AspenStringUtils.convertStringToChar(subfieldString);
     }
 
 

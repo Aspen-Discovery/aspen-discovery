@@ -27,6 +27,10 @@
 			</div>
 			{/if}
 
+			<div class="form-group" id="FloatingSave">
+				<button type="submit" name="submitStay" class="btn btn-primary"><i class="fas fa-save fa-2x"></i></button>
+			</div>
+
 			<div class="form-group">
 				{if $saveButtonText}
 					<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>

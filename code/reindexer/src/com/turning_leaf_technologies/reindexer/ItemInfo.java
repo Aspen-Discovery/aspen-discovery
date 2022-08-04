@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
@@ -176,7 +176,7 @@ public class ItemInfo{
 
 	public void setFormat(String format) {
 		this.format = format;
-		this.trimmedFormat = StringUtils.trimTrailingPunctuation(format);
+		this.trimmedFormat = AspenStringUtils.trimTrailingPunctuation(format);
 		primaryFormat = null;
 	}
 
@@ -282,7 +282,7 @@ public class ItemInfo{
 
 	void setIType(String IType) {
 		this.IType = IType;
-		this.trimmedIType = StringUtils.trimTrailingPunctuation(IType);
+		this.trimmedIType = AspenStringUtils.trimTrailingPunctuation(IType);
 	}
 
 	@SuppressWarnings("SpellCheckingInspection")
@@ -297,7 +297,7 @@ public class ItemInfo{
 	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
-		this.trimmedEContentSource = StringUtils.trimTrailingPunctuation(eContentSource);
+		this.trimmedEContentSource = AspenStringUtils.trimTrailingPunctuation(eContentSource);
 	}
 
 	String getCallNumber() {

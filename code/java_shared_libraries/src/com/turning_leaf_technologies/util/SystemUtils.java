@@ -33,13 +33,13 @@ public class SystemUtils {
 					}
 					memInfoLine = bufferedReader.readLine();
 				}
-				long percentMemoryUsage = (long)Math.ceil(freeMem / totalMem);
-				logger.info("Free memory: " + freeMem + " total memory: " + totalMem + " percent memory usage: " + percentMemoryUsage );
+				float percentMemoryAvialable = (float)freeMem / (float)totalMem;
+				logger.info("Free memory: " + freeMem + " total memory: " + totalMem + " percent memory usage: " + percentMemoryAvialable );
 
-				//These mimic what we alert for in getIndexStatus with an additional bugger to prevent the alert
-				if (freeMem < 1250000000){
+				//These mimic what we alert for in getIndexStatus with an additional buffer to prevent the alert
+				if (freeMem < 1500000000){
 					return true;
-				}else if (percentMemoryUsage > 94 && freeMem < 2750000000L){
+				}else if (percentMemoryAvialable < .075 && freeMem < 3000000000L){
 					return true;
 				}else{
 					return false;

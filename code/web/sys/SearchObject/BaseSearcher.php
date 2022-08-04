@@ -242,6 +242,16 @@ abstract class SearchObject_BaseSearcher
 		}
 	}
 
+	public function removeFilterByPrefix($fieldName)
+	{
+		// Make sure the field exists
+		$scopedName = $this->getScopedFieldName($fieldName);
+		if (isset($this->filterList[$scopedName])) {
+			// If so remove it.
+			unset($this->filterList[$scopedName]);
+		}
+	}
+
 	public function clearHiddenFilters()
 	{
 		$this->hiddenFilters = array();
@@ -594,6 +604,21 @@ abstract class SearchObject_BaseSearcher
 			'index' => $type,
 			'lookfor' => $searchTerm
 		);
+
+		if (isset($_REQUEST['searchId']) && is_numeric($_REQUEST['searchId'])){
+			$searchEntry = new SearchEntry();
+			$searchEntry->id = $_REQUEST['searchId'];
+			if ($searchEntry->find(true)){
+				$activeUserId = UserAccount::getActiveUserId();
+				if ($activeUserId && ($activeUserId == $searchEntry->user_id)){
+					$this->searchId = $searchEntry->id;
+					$this->savedSearch = $searchEntry->saved;
+				}elseif ($searchEntry->session_id == session_id()){
+					$this->searchId = $searchEntry->id;
+					$this->savedSearch = $searchEntry->saved;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -1521,6 +1546,7 @@ abstract class SearchObject_BaseSearcher
 	{
 		$this->searchType = $this->basicSearchType;
 		$this->searchId = null;
+		$this->savedSearch = false;
 		$this->resultsTotal = null;
 		$this->filterList = [];
 		$this->initTime = null;
@@ -1549,7 +1575,7 @@ abstract class SearchObject_BaseSearcher
 	 * @access  public
 	 * @param object $minified A minSO object
 	 */
-	public function deminify($minified)
+	public function deminify($minified, ?SearchEntry $searchEntry = null)
 	{
 		// Clean the object
 		$this->purge();
@@ -1557,6 +1583,9 @@ abstract class SearchObject_BaseSearcher
 		// Most values will transfer without changes
 		if (isset($minified->q)) {
 			$this->query = $minified->q;
+		}
+		if ($searchEntry != null){
+			$this->savedSearch = $searchEntry->saved;
 		}
 		$this->searchId = $minified->id;
 		$this->initTime = $minified->i;
@@ -1704,7 +1733,7 @@ abstract class SearchObject_BaseSearcher
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
 				$minSO = unserialize($search->search_object);
-				return SearchObjectFactory::deminify($minSO);
+				return SearchObjectFactory::deminify($minSO, $search);
 			} else {
 				// Just get out, we don't need to show an error
 				return null;
@@ -1741,7 +1770,7 @@ abstract class SearchObject_BaseSearcher
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())) {
 					// They do, deminify it to a new object.
 					$minSO = unserialize($search->search_object);
-					$savedSearch = SearchObjectFactory::deminify($minSO);
+					$savedSearch = SearchObjectFactory::deminify($minSO, $search);
 
 					// Now redirect to the URL associated with the saved search;
 					// this simplifies problems caused by mixing different classes
@@ -1750,7 +1779,8 @@ abstract class SearchObject_BaseSearcher
 					// the current session.  (We want all searches to be
 					// persistent and able to be bookmarked).
 					if ($redirect) {
-						header('Location: ' . $savedSearch->renderSearchUrl());
+						$newUrl = $savedSearch->renderSearchUrl();
+						header('Location: ' . $newUrl);
 						die();
 					} else {
 						return $savedSearch;

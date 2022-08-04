@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.indexing;
 
-import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 
 import javax.print.DocFlavor;
 import java.util.ArrayList;

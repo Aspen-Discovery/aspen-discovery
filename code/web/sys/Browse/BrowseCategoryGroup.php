@@ -116,20 +116,25 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	public function getBrowseCategoriesForLiDA($max = null, $appUser = null): array
 	{
 		if (!isset($this->_browseCategories) && $this->id) {
-			if($max) {
+			if ($max) {
 				$count = 0;
 				$this->_browseCategories = array();
 				$browseCategory = new BrowseCategoryGroupEntry();
 				$browseCategory->browseCategoryGroupId = $this->id;
 				$browseCategory->orderBy('weight');
 				if($browseCategory->find()) {
-					do {
-							if ($browseCategory->isValidForDisplay($appUser)) {
+					while($browseCategory->fetch()) {
+						if ($count >= $max){
+							break;
+						}
+						if ($browseCategory->isValidForDisplay($appUser)) {
+							$thisCategory = $browseCategory->getBrowseCategory();
+							if($thisCategory->textId != "system_saved_searches" && $thisCategory->textId != "system_user_lists") {
 								$count++;
-								$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
 							}
-
-					} while ($browseCategory->fetch() && $count < $max);
+							$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
+						}
+					}
 				}
 			} else {
 				$this->_browseCategories = array();
