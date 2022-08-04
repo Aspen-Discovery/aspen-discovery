@@ -9290,8 +9290,6 @@ a.browse-thumbnail-sorted.active {
   font-size: medium;
   font-weight: bold;
   border-radius: 0;
-  background-color: #f5bb59;
-  color: white;
   padding: 1px 8px;
 }
 .browse-cover-badge::before {
