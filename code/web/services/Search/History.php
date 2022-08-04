@@ -73,7 +73,7 @@ class History extends Action {
 					// Size is purely for debugging. Not currently displayed in the template.
 					// It's the size of the serialized, minified search in the database.
 					'size'        => round($size/1024, 3)."kb",
-					'hasNewResults' => $search->hasNewResults,
+					'hasNewResults' => $search->hasNewResults == 1,
 
 				);
 
