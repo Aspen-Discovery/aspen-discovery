@@ -9290,6 +9290,8 @@ a.browse-thumbnail-sorted.active {
   font-size: medium;
   font-weight: bold;
   border-radius: 0;
+  background-color: #FFEDD4;
+  color: #883E23;
   padding: 1px 8px;
 }
 .browse-cover-badge::before {
@@ -10224,6 +10226,10 @@ a.browse-thumbnail-sorted.active {
   color: white;
   padding: 1px 8px;
   vertical-align: baseline;
+}
+.badge-updated {
+  background-color: #FFEDD4;
+  color: #883E23;
 }
 .graph-bar {
   background-color: #088ec6;
