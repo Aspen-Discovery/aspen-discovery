@@ -10194,8 +10194,8 @@ a.browse-thumbnail-sorted.active {
   font-size: medium;
   font-weight: bold;
   border-radius: 0;
-  background-color: #f5bb59;
-  color: white;
+  background-color: #FFEDD4;
+  color: #883E23;
   padding: 1px 8px;
 }
 .list-cover-badge::before {
@@ -10222,8 +10222,8 @@ a.browse-thumbnail-sorted.active {
   font-size: 75%;
   font-weight: bold;
   border-radius: 0;
-  background-color: #f5bb59;
-  color: white;
+  background-color: #FFEDD4;
+  color: #883E23;
   padding: 1px 8px;
   vertical-align: baseline;
 }
