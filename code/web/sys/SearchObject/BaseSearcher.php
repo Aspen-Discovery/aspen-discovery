@@ -1076,20 +1076,6 @@ abstract class SearchObject_BaseSearcher
 			$params[] = "searchSource=" . $this->searchSource;
 		}
 
-		if (!empty($this->searchId)){
-			//Make sure the search belongs to the user or is part of the active session
-			$searchEntry = new SearchEntry();
-			$searchEntry->id = $this->searchId;
-			if ($searchEntry->find(true)){
-				$activeUserId = UserAccount::getActiveUserId();
-				if ($activeUserId && ($activeUserId == $searchEntry->user_id)){
-					$params[] = "searchId=" . $this->searchId;
-				}elseif ($searchEntry->session_id == session_id()){
-					$params[] = "searchId=" . $this->searchId;
-				}
-			}
-		}
-
 		// Join all parameters with an escaped ampersand,
 		//   add to the base url and return
 		return $url . join("&", $params);
