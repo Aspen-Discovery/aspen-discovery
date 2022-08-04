@@ -1499,6 +1499,10 @@ class SearchAPI extends Action
 									}
 								}
 							} while ($listEntry->fetch() && $count < 12);
+							$numCategoriesProcessed++;
+							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+								break;
+							}
 						}
 
 					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
@@ -1523,6 +1527,10 @@ class SearchAPI extends Action
 									'title_display' => $suggestion['titleInfo']['title_display'],
 								];
 							}
+						}
+						$numCategoriesProcessed++;
+						if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+							break;
 						}
 					} else {
 						$categoryResponse = array(
@@ -1569,12 +1577,12 @@ class SearchAPI extends Action
 								}
 							}
 						}
+						$numCategoriesProcessed++;
+						if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+							break;
+						}
 					}
 					$formattedCategories[] = $categoryResponse;
-					$numCategoriesProcessed++;
-					if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
-						break;
-					}
 				}
 			}
 		}
