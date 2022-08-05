@@ -1,24 +1,64 @@
 <?php
+require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/sys/Grouping/HideSubjectFacet.php';
+require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
-
-class HideSubjectFacets extends DataObject
+class Admin_HideSubjectFacets extends ObjectEditor
 {
-    public $__table = 'hide_subject_facets';
-    public $id;
-    public $name;
-    public $subjects;
-    public $subjectFilters;
+	function getObjectType() : string{
+		return 'HideSubjectFacet';
+	}
+	function getToolName() : string{
+		return 'HideSubjectFacets';
+	}
+	function getPageTitle() : string{
+		return 'Hide Subject Facets';
+	}
+	function getAllObjects($page, $recordsPerPage) : array{
+		$object = new HideSubjectFacet();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		$objectList = array();
+		while ($object->fetch()){
+			$objectList[$object->id] = clone $object;
+		}
+		return $objectList;
+	}
 
-    static function getObjectStructure(): array
-    {
-        $libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Hide Subject Facets'));
-        $locationList = Location::getLocationList(!UserAccount::userHasPermission('Hide Subject Facets'));
+	function getDefaultSort() : string{
+		return 'subjectTerm asc';
+	}
+	function getObjectStructure() : array {
+		return HideSubjectFacet::getObjectStructure();
+	}
+	function getPrimaryKeyColumn() : string{
+		return 'id';
+	}
+	function getIdKeyColumn() : string{
+		return 'id';
+	}
+	function getInstructions() : string{
+		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
+	}
 
-        return [
-            'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-            'subjects' => array('property' => 'subjects', 'type' => 'textarea', 'label' => 'Available Subjects', 'description' => 'Subjects that exist within the collection', 'readOnly' => true, 'hideInLists' => true),
-            'subjectFilters' => array('property' => 'subjectFilters', 'type' => 'textarea', 'label' => 'Subject Filters (each filter on it\'s own line, regular expressions ok)', 'description' => 'Subjects to filter by', 'hideInLists' => true),
-        ];
-    }
+	function getBreadcrumbs() : array
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/HideSubjectFacets', 'Hide Subject Facets');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection() : string
+	{
+		return 'cataloging';
+	}
+
+	function canView() : bool
+	{
+		return UserAccount::userHasPermission('Hide Subject Facets');
+	}
 }

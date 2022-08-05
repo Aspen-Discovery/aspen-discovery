@@ -11,12 +11,12 @@ function getUpdates22_08_00_HideSubjectFacet() : array
 			]
 		], //sample*/
         'hide_subject_facet_permission' => [
-            'title' => 'Add permission for Administer Subjects to Exclude from Subject Facet',
-            'description' => 'Add permission for Administer Subjects to Exclude from Subject Facet',
+            'title' => 'Add permission for Hide Subject Facets',
+            'description' => 'Add permission for Hide Subject Facets',
             'sql' => [
-                "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Administer Subjects to Exclude from Subject Facet', '', 85, 'Controls if the user can Subjects to Exclude from Subject Facet.')",
-                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Subjects to Exclude from Subject Facet'))",
-                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='cataloging'), (SELECT id from permissions where name='Administer Subjects to Exclude from Subject Facet'))"
+                "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Hide Subject Facets', '', 85, 'Controls if the user can hide subject facets.')",
+                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Hide Subject Facets'))",
+                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='cataloging'), (SELECT id from permissions where name='Hide Subject Facets'))"
             ]
         ], // hide_subject_facets_permission
         'hide_subject_facets' => [
