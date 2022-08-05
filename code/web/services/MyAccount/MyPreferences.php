@@ -132,8 +132,8 @@ class MyAccount_MyPreferences extends MyAccount
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('', 'My Preferences');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Your Preferences');
 		return $breadcrumbs;
 	}
 }

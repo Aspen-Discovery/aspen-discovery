@@ -74,7 +74,7 @@ abstract class MyAccount extends Action
 	 * @param string|null $sidebar Sets the sidebar on the page to be displayed
 	 * @param bool $translateTitle
 	 */
-	function display($mainContentTemplate, $pageTitle='My Account', $sidebar='Search/home-sidebar.tpl', $translateTitle = true) {
+	function display($mainContentTemplate, $pageTitle='Your Account', $sidebar='Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		$interface->setPageTitle($pageTitle);
 		parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);

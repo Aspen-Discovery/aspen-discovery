@@ -2,7 +2,7 @@
 <div id="header-menu" class="dropdown-menu dropdownMenu" aria-labelledby="header-menu-dropdown">
 	{if $showLoginButton}
 		<div id="hamburger-menu-my-account" class="header-menu-option">
-			<a href="/MyAccount/Home"><i class="fas fa-user fa-fw"></i><span>{translate text='My Account' isPublicFacing=true}</span></a>
+			<a href="/MyAccount/Home"><i class="fas fa-user fa-fw"></i><span>{translate text='Your Account' isPublicFacing=true}</span></a>
 		</div>
 	{/if}
 

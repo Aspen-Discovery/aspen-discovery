@@ -1,6 +1,6 @@
 ## OverDrive Options
 
-This page is in the [My Account](/MyAccount) ares.
+This page is in the [Your Account](/MyAccount) ares.
 
 If OverDrive is configured, the patron can access and update their email address for OverDrive notifications.
 

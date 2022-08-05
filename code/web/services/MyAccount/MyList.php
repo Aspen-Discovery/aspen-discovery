@@ -317,7 +317,7 @@ class MyAccount_MyList extends MyAccount {
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		if (UserAccount::isLoggedIn()){
 			$breadcrumbs[] = new Breadcrumb('/MyAccount/Lists', 'Lists');
 		}
