@@ -111,5 +111,12 @@ function getUpdates22_08_00() : array
 				"ALTER TABLE grouped_work_display_settings ADD COLUMN alwaysFlagNewTitles TINYINT(1) DEFAULT 0",
 			]
 		],//alwaysFlagNewTitlesInSearchResults
+		'showRelatedRecordLabels'  => [
+			'title' => 'Show Related Record Labels',
+			'description' => 'Add an for whether or not labels should be shown next to the values when showing information about records within a format',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN showRelatedRecordLabels TINYINT(1) DEFAULT 1",
+			]
+		],//showRelatedRecordLabels
 	];
 }

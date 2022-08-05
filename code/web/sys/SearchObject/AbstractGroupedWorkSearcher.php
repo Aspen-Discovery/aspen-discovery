@@ -312,7 +312,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		global $solrScope;
 
 		$searchEntry = new SearchEntry();
-		$searchEntry = $searchEntry->getSavedSearchByUrl($this->renderSearchUrl(), session_id(), UserAccount::getActiveUserId());
+		$searchEntry = $searchEntry->getSavedSearchByUrl($this->renderSearchUrl(false), session_id(), UserAccount::getActiveUserId());
 		$isSaved = false;
 		if ($searchEntry != null){
 			$isSaved = $searchEntry->saved;
