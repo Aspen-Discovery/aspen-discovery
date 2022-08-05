@@ -1467,6 +1467,7 @@ class SearchAPI extends Action
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
+							'id' => $categoryInformation->id,
 							'source' => $categoryInformation->source,
 							'listId' => $categoryInformation->sourceListId,
 							'isHidden' => false,
