@@ -19,7 +19,7 @@ class MyAccount_Home extends MyAccount{
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Your Account');
 		return $breadcrumbs;
 	}
 }

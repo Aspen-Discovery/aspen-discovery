@@ -1,6 +1,6 @@
 ## My Preferences and Language Settings
 
-This page is part of the [My Account](/MyAccount) area. Settings available on this page depend on configuration in the [Library Systems](/Admin/HelpManual?page=Library-Systems) area.
+This page is part of the [Your Account](/MyAccount) area. Settings available on this page depend on configuration in the [Library Systems](/Admin/HelpManual?page=Library-Systems) area.
 
 The patron can choose which installed language they would prefer for the catalogue. Depending on their language choice, they can also choose whether search results prioritise titles in their chosen language or exclude titles not in their chosen language.
 

@@ -11,7 +11,7 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			<h1>{translate text='My Account' isPublicFacing=true}</h1>
+			<h1>{translate text='Your Account' isPublicFacing=true}</h1>
 			{if $userHasCatalogConnection}
 				<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
 				{if $offline}

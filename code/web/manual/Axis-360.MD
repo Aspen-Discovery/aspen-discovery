@@ -23,6 +23,6 @@ These report are only reporting on successful button clicks in Aspen. It's usefu
 - **Holds Thawed:**	Number of holds removed from a frozen status /thawed in Aspen
 - **Downloads:**	Downloads is the number of times the download button was clicked. So if you have a user that is using Aspen to access the read online version, there would be one click for each time they opened the book OR if a user downloaded a title on one device but then needed it downloaded on another, that would result in 2 downloads for the same title.
 - **Previews:**	Number of previews accessed in Aspen
-- **Options Updates:**	Updating their preferences in Axis360 in Aspen My Account
+- **Options Updates:**	Updating their preferences in Axis360 in Aspen Your Account
 - **API Errors:**	Anytime we get an error back when accessing a record; we go to place a hold a hold or check out and we receive an error; if you're noticing a lot of them, let us know; we're not automatically monitoring these
 - **Connection Failures:** 	Axis360s entire APIs are down; should be zero for everyone

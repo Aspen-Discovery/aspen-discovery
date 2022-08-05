@@ -55,7 +55,7 @@ class Lists extends MyAccount
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Lists');
 		return $breadcrumbs;
 	}

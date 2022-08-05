@@ -36,8 +36,8 @@ class MyAccount_CompriseCompleted extends MyAccount
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Fines', 'My Fines');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Fines', 'Your Fines');
 		$breadcrumbs[] = new Breadcrumb('', 'Payment Completed');
 		return $breadcrumbs;
 	}
