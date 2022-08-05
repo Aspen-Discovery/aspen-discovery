@@ -61,23 +61,23 @@ abstract class Search_AdvancedBase extends Action{
 		// Process the facets, assuming they came back
 		$hasSelectedFacet = false;
 		$facets = array();
-		foreach ($facetList as $facet => $list) {
+		foreach ($facetList as $facetField => $list) {
 			if ($list['label'] instanceof FacetSetting){
 				$facetLabel = $list['label']->displayName;
 			}else{
 				$facetLabel = $list['label'];
 			}
-			$facets[$facetLabel] = $list;
+			$facets[$facetField] = $list;
 			$currentList = array();
 			$valueSelected = false;
 			foreach ($list['list'] as $value) {
 				// Build the filter string for the URL:
-				$fullFilter = $facet.':"'.$value['value'].'"';
+				$fullFilter = $facetField.':"'.$value['value'].'"';
 
 				// If we haven't already found a selected facet and the current
 				// facet has been applied to the search, we should store it as
 				// the selected facet for the current control.
-				if ($searchObject && $searchObject->hasFilter($facet, $value['value'])) {
+				if ($searchObject && $searchObject->hasFilter($facetField, $value['value'])) {
 					$selected = true;
 					// Remove the filter from the search object -- we don't want
 					// it to show up in the "applied filters" sidebar since it
@@ -100,13 +100,13 @@ abstract class Search_AdvancedBase extends Action{
 			$keys = array_keys($currentList);
 
 			//Add a value for not selected which will be the first item
-			if (strpos($facet, 'availability_toggle') === false){
+			if (strpos($facetField, 'availability_toggle') === false){
 				// Perform a natural case sort on the array of facet values:
 				natcasesort($keys);
 				if ($list['label'] instanceof FacetSetting){
-					$facets[$facetLabel]['values']['Any ' . $list['label']->displayName] = array('filter' => '','selected' => !$valueSelected, 'display' => ''/*'Any ' . $list['label']->displayName*/ );
+					$facets[$facetField]['values']['Any ' . $list['label']->displayName] = array('filter' => '','selected' => !$valueSelected, 'display' => ''/*'Any ' . $list['label']->displayName*/ );
 				}else{
-					$facets[$facetLabel]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected, 'display' => ''/*'Any ' . $list['label']*/ );
+					$facets[$facetField]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected, 'display' => ''/*'Any ' . $list['label']*/ );
 				}
 
 			}else{
@@ -155,10 +155,11 @@ abstract class Search_AdvancedBase extends Action{
 				}
 			}
 
-			$facets[$facetLabel]['facetName'] = $facet;
+			$facets[$facetField]['facetName'] = $facetField;
+			$facets[$facetField]['facetLabel'] = $facetLabel;
 			foreach($keys as $key) {
 				if (isset($currentList[$key])) {
-					$facets[$facetLabel]['values'][$key] = $currentList[$key];
+					$facets[$facetField]['values'][$key] = $currentList[$key];
 				}
 			}
 		}
