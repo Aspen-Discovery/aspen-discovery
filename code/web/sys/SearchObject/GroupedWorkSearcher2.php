@@ -742,7 +742,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$list[$field] = array();
 			$list[$field]['field_name'] = $field;
 			// Add the on-screen label
-			$list[$field]['label'] = $filter[$field];
+			if (is_object($filter[$field])){
+				$list[$field]['label'] = $filter[$field]->displayName;
+			}else{
+				$list[$field]['label'] = $filter[$field];
+			}
+
 			// Build our array of values for this field
 			$list[$field]['list'] = array();
 			$list[$field]['hasApplied'] = false;

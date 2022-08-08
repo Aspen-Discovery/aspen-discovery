@@ -49,15 +49,14 @@ class Search_Advanced extends Search_AdvancedBase {
 		$facets = $this->processFacets($facetList, $savedSearch);
 		//check to see if we have a facet for format category since we want to show those
 		//as icons
-		if (array_key_exists('format_category', $facetList)){
-			$label = $facetList['format_category']['label'];
-			foreach ($facets[$label]['values'] as $key => $optionInfo){
-				$optionInfo['imageName'] = str_replace(" ", "", strtolower($key)) . '.png';
-				$facets[$label]['values'][$key] = $optionInfo;
-			}
-			$interface->assign('formatCategoryLimit', $facets[$label]['values']);
-			unset($facets[$label]);
-		}
+//		if (array_key_exists('format_category', $facetList)){
+//			foreach ($facets['format_category']['values'] as $key => $optionInfo){
+//				$optionInfo['imageName'] = str_replace(" ", "", strtolower($key)) . '.png';
+//				$facets['format_category']['values'][$key] = $optionInfo;
+//			}
+//			$interface->assign('formatCategoryLimit', $facets['format_category']['values']);
+//			unset($facets['format_category']);
+//		}
 		$interface->assign('facetList', $facets);
 
 //		// Integer for % width of each column (be careful to avoid divide by zero!)
