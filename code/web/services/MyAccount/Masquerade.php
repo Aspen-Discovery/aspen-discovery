@@ -41,7 +41,7 @@ class MyAccount_Masquerade extends MyAccount
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Masquerade as another user');
 		return $breadcrumbs;
 	}

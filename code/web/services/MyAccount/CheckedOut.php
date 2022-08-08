@@ -26,8 +26,8 @@ class MyAccount_CheckedOut extends MyAccount{
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('', 'My Checked Out Titles');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Your Checked Out Titles');
 		return $breadcrumbs;
 	}
 }

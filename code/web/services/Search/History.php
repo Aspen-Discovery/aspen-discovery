@@ -202,7 +202,7 @@ class History extends Action {
 	{
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn()){
-			$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		}
 		$breadcrumbs[] = new Breadcrumb('', 'Search History');
 		return $breadcrumbs;

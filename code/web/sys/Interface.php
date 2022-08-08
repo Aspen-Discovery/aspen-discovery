@@ -197,7 +197,7 @@ class UInterface extends Smarty
 	}
 
 	/**
-	 *  Set template variables used in the My Account sidebar section dealing with fines.
+	 *  Set template variables used in the Your Account sidebar section dealing with fines.
 	 */
 	function setFinesRelatedTemplateVariables() {
 

@@ -89,6 +89,8 @@
 		</div>
 	{/if}
 
+{/strip}
+
 	{if $collectionSpotlight->style != 'horizontal-carousel'}
 		<script type="text/javascript">
 			{* Load title scrollers *}
@@ -98,7 +100,6 @@
 					var listScroller{$list->name|regex_replace:'/\W/':''|escape:url};
 				{/if}
 			{/foreach}
-
 
 			$(document).ready(function(){ldelim}
 				{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
@@ -191,5 +192,6 @@
 			{rdelim});
 		</script>
 	{/if}
+	{strip}
 </div>
 {/strip}
