@@ -65,7 +65,7 @@ class CloudLibrary_Settings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/integration/econtent';
 	}
 
 	function getBreadcrumbs() : array

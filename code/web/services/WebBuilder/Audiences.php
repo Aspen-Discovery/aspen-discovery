@@ -64,7 +64,7 @@ class WebBuilder_Audiences extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/audiencecat';
 	}
 
 	function getBreadcrumbs() : array

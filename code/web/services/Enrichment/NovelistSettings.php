@@ -66,7 +66,7 @@ class Enrichment_NovelistSettings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/integration/enrichment';
 	}
 
 	function getBreadcrumbs() : array

@@ -66,7 +66,7 @@ class Enrichment_ContentCafeSettings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=Content-Cafe';
+		return 'https://help.aspendiscovery.org/help/integration/enrichment';
 	}
 
 	function getBreadcrumbs() : array
