@@ -352,4 +352,31 @@ public class RecordInfo {
 		isClosedCaptioned = closedCaptioned;
 	}
 
+	public boolean allItemsHaveFormats() {
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.getFormat() == null){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public HashSet<String> getUniqueItemFormats() {
+		HashSet<String> uniqueItemFormats = new HashSet<>();
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.getFormat() != null){
+				uniqueItemFormats.add(curItem.getFormat());
+			}
+		}
+		return uniqueItemFormats;
+	}
+
+	public String getFirstItemFormatCategory(){
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.getFormatCategory() != null){
+				return curItem.getFormatCategory();
+			}
+		}
+		return null;
+	}
 }
