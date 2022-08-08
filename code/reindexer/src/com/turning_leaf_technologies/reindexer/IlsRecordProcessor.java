@@ -166,7 +166,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
