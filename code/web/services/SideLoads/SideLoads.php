@@ -101,7 +101,7 @@ class SideLoads_SideLoads extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=Side-Loaded-eContent';
+		return 'https://help.aspendiscovery.org/help/integration/sideload';
 	}
 
 	function getAdditionalObjectActions($existingObject) : array

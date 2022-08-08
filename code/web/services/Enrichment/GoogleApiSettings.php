@@ -66,7 +66,7 @@ class Enrichment_GoogleApiSettings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/integration/enrichment';
 	}
 
 	function getBreadcrumbs() : array

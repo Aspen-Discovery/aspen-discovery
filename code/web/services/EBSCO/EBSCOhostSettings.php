@@ -66,7 +66,7 @@ class EBSCO_EBSCOhostSettings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/ebsco';
 	}
 
 	function getBreadcrumbs() : array

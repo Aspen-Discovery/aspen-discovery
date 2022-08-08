@@ -83,7 +83,7 @@ class WebBuilder_Images extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/imagespdfs';
 	}
 
 	function getBreadcrumbs() : array
