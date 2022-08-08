@@ -77,7 +77,7 @@ export default class Settings_HomeScreen extends Component {
 	updateToggle = async (item, user, libraryUrl) => {
 		if (item.isHidden === true) {
 			await showBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
-				await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
+				await getPatronBrowseCategories(libraryUrl, user).then(res => {
 					this.setState({
 						patronCategories: res,
 					})
@@ -88,7 +88,7 @@ export default class Settings_HomeScreen extends Component {
 			});
 		} else {
 			await dismissBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
-				await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
+				await getPatronBrowseCategories(libraryUrl, user).then(res => {
 					this.setState({
 						patronCategories: res,
 					})

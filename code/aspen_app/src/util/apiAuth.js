@@ -1,6 +1,7 @@
 import React from "react";
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import base64 from 'react-native-base64';
 import _ from "lodash";
 import {API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5} from '@env';
@@ -34,11 +35,16 @@ export function createAuthTokens() {
  * Create secure data body to send the patron login information to Aspen via POST
  **/
 export async function postData() {
-	const secretKey = await SecureStore.getItemAsync("secretKey");
-	const userKey = await SecureStore.getItemAsync("userKey");
 	const content = new FormData();
-	content.append('username', userKey);
-	content.append('password', secretKey);
+	try {
+		const secretKey = await SecureStore.getItemAsync("secretKey");
+		const userKey = await SecureStore.getItemAsync("userKey");
+		content.append('username', userKey);
+		content.append('password', secretKey);
+	} catch (e) {
+		console.log("Unable to fetch user keys to make POST request.");
+		await AsyncStorage.removeItem('@userToken');
+	}
 
 	return content;
 }
@@ -113,4 +119,11 @@ export function problemCodeMap(code) {
 		default:
 			return null;
 	}
+}
+
+/**
+ * Remove HTML from a string
+ **/
+export function stripHTML(string) {
+	return string.replace( /(<([^>]+)>)/ig, '');
 }

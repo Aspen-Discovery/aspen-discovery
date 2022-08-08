@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import React from 'react';
 import {Platform, View} from 'react-native';
 import {Alert, Button, HStack, Text, Center} from "native-base";
+import {stripHTML} from "../util/apiAuth";
 
 // custom components and helper files
 
@@ -104,6 +105,7 @@ async function registerForPushNotificationsAsync() {
 
 /** status/colorScheme options: success, error, info, warning **/
 export function showILSMessage(type, message) {
+	const formattedMessage = stripHTML(message);
 	return (
 		<Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2}>
 			<HStack
@@ -114,7 +116,7 @@ export function showILSMessage(type, message) {
 			>
 				<HStack flexShrink={1} space={2} alignItems="center">
 					<Alert.Icon/>
-					<Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">{message}</Text>
+					<Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">{formattedMessage}</Text>
 				</HStack>
 			</HStack>
 		</Alert>
