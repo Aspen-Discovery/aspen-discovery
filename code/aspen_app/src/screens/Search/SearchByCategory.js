@@ -42,8 +42,11 @@ export default class SearchByCategory extends Component {
 			refreshing: false,
 			filtering: false,
 			endOfResults: false,
-			dataMessage: null
+			dataMessage: null,
+			listLastUsed: 0,
 		};
+		this.lastListUsed = 0;
+		this.updateLastListUsed = this.updateLastListUsed.bind(this);
 	}
 
 	componentDidMount = async () => {
@@ -54,8 +57,28 @@ export default class SearchByCategory extends Component {
 		const libraryUrl = route.params?.libraryUrl ?? '';
 
 		await getLists(libraryUrl);
+		this._getLastListUsed();
 		await this._fetchResults();
 	};
+
+	_getLastListUsed = () => {
+		if(this.context.user) {
+			const user = this.context.user;
+			this.lastListUsed = user.lastListUsed;
+		}
+	}
+
+	updateLastListUsed = (id) => {
+		this.setState({
+			isLoading: true,
+		})
+
+		this.lastListUsed = id;
+
+		this.setState({
+			isLoading: false,
+		})
+	}
 
 	_fetchResults = async () => {
 		const { page } = this.state;
@@ -68,7 +91,7 @@ export default class SearchByCategory extends Component {
 			if(response.ok) {
 				let records = response.data.result.records;
 
-				console.log(response);
+				//console.log(response);
 				if(records.length > 0) {
 					this.setState((prevState, nextProps) => ({
 						data:
@@ -118,15 +141,15 @@ export default class SearchByCategory extends Component {
 		)
 	};
 
-	renderItem = (item, library, user) => {
+	renderItem = (item, library, user, lastListUsed) => {
 		const imageUrl = library.baseUrl + "/bookcover.php?id=" + item.id + "&size=medium&type=grouped_work";
 		return (
 			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library)}>
 				<HStack space={3}>
 					<VStack>
 						<Image source={{ uri: imageUrl }} alt={item.title_display} borderRadius="md" size={{base: "90px", lg: "120px"}} />
-						<Badge mt={1} _text={{fontSize: 10}}>{item.language}</Badge>
-						<AddToList item={item.id} libraryUrl={library.baseUrl} lastListUsed={user.lastListUsed}/>
+						<Badge mt={1} _text={{fontSize: 10, color: "coolGray.600"}} bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900", _text: {color: "warmGray.400"}}}>{item.language}</Badge>
+						<AddToList item={item.id} libraryUrl={library.baseUrl} lastListUsed={lastListUsed} updateLastListUsed={this.updateLastListUsed} />
 					</VStack>
 
 					<VStack w="65%">
@@ -206,7 +229,7 @@ export default class SearchByCategory extends Component {
 				<FlatList
 					data={this.state.data}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({ item }) => this.renderItem(item, library, user)}
+					renderItem={({ item }) => this.renderItem(item, library, user, this.lastListUsed)}
 					keyExtractor={(item) => item.key}
 					ListFooterComponent={this._renderFooter}
 					onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set

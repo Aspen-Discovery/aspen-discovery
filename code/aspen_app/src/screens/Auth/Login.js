@@ -15,7 +15,6 @@ import {
 	KeyboardAvoidingView,
 	Modal,
 	Text,
-	Toast,
 	Pressable,
 	VStack,
 	HStack
@@ -50,7 +49,8 @@ export default class Login extends Component {
 			error: false,
 			isBeta: false,
 			fullData: [],
-			locationNum: -1
+			locationNum: 0,
+			showModal: false
 		};
 
 		// create arrays to store Greenhouse data from
@@ -59,24 +59,38 @@ export default class Login extends Component {
 		this.libraryData = [];
 		this.locationNum = -1;
 		this.fullData = [];
+		this.uniqueLibraries = [];
+		this.showSelectLibrary = true;
+		//this.showModal = false;
 	}
 
 	// handles the mount information, setting session variables, etc
 	componentDidMount = async () => {
 
-		await setGlobalVariables();
+		//await setGlobalVariables();
 
-		const data = await getGreenhouseData();
-		if(data) {
-			//console.log(data);
+		await getGreenhouseData(this.libraryData).then(async data => {
+			console.log("Data OK");
 			this.libraryData = data.libraryData;
-
-			if(data.locationNum) {
+			if (data.locationNum) {
 				this.locationNum = data.locationNum;
 			}
-
 			this.filteredLibraries = data.filteredLibraries;
-		}
+
+			if (Constants.manifest.slug === "aspen-lida") {
+				this.uniqueLibraries = _.uniqBy(this.libraryData, v => [v.librarySystem, v.name].join());
+			} else {
+				//console.log(this.libraryData);
+				this.uniqueLibraries = _.values(this.libraryData);
+				this.uniqueLibraries = _.uniqBy(this.uniqueLibraries, v => [v.libraryId, v.name].join());
+				if (this.locationNum <= 1) {
+					this.showSelectLibrary = false;
+					//console.log("showLibraries:");
+					//console.log(uniqueLibraries[0]);
+					await this.setLibraryBranch(this.uniqueLibraries[0]);
+				}
+			}
+		});
 
 		this.setState({
 			isLoading: false,
@@ -91,10 +105,11 @@ export default class Login extends Component {
 	};
 
 	// handles the opening or closing of the showLibraries() modal
-	handleModal = () => {
+	handleModal = (newState) => {
+		console.log("updating modal state...")
 		this.setState({
-			modalOpened: !this.state.modalOpened,
-		});
+			showModal: newState
+		})
 	};
 
 	// fetch the list of libraries based on distance and initial population of showLibraries modal
@@ -202,60 +217,36 @@ export default class Login extends Component {
     // Renders the list of libraries in a modal
     // When a library is picked it stores information from the Greenhouse API response used to validate login
 	 **/
-	showLibraries = () => {
-		let uniqueLibraries = [];
-		let showSelectLibrary = true;
-		if(Constants.manifest.slug === "aspen-lida") {
-			uniqueLibraries = _.uniqBy(this.libraryData, v => [v.librarySystem, v.name].join());
-		} else {
-			//console.log(this.libraryData);
-			uniqueLibraries = _.values(this.libraryData);
-			uniqueLibraries = _.uniqBy(uniqueLibraries, v => [v.libraryId, v.name].join());
-			if(this.locationNum <= 1) {
-				showSelectLibrary = false;
-				//console.log("showLibraries:");
-				//console.log(uniqueLibraries[0]);
-				this.setLibraryBranch(uniqueLibraries[0]);
-			}
-		}
-		if (uniqueLibraries) {
-			return (
-				<>
-					<Modal isOpen={this.state.modalOpened} onClose={this.handleModal} size="xl">
-						<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }}>
-							<Modal.CloseButton/>
-							<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
-							<Modal.Body>
-								<FlatList
-									data={uniqueLibraries}
-									refreshing={this.state.isFetching}
-									renderItem={({item}) => this.renderListItem(item)}
-									keyExtractor={(item) => item.siteId}
-									ListHeaderComponent={this.renderListHeader}
-									extraData={this.state}
-								/>
-							</Modal.Body>
-						</Modal.Content>
-					</Modal>
+/*	showLibraries = () => {
+		console.log("Opening modal...")
+		return (
+			<>
+				<Modal isOpen={this.state.modalOpened} onClose={this.handleModal} size="xl" avoidKeyboard>
+					<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }}>
+						<Modal.CloseButton/>
+						<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
+						<Modal.Body>
+							<FlatList
+								data={this.uniqueLibraries}
+								refreshing={this.state.isFetching}
+								renderItem={({item}) => this.renderListItem(item)}
+								keyExtractor={(item) => item.siteId}
+								ListHeaderComponent={this.renderListHeader}
+								extraData={this.state}
+							/>
+						</Modal.Body>
+					</Modal.Content>
+				</Modal>
+			</>
+		);
+	};*/
 
-					{showSelectLibrary ?
-						<Button colorScheme="primary" m={5} onPress={this.handleModal} size="md"
-						        startIcon={<Icon as={MaterialIcons} name="place" size={5}/>}>
-							{this.state.libraryName ? this.state.libraryName : translate('login.select_your_library')}
-						</Button>
-						: null}
-				</>
-			);
-		} else {
-			return null;
-		}
-	};
-
-	renderListItem = (item) => {
+	renderListItem = (item, setShowModal, showModal) => {
 		let isCommunity = true;
+
 		if(Constants.manifest.slug !== "aspen-lida") { isCommunity = false; }
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" onPress={() => this.setNewLibraryBranch(item)} pl="4" pr="5" py="2">
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" onPress={() => this.setNewLibraryBranch(item, showModal)} pl="4" pr="5" py="2">
 				<HStack space={3} alignItems="center">
 					<Avatar source={{ uri: item.favicon }} borderRadius={3} size="xs" alt={item.name} bg="white"  _dark={{ bg: "coolGray.800" }} />
 					<VStack>
@@ -315,6 +306,8 @@ export default class Login extends Component {
 		});
 		this.libraryData = updatedData;
 		this.setState({query: text, isFetching: false});
+		this.uniqueLibraries = updatedData;
+		console.log(updatedData);
 	};
 
 	// showLibraries: handles storing the states based on selected library to use later on in validation
@@ -327,7 +320,6 @@ export default class Login extends Component {
 				solrScope: item.solrScope,
 				libraryId: item.libraryId,
 				locationId: item.locationId,
-				modalOpened: false,
 				favicon: item.favicon,
 				logo: item.logo,
 				patronsLibrary: item,
@@ -336,7 +328,7 @@ export default class Login extends Component {
 	};
 
 	setNewLibraryBranch = async (item) => {
-		console.log(item);
+		//console.log(item);
 		if(_.isObject(item)) {
 			this.setState({
 				libraryName: item.name,
@@ -344,12 +336,13 @@ export default class Login extends Component {
 				solrScope: item.solrScope,
 				libraryId: item.libraryId,
 				locationId: item.locationId,
-				modalOpened: false,
 				favicon: item.favicon,
 				logo: item.logo,
 				patronsLibrary: item,
 			});
 		}
+
+		this.handleModal(false)
 	};
 
 	/**
@@ -365,16 +358,26 @@ export default class Login extends Component {
 		if(Constants.manifest.slug !== "aspen-lida") { isCommunity = false; }
 
 		//console.log(this.state);
+		console.log(this.locationNum);
 
 		// TODO: Get library logo, fallback on LiDA
 		return (
 			<Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
 				<Image source={{ uri: logo }} rounded={25} size="xl"
 				       alt={translate('app.name')} />
-
-				{this.showLibraries()}
-
-				<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "padding"} style={{width: "100%"}}>
+				{this.locationNum > 1 || isCommunity ? (
+					<SelectYourLibrary
+						libraryName={this.state.libraryName}
+						uniqueLibraries={this.uniqueLibraries}
+						renderListItem={this.renderListItem}
+						renderListHeader={this.renderListHeader}
+						extraData={this.state.query}
+						isRefreshing={this.state.isFetching}
+						showModal={this.state.showModal}
+						handleModal={this.handleModal}
+					/>
+				) : null }
+				<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "padding"} width="100%">
 					{this.state.libraryName ?
 						<GetLoginForm
 							libraryName={this.state.libraryName}
@@ -409,6 +412,36 @@ export default class Login extends Component {
 			</Box>
 		);
 	}
+}
+
+const SelectYourLibrary = (props) => {
+	const libraryName = props.libraryName;
+	//const uniqueLibraries = props.uniqueLibraries;
+	const renderListItem = props.renderListItem;
+	//const renderListHeader = props.renderListHeader;
+	const [showModal, setShowModal] = React.useState(false);
+	return <Center>
+		<Button colorScheme="primary" m={5} onPress={() => props.handleModal(true)} size="md"
+		        startIcon={<Icon as={MaterialIcons} name="place" size={5}/>}>
+			{libraryName ? libraryName : translate('login.select_your_library')}
+		</Button>
+		<Modal isOpen={props.showModal} onClose={() => props.handleModal(false)} size="lg" >
+			<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }}>
+				<Modal.CloseButton />
+				<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
+
+				<FlatList
+					data={props.uniqueLibraries}
+					renderItem={({item}) => renderListItem(item)}
+					keyExtractor={(item) => item.siteId}
+					ListHeaderComponent={props.renderListHeader}
+					refreshing={props.isRefreshing}
+					extraData={props.extraData}
+				/>
+
+			</Modal.Content>
+		</Modal>
+	</Center>
 }
 
 /**
@@ -530,61 +563,66 @@ async function setGlobalVariables() {
 	}
 }
 
-async function getGreenhouseData() {
-	let method;
-	let baseApiUrl;
-	if (Constants.manifest.slug === "aspen-lida") {
-		method = "getLibraries";
-	} else {
-		method = "getLibrary";
-	}
-	if (Constants.manifest.slug === "aspen-lida") {
-		baseApiUrl = Constants.manifest.extra.greenhouse;
-	} else {
-		baseApiUrl = Constants.manifest.extra.apiUrl;
-	}
-
-	let latitude = 0;
-	let longitude = 0;
-	try {
-		latitude = await SecureStore.getItemAsync("latitude");
-		longitude = await SecureStore.getItemAsync("longitude");
-	} catch (e) {
-		console.log(e);
-	}
-	const api = create({
-		baseURL: baseApiUrl + '/API',
-		timeout: 100000,
-		headers: getHeaders(),
-	});
-	const response = await api.get('/GreenhouseAPI?method=' + method, {
-		latitude: latitude,
-		longitude: longitude,
-		release_channel: Updates.releaseChannel
-	});
-	if (response.ok) {
-		let res = response.data;
+async function getGreenhouseData(data) {
+	if(_.isEmpty(data)) {
+		let method;
+		let baseApiUrl;
 		if (Constants.manifest.slug === "aspen-lida") {
-			let filteredLibraries = [];
-			filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.libraryId].join());
-			return {
-				"libraryData": res.libraries,
-				"filteredLibraries": filteredLibraries,
+			method = "getLibraries";
+		} else {
+			method = "getLibrary";
+		}
+		if (Constants.manifest.slug === "aspen-lida") {
+			baseApiUrl = Constants.manifest.extra.greenhouse;
+		} else {
+			baseApiUrl = Constants.manifest.extra.apiUrl;
+		}
+
+		let latitude = 0;
+		let longitude = 0;
+		try {
+			latitude = await SecureStore.getItemAsync("latitude");
+			longitude = await SecureStore.getItemAsync("longitude");
+		} catch (e) {
+			console.log(e);
+		}
+		const api = create({
+			baseURL: baseApiUrl + '/API',
+			timeout: 100000,
+			headers: getHeaders(),
+		});
+		const response = await api.get('/GreenhouseAPI?method=' + method, {
+			latitude: latitude,
+			longitude: longitude,
+			release_channel: Updates.releaseChannel
+		});
+		if (response.ok) {
+			let res = response.data;
+			if (Constants.manifest.slug === "aspen-lida") {
+				let filteredLibraries = [];
+				filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.libraryId].join());
+				return {
+					"libraryData": res.libraries,
+					"filteredLibraries": filteredLibraries,
+				}
+			} else {
+				let filteredLibraries = [];
+				filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.name].join());
+				return {
+					"locationNum": res.count,
+					"libraryData": res.library,
+					"filteredLibraries": filteredLibraries,
+				}
 			}
 		} else {
-			let filteredLibraries = [];
-			filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.name].join());
-			return {
-				"locationNum": res.count,
-				"libraryData": res.library,
-				"filteredLibraries": filteredLibraries,
-			}
+			this.setState({error: true});
+			console.log(response);
+			const problem = problemCodeMap(response.problem);
+			popToast(problem.title, problem.message, "warning");
 		}
+		console.log("Greenhouse request completed.");
 	} else {
-		this.setState({error: true});
-		console.log(response);
-		const problem = problemCodeMap(response.problem);
-		popToast(problem.title, problem.message, "warning");
+		console.log("data already saved");
 	}
-	console.log("Greenhouse request completed.");
+
 }

@@ -1,8 +1,8 @@
 import React, {Component, PureComponent} from "react";
-import {Box, Button, Icon, Pressable, ScrollView, Image, HStack, Text, FlatList, Center} from "native-base";
+import {Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center} from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import CachedImage from 'expo-cached-image'
-import _ from "lodash";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // custom components and helper files
 import BrowseCategory from './BrowseCategory';
@@ -19,9 +19,6 @@ import {
 	getPatronBrowseCategories,
 	getProfile
 } from "../../util/loadPatron";
-import {AuthContext} from "../../components/navigation";
-import {isNull} from "lodash";
-import {removeData} from "../../util/logout";
 import DisplayBrowseCategory from "./Category";
 
 export default class BrowseCategoryHome extends PureComponent {
@@ -122,6 +119,13 @@ export default class BrowseCategoryHome extends PureComponent {
 
 
 		//sleep(5000);
+
+		let libraryUrl = "";
+		try {
+			libraryUrl = await AsyncStorage.getItem('@pathUrl');
+		} catch (e) {
+			console.log(e);
+		}
 
 		if (libraryUrl) {
 			await getCheckedOutItems(libraryUrl);
@@ -256,23 +260,25 @@ export default class BrowseCategoryHome extends PureComponent {
 		if(data.source) {
 			type = data.source;
 		}
-		const imageUrl = libraryUrl + "/bookcover.php?id=" + data.id + "&size=small&type=" + type.toLowerCase();
+		const imageUrl = libraryUrl + "/bookcover.php?id=" + data.id + "&size=medium&type=" + type.toLowerCase();
 
-		let reloadCache = "259_200";
-		if(__DEV__){
-			reloadCache = "1";
+		let isNew = false;
+		if(typeof data.isNew !== "undefined") {
+			isNew = data.isNew;
 		}
+
 		return (
-			<Pressable mr={1.5} onPress={() => this.onPressItem(data.id, libraryUrl, type, title, discoveryVersion)}
+			<Pressable ml={1} mr={3} onPress={() => this.onPressItem(data.id, libraryUrl, type, title, discoveryVersion)}
 			           width={{base: 100, lg: 200}}
-			           height={{base: 150, lg: 250}}>
+			           height={{base: 125, lg: 250}}>
+				{discoveryVersion >= "22.08.00" && isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{fontSize: 9}}>New!</Badge></Container>) : null}
 				<CachedImage
 					cacheKey={data.id}
 					alt={title}
 					source={{
 						uri:  `${imageUrl}`,
-						expiresIn: `${reloadCache}`
-				}}
+						expiresIn: 86400,
+					}}
 					style={{width: '100%', height: '100%'}}
 				/>
 			</Pressable>
@@ -331,11 +337,6 @@ export default class BrowseCategoryHome extends PureComponent {
 			discoveryVersion = "22.06.00";
 		}
 
-/*
-		if(_.isEmpty(this.state.browseCategories) && !_.isEmpty(this.context.library)) {
-			this.loadBrowseCategories(library.baseUrl, user.id);
-		}
-*/
 
 		if (this.state.isLoading === true) {
 			return (loadingSpinner());
@@ -361,6 +362,7 @@ export default class BrowseCategoryHome extends PureComponent {
 								<DisplayBrowseCategory
 									categoryLabel={category.title}
 									categoryKey={category.key}
+									id={category.id}
 									records={category.records}
 									isHidden={category.isHidden}
 									categorySource={category.source}

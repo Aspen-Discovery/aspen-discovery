@@ -1020,6 +1020,10 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showSaveSearchForm(searchId);
+				}, false);
 			}
 			return false;
 		},
@@ -1040,7 +1044,7 @@ AspenDiscovery.Account = (function(){
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin($trigger, function(){
-					return AspenDiscovery.GroupedWork.showEmailForm(trigger, id);
+					return AspenDiscovery.Account.showCreateListForm(source, sourceId);
 				}, false);
 			}
 			return false;
