@@ -1,9 +1,20 @@
 {strip}
-	<h1>{translate text="My Lists" isPublicFacing=true}</h1>
+	<h1>{translate text="Your Lists" isPublicFacing=true}</h1>
 	{if empty($lists)}
 		<div class="alert alert-info">
 			{translate text="You have not created any lists yet." isPublicFacing=true}
 		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="btn-toolbar">
+					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
+					{if $showConvertListsFromClassic}
+						<a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
+					{/if}
+				</div>
+			</div>
+		</div>
+
 	{else}
 		<div class="row">
 				<select id="results-sort" name="sort" aria-label="{translate text='Sort' isPublicFacing=true}" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
