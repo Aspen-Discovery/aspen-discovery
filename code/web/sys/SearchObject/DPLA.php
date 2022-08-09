@@ -26,25 +26,51 @@ class DPLA {
 
 				$curResult['id'] = @$this->getDataForNode($curDoc->id);
 				$curResult['link'] = @$this->getDataForNode($curDoc->isShownAt);
-				$curResult['object'] = @$this->getDataForNode($curDoc->object);
-				$curResult['image'] = @$this->getDataForNode($curDoc->object);
+				if (isset($curDoc->object)) {
+					$curResult['object'] = @$this->getDataForNode($curDoc->object);
+					$curResult['image'] = @$this->getDataForNode($curDoc->object);
+				}else{
+					$curResult['object'] = '';
+					$curResult['image'] = '';
+					continue;
+				}
+
 				$curResult['title'] = @$this->getDataForNode($curDoc->sourceResource->title);
 				$curResult['label'] = @$this->getDataForNode($curDoc->sourceResource->title);
-				$curResult['format'] = @$this->getDataForNode($curDoc->sourceResource->type);
+				if (isset($curDoc->sourceResource->type)) {
+					$curResult['format'] = @$this->getDataForNode($curDoc->sourceResource->type);
+				}elseif (isset($curDoc->sourceResource->format)) {
+					$curResult['format'] = @$this->getDataForNode($curDoc->sourceResource->format);
+				}else{
+					$curResult['format'] = 'Unknown';
+				}
 				if (is_array($curResult['format'])){
 					$curResult['format'] = reset($curResult['format']);
 				}
-				$curResult['date'] = @$this->getDataForNode($curDoc->sourceResource->date->displayDate);
+				if (isset($curDoc->sourceResource->date->displayDate)){
+					$curResult['date'] = @$this->getDataForNode($curDoc->sourceResource->date->displayDate);
+				}else{
+					$curResult['date'] = 'Unknown';
+				}
 				$curResult['publisher'] = @$this->getDataForNode($curDoc->provider->name);
 				if ($curResult['publisher'] == "" ){
 					$curResult['publisher'] = @$this->getDataForNode($curDoc->originalRecord->publisher);
 				}
-				if (is_array(@$curDoc->sourceResource->description)){
-					$curResult['description'] = implode("<br>", $curDoc->sourceResource->description);
+				if (isset($curDoc->sourceResource->description)) {
+					if (is_array(@$curDoc->sourceResource->description)) {
+						$curResult['description'] = implode("<br>", $curDoc->sourceResource->description);
+					} else {
+						$curResult['description'] = @$this->getDataForNode($curDoc->sourceResource->description);
+					}
 				}else{
-					$curResult['description'] = @$this->getDataForNode($curDoc->sourceResource->description);
+					$curResult['description'] = "";
 				}
-				$curResult['dataProvider'] = @$this->getDataForNode($curDoc->dataProvider);
+				if (is_object($curDoc->dataProvider)){
+					$curResult['dataProvider'] = @$this->getDataForNode($curDoc->dataProvider->name);
+				}else{
+					$curResult['dataProvider'] = @$this->getDataForNode($curDoc->dataProvider);
+				}
+
 				$results[] = $curResult;
 			}
 		}
