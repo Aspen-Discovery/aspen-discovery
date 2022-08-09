@@ -120,33 +120,11 @@
 											{translate text="The filters below are optional. Only set the filters needed to narrow your search." isPublicFacing=true}
 										</div>
 
-										{*//TODO Is this in use?? *}
-										{if $formatCategoryLimit}
-											<div class="advancedSearchFacetDetails">
-												<div class="advancedSearchFacetHeader">{translate text=$formatCategoryLimit.label isPublicFacing=true}</div>
-												<div class="advancedSearchFacetList">
-													{foreach from=$formatCategoryLimit item="value" key="display"}
-														{if $value.filter != ""}
-															<div class="advancedSearchFacetFormatCategory">
-																<div><input id="categoryValue_{$display|lower|replace:' ':''}" type="radio"
-																            name="filter[]"
-																            value="{$value.filter|escape}"{if $value.selected} checked="checked"{/if}>
-																	<label for="categoryValue_{$display|lower|replace:' ':''}">
-																		<span class="categoryValue categoryValue_{$display|lower|replace:' ':''}">{translate text=$display isPublicFacing=true}</span>
-																	</label>
-																</div>
-															</div>
-														{/if}
-													{/foreach}
-												</div>
-											</div>
-										{/if}
-
 										{if $facetList}
-											{foreach from=$facetList item="facetInfo" key="label"}
+											{foreach from=$facetList item="facetInfo"}
 												<div class="row form-group">
 													<div class="col-sm-3">
-														<strong>{translate text=$label isPublicFacing=true}</strong>
+														<strong>{translate text=$facetInfo.facetLabel isPublicFacing=true}</strong>
 													</div>
 													<div class="col-sm-9">
 														{if $facetInfo.facetName == "publishDate" || $facetInfo.facetName == "publishDateSort"}
@@ -203,7 +181,7 @@
 																</div>
 															</div>
                                                         {else}
-															<select name="filter[]" class="form-control" aria-label="{translate text=$label inAttribute=true isPublicFacing=true}">
+															<select name="filter[]" class="form-control" aria-label="{translate text=$facetInfo.facetLabel inAttribute=true isPublicFacing=true}">
 																{foreach from=$facetInfo.values item="value" key="display"}
 																	{if strlen($display) > 0}
 																		<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$value.display|escape|truncate:80}</option>
