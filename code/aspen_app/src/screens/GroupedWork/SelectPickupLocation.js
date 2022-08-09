@@ -43,8 +43,8 @@ const SelectPickupLocation = (props) => {
 									mb={3}
 									onValueChange={itemValue => setVolume(itemValue)}
 								>
-									{volumes.map((item, index) => {
-										return <Select.Item label={item.displayLabel} value={item.volumeId}/>;
+									{volumes.map((volume, index) => {
+										return <Select.Item label={volume.displayLabel} value={volume.volumeId}/>;
 									})}
 								</Select>
 							</FormControl>
@@ -66,8 +66,8 @@ const SelectPickupLocation = (props) => {
 									onValueChange={itemValue => setActiveAccount(itemValue)}
 								>
 									<Select.Item label={user.displayName} value={patron}/>
-									{availableAccounts.map((item, index) => {
-										return <Select.Item label={item.displayName} value={item.id}/>;
+									{availableAccounts.map((account, index) => {
+										return <Select.Item label={account.displayName} value={account.id}/>;
 									})}
 								</Select>
 							</FormControl>
@@ -87,8 +87,8 @@ const SelectPickupLocation = (props) => {
 								mb={2}
 								onValueChange={itemValue => setLocation(itemValue)}
 							>
-								{locations.map((item, index) => {
-									return <Select.Item label={item.name} value={item.code}/>;
+								{locations.map((location, index) => {
+									return <Select.Item label={location.name} value={location.code}/>;
 								})}
 							</Select>
 						</FormControl>

@@ -2,7 +2,7 @@ import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import {DrawerContentScrollView} from "@react-navigation/drawer";
-import {Badge, Box, Button, Container, Divider, HStack, Icon, Image, Menu, Pressable, Text, VStack} from 'native-base';
+import {Badge, Box, Button, Container, Divider, HStack, Icon, Image, Menu, Pressable, Text, VStack, CircleIcon} from 'native-base';
 import {MaterialIcons} from "@expo/vector-icons";
 import {translate} from "../../translations/translations";
 import {UseColorMode} from "../../themes/theme";
@@ -33,7 +33,7 @@ export class DrawerContent extends Component {
 			langB: [],
 			asyncLoaded: false,
 		};
-			setGlobalVariables();
+			//setGlobalVariables();
 	}
 
 	loadILSMessages = async () => {
@@ -147,13 +147,17 @@ export class DrawerContent extends Component {
 	}
 
 	displayILSMessages = (messages) => {
-		return (
-			messages.map((item) => {
-				if(item.message) {
-					return showILSMessage(item.messageStyle, item.message);
-				}
-			})
-		)
+		if (_.isArray(messages) === true) {
+			return (
+				messages.map((item) => {
+					if(item.message) {
+						return showILSMessage(item.messageStyle, item.message);
+					}
+				})
+			)
+		} else {
+			return null;
+		}
 	}
 
 	handleRefreshProfile = async (libraryUrl) => {
@@ -179,17 +183,36 @@ export class DrawerContent extends Component {
 			this.bootstrapAsync(library.baseUrl);
 		}
 
-		let icon;
-		if(library.logoApp) {
-			icon = library.logoApp;
+		let discoveryVersion;
+		if(typeof library !== "undefined") {
+			if(library.discoveryVersion) {
+				let version = library.discoveryVersion;
+				version = version.split(" ");
+				discoveryVersion = version[0];
+			} else {
+				discoveryVersion = "22.06.00";
+			}
 		} else {
-			icon = library.favicon;
+			discoveryVersion = "22.06.00";
+		}
+
+		let icon;
+		if(typeof library !== "undefined") {
+			if(library.logoApp) {
+				icon = library.logoApp;
+			} else {
+				icon = library.favicon;
+			}
 		}
 
 		let numOverdue;
-		if(typeof user.numOverdue !== "undefined") {
-			if(user.numOverdue !== null) {
-				numOverdue = user.numOverdue;
+		if(typeof user !== "undefined") {
+			if(typeof user.numOverdue !== "undefined") {
+				if(user.numOverdue !== null) {
+					numOverdue = user.numOverdue;
+				} else {
+					numOverdue = 0;
+				}
 			} else {
 				numOverdue = 0;
 			}
@@ -198,9 +221,13 @@ export class DrawerContent extends Component {
 		}
 
 		let numCheckedOut;
-		if(typeof user.numCheckedOut !== "undefined") {
-			if(user.numCheckedOut !== null) {
-				numCheckedOut = user.numCheckedOut;
+		if(typeof user !== "undefined") {
+			if(typeof user.numCheckedOut !== "undefined") {
+				if(user.numCheckedOut !== null) {
+					numCheckedOut = user.numCheckedOut;
+				} else {
+					numCheckedOut = 0;
+				}
 			} else {
 				numCheckedOut = 0;
 			}
@@ -209,9 +236,13 @@ export class DrawerContent extends Component {
 		}
 
 		let numHolds;
-		if(typeof user.numHolds !== "undefined") {
-			if(user.numHolds !== null) {
-				numHolds = user.numHolds;
+		if(typeof user !== "undefined") {
+			if(typeof user.numHolds !== "undefined") {
+				if(user.numHolds !== null) {
+					numHolds = user.numHolds;
+				} else {
+					numHolds = 0;
+				}
 			} else {
 				numHolds = 0;
 			}
@@ -220,15 +251,66 @@ export class DrawerContent extends Component {
 		}
 
 		let numHoldsAvailable;
-		if(typeof user.numHoldsAvailable !== "undefined") {
-			if(user.numHoldsAvailable !== null) {
-				numHoldsAvailable = user.numHoldsAvailable;
+		if(typeof user !== "undefined") {
+			if(typeof user.numHoldsAvailable !== "undefined") {
+				if(user.numHoldsAvailable !== null) {
+					numHoldsAvailable = user.numHoldsAvailable;
+				} else {
+					numHoldsAvailable = 0;
+				}
 			} else {
 				numHoldsAvailable = 0;
 			}
 		} else {
 			numHoldsAvailable = 0;
 		}
+
+		let numLists;
+		if(typeof user !== "undefined") {
+			if(typeof user.numLists !== "undefined") {
+				if(user.numLists !== null) {
+					numLists = user.numLists;
+				} else {
+					numLists = 0;
+				}
+			} else {
+				numLists = 0;
+			}
+		} else {
+			numLists = 0;
+		}
+
+		let numSavedSearches;
+		if(typeof user !== "undefined") {
+			if(typeof user.numSavedSearches !== "undefined") {
+				if(user.numSavedSearches !== null) {
+					numSavedSearches = user.numSavedSearches;
+				} else {
+					numSavedSearches = 0;
+				}
+			} else {
+				numSavedSearches = 0;
+			}
+		} else {
+			numSavedSearches = 0;
+		}
+
+		let numSavedSearchesNew;
+		if(typeof user !== "undefined") {
+			if(typeof user.numSavedSearchesNew !== "undefined") {
+				if(user.numSavedSearchesNew !== null) {
+					numSavedSearchesNew = user.numSavedSearchesNew;
+				} else {
+					numSavedSearchesNew = 0;
+				}
+			} else {
+				numSavedSearchesNew = 0;
+			}
+		} else {
+			numSavedSearchesNew = 0;
+		}
+
+		//console.log(library);
 
 		return (
 			<DrawerContentScrollView>
@@ -298,16 +380,50 @@ export class DrawerContent extends Component {
 								) : null}
 							</Pressable>
 
-							<Pressable px="2" py="3" rounded="md" onPress={() => {
-								this.handleNavigation('AccountScreenTab', 'Lists', library.baseUrl)
-							}}>
-								<HStack space="1" alignItems="center">
-									<Icon as={MaterialIcons} name="chevron-right" size="7"/>
-									<VStack w="100%">
-										<Text fontWeight="500">{translate('user_profile.my_lists')}</Text>
-									</VStack>
-								</HStack>
-							</Pressable>
+							{discoveryVersion >= "22.08.00" ? (
+								<Pressable px="2" py="3" rounded="md" onPress={() => {
+									this.handleNavigation('AccountScreenTab', 'Lists', library.baseUrl)
+								}}>
+									<HStack space="1" alignItems="center">
+										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
+										<VStack w="100%">
+											<Text fontWeight="500">{translate('user_profile.my_lists')} {user ? (
+												<Text bold>({numLists})</Text>) : null}</Text>
+										</VStack>
+									</HStack>
+								</Pressable>
+							) : (
+								<Pressable px="2" py="3" rounded="md" onPress={() => {
+									this.handleNavigation('AccountScreenTab', 'Lists', library.baseUrl)
+								}}>
+									<HStack space="1" alignItems="center">
+										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
+										<VStack w="100%">
+											<Text fontWeight="500">{translate('user_profile.my_lists')}</Text>
+										</VStack>
+									</HStack>
+								</Pressable>
+							) }
+
+							{discoveryVersion >= "22.08.00" ? (
+								<Pressable px="2" py="3" rounded="md" onPress={() => {
+									this.handleNavigation('AccountScreenTab', 'SavedSearches', library.baseUrl)
+								}}>
+									<HStack space="1" alignItems="center">
+										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
+										<VStack w="100%">
+											<Text fontWeight="500">{translate('user_profile.saved_searches')} {user ? (
+												<Text bold>({numSavedSearches})</Text>) : null}</Text>
+										</VStack>
+									</HStack>
+									{numSavedSearchesNew > 0 ? (
+										<Container>
+											<Badge colorScheme="warning" ml={10} rounded="4px"
+											       _text={{fontSize: "xs"}}>{translate('user_profile.saved_searches_updated', {count: numSavedSearchesNew})}</Badge>
+										</Container>
+									) : null}
+								</Pressable>
+							) : null}
 
 						</VStack>
 						<VStack space="3">
@@ -322,7 +438,7 @@ export class DrawerContent extends Component {
 										</Text>
 									</HStack>
 								</Pressable>
-								{library.allowLinkedAccounts ? (
+								{library.allowLinkedAccounts === "1" ? (
 									<Pressable px="2" py="2"
 									           onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts', library.baseUrl)}>
 										<HStack space="1" alignItems="center">

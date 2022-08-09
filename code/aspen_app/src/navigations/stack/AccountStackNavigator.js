@@ -11,22 +11,19 @@ import Profile from "../../screens/MyAccount/Profile/Profile";
 import Preferences from "../../screens/MyAccount/Settings/Preferences";
 import MyLists from "../../screens/MyAccount/Lists/MyLists";
 import MyList from "../../screens/MyAccount/Lists/MyList";
+import MySavedSearches from "../../screens/MyAccount/SavedSearches/MySavedSearches";
+import MySavedSearch from "../../screens/MyAccount/SavedSearches/MySavedSearch";
 
 const AccountStackNavigator = () => {
 	const Stack = createNativeStackNavigator();
 	return (
 		<Stack.Navigator
-			initialRouteName="AccountScreen"
+			initialRouteName="ProfileScreen"
 			screenOptions={{
 				headerShown: true,
 				headerBackTitleVisible: false,
 			}}
 		>
-			<Stack.Screen
-				name="AccountScreen"
-				component={MyAccount}
-				options={{ title: translate('user_profile.title') }}
-			/>
 			<Stack.Screen
 				name="ProfileScreen"
 				component={Profile}
@@ -70,6 +67,16 @@ const AccountStackNavigator = () => {
 			<Stack.Screen
 				name="List"
 				component={MyList}
+				options={({ route }) => ({ title: route.params.name })}
+			/>
+			<Stack.Screen
+				name="SavedSearches"
+				component={MySavedSearches}
+				options={{ title: "Saved Searches" }}
+			/>
+			<Stack.Screen
+				name="SavedSearch"
+				component={MySavedSearch}
 				options={({ route }) => ({ title: route.params.name })}
 			/>
 			<Stack.Screen

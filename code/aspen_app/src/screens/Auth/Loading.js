@@ -31,7 +31,11 @@ class LoadingScreen extends Component {
 
 	componentDidMount = async () => {
 		let userToken;
-		let userProfile;
+		let libraryUrl;
+		let libraryId;
+		let librarySolrScope;
+		let locationId;
+		let libName;
 		try {
 			userToken = await AsyncStorage.getItem('@userToken');
 			//userProfile = await AsyncStorage.getItem('@patronProfile');
@@ -43,11 +47,6 @@ class LoadingScreen extends Component {
 		}
 
 		if(userToken) {
-			let libraryUrl;
-			let libraryId;
-			let librarySolrScope;
-			let locationId;
-			let libName;
 			try {
 				libraryUrl = await AsyncStorage.getItem('@pathUrl');
 				libName = await AsyncStorage.getItem('@libName');

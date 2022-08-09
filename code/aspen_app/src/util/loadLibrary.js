@@ -12,6 +12,15 @@ import {removeData} from "./logout";
  * Fetch branch/location information
  **/
 export async function getLocationInfo(library, location) {
+	let solrScope;
+	try {
+		solrScope = await AsyncStorage.getItem("@solrScope");
+	} catch (e) {
+		console.log(e);
+	}
+
+	let profile = [];
+
 	const api = create({
 		baseURL: library.baseUrl + '/API',
 		timeout: 10000,
@@ -20,26 +29,25 @@ export async function getLocationInfo(library, location) {
 	});
 	const response = await api.get('/SystemAPI?method=getLocationInfo', {
 		id: location.locationId,
-		library: global.solrScope, //need to pull this out of global.
+		library: solrScope,
 		version: GLOBALS.appVersion
 	});
 	if (response.ok) {
 		if(response.data.result.success) {
-			let profile = [];
 			if(typeof response.data.result.location !== 'undefined') {
 				profile = response.data.result.location;
 				//console.log("Location profile saved")
 			} else {
+				console.log("Location undefined.")
 				console.log(response);
 			}
 			await AsyncStorage.setItem('@locationInfo', JSON.stringify(profile));
 			return profile;
 		}
-		let profile = [];
 		return profile;
 	} else {
-		//console.log(response);
-		let profile = [];
+		console.log("Unable to fetch location.");
+		console.log(response);
 		return profile;
 	}
 }
@@ -48,6 +56,7 @@ export async function getLocationInfo(library, location) {
  * Fetch library information
  **/
 export async function getLibraryInfo(libraryId, libraryUrl, timeout) {
+	let profile = [];
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: timeout,
@@ -57,32 +66,19 @@ export async function getLibraryInfo(libraryId, libraryUrl, timeout) {
 	const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
 	if (response.ok) {
 		if(response.data.result.success) {
-			let profile = [];
 			if(typeof response.data.result.library !== 'undefined') {
 				profile = response.data.result.library;
-				global.barcodeStyle = profile.barcodeStyle;
-				global.libraryTheme = profile.themeId;
-				global.quickSearches = profile.quickSearches;
-				global.allowLinkedAccounts = profile.allowLinkedAccounts;
 				//console.log("Library profile saved");
 			} else {
-				global.barcodeStyle = "CODE128";
-				global.libraryTheme = 1;
-				global.quickSearches = [];
-				global.allowLinkedAccounts = 0;
 				console.log(response);
 			}
 			await AsyncStorage.setItem('@libraryInfo', JSON.stringify(profile));
 			return profile;
 		}
-		let profile = [];
 		return profile;
 	} else {
-		//console.log(response);
-		if (_.isUndefined(global.barcodeStyle)) {
-			global.barcodeStyle = "CODE128"
-		}
-		let profile = [];
+		console.log("Unable to fetch library.");
+		console.log(response);
 		return profile;
 	}
 }
@@ -99,7 +95,6 @@ export async function getAppSettings(url, timeout, slug) {
 	});
 	const response = await api.get('/SystemAPI?method=getAppSettings', {slug: slug});
 	if (response.ok) {
-		global.privacyPolicy = response.data.result.settings.privacyPolicy;
 		const appSettings = response.data.result.settings;
 		await AsyncStorage.setItem('@appSettings', JSON.stringify(appSettings));
 		console.log("App settings saved")
@@ -123,15 +118,16 @@ export async function getPickupLocations(libraryUrl) {
 	const response = await api.post('/UserAPI?method=getValidPickupLocations', postBody);
 
 	if (response.ok) {
-		let locations = {};
+		let locations = [];
 		const data = response.data.result.pickupLocations;
-		locations = data.map(({displayName, code, locationId}) => ({
-			key: locationId,
-			locationId: locationId,
-			code: code,
-			name: displayName,
-		}));
-
+		if(_.isObject(data) || _.isArray(data)) {
+			locations = data.map(({displayName, code, locationId}) => ({
+				key: locationId,
+				locationId: locationId,
+				code: code,
+				name: displayName,
+			}));
+		}
 		await AsyncStorage.setItem('@pickupLocations', JSON.stringify(locations));
 		//console.log("Pickup locations saved")
 		//console.log(locations);
@@ -157,6 +153,7 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 		const hiddenCategories = [];
 		if(discoveryVersion < "22.07.00") {
 			const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
+			console.log(responseHiddenCategories.data);
 			if(responseHiddenCategories.ok) {
 				if(typeof responseHiddenCategories.data.result !== "undefined") {
 					const categories = responseHiddenCategories.data.result.categories;
@@ -189,6 +186,8 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 					const items = category['records'];
 					const lists = [];
 
+					//console.log(category);
+
 					if(discoveryVersion >= "22.07.00") {
 						if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
 							subCategories.forEach(item => allCategories.push({
@@ -209,26 +208,37 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 								} else {
 									if(typeof listOfLists !== "undefined" && listOfLists.length !== 0) {
 										let array = _.values(listOfLists);
-										//console.log(category);
 										//console.log(array);
 										listOfLists.forEach(item => lists.push({
 											'id': item.sourceId,
+											'categoryId': item.id,
 											'source': 'List',
 											'title_display': item.title,
 										}))
 									}
 
 									let id = category.key;
+									let categoryId = category.key;
 									if(lists.length !== 0) {
 										if(typeof category.listId !== "undefined") {
 											id = category.listId;
 										}
-										allCategories.push({'key': id, 'title': category.title, 'source': category.source, 'records': lists});
+
+										let numNewTitles = 0;
+										if(typeof category.numNewTitles !== "undefined") {
+											numNewTitles = category.numNewTitles;
+										}
+										allCategories.push({'key': id, 'title': category.title, 'source': category.source, 'numNewTitles': numNewTitles, 'records': lists, 'id': categoryId});
 									} else {
 										if(typeof category.listId !== "undefined") {
 											id = category.listId;
 										}
-										allCategories.push({'key': id, 'title': category.title, 'source': category.source, 'records': category.records});
+
+										let numNewTitles = 0;
+										if(typeof category.numNewTitles !== "undefined") {
+											numNewTitles = category.numNewTitles;
+										}
+										allCategories.push({'key': id, 'title': category.title, 'source': category.source, 'numNewTitles': numNewTitles, 'records': category.records, 'id': categoryId});
 									}
 								}
 
@@ -284,16 +294,15 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 				});
 			}
 
-			//console.log(allCategories);
-			allCategories = _.pullAllBy(allCategories, hiddenCategories, 'key');
 
+			allCategories = _.pullAllBy(allCategories, hiddenCategories, 'key');
+			console.log(allCategories);
 			return allCategories;
 		} else {
 			console.log(response);
 		}
 	} else {
-		console.log("getBrowseCategories: " + libraryUrl);
-
+		console.log("No library URL to fetch browse categories.");
 	}
 }
 
