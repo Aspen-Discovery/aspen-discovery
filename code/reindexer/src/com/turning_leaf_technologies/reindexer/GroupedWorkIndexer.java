@@ -588,8 +588,9 @@ public class GroupedWorkIndexer {
 	 * continually, marking it as processed and then processing another.  The exception to this is during the full index
 	 * when we will process everything to ensure that records that have been regrouped will get processed during the full index.
 	 *
-	 * @param logEntry
-	 * @param doLogging
+	 * @param logEntry the log entry where results are written to
+	 * @param doLogging if logging should be done
+	 * @param maxWorksToProcess the maximum number of works that should be processed this run.
 	 */
 	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging, int maxWorksToProcess) {
 		//Check to see what records still need to be indexed based on a timed index
@@ -2265,6 +2266,7 @@ public class GroupedWorkIndexer {
 		return treatUnknownLanguageAs;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isTreatUnknownAudienceAsUnknown() {
 		return treatUnknownAudienceAsUnknown;
 	}

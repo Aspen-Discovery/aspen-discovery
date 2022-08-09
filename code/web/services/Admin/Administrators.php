@@ -147,7 +147,7 @@ class Admin_Administrators extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		return '';
+		return 'https://help.aspendiscovery.org/help/admin/users';
 	}
 
 	function getBreadcrumbs() : array

@@ -750,6 +750,8 @@ public class EvergreenExportMain {
 		if (hasFullExportFile && latestXmlFile == null){
 			//Wait until we get both the large XML file and the full export.
 			return 0;
+		}else if (latestXmlFile != null && !hasFullExportFile){
+			return 0;
 		}
 
 		if (filesToProcess.size() > 0){
@@ -1219,6 +1221,12 @@ public class EvergreenExportMain {
 				FileInputStream marcFileStream = new FileInputStream(curBibFile);
 				MarcReader catalogReader;
 				if (curBibFile.getName().endsWith(".xml")){
+					if (curBibFile.length() == 0){
+						if (!curBibFile.delete()){
+							logEntry.incErrors("Could not delete " + curBibFile);
+						}
+						continue;
+					}
 					catalogReader = new MarcXmlReader(marcFileStream);
 				}else{
 					catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());

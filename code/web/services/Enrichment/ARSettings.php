@@ -66,7 +66,7 @@ class Enrichment_ARSettings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=Accelerated-Reader';
+		return 'https://help.aspendiscovery.org/help/integration/enrichment';
 	}
 
 	function getBreadcrumbs() : array
