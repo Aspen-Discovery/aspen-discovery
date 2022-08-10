@@ -1,6 +1,6 @@
 import React from "react";
 import {create} from 'apisauce';
-import * as Sentry from 'sentry-expo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData} from "./apiAuth";
@@ -9,16 +9,24 @@ import {popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
 
 export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl) {
+	let solrScope;
+	try {
+		solrScope = await AsyncStorage.getItem("@solrScope");
+	} catch (e) {
+		console.log(e);
+	}
+
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutSlow,
 		headers: getHeaders,
-		params: {library: global.solrScope, lookfor: searchTerm, pageSize: pageSize, page: page},
+		params: {library: solrScope, lookfor: searchTerm, pageSize: pageSize, page: page},
 		auth: createAuthTokens()
 	});
 	const response = await api.get('/SearchAPI?method=getAppSearchResults');
 
 	if (response.ok) {
+		//console.log(response);
 		return response;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");

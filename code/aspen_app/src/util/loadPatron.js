@@ -241,6 +241,7 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 			patronId = await AsyncStorage.getItem('@patronProfile');
 		} catch (e) {
 			console.log(e);
+			patronId = null;
 		}
 	}
 
@@ -276,11 +277,14 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 
 		const responseActiveCategories = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
 		if(responseActiveCategories.ok) {
+			let numNewTitles = 0;
+			let isNew = false;
 			const categories = responseActiveCategories.data.result;
 			const activeCategories = [];
 			categories.map(function (category, index, array) {
 				const subCategories = category['subCategories'];
 
+				//console.log(categories);
 				if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
 					subCategories.forEach(item => activeCategories.push({
 						'key': item.key,
@@ -396,9 +400,8 @@ export async function getLists(libraryUrl) {
 		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
-	const response = await api.post('/ListAPI?method=getUserLists', postBody);
+	const response = await api.post('/ListAPI?method=getUserLists&checkIfValid=false', postBody);
 	if(response.ok) {
-		await getProfile(null, libraryUrl);
 		//console.log(response);
 		let lists = [];
 		if(response.data.result.success) {
@@ -422,7 +425,10 @@ export async function createList(title, description, access, libraryUrl) {
 	const response = await api.post('/ListAPI?method=createList', postBody);
 	if(response.ok) {
 		await getLists(libraryUrl);
-		await reloadProfile(libraryUrl);
+		//await reloadProfile(libraryUrl);
+		if(response.data.result.listId) {
+			await AsyncStorage.setItem('@lastListUsed', response.data.result.listId);
+		}
 		return response.data.result;
 	} else {
 		console.log(response);
@@ -441,7 +447,23 @@ export async function createListFromTitle(title, description, access, items, lib
 	const response = await api.post('/ListAPI?method=createList', postBody);
 	if(response.ok) {
 		await getLists(libraryUrl);
-		await reloadProfile(libraryUrl);
+		//await reloadProfile(libraryUrl);
+		if(response.data.result.listId) {
+			await AsyncStorage.setItem('@lastListUsed', response.data.result.listId);
+		}
+
+		let status = "success";
+		let alertTitle = "Success";
+		if (!response.data.result.success) {
+			status = "danger";
+			alertTitle = "Error";
+		}
+
+		if(response.data.result.numAdded) {
+			popAlert(alertTitle, response.data.result.numAdded + " added to " + title, status);
+		} else {
+			popAlert(alertTitle, "Title added to " + title, status);
+		}
 		return response.data.result;
 	} else {
 		console.log(response);
@@ -460,7 +482,8 @@ export async function editList(listId, title, description, access, libraryUrl) {
 	const response = await api.post('/ListAPI?method=editList', postBody);
 	if(response.ok) {
 		await getLists(libraryUrl);
-		await reloadProfile(libraryUrl);
+		//await reloadProfile(libraryUrl);
+		await AsyncStorage.setItem('@lastListUsed', listId);
 		return response.data;
 	} else {
 		console.log(response);
@@ -478,7 +501,7 @@ export async function clearListTitles(listId, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=clearListTitles', postBody);
 	if(response.ok) {
-		await getListTitles(listId, libraryUrl);
+		//await getListTitles(listId, libraryUrl);
 		return response.data;
 	} else {
 		console.log(response);
@@ -496,8 +519,8 @@ export async function addTitlesToList(id, itemId, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=addTitlesToList', postBody);
 	if(response.ok) {
-		await getLists(libraryUrl);
-		await reloadProfile(libraryUrl);
+		//await getLists(libraryUrl);
+		//await reloadProfile(libraryUrl);
 		if(response.data.result.success) {
 			popAlert("Success", response.data.result.numAdded + " added to list", "success");
 		} else {
@@ -520,7 +543,7 @@ export async function getListTitles(listId, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=getListTitles', postBody);
 	if(response.ok) {
-		console.log(response);
+		//console.log(response);
 		return response.data.result.titles;
 	} else {
 		console.log(response);
@@ -538,8 +561,9 @@ export async function removeTitlesFromList(listId, title, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=removeTitlesFromList', postBody);
 	if(response.ok) {
-		console.log(response.data);
+		//console.log(response.data);
 		await getListTitles(listId, libraryUrl);
+		//await AsyncStorage.setItem('@lastListUsed', listId);
 		return response.data.result;
 	} else {
 		console.log(response);
@@ -556,10 +580,52 @@ export async function deleteList(listId, libraryUrl) {
 		params: {id: listId}
 	});
 	const response = await api.post('/ListAPI?method=deleteList', postBody);
-	console.log(response);
+	//console.log(response);
 	if(response.ok) {
-
 		return response.data.result;
+	} else {
+		console.log(response);
+	}
+}
+
+export async function getSavedSearches(libraryUrl) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/ListAPI?method=getSavedSearchesForLiDA&checkIfValid=false', postBody);
+	if(response.ok) {
+		//console.log(response);
+		let savedSearches = [];
+		if(response.data.result.success) {
+			savedSearches = response.data.result.searches;
+		}
+		return savedSearches;
+	} else {
+		console.log(response);
+	}
+}
+
+export async function getSavedSearchTitles(searchId, libraryUrl) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {searchId: searchId, numTitles: 30}
+	});
+	const response = await api.post('/ListAPI?method=getSavedSearchTitles', postBody);
+	if(response.ok) {
+		let savedSearches = [];
+		//console.log(response);
+		if(response.data.result) {
+			savedSearches = response.data.result;
+		}
+		return savedSearches;
 	} else {
 		console.log(response);
 	}

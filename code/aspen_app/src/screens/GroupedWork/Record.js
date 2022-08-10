@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {Button, Center, HStack, Text, VStack, Badge } from "native-base";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
 	checkoutItem,
 	openSideLoad,
@@ -236,7 +237,7 @@ const ILS = (props) => {
 const OverDriveSample = (props) => {
 	const [loading, setLoading] = React.useState(false);
 
-	console.log(props);
+	//console.log(props);
 	return (
 		<Button size="xs"
 	        colorScheme="primary"
@@ -313,20 +314,31 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
 		itemId = recordId[2]
 	}
 
+	let patronProfile;
+	try {
+		let tmp = await AsyncStorage.getItem("@patronProfile");
+		patronProfile = JSON.parse(tmp);
+	} catch (e) {
+		console.log("Unable to fetch patron profile in grouped work from async storage");
+		console.log(e);
+	}
+
+	//console.log(patronProfile);
+
 	if (actionType.includes("checkout")) {
 		return await checkoutItem(libraryUrl, itemId, source, patronId);
 	} else if (actionType.includes("hold")) {
 
 		if(volumeId) {
 			return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch, volumeId);
-		} else if (!global.overdriveEmail && global.promptForOverdriveEmail === 1 && source === "overdrive") {
+		} else if (!patronProfile.overdriveEmail && patronProfile.promptForOverdriveEmail === 1 && source === "overdrive") {
 			const getPromptForOverdriveEmail = [];
 			getPromptForOverdriveEmail['getPrompt'] = true;
 			getPromptForOverdriveEmail['itemId'] = itemId;
 			getPromptForOverdriveEmail['source'] = source;
 			getPromptForOverdriveEmail['patronId'] = patronId;
-			getPromptForOverdriveEmail['overdriveEmail'] = global.overdriveEmail;
-			getPromptForOverdriveEmail['promptForOverdriveEmail'] = global.promptForOverdriveEmail;
+			getPromptForOverdriveEmail['overdriveEmail'] = patronProfile.overdriveEmail;
+			getPromptForOverdriveEmail['promptForOverdriveEmail'] = patronProfile.promptForOverdriveEmail;
 			return getPromptForOverdriveEmail;
 		} else {
 			return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch);
