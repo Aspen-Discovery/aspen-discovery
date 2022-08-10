@@ -1539,10 +1539,13 @@ class SearchAPI extends Action
 							'title' => $categoryInformation->label,
 							'source' => $categoryInformation->source,
 							'isHidden' => false,
-							'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12)
+							'records' => [],
 						);
+						$subCategories = $categoryInformation->getSubCategories();
+						if (count($subCategories) == 0){
+							$categoryResponse['records'] = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+						}
 						if ($includeSubCategories) {
-							$subCategories = $categoryInformation->getSubCategories();
 							$categoryResponse['subCategories'] = [];
 							if (count($subCategories) > 0) {
 								foreach ($subCategories as $subCategory) {
@@ -1575,15 +1578,18 @@ class SearchAPI extends Action
 											}
 										}
 									}
+									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+										break;
+									}
 								}
 							}
 						}
 						$numCategoriesProcessed++;
-						if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
-							break;
-						}
 					}
 					$formattedCategories[] = $categoryResponse;
+					if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+						break;
+					}
 				}
 			}
 		}
