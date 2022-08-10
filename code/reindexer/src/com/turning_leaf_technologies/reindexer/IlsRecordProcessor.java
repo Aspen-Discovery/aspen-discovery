@@ -166,7 +166,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
@@ -1551,6 +1551,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
 		//We should already have formats based on the items
 		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
+			//Check to see if all items have formats.
+			if (!recordInfo.allItemsHaveFormats()){
+				HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
+				if (uniqueItemFormats.size() == 1){
+					recordInfo.addFormat(uniqueItemFormats.iterator().next());
+					recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
+				}
+			}
+			//If not, we will assign the bib format to the item format if
 			return;
 		}
 
