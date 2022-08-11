@@ -208,3 +208,5 @@ sites/kodidev.localhost/conf/config.cron.ini
 sites/kodidev.localhost/conf/config.ini
 sites/kodidev.localhost/httpd-kodidev.localhost.conf
 sites/kodidev.localhost/kodidev.localhost.bat
+code/cron/.idea/workspace.xml
+code/cron/.idea/workspace.xml
