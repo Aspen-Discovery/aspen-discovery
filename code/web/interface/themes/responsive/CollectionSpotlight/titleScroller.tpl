@@ -1,18 +1,11 @@
 {strip}
 <div id="list-{$wrapperId}"{if !empty($display) && $display == 'false'} style="display:none"{/if} class="titleScroller tab-pane{if !empty($active)} active{/if}{if !empty($collectionSpotlight) && $collectionSpotlight->coverSize == 'medium'} mediumScroller{/if}{if !empty($collectionSpotlight) && $collectionSpotlight->showRatings} scrollerWithRatings{/if}">
 	<div id="{$wrapperId}" class="titleScrollerWrapper">
-		{if !empty($showCollectionSpotlightTitle) || !empty($showViewMoreLink) || !empty($Links)}
+		{if (!empty($showCollectionSpotlightTitle))}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 				{if !empty($showCollectionSpotlightTitle)}
 					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 				{/if}
-
-				{if !empty($showViewMoreLink) && strlen($fullListLink) > 0}
-					<div class="linkTab" style="float:right">
-						<a href='{$fullListLink}'><span class="seriesLink">{translate text="View More" isPublicFacing=true}</span></a>
-					</div>
-				{/if}
-
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
@@ -32,6 +25,11 @@
 				<div id="titleScrollerSelectedAuthor{$scrollerName}" class="titleScrollerSelectedAuthor notranslate"></div>
 			{/if}
 		</div>
+		{if !empty($showViewMoreLink) && strlen($fullListLink) > 0}
+			<div class="linkTab" style="float:right">
+				<a href='{$fullListLink}'><span class="seriesLink">{translate text="View More" isPublicFacing=true}</span></a>
+			</div>
+		{/if}
 	</div>
 </div>
 <script type="text/javascript">
