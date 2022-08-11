@@ -13,7 +13,7 @@
 	<input type="hidden" name="PaymentMethod" value="CreditOrDebit" />
 	<input type="hidden" name="ReturnUrl" id="{$userId}ReturnUrl" value="{$aspenUrl}/MyAccount/WorldPayCompleted?payment=" />
 	<input type="hidden" name="CancelUrl" id="{$userId}CancelUrl" value="{$aspenUrl}/MyAccount/WorldPayCancel?payment=" />
-	<input type="hidden" name="PostUrl" id="{$userId}PostUrl" value="{$aspenUrl}/WorldPay/Complete?payment=" />
+	<input type="hidden" name="PostUrl" id="{$userId}PostUrl" value="{$aspenUrl}/WorldPay/Complete" />
 	<input type="hidden" name="UserPart1" id="PaymentId" value="0" />
 	<input type="hidden" name="UserPart2" value="{$profile->firstname}" />
 	<input type="hidden" name="UserPart3" value="{$profile->lastname}" />
@@ -128,6 +128,7 @@
 			document.getElementById("{$userId}CancelUrl").value = cancelUrl;
 			document.getElementById("{$userId}ReturnUrl").value = returnUrl;
 			document.getElementById("{$userId}PostUrl").value = postUrl;
+			document.getElementById("PaymentId").value = paymentId;
 
             {rdelim});
 	</script>
