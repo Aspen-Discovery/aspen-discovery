@@ -111,9 +111,11 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("literary_form", literaryForm.keySet());
 			if (groupedWorkIndexer.isHideUnknownLiteraryForm()) {
 				literaryForm.remove("Unknown");
+				literaryFormFull.remove("Unknown");
 			}
 			if (groupedWorkIndexer.isHideNotCodedLiteraryForm()) {
 				literaryForm.remove("Not Coded");
+				literaryFormFull.remove("Not Coded");
 			}
 			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
 				targetAudienceFull.remove("Unknown");
