@@ -99,16 +99,16 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("geographic", geographic);
 			doc.addField("geographic_facet", geographicFacets);
 			doc.addField("era", eras);
+			//Check default values and inconsistent forms
 			checkDefaultValue(literaryFormFull, "Not Coded");
 			checkDefaultValue(literaryFormFull, "Other");
 			checkDefaultValue(literaryFormFull, "Unknown");
 			checkInconsistentLiteraryFormsFull();
-			doc.addField("literary_form_full", literaryFormFull.keySet());
 			checkDefaultValue(literaryForm, "Not Coded");
 			checkDefaultValue(literaryForm, "Other");
 			checkDefaultValue(literaryForm, "Unknown");
 			checkInconsistentLiteraryForms();
-			doc.addField("literary_form", literaryForm.keySet());
+			//Check if .isHide
 			if (groupedWorkIndexer.isHideUnknownLiteraryForm()) {
 				literaryForm.remove("Unknown");
 				literaryFormFull.remove("Unknown");
@@ -117,6 +117,10 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 				literaryForm.remove("Not Coded");
 				literaryFormFull.remove("Not Coded");
 			}
+			//Add field
+			doc.addField("literary_form_full", literaryFormFull.keySet());
+			doc.addField("literary_form", literaryForm.keySet());
+
 			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
 				targetAudienceFull.remove("Unknown");
 			}
