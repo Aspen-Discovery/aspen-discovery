@@ -1221,25 +1221,31 @@ public class EvergreenExportMain {
 		}
 
 		//Loop through remaining records and delete them
-		logEntry.addNote("Deleting " + recordGroupingProcessor.getNumRemainingRecordsToDelete() + " records that were not contained in the export");
-		for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
-			IlsTitle title = recordGroupingProcessor.getExistingRecords().get(identifier);
-			if (!title.isDeleted()) {
-				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
-				if (result.reindexWork) {
-					indexer.processGroupedWork(result.permanentId);
-				} else if (result.deleteWork) {
-					//Delete the work from solr and the database
-					indexer.deleteRecord(result.permanentId);
-				}
-				logEntry.incDeleted();
-				totalChanges++;
-				if (logEntry.getNumDeleted() % 250 == 0) {
-					logEntry.saveResults();
+		int numRemainingRecordsToDelete = recordGroupingProcessor.getNumRemainingRecordsToDelete();
+		if ((float)numRemainingRecordsToDelete / (float)numRecordsRead < 0.001) {
+			logEntry.addNote("Deleting " + numRemainingRecordsToDelete + " records that were not contained in the export");
+			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
+				IlsTitle title = recordGroupingProcessor.getExistingRecords().get(identifier);
+				if (!title.isDeleted()) {
+					RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
+					if (result.reindexWork) {
+						indexer.processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						indexer.deleteRecord(result.permanentId);
+					}
+					logEntry.incDeleted();
+					totalChanges++;
+					if (logEntry.getNumDeleted() % 250 == 0) {
+						logEntry.saveResults();
+					}
 				}
 			}
+			logEntry.saveResults();
+		}else{
+			logEntry.incErrors("");
+			logEntry.incErrors("More than .1% of records were marked for deletion, skipping due to the records to delete. The file had " + numRemainingRecordsToDelete + " records out of " + numRecordsRead + " records marked for deletion.");
 		}
-		logEntry.saveResults();
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set fullMarcExportRecordIdThreshold = ? where id = ?");
