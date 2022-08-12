@@ -30,5 +30,21 @@ function getUpdates22_09_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer VDX Hold Groups'))",
 			]
 		],
+		'vdx_settings' => [
+			'title' => 'VDX Settings setup',
+			'description' => 'Add the ability to add VDX Settings to the site',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS vdx_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							name VARCHAR(50) NOT NULL UNIQUE,
+							baseUrl VARCHAR(255) NOT NULL,
+							submissionEmailAddress VARCHAR(255) NOT NULL
+						) ENGINE = INNODB;',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
+							('ILL Integration', 'Administer VDX Settings', '', 10, 'Allows the user to define settings for Interlibrary Loans with VDX.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer VDX Settings'))",
+			]
+		],
 	];
 }

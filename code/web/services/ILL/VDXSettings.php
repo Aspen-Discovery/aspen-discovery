@@ -2,33 +2,33 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ILL/DPLASetting.php';
+require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
 
 class ILL_VDXSettings extends ObjectEditor
 {
 	function getObjectType() : string
 	{
-		return 'DPLASetting';
+		return 'VDXSetting';
 	}
 
 	function getToolName() : string
 	{
-		return 'DPLASettings';
+		return 'VDXSettings';
 	}
 
 	function getModule() : string
 	{
-		return 'Enrichment';
+		return 'ILL';
 	}
 
 	function getPageTitle() : string
 	{
-		return 'DP.LA Settings';
+		return 'VDX Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
 	{
-		$object = new DPLASetting();
+		$object = new VDXSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
@@ -46,7 +46,7 @@ class ILL_VDXSettings extends ObjectEditor
 
 	function getObjectStructure() : array
 	{
-		return DPLASetting::getObjectStructure();
+		return VDXSetting::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn() : string
