@@ -539,7 +539,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 	private Long daysAddedSincePubDate = null;
 	private Long loadScopedDaysAdded(ItemInfo curItem) {
 		Long daysSinceAdded;
-		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon")))) {
+		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon") || curItem.getGroupedStatus().equals("On Order")))) {
 			daysSinceAdded = -1L;
 		} else {
 			//Date Added To Catalog needs to be the earliest date added for the catalog.
