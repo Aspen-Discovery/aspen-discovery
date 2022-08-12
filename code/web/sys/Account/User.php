@@ -2490,6 +2490,10 @@ class User extends DataObject
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
 
+		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
+		$sections['ill_integration']->addAction(new AdminAction('VDX Settings', 'Define Settings for VDX Integration', '/ILL/VDXSettings'), ['Administer VDX Settings']);
+		$sections['ill_integration']->addAction(new AdminAction('VDX Hold Groups', 'Modify Hold Groups for creating holds via VDX.', '/ILL/VDXHoldGroups'), 'Administer VDX Hold Groups');
+
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
 		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), ['View Location Holds Reports', 'View All Holds Reports']);
 		$sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), ['View Location Student Reports', 'View All Student Reports']);
