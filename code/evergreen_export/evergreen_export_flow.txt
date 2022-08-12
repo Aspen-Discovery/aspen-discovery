@@ -1,0 +1,19 @@
+Basic Flow for how export from Evergreen works
+
+if (Index a Single Record){
+    Get the record to index;
+    Load the Account Profile and Indexing Profile;
+    Update Bib From Evergreen using APIs;
+}else{
+    while (loop forever!) {
+        Load the Account Profile and Indexing Profile;
+        Update Branch Info;
+        Export Volumes;
+        call updateRecords;
+        if (jars changed){
+            break;
+        }
+    }
+    stop the indexer;
+}
+done!
