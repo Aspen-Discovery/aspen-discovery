@@ -9,6 +9,7 @@ class VdxHoldGroup extends DataObject
 	public $name;
 
 	protected $_locations;
+	protected $_locationCodes;
 
 	public static function getObjectStructure(): array
 	{
@@ -98,6 +99,21 @@ class VdxHoldGroup extends DataObject
 		return $this->_locations;
 	}
 
+	public function getLocationCodes() {
+		if (!isset($this->_locationCodes) && $this->id) {
+			$this->_locationCodes = [];
+			$locationIds = $this->getLocations();
+			foreach ($locationIds as $locationId){
+				$location = new Location();
+				$location->locationId = $locationId;
+				if ($location->find(true)){
+					$this->_locationCodes[] = $location->code;
+				}
+			}
+		}
+		return $this->_locationCodes;
+	}
+
 	public function __set($name, $value)
 	{
 		if ($name == "locations") {
@@ -106,6 +122,7 @@ class VdxHoldGroup extends DataObject
 			$this->_data[$name] = $value;
 		}
 	}
+
 
 	public function saveLocations()
 	{
