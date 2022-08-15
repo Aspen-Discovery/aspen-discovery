@@ -1,21 +1,24 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/AspenLiDASetting.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 
-class AspenLiDA extends ObjectEditor
+class AspenLiDA_AppSettings extends ObjectEditor
 {
 	function getObjectType() : string {
-		return 'AspenLiDASetting';
+		return 'AppSetting';
 	}
 
 	function getToolName() : string {
+		return 'AppSettings';
+	}
+
+	function getModule() : string{
 		return 'AspenLiDA';
 	}
 
 	function getPageTitle() : string {
-		return 'Aspen LiDA Settings';
+		return 'App Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array {
@@ -34,7 +37,7 @@ class AspenLiDA extends ObjectEditor
 	}
 
 	function getDefaultSort() : string {
-		return 'slugName asc';
+		return 'name asc';
 	}
 
 	function getObjectStructure() : array
@@ -56,14 +59,14 @@ class AspenLiDA extends ObjectEditor
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
-		$breadcrumbs[] = new Breadcrumb('/Admin/AspenLiDA', 'Aspen LiDA Settings');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
+		$breadcrumbs[] = new Breadcrumb('/AspenLiDA/AppSettings', 'App Settings');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection() : string
 	{
-		return 'primary_configuration';
+		return 'aspen_lida';
 	}
 
 	function canView() : bool
@@ -71,7 +74,4 @@ class AspenLiDA extends ObjectEditor
 		return UserAccount::userHasPermission('Administer Aspen LiDA Settings');
 	}
 
-	function canAddNew(){
-		return $this->getNumObjects() <= 0;
-	}
 }
