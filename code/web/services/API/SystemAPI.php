@@ -124,7 +124,7 @@ class SystemAPI extends Action
 	{
 		global $configArray;
 		if (isset($_REQUEST['slug'])) {
-			$app = new AspenLiDASetting();
+			$app = new AppSetting();
 			$app->slugName = $_REQUEST['slug'];
 			if ($app->find(true)){
 				$settings = [];
@@ -458,7 +458,7 @@ class SystemAPI extends Action
 				}
 			}
 
-			$app = new AspenLiDASetting();
+			$app = new AppSetting();
 			if(isset($_REQUEST['slug'])) {
 				$app->slugName = $_REQUEST['slug'];
 				if (!$app->find(true)) {
