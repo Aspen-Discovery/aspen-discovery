@@ -29,8 +29,12 @@ if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
 if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
 	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 }
-
-require_once ROOT_DIR . '/sys/AspenLiDAQuickSearch.php';
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
+}
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+}
 
 class Library extends DataObject
 {
@@ -282,6 +286,10 @@ class Library extends DataObject
 
 	public $defaultRememberMe;
 
+	//LiDA settings
+	public $lidaNotificationSettingId;
+	public $lidaQuickSearchId;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 
@@ -485,6 +493,26 @@ class Library extends DataObject
 			//OverDrive scopes are likely not defined
 		}
 
+		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+		$notificationSetting = new NotificationSetting();
+		$notificationSetting->orderBy('name');
+		$notificationSettings = [];
+		$notificationSetting->find();
+		$notificationSettings[-1] = 'none';
+		while ($notificationSetting->fetch()){
+			$notificationSettings[$notificationSetting->id] = $notificationSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
+		$quickSearchSetting = new QuickSearchSetting();
+		$quickSearchSetting->orderBy('name');
+		$quickSearchSettings = [];
+		$quickSearchSetting->find();
+		$quickSearchSettings[-1] = 'none';
+		while ($quickSearchSetting->fetch()){
+			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
+		}
+
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
 		unset($cloudLibraryScopeStructure['libraryId']);
 
@@ -510,10 +538,6 @@ class Library extends DataObject
 			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
 		}
 
-		// Aspen LiDA //
-		$quickSearches = AspenLiDAQuickSearch::getObjectStructure();
-		unset($quickSearches['libraryId']);
-
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
 		$structure = array(
@@ -528,25 +552,6 @@ class Library extends DataObject
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Library will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
-
-			// Aspen LiDA //
-			'aspenLiDASection' =>array('property'=>'aspenLiDASection', 'type' => 'section', 'label' =>'Aspen LiDA', 'hideInLists' => true, 'properties' => array(
-				'quickSearches' => array(
-					'property'      => 'quickSearches',
-					'type'          => 'oneToMany',
-					'label'         => 'Quick Searches',
-					'description'   => 'Define quick searches for this app',
-					'keyThis'       => 'libraryId',
-					'keyOther'      => 'libraryId',
-					'subObjectType' => 'AspenLiDAQuickSearch',
-					'structure'     => $quickSearches,
-					'sortable'      => true,
-					'storeDb'       => true,
-					'allowEdit'     => false,
-					'canEdit'       => false,
-					'hideInLists'   => true
-				),
-			)),
 
 			// Basic Display //
 			'displaySection' =>array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true, 'properties' => array(
@@ -1006,6 +1011,11 @@ class Library extends DataObject
 				'forcesReindex' => true,
 				'permissions' => ['Library Records included in Catalog']
 			),
+
+			'aspenLiDASection' => array('property' => 'aspenLiDASection', 'type' => 'section', 'label' => 'Aspen LiDA', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Administer Aspen LiDA Settings'], 'properties' => array(
+				'lidaNotificationSettingId' => array('property' => 'lidaNotificationSettingId', 'type'=>'enum', 'values'=>$notificationSettings, 'label' => 'Notification Settings', 'description'=>'The Notification Settings to use for Aspen LiDA', 'hideInLists' => true, 'default' => -1),
+				'lidaQuickSearchId' => array('property' => 'lidaQuickSearchId', 'type'=>'enum', 'values'=>$quickSearchSettings, 'label' => 'Quick Search Settings', 'description'=>'The Quick Search Settings to use for Aspen LiDA', 'hideInLists' => true, 'default' => -1),
+			)),
 		);
 
 		//Update settings based on what we have access to
@@ -1702,37 +1712,41 @@ class Library extends DataObject
 		return $locations;
 	}
 
-	private $_quickSearches;
-	public function setQuickSearches($value)
-	{
-		$this->_quickSearches = $value;
-	}
-
 	/**
 	 * @return array|null
 	 */
 	public function getQuickSearches()
 	{
-		if (!isset($this->_quickSearches) && $this->libraryId) {
-			$this->_quickSearches = array();
-
-			$quickSearches = new AspenLiDAQuickSearch();
-			$quickSearches->libraryId = $this->libraryId;
-			if ($quickSearches->find()) {
-				while ($quickSearches->fetch()) {
-					$this->_quickSearches[$quickSearches->id] = clone $quickSearches;
+		$quickSearches = array();
+		$quickSearchSettings = new QuickSearchSetting();
+		$quickSearchSettings->id = $this->lidaQuickSearchId;
+		if($quickSearchSettings->find()) {
+			$quickSearch = new QuickSearch();
+			$quickSearch->quickSearchSettingId = $quickSearchSettings->id;
+			if ($quickSearch->find()) {
+				while ($quickSearch->fetch()) {
+					$quickSearches[$quickSearch->id] = clone $quickSearch;
 				}
 			}
-
 		}
-		return $this->_quickSearches;
+
+		return $quickSearches;
 	}
 
-	public function saveQuickSearches(){
-		if (isset ($this->_quickSearches) && is_array($this->_quickSearches)){
-			$this->saveOneToManyOptions($this->_quickSearches, 'libraryId');
-			unset($this->_quickSearches);
+	/**
+	 * @return array|null
+	 */
+	public function getLiDANotifications()
+	{
+		$lidaNotifications = array();
+
+		$notificationSettings = new NotificationSetting();
+		$notificationSettings->id = $this->lidaNotificationSettingId;
+		if($notificationSettings->find()) {
+			$lidaNotifications = clone $notificationSettings;
 		}
+
+		return $lidaNotifications;
 	}
 
 	public function getApiInfo() : array
@@ -1787,6 +1801,7 @@ class Library extends DataObject
 				'weight' => $quickSearch->weight
 			];
 		}
+		$apiInfo['notifications'] = $this->getLiDANotifications();
 		$activeTheme = new Theme();
 		$activeTheme->id = $this->theme;
 		if ($activeTheme->find(true)){
