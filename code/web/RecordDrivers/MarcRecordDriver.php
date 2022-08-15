@@ -976,47 +976,96 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($volumeData == null) {
 					$volumeData = $relatedRecord->getVolumeData();
 				}
-				if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
-					//Check the items to see which volumes are holdable
-					$hasItemsWithoutVolumes = false;
-					$holdableVolumes = [];
-					foreach ($relatedRecord->getItems() as $itemDetail) {
-						if ($itemDetail->holdable) {
-							if (!empty($itemDetail->volumeId)) {
-								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = ['volumeName' => $itemDetail->volume, 'volumeId'=>$itemDetail->volumeId];
-							} else {
-								$hasItemsWithoutVolumes = true;
+				//See if we have VDX integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
+				$useVdxForRecord = false;
+				$vdxGroupsForLocation = [];
+				require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
+				$vdxSettings = new VdxSetting();
+				if ($vdxSettings->find(true)){
+					require_once ROOT_DIR . '/sys/ILL/VdxHoldGroup.php';
+					require_once ROOT_DIR . '/sys/ILL/VdxHoldGroupLocation.php';
+					$useVdxForRecord = true;
+					$homeLocation = Location::getDefaultLocationForUser();
+					if ($homeLocation != null){
+						//Get the VDX Group(s) that we will interact with
+						$vdxGroupsForLocation = new VdxHoldGroupLocation();
+						$vdxGroupsForLocation->locationId = $homeLocation->locationId;
+						$vdxGroupIds = $vdxGroupsForLocation->fetchAll('id');
+						$vdxGroups = [];
+						foreach ($vdxGroupIds as $vdxGroupId){
+							$vdxGroup = new VdxHoldGroup();
+							$vdxGroup->id = $vdxGroupId;
+							if ($vdxGroup->find(true)){
+								$vdxGroups[] = clone $vdxGroup;
+							}
+						}
+
+						//Check to see if we have any items that are owned by any of the records in any of the groups.
+						//If we do, we don't need to use VDX
+						foreach ($relatedRecord->getItems() as $itemDetail){
+							foreach ($vdxGroups as $vdxGroup) {
+								if ($itemDetail->holdable && in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+									$useVdxForRecord = false;
+									break;
+								}
+							}
+							if (!$useVdxForRecord){
+								break;
 							}
 						}
 					}
-					if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
-						//Show a dialog to enable the patron to select a volume to place a hold on
-						$this->_actions[] = array(
-							'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
-							'url' => '',
-							'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
-							'requireLogin' => false,
-							'type' => 'ils_hold'
-						);
-					} else {
-						ksort($holdableVolumes);
-						foreach ($holdableVolumes as $volumeId => $volumeInfo) {
+				}
+				if (!$useVdxForRecord){
+					if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
+						//Check the items to see which volumes are holdable
+						$hasItemsWithoutVolumes = false;
+						$holdableVolumes = [];
+						foreach ($relatedRecord->getItems() as $itemDetail) {
+							if ($itemDetail->holdable) {
+								if (!empty($itemDetail->volumeId)) {
+									$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = ['volumeName' => $itemDetail->volume, 'volumeId'=>$itemDetail->volumeId];
+								} else {
+									$hasItemsWithoutVolumes = true;
+								}
+							}
+						}
+						if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
+							//Show a dialog to enable the patron to select a volume to place a hold on
 							$this->_actions[] = array(
-								'title' => translate(['text' => 'Hold %1%', 1=> $volumeInfo['volumeName'], 'isPublicFacing'=>true]),
+								'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
 								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '{$volumeInfo['volumeId']}');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
 								'requireLogin' => false,
 								'type' => 'ils_hold'
 							);
+						} else {
+							ksort($holdableVolumes);
+							foreach ($holdableVolumes as $volumeId => $volumeInfo) {
+								$this->_actions[] = array(
+									'title' => translate(['text' => 'Hold %1%', 1=> $volumeInfo['volumeName'], 'isPublicFacing'=>true]),
+									'url' => '',
+									'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '{$volumeInfo['volumeId']}');",
+									'requireLogin' => false,
+									'type' => 'ils_hold'
+								);
+							}
 						}
+					} else {
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Place Hold', 'isPublicFacing' => true]),
+							'url' => '',
+							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+							'requireLogin' => false,
+							'type' => 'ils_hold'
+						);
 					}
-				} else {
+				}else{
 					$this->_actions[] = array(
-						'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
+						'title' => translate(['text' => 'Request', 'isPublicFacing'=>true]),
 						'url' => '',
-						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+						'onclick' => "return AspenDiscovery.Record.showVdxRequest('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
-						'type' => 'ils_hold'
+						'type' => 'vdx_request'
 					);
 				}
 			}

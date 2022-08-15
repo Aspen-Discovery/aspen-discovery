@@ -615,13 +615,14 @@ class Location extends DataObject
 		return $locationList;
 	}
 
+	/** @var string|Location|null  */
 	private static $activeLocation = 'unset';
 
 	/**
 	 * Returns the active location to use when doing search scoping, etc.
 	 * This does not include the IP address
 	 *
-	 * @return Location|string
+	 * @return Location|null
 	 */
 	function getActiveLocation()
 	{
@@ -696,6 +697,52 @@ class Location extends DataObject
 		}
 
 		return Location::$activeLocation;
+	}
+
+	static $_defaultLocationForUser = null;
+
+	/**
+	 * @return Location|null
+	 */
+	static function getDefaultLocationForUser() : ?Location{
+		if (Location::$_defaultLocationForUser == null){
+			//Check to see if we have an active user
+			if (UserAccount::isLoggedIn()){
+				$homeLocationId = UserAccount::getUserHomeLocationId();
+				if ($homeLocationId > 0){
+					$location = new Location();
+					$location->locationId = $homeLocationId;
+					if ($location->find(true)){
+						Location::$_defaultLocationForUser = $location;
+					}
+				}
+			}
+			if (Location::$_defaultLocationForUser == null){
+				global $locationSingleton;
+				$activeLocation = $locationSingleton->getActiveLocation();
+				if ($activeLocation != null){
+					Location::$_defaultLocationForUser = $activeLocation;
+				}else{
+					//get the main location for the library or if there isn't one, get the first
+					global $library;
+					$location = new Location();
+					$location->libraryId = $library->libraryId;
+					$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+					if ($location->find(true)) {
+						Location::$_defaultLocationForUser = $location;
+					}else{
+						//Get the first location
+						$location = new Location();
+						if ($location->find(true)) {
+							Location::$_defaultLocationForUser = $location;
+						}else{
+							//There isn't anything to tie it to, leave it null
+						}
+					}
+				}
+			}
+		}
+		return Location::$_defaultLocationForUser;
 	}
 
 	function setActiveLocation($location)
