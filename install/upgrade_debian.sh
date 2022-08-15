@@ -21,6 +21,9 @@ if [ -f "/usr/local/aspen-discovery/install/upgrade_debian_$2.sh" ]; then
   /usr/local/aspen-discovery/install/upgrade_debian_$2.sh
 fi
 
+git checkout -b $2
+git branch $2 -u origin/$2
+
 echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver
