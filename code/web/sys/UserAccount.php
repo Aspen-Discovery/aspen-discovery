@@ -358,7 +358,7 @@ class UserAccount
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
 					$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
-					if (UserAccount::isUserMasquerading()){
+					if (UserAccount::isUserMasquerading() || $_SESSION['loggedInViaSSO']){
 						return $userData;
 					}else {
 						$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
@@ -473,7 +473,7 @@ class UserAccount
 	 * @return AspenError|User
 	 * @throws UnknownAuthenticationMethodException
 	 */
-	public static function login()
+	public static function login($validatedViaSSO = false)
 	{
 		global $logger;
 		global $usageByIPAddress;
@@ -481,7 +481,6 @@ class UserAccount
 
 		$validUsers = array();
 
-		$validatedViaSSO = false;
 		if (isset($_REQUEST['casLogin'])) {
 			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
 			//Check CAS first

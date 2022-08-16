@@ -1858,53 +1858,63 @@ class Library extends DataObject
 // in the DB, otherwise we delete the file
 	public function processSso(){
 		if (is_array($this->_changedFields) && in_array('ssoXmlUrl', $this->_changedFields)) {
-			global $logger;
-			global $configArray;
-			global $serverName;
-			$dataPath = '/data/aspen-discovery/sso_metadata/';
-			$fileName = md5($serverName) . '.xml';
-			$filePath = $dataPath . $fileName;
-			$url = trim($this->ssoXmlUrl);
-			if (strlen($url) > 0) {
-				// We've got a new or updated URL
-				// First try and retrieve the metadata
-				$this->curlWrapper = new CurlWrapper();
-				$this->curlWrapper->setTimeout(10);
-				$xml = $this->curlWrapper->curlGetPage($url);
-				if (strlen($xml) > 0) {
-					// Check it's a valid SAML message
-					try {
-						\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
-					} catch(Exception $e) {
-						$logger->log($e, Logger::LOG_ERROR);
-						return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');
-					}
-					$written = file_put_contents($filePath, $xml);
-					if ($written === false) {
-						$logger->log(
-							'Failed to write SSO metadata to ' . $filePath . ' for site ' .
-							$configArray['Site']['title'],
-							Logger::LOG_ERROR
-						);
-						return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
-					}
-				} else {
+			$filename = $this->fetchAndStoreSsoMetadata();
+			if (!$filename instanceof AspenError) {
+				// Update the ssoMetadataFilename in the DB
+				$this->ssoMetadataFilename = $fileName;
+			}
+			return $filename;
+		}
+	}
+
+	// Fetch the XML metadata from an IdP (using the URL specified in the config)
+	// and store it
+	public function fetchAndStoreSsoMetadata() {
+		global $logger;
+		global $configArray;
+		global $serverName;
+		$dataPath = '/data/aspen-discovery/sso_metadata/';
+		$fileName = md5($serverName) . '.xml';
+		$filePath = $dataPath . $fileName;
+		$url = trim($this->ssoXmlUrl);
+		if (strlen($url) > 0) {
+			// We've got a new or updated URL
+			// First try and retrieve the metadata
+			$this->curlWrapper = new CurlWrapper();
+			$this->curlWrapper->setTimeout(10);
+			$xml = $this->curlWrapper->curlGetPage($url);
+			if (strlen($xml) > 0) {
+				// Check it's a valid SAML message
+				require_once '/usr/share/simplesamlphp/lib/_autoload.php';
+				try {
+					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
+				} catch(Exception $e) {
+					$logger->log($e, Logger::LOG_ERROR);
+					return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');
+				}
+				$written = file_put_contents($filePath, $xml);
+				if ($written === false) {
 					$logger->log(
-						'Failed to retrieve any SSO metadata from ' . $url . ' for site ' .
+						'Failed to write SSO metadata to ' . $filePath . ' for site ' .
 						$configArray['Site']['title'],
 						Logger::LOG_ERROR
 					);
-					return new AspenError('Unable to use SSO IdP metadata, did not receive any metadata, please check "URL of service metadata XML"');
+					return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
 				}
-				// Update the ssoMetadataFilename in the DB
-				$this->ssoMetadataFilename = $fileName;
 			} else {
-				// The URL has been removed
-				// We don't remove the metadata file because
-				// another site may use it
-				// Update the ssoMetadataFilename in the DB
-				$this->ssoMetadataFilename = '';
+				$logger->log(
+					'Failed to retrieve any SSO metadata from ' . $url . ' for site ' .
+					$configArray['Site']['title'],
+					Logger::LOG_ERROR
+				);
+				return new AspenError('Unable to use SSO IdP metadata, did not receive any metadata, please check "URL of service metadata XML"');
 			}
+			return $fileName;
+		} else {
+			// The URL has been removed
+			// We don't remove the metadata file because
+			// another site may use it
+			return '';
 		}
 	}
 

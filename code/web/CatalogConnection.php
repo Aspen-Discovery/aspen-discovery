@@ -1299,4 +1299,8 @@ class CatalogConnection
 	public function validateUniqueId(User $user){
 		$this->driver->validateUniqueId($user);
 	}
+
+	public function getLmsToSso() {
+		return $this->driver->lmsToSso();
+	}
 }
