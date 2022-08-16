@@ -63,6 +63,10 @@ class VdxSetting extends DataObject {
 		$body .= "ReqVerifySource=**TBD**\r\n";
 		$body .= "AuthorisationStatus=**TBD**\r\n";
 
+		if (!empty($_REQUEST['note'])) {
+			$body .= "NOTE=" . strip_tags($_REQUEST['note']) . "\r\n";
+		}
+
 		if ($mailer->send($this->submissionEmailAddress, 'Document_Request', $body, null, null)){
 			$results = array(
 				'title' => translate(['text' => 'Request Sent', 'isPublicFacing' => true]),
