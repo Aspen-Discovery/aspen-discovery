@@ -210,8 +210,6 @@ class AspenSite extends DataObject
 					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 						$this->lastOfflineNote = "Unable to read JSON data or connect to server";
 						$this->lastOfflineTime = time();
-						$status['wasOffline'] = false;
-						$this->isOnline = 0;
 						$this->update();
 					}
 				}
