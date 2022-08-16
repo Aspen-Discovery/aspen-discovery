@@ -1140,6 +1140,7 @@ function initializeSession(){
     require_once $sessionClass;
 	if (class_exists($session_type)) {
 		/** @var SessionInterface $session */
+		session_name('aspen_session');
 		$session = new $session_type();
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}
