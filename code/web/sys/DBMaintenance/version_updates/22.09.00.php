@@ -75,6 +75,26 @@ function getUpdates22_09_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All VDX Forms'))",
 			]
 		], //vdx_forms
+		'vdx_requests' => [
+			'title' => 'VDX Requests',
+			'description' => 'Add the ability to track VDX Requests for a user',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS user_vdx_request(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							userId INT(11),
+							datePlaced INT(11),
+							title VARCHAR(255),
+							author VARCHAR(255),
+							publisher VARCHAR(255),
+							isbn VARCHAR(20),
+							feeAccepted TINYINT(1),
+							maximumFeeAmount VARCHAR(10),
+							catalogKey VARCHAR(20),
+							status VARCHAR(20)
+						) ENGINE = INNODB;',
+			]
+		], //vdx_requests
 		'move_aspen_lida_settings' => [
 			'title' => 'Move Aspen LiDA settings to own section',
 			'description' => 'Moves quick searches, general app config, branded app config, and adds notification settings',
