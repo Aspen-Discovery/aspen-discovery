@@ -428,7 +428,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox" {if $property.forcesReindex || $property.affectsLiDA || $property.note}style="margin-bottom: 0"{/if}>
 				<label for='{$propName}'>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}> {translate text=$property.label isAdminFacing=true}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}> {translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
 				</label>
 				{if $property.description}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 			</div>
