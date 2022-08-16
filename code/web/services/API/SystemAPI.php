@@ -19,7 +19,7 @@ class SystemAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getTranslation', 'getLanguages'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLocationAppSettings', 'getTranslation', 'getLanguages'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -149,6 +149,54 @@ class SystemAPI extends Action
 			}
 		}else{
 			return ['success' => false, 'message' => 'Slug name for app not provided'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getNotificationSettings() : array
+	{
+		if (isset($_REQUEST['libraryId'])) {
+			$library = new Library();
+			$library->libraryId = $_REQUEST['libraryId'];
+			if($library->find(true)) {
+				$notificationSettings = new NotificationSetting();
+				$notificationSettings->id = $library->lidaNotificationSettingId;
+				if($notificationSettings->find(true)) {
+					$settings['sendTo'] = $notificationSettings->sendTo;
+					$settings['notifySavedSearch'] = $notificationSettings->notifySavedSearch;
+					return ['success' => true, 'settings' => $settings];
+				} else {
+					return ['success' => false, 'message' => 'No notification settings found for library'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'No library found with provided id'];
+			}
+		} else{
+			return ['success' => false, 'message' => 'Must provide a library id'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getLocationAppSettings() : array
+	{
+		if (isset($_REQUEST['locationId'])) {
+			$location = new Location();
+			$location->locationId = $_REQUEST['locationId'];
+			if($location->find(true)) {
+				$appSettings = new AppSetting();
+				$appSettings->id = $location->lidaGeneralSettingId;
+				if($appSettings->find(true)) {
+					$settings['releaseChannel'] = $appSettings->releaseChannel;
+					$settings['enableAccess'] = $appSettings->enableAccess;
+					return ['success' => true, 'settings' => $settings];
+				} else {
+					return ['success' => false, 'message' => 'No app settings found for location'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'No location found with provided id'];
+			}
+		} else{
+			return ['success' => false, 'message' => 'Must provide a location id'];
 		}
 	}
 
