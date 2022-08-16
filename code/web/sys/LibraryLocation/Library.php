@@ -1336,7 +1336,7 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
-			$this->saveQuickSearches();
+			//$this->saveQuickSearches();
 		}
 		if ($this->_patronNameDisplayStyleChanged){
 			$libraryLocations = new Location();
@@ -1391,7 +1391,7 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
-			$this->saveQuickSearches();
+			//$this->saveQuickSearches();
 		}
 		return $ret;
 	}

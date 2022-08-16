@@ -39,6 +39,58 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
+		showVdxRequest: function(module, source, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getVdxRequestForm&recordSource=" + source;
+				$.getJSON(url, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
+		submitVdxRequest: function(module, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var module = module;
+				var params = {
+					'method': 'submitVdxRequest',
+					title: $('#title').val(),
+					author: $('#author').val(),
+					publisher: $('#publisher').val(),
+					isbn: $('#isbn').val(),
+					maximumFee: $('#maximumFee').val(),
+					acceptFee: $('#acceptFee').prop('checked'),
+					pickupLocation: $('#pickupLocationSelect').val(),
+					note: $('#note').val()
+				};
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";
+				$.getJSON(url, params, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
 		showPlaceHoldEditions: function (module, source, id, volume) {
 			if (Globals.loggedIn){
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
