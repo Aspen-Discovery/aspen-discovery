@@ -103,5 +103,93 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE aspen_lida_settings RENAME TO aspen_lida_branded_settings",
 			]
 		], //move_aspen_lida_settings
+		'move_library_quick_searches' => [
+			'title' => 'Move library quick searches',
+			'description' => 'Preserve previously setup quick searches to new admin area',
+			'continueOnError' => true,
+			'sql' => [
+				'moveLibraryQuickSearchesToSettings'
+			]
+		], //move_library_quick_searches
+		'move_location_app_settings' => [
+			'title' => 'Move location app settings',
+			'description' => 'Preserve previous settings for the app to new admin area',
+			'continueOnError' => true,
+			'sql' => [
+				'moveLocationAppSettings'
+			]
+		], //move_location_app_settings
 	];
+}
+
+/** @noinspection PhpUnused */
+function moveLibraryQuickSearchesToSettings(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+	global $aspen_db;
+
+	$oldQuickSearchSQL = "SELECT libraryId, weight, label, searchTerm FROM aspen_lida_quick_searches WHERE quickSearchSettingId = -1";
+	$oldQuickSearchRS = $aspen_db->query($oldQuickSearchSQL, PDO::FETCH_ASSOC);
+	$oldQuickSearchRow = $oldQuickSearchRS->fetch();
+
+	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
+	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearch.php';
+	while($oldQuickSearchRow != null) {
+		$library = new Library();
+		$library->libraryId = $oldQuickSearchRow['libraryId'];
+		if($library->find(true)) {
+			$quickSearchSettingId = "-1";
+			$quickSearchSetting = new QuickSearchSetting();
+			$quickSearchSetting->name = $library->displayName . " - Quick Searches";
+			if($quickSearchSetting->insert()) {
+				$quickSearchSettingId = $quickSearchSetting->id;
+			}
+
+			$quickSearch = new QuickSearch();
+			$quickSearch->quickSearchSettingId = "-1";
+			$quickSearch->libraryId = $library->libraryId;
+			$quickSearch->find();
+			while($quickSearch->fetch()) {
+				$quickSearch->quickSearchSettingId = $quickSearchSettingId;
+				$quickSearch->update();
+			}
+
+			$library->lidaQuickSearchId = $quickSearchSettingId;
+			$library->update();
+		}
+
+		$oldQuickSearchRow = $oldQuickSearchRS->fetch();
+	}
+}
+
+/** @noinspection PhpUnused */
+function moveLocationAppSettings(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+	global $aspen_db;
+
+	$oldLocationSettingsSQL = "SELECT locationId, displayName, enableAppAccess, appReleaseChannel FROM location WHERE lidaGeneralSettingId = -1";
+	$oldLocationSettingsRS = $aspen_db->query($oldLocationSettingsSQL, PDO::FETCH_ASSOC);
+	$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
+
+	require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+	while($oldLocationSettingsRow != null) {
+		$appSettingId = "-1";
+		$appSetting = new AppSetting();
+		$appSetting->enableAccess = $oldLocationSettingsRow['enableAppAccess'];
+		$appSetting->releaseChannel = $oldLocationSettingsRow['appReleaseChannel'];
+		if($appSetting->find(true)) {
+			$appSettingId = $appSetting->id;
+		} else {
+			$appSetting->name = $oldLocationSettingsRow['displayName'] . " - App Settings";
+			if($appSetting->insert()) {
+				$appSettingId = $appSetting->id;
+			}
+		}
+
+		$location = new Location();
+		$location->locationId = $oldLocationSettingsRow['locationId'];
+		if($location->find(true)) {
+			$location->lidaGeneralSettingId = $appSettingId;
+			$location->update();
+		}
+
+		$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
+	}
 }
