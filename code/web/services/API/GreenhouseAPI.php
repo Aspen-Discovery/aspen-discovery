@@ -89,7 +89,7 @@ class GreenhouseAPI extends Action
 			$notification = "";
 			$sendAlert = false;
 
-			if ($siteStatus['alive'] == false) {
+			if ($siteStatus['alive'] == false && $sites->isOnline !== 1 && $sites->isOnline !== "1") {
 				if ((($start - $sites->lastOfflineTime) > 4 * 60 * 60) || ($sites->lastOfflineTime > $sites->lastNotificationTime)) {
 					$sendAlert = true;
 					$alertText .= "- :fire: Greenhouse unable to connect to server: {$sites->lastOfflineNote}\n";
@@ -223,6 +223,9 @@ class GreenhouseAPI extends Action
 			//Now see if we should return this for use in LiDA
 			if($aspenSite->implementationStatus == 1 || $aspenSite->implementationStatus == 2|| $aspenSite->implementationStatus == 3) {
 				// Check the implementation status to make sure it's eligible for LiDA
+
+				$version = $aspenSite->version;
+
 				if($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3) {
 				//See if we need to reload the cache
 				$reloadCache = false;
@@ -316,6 +319,7 @@ class GreenhouseAPI extends Action
 			'library' => [],
 		];
 		global $configArray;
+		global $interface;
 
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
@@ -329,6 +333,7 @@ class GreenhouseAPI extends Action
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				if ($library->find(true)) {
+					$version = $interface->getVariable('gitBranch');
 					$baseUrl = $library->baseUrl;
 
 					if (empty($baseUrl)){
@@ -386,6 +391,19 @@ class GreenhouseAPI extends Action
 						$themeArray['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 					}
 
+					//get the app settings for the location
+					$releaseChannel = 0;
+					if($version >= "22.09.00") {
+						require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+						$appSettings = new AppSetting();
+						$appSettings->id = $location->lidaGeneralSettingId;
+						if($appSettings->find(true)) {
+							$releaseChannel = $appSettings->releaseChannel;
+						}
+					} else {
+						$releaseChannel = $location->appReleaseChannel;
+					}
+
 					$return['library'][] = [
 						'latitude' => $latitude,
 						'longitude' => $longitude,
@@ -396,7 +414,7 @@ class GreenhouseAPI extends Action
 						'siteId' => $libraryId . '.' . $location->locationId,
 						'solrScope' => $solrScope,
 						'baseUrl' => $baseUrl,
-						'releaseChannel' => $location->appReleaseChannel,
+						'releaseChannel' => $releaseChannel,
 						'favicon' => $themeArray['favicon'],
 						'logo' => $themeArray['logo'],
 						'theme' => $themeArray,
