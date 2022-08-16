@@ -1557,10 +1557,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (uniqueItemFormats.size() == 1){
 					recordInfo.addFormat(uniqueItemFormats.iterator().next());
 					recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
+					return;
 				}
 			}
-			//If not, we will assign the bib format to the item format if
-			return;
+			//If not, we will assign format based on bib level data
 		}
 
 		if (formatSource.equals("specified")){
