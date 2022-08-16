@@ -457,6 +457,6 @@
 
 	</div>
 {elseif $property.type == 'hidden'}
-	<input type='hidden' name='{$propName}' value='{$propValue}'>
+	<input type='hidden' id='{$propName}' name='{$propName}' value='{$propValue}'>
 {/if}
 {/strip}

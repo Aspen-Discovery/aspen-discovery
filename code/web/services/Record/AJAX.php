@@ -48,6 +48,7 @@ class Record_AJAX extends Action
 		echo($marcData->toRaw());
 	}
 
+	/** @noinspection PhpUnused */
 	function getVdxRequestForm()
 	{
 		global $interface;
@@ -78,13 +79,14 @@ class Record_AJAX extends Action
 							$marcRecord = new MarcRecordDriver($id);
 
 							$interface->assign('vdxForm', $vdxForm);
-							$vdxFormFields = $vdxForm->getFormFields($id, $marcRecord);
+							$vdxFormFields = $vdxForm->getFormFields($marcRecord);
 							$interface->assign('structure', $vdxFormFields);
 							$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
 
 							$results = array(
 								'title' => translate(['text'=>'Request Title', 'isPublicFacing'=>true]),
 								'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+								'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate(['text'=>'Place Request','isPublicFacing'=>true]) . '</a>',
 								'success' => true
 							);
 						}else{
@@ -119,6 +121,31 @@ class Record_AJAX extends Action
 			$results = array(
 				'title' => translate(['text'=>'Please login', 'isPublicFacing'=>true]),
 				'message' => translate(['text'=>"You must be logged in.  Please close this dialog and login before placing your request.", 'isPublicFacing'=>true]),
+				'success' => false
+			);
+		}
+		return $results;
+	}
+
+	function submitVdxRequest(){
+		if (UserAccount::isLoggedIn()) {
+			require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/ILL/VdxForm.php';
+			require_once ROOT_DIR . '/sys/ILL/VdxFormLocation.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)){
+				$results = $vdxSettings->submitRequest(UserAccount::getActiveUserObj(), $_REQUEST);
+			}else{
+				$results = array(
+					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+					'message' => translate(['text'=>"VDX Settings do not exist, please contact the library to make a request.", 'isPublicFacing'=>true]),
+					'success' => false
+				);
+			}
+		}else {
+			$results = array(
+				'title' => translate(['text' => 'Please login', 'isPublicFacing' => true]),
+				'message' => translate(['text' => "You must be logged in.  Please close this dialog and login before placing your request.", 'isPublicFacing' => true]),
 				'success' => false
 			);
 		}

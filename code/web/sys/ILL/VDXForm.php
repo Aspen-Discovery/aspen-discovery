@@ -152,7 +152,7 @@ class VdxForm extends DataObject
 		return parent::okToExport($selectedFilters);
 	}
 
-	public function getFormFields($recordId, ?MarcRecordDriver $marcRecordDriver)
+	public function getFormFields(?MarcRecordDriver $marcRecordDriver)
 	{
 		$fields = [];
 		if ($this->introText){
@@ -173,9 +173,24 @@ class VdxForm extends DataObject
 			$fields['feeInformationText'] =array('property' => 'feeInformationText', 'type' => 'label', 'label' => $this->feeInformationText, 'description' => '');
 			if ($this->showMaximumFee){
 				$fields['maximumFee'] =array('property' => 'maximumFee', 'type' => 'currency', 'label' => 'Maximum Fee ', 'description' => 'The maximum fee you are willing to pay to have this title transferred to the library.', 'default'=> 5, 'displayFormat'=>'%0.2f');
-				$fields['acceptFee'] =array('property' => 'acceptFee', 'type' => 'checkbox', 'label' => 'I will pay any fees associated with this request up to the maximum amount defined above', 'description' => '', 'required' => true);
+				$fields['acceptFee'] =array('property' => 'acceptFee', 'type' => 'checkbox', 'label' => 'I will pay any fees associated with this request up to the maximum amount defined above', 'description' => '');
 			}
 		}
+		$user = UserAccount::getLoggedInUser();
+		$locations = $user->getValidPickupBranches($user->getCatalogDriver()->accountProfile->recordSource);
+		$pickupLocations = [];
+		foreach ($locations as $key => $location){
+			if ($location instanceof Location){
+				$pickupLocations[$location->code] = $location->displayName;
+			}else{
+				if ($key == '0default'){
+					$pickupLocations[-1] = $location;
+				}
+			}
+		}
+		$fields['pickupLocation'] =array('property' => 'pickupLocation', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Pickup Location', 'description' => 'Where you would like to pickup the title', 'required' => true, 'default' => $user->getHomeLocationCode());
+		$fields['note'] =array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => 'Any additional information you want us to have about this request', 'required' => false);
+
 		$fields['catalogKey'] =array('property' => 'catalogKey', 'type' => ($this->showCatalogKey ? 'text' : 'hidden'), 'label' => 'Record Number', 'description' => 'The record number to be requested', 'maxLength' => 20, 'required' => false, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getId() : ''));
 		return $fields;
 	}
