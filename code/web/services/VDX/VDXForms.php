@@ -2,18 +2,18 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
+require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 
-class ILL_VDXSettings extends ObjectEditor
+class ILL_VdxForms extends ObjectEditor
 {
 	function getObjectType() : string
 	{
-		return 'VDXSetting';
+		return 'VdxForm';
 	}
 
 	function getToolName() : string
 	{
-		return 'VDXSettings';
+		return 'VdxForms';
 	}
 
 	function getModule() : string
@@ -23,12 +23,12 @@ class ILL_VDXSettings extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'VDX Settings';
+		return 'VDX Forms';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
 	{
-		$object = new VDXSetting();
+		$object = new VdxForm();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
@@ -46,7 +46,7 @@ class ILL_VDXSettings extends ObjectEditor
 
 	function getObjectStructure() : array
 	{
-		return VDXSetting::getObjectStructure();
+		return VdxForm::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn() : string
@@ -74,7 +74,7 @@ class ILL_VDXSettings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ill_integration', 'Interlibrary Loan');
-		$breadcrumbs[] = new Breadcrumb('/ILL/VDXSettings', 'VDX Settings');
+		$breadcrumbs[] = new Breadcrumb('/VDX/VdxForms', 'VDX Forms');
 		return $breadcrumbs;
 	}
 
@@ -85,11 +85,6 @@ class ILL_VDXSettings extends ObjectEditor
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission('Administer VDX Settings');
-	}
-
-	function canAddNew()
-	{
-		return $this->getNumObjects() == 0;
+		return UserAccount::userHasPermission(['Administer All VDX Forms', 'Administer Library VDX Forms']);
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/sys/ILL/VdxFormLocation.php';
+require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 class VdxForm extends DataObject
 {
 	public $__table = 'vdx_form';

@@ -979,11 +979,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				//See if we have VDX integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
 				$useVdxForRecord = false;
 				$vdxGroupsForLocation = [];
-				require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
+				require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 				$vdxSettings = new VdxSetting();
 				if ($vdxSettings->find(true)){
-					require_once ROOT_DIR . '/sys/ILL/VdxHoldGroup.php';
-					require_once ROOT_DIR . '/sys/ILL/VdxHoldGroupLocation.php';
+					require_once ROOT_DIR . '/sys/VDX/VdxHoldGroup.php';
+					require_once ROOT_DIR . '/sys/VDX/VdxHoldGroupLocation.php';
 					$useVdxForRecord = true;
 					$homeLocation = Location::getDefaultLocationForUser();
 					if ($homeLocation != null){

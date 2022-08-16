@@ -2489,9 +2489,9 @@ class User extends DataObject
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
 
 		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
-		$sections['ill_integration']->addAction(new AdminAction('VDX Settings', 'Define Settings for VDX Integration', '/ILL/VDXSettings'), ['Administer VDX Settings']);
-		$sections['ill_integration']->addAction(new AdminAction('VDX Hold Groups', 'Modify Hold Groups for creating holds via VDX.', '/ILL/VDXHoldGroups'), 'Administer VDX Hold Groups');
-		$sections['ill_integration']->addAction(new AdminAction('VDX Forms', 'Configure Forms for submitting VDX information.', '/ILL/VDXForms'), ['Administer All VDX Forms', 'Administer Library VDX Forms']);
+		$sections['ill_integration']->addAction(new AdminAction('VDX Settings', 'Define Settings for VDX Integration', '/VDX/VDXSettings'), ['Administer VDX Settings']);
+		$sections['ill_integration']->addAction(new AdminAction('VDX Hold Groups', 'Modify Hold Groups for creating holds via VDX.', '/VDX/VDXHoldGroups'), 'Administer VDX Hold Groups');
+		$sections['ill_integration']->addAction(new AdminAction('VDX Forms', 'Configure Forms for submitting VDX information.', '/VDX/VDXForms'), ['Administer All VDX Forms', 'Administer Library VDX Forms']);
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
 		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), ['View Location Holds Reports', 'View All Holds Reports']);

@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/sys/ILL/VdxHoldGroupLocation.php';
+require_once ROOT_DIR . '/sys/VDX/VdxHoldGroupLocation.php';
 
 class VdxHoldGroup extends DataObject
 {

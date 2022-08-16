@@ -61,9 +61,9 @@ class Record_AJAX extends Action
 			}
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
-			require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
-			require_once ROOT_DIR . '/sys/ILL/VdxForm.php';
-			require_once ROOT_DIR . '/sys/ILL/VdxFormLocation.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$homeLocation = Location::getDefaultLocationForUser();
@@ -129,9 +129,9 @@ class Record_AJAX extends Action
 
 	function submitVdxRequest(){
 		if (UserAccount::isLoggedIn()) {
-			require_once ROOT_DIR . '/sys/ILL/VdxSetting.php';
-			require_once ROOT_DIR . '/sys/ILL/VdxForm.php';
-			require_once ROOT_DIR . '/sys/ILL/VdxFormLocation.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$results = $vdxSettings->submitRequest(UserAccount::getActiveUserObj(), $_REQUEST);
