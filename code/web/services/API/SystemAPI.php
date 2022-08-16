@@ -19,7 +19,7 @@ class SystemAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getBrandedAppSettings', 'getTranslation', 'getLanguages'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLocationAppSettings', 'getTranslation', 'getLanguages'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -120,7 +120,7 @@ class SystemAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	public function getBrandedAppSettings() : array
+	public function getAppSettings() : array
 	{
 		global $configArray;
 		if (isset($_REQUEST['slug'])) {
@@ -177,7 +177,7 @@ class SystemAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	public function getAppSettings() : array
+	public function getLocationAppSettings() : array
 	{
 		if (isset($_REQUEST['locationId'])) {
 			$location = new Location();
