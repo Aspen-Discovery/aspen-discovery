@@ -982,6 +982,14 @@ public class EvergreenExportMain {
 		logEntry.addNote("Validating that full export is the correct size");
 		logEntry.saveResults();
 
+		File recordsInMarc = new File("/var/log/aspen-discovery/" + serverName + "/logs/recordsInFullMarc.csv");
+		BufferedWriter recordsInMarcWriter;
+		try {
+			recordsInMarcWriter = new BufferedWriter(new FileWriter(recordsInMarc));
+		}catch (Exception e){
+			logger.error("Error creating recordsInFullMarc.csv", e);
+			return 0;
+		}
 		int numRecordsRead = 0;
 		int numRecordsWithErrors = 0;
 		String lastRecordProcessed = "";
@@ -995,24 +1003,38 @@ public class EvergreenExportMain {
 					curBib = catalogReader.next();
 				} catch (Exception e) {
 					numRecordsWithErrors++;
+					recordsInMarcWriter.write("Exception Reading Record");
 				}
 				if (curBib != null) {
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
+						recordsInMarcWriter.write(recordNumber);
+						if (recordIdentifier.isSuppressed()){
+							recordsInMarcWriter.write(",suppressed");
+						}
 						lastRecordProcessed = recordNumber;
 						recordNumber = recordNumber.replaceAll("[^\\d]", "");
 						long recordNumberDigits = Long.parseLong(recordNumber);
 						if (recordNumberDigits > maxIdInExport) {
 							maxIdInExport = recordNumberDigits;
 						}
+					}else{
+						recordsInMarcWriter.write("Could not determine record identifier");
 					}
 				}
+				recordsInMarcWriter.newLine();
 			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
 			logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 			return totalChanges;
+		}
+		try {
+			recordsInMarcWriter.close();
+		}catch (Exception e){
+			logger.error("Error closing recordsInFullMarc.csv", e);
+			return 0;
 		}
 		int numRecordsInXmlFile = 0;
 		try {
