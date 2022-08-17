@@ -70,7 +70,7 @@ if ($search->getNumResults() > 0){
 						$notificationToken->userId = $searchEntry->user_id;
 						$notificationToken->find();
 						while($notificationToken->fetch()) {
-							$notification = array(
+							$body = array(
 								'to' => $notificationToken->pushToken,
 								'title' => 'New Titles',
 								'body' => 'New titles have been added to your saved search ' . $searchEntry->title . ' at the library. Check them out!',
@@ -78,7 +78,7 @@ if ($search->getNumResults() > 0){
 								'channelId' => 'savedSearch'
 							);
 							$expoNotification = new ExpoNotification();
-							$expoNotification->sendExpoPushNotification($notification, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
+							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
 						}
 					}
 				}
