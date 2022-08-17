@@ -129,11 +129,13 @@ class Record_AJAX extends Action
 
 	function submitVdxRequest(){
 		if (UserAccount::isLoggedIn()) {
+			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
+				$vdxDriver = new VdxDriver();
 				$results = $vdxSettings->submitRequest(UserAccount::getActiveUserObj(), $_REQUEST);
 			}else{
 				$results = array(

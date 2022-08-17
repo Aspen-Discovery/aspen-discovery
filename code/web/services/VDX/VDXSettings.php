@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 
-class ILL_VDXSettings extends ObjectEditor
+class VDX_VDXSettings extends ObjectEditor
 {
 	function getObjectType() : string
 	{
@@ -18,7 +18,7 @@ class ILL_VDXSettings extends ObjectEditor
 
 	function getModule() : string
 	{
-		return 'ILL';
+		return 'VDX';
 	}
 
 	function getPageTitle() : string

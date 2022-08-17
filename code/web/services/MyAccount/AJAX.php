@@ -2186,18 +2186,22 @@ class MyAccount_AJAX extends JSON_Action
 			if (UserAccount::isLoggedIn() == false || empty($user)){
 				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else {
-				if ($user->getHomeLibrary() != null) {
-					$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
-				}else{
-					$allowFreezeHolds = $library->allowFreezeHolds;
-				}
-				if ($allowFreezeHolds) {
-					$interface->assign('allowFreezeAllHolds', true);
+				if ($source != 'interlibrary_loan') {
+					if ($user->getHomeLibrary() != null) {
+						$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
+					} else {
+						$allowFreezeHolds = $library->allowFreezeHolds;
+					}
+					if ($allowFreezeHolds) {
+						$interface->assign('allowFreezeAllHolds', true);
+					} else {
+						$interface->assign('allowFreezeAllHolds', false);
+					}
+					$interface->assign('allowFreezeHolds', true);
 				} else {
 					$interface->assign('allowFreezeAllHolds', false);
+					$interface->assign('allowFreezeHolds', false);
 				}
-
-				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
 				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra');

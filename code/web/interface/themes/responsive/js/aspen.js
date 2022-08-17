@@ -5501,6 +5501,8 @@ AspenDiscovery.Account = (function(){
 				var label = 'Holds';
 				if (source === 'ils'){
 					label = 'Physical Holds';
+				}else if (source === 'interlibrary_loan'){
+					label = 'Interlibrary Loan Requests';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
 				}else if (source === 'cloud_library'){
@@ -11729,6 +11731,7 @@ AspenDiscovery.Record = (function(){
 					maximumFee: $('#maximumFee').val(),
 					acceptFee: $('#acceptFee').prop('checked'),
 					pickupLocation: $('#pickupLocationSelect').val(),
+					catalogKey: $('#catalogKey').val(),
 					note: $('#note').val()
 				};
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";

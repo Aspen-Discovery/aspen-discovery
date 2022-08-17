@@ -150,7 +150,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private function _connectToAPI($forceNewConnection, $methodName){
-		/** @var Memcache $memCache */
 		global $memCache;
 		$settings = $this->getSettings();
 		if ($settings == false){

@@ -538,6 +538,25 @@ class User extends DataObject
 		return false;
 	}
 
+	function hasInterlibraryLoan(){
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
+		$vdxSettings = new VdxSetting();
+		if ($vdxSettings->find(true)) {
+			$homeLocation = Location::getDefaultLocationForUser();
+			if ($homeLocation != null) {
+				//Get configuration for the form.
+				$vdxFormForLocation = new VdxFormLocation();
+				$vdxFormForLocation->locationId = $homeLocation->locationId;
+				if ($vdxFormForLocation->find(true)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Returns a list of users that can view this account
 	 *
@@ -1147,38 +1166,48 @@ class User extends DataObject
 			}
 
 			//Get holds from OverDrive
-			if ($this->isValidForEContentSource('overdrive')) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				$overDriveHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
-				if ($source == 'all' || $source == 'overdrive') {
+			if ($source == 'all' || $source == 'overdrive') {
+				if ($this->isValidForEContentSource('overdrive')) {
+					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+					$driver = new OverDriveDriver();
+					$overDriveHolds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
 				}
 			}
 
 			//Get holds from cloudLibrary
-			if ($this->isValidForEContentSource('cloud_library')) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				$cloudLibraryHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
-				if ($source == 'all' || $source == 'cloud_library') {
+			if ($source == 'all' || $source == 'cloud_library') {
+				if ($this->isValidForEContentSource('cloud_library')) {
+					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+					$driver = new CloudLibraryDriver();
+					$cloudLibraryHolds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
 				}
 			}
 
 			//Get holds from Axis 360
-			if ($this->isValidForEContentSource('axis360')) {
-				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-				$driver = new Axis360Driver();
-				$axis360Holds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $axis360Holds);
-				if ($source == 'all' || $source == 'axis360') {
+			if ($source == 'all' || $source == 'axis360') {
+				if ($this->isValidForEContentSource('axis360')) {
+					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+					$driver = new Axis360Driver();
+					$axis360Holds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $axis360Holds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
 				}
 			}
 
+			if ($source == 'all' || $source == 'interlibrary_loan') {
+				if ($this->hasInterlibraryLoan()) {
+					//For now, this is just VDX
+					require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+					$driver = new VdxDriver();
+					$vdxRequests = $driver->getRequests($this);
+					$allHolds = array_merge_recursive($allHolds, $vdxRequests);
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $vdxRequests);
+				}
+			}
 			//Delete all existing holds
 			$hold = new Hold();
 			$hold->userId = $this->id;
@@ -1314,6 +1343,10 @@ class User extends DataObject
 					$indexToSortBy = 'sortTitle';
 			}
 			uasort($holdsToReturn['unavailable'], $holdSort);
+		}
+
+		if ($source == 'interlibrary_loan'){
+			unset($holdsToReturn['available']);
 		}
 
 		return $holdsToReturn;

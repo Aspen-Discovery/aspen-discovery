@@ -14,4 +14,6 @@ class VdxRequest extends DataObject
 	public $maximumFee;
 	public $catalogKey;
 	public $status;
+	public $note;
+	public $pickupLocation;
 }

@@ -85,6 +85,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->hasInterlibraryLoan()}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=interlibrary_loan" id="holdsInterlibraryLoan" title="View Interlibrary Loan Requests">
+												{translate text="Interlibrary Loan Requests" isPublicFacing=true} {if !$offline}<span class="badge"><span class="interlibrary-loan-requests-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 									{if $user->isValidForEContentSource('overdrive')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;

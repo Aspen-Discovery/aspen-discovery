@@ -1,15 +1,19 @@
 {assign var="hideCoversFormDisplayed" value=false}
 {foreach from=$recordList item=sectionData key=sectionKey}
-	<h2>{if $sectionKey == 'available'}{translate text="Holds Ready For Pickup" isPublicFacing=true}{else}{translate text="Pending Holds" isPublicFacing=true}{/if}</h2>
+	<h2>{if $sectionKey == 'available'}{translate text="Holds Ready For Pickup" isPublicFacing=true}{else}{if $source=='interlibrary_loan'}{translate text="Pending Requests" isPublicFacing=true}{else}{translate text="Pending Holds" isPublicFacing=true}{/if}{/if}</h2>
 	<p class="alert alert-info">
 		{if $sectionKey == 'available'}
 			{translate text="These titles have arrived at the library or are available online for you to use." isPublicFacing=true}
 			{*These titles have arrived at the library or are available online for you to use.*}
 		{else}
-			{if not $notification_method or $notification_method eq 'Unknown'}
-				{translate text="These titles are currently checked out to other patrons. We will notify you when a title is available." isPublicFacing=true}
+			{if $source == 'interlibrary_loan'}
+				{translate text="These requests will be filled by another library and sent to your library. We will notify you when a title is available." isPublicFacing=true}
 			{else}
-				{translate text="These titles are currently checked out to other patrons. We will notify you via %1% when a title is available." 1=$notification_method isPublicFacing=true}
+				{if not $notification_method or $notification_method eq 'Unknown'}
+					{translate text="These titles are currently checked out to other patrons. We will notify you when a title is available." isPublicFacing=true}
+				{else}
+					{translate text="These titles are currently checked out to other patrons. We will notify you via %1% when a title is available." 1=$notification_method isPublicFacing=true}
+				{/if}
 			{/if}
 		{/if}
 	</p>
@@ -44,6 +48,8 @@
 					{include file="MyAccount/cloudLibraryHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{elseif $record->type == 'axis360'}
 					{include file="MyAccount/axis360Hold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
+				{elseif $record->type == 'vdx'}
+					{include file="MyAccount/vdxRequest.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{else}
 					<div class="row">
 						Unknown record type {$record->type}
@@ -55,7 +61,11 @@
 		{if $sectionKey == 'available'}
 			{translate text='You do not have any holds that are ready to be picked up.' isPublicFacing=true}
 		{else}
-			{translate text='You do not have any pending holds.' isPublicFacing=true}
+			{if $source == 'interlibrary_loan'}
+				{translate text='You do not have any pending requests.' isPublicFacing=true}
+			{else}
+				{translate text='You do not have any pending holds.' isPublicFacing=true}
+			{/if}
 		{/if}
 	{/if}
 {/foreach}
