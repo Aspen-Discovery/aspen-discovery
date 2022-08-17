@@ -72,6 +72,7 @@ AspenDiscovery.Record = (function(){
 					maximumFee: $('#maximumFee').val(),
 					acceptFee: $('#acceptFee').prop('checked'),
 					pickupLocation: $('#pickupLocationSelect').val(),
+					catalogKey: $('#catalogKey').val(),
 					note: $('#note').val()
 				};
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";

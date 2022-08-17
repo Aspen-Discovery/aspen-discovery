@@ -95,6 +95,15 @@ function getUpdates22_09_00() : array
 						) ENGINE = INNODB;',
 			]
 		], //vdx_requests
+		'vdx_requests_2' => [
+			'title' => 'VDX Requests 2',
+			'description' => 'Add additional fields for vdx requests',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_vdx_request ADD COLUMN note text',
+				'ALTER TABLE user_vdx_request ADD COLUMN pickupLocation VARCHAR(75)',
+			]
+		], //vdx_requests
 		'move_aspen_lida_settings' => [
 			'title' => 'Move Aspen LiDA settings to own section',
 			'description' => 'Moves quick searches, general app config, branded app config, and adds notification settings',

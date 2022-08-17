@@ -248,6 +248,8 @@ AspenDiscovery.Account = (function(){
 				var label = 'Holds';
 				if (source === 'ils'){
 					label = 'Physical Holds';
+				}else if (source === 'interlibrary_loan'){
+					label = 'Interlibrary Loan Requests';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
 				}else if (source === 'cloud_library'){
