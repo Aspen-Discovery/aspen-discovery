@@ -241,7 +241,7 @@ class AspenSite extends DataObject
 				}
 			}
 
-			if($numTries <= 2) {
+			if($numTries <= 2 && $this->isOnline != 1 && $this->isOnline != "1") {
 				$status['alive'] = false;
 				$status['checks'] = [];
 				$status['wasOffline'] = false;
