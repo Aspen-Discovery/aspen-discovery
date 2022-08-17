@@ -139,6 +139,42 @@ function getUpdates22_09_00() : array
 				'moveLocationAppSettings'
 			]
 		], //move_location_app_settings
+		'create_user_notification_tokens' => [
+			'title' => 'Add user notification push tokens',
+			'description' => 'Setup table to store user notification push tokens from Expo',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS user_notification_tokens (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT(11),
+					pushToken VARCHAR(500)
+				) ENGINE INNODB',
+			]
+		], //create_user_notification_tokens
+		'create_user_notifications' => [
+			'title' => 'Add user notification receipts',
+			'description' => 'Setup table to store user notification receipts from Expo',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS user_notifications (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT(11),
+					notificationType VARCHAR(75),
+					notificationDate INT(11),
+					receiptId VARCHAR(500),
+					completed TINYINT(1),
+					error TINYINT(1),
+					message VARCHAR(500)
+				) ENGINE INNODB',
+			]
+		], //create_user_notifications
+		'greenhouse_add_accessToken' => [
+			'title' => 'Add notificationAccessToken for Greenhouse',
+			'description' => 'Add access token for notification api access',
+			'sql' => [
+				"ALTER TABLE greenhouse_settings ADD COLUMN notificationAccessToken VARCHAR(256) default NULL",
+			]
+		], //greenhouse_add_accessToken
 	];
 }
 
