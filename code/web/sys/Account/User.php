@@ -2889,6 +2889,31 @@ class User extends DataObject
 		return false;
 	}
 
+	public function saveNotificationPushToken($token): bool{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$pushToken = new UserNotificationToken();
+		$pushToken->userId = $this->id;
+		$pushToken->pushToken = $token;
+		if($pushToken->insert()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public function getNotificationPushToken(): array{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$tokens = [];
+		$obj = new UserNotificationToken();
+		$obj->userId = $this->id;
+		$obj->find();
+		while($obj->fetch()){
+			$token[$obj->pushToken] = $obj->pushToken;
+			$tokens[] = $token;
+		}
+		return $tokens;
+	}
+
 	public function okToExport(array $selectedFilters) : bool{
 		$okToExport = parent::okToExport($selectedFilters);
 		if ($this->homeLocationId == 0 || in_array($this->homeLocationId, $selectedFilters['locations'])){
