@@ -232,12 +232,11 @@ class AspenSite extends DataObject
 					$status['checks'] = [];
 					$status['wasOffline'] = false;
 					$this->isOnline = 0;
-					$this->update();
+					$this->lastOfflineNote = "Unable to connect to server";
 					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-						$this->lastOfflineNote = "Unable to connect to server";
 						$this->lastOfflineTime = time();
-						$this->update();
 					}
+					$this->update();
 				}
 			}
 
@@ -259,12 +258,12 @@ class AspenSite extends DataObject
 			$status['checks'] = [];
 			$status['wasOffline'] = false;
 			$this->isOnline = 0;
-			$this->update();
+			$this->lastOfflineNote = "Base URL not set";
+			$this->lastOfflineTime = time();
 			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-				$this->lastOfflineNote = "Base URL not set";
 				$this->lastOfflineTime = time();
-				$this->update();
 			}
+			$this->update();
 		}
 
 		return $status;
