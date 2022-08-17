@@ -9,7 +9,7 @@ class GreenhouseAPI extends Action
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getLibraries', 'getLibrary', 'authenticateTokens')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getLibraries', 'getLibrary', 'authenticateTokens', 'getNotificationAccessToken')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
@@ -59,6 +59,16 @@ class GreenhouseAPI extends Action
 		}
 
 		return [ 'success' => false ];
+	}
+
+	public function getNotificationAccessToken() {
+		$accessToken = null;
+		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+		$greenhouseSettings = new GreenhouseSettings();
+		if($greenhouseSettings->find(true)){
+			$accessToken = $greenhouseSettings->notificationAccessToken;
+		}
+		return ['token' => $accessToken];
 	}
 
 	public function updateSiteStatuses() {

@@ -5,6 +5,9 @@ require_once __DIR__ . '/../bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/SearchUpdateLogEntry.php';
 
+require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+
 //Create a log entry
 $searchUpdateLogEntry = new SearchUpdateLogEntry();
 $searchUpdateLogEntry->startTime = time();
@@ -63,8 +66,20 @@ if ($search->getNumResults() > 0){
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
 					if ($hasNewResults){
-						//TODO: Trigger notification here
-
+						$notificationToken = new UserNotificationToken();
+						$notificationToken->userId = $searchEntry->user_id;
+						$notificationToken->find();
+						while($notificationToken->fetch()) {
+							$body = array(
+								'to' => $notificationToken->pushToken,
+								'title' => 'New Titles',
+								'body' => 'New titles have been added to your saved search ' . $searchEntry->title . ' at the library. Check them out!',
+								'categoryId' => 'savedSearch',
+								'channelId' => 'savedSearch'
+							);
+							$expoNotification = new ExpoNotification();
+							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
+						}
 					}
 				}
 			}else{
