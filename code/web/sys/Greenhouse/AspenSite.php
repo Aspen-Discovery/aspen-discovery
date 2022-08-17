@@ -94,17 +94,6 @@ class AspenSite extends DataObject
 					$retry = ($numTries <= 2);
 					if($retry) {
 						sleep(5);
-					} else {
-						$status['alive'] = false;
-						$status['checks'] = [];
-						$status['wasOffline'] = false;
-						$this->isOnline = 0;
-
-						if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-							$this->lastOfflineTime = time();
-						}
-						$this->lastOfflineNote = "Unable to connect to server after 2 attempts";
-						$this->update();
 					}
 					$ctx = stream_context_create(array(
 						'http' => array(
@@ -251,6 +240,20 @@ class AspenSite extends DataObject
 					}
 				}
 			}
+
+			if($numTries <= 2) {
+				$status['alive'] = false;
+				$status['checks'] = [];
+				$status['wasOffline'] = false;
+				$this->isOnline = 0;
+
+				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+					$this->lastOfflineTime = time();
+				}
+				$this->lastOfflineNote = "Unable to connect to server after 2 attempts";
+				$this->update();
+			}
+
 		}else{
 			$status['alive'] = false;
 			$status['checks'] = [];
