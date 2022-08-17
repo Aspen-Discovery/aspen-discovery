@@ -245,7 +245,6 @@ class AspenSite extends DataObject
 				$status['checks'] = [];
 				$status['wasOffline'] = false;
 				$this->isOnline = 0;
-
 				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 					$this->lastOfflineTime = time();
 				}
@@ -259,7 +258,6 @@ class AspenSite extends DataObject
 			$status['wasOffline'] = false;
 			$this->isOnline = 0;
 			$this->lastOfflineNote = "Base URL not set";
-			$this->lastOfflineTime = time();
 			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 				$this->lastOfflineTime = time();
 			}
