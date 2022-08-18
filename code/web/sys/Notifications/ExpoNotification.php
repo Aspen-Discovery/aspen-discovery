@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 
 class ExpoNotification extends DataObject
 {
-	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType){
+	public function sendExpoPushNotification($body, $userId, $notificationType){
 		//https://docs.expo.dev/push-notifications/sending-notifications
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/send";
@@ -18,6 +18,7 @@ class ExpoNotification extends DataObject
 		);
 		$expoCurlWrapper->addCustomHeaders($headers, false);
 		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
+		ExternalRequestLogEntry::logRequest('expoNotification.sendExpoPushNotification', 'POST', $url, $expoCurlWrapper->getHeaders(), false, $expoCurlWrapper->getResponseCode(), $response, []);
 		if ($expoCurlWrapper->getResponseCode() === 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
@@ -32,9 +33,6 @@ class ExpoNotification extends DataObject
 				$error = $json['errors'][0];
 				$notification->error = 1;
 				$notification->message = $error['code'] . ": " . $error['message'];
-				if($error['code'] == "DeviceNotRegistered") {
-					UserNotificationToken::deleteToken($pushToken);
-				}
 			}
 			$notification->insert();
 		} else {
