@@ -124,6 +124,7 @@ class SystemAPI extends Action
 	{
 		global $configArray;
 		if (isset($_REQUEST['slug'])) {
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
 			$app = new BrandedAppSetting();
 			$app->slugName = $_REQUEST['slug'];
 			if ($app->find(true)){
@@ -159,6 +160,7 @@ class SystemAPI extends Action
 			$library = new Library();
 			$library->libraryId = $_REQUEST['libraryId'];
 			if($library->find(true)) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 				$notificationSettings = new NotificationSetting();
 				$notificationSettings->id = $library->lidaNotificationSettingId;
 				if($notificationSettings->find(true)) {
@@ -183,6 +185,7 @@ class SystemAPI extends Action
 			$location = new Location();
 			$location->locationId = $_REQUEST['locationId'];
 			if($location->find(true)) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 				$appSettings = new AppSetting();
 				$appSettings->id = $location->lidaGeneralSettingId;
 				if($appSettings->find(true)) {
@@ -506,6 +509,7 @@ class SystemAPI extends Action
 				}
 			}
 
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
 			$app = new BrandedAppSetting();
 			if(isset($_REQUEST['slug'])) {
 				$app->slugName = $_REQUEST['slug'];
