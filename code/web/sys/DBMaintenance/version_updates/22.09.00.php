@@ -103,7 +103,17 @@ function getUpdates22_09_00() : array
 				'ALTER TABLE user_vdx_request ADD COLUMN note text',
 				'ALTER TABLE user_vdx_request ADD COLUMN pickupLocation VARCHAR(75)',
 			]
-		], //vdx_requests
+		], //vdx_requests_2
+		'vdx_setting_updates' => [
+			'title' => 'VDX Setting Updates',
+			'description' => 'Add additional information to be sent with the email',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE vdx_settings ADD COLUMN patronKey VARCHAR(50)',
+				'ALTER TABLE vdx_settings ADD COLUMN reqVerifySource VARCHAR(50)',
+				'ALTER TABLE location ADD COLUMN vdxLocation VARCHAR(50)',
+			]
+		], //vdx_requests_2
 		'move_aspen_lida_settings' => [
 			'title' => 'Move Aspen LiDA settings to own section',
 			'description' => 'Moves quick searches, general app config, branded app config, and adds notification settings',

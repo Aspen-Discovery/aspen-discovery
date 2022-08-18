@@ -136,7 +136,7 @@ class Record_AJAX extends Action
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$vdxDriver = new VdxDriver();
-				$results = $vdxSettings->submitRequest(UserAccount::getActiveUserObj(), $_REQUEST);
+				$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
 			}else{
 				$results = array(
 					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
