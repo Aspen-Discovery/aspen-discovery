@@ -83,6 +83,10 @@ class AspenSite extends DataObject
 	public function updateStatus() {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$status = $this->toArray();
+
+		$curlWrapper = new CurlWrapper();
+		$curlWrapper->setTimeout(5);
+		$this->lastOfflineNote = '';
 		if (!empty($this->baseUrl)){
 			$statusUrl = $this->baseUrl . '/API/SearchAPI?method=getIndexStatus';
 			$retry = true;
@@ -91,28 +95,45 @@ class AspenSite extends DataObject
 				$retry = false;
 				$numTries++;
 				try {
-					$retry = ($numTries <= 2);
-					if($retry) {
-						sleep(5);
-					}
-					$ctx = stream_context_create(array(
-						'http' => array(
-							'timeout' => 5
-						)
-					));
-					$statusRaw = file_get_contents($statusUrl, 0, $ctx);
-					if ($statusRaw) {
-						$statusJson = json_decode($statusRaw, true);
-						if(empty($statusJson)) {
+					$statusRaw = $curlWrapper->curlGetPage($statusUrl);
+					$responseCode = $curlWrapper->getResponseCode();
+					if ($responseCode != 200) {
+						//We might get a better response if we retry.
+						$canRetry = true;
+						if ($responseCode == 403){
+							$this->lastOfflineNote = "Got a response code of " . $curlWrapper->getResponseCode() . " can't monitor status for this server.";
+							$canRetry = false;
+						}elseif ($responseCode == 0){
+							$this->lastOfflineNote = "Got a response code of " . $curlWrapper->getResponseCode() . " could not connect to the server.";
+						}else{
+							$this->lastOfflineNote = "Got a response code of " . $curlWrapper->getResponseCode() . ".";
+						}
+						$retry = $canRetry && ($numTries <= 2);
+						if (!$retry) {
 							$status['alive'] = false;
 							$status['checks'] = [];
 							$status['wasOffline'] = false;
 							$this->isOnline = 0;
 
-							if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+							if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 								$this->lastOfflineTime = time();
 							}
-							$this->lastOfflineNote = "JSON data is not available";
+						}
+					} else {
+						$statusJson = json_decode($statusRaw, true);
+						if(empty($statusJson)) {
+							$retry = ($numTries <= 2);
+							if (!$retry) {
+								$status['alive'] = false;
+								$status['checks'] = [];
+								$status['wasOffline'] = false;
+								$this->isOnline = 0;
+
+								if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+									$this->lastOfflineTime = time();
+								}
+								$this->lastOfflineNote = "JSON data is not available";
+							}
 						} else {
 							$status['alive'] = true;
 							$status = array_merge($status, $statusJson['result']);
@@ -228,30 +249,23 @@ class AspenSite extends DataObject
 						$this->update();
 					}
 				}catch (Exception $e) {
-					$status['alive'] = false;
-					$status['checks'] = [];
-					$status['wasOffline'] = false;
-					$this->isOnline = 0;
-					$this->lastOfflineNote = "Unable to connect to server";
-					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-						$this->lastOfflineTime = time();
+					$retry = ($numTries <= 2);
+					if(!$retry) {
+						$status['alive'] = false;
+						$status['checks'] = [];
+						$status['wasOffline'] = false;
+						$this->isOnline = 0;
+						$this->lastOfflineNote = "Unable to connect to server";
+						if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+							$this->lastOfflineTime = time();
+						}
+						$this->update();
 					}
-					$this->update();
+				}
+				if($retry) {
+					sleep(5);
 				}
 			}
-
-			if($numTries <= 2 && $this->isOnline != 1 && $this->isOnline != "1") {
-				$status['alive'] = false;
-				$status['checks'] = [];
-				$status['wasOffline'] = false;
-				$this->isOnline = 0;
-				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-					$this->lastOfflineTime = time();
-				}
-				$this->lastOfflineNote = "Unable to connect to server after 2 attempts";
-				$this->update();
-			}
-
 		}else{
 			$status['alive'] = false;
 			$status['checks'] = [];
