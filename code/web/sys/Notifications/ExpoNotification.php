@@ -27,6 +27,8 @@ class ExpoNotification extends DataObject
 			$notification->pushToken = $pushToken;
 			$notification->notificationType = $notificationType;
 			$notification->notificationDate = time();
+			$notification->completed = 0;
+			$notification->error = 0;
 			if($data['id']) {
 				$notification->receiptId = $data['id'];
 			}
