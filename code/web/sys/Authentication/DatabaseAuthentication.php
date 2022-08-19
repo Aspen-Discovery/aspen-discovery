@@ -23,7 +23,7 @@ class DatabaseAuthentication implements Authentication {
 		if (($username == '') || ($password == '')) {
 			$user = new AspenError('Login information cannot be blank.');
 		} else {
-			if ($username = 'nyt_user'){
+			if ($username == 'nyt_user'){
 				$user = new AspenError('Cannot login as the New York Times User');
 			}else {
 				$user = new User();
