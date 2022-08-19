@@ -16,4 +16,5 @@ class VdxRequest extends DataObject
 	public $status;
 	public $note;
 	public $pickupLocation;
+	public $vdxId;
 }
