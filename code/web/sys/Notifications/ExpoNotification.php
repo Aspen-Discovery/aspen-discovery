@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 
 class ExpoNotification extends DataObject
 {
-	public function sendExpoPushNotification($body, $userId, $notificationType){
+	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType){
 		//https://docs.expo.dev/push-notifications/sending-notifications
 		global $logger;
 		$logger->log("Sending Expo Push Notification", Logger::LOG_ERROR);
@@ -26,6 +26,7 @@ class ExpoNotification extends DataObject
 			$data = $json['data'];
 			$notification = new UserNotification();
 			$notification->userId = $userId;
+			$notification->pushToken = $pushToken;
 			$notification->notificationType = $notificationType;
 			$notification->notificationDate = time();
 			if($data['id']) {
