@@ -21,7 +21,7 @@ class UserNotification extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'notificationDate' => ['property' => 'notificationDate', 'type' => 'timestamp', 'label' => 'Notification Date', 'description' => 'The date the notification was sent', 'readOnly' => true],
 			'notificationType' => ['property' => 'notificationType', 'type' => 'text', 'label' => 'Notification Type', 'description' => 'The kind of notification this was', 'readOnly' => true],
-			'userId' => ['property' => 'userId', 'type' => 'text', 'label' => 'User', 'description' => 'The user who the notification was sent to', 'readOnly' => true],
+			'user' => ['property' => 'user', 'type' => 'text', 'label' => 'User', 'description' => 'The user who the notification was sent to', 'readOnly' => true],
 			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The user\'s home library', 'readOnly' => true],
 			'device' => ['property' => 'device', 'type' => 'text', 'label' => 'Device', 'description' => 'The device that the notification was sent to', 'readOnly' => true],
 			'receiptId' => ['property' => 'receiptId', 'type' => 'text', 'label' => 'Receipt ID', 'description' => 'The ID of the notification within the notification API', 'readOnly' => true],
@@ -63,7 +63,7 @@ class UserNotification extends DataObject
 				if (array_key_exists($this->userId, UserNotification::$usersById)){
 					$this->_data['library'] = UserNotification::$usersById[$this->userId]->getHomeLibrary()->displayName;
 				}else {
-					$this->_data['library'] = 'Unknown';
+					$this->_data['library'] = translate(['text' => 'Unknown', 'isPublicFacing'=>true]);
 				}
 			}
 		} elseif ($name == 'device'){
@@ -75,7 +75,7 @@ class UserNotification extends DataObject
 						$this->_data['device'] = $token->deviceModel;
 					}
 				}else {
-					$this->_data['device'] = 'Unknown';
+					$this->_data['device'] = translate(['text' => 'Unknown', 'isPublicFacing'=>true]);
 				}
 			}
 		}
