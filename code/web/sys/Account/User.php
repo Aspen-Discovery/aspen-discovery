@@ -2654,7 +2654,13 @@ class User extends DataObject
 		$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
 		$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
 		$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
-		$sections['aspen_lida']->addAction(new AdminAction('Notification Settings', 'Define settings for in-app notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings'), 'Administer Aspen LiDA Settings');
+		$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
+		$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
+		if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')){
+			$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
+		}else{
+			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+		}
 		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
