@@ -2927,11 +2927,14 @@ class User extends DataObject
 		$pushToken = new UserNotificationToken();
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
-		if($pushToken->insert()) {
+		if($pushToken->find(true)) {
 			return true;
 		} else {
-			return false;
+			if($pushToken->insert()) {
+				return true;
+			}
 		}
+		return false;
 	}
 
 	public function getNotificationPushToken(): array{

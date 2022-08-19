@@ -6,6 +6,8 @@ class ExpoNotification extends DataObject
 {
 	public function sendExpoPushNotification($body, $userId, $notificationType){
 		//https://docs.expo.dev/push-notifications/sending-notifications
+		global $logger;
+		$logger->log("Sending Expo Push Notification", Logger::LOG_ERROR);
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/send";
 		$expoCurlWrapper = new CurlWrapper();
@@ -18,7 +20,7 @@ class ExpoNotification extends DataObject
 		);
 		$expoCurlWrapper->addCustomHeaders($headers, false);
 		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
-		ExternalRequestLogEntry::logRequest('expoNotification.sendExpoPushNotification', 'POST', $url, $expoCurlWrapper->getHeaders(), false, $expoCurlWrapper->getResponseCode(), $response, []);
+		$logger->log(print_r($response, true), Logger::LOG_ERROR);
 		if ($expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
