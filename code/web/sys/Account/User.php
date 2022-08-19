@@ -2928,11 +2928,12 @@ class User extends DataObject
 		return false;
 	}
 
-	public function saveNotificationPushToken($token): bool{
+	public function saveNotificationPushToken($token, $device): bool{
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$pushToken = new UserNotificationToken();
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
+		$pushToken->deviceModel = $device;
 		if($pushToken->find(true)) {
 			return true;
 		} else {

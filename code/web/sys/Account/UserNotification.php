@@ -22,7 +22,8 @@ class UserNotification extends DataObject
 			'notificationDate' => ['property' => 'notificationDate', 'type' => 'timestamp', 'label' => 'Notification Date', 'description' => 'The date the notification was sent', 'readOnly' => true],
 			'notificationType' => ['property' => 'notificationType', 'type' => 'text', 'label' => 'Notification Type', 'description' => 'The kind of notification this was', 'readOnly' => true],
 			'userId' => ['property' => 'userId', 'type' => 'text', 'label' => 'User', 'description' => 'The user who the notification was sent to', 'readOnly' => true],
-			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The patron\'s home library', 'readOnly' => true],
+			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The user\'s home library', 'readOnly' => true],
+			'device' => ['property' => 'device', 'type' => 'text', 'label' => 'Device', 'description' => 'The device that the notification was sent to', 'readOnly' => true],
 			'receiptId' => ['property' => 'receiptId', 'type' => 'text', 'label' => 'Receipt ID', 'description' => 'The ID of the notification within the notification API', 'readOnly' => true],
 			'completed' => ['property' => 'completed', 'type' => 'checkbox', 'label' => 'Completed?', 'description' => 'Whether or not the notification has been received by the device', 'readOnly' => true],
 			'error' => ['property' => 'error', 'type' => 'checkbox', 'label' => 'Error?', 'description' => 'Whether or not an error occurred during processing of the notification', 'readOnly' => true],
@@ -63,6 +64,18 @@ class UserNotification extends DataObject
 					$this->_data['library'] = UserNotification::$usersById[$this->userId]->getHomeLibrary()->displayName;
 				}else {
 					$this->_data['library'] = 'Unknown';
+				}
+			}
+		} elseif ($name == 'device'){
+			if (empty($this->_data['device'])){
+				if (array_key_exists($this->userId, UserNotification::$usersById)){
+					$token = new UserNotificationToken();
+					$token->pushToken = $this->pushToken;
+					if($token->find(true)) {
+						$this->_data['device'] = $token->deviceModel;
+					}
+				}else {
+					$this->_data['device'] = 'Unknown';
 				}
 			}
 		}

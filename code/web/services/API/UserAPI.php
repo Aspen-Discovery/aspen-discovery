@@ -3215,7 +3215,8 @@ class UserAPI extends Action
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if(isset($_POST['pushToken'])) {
-				$result = $user->saveNotificationPushToken($_POST['pushToken']);
+				$device = $_POST['deviceModel'] ?? "Unknown";
+				$result = $user->saveNotificationPushToken($_POST['pushToken'], $device);
 				if($result === true) {
 					return array(
 						'success' => true,

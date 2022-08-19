@@ -210,6 +210,13 @@ function getUpdates22_09_00() : array
 				"UPDATE permissions set sectionName = 'Aspen LiDA' where name = 'Administer Aspen LiDA Settings'"
 			]
 		], //notifications_report_permissions
+		'add_device_notification_tokens' => [
+			'title' => 'Add deviceModel to user_notification_tokens',
+			'description' => 'Add deviceModel to user_notification_tokens',
+			'sql' => [
+				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
+			]
+		], //add_device_notification_tokens
 	];
 }
 
