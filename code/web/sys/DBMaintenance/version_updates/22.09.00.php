@@ -104,6 +104,14 @@ function getUpdates22_09_00() : array
 				'ALTER TABLE user_vdx_request ADD COLUMN pickupLocation VARCHAR(75)',
 			]
 		], //vdx_requests_2
+		'vdx_request_id' => [
+			'title' => 'VDX Request IDs',
+			'description' => 'Add vdxid to requests',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_vdx_request ADD COLUMN vdxId INT',
+			]
+		], //vdx_request_id
 		'vdx_setting_updates' => [
 			'title' => 'VDX Setting Updates',
 			'description' => 'Add additional information to be sent with the email',
