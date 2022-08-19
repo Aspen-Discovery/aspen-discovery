@@ -65,9 +65,9 @@ if ($search->getNumResults() > 0){
 				$searchEntry->hasNewResults = $hasNewResults;
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
-					if ($hasNewResults){
+					if ($hasNewResults && $userForSearch->canReceiveNotifications()){
 						$notificationToken = new UserNotificationToken();
-						$notificationToken->userId = $searchEntry->user_id;
+						$notificationToken->userId = $userForSearch->id;
 						$notificationToken->find();
 						while($notificationToken->fetch()) {
 							$body = array(

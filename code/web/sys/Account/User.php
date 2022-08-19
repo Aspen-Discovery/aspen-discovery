@@ -2928,6 +2928,31 @@ class User extends DataObject
 		return false;
 	}
 
+	public function canReceiveNotifications(): bool
+	{
+		$userLibrary = Library::getPatronHomeLibrary();
+		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+		$settings = new NotificationSetting();
+		$settings->id = $userLibrary->lidaNotificationSettingId;
+		if($settings->find(true)) {
+			if($settings->sendTo == 2 || $settings->sendTo == '2') {
+				return true;
+			} elseif($settings->sendTo == 1 || $settings->sendTo == '1') {
+				$isStaff = 0;
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if($patronType->find(true)) {
+					$isStaff = $patronType->isStaff;
+				}
+				if($isStaff == 1 || $isStaff == '1') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public function saveNotificationPushToken($token, $device): bool{
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$pushToken = new UserNotificationToken();
