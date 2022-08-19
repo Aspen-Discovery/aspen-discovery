@@ -152,11 +152,15 @@ class VdxDriver
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mailer = new Mailer();
 
+		//Load client location and external location from location
+		$userHomeLocation = $user->getHomeLocation();
+		$vdxLocation = empty($userHomeLocation->vdxLocation) ? $userHomeLocation->code : $userHomeLocation->vdxLocation;
+
 		$body = "USERID=$user->cat_username\r\n";
 		$body .= "ClientCategory=$user->patronType\r\n";
-		$body .= "PatronKey=**TBD**\r\n";
-		$body .= "ClientLocation=**TBD**\r\n";
-		$body .= "ExternalLocation=**TBD**\r\n";
+		$body .= "PatronKey=$settings->patronKey\r\n";
+		$body .= "ClientLocation=$vdxLocation\r\n";
+		$body .= "ExternalLocation=$vdxLocation\r\n";
 		$body .= "ClientFirstName=$user->firstname\r\n";
 		$body .= "ClientLastName=$user->lastname\r\n";
 		$body .= "ClientAddr4Street=\r\n";
@@ -180,11 +184,14 @@ class VdxDriver
 		$body .= "ReqClassmark=\r\n";
 		$body .= "ReqPubPlace=\r\n";
 		$body .= "PickupLocation=" . $newRequest->pickupLocation . "\r\n";
-		$body .= "ReqVerifySource=**TBD**\r\n";
-		$body .= "AuthorisationStatus=**TBD**\r\n";
+		$body .= "ReqVerifySource=$settings->reqVerifySource\r\n";
+
 
 		if (!empty($newRequest->note)) {
 			$body .= "NOTE=" . $newRequest->note . "\r\n";
+			$body .= "AuthorisationStatus=MAUTH\r\n";
+		}else{
+			$body .= "AuthorisationStatus=TAUTH\r\n";
 		}
 
 		if ($mailer->send($settings->submissionEmailAddress, 'Document_Request', $body, null, null)){
