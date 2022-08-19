@@ -194,6 +194,13 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE greenhouse_settings ADD COLUMN notificationAccessToken VARCHAR(256) default NULL",
 			]
 		], //greenhouse_add_accessToken
+		'add_pushToken_user_notifications' => [
+			'title' => 'Add pushToken column to user_notifications table',
+			'description' => 'Add pushToken column to user_notifications table',
+			'sql' => [
+				"ALTER TABLE user_notifications ADD COLUMN pushToken VARCHAR(500) default NULL",
+			]
+		], //add_pushToken_user_notifications
 	];
 }
 
