@@ -20,7 +20,7 @@ class ExpoNotification extends DataObject
 		);
 		$expoCurlWrapper->addCustomHeaders($headers, false);
 		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
-		$logger->log(print_r($response, true), Logger::LOG_ERROR);
+		$logger->log('Sent notification via Expo ' . $expoCurlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
 		if ($expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
