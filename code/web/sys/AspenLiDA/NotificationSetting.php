@@ -14,7 +14,7 @@ class NotificationSetting extends DataObject
 	private $_libraries;
 
 	static function getObjectStructure() : array {
-		$sendToOptions = [0 => 'None (disabled)', 1 => 'Only Staff', 3 => 'Everyone'];
+		$sendToOptions = [0 => 'None (disabled)', 1 => 'Only Staff Users', 2 => 'All Users'];
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
 		$structure = array(

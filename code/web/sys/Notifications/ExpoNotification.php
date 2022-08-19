@@ -4,10 +4,9 @@ require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 
 class ExpoNotification extends DataObject
 {
-	public function sendExpoPushNotification($body, $userId, $notificationType){
+	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType){
 		//https://docs.expo.dev/push-notifications/sending-notifications
 		global $logger;
-		$logger->log("Sending Expo Push Notification", Logger::LOG_ERROR);
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/send";
 		$expoCurlWrapper = new CurlWrapper();
@@ -20,14 +19,16 @@ class ExpoNotification extends DataObject
 		);
 		$expoCurlWrapper->addCustomHeaders($headers, false);
 		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
-		$logger->log(print_r($response, true), Logger::LOG_ERROR);
 		if ($expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();
 			$notification->userId = $userId;
+			$notification->pushToken = $pushToken;
 			$notification->notificationType = $notificationType;
 			$notification->notificationDate = time();
+			$notification->completed = 0;
+			$notification->error = 0;
 			if($data['id']) {
 				$notification->receiptId = $data['id'];
 			}
@@ -58,7 +59,7 @@ class ExpoNotification extends DataObject
 		$expoCurlWrapper->addCustomHeaders($headers, false);
 		$body = ['ids' => $receiptId];
 		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
-		if($expoCurlWrapper->getResponseCode() === 200) {
+		if($expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();

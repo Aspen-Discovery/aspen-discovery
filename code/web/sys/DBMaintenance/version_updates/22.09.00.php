@@ -202,6 +202,29 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE greenhouse_settings ADD COLUMN notificationAccessToken VARCHAR(256) default NULL",
 			]
 		], //greenhouse_add_accessToken
+		'add_pushToken_user_notifications' => [
+			'title' => 'Add pushToken column to user_notifications table',
+			'description' => 'Add pushToken column to user_notifications table',
+			'sql' => [
+				"ALTER TABLE user_notifications ADD COLUMN pushToken VARCHAR(500) default NULL",
+			]
+		], //add_pushToken_user_notifications
+		'notifications_report_permissions' => [
+			'title' => 'Add permissions for Notifications report',
+			'description' => 'Add permissions for Notifications report',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'View Notifications Reports', '', 6, 'Controls if the user can view the Notifications Report.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Notifications Reports'))",
+				"UPDATE permissions set sectionName = 'Aspen LiDA' where name = 'Administer Aspen LiDA Settings'"
+			]
+		], //notifications_report_permissions
+		'add_device_notification_tokens' => [
+			'title' => 'Add deviceModel to user_notification_tokens',
+			'description' => 'Add deviceModel to user_notification_tokens',
+			'sql' => [
+				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
+			]
+		], //add_device_notification_tokens
 	];
 }
 

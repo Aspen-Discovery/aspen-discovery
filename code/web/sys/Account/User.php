@@ -2654,7 +2654,13 @@ class User extends DataObject
 		$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
 		$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
 		$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
-		$sections['aspen_lida']->addAction(new AdminAction('Notification Settings', 'Define settings for in-app notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings'), 'Administer Aspen LiDA Settings');
+		$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
+		$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
+		if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')){
+			$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
+		}else{
+			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+		}
 		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
@@ -2922,11 +2928,37 @@ class User extends DataObject
 		return false;
 	}
 
-	public function saveNotificationPushToken($token): bool{
+	public function canReceiveNotifications(): bool
+	{
+		$userLibrary = Library::getPatronHomeLibrary();
+		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+		$settings = new NotificationSetting();
+		$settings->id = $userLibrary->lidaNotificationSettingId;
+		if($settings->find(true)) {
+			if($settings->sendTo == 2 || $settings->sendTo == '2') {
+				return true;
+			} elseif($settings->sendTo == 1 || $settings->sendTo == '1') {
+				$isStaff = 0;
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if($patronType->find(true)) {
+					$isStaff = $patronType->isStaff;
+				}
+				if($isStaff == 1 || $isStaff == '1') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function saveNotificationPushToken($token, $device): bool{
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$pushToken = new UserNotificationToken();
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
+		$pushToken->deviceModel = $device;
 		if($pushToken->find(true)) {
 			return true;
 		} else {
