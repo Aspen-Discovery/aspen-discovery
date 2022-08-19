@@ -2928,9 +2928,9 @@ class User extends DataObject
 		return false;
 	}
 
-	public function canReceiveNotifications(): bool
+	public function canReceiveNotifications($user): bool
 	{
-		$userLibrary = Library::getPatronHomeLibrary();
+		$userLibrary = Library::getPatronHomeLibrary($user);
 		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 		$settings = new NotificationSetting();
 		$settings->id = $userLibrary->lidaNotificationSettingId;
