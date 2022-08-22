@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 
-class VDX_VdxForms extends ObjectEditor
+class VDX_VDXForms extends ObjectEditor
 {
 	function getObjectType() : string
 	{
@@ -13,7 +13,7 @@ class VDX_VdxForms extends ObjectEditor
 
 	function getToolName() : string
 	{
-		return 'VdxForms';
+		return 'VDXForms';
 	}
 
 	function getModule() : string
@@ -74,7 +74,7 @@ class VDX_VdxForms extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ill_integration', 'Interlibrary Loan');
-		$breadcrumbs[] = new Breadcrumb('/VDX/VdxForms', 'VDX Forms');
+		$breadcrumbs[] = new Breadcrumb('/VDX/VDXForms', 'VDX Forms');
 		return $breadcrumbs;
 	}
 
