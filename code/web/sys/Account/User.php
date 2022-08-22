@@ -539,20 +539,24 @@ class User extends DataObject
 	}
 
 	function hasInterlibraryLoan() : bool {
-		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-		require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
-		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)) {
-			$homeLocation = Location::getDefaultLocationForUser();
-			if ($homeLocation != null) {
-				//Get configuration for the form.
-				$vdxFormForLocation = new VdxFormLocation();
-				$vdxFormForLocation->locationId = $homeLocation->locationId;
-				if ($vdxFormForLocation->find(true)) {
-					return true;
+		try {
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)) {
+				$homeLocation = Location::getDefaultLocationForUser();
+				if ($homeLocation != null) {
+					//Get configuration for the form.
+					$vdxFormForLocation = new VdxFormLocation();
+					$vdxFormForLocation->locationId = $homeLocation->locationId;
+					if ($vdxFormForLocation->find(true)) {
+						return true;
+					}
 				}
 			}
+		}catch (Exception $e){
+			//This happens if the tables aren't setup, ignore
 		}
 		return false;
 	}

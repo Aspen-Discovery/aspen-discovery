@@ -53,7 +53,7 @@ class VdxDriver
 
 									if ($label == 'ILL Number') {
 										if ($curRequest != null) {
-											if ((strpos($curRequest->status, 'Completed') !== false) && $curRequest->status != 'Cancelled') {
+											if ((strpos($curRequest->status, 'Completed') === false) && $curRequest->status != 'Cancelled') {
 												$openRequests[] = $curRequest;
 											}else{
 												$closedRequests[] = $curRequest;
@@ -88,7 +88,7 @@ class VdxDriver
 								}
 							}
 							if ($curRequest != null){
-								if ((strpos($curRequest->status, 'Completed') !== false) && $curRequest->status != 'Cancelled') {
+								if ((strpos($curRequest->status, 'Completed') === false) && $curRequest->status != 'Cancelled') {
 									$openRequests[] = $curRequest;
 								}else{
 									$closedRequests[] = $curRequest;
@@ -222,12 +222,15 @@ class VdxDriver
 		$newRequest->publisher = strip_tags($requestFields['publisher']);
 		$newRequest->isbn = strip_tags($requestFields['isbn']);
 		$newRequest->feeAccepted = $requestFields['acceptFee'] == 'true' ? 1 : 0;
-		$newRequest->maximumFee = strip_tags($requestFields['maximumFee']);
+		$newRequest->maximumFeeAmount = strip_tags($requestFields['maximumFeeAmount']);
 		$newRequest->catalogKey = strip_tags($requestFields['catalogKey']);
 		$newRequest->note = strip_tags($requestFields['note']);
 		$newRequest->pickupLocation = strip_tags($requestFields['pickupLocation']);
 		$newRequest->status = 'New';
-		$newRequest->insert();
+		if (!$newRequest->insert()){
+			global $logger;
+			$logger->log("Could not insert new request " . $newRequest->getLastError(), Logger::LOG_ERROR);
+		}
 
 		//To submit, email the submission email address
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -256,7 +259,7 @@ class VdxDriver
 		$body .= "ReqPublisher=" . $newRequest->publisher . "\r\n";
 		$body .= "ReqPubDate=\r\n";
 		$body .= "ReqAdditional=Patron response to will pay: " . ($newRequest->feeAccepted ? 'Yes' : 'No') . "\r\n";
-		$body .= "ReqMaxCostCurr=USD " . $newRequest->maximumFee . "\r\n";
+		$body .= "ReqMaxCostCurr=USD " . $newRequest->maximumFeeAmount . "\r\n";
 		$body .= "ReqISBN=" . $newRequest->isbn . "\r\n";
 		$body .= "ControlNumbers._new=1\r\n";
 		$body .= "ControlNumbers.icn_rota_pos=-1\r\n";
