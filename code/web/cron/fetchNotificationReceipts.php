@@ -15,7 +15,9 @@ $numProcessed = 0;
 while($notification->fetch()) {
 	$expoNotification = new ExpoNotification();
 	if(!empty($notification->receiptId)) {
-		$expoNotification->getExpoNotificationReceipt($notification->receiptId);
+		// expo expects receipt id in an array, even if a single value
+		$arr[] = $notification->receiptId;
+		$expoNotification->getExpoNotificationReceipt($arr);
 		$numProcessed++;
 	}
 }
