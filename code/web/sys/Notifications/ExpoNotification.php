@@ -1,6 +1,7 @@
 <?php /** @noinspection PhpUnused */
 require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class ExpoNotification extends DataObject
 {
