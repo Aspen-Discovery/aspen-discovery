@@ -436,6 +436,16 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			}
+			if (Globals.hasInterlibraryLoanConnection) {
+				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(interlibraryLoanUrl, function (data) {
+					if (data.success) {
+						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+					}
+				});
+			}
 
 			return false;
 		},

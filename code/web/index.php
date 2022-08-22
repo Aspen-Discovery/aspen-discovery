@@ -461,6 +461,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	if (isset($homeLibrary)){
 		$interface->assign('homeLibrary', $homeLibrary->displayName);
 	}
+	$interface->assign('hasInterlibraryLoanConnection', UserAccount::getUserHasInterLibraryLoan());
 	$timer->logTime('Load patron pType');
 }else{
 	$interface->assign('pType', 'logged out');
