@@ -4,12 +4,14 @@ require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 
 class ExpoNotification extends DataObject
 {
+	/** @var CurlWrapper */
+	private $expoCurlWrapper;
+
 	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType){
 		//https://docs.expo.dev/push-notifications/sending-notifications
-		global $logger;
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/send";
-		$expoCurlWrapper = new CurlWrapper();
+		$this->expoCurlWrapper = new CurlWrapper();
 		$headers = array(
 			'Host: exp.host',
 			'Accept: application/json',
@@ -17,9 +19,9 @@ class ExpoNotification extends DataObject
 			'Content-Type: application/json',
 			'Authorization: Bearer ' . $bearerAuthToken
 		);
-		$expoCurlWrapper->addCustomHeaders($headers, false);
-		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
-		if ($expoCurlWrapper->getResponseCode() == 200) {
+		$this->expoCurlWrapper->addCustomHeaders($headers, true);
+		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
+		if ($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();
@@ -40,7 +42,7 @@ class ExpoNotification extends DataObject
 			$notification->insert();
 		} else {
 			global $logger;
-			$logger->log('Error sending notification via Expo ' . $expoCurlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
+			$logger->log('Error sending notification via Expo ' . $this->expoCurlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
 		}
 	}
 
@@ -48,7 +50,7 @@ class ExpoNotification extends DataObject
 		//https://docs.expo.dev/push-notifications/sending-notifications/#push-receipt-errors
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/getReceipts";
-		$expoCurlWrapper = new CurlWrapper();
+		$this->expoCurlWrapper = new CurlWrapper();
 		$headers = array(
 			'Host: exp.host',
 			'Accept: application/json',
@@ -56,10 +58,10 @@ class ExpoNotification extends DataObject
 			'Content-Type: application/json',
 			'Authorization: Bearer ' . $bearerAuthToken
 		);
-		$expoCurlWrapper->addCustomHeaders($headers, false);
+		$this->expoCurlWrapper->addCustomHeaders($headers, true);
 		$body = ['ids' => $receiptId];
-		$response = $expoCurlWrapper->curlPostPage($url, json_encode($body));
-		if($expoCurlWrapper->getResponseCode() == 200) {
+		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
+		if($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();
@@ -79,7 +81,7 @@ class ExpoNotification extends DataObject
 			}
 		} else {
 			global $logger;
-			$logger->log('Error fetching notification receipt via Expo ' . $expoCurlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
+			$logger->log('Error fetching notification receipt via Expo ' . $this->expoCurlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
 		}
 	}
 
