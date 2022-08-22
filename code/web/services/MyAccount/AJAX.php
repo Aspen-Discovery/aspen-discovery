@@ -1541,6 +1541,41 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function getMenuDataInterlibraryLoan()
+	{
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->hasInterlibraryLoan()) {
+				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+				$driver = new VdxDriver();
+				$vdxSummary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$vdxSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+					}
+				}
+				$timer->logTime("Loaded VDX Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $vdxSummary->toArray()
+				];
+			} else {
+				$result['message'] = 'Invalid for VDX';
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function getRatingsData()
 	{
 		global $interface;

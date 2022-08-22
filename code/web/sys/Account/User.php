@@ -538,7 +538,7 @@ class User extends DataObject
 		return false;
 	}
 
-	function hasInterlibraryLoan(){
+	function hasInterlibraryLoan() : bool {
 		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 		require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';

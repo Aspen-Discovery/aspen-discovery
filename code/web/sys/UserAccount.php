@@ -243,6 +243,15 @@ class UserAccount
 		return '';
 	}
 
+	public static function getUserHasInterLibraryLoan()
+	{
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->hasInterlibraryLoan();
+		}
+		return false;
+	}
+
 	public static function getUserHasCatalogConnection()
 	{
 		UserAccount::loadUserObjectFromDatabase();
