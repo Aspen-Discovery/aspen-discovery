@@ -518,6 +518,14 @@ class UserAPI extends Action
 				}
 			}
 
+			//Add Interlibrary Loan
+			if ($user->hasInterlibraryLoan()){
+				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+				$driver = new VdxDriver();
+				$vdxSummary = $driver->getAccountSummary($user);
+			}
+
+
 			$userData->numCheckedOut = $numCheckedOut;
 			$userData->numHolds = $numHolds;
 			$userData->numHoldsAvailable = $numHoldsAvailable;

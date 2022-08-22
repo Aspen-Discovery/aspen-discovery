@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		hasInterlibraryLoanConnection: false,
 		isPrint: false,
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
@@ -5686,6 +5687,16 @@ AspenDiscovery.Account = (function(){
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
 						}
+					}
+				});
+			}
+			if (Globals.hasInterlibraryLoanConnection) {
+				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(interlibraryLoanUrl, function (data) {
+					if (data.success) {
+						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
 					}
 				});
 			}

@@ -19,7 +19,8 @@ class VdxDriver
 	public function getRequests(User $patron)
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
-		$unavailableHolds = array();
+		$openRequests = array();
+		$closedRequests = array();
 		if ($this->settings != false){
 			//Fetch requests for the user
 			if ($this->loginToVdx($patron)){
@@ -29,7 +30,7 @@ class VdxDriver
 				if ($this->curlWrapper->getResponseCode() == 200){
 					//Get the number of requests
 					$matches = [];
-					if (preg_match('%<td class="reqnavlinks-wrap hits">.*?<p><span class="availbodybold">(\d*)&nbsp;</span>request found&nbsp;.*?</p>.*?</td>%s', $myRequestsResponse, $matches)){
+					if (preg_match('%<td class="reqnavlinks-wrap hits">.*?<p><span class="availbodybold">(\d*)&nbsp;</span>requests? found&nbsp;.*?</p>.*?</td>%s', $myRequestsResponse, $matches)){
 						$numRequests = $matches[1];
 					}else{
 						$numRequests = 0;
@@ -52,7 +53,11 @@ class VdxDriver
 
 									if ($label == 'ILL Number') {
 										if ($curRequest != null) {
-											$unavailableHolds[] = $curRequest;
+											if ((strpos($curRequest->status, 'Completed') !== false) && $curRequest->status != 'Cancelled') {
+												$openRequests[] = $curRequest;
+											}else{
+												$closedRequests[] = $curRequest;
+											}
 										}
 										$curRequest = new Hold();
 										$curRequest->userId = $patron->id;
@@ -74,14 +79,20 @@ class VdxDriver
 										//$curRequest['circulationStatus'] .= $value;
 									} elseif ($label == 'Cancel') {
 										$curRequest->cancelable = true;
+									} elseif ($label == 'Date Completed') {
+										//Ignore this one
 									} else {
 										//Unknown label
-										echo("Unknown label");
+										echo("Unknown label $label" );
 									}
 								}
 							}
 							if ($curRequest != null){
-								$unavailableHolds[] = $curRequest;
+								if ((strpos($curRequest->status, 'Completed') !== false) && $curRequest->status != 'Cancelled') {
+									$openRequests[] = $curRequest;
+								}else{
+									$closedRequests[] = $curRequest;
+								}
 							}
 						}
 					}
@@ -90,10 +101,80 @@ class VdxDriver
 		}
 
 		//TODO: Load the VDX requests we have in the database and match them up.
+		require_once ROOT_DIR . '/sys/VDX/VdxRequest.php';
+		$vdxRequest = new VdxRequest();
+		$vdxRequest->userId = $patron->id;
+		$vdxRequest->find();
+		while ($vdxRequest->fetch()){
+			if (empty($vdxRequest->vdxId)) {
+				//Try to sync with a hold we have read from VDX.
+				foreach ($openRequests as $request){
+					if ($request->title == $vdxRequest->title && $request->author == $vdxRequest->author){
+						$vdxRequest->vdxId = $request->sourceId;
+						$vdxRequest->status = $request->status;
+						$request->recordId = $vdxRequest->catalogKey;
+						$vdxRequest->update();
+						break;
+					}
+				}
+				if (!empty($vdxRequest->vdxId)) {
+					continue;
+				}
+				//If we didn't find it in the open requests, check the closed requests we do this as 2 stages in case someone requests the same title multiple times.
+				foreach ($closedRequests as $request) {
+					if ($request->title == $vdxRequest->title && $request->author == $vdxRequest->author) {
+						$vdxRequest->vdxId = $request->sourceId;
+						$vdxRequest->status = $request->status;
+						$request->recordId = $vdxRequest->catalogKey;
+						$vdxRequest->update();
+						break;
+					}
+				}
+				if (!empty($vdxRequest->vdxId)) {
+					continue;
+				}
+				//If we still don't have a VDX ID, it might have either not arrived within VDX yet, or it might be closed.
+				//We'll give it 24 hours to show up and if it hasn't, we can assume that it's been closed.
+				if (time() - $vdxRequest->datePlaced > (24 * 60 * 60)){
+					$vdxRequest->status = 'Not found in VDX';
+					break;
+				}else{
+					//Create a temporary open request for it
+					$curRequest = new Hold();
+					$curRequest->userId = $patron->id;
+					$curRequest->type = 'vdx';
+					$curRequest->sourceId = $vdxRequest->catalogKey;
+					$curRequest->title = $vdxRequest->title;
+					$curRequest->author = $vdxRequest->author;
+					$curRequest->status = 'Pending';
+					$curRequest->pickupLocationName = $vdxRequest->pickupLocation;
+					$curRequest->cancelable = false;
+					$openRequests[] = $curRequest;
+				}
+			}
+		}
 
 		return [
-			'unavailable' => $unavailableHolds
+			'unavailable' => $openRequests
 		];
+	}
+
+	public function getAccountSummary(User $user) : AccountSummary {
+		list($existingId, $summary) = $user->getCachedAccountSummary('vdx');
+
+		if ($summary === null || isset($_REQUEST['reload'])) {
+			//Get account information from api
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'vdx';
+			$summary->resetCounters();
+
+			$requests = $this->getRequests($user);
+			$summary->numUnavailableHolds = count($requests['unavailable']);
+		}
+
+		return $summary;
 	}
 
 	private function loginToVdx(User $user)
