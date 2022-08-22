@@ -57,7 +57,7 @@ class AspenLiDA_NotificationsReport extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
-		$breadcrumbs[] = new Breadcrumb('/Admin/AspenLiDA/NotificationsReport', 'Notifications Report');
+		$breadcrumbs[] = new Breadcrumb('/AspenLiDA/NotificationsReport', 'Notifications Report');
 		return $breadcrumbs;
 	}
 
