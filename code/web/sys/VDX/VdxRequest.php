@@ -11,7 +11,7 @@ class VdxRequest extends DataObject
 	public $publisher;
 	public $isbn;
 	public $feeAccepted;
-	public $maximumFee;
+	public $maximumFeeAmount;
 	public $catalogKey;
 	public $status;
 	public $note;
