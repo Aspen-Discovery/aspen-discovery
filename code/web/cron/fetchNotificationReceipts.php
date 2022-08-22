@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../bootstrap_aspen.php';
 
-require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 
 $notification = new UserNotification();
