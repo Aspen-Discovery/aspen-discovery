@@ -13,7 +13,7 @@ class VDX_VDXHoldGroups extends ObjectEditor
 
 	function getToolName() : string
 	{
-		return 'VdxHoldGroups';
+		return 'VDXHoldGroups';
 	}
 
 	function getModule() : string
