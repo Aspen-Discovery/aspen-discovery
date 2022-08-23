@@ -60,7 +60,7 @@ class ExpoNotification extends DataObject
 			'Authorization: Bearer ' . $bearerAuthToken
 		);
 		$this->expoCurlWrapper->addCustomHeaders($headers, true);
-		$body = ['ids' => $receiptId];
+		$body = ['ids' => [$receiptId]];
 		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
 		if($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
