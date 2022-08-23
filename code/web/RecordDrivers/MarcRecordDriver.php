@@ -991,7 +991,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							//Get the VDX Group(s) that we will interact with
 							$vdxGroupsForLocation = new VdxHoldGroupLocation();
 							$vdxGroupsForLocation->locationId = $homeLocation->locationId;
-							$vdxGroupIds = $vdxGroupsForLocation->fetchAll('id');
+							$vdxGroupIds = $vdxGroupsForLocation->fetchAll('vdxHoldGroupId');
 							$vdxGroups = [];
 							foreach ($vdxGroupIds as $vdxGroupId) {
 								$vdxGroup = new VdxHoldGroup();
