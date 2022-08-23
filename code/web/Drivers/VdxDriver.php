@@ -16,7 +16,7 @@ class VdxDriver
 		}
 	}
 
-	public function getRequests(User $patron)
+	public function getRequests(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$openRequests = array();
@@ -45,10 +45,13 @@ class VdxDriver
 								if (preg_match_all('%<td.*?>(.*?)</td>%s', $tableRow[0], $tableCells, PREG_SET_ORDER)) {
 									$label = trim(strip_tags($tableCells[0][1]));
 									$label = str_replace(':', '', $label);
+									$originalLabel = $tableCells[0][1];
 									if (array_key_exists(1, $tableCells)){
-										$value = strip_tags(trim($tableCells[1][0]));
+										$value = $tableCells[1][0];
+										$trimmedValue = trim(strip_tags(trim($tableCells[1][0])));
 									}else{
 										$value = '';
+										$trimmedValue = '';
 									}
 
 									if ($label == 'ILL Number') {
@@ -62,23 +65,27 @@ class VdxDriver
 										$curRequest = new Hold();
 										$curRequest->userId = $patron->id;
 										$curRequest->type = 'vdx';
-										$curRequest->sourceId = $value;
+										$curRequest->sourceId = $trimmedValue;
 									} elseif ($label == 'Author') {
-										$curRequest->author = $value;
+										$curRequest->author = $trimmedValue;
 									} elseif ($label == 'Title') {
-										$curRequest->title = $value;
+										$curRequest->title = $trimmedValue;
 									} elseif ($label == 'Status') {
-										$curRequest->status = $value;
+										$curRequest->status = $trimmedValue;
 									} elseif ($label == 'Circulation Status') {
 										//$curRequest['circulationStatus'] = $value;
 									} elseif ($label == 'Needed by') {
-										$curRequest->expirationDate = strtotime($value);
+										$curRequest->expirationDate = strtotime($trimmedValue);
 									} elseif ($label == 'Pickup Location') {
-										$curRequest->pickupLocationName = $value;
+										$curRequest->pickupLocationName = $trimmedValue;
 									} elseif ($label == '') {
 										//$curRequest['circulationStatus'] .= $value;
 									} elseif ($label == 'Cancel') {
 										$curRequest->cancelable = true;
+										//<a href="zengine?VDXaction=IllTerminateRequest&amp;command=117&amp;hit=0" onclick="disableRefresh(); return true; return false;" style="background-image: url(&quot;images/sr_cancelrequest.gif&quot;);" title="Cancel" class="icon" onmousemove="window.status='Cancel';" onmouseover="this.style.backgroundImage='url(images/sr_cancelrequest_on.gif)'" onmouseout="this.style.backgroundImage='url(images/sr_cancelrequest.gif)'"><span>Cancel</span></a>
+										if (preg_match('/zengine\?VDXaction=IllTerminateRequest&amp;command=117&amp;hit=(\d+)/s', $originalLabel, $hitMatches)){
+											$curRequest->cancelId  = $hitMatches[1];
+										}
 									} elseif ($label == 'Date Completed') {
 										//Ignore this one
 									} else {
@@ -292,5 +299,58 @@ class VdxDriver
 			);
 		}
 		return $results;
+	}
+
+	public function cancelRequest(User $patron, string $requestId, $cancelId){
+		$result = [
+			'success' => 'false',
+			'message' => translate(['text'=>'Unknown error cancelling request', 'isPublicFacing' => true])
+		];
+
+		$loginUrl = "{$this->settings->baseUrl}/zportal/zengine";
+		$loginPageResponse = $this->curlWrapper->curlGetPage($loginUrl);
+		if ($this->loginToVdx($patron)){
+			$myRequestsUrl = "{$this->settings->baseUrl}/zportal/zengine?VDXaction=IllSearchAdvanced";
+			$myRequestsResponse = $this->curlWrapper->curlGetPage($myRequestsUrl);
+
+			$getCancelFormUrl = "{$this->settings->baseUrl}/zportal/zengine?VDXaction=IllTerminateRequest&command=117&hit=$cancelId";
+			$getCancelFormResponse = $this->curlWrapper->curlGetPage($getCancelFormUrl);
+
+			//Submit a post
+			$postParams = [
+				'command'=>'117',
+				'page'=>'main',
+				'form_submitted'=>'false',
+				'illno'=> $requestId,
+				'request_terminated'=>'Y',
+				'termination_date'=>'_sysdate_',
+				'FormName'=>'request_terminate_form',
+				'auth_status'=>'AUTH',
+				'IllSubmit.x'=>'Cancel Request',
+				'VDXaction'=>'IllSubmit'
+			];
+			$cancelUrl = "{$this->settings->baseUrl}/zportal/zengine";
+
+			$headers  = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->curlWrapper->addCustomHeaders($headers, false);
+			$cancelResponse = $this->curlWrapper->curlPostPage($cancelUrl, $postParams);
+			if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '302'){
+				if (preg_match("/<p>.*?Request # <span class=\"resultsbright\">&nbsp;.*?$requestId</span>&nbsp; has been cancelled.*?</p>/", $cancelResponse)){
+					$result = [
+						'success' => 'true',
+						'message' => translate(['text'=>'Your request was cancelled successfully', 'isPublicFacing' => true])
+					];
+				}else{
+					$result['message'] = translate(['text'=>'Failed to cancel the request, please try again in a few minutes. If this problem persists, please contact the library.', 'isPublicFacing' => true]);
+				}
+			}
+		}else{
+			$result['message'] = translate(['text'=>'Could not login to the interlibrary loan system', 'isPublicFacing' => true]);
+			return $result;
+		}
+
+		return $result;
 	}
 }

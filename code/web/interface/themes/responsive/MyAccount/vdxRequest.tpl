@@ -92,7 +92,6 @@
 							<span class="frozenHold label label-warning">
 						{/if}
 						{translate text=$record->status isPublicFacing=true}
-						{if $record->frozen && $showDateWhenSuspending && !empty($record->reactivateDate)} until {$record->reactivateDate|date_format:"%b %d, %Y"}</span>{/if}
 					</div>
 				</div>
 			</div>
@@ -102,7 +101,7 @@
 				<div class="btn-group btn-group-vertical btn-block">
 					{if $record->cancelable}
 						{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-						<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+						<button onclick="return AspenDiscovery.Account.cancelVdxRequest('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Request" isPublicFacing=true}</button>
 					{/if}
 				</div>
 				{if $showWhileYouWait}

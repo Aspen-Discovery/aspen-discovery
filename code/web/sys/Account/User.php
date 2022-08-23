@@ -1632,6 +1632,16 @@ class User extends DataObject
 		return $result;
 	}
 
+	function cancelVdxRequest($requestId, $cancelId){
+		//For now, this is just VDX
+		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+		$driver = new VdxDriver();
+		$result = $driver->cancelRequest($this, $requestId, $cancelId);
+
+		$this->clearCache();
+		return $result;
+	}
+
 //		function changeHoldPickUpLocation($recordId, $itemToUpdateId, $newPickupLocation){
 			//$recordId is not used to update change hold pick up location in driver
 	function changeHoldPickUpLocation($itemToUpdateId, $newPickupLocation){

@@ -216,7 +216,7 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function confirmCancelHold()
+	function confirmCancelHold() : array
 	{
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
@@ -230,7 +230,8 @@ class MyAccount_AJAX extends JSON_Action
 		);
 	}
 
-	function cancelHold()
+	/** @noinspection PhpUnused */
+	function cancelHold() : array
 	{
 		$result = array(
 			'success' => false,
@@ -337,6 +338,52 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		return $tmpResult;
+	}
+
+	/** @noinspection PhpUnused */
+	function cancelVdxRequest() : array
+	{
+		$result = array(
+			'success' => false,
+			'message' => translate(['text'=>'Error cancelling request.','isPublicFacing'=>true])
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = translate(['text'=>'You must be logged in to cancel a request.  Please close this dialog and login again.','isPublicFacing'=>true]);;
+		} else {
+			//Determine which user the request is on so we can cancel it.
+			$patronId = $_REQUEST['patronId'];
+			$user = UserAccount::getLoggedInUser();
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false) {
+				$result['message'] = translate(['text'=>'Sorry, you do not have access to cancel requests for the supplied user.','isPublicFacing'=>true]);;
+			} else {
+				//MDN 9/20/2015 The recordId can be empty for Prospector holds
+				if (empty($_REQUEST['requestId']) || !isset($_REQUEST['cancelId'])) {
+					$result['message'] = translate(['text'=>'Information about the requests to be cancelled was not provided.','isPublicFacing'=>true]);;
+				} else {
+					$requestId = $_REQUEST['requestId'];
+					$cancelId = $_REQUEST['cancelId'];
+					$result = $patronOwningHold->cancelVdxRequest($requestId, $cancelId);
+				}
+			}
+		}
+
+		global $interface;
+		// if title come back a single item array, set as the title instead. likewise for message
+		if (isset($result['title'])) {
+			if (is_array($result['title']) && count($result['title']) == 1) $result['title'] = current($result['title']);
+		}
+		if (is_array($result['message']) && count($result['message']) == 1) $result['message'] = current($result['message']);
+
+		$interface->assign('cancelResults', $result);
+
+		return array(
+			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
+			'success' => $result['success']
+		);
 	}
 
 	function cancelAllHolds()
