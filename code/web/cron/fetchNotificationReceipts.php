@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../bootstrap_aspen.php';
 
-require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 
 $notification = new UserNotification();
@@ -15,7 +15,9 @@ $numProcessed = 0;
 while($notification->fetch()) {
 	$expoNotification = new ExpoNotification();
 	if(!empty($notification->receiptId)) {
-		$expoNotification->getExpoNotificationReceipt($notification->receiptId);
+		// expo expects receipt id in an array, even if a single value
+		$arr[] = $notification->receiptId;
+		$expoNotification->getExpoNotificationReceipt($arr);
 		$numProcessed++;
 	}
 }

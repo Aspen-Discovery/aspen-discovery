@@ -1,6 +1,7 @@
 <?php /** @noinspection PhpUnused */
 require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class ExpoNotification extends DataObject
 {
@@ -65,7 +66,7 @@ class ExpoNotification extends DataObject
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();
-			$notification->receiptId = $receiptId;
+			$notification->receiptId = $receiptId[0];
 			if($notification->find(true)) {
 				if(!array_key_exists('errors', $data)) {
 					$notification->completed = 1;

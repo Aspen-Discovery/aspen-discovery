@@ -2996,6 +2996,18 @@ class User extends DataObject
 		return $tokens;
 	}
 
+	public function deleteNotificationPushToken($token): bool{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$pushToken = new UserNotificationToken();
+		$pushToken->userId = $this->id;
+		$pushToken->pushToken = $token;
+		if($pushToken->find(true)) {
+			$pushToken->delete();
+			return true;
+		}
+		return false;
+	}
+
 	public function okToExport(array $selectedFilters) : bool{
 		$okToExport = parent::okToExport($selectedFilters);
 		if ($this->homeLocationId == 0 || in_array($this->homeLocationId, $selectedFilters['locations'])){

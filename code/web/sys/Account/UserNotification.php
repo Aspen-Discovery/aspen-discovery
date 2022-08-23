@@ -31,6 +31,11 @@ class UserNotification extends DataObject
 		];
 	}
 
+	public function getNumericColumnNames() : array
+	{
+		return ['completed', 'error'];
+	}
+
 	/** @var User[] */
 	private static $usersById = [];
 	function __get($name){
