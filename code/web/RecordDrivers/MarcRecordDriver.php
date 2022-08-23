@@ -979,41 +979,45 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				//See if we have VDX integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
 				$useVdxForRecord = false;
 				$vdxGroupsForLocation = [];
-				require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-				$vdxSettings = new VdxSetting();
-				if ($vdxSettings->find(true)){
-					require_once ROOT_DIR . '/sys/VDX/VdxHoldGroup.php';
-					require_once ROOT_DIR . '/sys/VDX/VdxHoldGroupLocation.php';
-					$useVdxForRecord = true;
-					$homeLocation = Location::getDefaultLocationForUser();
-					if ($homeLocation != null){
-						//Get the VDX Group(s) that we will interact with
-						$vdxGroupsForLocation = new VdxHoldGroupLocation();
-						$vdxGroupsForLocation->locationId = $homeLocation->locationId;
-						$vdxGroupIds = $vdxGroupsForLocation->fetchAll('id');
-						$vdxGroups = [];
-						foreach ($vdxGroupIds as $vdxGroupId){
-							$vdxGroup = new VdxHoldGroup();
-							$vdxGroup->id = $vdxGroupId;
-							if ($vdxGroup->find(true)){
-								$vdxGroups[] = clone $vdxGroup;
+				try {
+					require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+					$vdxSettings = new VdxSetting();
+					if ($vdxSettings->find(true)) {
+						require_once ROOT_DIR . '/sys/VDX/VdxHoldGroup.php';
+						require_once ROOT_DIR . '/sys/VDX/VdxHoldGroupLocation.php';
+						$useVdxForRecord = true;
+						$homeLocation = Location::getDefaultLocationForUser();
+						if ($homeLocation != null) {
+							//Get the VDX Group(s) that we will interact with
+							$vdxGroupsForLocation = new VdxHoldGroupLocation();
+							$vdxGroupsForLocation->locationId = $homeLocation->locationId;
+							$vdxGroupIds = $vdxGroupsForLocation->fetchAll('id');
+							$vdxGroups = [];
+							foreach ($vdxGroupIds as $vdxGroupId) {
+								$vdxGroup = new VdxHoldGroup();
+								$vdxGroup->id = $vdxGroupId;
+								if ($vdxGroup->find(true)) {
+									$vdxGroups[] = clone $vdxGroup;
+								}
 							}
-						}
 
-						//Check to see if we have any items that are owned by any of the records in any of the groups.
-						//If we do, we don't need to use VDX
-						foreach ($relatedRecord->getItems() as $itemDetail){
-							foreach ($vdxGroups as $vdxGroup) {
-								if ($itemDetail->holdable && in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
-									$useVdxForRecord = false;
+							//Check to see if we have any items that are owned by any of the records in any of the groups.
+							//If we do, we don't need to use VDX
+							foreach ($relatedRecord->getItems() as $itemDetail) {
+								foreach ($vdxGroups as $vdxGroup) {
+									if ($itemDetail->holdable && in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+										$useVdxForRecord = false;
+										break;
+									}
+								}
+								if (!$useVdxForRecord) {
 									break;
 								}
 							}
-							if (!$useVdxForRecord){
-								break;
-							}
 						}
 					}
+				}catch (Exception $e){
+					//This happens if the tables are not installed yet
 				}
 				if (!$useVdxForRecord){
 					if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
