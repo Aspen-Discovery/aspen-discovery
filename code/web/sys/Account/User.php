@@ -1218,10 +1218,16 @@ class User extends DataObject
 			$hold->delete(true);
 
 			foreach ($allHolds['available'] as $holdToSave){
-				$holdToSave->insert();
+				if (!$holdToSave->insert()){
+					global $logger;
+					$logger->log('Could not save available hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+				}
 			}
 			foreach ($allHolds['unavailable'] as $holdToSave){
-				$holdToSave->insert();
+				if (!$holdToSave->insert()){
+					global $logger;
+					$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+				}
 			}
 			$this->holdInfoLastLoaded = time();
 			$this->update();

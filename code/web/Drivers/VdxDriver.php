@@ -64,8 +64,10 @@ class VdxDriver
 										}
 										$curRequest = new Hold();
 										$curRequest->userId = $patron->id;
-										$curRequest->type = 'vdx';
+										$curRequest->type = 'interlibrary_loan';
+										$curRequest->source = 'vdx';
 										$curRequest->sourceId = $trimmedValue;
+										$curRequest->recordId = '';
 									} elseif ($label == 'Author') {
 										$curRequest->author = $trimmedValue;
 									} elseif ($label == 'Title') {
@@ -149,8 +151,10 @@ class VdxDriver
 					//Create a temporary open request for it
 					$curRequest = new Hold();
 					$curRequest->userId = $patron->id;
-					$curRequest->type = 'vdx';
+					$curRequest->type = 'interlibrary_loan';
+					$curRequest->source = 'vdx';
 					$curRequest->sourceId = $vdxRequest->catalogKey;
+					$curRequest->recordId = $vdxRequest->catalogKey;
 					$curRequest->title = $vdxRequest->title;
 					$curRequest->author = $vdxRequest->author;
 					$curRequest->status = 'Pending';
