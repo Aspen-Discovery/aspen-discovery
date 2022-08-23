@@ -23,6 +23,8 @@ $search->find();
 
 global $library;
 global $solrScope;
+global $configArray;
+
 $defaultSolrScope = $solrScope;
 if ($search->getNumResults() > 0){
 	$searchUpdateLogEntry->numSearches = $search->getNumResults();
@@ -75,7 +77,8 @@ if ($search->getNumResults() > 0){
 								'title' => 'New Titles',
 								'body' => 'New titles have been added to your saved search ' . $searchEntry->title . ' at the library. Check them out!',
 								'categoryId' => 'savedSearch',
-								'channelId' => 'savedSearch'
+								'channelId' => 'savedSearch',
+								'data' => array('url' => 'aspen-lida://user/saved_search/id=' . $searchEntry->id . "&title=" . $searchEntry->title . "&url=" . $configArray['Site']['url'])
 							);
 							$expoNotification = new ExpoNotification();
 							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
