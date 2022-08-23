@@ -1218,10 +1218,16 @@ class User extends DataObject
 			$hold->delete(true);
 
 			foreach ($allHolds['available'] as $holdToSave){
-				$holdToSave->insert();
+				if (!$holdToSave->insert()){
+					global $logger;
+					$logger->log('Could not save available hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+				}
 			}
 			foreach ($allHolds['unavailable'] as $holdToSave){
-				$holdToSave->insert();
+				if (!$holdToSave->insert()){
+					global $logger;
+					$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+				}
 			}
 			$this->holdInfoLastLoaded = time();
 			$this->update();
@@ -1628,6 +1634,16 @@ class User extends DataObject
 	 */
 	function cancelHold($recordId, $cancelId, $isIll){
 		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
+		$this->clearCache();
+		return $result;
+	}
+
+	function cancelVdxRequest($requestId, $cancelId){
+		//For now, this is just VDX
+		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+		$driver = new VdxDriver();
+		$result = $driver->cancelRequest($this, $requestId, $cancelId);
+
 		$this->clearCache();
 		return $result;
 	}
