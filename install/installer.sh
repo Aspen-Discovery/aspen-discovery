@@ -62,10 +62,8 @@ read timezone
 timedatectl set-timezone $timezone
 
 #Setup LogRotate
-#cp install/logrotate.conf /etc/logrotate.d/aspen_discovery
-#Test Logrotate
-#logrotate -d /etc/logrotate.d/aspen-discovery
-#Restart logrotate
+cp install/logrotate.conf /etc/logrotate.d/aspen_discovery
+
 
 cd /usr/local/aspen-discovery/install
 bash ./setup_aspen_user.sh
