@@ -26,6 +26,9 @@
 					<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All" isPublicFacing=true} <span class="badge"><span class="holds-placeholder">&nbsp;</span></span></a></li>
 					<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
+				{if $user->hasInterlibraryLoan()}
+					<li role="presentation"{if $tab=='interlibrary_loan'} class="active"{/if}><a href="#interlibrary_loan" aria-controls="interlibrary_loan" role="tab" data-toggle="tab">{translate text="Interlibrary Loan Requests" isPublicFacing=true} <span class="badge"><span class="interlibrary-loan-requests-placeholder">&nbsp;</span></span></a></li>
+				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
 					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive" isPublicFacing=true} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
@@ -46,6 +49,9 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allHoldsPlaceholder" aria-label="All Holds List">{translate text="Loading holds from all sources" isPublicFacing=true}</div></div>
 					<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder" aria-label="List of Holds on Physical Materials">{translate text="Loading holds of physical materials" isPublicFacing=true}</div></div>
 				{/if}
+				{if $user->hasInterlibraryLoan()}
+					<div role="tabpanel" class="tab-pane{if $tab=='interlibrary_loan'} active{/if}" id="interlibrary_loan" aria-label="List of Interlibrary Loan Requests"><div id="interlibrary_loanHoldsPlaceholder">{translate text="Loading Interlibrary Loan Requests" isPublicFacing=true}</div></div>
+				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
 					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="List of Holds on OverDrive Titles"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from OverDrive" isPublicFacing=true}</div></div>
 				{/if}
@@ -64,6 +70,9 @@
 					});
 					$("a[href='#ils']").on('show.bs.tab', function (e) {
 						AspenDiscovery.Account.loadHolds('ils');
+					});
+					$("a[href='#interlibrary_loan']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('interlibrary_loan');
 					});
 					$("a[href='#overdrive']").on('show.bs.tab', function (e) {
 						AspenDiscovery.Account.loadHolds('overdrive');

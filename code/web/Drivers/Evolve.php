@@ -34,7 +34,7 @@ class Evolve extends AbstractIlsDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -87,7 +87,7 @@ class Evolve extends AbstractIlsDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -171,7 +171,7 @@ class Evolve extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = [
 			'success' => false,
@@ -255,7 +255,7 @@ class Evolve extends AbstractIlsDriver
 		return $hold_result;
 	}
 
-	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		$result = [
 			'success' => false,
@@ -276,7 +276,7 @@ class Evolve extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	function thawHold(User $patron, $recordId, $itemToThawId)
+	function thawHold(User $patron, $recordId, $itemToThawId) : array
 	{
 		$result = [
 			'success' => false,
@@ -290,7 +290,7 @@ class Evolve extends AbstractIlsDriver
 		return $result;
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		$result = [
 			'success' => false,
@@ -355,7 +355,7 @@ class Evolve extends AbstractIlsDriver
 		// TODO: Implement updatePatronInfo() method.
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		// TODO: Implement hasNativeReadingHistory() method.
 	}
@@ -363,7 +363,7 @@ class Evolve extends AbstractIlsDriver
 	/**
 	 * @inheritDoc
 	 */
-	public function getHolds(User $patron)
+	public function getHolds(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -494,7 +494,7 @@ class Evolve extends AbstractIlsDriver
 		return null;
 	}
 
-	public function getFines(User $patron, $includeMessages = false)
+	public function getFines(User $patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 

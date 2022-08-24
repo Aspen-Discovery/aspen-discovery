@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		hasInterlibraryLoanConnection: false,
 		isPrint: false,
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
@@ -5501,6 +5502,8 @@ AspenDiscovery.Account = (function(){
 				var label = 'Holds';
 				if (source === 'ils'){
 					label = 'Physical Holds';
+				}else if (source === 'interlibrary_loan'){
+					label = 'Interlibrary Loan Requests';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
 				}else if (source === 'cloud_library'){
@@ -5684,6 +5687,16 @@ AspenDiscovery.Account = (function(){
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
 						}
+					}
+				});
+			}
+			if (Globals.hasInterlibraryLoanConnection) {
+				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(interlibraryLoanUrl, function (data) {
+					if (data.success) {
+						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
 					}
 				});
 			}
@@ -5989,6 +6002,32 @@ AspenDiscovery.Account = (function(){
 			} else {
 				this.ajaxLogin(null, this.cancelHoldAll, true);
 				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false;
+		},
+
+		cancelVdxRequest: function(patronId, requestId, cancelId){
+			if (confirm("Are you sure you want to cancel this request?")){
+				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function(data){
+						if (data.success){
+							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
+							//remove the row from the holds list
+							$("#vdxHold_" + overdriveId).hide();
+							AspenDiscovery.Account.loadMenuData();
+						}else{
+							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function(){
+						AspenDiscovery.showMessage("Error Cancelling Request", "An error occurred processing your request.  Please try again in a few minutes.", false);
+					}
+				});
 			}
 			return false;
 		},
@@ -11691,6 +11730,59 @@ AspenDiscovery.Record = (function(){
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){
 					AspenDiscovery.Record.showPlaceHold(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
+		showVdxRequest: function(module, source, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getVdxRequestForm&recordSource=" + source;
+				$.getJSON(url, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
+		submitVdxRequest: function(module, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var module = module;
+				var params = {
+					'method': 'submitVdxRequest',
+					title: $('#title').val(),
+					author: $('#author').val(),
+					publisher: $('#publisher').val(),
+					isbn: $('#isbn').val(),
+					maximumFeeAmount: $('#maximumFeeAmount').val(),
+					acceptFee: $('#acceptFee').prop('checked'),
+					pickupLocation: $('#pickupLocationSelect').val(),
+					catalogKey: $('#catalogKey').val(),
+					note: $('#note').val()
+				};
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";
+				$.getJSON(url, params, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
 				}, false);
 			}
 			return false;

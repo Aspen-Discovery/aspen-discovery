@@ -576,7 +576,7 @@ class MillenniumHolds{
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron, $indexingProfile) {
+	public function getHolds($patron, $indexingProfile) : array {
 		global $timer;
 		//Load the information from millennium using CURL
 		$sResult = $this->driver->_fetchPatronInfoPage($patron, 'holds');

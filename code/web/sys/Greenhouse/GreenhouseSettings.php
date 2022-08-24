@@ -11,6 +11,7 @@ class GreenhouseSettings extends DataObject
 	public $apiKey3;
 	public $apiKey4;
 	public $apiKey5;
+	public $notificationAccessToken;
 
 	public static function getObjectStructure() : array {
 		return [
@@ -21,6 +22,7 @@ class GreenhouseSettings extends DataObject
 			'apiKey3' => ['property' => 'apiKey3', 'type' => 'storedPassword', 'label' => 'API Key 3', 'description' => 'API key for authenticating LiDA access', 'canBatchUpdate'=> false, 'hideInLists'=> true],
 			'apiKey4' => ['property' => 'apiKey4', 'type' => 'storedPassword', 'label' => 'API Key 4', 'description' => 'API key for authenticating LiDA access', 'canBatchUpdate'=> false, 'hideInLists'=> true],
 			'apiKey5' => ['property' => 'apiKey5', 'type' => 'storedPassword', 'label' => 'API Key 5', 'description' => 'API key for authenticating LiDA access', 'canBatchUpdate'=> false, 'hideInLists'=> true],
+			'notificationAccessToken' => ['property' => 'notificationAccessToken', 'type' => 'storedPassword', 'label' => 'Notification API Access Token', 'description' => 'API key for authenticating access to Notification APIs', 'canBatchUpdate'=> false, 'hideInLists'=> true],
 		];
 	}
 }

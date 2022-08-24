@@ -90,4 +90,9 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor
 	{
 		return UserAccount::userHasPermission('Administer EBSCOhost Settings');
 	}
+
+	function canDelete()
+	{
+		return false;
+	}
 }

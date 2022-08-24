@@ -3,7 +3,7 @@
 
 abstract class AbstractDriver
 {
-	public abstract function hasNativeReadingHistory();
+	public abstract function hasNativeReadingHistory() : bool;
 
 	public function performsReadingHistoryUpdatesOfILS()
 	{
@@ -30,12 +30,12 @@ abstract class AbstractDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public abstract function getCheckouts(User $patron);
+	public abstract function getCheckouts(User $patron) : array;
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public abstract function hasFastRenewAll();
+	public abstract function hasFastRenewAll() : bool;
 
 	/**
 	 * Renew all titles currently checked out to the user
@@ -71,7 +71,7 @@ abstract class AbstractDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public abstract function getHolds(User $patron);
+	public abstract function getHolds(User $patron) : array;
 
 	/**
 	 * Place Hold
@@ -97,6 +97,6 @@ abstract class AbstractDriver
 	 * @param boolean $isIll If the hold is an ILL hold
 	 * @return  array
 	 */
-	abstract function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false);
+	abstract function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array;
 
 }

@@ -68,6 +68,8 @@ class Location extends DataObject
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
+	public $vdxFormId;
+	public $vdxLocation;
 	public $systemsToRepeatIn;
 	public $homeLink;
 	public $ptypesToAllowRenewals;
@@ -104,6 +106,8 @@ class Location extends DataObject
 	 * @var array|LocationHours[]|mixed|null
 	 */
 	public $ebscohostSearchSettingId;
+
+	public $lidaGeneralSettingId;
 
 	function getNumericColumnNames() : array
 	{
@@ -241,7 +245,31 @@ class Location extends DataObject
 			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
-		$releaseChannels = [0 => 'Beta (Testing)', 1 => 'Production (Public)'];
+		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+		$appSetting = new AppSetting();
+		$appSetting->orderBy('name');
+		$appSettings = [];
+		$appSetting->find();
+		$appSettings[-2] = 'None';
+		while ($appSetting->fetch()) {
+			$appSettings[$appSetting->id] = $appSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		$vdxActive = false;
+		$vdxForms = [];
+		$vdxSettings = new VdxSetting();
+		if ($vdxSettings->find(true)) {
+			$vdxActive = true;
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxForm = new VdxForm();
+			$vdxForm->find();
+			$vdxForm->orderBy('name');
+			$vdxForms[-1] = 'Select a form';
+			while ($vdxForm->fetch()){
+				$vdxForms[$vdxForm->id] = $vdxForm->name;
+			}
+		}
 
 		$structure = array(
 			'locationId' => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
@@ -253,10 +281,6 @@ class Location extends DataObject
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Location will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
 			'showOnDonationsPage' => array('property' => 'showOnDonationsPage', 'type' => 'checkbox', 'label' => 'Show Location on Donations page', 'description' => 'Whether or not this Location will show on the Donation page.', 'forcesReindex' => false, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
-			'appSection' => array('property' => 'appSection', 'type' => 'section', 'label' => 'Aspen LiDA Settings', 'hideInLists' => true, 'properties' => array(
-				'enableAppAccess' => array('property' => 'enableAppAccess', 'type' => 'checkbox', 'label' => 'Display Location in Aspen LiDA', 'description' => 'Whether or not the location is available in Aspen LiDA.', 'editPermissions' => ['Location Domain Settings'], 'default' => false),
-				'appReleaseChannel' => array('property' => 'appReleaseChannel', 'type' => 'enum', 'values' => $releaseChannels, 'label' => 'Release Channel', 'description' => 'Is the location available in the production or beta/testing app', 'editPermissions' => ['Location Domain Settings']),
-			)),
 			'theme' => array('property' => 'theme', 'type' => 'enum', 'label' => 'Theme', 'values' => $availableThemes, 'description' => 'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default', 'editPermissions' => ['Location Theme Configuration']),
 			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false, 'permissions' => ['Location Theme Configuration']),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to', 'editPermissions' => ['Location Domain Settings']),
@@ -355,6 +379,10 @@ class Location extends DataObject
 
 			'browseCategoryGroupId' => array('property' => 'browseCategoryGroupId', 'required' => true, 'type' => 'enum', 'affectsLiDA' => true, 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'renderAsHeading' => true, 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true, 'permissions' => ['Location Browse Category Options']),
 
+			'interLibraryLoanSection' => array('property'=>'interLibraryLoanSectionSection', 'type' => 'section', 'label' =>'Interlibrary loans', 'hideInLists' => true, 'permissions' => ['Library ILL Options'],  'properties' => array(
+				'vdxLocation' => ['property' => 'name', 'type' => 'text', 'label' => 'VDX Location', 'description' => 'The location code to send in the VDX email', 'maxLength' => 50],
+				'vdxForm' => ['property' => 'name', 'type' => 'enum', 'values'=> $vdxForms, 'label' => 'VDX Form', 'description' => 'The form to use when submitting VDX requests'],
+			)),
 			'axis360Section' => array('property' => 'axis360Section', 'type' => 'section', 'label' => 'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
@@ -455,6 +483,10 @@ class Location extends DataObject
 				'forcesReindex' => true,
 				'permissions' => ['Location Records included in Catalog']
 			),
+
+			'aspenLiDASection' => array('property' => 'aspenLiDASection', 'type' => 'section', 'label' => 'Aspen LiDA', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Administer Aspen LiDA Settings'], 'properties' => array(
+				'lidaGeneralSettingId' => array('property' => 'lidaGeneralSettingId', 'type'=>'enum', 'values'=>$appSettings, 'label' => 'App Settings', 'description'=>'The general app settings to use for Aspen LiDA', 'hideInLists' => true, 'default' => -1),
+			)),
 		);
 
 		if (!UserAccount::userHasPermission('Administer All Libraries')) {
@@ -478,6 +510,9 @@ class Location extends DataObject
 		}
 		if (!array_key_exists('Side Loads', $enabledModules)){
 			unset($structure['sideLoadScopes']);
+		}
+		if (!$vdxActive){
+			unset($structure['interLibraryLoanSection']);
 		}
 		return $structure;
 	}
@@ -615,13 +650,14 @@ class Location extends DataObject
 		return $locationList;
 	}
 
+	/** @var string|Location|null  */
 	private static $activeLocation = 'unset';
 
 	/**
 	 * Returns the active location to use when doing search scoping, etc.
 	 * This does not include the IP address
 	 *
-	 * @return Location|string
+	 * @return Location|null
 	 */
 	function getActiveLocation()
 	{
@@ -696,6 +732,52 @@ class Location extends DataObject
 		}
 
 		return Location::$activeLocation;
+	}
+
+	static $_defaultLocationForUser = null;
+
+	/**
+	 * @return Location|null
+	 */
+	static function getDefaultLocationForUser() : ?Location{
+		if (Location::$_defaultLocationForUser == null){
+			//Check to see if we have an active user
+			if (UserAccount::isLoggedIn()){
+				$homeLocationId = UserAccount::getUserHomeLocationId();
+				if ($homeLocationId > 0){
+					$location = new Location();
+					$location->locationId = $homeLocationId;
+					if ($location->find(true)){
+						Location::$_defaultLocationForUser = $location;
+					}
+				}
+			}
+			if (Location::$_defaultLocationForUser == null){
+				global $locationSingleton;
+				$activeLocation = $locationSingleton->getActiveLocation();
+				if ($activeLocation != null){
+					Location::$_defaultLocationForUser = $activeLocation;
+				}else{
+					//get the main location for the library or if there isn't one, get the first
+					global $library;
+					$location = new Location();
+					$location->libraryId = $library->libraryId;
+					$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+					if ($location->find(true)) {
+						Location::$_defaultLocationForUser = $location;
+					}else{
+						//Get the first location
+						$location = new Location();
+						if ($location->find(true)) {
+							Location::$_defaultLocationForUser = $location;
+						}else{
+							//There isn't anything to tie it to, leave it null
+						}
+					}
+				}
+			}
+		}
+		return Location::$_defaultLocationForUser;
 	}
 
 	function setActiveLocation($location)

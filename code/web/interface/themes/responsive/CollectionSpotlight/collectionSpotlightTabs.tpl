@@ -2,21 +2,17 @@
 <div id="collectionSpotlight{$collectionSpotlight->id}" class="{if count($collectionSpotlight->lists) > 1}ui-tabs {/if}collectionSpotlight {$collectionSpotlight->style}">
 	{if count($collectionSpotlight->lists) > 1}
 		{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
+			{*Display Title Scroller Header*}
 			<div id="{$list->name|regex_replace:'/\W/':''|escape:url}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
-				{if $collectionSpotlight->showSpotlightTitle || $collectionSpotlight->showViewMoreLink}
+				{if $collectionSpotlight->showSpotlightTitle}
 					<div id="list-{$list->name|regex_replace:'/\W/':''|escape:url}Header" class="titleScrollerHeader">
-						{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
-							{assign var="fullListLink" value=$list->fullListLink()}
-						{/foreach}
 						{if $collectionSpotlight->showSpotlightTitle && !empty($collectionSpotlight->name)}
 							<span class="listTitle resultInformationLabel">{if $collectionSpotlight->name}{translate text=$collectionSpotlight->name isPublicFacing=true isAdminEnteredData=true}{/if}</span>
-						{/if}
-						{if $collectionSpotlight->showViewMoreLink}
-							<div id="titleScrollerViewMore{$listName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 						{/if}
 					</div>
 				{/if}
 			</div>
+
 			{* Display Tabs *}
 			<ul class="nav nav-tabs" role="tablist">
 				{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
@@ -55,10 +51,11 @@
 				{assign var="scrollerVariable" value="listScroller$listName"}
 				{assign var="fullListLink" value=$list->fullListLink()}
 				{assign var="scrollerTitle" value=$collectionSpotlight->name}
+				{assign var="fullListLink" value=$list->fullListLink()}
+				{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
 
 				{if count($collectionSpotlight->lists) == 1}
 					{assign var="scrollerTitle" value=$collectionSpotlight->name}
-					{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
 					{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
 				{/if}
 				{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
@@ -70,6 +67,7 @@
 						{assign var="display" value="false"}
 					{/if}
 				{/if}
+
 				{if $collectionSpotlight->style == 'horizontal'}
 					{include file='CollectionSpotlight/titleScroller.tpl'}
 				{elseif $collectionSpotlight->style == 'horizontal-carousel'}

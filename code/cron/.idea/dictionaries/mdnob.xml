@@ -68,6 +68,7 @@
       <w>datelastseen</w>
       <w>deletedbiblio</w>
       <w>deleteditems</w>
+      <w>dests</w>
       <w>directx</w>
       <w>disablereplication</w>
       <w>disccartridge</w>
@@ -161,10 +162,12 @@
       <w>onloan</w>
       <w>onshelf</w>
       <w>opac</w>
+      <w>osrf</w>
       <w>overdriveid</w>
       <w>overidden</w>
       <w>patronbarcode</w>
       <w>patroncodes</w>
+      <w>pcts</w>
       <w>photonegative</w>
       <w>physicalobject</w>
       <w>pika</w>
@@ -182,6 +185,8 @@
       <w>replacementprice</w>
       <w>replacementpricedate</w>
       <w>reshelve</w>
+      <w>resv</w>
+      <w>rsrc</w>
       <w>searchstring</w>
       <w>searchtype</w>
       <w>seedpacket</w>
@@ -226,6 +231,7 @@
       <w>unstemmed</w>
       <w>upcs</w>
       <w>validationstatus</w>
+      <w>vals</w>
       <w>verticalfile</w>
       <w>viaf</w>
       <w>videocartridge</w>

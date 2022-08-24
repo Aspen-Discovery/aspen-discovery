@@ -266,7 +266,7 @@ class OverDrive_AJAX extends JSON_Action
 
 	}
 
-	function cancelHold()
+	function cancelHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -285,7 +285,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
-	function freezeHold()
+	function freezeHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
@@ -358,7 +358,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
-	function thawHold()
+	function thawHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array( // set default response

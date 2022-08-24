@@ -127,7 +127,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		}
 	}
 
-	function cancelHold()
+	function cancelHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
