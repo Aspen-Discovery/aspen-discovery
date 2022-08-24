@@ -234,6 +234,13 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
 			]
 		], //add_device_notification_tokens
+        'change_default_formatSource_KohaOnly' => [
+            'title' => 'Change default format source to "Item Record" for Koha libraries',
+            'description' => 'Changes the default format source to "Item Record" for Koha libraries',
+            'sql' => [
+                "UPDATE indexing_profiles SET formatSource = 'item' WHERE catalogDriver = 'Koha'",
+            ]
+        ], //change_default_formatSource_KohaOnly
 		'add_user_not_interested_index' => [
 			'title' => 'Add index for user not interested',
 			'description' => 'Add index for user not interested',
