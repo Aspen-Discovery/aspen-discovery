@@ -1,6 +1,5 @@
 <?php
 
-require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 class VdxForm extends DataObject
 {
 	public $__table = 'vdx_form';
@@ -83,9 +82,13 @@ class VdxForm extends DataObject
 	{
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
-			$holdGroupLocation = new VdxFormLocation();
-			$holdGroupLocation->vdxFormId = $this->id;
-			$holdGroupLocation->delete(true);
+			$location = new Location();
+			$location->vdxFormId = $this->id;
+			$location->find();
+			while ($location->fetch()){
+				$location->vdxFormId = -1;
+				$location->update();
+			}
 		}
 		return $ret;
 	}
@@ -99,19 +102,26 @@ class VdxForm extends DataObject
 		}
 	}
 
-	/**
-	 * @return int[]
-	 */
-	public function getLocations(): ?array
-	{
-		if (!isset($this->_locations) && $this->id) {
-			$this->_locations = [];
-			$obj = new VdxFormLocation();
-			$obj->vdxFormId = $this->id;
-			$obj->find();
-			while ($obj->fetch()) {
-				$this->_locations[$obj->locationId] = $obj->locationId;
+	public function saveLocations(){
+		if (isset ($this->_locations) && is_array($this->_locations)){
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All VDX Forms'));
+			foreach ($locationList as $locationId => $displayName) {
+				$location = new Location();
+				$location->locationId = $locationId;
+				$location->find(true);
+				if (in_array($locationId, $this->_locations)){
+					if ($location->vdxFormId != $this->id){
+						$location->vdxFormId = $this->id;
+						$location->update();
+					}
+				}else{
+					if ($location->vdxFormId == $this->id){
+						$location->vdxFormId = -1;
+						$location->update();
+					}
+				}
 			}
+			unset($this->_locations);
 		}
 		return $this->_locations;
 	}
@@ -122,28 +132,6 @@ class VdxForm extends DataObject
 			$this->_locations = $value;
 		} else {
 			$this->_data[$name] = $value;
-		}
-	}
-
-
-	public function saveLocations()
-	{
-		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All VDX Forms'));
-			foreach ($locationList as $locationId => $displayName) {
-				$obj = new VdxFormLocation();
-				$obj->vdxFormId = $this->id;
-				$obj->locationId = $locationId;
-				if (in_array($locationId, $this->_locations)) {
-					if (!$obj->find(true)) {
-						$obj->insert();
-					}
-				} else {
-					if ($obj->find(true)) {
-						$obj->delete();
-					}
-				}
-			}
 		}
 	}
 
@@ -193,5 +181,19 @@ class VdxForm extends DataObject
 
 		$fields['catalogKey'] =array('property' => 'catalogKey', 'type' => ($this->showCatalogKey ? 'text' : 'hidden'), 'label' => 'Record Number', 'description' => 'The record number to be requested', 'maxLength' => 20, 'required' => false, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getId() : ''));
 		return $fields;
+	}
+
+	private function getLocations()
+	{
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = [];
+			$obj = new Location();
+			$obj->vdxFormId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_locations[$obj->locationId] = $obj->locationId;
+			}
+		}
+		return $this->_locations;
 	}
 }

@@ -121,7 +121,16 @@ function getUpdates22_09_00() : array
 				'ALTER TABLE vdx_settings ADD COLUMN reqVerifySource VARCHAR(50)',
 				'ALTER TABLE location ADD COLUMN vdxLocation VARCHAR(50)',
 			]
-		], //vdx_requests_2
+		], //vdx_setting_updates
+		'vdx_form_updates_locations' => [
+			'title' => 'VDX Form Location Updates',
+			'description' => 'Update linking forms with locations',
+			'continueOnError' => true,
+			'sql' => [
+				'DROP TABLE vdx_form_location',
+				'ALTER TABLE location ADD COLUMN vdxFormId INT(11)',
+			]
+		], //vdx_form_updates_locations
 		'move_aspen_lida_settings' => [
 			'title' => 'Move Aspen LiDA settings to own section',
 			'description' => 'Moves quick searches, general app config, branded app config, and adds notification settings',

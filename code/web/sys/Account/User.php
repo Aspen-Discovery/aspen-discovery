@@ -542,15 +542,12 @@ class User extends DataObject
 		try {
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)) {
 				$homeLocation = Location::getDefaultLocationForUser();
 				if ($homeLocation != null) {
 					//Get configuration for the form.
-					$vdxFormForLocation = new VdxFormLocation();
-					$vdxFormForLocation->locationId = $homeLocation->locationId;
-					if ($vdxFormForLocation->find(true)) {
+					if ($homeLocation->vdxFormId != -1) {
 						return true;
 					}
 				}
