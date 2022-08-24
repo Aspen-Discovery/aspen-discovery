@@ -63,7 +63,7 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	public function getFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false) : array
 	{
 		if ($this->useDb) {
 			return $this->getFinesViaDB($patron, $includeMessages);
@@ -72,7 +72,7 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	public function getFinesViaHIP($patron)
+	public function getFinesViaHIP($patron) : array
 	{
 		global $configArray;
 		global $logger;
@@ -148,7 +148,7 @@ abstract class Horizon extends AbstractIlsDriver
 		return $messages;
 	}
 
-	public function getFinesViaDB($patron, $includeMessages = false)
+	public function getFinesViaDB($patron, $includeMessages = false) : array
 	{
 		$sql = "select title_inverted.title as TITLE, item.bib# as BIB_NUM, item.item# as ITEM_NUM, " .
 			"burb.borrower# as BORROWER_NUM, burb.amount as AMOUNT, burb.comment, " .
@@ -498,7 +498,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 	abstract function translateStatus($status);
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}

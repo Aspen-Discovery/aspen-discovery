@@ -14,7 +14,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$this->curlWrapper->timeout = 20;
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}
@@ -63,7 +63,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		if (isset($this->checkouts[$patron->id])){
@@ -110,7 +110,7 @@ class Axis360Driver extends AbstractEContentDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -205,7 +205,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron, $forSummary = false)
+	public function getHolds($patron, $forSummary = false) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		if (isset($this->holds[$patron->id])){
@@ -320,7 +320,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){
@@ -684,7 +684,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$checkouts[$key] = $checkout;
 	}
 
-	function freezeHold(User $patron, $recordId)
+	function freezeHold(User $patron, $recordId) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){
@@ -731,7 +731,7 @@ class Axis360Driver extends AbstractEContentDriver
 		return $result;
 	}
 
-	function thawHold(User $patron, $recordId)
+	function thawHold(User $patron, $recordId) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){

@@ -355,7 +355,7 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	public function getCheckouts($patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 
@@ -1000,7 +1000,7 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return true;
 	}
@@ -1547,7 +1547,7 @@ class Koha extends AbstractIlsDriver
 	 * otherwise.
 	 * @access public
 	 */
-	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title')
+	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title') : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -1755,7 +1755,7 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -1845,7 +1845,7 @@ class Koha extends AbstractIlsDriver
 	 * @param bool $includeMessages
 	 * @return array
 	 */
-	public function getFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -1965,12 +1965,12 @@ class Koha extends AbstractIlsDriver
 		return $this->basicAuthToken;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		// Store result for API or app use
 		$result['api'] = array();
@@ -2049,7 +2049,7 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId)
+	function thawHold($patron, $recordId, $itemToThawId) : array
 	{
 		$result = [
 			'success' => false,
@@ -2097,7 +2097,7 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		// Store result for API or app use
 		$result['api'] = array();

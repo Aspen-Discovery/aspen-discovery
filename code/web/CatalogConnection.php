@@ -246,7 +246,7 @@ class CatalogConnection
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts(User $user)
+	public function getCheckouts(User $user) : array
 	{
 		return $this->driver->getCheckouts($user);
 	}
@@ -263,7 +263,7 @@ class CatalogConnection
 	 * otherwise.
 	 * @access public
 	 */
-	public function getFines($patron, $includeMessages = false)
+	public function getFines(User $patron, bool $includeMessages = false) : array
 	{
 		$fines = $this->driver->getFines($patron, $includeMessages);
 		foreach ($fines as &$fine){
@@ -515,7 +515,7 @@ class CatalogConnection
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user)
+	public function getHolds($user) : array
 	{
 		return $this->driver->getHolds($user);
 	}
@@ -808,22 +808,22 @@ class CatalogConnection
 		$patron->update();
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		return $this->driver->cancelHold($patron, $recordId, $cancelId, $isIll);
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		return $this->driver->freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId)
+	function thawHold($patron, $recordId, $itemToThawId) : array
 	{
 		return $this->driver->thawHold($patron, $recordId, $itemToThawId);
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 	}
