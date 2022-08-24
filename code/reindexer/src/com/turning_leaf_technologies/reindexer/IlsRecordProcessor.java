@@ -1558,25 +1558,25 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Check to see if all items have formats.
 			if (!recordInfo.allItemsHaveFormats()){
 				HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
-				if (uniqueItemFormats.size() == 1){
+				if (uniqueItemFormats.size() == 1) {
 					recordInfo.addFormat(uniqueItemFormats.iterator().next());
 					recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
-					return;
-				}
-				try {
-					if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().contains("Book")) {
-						LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
-						if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
-							String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
-							//noinspection Java8MapApi
-							for (String itemType : uniqueItemFormats) {
-								uniqueItemFormats.remove(itemType);
-								uniqueItemFormats.add(translatedFormat);
+					try {
+						if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().contains("Book")) {
+							LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+							if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
+								String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+								//noinspection Java8MapApi
+								for (String itemType : uniqueItemFormats) {
+									uniqueItemFormats.remove(itemType);
+									uniqueItemFormats.add(translatedFormat);
+								}
 							}
 						}
+					} catch (Exception e) {
+						logger.error("Error checking record for large print");
 					}
-				} catch (Exception e) {
-					logger.error("Error checking record for large print");
+					return;
 				}
 			}else {
 				return;
