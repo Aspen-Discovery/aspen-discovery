@@ -245,7 +245,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron){
+	public function getHolds($patron) : array{
 		global $configArray;
 
 		$availableHolds = array();
@@ -432,19 +432,19 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) {
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
-	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToFreezeId, '', 'on');
 	}
 
-	function thawHold(User $patron, $recordId, $itemToThawId) {
+	function thawHold(User $patron, $recordId, $itemToThawId) : array {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToThawId, '', 'off');
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) {
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $newPickupLocation, 'off');
 	}
 
@@ -674,7 +674,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	public function getCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate') {
+	public function getCheckouts(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate') : array {
 		global $configArray;
 
 		$userId = $patron->id;
@@ -762,7 +762,7 @@ abstract class HorizonAPI extends Horizon{
 		return $checkedOutTitles;
 	}
 
-	public function hasFastRenewAll(){
+	public function hasFastRenewAll() : bool{
 		return false;
 	}
 
@@ -977,7 +977,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	public function hasNativeReadingHistory() {
+	public function hasNativeReadingHistory() : bool {
 		return false;
 	}
 

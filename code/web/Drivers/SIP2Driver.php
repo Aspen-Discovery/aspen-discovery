@@ -209,7 +209,7 @@ abstract class SIP2Driver extends AbstractIlsDriver{
 		return $user;
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}
@@ -278,7 +278,7 @@ abstract class SIP2Driver extends AbstractIlsDriver{
 		return null;
 	}
 
-	public function getFines(User $patron, $includeMessages = false)
+	public function getFines(User $patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -432,7 +432,7 @@ abstract class SIP2Driver extends AbstractIlsDriver{
 	/**
 	 * @inheritDoc
 	 */
-	public function getHolds(User $patron)
+	public function getHolds(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();

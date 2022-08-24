@@ -68,6 +68,7 @@ class Location extends DataObject
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
+	public $vdxFormId;
 	public $vdxLocation;
 	public $systemsToRepeatIn;
 	public $homeLink;
@@ -254,6 +255,22 @@ class Location extends DataObject
 			$appSettings[$appSetting->id] = $appSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		$vdxActive = false;
+		$vdxForms = [];
+		$vdxSettings = new VdxSetting();
+		if ($vdxSettings->find(true)) {
+			$vdxActive = true;
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxForm = new VdxForm();
+			$vdxForm->find();
+			$vdxForm->orderBy('name');
+			$vdxForms[-1] = 'Select a form';
+			while ($vdxForm->fetch()){
+				$vdxForms[$vdxForm->id] = $vdxForm->name;
+			}
+		}
+
 		$structure = array(
 			'locationId' => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
 			'subdomain' => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false, 'forcesReindex' => true, 'canBatchUpdate'=>false, 'permissions' => ['Location Domain Settings']),
@@ -364,6 +381,7 @@ class Location extends DataObject
 
 			'interLibraryLoanSection' => array('property'=>'interLibraryLoanSectionSection', 'type' => 'section', 'label' =>'Interlibrary loans', 'hideInLists' => true, 'permissions' => ['Library ILL Options'],  'properties' => array(
 				'vdxLocation' => ['property' => 'name', 'type' => 'text', 'label' => 'VDX Location', 'description' => 'The location code to send in the VDX email', 'maxLength' => 50],
+				'vdxForm' => ['property' => 'name', 'type' => 'enum', 'values'=> $vdxForms, 'label' => 'VDX Form', 'description' => 'The form to use when submitting VDX requests'],
 			)),
 			'axis360Section' => array('property' => 'axis360Section', 'type' => 'section', 'label' => 'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
@@ -492,6 +510,9 @@ class Location extends DataObject
 		}
 		if (!array_key_exists('Side Loads', $enabledModules)){
 			unset($structure['sideLoadScopes']);
+		}
+		if (!$vdxActive){
+			unset($structure['interLibraryLoanSection']);
 		}
 		return $structure;
 	}

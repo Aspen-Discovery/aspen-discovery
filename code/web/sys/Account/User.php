@@ -542,15 +542,12 @@ class User extends DataObject
 		try {
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)) {
 				$homeLocation = Location::getDefaultLocationForUser();
 				if ($homeLocation != null) {
 					//Get configuration for the form.
-					$vdxFormForLocation = new VdxFormLocation();
-					$vdxFormForLocation->locationId = $homeLocation->locationId;
-					if ($vdxFormForLocation->find(true)) {
+					if ($homeLocation->vdxFormId != -1) {
 						return true;
 					}
 				}
@@ -1004,7 +1001,7 @@ class User extends DataObject
 	 * @param string $source
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($includeLinkedUsers = true, $source = 'all'){
+	public function getCheckouts($includeLinkedUsers = true, $source = 'all') : array{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
 		//15 minutes ago or if the refresh option is selected
@@ -1136,7 +1133,7 @@ class User extends DataObject
 		}
 	}
 
-	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all')
+	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all') : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
@@ -1410,7 +1407,7 @@ class User extends DataObject
 	}
 
 	private $ilsFinesForUser;
-	public function getFines($includeLinkedUsers = true){
+	public function getFines($includeLinkedUsers = true) : array {
 
 		if (!isset($this->ilsFinesForUser)){
 			$this->ilsFinesForUser = $this->getCatalogDriver()->getFines($this);
@@ -1632,7 +1629,7 @@ class User extends DataObject
 	 *
 	 * @return array            Information about the result of the cancellation process
 	 */
-	function cancelHold($recordId, $cancelId, $isIll){
+	function cancelHold($recordId, $cancelId, $isIll) : array {
 		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
 		$this->clearCache();
 		return $result;
@@ -1648,9 +1645,7 @@ class User extends DataObject
 		return $result;
 	}
 
-//		function changeHoldPickUpLocation($recordId, $itemToUpdateId, $newPickupLocation){
-			//$recordId is not used to update change hold pick up location in driver
-	function changeHoldPickUpLocation($itemToUpdateId, $newPickupLocation){
+	function changeHoldPickUpLocation($itemToUpdateId, $newPickupLocation) : array{
 		$result = $this->getCatalogDriver()->changeHoldPickupLocation($this, null, $itemToUpdateId, $newPickupLocation);
 		$this->clearCache();
 		return $result;
@@ -1817,7 +1812,7 @@ class User extends DataObject
 		return $tmpResult;
 	}
 
-	function thawHold($recordId, $holdId){
+	function thawHold($recordId, $holdId) : array{
 		$result = $this->getCatalogDriver()->thawHold($this, $recordId, $holdId);
 		$this->clearCache();
 		return $result;

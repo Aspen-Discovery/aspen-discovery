@@ -376,9 +376,9 @@ abstract class HorizonROA extends AbstractIlsDriver
 		}
 		return null;
 	}
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
-		false;
+		return false;
 	}
 	/**
 	 * Return the number of holds that are on a record
@@ -490,7 +490,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -836,7 +836,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$hold_result['bid']   = $recordId; //TODO: bid or bib
 		return $hold_result;
 	}
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -865,7 +865,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 				'message' => 'Sorry, the hold was not canceled');
 		}
 	}
-	function freezeHold($patron, $recordId, $holdToFreezeId, $dateToReactivate)
+	function freezeHold($patron, $recordId, $holdToFreezeId, $dateToReactivate) : array
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -906,7 +906,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			);
 		}
 	}
-	function thawHold($patron, $recordId, $holdToThawId)
+	function thawHold($patron, $recordId, $holdToThawId) : array
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -948,7 +948,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			);
 		}
 	}
-	function changeHoldPickupLocation(User $patron, $recordId, $holdToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $holdToUpdateId, $newPickupLocation) : array
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -1064,7 +1064,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		}
 		return $bibInfo;
 	}
-	public function getFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false) : array
 	{
 		$fines = array();
 		//Get the session token for the user
