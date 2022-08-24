@@ -234,6 +234,13 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
 			]
 		], //add_device_notification_tokens
+		'add_user_not_interested_index' => [
+			'title' => 'Add index for user not interested',
+			'description' => 'Add index for user not interested',
+			'sql' => [
+				"alter table user_not_interested add index groupedRecordPermanentId(groupedRecordPermanentId, userId)",
+			]
+		], //add_user_not_interested_index
 	];
 }
 
