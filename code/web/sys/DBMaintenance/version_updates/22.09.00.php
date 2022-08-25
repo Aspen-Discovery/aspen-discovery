@@ -248,6 +248,13 @@ function getUpdates22_09_00() : array
 				"alter table user_not_interested add index groupedRecordPermanentId(groupedRecordPermanentId, userId)",
 			]
 		], //add_user_not_interested_index
+		'add_additional_format_pickup_options' => [
+			'title' => 'Add additional format pickup options',
+			'description' => 'Add index for user not interested',
+			'sql' => [
+				"alter table format_map_values CHANGE COLUMN mustPickupAtHoldingBranch pickupAt TINYINT(1) DEFAULT 0",
+			]
+		], //add_additional_format_pickup_options
 	];
 }
 

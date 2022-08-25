@@ -12,7 +12,7 @@ class FormatMapValue extends DataObject
 	public $suppress;
 	public /** @noinspection PhpUnused */ $inLibraryUseOnly;
 	public $holdType;
-	public $mustPickupAtHoldingBranch;
+	public $pickupAt;
 
 	static function getObjectStructure() : array
 	{
@@ -34,7 +34,7 @@ class FormatMapValue extends DataObject
 			'holdType' => array('property' => 'holdType', 'type' => 'enum', 'values' => ['bib' => 'Bib Only', 'item' => 'Item Only', 'either' => 'Either Bib or Item', 'none' => 'No Holds Allowed'], 'label' => 'Hold Type', 'description' => 'Types of Holds to allow', 'default' => 'bib', 'required' => true, 'forcesReindex' => true),
 			'suppress' => array('property' => 'suppress', 'type' => 'checkbox', 'label' => 'Suppress?', 'description' => 'Suppress from the catalog', 'default' => 0, 'required' => true, 'forcesReindex' => true),
 			'inLibraryUseOnly' => array('property' => 'inLibraryUseOnly', 'type' => 'checkbox', 'label' => 'In Library Use Only?', 'description' => 'Make the item usable within the library only', 'default' => 0, 'required' => true, 'forcesReindex' => true),
-			'mustPickupAtHoldingBranch' => array('property' => 'mustPickupAtHoldingBranch', 'type' => 'checkbox', 'label' => 'Must Pickup at Holding Branch?', 'description' => 'When placing holds, only branches where the item is can be used as pickup locations.', 'default' => 0, 'required' => true, 'forcesReindex' => false),
+			'pickupAt' => array('property' => 'pickupAt', 'type' => 'enum', 'values' => [0 => 'Any valid location', 1 => 'Holding Branch', 2 => 'Holding Library'], 'label' => 'Pickup at', 'description' => 'When placing holds, only branches where the item is can be used as pickup locations.', 'default' => 0, 'required' => true, 'forcesReindex' => false),
 		);
 	}
 }
