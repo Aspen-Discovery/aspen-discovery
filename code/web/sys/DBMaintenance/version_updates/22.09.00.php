@@ -121,7 +121,16 @@ function getUpdates22_09_00() : array
 				'ALTER TABLE vdx_settings ADD COLUMN reqVerifySource VARCHAR(50)',
 				'ALTER TABLE location ADD COLUMN vdxLocation VARCHAR(50)',
 			]
-		], //vdx_requests_2
+		], //vdx_setting_updates
+		'vdx_form_updates_locations' => [
+			'title' => 'VDX Form Location Updates',
+			'description' => 'Update linking forms with locations',
+			'continueOnError' => true,
+			'sql' => [
+				'DROP TABLE vdx_form_location',
+				'ALTER TABLE location ADD COLUMN vdxFormId INT(11)',
+			]
+		], //vdx_form_updates_locations
 		'move_aspen_lida_settings' => [
 			'title' => 'Move Aspen LiDA settings to own section',
 			'description' => 'Moves quick searches, general app config, branded app config, and adds notification settings',
@@ -225,6 +234,20 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
 			]
 		], //add_device_notification_tokens
+        'change_default_formatSource_KohaOnly' => [
+            'title' => 'Change default format source to "Item Record" for Koha libraries',
+            'description' => 'Changes the default format source to "Item Record" for Koha libraries',
+            'sql' => [
+                "UPDATE indexing_profiles SET formatSource = 'item' WHERE catalogDriver = 'Koha'",
+            ]
+        ], //change_default_formatSource_KohaOnly
+		'add_user_not_interested_index' => [
+			'title' => 'Add index for user not interested',
+			'description' => 'Add index for user not interested',
+			'sql' => [
+				"alter table user_not_interested add index groupedRecordPermanentId(groupedRecordPermanentId, userId)",
+			]
+		], //add_user_not_interested_index
 	];
 }
 

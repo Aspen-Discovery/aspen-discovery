@@ -376,6 +376,8 @@ public class EvolveExportMain {
 						logEntry.incErrors("Error parsing marc record", e);
 					}
 				}
+			}else{
+				logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + loginResponse.getMessage());
 			}
 
 			//Also ask for holdings modified from a specific date

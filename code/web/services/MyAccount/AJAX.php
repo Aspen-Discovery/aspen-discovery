@@ -436,7 +436,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $tmpResult;
 	}
 
-	function freezeHold()
+	function freezeHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
@@ -576,7 +576,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $tmpResult;
 	}
 
-	function thawHold()
+	function thawHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array( // set default response
@@ -2158,7 +2158,7 @@ class MyAccount_AJAX extends JSON_Action
 		exit;
 	}
 
-	public function getCheckouts()
+	public function getCheckouts() : array
 	{
 		global $interface;
 
@@ -2244,7 +2244,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
-	public function getHolds()
+	public function getHolds() : array
 	{
 		global $interface;
 

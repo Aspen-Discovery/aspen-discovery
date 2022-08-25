@@ -63,43 +63,32 @@ class Record_AJAX extends Action
 			$interface->assign('recordSource', $recordSource);
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$homeLocation = Location::getDefaultLocationForUser();
 				if ($homeLocation != null){
 					//Get configuration for the form.
-					$vdxFormForLocation = new VdxFormLocation();
-					$vdxFormForLocation->locationId = $homeLocation->locationId;
-					if ($vdxFormForLocation->find(true)){
-						$vdxForm = new VdxForm();
-						$vdxForm->id = $vdxFormForLocation->vdxFormId;
-						if ($vdxForm->find(true)){
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$marcRecord = new MarcRecordDriver($id);
+					$vdxForm = new VdxForm();
+					$vdxForm->id = $homeLocation->vdxFormId;
+					if ($vdxForm->find(true)){
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$marcRecord = new MarcRecordDriver($id);
 
-							$interface->assign('vdxForm', $vdxForm);
-							$vdxFormFields = $vdxForm->getFormFields($marcRecord);
-							$interface->assign('structure', $vdxFormFields);
-							$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+						$interface->assign('vdxForm', $vdxForm);
+						$vdxFormFields = $vdxForm->getFormFields($marcRecord);
+						$interface->assign('structure', $vdxFormFields);
+						$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
 
-							$results = array(
-								'title' => translate(['text'=>'Request Title', 'isPublicFacing'=>true]),
-								'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-								'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate(['text'=>'Place Request','isPublicFacing'=>true]) . '</a>',
-								'success' => true
-							);
-						}else{
-							$results = array(
-								'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
-								'message' => translate(['text'=>"Unable to find the specified form.", 'isPublicFacing'=>true]),
-								'success' => false
-							);
-						}
+						$results = array(
+							'title' => translate(['text'=>'Request Title', 'isPublicFacing'=>true]),
+							'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate(['text'=>'Place Request','isPublicFacing'=>true]) . '</a>',
+							'success' => true
+						);
 					}else{
 						$results = array(
 							'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
-							'message' => translate(['text'=>"Unable to find a form for the location.", 'isPublicFacing'=>true]),
+							'message' => translate(['text'=>"Unable to find the specified form.", 'isPublicFacing'=>true]),
 							'success' => false
 						);
 					}
@@ -132,7 +121,6 @@ class Record_AJAX extends Action
 			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-			require_once ROOT_DIR . '/sys/VDX/VdxFormLocation.php';
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$vdxDriver = new VdxDriver();

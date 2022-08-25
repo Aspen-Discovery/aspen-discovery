@@ -44,7 +44,7 @@ class MillenniumCheckouts {
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts(User $user, $indexingProfile) {
+	public function getCheckouts(User $user, IndexingProfile $indexingProfile) : array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 		global $timer;

@@ -232,8 +232,8 @@ class VdxDriver
 		$newRequest->author = strip_tags($requestFields['author']);
 		$newRequest->publisher = strip_tags($requestFields['publisher']);
 		$newRequest->isbn = strip_tags($requestFields['isbn']);
-		$newRequest->feeAccepted = $requestFields['acceptFee'] == 'true' ? 1 : 0;
-		$newRequest->maximumFeeAmount = strip_tags($requestFields['maximumFeeAmount']);
+		$newRequest->feeAccepted = (isset($requestFields['acceptFee']) && $requestFields['acceptFee'] == 'true') ? 1 : 0;
+		$newRequest->maximumFeeAmount = isset($requestFields['maximumFeeAmount']) ? strip_tags($requestFields['maximumFeeAmount']) : 0;
 		$newRequest->catalogKey = strip_tags($requestFields['catalogKey']);
 		$newRequest->note = strip_tags($requestFields['note']);
 		$newRequest->pickupLocation = strip_tags($requestFields['pickupLocation']);
