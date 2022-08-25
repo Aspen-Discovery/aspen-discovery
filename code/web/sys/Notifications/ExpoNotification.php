@@ -66,7 +66,7 @@ class ExpoNotification extends DataObject
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();
-			$notification->receiptId = $receiptId[0];
+			$notification->receiptId = $receiptId;
 			if($notification->find(true)) {
 				if(!array_key_exists('errors', $data)) {
 					$notification->completed = 1;

@@ -5,17 +5,16 @@ require_once __DIR__ . '/../bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 
-$notification = new UserNotification();
-$notification->completed = 0;
-$notification->error = 0;
-$notification->find();
+$userNotification = new UserNotification();
+$userNotification->completed = 0;
+$userNotification->error = 0;
+
+$notifications = $userNotification->fetchAll('receiptId');
 
 $numProcessed = 0;
 
-while($notification->fetch()) {
+foreach($notifications as $notification) {
 	$expoNotification = new ExpoNotification();
-	if(!empty($notification->receiptId)) {
-		$expoNotification->getExpoNotificationReceipt($notification->receiptId);
-		$numProcessed++;
-	}
+	$expoNotification->getExpoNotificationReceipt($notification);
+	$numProcessed++;
 }
