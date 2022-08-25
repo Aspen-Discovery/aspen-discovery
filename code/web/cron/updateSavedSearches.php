@@ -79,7 +79,7 @@ if ($search->getNumResults() > 0){
 								'body' => 'New titles have been added to your saved search ' . $searchEntry->title . ' at the library. Check them out!',
 								'categoryId' => 'savedSearch',
 								'channelId' => 'savedSearch',
-								'data' => array('url' => urlencode('aspen-lida://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title . "&libraryUrl=" . $configArray['Site']['url']))
+								'data' => array('url' => urlencode('aspen-lida://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title))
 							);
 							$expoNotification = new ExpoNotification();
 							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
