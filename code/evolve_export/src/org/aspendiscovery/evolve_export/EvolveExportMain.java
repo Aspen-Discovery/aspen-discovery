@@ -377,7 +377,7 @@ public class EvolveExportMain {
 					}
 				}
 			}else{
-				logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + loginResponse.getMessage());
+				logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
 			}
 
 			//Also ask for holdings modified from a specific date
