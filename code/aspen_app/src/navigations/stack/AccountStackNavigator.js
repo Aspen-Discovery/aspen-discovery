@@ -1,18 +1,19 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {translate} from "../../translations/translations";
-import MyAccount from "../../screens/MyAccount/MyAccount";
 import CheckedOut from "../../screens/MyAccount/CheckedOut";
 import Holds from "../../screens/MyAccount/Holds";
 import GroupedWork from "../../screens/GroupedWork/GroupedWork";
 import Settings_HomeScreen from "../../screens/MyAccount/Settings/HomeScreen";
+import Settings_Notifications from "../../screens/MyAccount/Settings/Notifications";
 import LinkedAccounts from "../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts";
 import Profile from "../../screens/MyAccount/Profile/Profile";
 import Preferences from "../../screens/MyAccount/Settings/Preferences";
 import MyLists from "../../screens/MyAccount/Lists/MyLists";
 import MyList from "../../screens/MyAccount/Lists/MyList";
 import MySavedSearches from "../../screens/MyAccount/SavedSearches/MySavedSearches";
-import MySavedSearch from "../../screens/MyAccount/SavedSearches/MySavedSearch";
+import SavedSearchScreen from "../../screens/MyAccount/SavedSearches/MySavedSearch";
+import LoadSavedSearch from "../../screens/MyAccount/SavedSearches/LoadSavedSearch";
 
 const AccountStackNavigator = () => {
 	const Stack = createNativeStackNavigator();
@@ -35,6 +36,16 @@ const AccountStackNavigator = () => {
 				options={{ title: "Preferences" }}
 			/>
 			<Stack.Screen
+				name="SettingsHomeScreen"
+				component={Settings_HomeScreen}
+				options={{ title: translate('user_profile.home_screen_settings') }}
+			/>
+			<Stack.Screen
+				name="SettingsNotifications"
+				component={Settings_Notifications}
+				options={{ title: translate('user_profile.notification_settings') }}
+			/>
+			<Stack.Screen
 				name="CheckedOut"
 				component={CheckedOut}
 				options={{ title: translate('checkouts.title') }}
@@ -48,11 +59,6 @@ const AccountStackNavigator = () => {
 				name="GroupedWork"
 				component={GroupedWork}
 				options={{ title: translate('grouped_work.title') }}
-			/>
-			<Stack.Screen
-				name="SettingsHomeScreen"
-				component={Settings_HomeScreen}
-				options={{ title: translate('user_profile.home_screen_settings') }}
 			/>
 			<Stack.Screen
 				name="LinkedAccounts"
@@ -76,7 +82,7 @@ const AccountStackNavigator = () => {
 			/>
 			<Stack.Screen
 				name="SavedSearch"
-				component={MySavedSearch}
+				component={SavedSearchScreen}
 				options={({ route }) => ({ title: route.params.name })}
 			/>
 			<Stack.Screen
@@ -85,6 +91,11 @@ const AccountStackNavigator = () => {
 				options={{
 					title: translate('grouped_work.title') ,
 				}}
+			/>
+			<Stack.Screen
+				name="LoadSavedSearch"
+				component={LoadSavedSearch}
+				options={({ route }) => ({ title: route.params.name })}
 			/>
 		</Stack.Navigator>
 	)

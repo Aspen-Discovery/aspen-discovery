@@ -4,12 +4,17 @@ import * as SecureStore from 'expo-secure-store';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useToken, useContrastText, useColorModeValue } from 'native-base';
+import { useToken, useContrastText, useColorModeValue, Spinner } from 'native-base';
 import * as Location from "expo-location";
 import * as Updates from 'expo-updates';
 import Constants from "expo-constants";
 import {create} from 'apisauce';
 import * as Sentry from 'sentry-expo';
+import * as Notifications from 'expo-notifications';
+//import { Linking } from 'react-native';
+import * as Linking from 'expo-linking';
+import {Platform} from "react-native";
+
 
 import Splash from "./splash";
 import Login from "../screens/Auth/Login";
@@ -23,6 +28,8 @@ import {removeData} from "../util/logout";
 import {navigationRef} from "../helpers/RootNavigator";
 import {GLOBALS} from "../util/globals";
 import {getILSMessages} from "../util/loadPatron";
+import TabNavigator from "../navigations/tab/TabNavigator";
+import AccountStackNavigator from "../navigations/stack/AccountStackNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -39,8 +46,15 @@ Sentry.init({
 	dist: GLOBALS.appPatch,
 });
 
+const prefix = Linking.createURL("/");
+console.log(prefix);
+
+const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
 
 export function App() {
+
+	const [isReady, setIsReady] = React.useState(!__DEV__);
+	const [initialState, setInitialState] = React.useState();
 
 	const primaryColor = useToken("colors", "primary.base");
 	const primaryColorContrast = useToken("colors", useContrastText(primaryColor));
@@ -87,6 +101,7 @@ export function App() {
 	);
 
 	React.useEffect(() => {
+
 		const timer = setInterval(async () => {
 			if(!__DEV__){
 				const update = await Updates.checkForUpdateAsync()
@@ -102,7 +117,9 @@ export function App() {
 				}
 			}
 		}, 15000)
-		return () => clearInterval(timer)
+		return () => {
+			clearInterval(timer);
+		}
 	}, [])
 
 	React.useEffect(() => {
@@ -261,6 +278,73 @@ export function App() {
 		<AuthContext.Provider value={authContext}>
 			<NavigationContainer theme={navigationTheme}
 			                     ref={navigationRef}
+			                     fallback={<Spinner />}
+			                     //initialState={initialState}
+			                     linking={{
+									 prefixes: [prefix],
+									 config: {
+										 screens: {
+											 Drawer: {
+												 screens: {
+													 Tabs: {
+														 screens: {
+															 AccountScreenTab: {
+																 screens: {
+																	 SavedSearches: 'user/saved_searches',
+																	 LoadSavedSearch: 'user/saved_search',
+																	 Lists: 'user/lists',
+																	 List: 'user/list'
+																 }
+															 }
+														 }
+													 }
+												 }
+											 },
+										 }
+									 },
+				                     async getInitialURL() {
+										 let url = await Linking.getInitialURL();
+
+										//console.log("Running getInitialURL");
+
+										 if(url != null) {
+											 url = decodeURIComponent(url).replace( /\+/g, ' ' );
+											 url = url.concat("&results=[]");
+											 url = url.replace("aspen-lida://", prefix)
+											 //url = 'exp://192.168.1.27:19000/--/user/saved_search?search=245859&name=New Comics';
+											 //console.log(url);
+											 return url;
+										 }
+
+										 const response = await Notifications.getLastNotificationResponseAsync();
+										 url = decodeURIComponent(response?.notification.request.content.data.url).replace( /\+/g, ' ' );
+					                     url = url.concat("&results=[]");
+					                     url = url.replace("aspen-lida://", prefix)
+					                     //url = 'exp://192.168.1.27:19000/--/user/saved_search?search=245859&name=New Comics';
+					                     //console.log(url);
+										 return url;
+				                     },
+									 subscribe(listener) {
+
+										 //console.log("Running subscriber");
+										 const linkingSubscription = Linking.addEventListener('url', ({ url }) => { listener(url) });
+
+										 const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+											 const url = response.notification.request.content.data.url;
+
+											 // any custom logic to see whether the URL needs to be handled
+											 // ...
+
+											 listener(url);
+										 });
+
+										 return () => {
+											 // clean up event listeners
+											 subscription.remove();
+											 linkingSubscription.remove();
+										 }
+									 }
+			                     }}
 			>
 				<Stack.Navigator
 					screenOptions={{ headerShown: false }}
@@ -278,7 +362,7 @@ export function App() {
 					) : (
 						// User is signed in
 						<Stack.Screen
-							name={translate('navigation.home')}
+							name="Drawer"
 							component={AccountDrawer}
 							screenOptions={{
 								headerShown: false

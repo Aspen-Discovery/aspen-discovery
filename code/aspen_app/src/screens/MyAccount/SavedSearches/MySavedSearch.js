@@ -18,9 +18,7 @@ import {
 	VStack,
 	Image
 } from "native-base";
-import {MaterialIcons} from "@expo/vector-icons";
-import moment from "moment";
-import * as WebBrowser from 'expo-web-browser';
+import { useIsFocused } from '@react-navigation/native';
 
 // custom components and helper files
 import {translate} from '../../../translations/translations';
@@ -32,9 +30,9 @@ import {userContext} from "../../../context/user";
 import _ from "lodash";
 import AddToList from "../../Search/AddToList";
 
-export default class MySavedSearch extends Component {
-	constructor() {
-		super();
+class MySavedSearch extends React.PureComponent {
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -42,46 +40,66 @@ export default class MySavedSearch extends Component {
 			user: [],
 			search: [],
 			searchDetails: [],
-			id: null,
+			id: 0,
+			//reloadSearch: this.loadSearch.bind(this)
 		};
 	}
 
+/*	static getDerivedStateFromProps(nextProps, prevState) {
+		if(nextProps.route.params.search !== prevState.id){
+			//Change in props
+			return{
+				model:prevState.reloadSearch(nextProps.model)
+			};
+		}
+		return null; // No change to state
+	}*/
+
 	loadSearch = async () => {
+		this.setState({
+			isLoading: true,
+		})
+
 		const { route } = this.props;
 		const givenSearchId = route.params?.search ?? 0;
-		const libraryUrl = route.params?.libraryUrl ?? 0;
+		const libraryUrl = route.params?.libraryUrl ?? this.context.library.baseUrl;
 
 		await getSavedSearchTitles(givenSearchId, libraryUrl).then(response => {
 			this.setState({
 				search: response,
 				id: givenSearchId,
+				libraryUrl: libraryUrl,
 			})
 		});
 	}
 
 	componentDidMount = async () => {
 		const { route } = this.props;
+		console.log(route.params);
+		const givenSearchId = route.params?.search ?? 0;
 		const givenSearch = route.params?.details ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const givenResults = route.params?.results ?? '';
+		const libraryUrl = route.params?.libraryUrl ?? this.context.library.baseUrl;
 
-		this.setState({
-			isLoading: false,
-			searchDetails: givenSearch,
-			libraryUrl: libraryUrl
-		});
+		//console.log(givenSearchId);
 
 		await this.loadSearch();
 
-		this.interval = setInterval(() => {
+		this.setState({
+			isLoading: false,
+		})
+
+/*		this.interval = setInterval(() => {
+			//console.log(this.state);
 			this.loadSearch();
 		}, 100000)
 
-		return () => clearInterval(this.interval)
+		return () => clearInterval(this.interval)*/
 
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		//clearInterval(this.interval);
 	}
 
 	// renders the items on the screen
@@ -96,7 +114,7 @@ export default class MySavedSearch extends Component {
 			isNew = item.isNew;
 		};
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, this.state.libraryUrl)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, libraryUrl)}>
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
 					<VStack>
 						{isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{fontSize: 9}}>New!</Badge></Container>) : null}
@@ -134,7 +152,7 @@ export default class MySavedSearch extends Component {
 	}
 
 	openItem = (id, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {item: id, libraryUrl: this.state.libraryUrl}});
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {item: id, libraryUrl: libraryUrl}});
 	};
 
 	_listEmpty = () => {
@@ -150,6 +168,7 @@ export default class MySavedSearch extends Component {
 	static contextType = userContext;
 
 	render() {
+		const {isFocused} = this.props;
 		const {search} = this.state;
 		const user = this.context.user;
 		const location = this.context.location;
@@ -165,10 +184,10 @@ export default class MySavedSearch extends Component {
 
 		return (
 			<ScrollView>
-				<Box safeArea={2}>
+				<Box safeArea={2} isFocused={isFocused}>
 					<FlatList
 						data={this.state.search}
-						renderItem={({ item }) => this.renderItem(item, this.state.libraryUrl)}
+						renderItem={({ item }) => this.renderItem(item, library.baseUrl)}
 						keyExtractor={(item) => item.id}
 					/>
 				</Box>
@@ -176,4 +195,9 @@ export default class MySavedSearch extends Component {
 		);
 
 	}
+}
+
+export default function SavedSearchScreen(props) {
+	const isFocused = useIsFocused();
+	return <MySavedSearch {...props} isFocused={isFocused} />;
 }
