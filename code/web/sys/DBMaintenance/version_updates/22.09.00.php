@@ -255,6 +255,14 @@ function getUpdates22_09_00() : array
 				"alter table format_map_values CHANGE COLUMN mustPickupAtHoldingBranch pickupAt TINYINT(1) DEFAULT 0",
 			]
 		], //add_additional_format_pickup_options
+
+		//mark
+
+		//kirstien
+
+		//kodi
+
+		//other
 	];
 }
 

@@ -313,6 +313,12 @@ class Location extends DataObject
 				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew (Millennium/Sierra)', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*', 'permissions' => ['Location ILS Connection']),
 			)),
 
+			// Catalog Enrichment //
+			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'], 'properties' => [
+				'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+				]
+			],
+
 			//Curbside pickup for Koha plugin
 			'curbsidePickupSettings' => array('property' => 'curbsidePickupInstructions', 'type' => 'textarea', 'label' => 'Patron instructions for curbside pickup', 'description' => 'Instructions specific to this location for instructions to patrons when checking-in for picking up curbside.', 'hideInLists' => true, 'permissions' => ['Location ILS Connection'], 'note' => 'Koha only, requires Curbside Pickup plugin'),
 
