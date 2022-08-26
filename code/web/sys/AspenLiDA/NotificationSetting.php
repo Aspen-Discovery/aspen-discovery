@@ -20,7 +20,7 @@ class NotificationSetting extends DataObject
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name for the app without spaces', 'maxLength' => 50, 'required' => true),
-			'sendTo' => array('property' => 'sendTo', 'type' => 'enum', 'values' => $sendToOptions, 'label' => 'Send In-App Notifications To', 'description' => 'Determine who should receive in-app notifications.'),
+			'sendTo' => array('property' => 'sendTo', 'type' => 'enum', 'values' => $sendToOptions, 'label' => 'Send In-App Notifications To', 'description' => 'Determine who should receive in-app notifications.', 'hideInLists' => true),
 			'notificationTypeSection'=> array('property'=>'notificationTypeSection', 'type' => 'section', 'label' =>'Notification Types', 'renderAsHeading' => true, 'hideInLists' => true, 'properties' => array(
 				'notifySavedSearch' => array('property' => 'notifySavedSearch', 'type' => 'checkbox', 'label' => 'Saved Searches', 'description' => 'Whether or not to send notifications for saved search updates.'),
 			)),
@@ -31,7 +31,6 @@ class NotificationSetting extends DataObject
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
-				'hideInLists' => true,
 			),
 		);
 		if (!UserAccount::userHasPermission('Administer Aspen LiDA Settings')){
