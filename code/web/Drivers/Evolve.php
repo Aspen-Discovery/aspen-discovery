@@ -357,7 +357,7 @@ class Evolve extends AbstractIlsDriver
 
 	public function hasNativeReadingHistory() : bool
 	{
-		// TODO: Implement hasNativeReadingHistory() method.
+		return false;
 	}
 
 	/**
