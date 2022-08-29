@@ -129,10 +129,12 @@ class ExtractOverDriveInfo {
 					//and metadata updated for it.  So we need to call again to figure out which records have
 					//availability and/or metadata updated
 					logger.info("Loading products with any changes (to get availability)");
+					logEntry.addNote("Loading products with any changes (to get availability)");
 					loadProductsFromAPI(LOAD_PRODUCTS_WITH_ANY_CHANGES, extractStartTime);
 
 					//Look for any records that are new
 					if (!settings.isRunFullUpdate()) {
+						logEntry.addNote("Loading new products");
 						loadNewProducts(extractStartTime);
 					}
 
@@ -188,90 +190,68 @@ class ExtractOverDriveInfo {
 					logEntry.setNumProducts(totalRecordsWithChanges);
 					logEntry.saveResults();
 
-					//Update, regroup, and reindex records
-					int numExtractionThreads = settings.getNumExtractionThreads();
-					if (numExtractionThreads > 10) {
-						numExtractionThreads = 10;
-					}else if (numExtractionThreads < 1){
-						numExtractionThreads = 1;
-					}
-
-					//ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(numExtractionThreads);
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
-						//es.execute(() -> {
-							numProcessed[0]++;
-							try {
-								//Extract data from overdrive and update the database
-								final boolean[] errorsEncountered = {false};
-								if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-									//Load Metadata for the record
-									Thread metadataThread = new Thread(() -> {
-										try {
-											updateOverDriveMetaData(curRecord);
-										} catch (SocketTimeoutException e) {
-											settings.addProductToUpdateNextTime(curRecord.getId());
-											logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
-											errorsEncountered[0] = true;
-										}
-									});
-									//Load availability for all collections since we will currently only have collections where the record changed.
-									for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
-										curRecord.addCollection(collectionInfo);
+						numProcessed[0]++;
+						try {
+							//Extract data from overdrive and update the database
+							final boolean[] errorsEncountered = {false};
+							if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+								//Load Metadata for the record
+								Thread metadataThread = new Thread(() -> {
+									try {
+										updateOverDriveMetaData(curRecord);
+									} catch (SocketTimeoutException e) {
+										settings.addProductToUpdateNextTime(curRecord.getId());
+										logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
+										errorsEncountered[0] = true;
 									}
-									//Load availability for the record
-									Thread availabilityThread = new Thread(() -> {
-										try {
-											updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
-										} catch (SocketTimeoutException e) {
-											settings.addProductToUpdateNextTime(curRecord.getId());
-											logEntry.addNote("Error loading availability for " + curRecord.getId() + " " + e.getMessage());
-											errorsEncountered[0] = true;
-										}
-									});
-									metadataThread.start();
-									availabilityThread.start();
-									metadataThread.join();
-									availabilityThread.join();
+								});
+								//Load availability for all collections since we will currently only have collections where the record changed.
+								for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
+									curRecord.addCollection(collectionInfo);
+								}
+								//Load availability for the record
+								Thread availabilityThread = new Thread(() -> {
+									try {
+										updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
+									} catch (SocketTimeoutException e) {
+										settings.addProductToUpdateNextTime(curRecord.getId());
+										logEntry.addNote("Error loading availability for " + curRecord.getId() + " " + e.getMessage());
+										errorsEncountered[0] = true;
+									}
+								});
+								metadataThread.start();
+								availabilityThread.start();
+								metadataThread.join();
+								availabilityThread.join();
 
-									if (!errorsEncountered[0]){
-										String groupedWorkId = null;
-										if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-											//Regroup the record
-											groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
+								if (!errorsEncountered[0]){
+									String groupedWorkId = null;
+									if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+										//Regroup the record
+										groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
+									}
+									if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+										//Metadata didn't change so we need to load from the database
+										if (groupedWorkId == null) {
+											groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
 										}
-										if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-											//Metadata didn't change so we need to load from the database
-											if (groupedWorkId == null) {
-												groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
-											}
-											//Reindex the record
-											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-											logEntry.incUpdated();
-										}else{
-											logEntry.incSkipped();
-										}
+										//Reindex the record
+										getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+										logEntry.incUpdated();
+									}else{
+										logEntry.incSkipped();
 									}
 								}
-							}catch (Exception e){
-								logEntry.incErrors("Error processing record " + curRecord.getId(), e);
 							}
-							if (numProcessed[0] % 100 == 0) {
-								logEntry.addNote("Processed " + numProcessed[0]);
-								logEntry.saveResults();
-							}
-						//});
+						}catch (Exception e){
+							logEntry.incErrors("Error processing record " + curRecord.getId(), e);
+						}
+						if (numProcessed[0] % 100 == 0) {
+							logEntry.addNote("Processed " + numProcessed[0]);
+							logEntry.saveResults();
+						}
 					}
-//					es.shutdown();
-//					while (true) {
-//						try {
-//							boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
-//							if (terminated){
-//								break;
-//							}
-//						} catch (InterruptedException e) {
-//							logger.error("Error waiting for all extracts to finish");
-//						}
-//					}
 
 					if (checkForDeletedRecords) {
 						//Remove any records that no longer exist
@@ -983,6 +963,8 @@ class ExtractOverDriveInfo {
 		if  (loadType == LOAD_ALL_PRODUCTS && collectionInfo.getAspenLibraryId() == 0) {
 			logger.info("Not loading products for " + collectionInfo.getName() + " since it is not part of Aspen");
 		}
+		int numProductsLoaded = 0;
+		int numProductsPreviouslyLoaded = 0;
 		WebServiceResponse productsResponse = callOverDriveURL("overdriveExtract.loadProducts", mainProductUrl);
 		if (productsResponse.getResponseCode() == 200) {
 			JSONObject productInfo = productsResponse.getJSONResponse();
@@ -1034,11 +1016,13 @@ class ExtractOverDriveInfo {
 										previouslyLoadedProduct = curRecord;
 										logger.debug("    No previously loaded product for " + curRecord.getId());
 									} else {
+										numProductsPreviouslyLoaded++;
 										previouslyLoadedProduct.hasChanges = true;
 										logger.debug("    Found previously loaded product for " + curRecord.getId());
 									}
 									previouslyLoadedProduct.addCollection(collectionInfo);
 								}
+								numProductsLoaded++;
 							}
 							//Get out of the number of tries
 							if (loadType == LOAD_ALL_PRODUCTS) {
@@ -1068,6 +1052,14 @@ class ExtractOverDriveInfo {
 					}
 				}
 			}
+			if (loadType == LOAD_ALL_PRODUCTS) {
+				logEntry.addNote(collectionInfo.getName() + " has " + numProductsLoaded + " products in it, " + numProductsPreviouslyLoaded + " were loaded previously.");
+			}else if (loadType == LOAD_PRODUCTS_WITH_ANY_CHANGES) {
+				logEntry.addNote(collectionInfo.getName() + " has " + numProductsLoaded + " changed products in it, " + numProductsPreviouslyLoaded + " were loaded previously.");
+			}else if (loadType == LOAD_NEW_PRODUCTS) {
+				logEntry.addNote(collectionInfo.getName() + " has " + numProductsLoaded + " new products in it, " + numProductsPreviouslyLoaded + " were loaded previously.");
+			}
+			logEntry.saveResults();
 		}else{
 			logEntry.incErrors("Unable to load products from " + collectionInfo.getName() + " " + mainProductUrl);
 			logger.error(productsResponse.getResponseCode() + " " + productsResponse.getMessage());
