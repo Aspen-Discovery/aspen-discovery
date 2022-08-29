@@ -296,7 +296,7 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 
 
 			allCategories = _.pullAllBy(allCategories, hiddenCategories, 'key');
-			console.log(allCategories);
+			//console.log(allCategories);
 			return allCategories;
 		} else {
 			console.log(response);

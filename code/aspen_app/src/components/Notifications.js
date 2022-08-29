@@ -1,78 +1,17 @@
 import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import React from 'react';
 import {Platform, View} from 'react-native';
 import {Alert, Button, HStack, Text, Center} from "native-base";
-import {stripHTML} from "../util/apiAuth";
+import {create} from 'apisauce';
 
 // custom components and helper files
+import {createAuthTokens, getHeaders, postData, problemCodeMap, stripHTML} from "../util/apiAuth";
+import {GLOBALS} from "../util/globals";
+import {popAlert, popToast} from "./loadError";
 
-Notifications.setNotificationHandler({
-	handleNotification: async () => ({
-		shouldShowAlert: true,
-		shouldPlaySound: false,
-		shouldSetBadge: false,
-	}),
-});
-
-export default function Messages() {
-	const [expoPushToken, setExpoPushToken] = useState('');
-	const [notification, setNotification] = useState(false);
-	const notificationListener = useRef();
-	const responseListener = useRef();
-
-	useEffect(() => {
-		registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-
-		notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-			setNotification(notification);
-		});
-
-		responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-			console.log(response);
-		});
-
-		return () => {
-			Notifications.removeNotificationSubscription(notificationListener.current);
-			Notifications.removeNotificationSubscription(responseListener.current);
-		};
-	}, []);
-
-	return (
-		<View
-			style={{
-				flex: 1,
-				alignItems: 'center',
-				justifyContent: 'space-around',
-			}}>
-			<Text>Your expo push token: {expoPushToken}</Text>
-			<View style={{alignItems: 'center', justifyContent: 'center'}}>
-				<Text>Title: {notification ? notification.request.content.title : null} </Text>
-				<Text>Body: {notification ? notification.request.content.body : null}</Text>
-				<Text>Data: {notification ? JSON.stringify(notification.request.content.data) : null}</Text>
-			</View>
-			<Button
-				title="Press to schedule a notification"
-				onPress={async () => {
-					await schedulePushNotification();
-				}}
-			/>
-		</View>
-	);
-}
-
-async function schedulePushNotification() {
-	await Notifications.scheduleNotificationAsync({
-		content: {
-			title: "You've got mail! 📬",
-			body: 'Here is the notification body',
-			data: {data: 'goes here'},
-		},
-		trigger: {seconds: 2},
-	});
-}
-
-async function registerForPushNotificationsAsync() {
+export async function registerForPushNotificationsAsync(libraryUrl) {
 	let token;
 	if (Constants.isDevice) {
 		const {status: existingStatus} = await Notifications.getPermissionsAsync();
@@ -82,25 +21,120 @@ async function registerForPushNotificationsAsync() {
 			finalStatus = status;
 		}
 		if (finalStatus !== 'granted') {
-			alert('Failed to get push token for push notification!');
+			console.log('Failed to get push token for push notification!');
 			return;
 		}
 		token = (await Notifications.getExpoPushTokenAsync()).data;
+		await savePushToken(libraryUrl, token);
 		console.log(token);
 	} else {
-		alert('Must use physical device for Push Notifications');
+		alert('Push notifications require a physical device');
 	}
 
+	await createNotificationChannels();
+	await createNotificationCategories();
+
+	return token;
+}
+
+async function savePushToken(libraryUrl, pushToken) {
+	let postBody = await postData();
+	postBody.append('pushToken', pushToken);
+	postBody.append('deviceModel', Device.modelName);
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/UserAPI?method=saveNotificationPushToken', postBody);
+	if(response.ok) {
+		if(response.data.result.success) {
+			popAlert(response.data.result.title, response.data.result.message, "success");
+		} else {
+			popAlert(response.data.result.title, response.data.result.message, "error");
+		}
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popToast(problem.title, problem.message, "warning");
+		console.log(response);
+	}
+}
+
+export async function getPushToken(libraryUrl) {
+	let postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/UserAPI?method=getNotificationPushToken', postBody);
+	if(response.ok) {
+		if(response.data.result.success) {
+			return response.data.result.tokens[0];
+		} else {
+			return [];
+		}
+	} else {
+		const problem = problemCodeMap(response.problem);
+		console.log(response);
+		return [];
+	}
+}
+
+
+export async function deletePushToken(libraryUrl, pushToken, shouldAlert = false) {
+	let postBody = await postData();
+	postBody.append('pushToken', pushToken);
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/UserAPI?method=deleteNotificationPushToken', postBody);
+	if(response.ok) {
+		//console.log(response);
+		if(shouldAlert) {
+			if(response.data.result.success) {
+				popAlert(response.data.result.title, response.data.result.message, "success");
+			} else {
+				popAlert(response.data.result.title, response.data.result.message, "error");
+			}
+		}
+		return true;
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popToast(problem.title, problem.message, "warning");
+		console.log(response);
+		return false;
+	}
+}
+
+async function createNotificationChannels() {
 	if (Platform.OS === 'android') {
-		Notifications.setNotificationChannelAsync('default', {
-			name: 'default',
+		Notifications.setNotificationChannelGroupAsync('updates', {
+			name: 'Updates',
+			description: null
+		});
+
+		Notifications.setNotificationChannelAsync('savedSearch', {
+			name: 'Saved Searches',
 			importance: Notifications.AndroidImportance.MAX,
 			vibrationPattern: [0, 250, 250, 250],
 			lightColor: '#FF231F7C',
+			groupId: 'updates',
+			showBadge: true
 		});
 	}
+}
 
-	return token;
+async function createNotificationCategories() {
+	Notifications.setNotificationCategoryAsync('savedSearch', {
+		identifier: 'Saved Searches',
+		buttonTitle: 'View',
+		});
 }
 
 /** status/colorScheme options: success, error, info, warning **/
