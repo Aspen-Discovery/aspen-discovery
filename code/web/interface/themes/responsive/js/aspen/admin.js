@@ -1221,12 +1221,20 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowspecifiedFormatBoost").show();
 				$("#propertyRowcheckRecordForLargePrint").hide();
 				$("#propertyRowformatMap").hide();
-			}else{
+			}
+			else if (formatSource === 'item'){
 				$("#propertyRowspecifiedFormat").hide();
 				$("#propertyRowspecifiedFormatCategory").hide();
 				$("#propertyRowspecifiedFormatBoost").hide();
 				$("#propertyRowformatMap").show();
 				$("#propertyRowcheckRecordForLargePrint").show();
+			}
+			else{
+				$("#propertyRowspecifiedFormat").hide();
+				$("#propertyRowspecifiedFormatCategory").hide();
+				$("#propertyRowspecifiedFormatBoost").hide();
+				$("#propertyRowformatMap").show();
+				$("#propertyRowcheckRecordForLargePrint").hide();
 			}
 		},
 		updateLayoutSettingsFields: function () {

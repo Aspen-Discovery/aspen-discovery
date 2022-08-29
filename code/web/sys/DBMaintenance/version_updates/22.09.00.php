@@ -234,6 +234,13 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
 			]
 		], //add_device_notification_tokens
+        'change_default_formatSource_KohaOnly' => [
+            'title' => 'Change default format source to "Item Record" for Koha libraries',
+            'description' => 'Changes the default format source to "Item Record" for Koha libraries',
+            'sql' => [
+                "UPDATE indexing_profiles SET formatSource = 'item' WHERE catalogDriver = 'Koha'",
+            ]
+        ], //change_default_formatSource_KohaOnly
 		'add_user_not_interested_index' => [
 			'title' => 'Add index for user not interested',
 			'description' => 'Add index for user not interested',
@@ -241,6 +248,21 @@ function getUpdates22_09_00() : array
 				"alter table user_not_interested add index groupedRecordPermanentId(groupedRecordPermanentId, userId)",
 			]
 		], //add_user_not_interested_index
+		'add_additional_format_pickup_options' => [
+			'title' => 'Add additional format pickup options',
+			'description' => 'Add index for user not interested',
+			'sql' => [
+				"alter table format_map_values CHANGE COLUMN mustPickupAtHoldingBranch pickupAt TINYINT(1) DEFAULT 0",
+			]
+		], //add_additional_format_pickup_options
+
+		//mark
+
+		//kirstien
+
+		//kodi
+
+		//other
 	];
 }
 

@@ -5946,6 +5946,8 @@ AspenDiscovery.Account = (function(){
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
+					}else{
+						AspenDiscovery.showMessage("Cancelling hold failed", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
@@ -8397,12 +8399,20 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowspecifiedFormatBoost").show();
 				$("#propertyRowcheckRecordForLargePrint").hide();
 				$("#propertyRowformatMap").hide();
-			}else{
+			}
+			else if (formatSource === 'item'){
 				$("#propertyRowspecifiedFormat").hide();
 				$("#propertyRowspecifiedFormatCategory").hide();
 				$("#propertyRowspecifiedFormatBoost").hide();
 				$("#propertyRowformatMap").show();
 				$("#propertyRowcheckRecordForLargePrint").show();
+			}
+			else{
+				$("#propertyRowspecifiedFormat").hide();
+				$("#propertyRowspecifiedFormatCategory").hide();
+				$("#propertyRowspecifiedFormatBoost").hide();
+				$("#propertyRowformatMap").show();
+				$("#propertyRowcheckRecordForLargePrint").hide();
 			}
 		},
 		updateLayoutSettingsFields: function () {

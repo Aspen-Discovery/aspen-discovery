@@ -931,7 +931,8 @@ class UserAPI extends Action
 	{
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$fines = $user->getFines();
+			$includeLinkedUsers = $_REQUEST['includeLinkedUsers'] ?? false;
+			$fines = $user->getFines($includeLinkedUsers, true);
 			$totalOwed = 0;
 			foreach ($fines as &$fine) {
 				if (isset($fine['amountOutstandingVal'])) {

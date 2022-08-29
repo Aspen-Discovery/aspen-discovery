@@ -42,7 +42,6 @@ class QuickSearchSetting extends DataObject
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this scope',
 				'values' => $libraryList,
-				'hideInLists' => true,
 			),
 		];
 	}

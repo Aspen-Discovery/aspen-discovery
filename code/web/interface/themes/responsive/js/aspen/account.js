@@ -692,6 +692,8 @@ AspenDiscovery.Account = (function(){
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
+					}else{
+						AspenDiscovery.showMessage("Cancelling hold failed", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
