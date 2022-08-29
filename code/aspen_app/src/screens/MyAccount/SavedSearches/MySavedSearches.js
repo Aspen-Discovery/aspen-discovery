@@ -57,8 +57,6 @@ export default class MySavedSearches extends Component {
 			hasNewResults = item.hasNewResults;
 		}
 
-		console.log(hasNewResults);
-
 		return (
 			<Pressable onPress={() => {this.openList(item.id, item, libraryUrl)}} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="1" pr="1" py="2">
 				<HStack space={3} justifyContent="flex-start">

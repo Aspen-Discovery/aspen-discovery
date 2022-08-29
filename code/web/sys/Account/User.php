@@ -1407,7 +1407,7 @@ class User extends DataObject
 	}
 
 	private $ilsFinesForUser;
-	public function getFines($includeLinkedUsers = true) : array {
+	public function getFines($includeLinkedUsers = true, $APIRequest = false) : array {
 
 		if (!isset($this->ilsFinesForUser)){
 			$this->ilsFinesForUser = $this->getCatalogDriver()->getFines($this);
@@ -1415,7 +1415,12 @@ class User extends DataObject
 				$this->ilsFinesForUser = array();
 			}
 		}
-		$ilsFines[$this->id] = $this->ilsFinesForUser;
+
+		if($APIRequest && !$includeLinkedUsers) {
+			$ilsFines = $this->ilsFinesForUser;
+		} else {
+			$ilsFines[$this->id] = $this->ilsFinesForUser;
+		}
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
@@ -2519,6 +2524,7 @@ class User extends DataObject
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
 		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
+		$sections['ecommerce']->addAction(new AdminAction('ACI Speedway Settings', 'Define Settings for ACI Speedway.', '/Admin/ACISpeedwaySettings'), 'Administer ACI Speedway');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
