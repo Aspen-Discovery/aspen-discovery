@@ -481,7 +481,7 @@ class SirsiDynixROA extends HorizonAPI
 
 			$createPatronInfoParameters['fields']['profile'] = array(
 				'resource' => '/policy/userProfile',
-				'key' => 'SELFREG', //TODO: This needs to be configurable
+				'key' => $library->selfRegistrationUserProfile,
 			);
 
 			if (!empty($_REQUEST['firstName'])) {

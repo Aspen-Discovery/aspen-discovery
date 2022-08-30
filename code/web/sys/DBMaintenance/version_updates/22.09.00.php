@@ -257,6 +257,13 @@ function getUpdates22_09_00() : array
 		], //add_additional_format_pickup_options
 
 		//mark
+		'symphony_self_registration_profile' => [
+			'title' => 'Add Self Registration Profile for Symphony',
+			'description' => 'Add Self Registration Profile for Symphony',
+			'sql' => [
+				"alter table library ADD COLUMN selfRegistrationUserProfile VARCHAR(20) DEFAULT 'SELFREG'",
+			]
+		], //symphony_self_registration_profile
 
 		//kirstien
 
