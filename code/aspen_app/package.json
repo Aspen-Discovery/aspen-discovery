@@ -46,7 +46,7 @@
         "i18n-js": "^3.8.0",
         "moment": "^2.29.4",
         "native-base": "^3.4.9",
-        "next": "^12.2.3",
+        "next": "^12.2.4",
         "react": "17.0.2",
         "react-devtools": "^4.25.0",
         "react-dom": "17.0.2",
