@@ -1380,7 +1380,7 @@ class ExtractOverDriveInfo {
 		}
 
 		BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(overDriveInfo.getCollections().size());
-		ThreadPoolExecutor es = new ThreadPoolExecutor(4, overDriveInfo.getCollections().size(), 5000, TimeUnit.MILLISECONDS, blockingQueue);
+		ThreadPoolExecutor es = new ThreadPoolExecutor(overDriveInfo.getCollections().size() / 2, overDriveInfo.getCollections().size(), 5000, TimeUnit.MILLISECONDS, blockingQueue);
 		//We need to load availability for every collection because sharing can vary, but we only need to do the shared collection
 		//and any of our libraries that have Advantage collections
 		for (AdvantageCollectionInfo collectionInfo : overDriveInfo.getCollections()){
