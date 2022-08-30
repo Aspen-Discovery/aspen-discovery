@@ -4025,7 +4025,7 @@ class Koha extends AbstractIlsDriver
 						}
 					} else {
 						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
-						$logger->log("Error updating payment withiin Koha response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
+						$logger->log("Error updating payment within Koha response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
 					}
 					$allPaymentsSucceed = false;
 				}
@@ -4061,11 +4061,9 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if ($allPaymentsSucceed){
-				$result = [
-					'success' => true,
-					'message' => 'Your fines have been paid successfully, thank you.'
-				];
-			}
+				$result['success'] = true;
+                $result['message'] = translate(['text' => 'Your fines have been paid successfully, thank you.', 'isPublicFacing'=>true]);
+            }
 		}
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $result;
