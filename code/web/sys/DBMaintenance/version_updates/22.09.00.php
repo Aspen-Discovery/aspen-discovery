@@ -266,6 +266,33 @@ function getUpdates22_09_00() : array
 		], //symphony_self_registration_profile
 
 		//kirstien
+		'aci_speedpay_settings' => [
+			'title' => 'Add settings for ACI Speedpay',
+			'description' => 'Add settings for ACI Speedpay integration',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS aci_speedpay_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) UNIQUE,
+					sandboxMode TINYINT(1) DEFAULT 0,
+					clientId VARCHAR(100),
+					clientSecret VARCHAR(100),
+					apiAuthKey VARCHAR(100),
+					billerId VARCHAR(100),
+					billerAccountId VARCHAR(100)
+				) ENGINE INNODB",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer ACI Speedpay', '', 10, 'Controls if the user can change ACI Speedpay settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer ACI Speedpay'))",
+				"ALTER TABLE library ADD COLUMN aciSpeedpaySettingId INT(11) DEFAULT -1"
+			),
+		], //aci_speedpay_settings
+		'add_aci_token_payment' => [
+			'title' => 'Add aciToken to user_payments',
+			'description' => 'Add aciToken to user_payments',
+			'sql' => [
+				"ALTER TABLE user_payments ADD COLUMN aciToken VARCHAR(255) default NULL",
+			]
+		], //add_aci_token_payment
 
 		//kodi
 
