@@ -253,7 +253,7 @@ if (isset($_REQUEST['lookfor'])) {
 				$_REQUEST['lookfor'][$i] = $cleanedSearchTerm;
 				$_GET['lookfor'][$i] = $cleanedSearchTerm;
 			}
-			if (strlen($searchTerm) >= 256) {
+			if (strlen($searchTerm) >= 500) {
 				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
 				$interface->setTemplate('../queryTooLong.tpl');
 				$interface->setPageTitle('An Error has occurred');
