@@ -1,0 +1,42 @@
+if (regroup all records) {
+    recordGrouper.regroupAllRecords;
+}
+get last update time;
+block {
+  scan for full export files in /marc that end with mrc or marc;
+  remove any files that were added before our last update from MARC;
+  only keep the latest MARC;
+}
+block {
+  scan for large xml files in /marc that end with xml;
+  remove any files that were added before our last update from MARC;
+  only keep the latest MARC;
+}
+
+if (full export file exists and large xml file does not) {
+    return;
+}else if (full export file does not and large xml file does) {
+    return;
+}else{
+    call processRecordsUsingMarcExtract;
+}
+
+scan for item change csv files in /marc_delta that end with csv;
+if (we have any){
+    call updateItemsUsingCsvFile;
+}
+
+scan for incremental change ids files in /marc_delta that end with ids and start with incremental_changes or incremental_new;
+if (we have any){
+    just delete them, they aren't used anymore;
+}
+
+look for latest all ids file in /marc_delta that ends with ids and starts with all
+if (we have one) {
+    call updateItemsBasedOnIds;
+}
+
+look for latest deleted ids file
+if (we have any) {
+    just delete them, they aren't used anymore;
+}
