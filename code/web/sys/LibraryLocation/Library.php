@@ -315,7 +315,6 @@ class Library extends DataObject
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
-	private $curlWrapper;
 
 	public function getNumericColumnNames() : array {
 		return [
@@ -1880,9 +1879,9 @@ class Library extends DataObject
 		if (strlen($url) > 0) {
 			// We've got a new or updated URL
 			// First try and retrieve the metadata
-			$this->curlWrapper = new CurlWrapper();
-			$this->curlWrapper->setTimeout(10);
-			$xml = $this->curlWrapper->curlGetPage($url);
+			$curlWrapper = new CurlWrapper();
+			$curlWrapper->setTimeout(10);
+			$xml = $curlWrapper->curlGetPage($url);
 			if (strlen($xml) > 0) {
 				// Check it's a valid SAML message
 				require_once '/usr/share/simplesamlphp/lib/_autoload.php';
@@ -1900,6 +1899,8 @@ class Library extends DataObject
 						Logger::LOG_ERROR
 					);
 					return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
+				} else {
+					chmod($filePath, 0764);
 				}
 			} else {
 				$logger->log(
