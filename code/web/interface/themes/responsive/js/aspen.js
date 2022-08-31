@@ -6592,7 +6592,7 @@ AspenDiscovery.Account = (function(){
 					if(data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
-						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
 					if(data.isDonation) {

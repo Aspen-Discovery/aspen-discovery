@@ -2346,7 +2346,7 @@ class User extends DataObject
 	{
 		if ($this->hasIlsConnection()) {
 			$homeLibrary = $this->getHomeLibrary();
-			if ($homeLibrary->allowUsernameUpdates) {
+			if ($homeLibrary != null && $homeLibrary->allowUsernameUpdates) {
 				return $this->getCatalogDriver()->hasEditableUsername();
 			}
 		}
