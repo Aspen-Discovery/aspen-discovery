@@ -90,21 +90,20 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("series2", series2.values());
 			doc.addField("series_with_volume", seriesWithVolume.values());
 
-			Collection<String> hideSubjects = groupedWorkIndexer.getHideSubjectFacets();
 			doc.addField("topic", topics);
-			topicFacets.removeAll(hideSubjects);
+			topicFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("topic_facet", topicFacets);
-			subjects.removeAll(hideSubjects);
+			subjects.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("subject_facet", subjects);
 			doc.addField("lc_subject", lcSubjects);
 			doc.addField("bisac_subject", bisacSubjects);
 			doc.addField("genre", genres);
-			genreFacets.removeAll(hideSubjects);
+			genreFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("genre_facet", genreFacets);
 			doc.addField("geographic", geographic);
-			geographicFacets.removeAll(hideSubjects);
+			geographicFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("geographic_facet", geographicFacets);
-			eras.removeAll(hideSubjects);
+			eras.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("era", eras);
 			checkDefaultValue(literaryFormFull, "Not Coded");
 			checkDefaultValue(literaryFormFull, "Other");

@@ -45,6 +45,7 @@ public class GroupedWorkIndexer {
 	private HooplaProcessor hooplaProcessor;
 	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
+	protected static final HashSet<String> hideSubjects = new HashSet<>();
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
@@ -134,7 +135,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getRecordForIdentifierStmt;
 	private PreparedStatement addRecordToDBStmt;
 	private PreparedStatement updateRecordInDBStmt;
-	private PreparedStatement getHideSubjectFacetsStmt;
+	private PreparedStatement getHideSubjectsStmt;
 
 	private final CRC32 checksumCalculator = new CRC32();
 
@@ -267,7 +268,7 @@ public class GroupedWorkIndexer {
 			getRecordForIdentifierStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(sourceData) as sourceData FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressedNoMarcAvailable = 0, sourceData = COMPRESS(?), lastModified = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
-			getHideSubjectFacetsStmt = dbConn.prepareStatement("SELECT subjectNormalized from hide_subject_facets", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getHideSubjectsStmt = dbConn.prepareStatement("SELECT subjectNormalized from hide_subject_facets", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -436,6 +437,9 @@ public class GroupedWorkIndexer {
 		//Load translation maps
 		loadSystemTranslationMaps();
 
+		//Load subject facets to hide
+		loadHideSubjects();
+
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
@@ -467,6 +471,7 @@ public class GroupedWorkIndexer {
 		hooplaProcessor = null;
 		translationMaps.clear();
 		lexileInformation.clear();
+		hideSubjects.clear();
 		scopes.clear();
 		try {
 			getRatingStmt.close();
@@ -1354,14 +1359,15 @@ public class GroupedWorkIndexer {
 		return  translatedCollection;
 	}
 
-	Collection<String> getHideSubjectFacets() throws SQLException {
-		Set<String> hideSubjects = new HashSet<>();
-		ResultSet hideSubjectsRS = getHideSubjectFacetsStmt.executeQuery();
-		while (hideSubjectsRS.next()){
-			hideSubjects.add(hideSubjectsRS.getString("subjectNormalized"));
+	private void loadHideSubjects() {
+		try {
+			ResultSet hideSubjectsRS = getHideSubjectsStmt.executeQuery();
+			while (hideSubjectsRS.next()) {
+				hideSubjects.add(hideSubjectsRS.getString("subjectNormalized"));
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading subjects to hide: ", e);
 		}
-		Collection<String> hideSubjectsNormalized = AspenStringUtils.normalizeSubjects(hideSubjects);
-		return hideSubjectsNormalized;
 	}
 
 	TreeSet<Scope> getScopes() {
