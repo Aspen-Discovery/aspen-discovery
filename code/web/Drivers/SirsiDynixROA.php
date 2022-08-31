@@ -22,6 +22,12 @@ class SirsiDynixROA extends HorizonAPI
 			if (!empty($physicalLocation)) {
 				$workingLibraryId = $physicalLocation->code;
 			}
+			//If we still don't have a working library id, get the
+			if (empty($workingLibraryId)){
+				$libraryLocations = $library->getLocations();
+				$firstLocation = reset($libraryLocations);
+				$workingLibraryId = $firstLocation->code;
+			}
 		}
 		$logger->log('WebServiceURL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
