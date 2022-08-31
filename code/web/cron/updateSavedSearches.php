@@ -68,11 +68,13 @@ if ($search->getNumResults() > 0){
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
 					if ($hasNewResults && $userForSearch->canReceiveNotifications($userForSearch)){
+						global $logger;
+						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
 						$notificationToken = new UserNotificationToken();
 						$notificationToken->userId = $userForSearch->id;
 						$notificationToken->find();
 						while($notificationToken->fetch()) {
-							//TODO: change app prefix to match app slug for branded apps
+							$logger->log("Found notification push token for user " . $userForSearch->id, Logger::LOG_ERROR);
 							$body = array(
 								'to' => $notificationToken->pushToken,
 								'title' => 'New Titles',
