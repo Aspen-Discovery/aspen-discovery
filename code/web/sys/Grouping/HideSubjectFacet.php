@@ -34,6 +34,6 @@ class HideSubjectFacet extends DataObject
 
     public function normalizeSubject($subjectTerm): string
     {
-        return rtrim($subjectTerm, '- \t\n\r\0\x0B\,.;\|');
+        return rtrim($subjectTerm, '- .,;|\t');
     }
 }
