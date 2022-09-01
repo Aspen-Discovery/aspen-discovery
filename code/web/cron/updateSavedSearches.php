@@ -65,9 +65,22 @@ if ($search->getNumResults() > 0){
 				$numResults = $searchObject->getResultTotal();
 				$hasNewResults = $numResults > 0;
 				$searchEntry->hasNewResults = $hasNewResults;
+				if(!empty($searchEntry->lastUpdated)) {
+					$lastUpdated = strtotime($searchEntry->lastUpdated);
+					$oneWeekLater = strtotime("+7 day", $lastUpdated);
+					$oneWeekLater = date("Y-m-d", $oneWeekLater);
+					$today = date("Y-m-d");
+					if($oneWeekLater == $today) {
+						$searchEntry->lastUpdated = $today;
+					} else {
+						$searchEntry->hasNewResults = 0;
+					}
+				} else {
+					$searchEntry->lastUpdated = date("Y-m-d");
+				}
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
-					if ($hasNewResults && $userForSearch->canReceiveNotifications($userForSearch)){
+					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch)){
 						global $logger;
 						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
 						$notificationToken = new UserNotificationToken();

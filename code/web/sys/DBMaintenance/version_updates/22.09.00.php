@@ -318,6 +318,13 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE user_payments ADD COLUMN aciToken VARCHAR(255) default NULL",
 			]
 		], //add_aci_token_payment
+		'add_lastUpdated_search' => [
+			'title' => 'Add lastUpdated to search',
+			'description' => 'Add lastUpdated to search',
+			'sql' => [
+				"ALTER TABLE search ADD COLUMN lastUpdated date",
+			]
+		], //add_lastUpdated_search
 
 		//kodi
 
