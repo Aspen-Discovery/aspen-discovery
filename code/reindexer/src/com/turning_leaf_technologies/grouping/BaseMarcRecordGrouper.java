@@ -584,7 +584,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		if (activeLanguage == null){
 			if (treatUnknownLanguageAs.length() > 0){
 				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
-				if (activeLanguage.length() != 3){
+				if (activeLanguage.length() != 3 || activeLanguage.contains(" ")){
 					activeLanguage = "unk";
 				}
 			}else {
