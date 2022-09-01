@@ -49,11 +49,13 @@
 				{assign var="scrollerName" value="$listName"}
 				{assign var="wrapperId" value="$listName"}
 				{assign var="scrollerVariable" value="listScroller$listName"}
-				{assign var="fullListLink" value=$list->fullListLink()}
 				{assign var="scrollerTitle" value=$collectionSpotlight->name}
 				{assign var="fullListLink" value=$list->fullListLink()}
 				{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
-
+				{if count($collectionSpotlight->lists) > 1}
+					{assign var="showViewMoreListTitle" value=$list->name}
+				{/if}
+				
 				{if count($collectionSpotlight->lists) == 1}
 					{assign var="scrollerTitle" value=$collectionSpotlight->name}
 					{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
