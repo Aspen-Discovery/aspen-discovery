@@ -1,4 +1,3 @@
-{debug}
 {strip}
 	<div id="main-content" class="col-md-12">
 		<h1><span id="releaseVersion">{$releaseVersion}</span> {translate text="Release Information" isAdminFacing=true}</h1>
