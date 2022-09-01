@@ -890,6 +890,10 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+		if (!empty($library->ssoXmlUrl)) {
+			$interface->assign('ssoXmlUrl', $library->ssoXmlUrl);
+		}
+		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
 		if (!empty($library->loginNotes)){
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();

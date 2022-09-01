@@ -7,7 +7,14 @@ if (count($_SERVER['argv']) > 1){
 	fwrite($fhnd, "# Fetch Notification Receipts #\n");
 	fwrite($fhnd, "#########################\n");
 	fwrite($fhnd, "0 11 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php $serverName\n");
+
+	fwrite($fhnd, "\n#############################\n");
+	fwrite($fhnd, "# Refresh SAML SSO metadata #\n");
+	fwrite($fhnd, "#############################\n");
+	fwrite($fhnd, "00 05  * * * aspen php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php $serverName\n");
 } else {
 	echo "Must provide servername as first file";
 	exit();
 }
+
+?>
