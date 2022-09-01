@@ -534,6 +534,8 @@ class SystemAPI extends Action
 				$fileName = $app->logoLogin;
 			} elseif ($type === "appIcon") {
 				$fileName = $app->logoAppIcon;
+			} elseif ($type === "appNotification") {
+				$filename = $app->logoNotification;
 			} else {
 				die();
 			}

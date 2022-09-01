@@ -325,6 +325,13 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE search ADD COLUMN lastUpdated date",
 			]
 		], //add_lastUpdated_search
+		'add_logoNotification' => [
+			'title' => 'Add notification logo for branded apps',
+			'description' => 'Add option to upload notification logo for branded apps - Android only',
+			'sql' => [
+				"ALTER TABLE aspen_lida_branded_settings ADD COLUMN logoNotification VARCHAR(100)",
+			]
+		], //add_logoNotification
 
 		//kodi
 
