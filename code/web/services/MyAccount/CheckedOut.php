@@ -15,7 +15,11 @@ class MyAccount_CheckedOut extends MyAccount{
 		}
 		$interface->assign('tab', $tab);
 		if ($library->showLibraryHoursNoticeOnAccountPages) {
-			$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
+			if ($user->homeLocationId != null) {
+				$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
+			}else{
+				$libraryHoursMessage = '';
+			}
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
@@ -26,8 +30,8 @@ class MyAccount_CheckedOut extends MyAccount{
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('', 'My Checked Out Titles');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Your Checked Out Titles');
 		return $breadcrumbs;
 	}
 }

@@ -183,7 +183,7 @@
 				</div>
 			</div>
         {elseif $property.type == 'text' || $property.type == 'regularExpression' || $property.type == 'folder'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if $property.autocomplete}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.readOnly)}readonly{/if}  {if $property.forcesReindex}aria-describedby="{$propName}HelpBlock"{/if} >
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}{if $property.validationGroupName} {$property.validationGroupName}-validation-group{/if}' {if $property.autocomplete}autocomplete="{$property.autocomplete}"{/if} {if !empty($property.readOnly)}readonly{/if}  {if $property.forcesReindex}aria-describedby="{$propName}HelpBlock"{/if} >
 			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
@@ -428,7 +428,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox" {if $property.forcesReindex || $property.affectsLiDA || $property.note}style="margin-bottom: 0"{/if}>
 				<label for='{$propName}'>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}> {translate text=$property.label isAdminFacing=true}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}> {translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
 				</label>
 				{if $property.description}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 			</div>
@@ -457,6 +457,6 @@
 
 	</div>
 {elseif $property.type == 'hidden'}
-	<input type='hidden' name='{$propName}' value='{$propValue}'>
+	<input type='hidden' id='{$propName}' name='{$propName}' value='{$propValue}'>
 {/if}
 {/strip}

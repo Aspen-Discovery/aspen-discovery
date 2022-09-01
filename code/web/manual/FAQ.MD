@@ -79,7 +79,7 @@ Find out more about archives integration here: [https://bywatersolutions.com/new
 
 **Q:** *How do I create a browse category in Aspen Discovery?*
 
-**A:** There are three ways to create browse categories in Aspen. The simplest way is to create a search with all the desired facets, then scroll to the bottom of the page and select "Add To Browse." The second way to create a browse category is through lists in My Account, and the third way is to go into the Aspen Administration menu, scroll down to Local Catalog Enrichment, and click on Browse Categories. To create a browse category, you will need to be logged into a staff account with the necessary permissions.
+**A:** There are three ways to create browse categories in Aspen. The simplest way is to create a search with all the desired facets, then scroll to the bottom of the page and select "Add To Browse." The second way to create a browse category is through lists in Your Account, and the third way is to go into the Aspen Administration menu, scroll down to Local Catalog Enrichment, and click on Browse Categories. To create a browse category, you will need to be logged into a staff account with the necessary permissions.
 
 Find out more about creating browse categories here: [https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery](https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery)
 

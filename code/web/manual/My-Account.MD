@@ -1,10 +1,10 @@
-## My Account
+## Your Account
 
-The [My Account](/MyAccount) panel can be accessed by logged in users by clicking on their logged in name and selecting one of the options or via the hamburger menu. It shows a menu of options in the left hand panel and a summary of the account status in the main pane. The options will vary depending on the system settings. The summary shows any patron messages from the ILS. It shows a clickable summary of Checked Out items, items on Hold, Overdue items and items Ready for pickup. The Recommended for you section shows the patron recommended items based on their ratings and loan history.
+The [Your Account](/MyAccount) panel can be accessed by logged in users by clicking on their logged in name and selecting one of the options or via the hamburger menu. It shows a menu of options in the left hand panel and a summary of the account status in the main pane. The options will vary depending on the system settings. The summary shows any patron messages from the ILS. It shows a clickable summary of Checked Out items, items on Hold, Overdue items and items Ready for pickup. The Recommended for you section shows the patron recommended items based on their ratings and loan history.
 
-![Image of My Account page](/manual/images/My_Account_SS.png)
+![Image of Your Account page](/manual/images/My_Account_SS.png)
 
-Read more about each of the My Account options:
+Read more about each of the Your Account options:
 - [Fine Payment](/Admin/HelpManual?page=Fines-and-Fees)
 - [Checked Out Titles](/Admin/HelpManual?page=Check-Out-Titles)
 - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)

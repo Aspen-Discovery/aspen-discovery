@@ -94,15 +94,7 @@ export default function TabNavigator() {
 				name="AccountScreenTab"
 				component={AccountStackNavigator}
 				options={{
-					tabBarButton: () => null,
-				}}
-			/>
-			<Tab.Screen
-				name="Login"
-				component={Login}
-				options={{
-					tabBarButton: () => null,
-					lazy: true
+					tabBarButton: () => null
 				}}
 			/>
 			<Tab.Screen

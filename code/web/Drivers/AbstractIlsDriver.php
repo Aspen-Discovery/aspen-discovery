@@ -46,11 +46,11 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 */
 	abstract function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
 
-	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate);
+	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array;
 
-	abstract function thawHold(User $patron, $recordId, $itemToThawId);
+	abstract function thawHold(User $patron, $recordId, $itemToThawId) : array;
 
-	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation);
+	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array;
 
 	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade);
 
@@ -61,7 +61,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	public abstract function getFines(User $patron, $includeMessages = false);
+	public abstract function getFines(User $patron, $includeMessages = false) : array;
 
 	/**
 	 * @return IndexingProfile|null

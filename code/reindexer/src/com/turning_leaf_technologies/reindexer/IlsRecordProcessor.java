@@ -166,7 +166,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
@@ -931,6 +931,21 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			setDetailedStatus(itemInfo, itemField, itemStatus, recordInfo.getRecordIdentifier());
 		}
 
+		loadItemFormat(recordInfo, itemField, itemInfo);
+
+		groupedWork.addKeywords(itemLocation);
+		if (itemSublocation.length() > 0){
+			groupedWork.addKeywords(itemSublocation);
+		}
+
+		itemInfo.setMarcField(itemField);
+
+		recordInfo.addItem(itemInfo);
+
+		return new ItemInfoWithNotes(itemInfo, suppressionNotes);
+	}
+
+	protected void loadItemFormat(RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo) {
 		if (formatSource.equals("item") && formatSubfield != ' '){
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			if (format != null) {
@@ -957,17 +972,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
-
-		groupedWork.addKeywords(itemLocation);
-		if (itemSublocation.length() > 0){
-			groupedWork.addKeywords(itemSublocation);
-		}
-
-		itemInfo.setMarcField(itemField);
-
-		recordInfo.addItem(itemInfo);
-
-		return new ItemInfoWithNotes(itemInfo, suppressionNotes);
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
@@ -1551,9 +1555,35 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
 		//We should already have formats based on the items
 		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
-			return;
+			//Check to see if all items have formats.
+			if (!recordInfo.allItemsHaveFormats()){
+				HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
+				if (uniqueItemFormats.size() == 1) {
+					recordInfo.addFormat(uniqueItemFormats.iterator().next());
+					recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
+					try {
+						if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().contains("Book")) {
+							LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+							if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
+								String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+								//noinspection Java8MapApi
+								for (String itemType : uniqueItemFormats) {
+									uniqueItemFormats.remove(itemType);
+									uniqueItemFormats.add(translatedFormat);
+								}
+							}
+						}
+					} catch (Exception e) {
+						logger.error("Error checking record for large print");
+					}
+					return;
+				}
+			}else {
+				return;
+			}
 		}
 
+		//If not, we will assign format based on bib level data
 		if (formatSource.equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
 			translatedFormats.add(specifiedFormat);

@@ -12,7 +12,7 @@ Collection Spotlights allow you to display your collection on a custom Web Build
 
 ### Creating a Collection Spotlight with Lists
 
-1. Select the list you want to spotlight. You can find your lists by visiting the **My Account** page and clicking **My Lists**. Click here to learn more about lists.
+1. Select the list you want to spotlight. You can find your lists by visiting the **Your Account** page and clicking **Your Lists**. Click here to learn more about lists.
 2. Select **Create Spotlight**.
 
 ![Create Spotlight](/manual/images/CollectionSpotlights_Create-Spotlight.jpg)

@@ -150,7 +150,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private function _connectToAPI($forceNewConnection, $methodName){
-		/** @var Memcache $memCache */
 		global $memCache;
 		$settings = $this->getSettings();
 		if ($settings == false){
@@ -541,7 +540,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param bool $forSummary
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($patron, $forSummary = false){
+	public function getCheckouts(User $patron, bool $forSummary = false) : array{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		global $logger;
 		if (!$this->isUserValidForOverDrive($patron)){
@@ -684,7 +683,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param bool $forSummary
 	 * @return array
 	 */
-	public function getHolds($patron, $forSummary = false){
+	public function getHolds($patron, $forSummary = false) : array{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Cache holds for the user just for this call.
 		if (isset($this->holds[$patron->id])){
@@ -852,7 +851,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $holdResult;
 	}
 
-	function freezeHold(User $patron, $overDriveId, $reactivationDate)
+	function freezeHold(User $patron, $overDriveId, $reactivationDate) : array
 	{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
 		$params = array(
@@ -903,7 +902,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $holdResult;
 	}
 
-	function thawHold(User $patron, $overDriveId)
+	function thawHold(User $patron, $overDriveId) : array
 	{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
 		$response = $this->_callPatronDeleteUrl($patron, $url, "thawHold");
@@ -946,7 +945,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param string $overDriveId
 	 * @return array
 	 */
-	function cancelHold($patron, $overDriveId, $cancelId = null, $isIll = false){
+	function cancelHold($patron, $overDriveId, $cancelId = null, $isIll = false) : array{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($patron, $url, "cancelHold");
 
@@ -1280,12 +1279,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}
 
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}

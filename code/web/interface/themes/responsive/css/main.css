@@ -9290,8 +9290,8 @@ a.browse-thumbnail-sorted.active {
   font-size: medium;
   font-weight: bold;
   border-radius: 0;
-  background-color: #f5bb59;
-  color: white;
+  background-color: #FFEDD4;
+  color: #883E23;
   padding: 1px 8px;
 }
 .browse-cover-badge::before {
@@ -10184,6 +10184,9 @@ a.browse-thumbnail-sorted.active {
   position: relative;
   margin-top: 5px;
 }
+.listResultImage a > img {
+  max-width: 100%;
+}
 .list-cover-badge {
   position: absolute;
   top: -12px;
@@ -10191,8 +10194,8 @@ a.browse-thumbnail-sorted.active {
   font-size: medium;
   font-weight: bold;
   border-radius: 0;
-  background-color: #f5bb59;
-  color: white;
+  background-color: #FFEDD4;
+  color: #883E23;
   padding: 1px 8px;
 }
 .list-cover-badge::before {
@@ -10205,6 +10208,28 @@ a.browse-thumbnail-sorted.active {
   height: 0;
   border-top: 10px solid #3d4364;
   border-left: 10px solid transparent;
+}
+.new-result-badge {
+  display: inline-block;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #FFEDD4;
+  color: #883E23;
+  padding: 1px 8px;
+}
+.account-updated-search-badge {
+  display: inline-block;
+  font-size: 75%;
+  font-weight: bold;
+  border-radius: 0;
+  background-color: #FFEDD4;
+  color: #883E23;
+  padding: 1px 8px;
+  vertical-align: baseline;
+}
+.badge-updated {
+  background-color: #FFEDD4;
+  color: #883E23;
 }
 .graph-bar {
   background-color: #088ec6;

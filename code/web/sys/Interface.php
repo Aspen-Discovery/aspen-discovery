@@ -197,7 +197,7 @@ class UInterface extends Smarty
 	}
 
 	/**
-	 *  Set template variables used in the My Account sidebar section dealing with fines.
+	 *  Set template variables used in the Your Account sidebar section dealing with fines.
 	 */
 	function setFinesRelatedTemplateVariables() {
 
@@ -533,11 +533,13 @@ class UInterface extends Smarty
 		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
-		$this->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
-		$this->assign('show856LinksAsTab', $library->getGroupedWorkDisplaySettings()->show856LinksAsTab);
-		$this->assign('showSearchTools', $library->getGroupedWorkDisplaySettings()->showSearchTools);
-		$this->assign('showQuickCopy', $library->getGroupedWorkDisplaySettings()->showQuickCopy);
-		$this->assign('alwaysShowSearchResultsMainDetails', $library->getGroupedWorkDisplaySettings()->alwaysShowSearchResultsMainDetails);
+		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+		$this->assign('showRatings', $groupedWorkDisplaySettings->showRatings);
+		$this->assign('show856LinksAsTab', $groupedWorkDisplaySettings->show856LinksAsTab);
+		$this->assign('showSearchTools', $groupedWorkDisplaySettings->showSearchTools);
+		$this->assign('showQuickCopy', $groupedWorkDisplaySettings->showQuickCopy);
+		$this->assign('alwaysShowSearchResultsMainDetails', $groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails);
+		$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
 		$this->assign('expiredMessage', $library->expiredMessage);
 		$this->assign('expirationNearMessage', $library->expirationNearMessage);
@@ -573,29 +575,33 @@ class UInterface extends Smarty
 		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
 
 		if ($location != null){ // library and location
+			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
-			$this->assign('showComments', $location->getGroupedWorkDisplaySettings()->showComments);
+			$this->assign('showComments', $groupedWorkDisplaySettings->showComments);
 			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
-			$showStaffView = $location->getGroupedWorkDisplaySettings()->showStaffView;
+			$showStaffView = $groupedWorkDisplaySettings->showStaffView;
 			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
-			$this->assign('showGoodReadsReviews', $location->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
+			$this->assign('showGoodReadsReviews', $groupedWorkDisplaySettings->showGoodReadsReviews);
 			$showHoldButton = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
 			$showHoldButtonInSearchResults = (($location->showHoldButton == 1) && ($library->showHoldButtonInSearchResults == 1)) ? 1 : 0;
-			$this->assign('showSimilarTitles', $location->getGroupedWorkDisplaySettings()->showSimilarTitles);
-			$this->assign('showSimilarAuthors', $location->getGroupedWorkDisplaySettings()->showSimilarAuthors);
-			$this->assign('showStandardReviews', $location->getGroupedWorkDisplaySettings()->showStandardReviews);
+			$this->assign('showSimilarTitles', $groupedWorkDisplaySettings->showSimilarTitles);
+			$this->assign('showSimilarAuthors', $groupedWorkDisplaySettings->showSimilarAuthors);
+			$this->assign('showStandardReviews', $groupedWorkDisplaySettings->showStandardReviews);
+			$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 		}else{ // library only
+			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $library->showFavorites);
 			$showHoldButton = $library->showHoldButton;
 			$showHoldButtonInSearchResults = $library->showHoldButtonInSearchResults;
-			$this->assign('showComments', $library->getGroupedWorkDisplaySettings()->showComments);
+			$this->assign('showComments', $groupedWorkDisplaySettings->showComments);
 			$this->assign('showEmailThis', $library->showEmailThis);
 			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
 			$showStaffView = $library->getGroupedWorkDisplaySettings()->showStaffView;
-			$this->assign('showSimilarTitles', $library->getGroupedWorkDisplaySettings()->showSimilarTitles);
-			$this->assign('showSimilarAuthors', $library->getGroupedWorkDisplaySettings()->showSimilarAuthors);
-			$this->assign('showGoodReadsReviews', $library->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
-			$this->assign('showStandardReviews', $library->getGroupedWorkDisplaySettings()->showStandardReviews);
+			$this->assign('showSimilarTitles', $groupedWorkDisplaySettings->showSimilarTitles);
+			$this->assign('showSimilarAuthors', $groupedWorkDisplaySettings->showSimilarAuthors);
+			$this->assign('showGoodReadsReviews', $groupedWorkDisplaySettings->showGoodReadsReviews);
+			$this->assign('showStandardReviews', $groupedWorkDisplaySettings->showStandardReviews);
+			$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 		}
 		if ($showStaffView == 2){
 			$showStaffView = UserAccount::isStaff();

@@ -1,4 +1,5 @@
 User-agent: *
+crawl-delay: 10
 Disallow: /cgi-bin/
 Disallow: /Admin/
 Disallow: /images/fiveStar/

@@ -1570,10 +1570,17 @@ class GroupedWorkDriver extends IndexRecordDriver
 			}
 
 			$addOnlineMaterialsToAvailableNow = true;
+			$defaultAvailabilityToggle = 'global';
 			if ($searchLocation != null) {
 				$addOnlineMaterialsToAvailableNow = $searchLocation->getGroupedWorkDisplaySettings()->includeOnlineMaterialsInAvailableToggle;
+				$defaultAvailabilityToggle = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
 			} elseif ($searchLibrary != null) {
 				$addOnlineMaterialsToAvailableNow = $searchLibrary->getGroupedWorkDisplaySettings()->includeOnlineMaterialsInAvailableToggle;
+				$defaultAvailabilityToggle = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			}
+
+			if (empty($selectedAvailability) && $defaultAvailabilityToggle != 'global'){
+				$selectedAvailability[] = $defaultAvailabilityToggle;
 			}
 
 			global $searchSource;

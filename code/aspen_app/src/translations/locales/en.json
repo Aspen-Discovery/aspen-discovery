@@ -18,7 +18,8 @@
     "button_ok": "OK",
     "close_window": "Close",
     "privacy_policy": "Privacy Policy",
-    "contact": "Contact"
+    "contact": "Contact",
+    "new": "New"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -63,7 +64,11 @@
     "linked_accounts": "Linked Accounts",
     "profile": "Profile",
     "my_lists": "Lists",
-    "saved_searches": "Saved Searches"
+    "saved_searches": "Saved Searches",
+    "saved_searches_updated": "{{count}} With Updates",
+    "manage_notifications": "Manage Notifications",
+    "notification_settings": "Notification Settings",
+    "allow_notifications": "Allow Notifications"
   },
   "linked_accounts": {
     "account_to_manage": "Account to Manage",

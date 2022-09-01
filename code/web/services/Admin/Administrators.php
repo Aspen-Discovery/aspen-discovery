@@ -147,7 +147,7 @@ class Admin_Administrators extends ObjectEditor
 	}
 
 	function getInstructions() : string{
-		return '';
+		return 'https://help.aspendiscovery.org/help/admin/users';
 	}
 
 	function getBreadcrumbs() : array
@@ -167,6 +167,11 @@ class Admin_Administrators extends ObjectEditor
 	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Users');
+	}
+
+	function canDelete()
+	{
+		return false;
 	}
 
 	function canBatchEdit()

@@ -248,6 +248,8 @@ AspenDiscovery.Account = (function(){
 				var label = 'Holds';
 				if (source === 'ils'){
 					label = 'Physical Holds';
+				}else if (source === 'interlibrary_loan'){
+					label = 'Interlibrary Loan Requests';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
 				}else if (source === 'cloud_library'){
@@ -362,9 +364,10 @@ AspenDiscovery.Account = (function(){
 						}
 						$(".readingHistory-placeholder").html(summary.readingHistory);
 						if (summary.hasUpdatedSavedSearches){
+							$(".saved-searches-placeholder").html(summary.savedSearches);
 							$(".newSavedSearchBadge").show();
 						}else{
-							$(".newSavedSearchBadge").show();
+							$(".newSavedSearchBadge").hide();
 						}
 
 						$(".materialsRequests-placeholder").html(summary.materialsRequests);
@@ -430,6 +433,16 @@ AspenDiscovery.Account = (function(){
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
 						}
+					}
+				});
+			}
+			if (Globals.hasInterlibraryLoanConnection) {
+				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(interlibraryLoanUrl, function (data) {
+					if (data.success) {
+						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
 					}
 				});
 			}
@@ -679,6 +692,8 @@ AspenDiscovery.Account = (function(){
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
+					}else{
+						AspenDiscovery.showMessage("Cancelling hold failed", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
@@ -735,6 +750,32 @@ AspenDiscovery.Account = (function(){
 			} else {
 				this.ajaxLogin(null, this.cancelHoldAll, true);
 				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false;
+		},
+
+		cancelVdxRequest: function(patronId, requestId, cancelId){
+			if (confirm("Are you sure you want to cancel this request?")){
+				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function(data){
+						if (data.success){
+							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
+							//remove the row from the holds list
+							$("#vdxHold_" + overdriveId).hide();
+							AspenDiscovery.Account.loadMenuData();
+						}else{
+							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function(){
+						AspenDiscovery.showMessage("Error Cancelling Request", "An error occurred processing your request.  Please try again in a few minutes.", false);
+					}
+				});
 			}
 			return false;
 		},
@@ -1019,6 +1060,10 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showSaveSearchForm(searchId);
+				}, false);
 			}
 			return false;
 		},
@@ -1039,7 +1084,7 @@ AspenDiscovery.Account = (function(){
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin($trigger, function(){
-					return AspenDiscovery.GroupedWork.showEmailForm(trigger, id);
+					return AspenDiscovery.Account.showCreateListForm(source, sourceId);
 				}, false);
 			}
 			return false;
@@ -1293,7 +1338,7 @@ AspenDiscovery.Account = (function(){
 					if(data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
-						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
 					if(data.isDonation) {

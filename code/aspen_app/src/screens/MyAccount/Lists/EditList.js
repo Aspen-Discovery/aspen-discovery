@@ -6,7 +6,6 @@ import {popAlert} from "../../../components/loadError";
 
 const EditList = (props) => {
 	const { data, listId, navigation, libraryUrl } = props;
-	console.log(listId);
 	const [showModal, setShowModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [title, setTitle] = useState(null);

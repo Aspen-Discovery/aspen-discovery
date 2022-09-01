@@ -1,16 +1,15 @@
 import React, {useState} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Button, Center, Modal, Box, Text, Icon, FormControl, Input, Radio, TextArea, Heading, Select, HStack, Stack, IconButton } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import {addTitlesToList, createListFromTitle, getLists} from "../../util/loadPatron";
 import _ from "lodash";
-import {popAlert} from "../../components/loadError";
 
 export const AddToList = (props) => {
-	const { item, libraryUrl, lastListUsed } = props;
+	const { item, libraryUrl, updateLastListUsed, lastListUsed} = props;
 	const [showUseExistingModal, setShowUseExistingModal] = useState(false);
 	const [showCreateNewModal, setShowCreateNewModal] = useState(false);
 	const [loading, setLoading] = useState(false);
+
 	const [lists, setLists] = useState([]);
 	const [listId, setListId] = useState(lastListUsed);
 
@@ -22,6 +21,7 @@ export const AddToList = (props) => {
 		<Center>
 			<Button onPress={
 				async () => {
+					//console.log(props.lastListUsed);
 					await getLists(libraryUrl).then(response => {
 						setLists(response);
 						setShowUseExistingModal(true);
@@ -69,9 +69,10 @@ export const AddToList = (props) => {
 										setLoading(false);
 										setShowUseExistingModal(false)
 									});
+									updateLastListUsed(listId);
 								}}>Save to list</Button>) : (<Button onPress={() => {
-								setShowUseExistingModal(false)
-								setShowCreateNewModal(true)
+									setShowUseExistingModal(false)
+									setShowCreateNewModal(true)
 							}}>Create a new list</Button>) }
 
 						</Button.Group>
@@ -117,15 +118,12 @@ export const AddToList = (props) => {
 							<Button
 								isLoading={loading}
 								onPress={async () => {
-									await createListFromTitle(title, description, access, item, libraryUrl).then(res =>{
-										let status = "success"
-										if(!res.success) {
-											status = "danger"
-										}
-										setLoading(false)
-										popAlert("List created from item", res.message, status);
+									setLoading(true);
+									await createListFromTitle(title, description, access, item, libraryUrl).then(res => {
+										updateLastListUsed(res.listId);
+										setLoading(false);
+										setShowCreateNewModal(false);
 									});
-									setShowCreateNewModal(false)
 								}}
 							>Create List</Button>
 						</Button.Group>

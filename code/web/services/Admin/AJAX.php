@@ -121,6 +121,9 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'events') {
 			require_once ROOT_DIR . '/sys/Events/EventsIndexingLogEntry.php';
 			$extractLog = new EventsIndexingLogEntry();
+		} elseif ($source == 'search_update') {
+			require_once ROOT_DIR . '/sys/SearchUpdateLogEntry.php';
+			$extractLog = new SearchUpdateLogEntry();
 		}
 
 		if ($extractLog == null) {

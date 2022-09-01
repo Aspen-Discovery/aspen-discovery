@@ -29,8 +29,14 @@ if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
 if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
 	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 }
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
+}
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+}
 
-require_once ROOT_DIR . '/sys/AspenLiDAQuickSearch.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class Library extends DataObject
 {
@@ -106,6 +112,7 @@ class Library extends DataObject
 	public $proPaySettingId;
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
+	public $aciSpeedpaySettingId;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -220,6 +227,7 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $selfRegistrationFormMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationSuccessMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationTemplate;
+	public $selfRegistrationUserProfile;
 	public $addSMSIndicatorToPhone;
 
 	public $allowLinkedAccounts;
@@ -255,6 +263,27 @@ class Library extends DataObject
 	public $edsSettingsId;
 	public $ebscohostSearchSettingId;
 
+	//SSO
+	public /** @noinspection PhpUnused */ $ssoName;
+	public /** @noinspection PhpUnused */ $ssoXmlUrl;
+	public /** @noinspection PhpUnused */ $ssoUniqueAttribute;
+	public /** @noinspection PhpUnused */ $ssoMetadataFilename;
+	public /** @noinspection PhpUnused */ $ssoIdAttr;
+	public /** @noinspection PhpUnused */ $ssoUsernameAttr;
+	public /** @noinspection PhpUnused */ $ssoFirstnameAttr;
+	public /** @noinspection PhpUnused */ $ssoLastnameAttr;
+	public /** @noinspection PhpUnused */ $ssoEmailAttr;
+	public /** @noinspection PhpUnused */ $ssoDisplayNameAttr;
+	public /** @noinspection PhpUnused */ $ssoPhoneAttr;
+	public /** @noinspection PhpUnused */ $ssoPatronTypeAttr;
+	public /** @noinspection PhpUnused */ $ssoPatronTypeFallback;
+	public /** @noinspection PhpUnused */ $ssoAddressAttr;
+	public /** @noinspection PhpUnused */ $ssoCityAttr;
+	public /** @noinspection PhpUnused */ $ssoLibraryIdAttr;
+	public /** @noinspection PhpUnused */ $ssoLibraryIdFallback;
+	public /** @noinspection PhpUnused */ $ssoCategoryIdAttr;
+	public /** @noinspection PhpUnused */ $ssoCategoryIdFallback;
+
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
 	public /** @noinspection PhpUnused */ $combinedResultsLabel;
@@ -281,6 +310,10 @@ class Library extends DataObject
 	public $twoFactorAuthSettingId;
 
 	public $defaultRememberMe;
+
+	//LiDA settings
+	public $lidaNotificationSettingId;
+	public $lidaQuickSearchId;
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
@@ -430,6 +463,16 @@ class Library extends DataObject
 			$xpressPaySettings[$xpressPaySetting->id] = $xpressPaySetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/ACISpeedpaySetting.php';
+		$aciSpeedpaySetting = new ACISpeedpaySetting();
+		$aciSpeedpaySetting->orderBy('name');
+		$aciSpeedpaySettings = [];
+		$aciSpeedpaySetting->find();
+		$aciSpeedpaySettings[-1] = 'none';
+		while ($aciSpeedpaySetting->fetch()){
+			$aciSpeedpaySettings[$aciSpeedpaySetting->id] = $aciSpeedpaySetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -485,6 +528,26 @@ class Library extends DataObject
 			//OverDrive scopes are likely not defined
 		}
 
+		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+		$notificationSetting = new NotificationSetting();
+		$notificationSetting->orderBy('name');
+		$notificationSettings = [];
+		$notificationSetting->find();
+		$notificationSettings[-1] = 'none';
+		while ($notificationSetting->fetch()){
+			$notificationSettings[$notificationSetting->id] = $notificationSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
+		$quickSearchSetting = new QuickSearchSetting();
+		$quickSearchSetting->orderBy('name');
+		$quickSearchSettings = [];
+		$quickSearchSetting->find();
+		$quickSearchSettings[-1] = 'none';
+		while ($quickSearchSetting->fetch()){
+			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
+		}
+
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
 		unset($cloudLibraryScopeStructure['libraryId']);
 
@@ -510,10 +573,6 @@ class Library extends DataObject
 			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
 		}
 
-		// Aspen LiDA //
-		$quickSearches = AspenLiDAQuickSearch::getObjectStructure();
-		unset($quickSearches['libraryId']);
-
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
 		$structure = array(
@@ -528,25 +587,6 @@ class Library extends DataObject
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Library will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
-
-			// Aspen LiDA //
-			'aspenLiDASection' =>array('property'=>'aspenLiDASection', 'type' => 'section', 'label' =>'Aspen LiDA', 'hideInLists' => true, 'properties' => array(
-				'quickSearches' => array(
-					'property'      => 'quickSearches',
-					'type'          => 'oneToMany',
-					'label'         => 'Quick Searches',
-					'description'   => 'Define quick searches for this app',
-					'keyThis'       => 'libraryId',
-					'keyOther'      => 'libraryId',
-					'subObjectType' => 'AspenLiDAQuickSearch',
-					'structure'     => $quickSearches,
-					'sortable'      => true,
-					'storeDb'       => true,
-					'allowEdit'     => false,
-					'canEdit'       => false,
-					'hideInLists'   => true
-				),
-			)),
 
 			// Basic Display //
 			'displaySection' =>array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true, 'properties' => array(
@@ -570,6 +610,32 @@ class Library extends DataObject
 				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'contactEmail' => array('property'=>'contactEmail', 'type'=>'text', 'label'=>'General Email Address (LiDA only)', 'description'=>'A general email address for the public to contact the library', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true, 'affectsLiDA' => true)
 			)),
+			'ssoSection' => array('property'=>'ssoSection', 'type' => 'section', 'label' =>'Single Sign-on', 'hideInLists' => true, 'properties' => array(
+				'ssoName' => array('property'=>'ssoName', 'type'=>'text', 'label'=>'Name of service', 'description'=>'The name to be displayed when referring to the authentication service', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoXmlUrl' => array('property'=>'ssoXmlUrl', 'type'=>'text', 'label'=>'URL of service metadata XML', 'description'=>'The URL at which the metadata XML document for this identity provider can be obtained', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoUniqueAttribute' => array('property'=>'ssoUniqueAttribute', 'type'=>'text', 'label'=>'Name of the identity provider attribute that uniquely identifies a user', 'description'=>'This should be unique to each user', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoIdAttr' => array('property'=>'ssoIdAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user ID', 'description'=>'This should be unique to each user', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoUsernameAttr' => array('property'=>'ssoUsernameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s username', 'description'=>'The user\'s username', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoFirstnameAttr' => array('property'=>'ssoFirstnameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s first name', 'description'=>'The user\'s first name', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoLastnameAttr' => array('property'=>'ssoLastnameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s last name', 'description'=>'The user\'s last name', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoEmailAttr' => array('property'=>'ssoEmailAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s email address', 'description'=>'The user\'s email address', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoDisplayNameAttr' => array('property'=>'ssoDisplayNameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s display name', 'description'=>'The user\'s display name, if one is not supplied, a name for display will be assembled from first and last names', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoPhoneAttr' => array('property'=>'ssoPhoneAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s phone number', 'description'=>'The user\'s phone number', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoAddressAttr' => array('property'=>'ssoAddressAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s address', 'description'=>'The user\'s address', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoCityAttr' => array('property'=>'ssoCityAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s city', 'description'=>'The user\'s city', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoPatronTypeSection' => array('property' => 'ssoPatronTypeSection', 'type' => 'section', 'label' => 'Patron type', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
+					'ssoPatronTypeAttr' => array('property'=>'ssoPatronTypeAttr', 'serverValidation' => 'validatePatronType', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron type', 'description'=>'The user\'s patron type, this should be a value that is recognised by Aspen. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoPatronTypeFallback' => array('property'=>'ssoPatronTypeFallback', 'type'=>'text', 'label'=>'A fallback value for patron type', 'description'=>'A value to be used in the event the identity provider does not supply a patron type attribute, this should be a value that is recognised by Aspen.', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				)),
+				'ssoLibraryIdSection' => array('property' => 'ssoLibraryIdSection', 'type' => 'section', 'label' => 'Library ID', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
+					'ssoLibraryIdAttr' => array('property'=>'ssoLibraryIdAttr', 'serverValidation' => 'validateLibraryId', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s library ID', 'description'=>'The user\'s library ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoLibraryIdFallback' => array('property'=>'ssoLibraryIdFallback', 'type'=>'text', 'label'=>'A fallback value for library ID', 'description'=>'A value to be used in the event the identity provider does not supply a library ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				)),
+				'ssoCategoryIdSection' => array('property' => 'ssoCategoryIdSection', 'type' => 'section', 'label' => 'Patron category ID', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
+					'ssoCategoryIdAttr' => array('property'=>'ssoCategoryIdAttr', 'serverValidation' => 'validateCategoryId','type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s patron category ID', 'description'=>'The user\'s patron category ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+					'ssoCategoryIdFallback' => array('property'=>'ssoCategoryIdFallback', 'type'=>'text', 'label'=>'A fallback value for category ID', 'description'=>'A value to be used in the event the identity provider does not supply a category ID attribute, this should be an ID that is recognised by your LMS', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				)),
+			)),
 
 			// ILS/Account Integration //
 			'ilsSection' => array('property'=>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
@@ -584,7 +650,7 @@ class Library extends DataObject
 				'showWhileYouWait' => array('property'=>'showWhileYouWait', 'type'=>'checkbox', 'label'=>'Show While You Wait', 'description'=>'Whether or not the user should be shown suggestions of other titles they might like.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showMessagingSettings' => array('property'=>'showMessagingSettings', 'type'=>'checkbox', 'label'=>'Show Messaging Settings (Koha, Symphony)', 'description'=>'Whether or not the user should be able to view their messaging settings.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
-				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
+				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of Your Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
 				'displayItemBarcode' => array('property'=>'displayItemBarcode', 'type'=>'checkbox', 'label'=>'Display item barcodes in patron checkouts', 'description'=>'Whether or not patrons can see item barcodes to materials they have checked out.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'displayHoldsOnCheckout' => array('property'=>'displayHoldsOnCheckout', 'type'=>'checkbox', 'label'=>'Display if patron checkouts have holds on them (Koha)', 'description'=>'Whether or not patrons can see if checked out items have holds on them.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'enableReadingHistory' => array('property'=>'enableReadingHistory', 'type'=>'checkbox', 'label'=>'Enable Reading History', 'description' => 'Whether or not users reading history is shown within Aspen.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
@@ -676,6 +742,7 @@ class Library extends DataObject
 					'selfRegistrationFormMessage' => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'hideInLists' => true),
 					'selfRegistrationSuccessMessage' => array('property'=>'selfRegistrationSuccessMessage', 'type'=>'html', 'label'=>'Self Registration Success Message', 'description'=>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.', 'hideInLists' => true),
 					'selfRegistrationTemplate' => array('property'=>'selfRegistrationTemplate', 'type'=>'text', 'label'=>'Self Registration Template', 'description'=>'The ILS template to use during self registration (Sierra and Millennium).', 'hideInLists' => true, 'default' => 'default'),
+					'selfRegistrationUserProfile' => array('property'=>'selfRegistrationUserProfile', 'type'=>'text', 'label'=>'Self Registration Profile', 'description'=>'The Profile to use during self registration (Symphony).', 'hideInLists' => true, 'default' => 'SELFREG'),
 				)),
 				'masqueradeModeSection' => array('property' => 'masqueradeModeSection', 'type' => 'section', 'label' => 'Masquerade Mode', 'hideInLists' => true, 'permissions' => ['Library ILS Connection'], 'properties' => array(
 					'allowMasqueradeMode'                        => array('property'=>'allowMasqueradeMode', 'type'=>'checkbox', 'label'=>'Allow Masquerade Mode', 'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.', 'hideInLists' => true, 'default' => true),
@@ -685,7 +752,7 @@ class Library extends DataObject
 			)),
 
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library eCommerce Options'], 'properties' => array(
-				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 7 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay', 6 => 'Xpress-pay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
+				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 7 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay', 6 => 'Xpress-pay', 8 => 'ACI Speedpay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
 				'finesToPay' => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
 				'finePaymentOrder' => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLink' => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
@@ -694,10 +761,11 @@ class Library extends DataObject
 				'showRefreshAccountButton' => array('property'=>'showRefreshAccountButton', 'type'=>'checkbox', 'label'=>'Show Refresh Account Button', 'description'=>'Whether or not a Show Refresh Account button is displayed in a pop-up when a user clicks the E-Commerce Link', 'hideInLists' => true, 'default' => true),
 
 				'compriseSettingId'  => array('property' => 'compriseSettingId', 'type' => 'enum', 'values' => $compriseSettings, 'label' => 'Comprise SMARTPAY Settings', 'description' => 'The Comprise SMARTPAY settings to use', 'hideInLists' => true, 'default' => -1),
-				'worldPaySettingId'  => array('property' => 'worldPaySettingId', 'type' => 'enum', 'values' => $worldPaySettings, 'label' => 'FIS World Pay Settings', 'description' => 'The FIS WolrdPay settings to use', 'hideInLists' => true, 'default' => -1),
+				'worldPaySettingId'  => array('property' => 'worldPaySettingId', 'type' => 'enum', 'values' => $worldPaySettings, 'label' => 'FIS World Pay Settings', 'description' => 'The FIS WorldPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'payPalSettingId'  => array('property' => 'payPalSettingId', 'type' => 'enum', 'values' => $payPalSettings, 'label' => 'PayPal Settings', 'description' => 'The PayPal settings to use', 'hideInLists' => true, 'default' => -1),
 				'proPaySettingId'  => array('property' => 'proPaySettingId', 'type' => 'enum', 'values' => $proPaySettings, 'label' => 'ProPay Settings', 'description' => 'The ProPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'xpressPaySettingId'  => array('property' => 'xpressPaySettingId', 'type' => 'enum', 'values' => $xpressPaySettings, 'label' => 'Xpress-pay Settings', 'description' => 'The Xpress-pay settings to use', 'hideInLists' => true, 'default' => -1),
+				'aciSpeedpaySettingId'  => array('property' => 'aciSpeedpaySettingId', 'type' => 'enum', 'values' => $aciSpeedpaySettings, 'label' => 'ACI Speedpay Settings', 'description' => 'The ACI Speedpay settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
@@ -1006,6 +1074,11 @@ class Library extends DataObject
 				'forcesReindex' => true,
 				'permissions' => ['Library Records included in Catalog']
 			),
+
+			'aspenLiDASection' => array('property' => 'aspenLiDASection', 'type' => 'section', 'label' => 'Aspen LiDA', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Administer Aspen LiDA Settings'], 'properties' => array(
+				'lidaNotificationSettingId' => array('property' => 'lidaNotificationSettingId', 'type'=>'enum', 'values'=>$notificationSettings, 'label' => 'Notification Settings', 'description'=>'The Notification Settings to use for Aspen LiDA', 'hideInLists' => true, 'default' => -1),
+				'lidaQuickSearchId' => array('property' => 'lidaQuickSearchId', 'type'=>'enum', 'values'=>$quickSearchSettings, 'label' => 'Quick Search Settings', 'description'=>'The Quick Search Settings to use for Aspen LiDA', 'hideInLists' => true, 'default' => -1),
+			)),
 		);
 
 		//Update settings based on what we have access to
@@ -1168,6 +1241,51 @@ class Library extends DataObject
 		return null;
 	}
 
+	public function validateSso($attrField, $fallbackField, $errorMessage) {
+		$validationResults = array(
+			'validatedOk' => true,
+			'errors' => array(),
+		);
+		// Only proceed if we have a populated SSO IdP URL (we infer SSO auth usage
+		// from this)
+		if (!$this->ssoXmlUrl || strlen($this->ssoXmlUrl) == 0) {
+			return $validationResults;
+		}
+		if (
+			(!$this->$attrField || strlen($this->$attrField) == 0 ) &&
+			(!$this->$fallbackField || strlen($this->$fallbackField) == 0)
+		) {
+			$validationResults['errors'][] = $errorMessage;
+			$validationResults['validatedOk'] = false;
+		}
+		return $validationResults;
+
+	}
+
+	public function validatePatronType() {
+		return $this->validateSso(
+			'ssoPatronTypeAttr',
+			'ssoPatronTypeFallback',
+			'Single sign-on patron type: You must enter either an identity provider attribute name or fallback value'
+		);
+	}
+
+	public function validateLibraryId() {
+		return $this->validateSso(
+			'ssoLibraryIdAttr',
+			'ssoLibraryIdFallback',
+			'Single sign-on library ID: You must enter either an identity provider attribute name or fallback value'
+		);
+	}
+
+	public function validateCategoryId() {
+		return $this->validateSso(
+			'ssoCategoryIdAttr',
+			'ssoCategoryIdFallback',
+			'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value'
+		);
+	}
+
 	public function __get($name){
 		if ($name == "holidays") {
 			if (!isset($this->holidays) && $this->libraryId){
@@ -1315,7 +1433,15 @@ class Library extends DataObject
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
 		}
-		$ret = parent::update();
+		$ret = false;
+		// We process the SSO additional work before the DB is updated because we set
+		// a value on this object which needs to be persisted to the DB
+		$ssoOk = $this->processSso();
+		if ($ssoOk instanceof AspenError) {
+			$this->setLastError($ssoOk->getMessage());
+		} else {
+			$ret = parent::update();
+		}
 		if ($ret !== FALSE ){
 			$this->saveHolidays();
 			$this->saveRecordsOwned();
@@ -1326,7 +1452,7 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
-			$this->saveQuickSearches();
+			//$this->saveQuickSearches();
 		}
 		if ($this->_patronNameDisplayStyleChanged){
 			$libraryLocations = new Location();
@@ -1381,7 +1507,8 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
-			$this->saveQuickSearches();
+			//$this->saveQuickSearches();
+			$this->processSso();
 		}
 		return $ret;
 	}
@@ -1702,40 +1829,111 @@ class Library extends DataObject
 		return $locations;
 	}
 
-	private $_quickSearches;
-	public function setQuickSearches($value)
-	{
-		$this->_quickSearches = $value;
-	}
-
 	/**
 	 * @return array|null
 	 */
 	public function getQuickSearches()
 	{
-		if (!isset($this->_quickSearches) && $this->libraryId) {
-			$this->_quickSearches = array();
-
-			$quickSearches = new AspenLiDAQuickSearch();
-			$quickSearches->libraryId = $this->libraryId;
-			if ($quickSearches->find()) {
-				while ($quickSearches->fetch()) {
-					$this->_quickSearches[$quickSearches->id] = clone $quickSearches;
+		$quickSearches = array();
+		$quickSearchSettings = new QuickSearchSetting();
+		$quickSearchSettings->id = $this->lidaQuickSearchId;
+		if($quickSearchSettings->find()) {
+			$quickSearch = new QuickSearch();
+			$quickSearch->quickSearchSettingId = $quickSearchSettings->id;
+			if ($quickSearch->find()) {
+				while ($quickSearch->fetch()) {
+					$quickSearches[$quickSearch->id] = clone $quickSearch;
 				}
 			}
-
 		}
-		return $this->_quickSearches;
+
+		return $quickSearches;
 	}
 
-	public function saveQuickSearches(){
-		if (isset ($this->_quickSearches) && is_array($this->_quickSearches)){
-			$this->saveOneToManyOptions($this->_quickSearches, 'libraryId');
-			unset($this->_quickSearches);
+	/**
+	 * @return array|null
+	 */
+	public function getLiDANotifications()
+	{
+		$lidaNotifications = array();
+
+		$notificationSettings = new NotificationSetting();
+		$notificationSettings->id = $this->lidaNotificationSettingId;
+		if($notificationSettings->find()) {
+			$lidaNotifications = clone $notificationSettings;
+		}
+
+		return $lidaNotifications;
+	}
+
+// If the URL of the XML metadata has changed in any way, and is populated,
+// we need to use it to fetch the metadata and store the metadata's filename
+// in the DB, otherwise we delete the file
+	public function processSso(){
+		if (is_array($this->_changedFields) && in_array('ssoXmlUrl', $this->_changedFields)) {
+			$filename = $this->fetchAndStoreSsoMetadata();
+			if (!$filename instanceof AspenError) {
+				// Update the ssoMetadataFilename in the DB
+				$this->ssoMetadataFilename = $fileName;
+			}
+			return $filename;
 		}
 	}
 
-	public function getApiInfo() : array
+	// Fetch the XML metadata from an IdP (using the URL specified in the config)
+	// and store it
+	public function fetchAndStoreSsoMetadata() {
+		global $logger;
+		global $configArray;
+		global $serverName;
+		$dataPath = '/data/aspen-discovery/sso_metadata/';
+		$fileName = md5($serverName) . '.xml';
+		$filePath = $dataPath . $fileName;
+		$url = trim($this->ssoXmlUrl);
+		if (strlen($url) > 0) {
+			// We've got a new or updated URL
+			// First try and retrieve the metadata
+			$curlWrapper = new CurlWrapper();
+			$curlWrapper->setTimeout(10);
+			$xml = $curlWrapper->curlGetPage($url);
+			if (strlen($xml) > 0) {
+				// Check it's a valid SAML message
+				require_once '/usr/share/simplesamlphp/lib/_autoload.php';
+				try {
+					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
+				} catch(Exception $e) {
+					$logger->log($e, Logger::LOG_ERROR);
+					return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');
+				}
+				$written = file_put_contents($filePath, $xml);
+				if ($written === false) {
+					$logger->log(
+						'Failed to write SSO metadata to ' . $filePath . ' for site ' .
+						$configArray['Site']['title'],
+						Logger::LOG_ERROR
+					);
+					return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
+				} else {
+					chmod($filePath, 0764);
+				}
+			} else {
+				$logger->log(
+					'Failed to retrieve any SSO metadata from ' . $url . ' for site ' .
+					$configArray['Site']['title'],
+					Logger::LOG_ERROR
+				);
+				return new AspenError('Unable to use SSO IdP metadata, did not receive any metadata, please check "URL of service metadata XML"');
+			}
+			return $fileName;
+		} else {
+			// The URL has been removed
+			// We don't remove the metadata file because
+			// another site may use it
+			return '';
+		}
+	}
+
+    public function getApiInfo() : array
 	{
 		global $configArray;
 		global $interface;
@@ -1787,6 +1985,7 @@ class Library extends DataObject
 				'weight' => $quickSearch->weight
 			];
 		}
+		$apiInfo['notifications'] = $this->getLiDANotifications();
 		$activeTheme = new Theme();
 		$activeTheme->id = $this->theme;
 		if ($activeTheme->find(true)){

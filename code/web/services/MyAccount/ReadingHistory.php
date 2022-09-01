@@ -84,8 +84,8 @@ class ReadingHistory extends MyAccount
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('', 'My Reading History');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Your Reading History');
 		return $breadcrumbs;
 	}
 }

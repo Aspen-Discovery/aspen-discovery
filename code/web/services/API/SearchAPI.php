@@ -1467,6 +1467,7 @@ class SearchAPI extends Action
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
+							'id' => $categoryInformation->id,
 							'source' => $categoryInformation->source,
 							'listId' => $categoryInformation->sourceListId,
 							'isHidden' => false,
@@ -1499,6 +1500,10 @@ class SearchAPI extends Action
 									}
 								}
 							} while ($listEntry->fetch() && $count < 12);
+							$numCategoriesProcessed++;
+							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+								break;
+							}
 						}
 
 					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
@@ -1524,16 +1529,23 @@ class SearchAPI extends Action
 								];
 							}
 						}
+						$numCategoriesProcessed++;
+						if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+							break;
+						}
 					} else {
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
 							'source' => $categoryInformation->source,
 							'isHidden' => false,
-							'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12)
+							'records' => [],
 						);
+						$subCategories = $categoryInformation->getSubCategories();
+						if (count($subCategories) == 0){
+							$categoryResponse['records'] = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+						}
 						if ($includeSubCategories) {
-							$subCategories = $categoryInformation->getSubCategories();
 							$categoryResponse['subCategories'] = [];
 							if (count($subCategories) > 0) {
 								foreach ($subCategories as $subCategory) {
@@ -1566,12 +1578,15 @@ class SearchAPI extends Action
 											}
 										}
 									}
+									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
+										break;
+									}
 								}
 							}
 						}
+						$numCategoriesProcessed++;
 					}
 					$formattedCategories[] = $categoryResponse;
-					$numCategoriesProcessed++;
 					if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories){
 						break;
 					}

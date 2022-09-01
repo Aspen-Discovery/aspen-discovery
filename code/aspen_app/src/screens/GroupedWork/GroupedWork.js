@@ -6,19 +6,12 @@ import {
 	Box,
 	Button,
 	Center,
-	Checkbox,
-	FormControl,
-	Input,
-	Modal,
-	ScrollView,
-	Stack,
 	Text,
 	Icon,
-	Image
+	Image,
+	ScrollView
 } from "native-base";
 import {Rating} from "react-native-elements";
-import CachedImage from 'expo-cached-image'
-import ExpoFastImage from 'expo-fast-image';
 
 // custom components and helper files
 import {translate} from '../../translations/translations';
@@ -26,11 +19,10 @@ import Manifestation from "./Manifestation";
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
 import {getGroupedWork, getItemDetails} from "../../util/recordActions";
-import {getPickupLocations} from "../../util/loadLibrary";
-import {updateOverDriveEmail} from "../../util/accountActions";
 import {AddToListFromItem} from "./AddToList";
 import {userContext} from "../../context/user";
 import {getLinkedAccounts, getProfile} from "../../util/loadPatron";
+import {GetOverDriveSettings} from "./OverDriveSettings";
 
 export default class GroupedWork extends Component {
 	constructor(props, context) {
@@ -53,10 +45,13 @@ export default class GroupedWork extends Component {
 			status: null,
 			alert: false,
 			shouldReload: false,
+			lastListUsed: 0,
+			showOverDriveSettings: false,
 		};
 		this.locations = [];
 		this._fetchLocations();
 		this._fetchLinkedAccounts();
+		this._getLastListUsed();
 	}
 
 	authorSearch = (author, libraryUrl) => {
@@ -76,10 +71,23 @@ export default class GroupedWork extends Component {
 	};
 
 	componentDidMount = async () => {
+		await this._getLastListUsed();
 		await this._fetchItemData();
 		await this._fetchLocations();
 		await this._fetchLinkedAccounts();
 	};
+
+	_getLastListUsed = async () => {
+		let lastListUsed;
+		try {
+			lastListUsed = await AsyncStorage.getItem('@lastListUsed');
+			this.setState({
+				lastListUsed: lastListUsed,
+			})
+		} catch (e) {
+			console.log(e);
+		}
+	}
 
 	_fetchItemData = async () => {
 
@@ -258,6 +266,14 @@ export default class GroupedWork extends Component {
 		})
 	}
 
+	// handles the opening or closing of the GetOverDriveSettings() modal
+	handleOverDriveSettings = (newState) => {
+		//console.log("updating modal state...")
+		this.setState({
+			showOverDriveSettings: newState
+		})
+	};
+
 	loadItemDetails = async (libraryUrl) => {
 		await getItemDetails(libraryUrl, this.state.groupedWorkId, this.state.format).then(response =>{
 			this.setState({
@@ -360,7 +376,7 @@ export default class GroupedWork extends Component {
 					                                          openHolds={this.openHolds}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 
-					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} />
+					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} lastListUsed={this.state.lastListUsed} />
 
 					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
 						{this.state.data.description}
@@ -397,49 +413,20 @@ export default class GroupedWork extends Component {
 						</AlertDialog.Content>
 					</AlertDialog>
 				</Center>
-				<Modal
-					isOpen={this.state.prompt}
-					onClose={this.hidePrompt}
-					initialFocusRef={this.initialRef}
-					avoidKeyboard
-					closeOnOverlayClick={false}
-				>
-					<Modal.Content>
-						<Modal.CloseButton/>
-						<Modal.Header>{this.state.promptTitle}</Modal.Header>
-						<Modal.Body mt={4}>
-							<FormControl>
-								<Stack>
-									<FormControl.Label>{translate('overdrive.email_field')}</FormControl.Label>
-									<Input
-										autoCapitalize="none"
-										autoCorrect={false}
-										id="overdriveEmail"
-										onChangeText={text => this.setEmail(text)}
-									/>
-									<Checkbox
-										value="yes"
-										my={2}
-										id="promptForOverdriveEmail"
-										onChange={isSelected => this.setRememberPrompt(isSelected)}
-									>{translate('user_profile.remember_settings')}</Checkbox>
-								</Stack>
-							</FormControl>
-
-						</Modal.Body>
-						<Modal.Footer>
-							<Button.Group space={2} size="md">
-								<Button colorScheme="primary" variant="ghost"
-								        onPress={this.hidePrompt}>{translate('general.close_window')}</Button>
-								<Button onPress={async () => {
-									await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail, library.baseUrl).then(response => {
-										this.showAlert(response);
-									})
-								}}>{translate('holds.place_hold')}</Button>
-							</Button.Group>
-						</Modal.Footer>
-					</Modal.Content>
-				</Modal>
+				<GetOverDriveSettings
+					promptTitle={this.state.promptTitle}
+					promptItemId={this.state.promptItemId}
+					promptSource={this.state.promptSource}
+					promptPatronId={this.state.promptPatronId}
+					overdriveEmail={this.state.overdriveEmail}
+					promptForOverdriveEmail={this.state.promptForOverdriveEmail}
+					showAlert={this.showAlert}
+					setEmail={this.setEmail}
+					setRememberPrompt={this.setRememberPrompt}
+					showOverDriveSettings={this.state.showOverDriveSettings}
+					handleOverDriveSettings={this.handleOverDriveSettings}
+					libraryUrl={library.baseUrl}
+				/>
 			</ScrollView>
 		);
 	}

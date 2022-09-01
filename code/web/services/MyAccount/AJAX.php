@@ -216,7 +216,7 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function confirmCancelHold()
+	function confirmCancelHold() : array
 	{
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
@@ -230,7 +230,8 @@ class MyAccount_AJAX extends JSON_Action
 		);
 	}
 
-	function cancelHold()
+	/** @noinspection PhpUnused */
+	function cancelHold() : array
 	{
 		$result = array(
 			'success' => false,
@@ -339,6 +340,52 @@ class MyAccount_AJAX extends JSON_Action
 		return $tmpResult;
 	}
 
+	/** @noinspection PhpUnused */
+	function cancelVdxRequest() : array
+	{
+		$result = array(
+			'success' => false,
+			'message' => translate(['text'=>'Error cancelling request.','isPublicFacing'=>true])
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = translate(['text'=>'You must be logged in to cancel a request.  Please close this dialog and login again.','isPublicFacing'=>true]);;
+		} else {
+			//Determine which user the request is on so we can cancel it.
+			$patronId = $_REQUEST['patronId'];
+			$user = UserAccount::getLoggedInUser();
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false) {
+				$result['message'] = translate(['text'=>'Sorry, you do not have access to cancel requests for the supplied user.','isPublicFacing'=>true]);;
+			} else {
+				//MDN 9/20/2015 The recordId can be empty for Prospector holds
+				if (empty($_REQUEST['requestId']) || !isset($_REQUEST['cancelId'])) {
+					$result['message'] = translate(['text'=>'Information about the requests to be cancelled was not provided.','isPublicFacing'=>true]);;
+				} else {
+					$requestId = $_REQUEST['requestId'];
+					$cancelId = $_REQUEST['cancelId'];
+					$result = $patronOwningHold->cancelVdxRequest($requestId, $cancelId);
+				}
+			}
+		}
+
+		global $interface;
+		// if title come back a single item array, set as the title instead. likewise for message
+		if (isset($result['title'])) {
+			if (is_array($result['title']) && count($result['title']) == 1) $result['title'] = current($result['title']);
+		}
+		if (is_array($result['message']) && count($result['message']) == 1) $result['message'] = current($result['message']);
+
+		$interface->assign('cancelResults', $result);
+
+		return array(
+			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
+			'success' => $result['success']
+		);
+	}
+
 	function cancelAllHolds()
 	{
 		$tmpResult = array(
@@ -389,7 +436,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $tmpResult;
 	}
 
-	function freezeHold()
+	function freezeHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
@@ -529,7 +576,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $tmpResult;
 	}
 
-	function thawHold()
+	function thawHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array( // set default response
@@ -843,6 +890,10 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+		if (!empty($library->ssoXmlUrl)) {
+			$interface->assign('ssoXmlUrl', $library->ssoXmlUrl);
+		}
+		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
 		if (!empty($library->loginNotes)){
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();
@@ -1364,6 +1415,7 @@ class MyAccount_AJAX extends JSON_Action
 				$searchEntry->hasNewResults = 1;
 				$searchEntry->find();
 				$ilsSummary->hasUpdatedSavedSearches = ($searchEntry->getNumResults() > 0);
+				$ilsSummary->setNumUpdatedSearches($searchEntry->getNumResults());
 
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);
@@ -1532,6 +1584,41 @@ class MyAccount_AJAX extends JSON_Action
 				];
 			} else {
 				$result['message'] = 'Invalid for OverDrive';
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getMenuDataInterlibraryLoan()
+	{
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->hasInterlibraryLoan()) {
+				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+				$driver = new VdxDriver();
+				$vdxSummary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$vdxSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+					}
+				}
+				$timer->logTime("Loaded VDX Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $vdxSummary->toArray()
+				];
+			} else {
+				$result['message'] = 'Invalid for VDX';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -2075,7 +2162,7 @@ class MyAccount_AJAX extends JSON_Action
 		exit;
 	}
 
-	public function getCheckouts()
+	public function getCheckouts() : array
 	{
 		global $interface;
 
@@ -2161,7 +2248,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
-	public function getHolds()
+	public function getHolds() : array
 	{
 		global $interface;
 
@@ -2185,18 +2272,22 @@ class MyAccount_AJAX extends JSON_Action
 			if (UserAccount::isLoggedIn() == false || empty($user)){
 				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else {
-				if ($user->getHomeLibrary() != null) {
-					$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
-				}else{
-					$allowFreezeHolds = $library->allowFreezeHolds;
-				}
-				if ($allowFreezeHolds) {
-					$interface->assign('allowFreezeAllHolds', true);
+				if ($source != 'interlibrary_loan') {
+					if ($user->getHomeLibrary() != null) {
+						$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
+					} else {
+						$allowFreezeHolds = $library->allowFreezeHolds;
+					}
+					if ($allowFreezeHolds) {
+						$interface->assign('allowFreezeAllHolds', true);
+					} else {
+						$interface->assign('allowFreezeAllHolds', false);
+					}
+					$interface->assign('allowFreezeHolds', true);
 				} else {
 					$interface->assign('allowFreezeAllHolds', false);
+					$interface->assign('allowFreezeHolds', false);
 				}
-
-				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
 				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra');
@@ -3082,7 +3173,7 @@ class MyAccount_AJAX extends JSON_Action
 				'application_context' => [
 					'brand_name' => $paymentLibrary->displayName,
 					'locale' => 'en-US',
-					'shipping_preferences' => 'NO_SHIPPING',
+					'shipping_preference' => 'NO_SHIPPING',
 					'user_action' => 'PAY_NOW',
 					'return_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
 					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
