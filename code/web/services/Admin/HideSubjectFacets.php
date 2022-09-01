@@ -61,4 +61,9 @@ class Admin_HideSubjectFacets extends ObjectEditor
 	{
 		return UserAccount::userHasPermission('Hide Subject Facets');
 	}
+
+    function getInitializationJs() : string{
+        return 'AspenDiscovery.Searches.initAutoComplete({searchTermSelector: "subjectTerm", searchIndex: "Subject"})';
+    }
+
 }

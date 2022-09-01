@@ -4764,9 +4764,9 @@ var AspenDiscovery = (function(){
 		},
 
 		//// Quick Way to get a single URL parameter value (parameterName must be in the url query string)
-		//getQueryParameterValue: function (parameterName) {
-		//	return location.search.split(parameterName + '=')[1].split('&')[0]
-		//},
+		// getQueryParameterValue: function (parameterName) {
+		// 	return location.search.split(parameterName + '=')[1].split('&')[0];
+		// },
 
 		replaceQueryParam : function (param, newValue, search) {
 			if (typeof search == 'undefined') search = location.search;
@@ -12257,7 +12257,7 @@ AspenDiscovery.ResultsList = (function(){
 
 AspenDiscovery.Searches = (function(){
 	$(document).ready(function(){
-		AspenDiscovery.Searches.initAutoComplete();
+		AspenDiscovery.Searches.initAutoComplete({});
 
 		// Add Browser-stored showCovers setting to the search form if there is a stored value set, and
 		// this is not a OPAC Machine, and the user is not logged in, and there is not a hidden value
@@ -12321,8 +12321,7 @@ AspenDiscovery.Searches = (function(){
 
 		changeDropDownFacet: function (facetId) {
 			var selectedFacetDropdown = $('#' + facetId + ' option:selected');
-			var destination = selectedFacetDropdown.data('destination');
-			window.location = destination;
+			window.location = selectedFacetDropdown.data('destination');
 			return false;
 		},
 
@@ -12373,45 +12372,50 @@ AspenDiscovery.Searches = (function(){
 			return false;
 		},
 
-		initAutoComplete: function(){
-			try{
-				var searchTermInput = $("#lookfor");
-				if (searchTermInput.length){
-					searchTermInput.autocomplete({
-						source:function(request,response){
-							var url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
+		initAutoComplete: function(parameters){
+			var URLSearchParameters = new URLSearchParams(window.location.search);
+			var searchTermSelector = (parameters.searchTermSelector) ? '#' + parameters.searchTermSelector : "#lookfor";
+			try {
+				if ($(searchTermSelector).length) {
+					$(searchTermSelector).autocomplete({
+						source: function (request, response) {
+							var searchIndexSelected = $(searchTermSelector).closest('form').find('select#searchIndex option:selected').val();
+							var searchIndex = (parameters.searchIndex) ? parameters.searchIndex : (searchIndexSelected) ? searchIndexSelected : (URLSearchParameters.get('searchIndex')) ? URLSearchParameters.get('searchIndex') : '';
+							var searchSourceSelected = $(searchTermSelector).closest('form').find('select#searchSource option:selected').val();
+							var searchSource = (parameters.searchSource) ? parameters.searchSource : (searchSourceSelected) ? searchSourceSelected : (URLSearchParameters.get('searchSource')) ? URLSearchParameters.get('searchSource') : '';
+							var url = Globals.path + "/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $(searchTermSelector).val() + "&searchIndex=" + searchIndex + "&searchSource=" + searchSource;
 							$.ajax({
-								url:url,
-								dataType:"json",
-								success:function(data){
+								url: url,
+								dataType: "json",
+								success: function (data) {
 									response(data);
 								}
 							});
 						},
-						position:{
-							my:"left top",
-							at:"left bottom",
-							of:"#lookfor",
-							collision:"none"
+						position: {
+							my: "left top",
+							at: "left bottom",
+							of: $(searchTermSelector),
+							collision: "none"
 						},
-						minLength:4,
-						delay:600,
-						select: function(event, ui){
-							searchTermInput.val(ui.item.value);
-							$("#searchForm").submit();
+						minLength: 4,
+						delay: 600,
+						select: function (event, ui) {
+							var form = $(searchTermSelector).closest('form');
+							$(searchTermSelector).val(ui.item.value);
+							form.submit();
 							return false;
 						}
-					}).data('ui-autocomplete')._renderItem = function( ul, item ) {
-						return $( "<li></li>" )
-							.data( "ui-autocomplete-item", item.value )
-							.append( '<a>' + item.label + '</a>' )
-							.appendTo( ul );
+					}).data('ui-autocomplete')._renderItem = function (ul, item) {
+						return $("<li></li>")
+							.data("ui-autocomplete-item", item.value)
+							.append('<a>' + item.label + '</a>')
+							.appendTo(ul);
 					};
 				}
-
-			}catch(e){
-				alert("error during autocomplete setup"+e);
-			}
+			} catch (e) {
+				alert("error during autocomplete setup:\n" + e);
+			};
 		},
 
 		sendEmail: function(){
