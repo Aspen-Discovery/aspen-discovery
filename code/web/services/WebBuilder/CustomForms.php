@@ -81,7 +81,7 @@ class WebBuilder_CustomForms extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '';
+		return 'https://help.aspendiscovery.org/help/webbuilder/customforms';
 	}
 
 	function getBreadcrumbs() : array

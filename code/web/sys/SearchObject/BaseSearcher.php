@@ -242,6 +242,16 @@ abstract class SearchObject_BaseSearcher
 		}
 	}
 
+	public function removeFilterByPrefix($fieldName)
+	{
+		// Make sure the field exists
+		$scopedName = $this->getScopedFieldName($fieldName);
+		if (isset($this->filterList[$scopedName])) {
+			// If so remove it.
+			unset($this->filterList[$scopedName]);
+		}
+	}
+
 	public function clearHiddenFilters()
 	{
 		$this->hiddenFilters = array();
@@ -1000,9 +1010,10 @@ abstract class SearchObject_BaseSearcher
 	 * Build a url for the current search
 	 *
 	 * @access  public
+	 * @param bool $includePaginationAndSortParameters
 	 * @return  string   URL of a search
 	 */
-	public function renderSearchUrl()
+	public function renderSearchUrl(bool $includePaginationAndSortParameters = true)
 	{
 		// Get the base URL and initialize the parameters attached to it:
 		$url = $this->getBaseUrl();
@@ -1036,12 +1047,12 @@ abstract class SearchObject_BaseSearcher
 		}
 
 		// Sorting
-		if ($this->sort != null) {
+		if ($this->sort != null && $includePaginationAndSortParameters) {
 			$params[] = "sort=" . urlencode($this->sort);
 		}
 
 		// Page number
-		if ($this->page != 1) {
+		if ($this->page != 1 && $includePaginationAndSortParameters) {
 			// Don't url encode if it's the paging template
 			if ($this->page == '%d') {
 				$params[] = "page=" . $this->page;
@@ -1052,7 +1063,7 @@ abstract class SearchObject_BaseSearcher
 		}
 
 		// View
-		if ($this->view != null) {
+		if ($this->view != null && $includePaginationAndSortParameters) {
 			$params[] = "view=" . urlencode($this->view);
 		} else if (isset($_REQUEST['view'])) {
 			$view = $_REQUEST['view'];
@@ -1064,20 +1075,6 @@ abstract class SearchObject_BaseSearcher
 
 		if ($this->searchSource) {
 			$params[] = "searchSource=" . $this->searchSource;
-		}
-
-		if (!empty($this->searchId)){
-			//Make sure the search belongs to the user or is part of the active session
-			$searchEntry = new SearchEntry();
-			$searchEntry->id = $this->searchId;
-			if ($searchEntry->find(true)){
-				$activeUserId = UserAccount::getActiveUserId();
-				if ($activeUserId && ($activeUserId == $searchEntry->user_id)){
-					$params[] = "searchId=" . $this->searchId;
-				}elseif ($searchEntry->session_id == session_id()){
-					$params[] = "searchId=" . $this->searchId;
-				}
-			}
 		}
 
 		// Join all parameters with an escaped ampersand,
@@ -1648,7 +1645,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function addToHistory()
 	{
-		$thisSearchUrl = $this->renderSearchUrl();
+		$thisSearchUrl = $this->renderSearchUrl(false);
 		$s = new SearchEntry();
 		//Get the active search within the history, looking at the URL for speed instead of deminifying everything
 		$previouslySavedSearch = $s->getSavedSearchByUrl($thisSearchUrl, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);

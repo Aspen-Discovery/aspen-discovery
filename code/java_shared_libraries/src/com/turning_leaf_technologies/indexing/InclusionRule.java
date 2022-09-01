@@ -103,28 +103,30 @@ class InclusionRule {
 		this.urlReplacement = urlReplacement;
 	}
 
-	MaxSizeHashMap<String, Boolean> includedItemResults = new MaxSizeHashMap<>(500);
+	private String lastIdentifier = null;
+	private boolean lastIdentifierResult = false;
+
 	//private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
 	HashMap<String, Boolean> inclusionCache = new HashMap<>();
 
 	boolean isItemIncluded(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
-		Boolean includedItemResult = includedItemResults.get(itemIdentifier);
-		if (includedItemResult != null){
-			return includedItemResult;
+		if (lastIdentifier != null && lastIdentifier.equals(itemIdentifier)){
+			return lastIdentifierResult;
 		}
 
+		lastIdentifier = itemIdentifier;
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
-			includedItemResults.put(itemIdentifier, Boolean.FALSE);
+			lastIdentifierResult = false;
 			return false;
 		}else if (!includeItemsOnOrder && isOnOrder){
-			includedItemResults.put(itemIdentifier, Boolean.FALSE);
+			lastIdentifierResult = false;
 			return  false;
 		}else if (!includeEContent && isEContent){
-			includedItemResults.put(itemIdentifier, Boolean.FALSE);
+			lastIdentifierResult = false;
 			return  false;
 		}else if (!this.recordType.equals(recordType)){
-			includedItemResults.put(itemIdentifier, Boolean.FALSE);
+			lastIdentifierResult = false;
 			return  false;
 		}
 
@@ -134,7 +136,7 @@ class InclusionRule {
 			if (matchAllLocations){
 				locationCode = "null";
 			}else {
-				includedItemResults.put(itemIdentifier, Boolean.FALSE);
+				lastIdentifierResult = false;
 				return false;
 			}
 		}
@@ -251,7 +253,7 @@ class InclusionRule {
 			}
 			isIncluded = hasMatch && includeExcludeMatches;
 		}
-		includedItemResults.put(itemIdentifier, isIncluded);
+		lastIdentifierResult = isIncluded;
 		return isIncluded;
 	}
 

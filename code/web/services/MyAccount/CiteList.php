@@ -39,7 +39,7 @@ class CiteList extends Action {
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		if (!empty($this->listId)) {
 			$breadcrumbs[] = new Breadcrumb('/MyAccount/MyList/' . $this->listId, $this->listTitle);
 		}

@@ -49,6 +49,100 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
+	function getVdxRequestForm() : array
+	{
+		global $interface;
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getLoggedInUser();
+			$id = $_REQUEST['id'];
+			if (strpos($id, ':') > 0){
+				list(,$id) = explode(':', $id);
+			}
+			$recordSource = $_REQUEST['recordSource'];
+			$interface->assign('recordSource', $recordSource);
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)){
+				$homeLocation = Location::getDefaultLocationForUser();
+				if ($homeLocation != null){
+					//Get configuration for the form.
+					$vdxForm = new VdxForm();
+					$vdxForm->id = $homeLocation->vdxFormId;
+					if ($vdxForm->find(true)){
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$marcRecord = new MarcRecordDriver($id);
+
+						$interface->assign('vdxForm', $vdxForm);
+						$vdxFormFields = $vdxForm->getFormFields($marcRecord);
+						$interface->assign('structure', $vdxFormFields);
+						$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+
+						$results = array(
+							'title' => translate(['text'=>'Request Title', 'isPublicFacing'=>true]),
+							'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate(['text'=>'Place Request','isPublicFacing'=>true]) . '</a>',
+							'success' => true
+						);
+					}else{
+						$results = array(
+							'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+							'message' => translate(['text'=>"Unable to find the specified form.", 'isPublicFacing'=>true]),
+							'success' => false
+						);
+					}
+				}else{
+					$results = array(
+						'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+						'message' => translate(['text'=>"Unable to determine home library to place request from.", 'isPublicFacing'=>true]),
+						'success' => false
+					);
+				}
+			}else{
+				$results = array(
+					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+					'message' => translate(['text'=>"VDX Settings do not exist, please contact the library to make a request.", 'isPublicFacing'=>true]),
+					'success' => false
+				);
+			}
+		} else {
+			$results = array(
+				'title' => translate(['text'=>'Please login', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>"You must be logged in.  Please close this dialog and login before placing your request.", 'isPublicFacing'=>true]),
+				'success' => false
+			);
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function submitVdxRequest() : array{
+		if (UserAccount::isLoggedIn()) {
+			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)){
+				$vdxDriver = new VdxDriver();
+				$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
+			}else{
+				$results = array(
+					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+					'message' => translate(['text'=>"VDX Settings do not exist, please contact the library to make a request.", 'isPublicFacing'=>true]),
+					'success' => false
+				);
+			}
+		}else {
+			$results = array(
+				'title' => translate(['text' => 'Please login', 'isPublicFacing' => true]),
+				'message' => translate(['text' => "You must be logged in.  Please close this dialog and login before placing your request.", 'isPublicFacing' => true]),
+				'success' => false
+			);
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
 	function getPlaceHoldForm()
 	{
 		global $interface;
@@ -994,35 +1088,44 @@ class Record_AJAX extends Action
 		}
 
 		//Check to see if the record must be picked up at the holding branch
-		$mustPickupAtHoldingBranch = true;
+		$pickupAt = 0;
 		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 		$format = $marcRecord->getPrimaryFormat();
 		global $indexingProfiles;
 		$indexingProfile = $indexingProfiles[$relatedRecord->source];
 		$formatMap = $indexingProfile->formatMap;
-		$formatFound = false;
 		/** @var FormatMapValue $formatMapValue */
 		foreach ($formatMap as $formatMapValue) {
 			if (strcasecmp($formatMapValue->format, $format) === 0) {
-				$formatFound = true;
-				if (!$formatMapValue->mustPickupAtHoldingBranch){
-					$mustPickupAtHoldingBranch = false;
-					break;
-				}
+				$pickupAt = max($pickupAt, $formatMapValue->pickupAt);
+				break;
 			}
-		}
-		if (!$formatFound){
-			$mustPickupAtHoldingBranch = false;
 		}
 
 		//If we have to pickup at the holding branch, filter the list of available pickup locations to
 		//only include locations where the item is
-		if ($mustPickupAtHoldingBranch){
+		if ($pickupAt > 0){
 			$itemLocations = [];
 			$items = $relatedRecord->getItems();
 			foreach ($items as $item){
-				$itemLocations[$item->locationCode] = $item->locationCode;
+				if ($pickupAt == 2){
+					//Item can be picked up at any branch within the library
+					if (!isset($itemLocations[$item->locationCode])) {
+						$locationForLocationCode = new Location();
+						$locationForLocationCode->code = $item->locationCode;
+						if ($locationForLocationCode->find(true)){
+							$libraryForLocation = $locationForLocationCode->getParentLibrary();
+							foreach ($libraryForLocation->getLocations() as $libraryBranch){
+								$itemLocations[$libraryBranch->code] = $libraryBranch->code;
+							}
+						}
+					}
+				}else{
+					//Item can be picked up at just the owning branch
+					$itemLocations[$item->locationCode] = $item->locationCode;
+				}
 			}
+
 
 			foreach($locations as $locationKey => $location){
 				if (is_object($location) && !in_array($location->code, $itemLocations)){
@@ -1030,7 +1133,7 @@ class Record_AJAX extends Action
 				}
 			}
 		}
-		$interface->assign('mustPickupAtHoldingBranch', $mustPickupAtHoldingBranch);
+		$interface->assign('pickupAt', $pickupAt);
 
 		//Check to see if we need to prompt for hold notifications
 		$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();

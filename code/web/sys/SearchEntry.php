@@ -16,6 +16,11 @@ class SearchEntry extends DataObject
 	public $title;
 	public $hasNewResults;
 
+	public function getNumericColumnNames(): array
+	{
+		return ['id', 'user_id', 'saved', 'hasNewResults'];
+	}
+
 	/**
 	 * Get an array of SearchEntry objects for the specified user.
 	 *

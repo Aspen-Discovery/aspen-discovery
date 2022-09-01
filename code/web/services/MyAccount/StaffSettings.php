@@ -48,7 +48,7 @@ class MyAccount_StaffSettings extends MyAccount
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Staff Settings');
 		return $breadcrumbs;
 	}

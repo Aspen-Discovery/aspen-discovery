@@ -210,10 +210,25 @@ export default class CheckedOut extends Component {
 			return (loadError(this.state.error, this._fetchCheckouts));
 		}
 
+		let numCheckedOut;
+		if(typeof user !== "undefined") {
+			if(typeof user.numCheckedOut !== "undefined") {
+				if(user.numCheckedOut !== null) {
+					numCheckedOut = user.numCheckedOut;
+				} else {
+					numCheckedOut = 0;
+				}
+			} else {
+				numCheckedOut = 0;
+			}
+		} else {
+			numCheckedOut = 0;
+		}
+
 		return (
 			<ScrollView>
 			<Box>
-				{user.numCheckedOut && user.numCheckedOut > 0 ?
+				{numCheckedOut > 0 ?
 					<Center pt={3} pb={3}>
 						<Button
 							isLoading={this.state.renewingAll}

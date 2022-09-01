@@ -42,7 +42,7 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		return 'id';
 	}
 	function getInstructions() : string{
-		return '/Admin/HelpManual?page=Wikipedia';
+		return 'https://help.aspendiscovery.org/help/integration/enrichment';
 	}
 
 	function getBreadcrumbs() : array

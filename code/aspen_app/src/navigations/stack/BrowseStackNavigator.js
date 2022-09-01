@@ -17,6 +17,7 @@ const BrowseStackNavigator = () => {
 			screenOptions={{
 				headerShown: true,
 				headerBackTitleVisible: false,
+				animation: 'none',
 			}}
 		>
 			<Stack.Screen
@@ -30,7 +31,7 @@ const BrowseStackNavigator = () => {
 				name="GroupedWorkScreen"
 				component={GroupedWork}
 				options={{
-					title: translate('grouped_work.title') ,
+					title: translate('grouped_work.title'),
 				}}
 			/>
 			<Stack.Screen

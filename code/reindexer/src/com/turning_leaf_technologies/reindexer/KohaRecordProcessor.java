@@ -170,144 +170,81 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && displayStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
 	}
 
+	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
 	@Override
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
-		HashMap<String, Integer> itemCountsByItype = new HashMap<>();
-		HashMap<String, String> itemTypeToFormat = new HashMap<>();
-		int mostUsedCount = 0;
-		String mostPopularIType = ""; //Get a list of all the formats based on the items
-		for(ItemInfo item : recordInfo.getRelatedItems()){
-			if (item.isEContent()) {continue;}
-			boolean foundFormatFromShelfLocation = false;
-			String shelfLocationCode = item.getShelfLocationCode();
-			if (shelfLocationCode != null){
-				String shelfLocation = shelfLocationCode.toLowerCase().trim();
-				if (hasTranslation("format", shelfLocation)){
-					String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
-					if (translatedLocation != null && translatedLocation.length() > 0) {
-						if (itemCountsByItype.containsKey(shelfLocation)) {
-							itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
-						} else {
-							itemCountsByItype.put(shelfLocation, 1);
-						}
-						foundFormatFromShelfLocation = true;
-						itemTypeToFormat.put(shelfLocation, translatedLocation);
-						if (itemCountsByItype.get(shelfLocation) > mostUsedCount) {
-							mostPopularIType = shelfLocation;
-							mostUsedCount = itemCountsByItype.get(shelfLocation);
-						}
-					}
-				}
-			}
+	protected void loadItemFormat(RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo) {
+		if (itemInfo.isEContent()) {return;}
 
-			boolean foundFormatFromSublocation = false;
-			String subLocationCode = item.getSubLocationCode();
-			if (!foundFormatFromShelfLocation && subLocationCode != null){
-				String subLocation = subLocationCode.toLowerCase().trim();
-				if (hasTranslation("format", subLocation)){
-					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
-					if (translatedLocation != null && translatedLocation.length() > 0) {
-						if (itemCountsByItype.containsKey(subLocation)) {
-							itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
-						} else {
-							itemCountsByItype.put(subLocation, 1);
-						}
-						foundFormatFromSublocation = true;
-						itemTypeToFormat.put(subLocation, translatedLocation);
-						if (itemCountsByItype.get(subLocation) > mostUsedCount) {
-							mostPopularIType = subLocation;
-							mostUsedCount = itemCountsByItype.get(subLocation);
-						}
-					}
-				}
-			}
-
-			boolean foundFormatFromCollection = false;
-			String collectionCode = item.getCollection();
-			if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && collectionCode != null){
-				collectionCode = collectionCode.toLowerCase().trim();
-				if (hasTranslation("format", collectionCode)){
-					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
-					if (translatedLocation != null && translatedLocation.length() > 0) {
-						if (itemCountsByItype.containsKey(collectionCode)) {
-							itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
-						} else {
-							itemCountsByItype.put(collectionCode, 1);
-						}
-						foundFormatFromCollection = true;
-						itemTypeToFormat.put(collectionCode, translatedLocation);
-						if (itemCountsByItype.get(collectionCode) > mostUsedCount) {
-							mostPopularIType = collectionCode;
-							mostUsedCount = itemCountsByItype.get(collectionCode);
-						}
-					}
-				}
-			}
-
-			if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection) {
-				String iTypeCode = item.getITypeCode();
-				if (iTypeCode != null) {
-					String iType = iTypeCode.toLowerCase().trim();
-					if (itemCountsByItype.containsKey(iType)) {
-						itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
-					} else {
-						itemCountsByItype.put(iType, 1);
-						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
-						//We still will want to record those counts.
-						String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-						if (translatedFormat == null) {
-							translatedFormat = "";
-						}
-						itemTypeToFormat.put(iType, translatedFormat);
-					}
-
-					if (itemCountsByItype.get(iType) > mostUsedCount) {
-						mostPopularIType = iType;
-						mostUsedCount = itemCountsByItype.get(iType);
-					}
+		boolean foundFormatFromShelfLocation = false;
+		String shelfLocationCode = itemInfo.getShelfLocationCode();
+		if (shelfLocationCode != null) {
+			String shelfLocation = shelfLocationCode.toLowerCase().trim();
+			if (hasTranslation("format", shelfLocation)) {
+				String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
+				if (translatedLocation != null && translatedLocation.length() > 0) {
+					foundFormatFromShelfLocation = true;
+					itemInfo.setFormat(translatedLocation);
+					itemInfo.setFormatCategory(translatedLocation);
 				}
 			}
 		}
 
+		boolean foundFormatFromSublocation = false;
+		String subLocationCode = itemInfo.getSubLocationCode();
+		if (!foundFormatFromShelfLocation && subLocationCode != null) {
+			String subLocation = subLocationCode.toLowerCase().trim();
+			if (hasTranslation("format", subLocation)) {
+				String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
+				if (translatedLocation != null && translatedLocation.length() > 0) {
+					foundFormatFromSublocation = true;
+					itemInfo.setFormat(translatedLocation);
+					itemInfo.setFormatCategory(translatedLocation);
+				}
+			}
+		}
+
+		boolean foundFormatFromCollection = false;
+		String collectionCode = itemInfo.getCollection();
+		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && collectionCode != null) {
+			collectionCode = collectionCode.toLowerCase().trim();
+			if (hasTranslation("format", collectionCode)) {
+				String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
+				if (translatedLocation != null && translatedLocation.length() > 0) {
+					foundFormatFromCollection = true;
+					itemInfo.setFormat(translatedLocation);
+					itemInfo.setFormatCategory(translatedLocation);
+				}
+			}
+		}
+
+		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection) {
+			String iTypeCode = itemInfo.getITypeCode();
+			if (iTypeCode != null) {
+				String iType = iTypeCode.toLowerCase().trim();
+				//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
+				String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
+				if (translatedFormat == null) {
+					translatedFormat = "";
+				}
+				itemInfo.setFormat(translatedFormat);
+				itemInfo.setFormatCategory(translatedFormat);
+			}
+		}
+
+		String format = getItemSubfieldData(formatSubfield, itemField);
+		String formatBoost = null;
+		if (hasTranslation("format_boost", format)) {
+			formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+		}
 		try {
-			if (checkRecordForLargePrint && (itemTypeToFormat.size() == 1) && itemTypeToFormat.values().iterator().next().equalsIgnoreCase("Book")) {
-				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
-				if (printFormats.size() == 1 && printFormats.iterator().next().equalsIgnoreCase("LargePrint")) {
-					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
-					//noinspection Java8MapApi
-					for (String itemType : itemTypeToFormat.keySet()) {
-						itemTypeToFormat.put(itemType, translatedFormat);
-					}
-				}
+			if (formatBoost != null && formatBoost.length() > 0) {
+				recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 			}
-		}catch (Exception e){
-			logger.error("Error checking record for large print");
-		}
-
-		if (itemTypeToFormat.size() == 0 || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).length() == 0){
-			//We didn't get any formats from the collections, get formats from the base method (007, 008, etc).
-			//logger.debug("All formats are books or there were no formats found, loading format information from the bib");
-			super.loadPrintFormatFromBib(recordInfo, record);
-		} else{
-			//logger.debug("Using default method of loading formats from iType");
-			recordInfo.addFormat(itemTypeToFormat.get(mostPopularIType));
-			String translatedFormatCategory = translateValue("format_category", mostPopularIType, recordInfo.getRecordIdentifier());
-			if (translatedFormatCategory == null){
-				translatedFormatCategory = translateValue("format_category", itemTypeToFormat.get(mostPopularIType), recordInfo.getRecordIdentifier());
-				if (translatedFormatCategory == null){
-					translatedFormatCategory = mostPopularIType;
-				}
+		} catch (Exception e) {
+			if (!unhandledFormatBoosts.contains(format)){
+				unhandledFormatBoosts.add(format);
+				logger.warn("Could not get boost for format " + format);
 			}
-			recordInfo.addFormatCategory(translatedFormatCategory);
-			long formatBoost = 1L;
-			String formatBoostStr = translateValue("format_boost", mostPopularIType, recordInfo.getRecordIdentifier());
-			if (formatBoostStr == null){
-				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordInfo.getRecordIdentifier());
-			}
-			if (AspenStringUtils.isNumeric(formatBoostStr)) {
-				formatBoost = Long.parseLong(formatBoostStr);
-			}
-			recordInfo.setFormatBoost(formatBoost);
 		}
 	}
 
@@ -437,7 +374,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
+					if (iType.equals("ebook") || iType.equals("ebk") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 					}
 				}
@@ -467,7 +404,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isOneClickDigital = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
+					if (iType.equals("ebook") || iType.equals("ebk") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 						String sourceType = getSourceType(record, itemField);
 						if (sourceType != null){

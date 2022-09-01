@@ -14,12 +14,12 @@ const HoursAndLocation = (props) => {
 		<>
 			<Box mb={4}>
 				<Center>
-					<HStack space={3} alignItems="center">
+					<HStack space={2} alignItems="center">
 						<Icon as={MaterialIcons} name="schedule" size="sm" mt={0.3} mr={-1}/>
-						<Text fontSize="lg" bold>{translate('library_contact.today_hours')}</Text>
+						<Text fontSize="md" bold>{translate('library_contact.today_hours')}</Text>
 					</HStack>
 					<Text>{description}</Text>
-					<Text alignText="center" mt={2} italic>{hoursMessage}</Text>
+					<Text alignText="center" italic>{hoursMessage}</Text>
 				</Center>
 			</Box>
 			<Divider mb={10}/>

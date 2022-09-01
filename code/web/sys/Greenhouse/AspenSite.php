@@ -29,6 +29,9 @@ class AspenSite extends DataObject
 	public $nextMeetingPerson;
 	public $activeTicketFeed;
 	public $lastOfflineTime;
+	public $lastOnlineTime;
+	public $lastOfflineNote;
+	public $isOnline;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
 
@@ -70,143 +73,209 @@ class AspenSite extends DataObject
 			'nextMeetingPerson' => ['property' => 'nextMeetingPerson', 'type'=>'text', 'label'=>'Next meeting person', 'description'=>'Who will meet with the library next.', 'hideInLists' => false],
 			'notes' => ['property' => 'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes on the site.', 'hideInLists' => true],
 			'lastNotificationTime' => ['property' => 'lastNotificationTime', 'type'=>'timestamp', 'label'=>'Last Notification Time', 'description'=>'When the last alert was sent.', 'hideInLists' => false],
-			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline TIme', 'description' => 'When the last time the site was offline.', 'hideInLists' => false],
+			'isOnline' => ['property'=>'isOnline', 'type'=>'label', 'label'=>'Server is online', 'description'=>'Whether or not the server is online.', 'hideInLists' => false],
+			'lastOfflineTime' => ['property' => 'lastOfflineTime', 'type' => 'timestamp', 'label' => 'Last Offline Time', 'description' => 'When the last time the site was offline.'],
+			'lastOfflineNote' => ['property' => 'lastOfflineNote', 'type' => 'textarea', 'label' => 'Last Offline Note', 'description' => 'Note for when the site was last offline.'],
+			'lastOnlineTime' => ['property' => 'lastOnlineTime', 'type' => 'timestamp', 'label' => 'Last Online Time', 'description' => 'When the last time the site was online.'],
 		];
 	}
 
 	public function updateStatus() {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$status = $this->toArray();
+
+		$curlWrapper = new CurlWrapper();
+		$curlWrapper->setTimeout(5);
+		$this->lastOfflineNote = '';
 		if (!empty($this->baseUrl)){
 			$statusUrl = $this->baseUrl . '/API/SearchAPI?method=getIndexStatus';
-			try {
-				$statusRaw = file_get_contents($statusUrl);
-				if ($statusRaw) {
-					$statusJson = json_decode($statusRaw, true);
-					$status['alive'] = true;
-					$status = array_merge($status, $statusJson['result']);
+			$retry = true;
+			$numTries = 0;
+			while($retry == true) {
+				$retry = false;
+				$numTries++;
+				try {
+					$statusRaw = $curlWrapper->curlGetPage($statusUrl);
+					$responseCode = $curlWrapper->getResponseCode();
+					if ($responseCode != 200) {
+						//We might get a better response if we retry.
+						$canRetry = true;
+						if ($responseCode == 403){
+							$this->lastOfflineNote = "Got a response code of " . $curlWrapper->getResponseCode() . " can't monitor status for this server.";
+							$canRetry = false;
+						}elseif ($responseCode == 0){
+							$this->lastOfflineNote = "Got a response code of " . $curlWrapper->getResponseCode() . " could not connect to the server.";
+						}else{
+							$this->lastOfflineNote = "Got a response code of " . $curlWrapper->getResponseCode() . ".";
+						}
+						$retry = $canRetry && ($numTries <= 2);
+						if (!$retry) {
+							$status['alive'] = false;
+							$status['checks'] = [];
+							$status['wasOffline'] = false;
+							$this->isOnline = 0;
 
-					//Update logging for CPU usage, memory usage, and general site stats
-					$now = time();
-					$twoWeeksAgo = $now - 2 * 7 * 24 * 60 * 60;
-					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCpuUsage.php';
-					$cpuUsage = new AspenSiteCpuUsage();
-					//delete anything more than 2 weeks old
-					$cpuUsage->whereAdd();
-					$cpuUsage->aspenSiteId = $this->id;
-					$cpuUsage->whereAdd('timestamp < ' . $twoWeeksAgo);
-					$cpuUsage->delete(true);
-					$cpuUsage = new AspenSiteCpuUsage();
-					$cpuUsage->aspenSiteId = $this->id;
-					$cpuUsage->timestamp = $now;
-					$loadPerCpu = (float)$status['serverStats']['load_per_cpu']['value'];
-					$cpuUsage->loadPerCpu = $loadPerCpu;
-					$cpuUsage->insert();
+							if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+								$this->lastOfflineTime = time();
+							}
+						}
+					} else {
+						$statusJson = json_decode($statusRaw, true);
+						if(empty($statusJson)) {
+							$retry = ($numTries <= 2);
+							if (!$retry) {
+								$status['alive'] = false;
+								$status['checks'] = [];
+								$status['wasOffline'] = false;
+								$this->isOnline = 0;
 
-					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteMemoryUsage.php';
-					$memoryUsage = new AspenSiteMemoryUsage();
-					//delete anything more than 2 weeks old
-					$memoryUsage->whereAdd();
-					$memoryUsage->aspenSiteId = $this->id;
-					$memoryUsage->whereAdd('timestamp < ' . $twoWeeksAgo);
-					$memoryUsage->delete(true);
-					$memoryUsage = new AspenSiteMemoryUsage();
-					$memoryUsage->aspenSiteId = $this->id;
-					$memoryUsage->timestamp = $now;
-					$memoryUsage->percentMemoryUsage = $status['serverStats']['percent_memory_in_use']['value'];
-					$totalMemory = StringUtils::unformatBytes($status['serverStats']['total_memory']['value']) / (1024 * 1024 * 1024);
-					$memoryUsage->totalMemory = $totalMemory;
-					$availableMemory = StringUtils::unformatBytes($status['serverStats']['available_memory']['value']) / (1024 * 1024 * 1024);
-					$memoryUsage->availableMemory = $availableMemory;
-					$memoryUsage->insert();
+								if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+									$this->lastOfflineTime = time();
+								}
+								$this->lastOfflineNote = "JSON data is not available";
+							}
+						} else {
+							$status['alive'] = true;
+							$status = array_merge($status, $statusJson['result']);
 
-					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteWaitTime.php';
-					$waitTime = new AspenSiteWaitTime();
-					//delete anything more than 2 weeks old
-					$waitTime->whereAdd();
-					$waitTime->aspenSiteId = $this->id;
-					$waitTime->whereAdd('timestamp < ' . $twoWeeksAgo);
-					$waitTime->delete(true);
-					$waitTime = new AspenSiteWaitTime();
-					$waitTime->aspenSiteId = $this->id;
-					$waitTime->timestamp = $now;
-					$waitTimeVal = (float)$status['serverStats']['wait_time']['value'];
-					$waitTime->waitTime = $waitTimeVal;
-					$waitTime->insert();
+							//Update logging for CPU usage, memory usage, and general site stats
+							$now = time();
+							$twoWeeksAgo = $now - 2 * 7 * 24 * 60 * 60;
+							require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCpuUsage.php';
+							$cpuUsage = new AspenSiteCpuUsage();
+							//delete anything more than 2 weeks old
+							$cpuUsage->whereAdd();
+							$cpuUsage->aspenSiteId = $this->id;
+							$cpuUsage->whereAdd('timestamp < ' . $twoWeeksAgo);
+							$cpuUsage->delete(true);
+							$cpuUsage = new AspenSiteCpuUsage();
+							$cpuUsage->aspenSiteId = $this->id;
+							$cpuUsage->timestamp = $now;
+							$loadPerCpu = (float)$status['serverStats']['load_per_cpu']['value'];
+							$cpuUsage->loadPerCpu = $loadPerCpu;
+							$cpuUsage->insert();
 
-					//Update daily stats
-					require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteStat.php';
-					$aspenSiteStat = new AspenSiteStat();
-					$aspenSiteStat->year = date('Y');
-					$aspenSiteStat->month = date('n');
-					$aspenSiteStat->day = date('j');
-					$aspenSiteStat->aspenSiteId = $this->id;
-					if ($aspenSiteStat->find(true)){
-						$foundStats = true;
-					}else{
-						$foundStats = false;
-					}
-					$statsChanged = false;
-					$dataDiskSpace = StringUtils::unformatBytes($status['serverStats']['data_disk_space']['value']) / (1024 * 1024 * 1024);
-					if (!$foundStats || $dataDiskSpace < $aspenSiteStat->minDataDiskSpace){
-						$aspenSiteStat->minDataDiskSpace = $dataDiskSpace;
-						$statsChanged = true;
-					}
-					$usrDiskSpace = StringUtils::unformatBytes($status['serverStats']['usr_disk_space']['value']) / (1024 * 1024 * 1024);
-					if (!$foundStats || $usrDiskSpace < $aspenSiteStat->minUsrDiskSpace){
-						$aspenSiteStat->minUsrDiskSpace = $usrDiskSpace;
-						$statsChanged = true;
-					}
-					if (!$foundStats || $availableMemory < $aspenSiteStat->minAvailableMemory){
-						$aspenSiteStat->minAvailableMemory = $availableMemory;
-						$statsChanged = true;
-					}
-					if (!$foundStats || $availableMemory > $aspenSiteStat->maxAvailableMemory){
-						$aspenSiteStat->maxAvailableMemory = $availableMemory;
-						$statsChanged = true;
-					}
-					if (!$foundStats || $loadPerCpu < $aspenSiteStat->minLoadPerCPU){
-						$aspenSiteStat->minLoadPerCPU = $loadPerCpu;
-						$statsChanged = true;
-					}
-					if (!$foundStats || $loadPerCpu > $aspenSiteStat->maxLoadPerCPU){
-						$aspenSiteStat->maxLoadPerCPU = $loadPerCpu;
-						$statsChanged = true;
-					}
-					$waitTime = (float)$status['serverStats']['wait_time']['value'];
-					if (!$foundStats || $waitTime > $aspenSiteStat->maxWaitTime){
-						$aspenSiteStat->maxWaitTime = $waitTime;
-						$statsChanged = true;
-					}
+							require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteMemoryUsage.php';
+							$memoryUsage = new AspenSiteMemoryUsage();
+							//delete anything more than 2 weeks old
+							$memoryUsage->whereAdd();
+							$memoryUsage->aspenSiteId = $this->id;
+							$memoryUsage->whereAdd('timestamp < ' . $twoWeeksAgo);
+							$memoryUsage->delete(true);
+							$memoryUsage = new AspenSiteMemoryUsage();
+							$memoryUsage->aspenSiteId = $this->id;
+							$memoryUsage->timestamp = $now;
+							$memoryUsage->percentMemoryUsage = $status['serverStats']['percent_memory_in_use']['value'];
+							$totalMemory = StringUtils::unformatBytes($status['serverStats']['total_memory']['value']) / (1024 * 1024 * 1024);
+							$memoryUsage->totalMemory = $totalMemory;
+							$availableMemory = StringUtils::unformatBytes($status['serverStats']['available_memory']['value']) / (1024 * 1024 * 1024);
+							$memoryUsage->availableMemory = $availableMemory;
+							$memoryUsage->insert();
 
-					if (!$foundStats){
-						$aspenSiteStat->insert();
-					}else if ($statsChanged){
-						$aspenSiteStat->update();
+							require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteWaitTime.php';
+							$waitTime = new AspenSiteWaitTime();
+							//delete anything more than 2 weeks old
+							$waitTime->whereAdd();
+							$waitTime->aspenSiteId = $this->id;
+							$waitTime->whereAdd('timestamp < ' . $twoWeeksAgo);
+							$waitTime->delete(true);
+							$waitTime = new AspenSiteWaitTime();
+							$waitTime->aspenSiteId = $this->id;
+							$waitTime->timestamp = $now;
+							$waitTimeVal = (float)$status['serverStats']['wait_time']['value'];
+							$waitTime->waitTime = $waitTimeVal;
+							$waitTime->insert();
+
+							//Update daily stats
+							require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteStat.php';
+							$aspenSiteStat = new AspenSiteStat();
+							$aspenSiteStat->year = date('Y');
+							$aspenSiteStat->month = date('n');
+							$aspenSiteStat->day = date('j');
+							$aspenSiteStat->aspenSiteId = $this->id;
+							if ($aspenSiteStat->find(true)){
+								$foundStats = true;
+							}else{
+								$foundStats = false;
+							}
+							$statsChanged = false;
+							$dataDiskSpace = StringUtils::unformatBytes($status['serverStats']['data_disk_space']['value']) / (1024 * 1024 * 1024);
+							if (!$foundStats || $dataDiskSpace < $aspenSiteStat->minDataDiskSpace){
+								$aspenSiteStat->minDataDiskSpace = $dataDiskSpace;
+								$statsChanged = true;
+							}
+							$usrDiskSpace = StringUtils::unformatBytes($status['serverStats']['usr_disk_space']['value']) / (1024 * 1024 * 1024);
+							if (!$foundStats || $usrDiskSpace < $aspenSiteStat->minUsrDiskSpace){
+								$aspenSiteStat->minUsrDiskSpace = $usrDiskSpace;
+								$statsChanged = true;
+							}
+							if (!$foundStats || $availableMemory < $aspenSiteStat->minAvailableMemory){
+								$aspenSiteStat->minAvailableMemory = $availableMemory;
+								$statsChanged = true;
+							}
+							if (!$foundStats || $availableMemory > $aspenSiteStat->maxAvailableMemory){
+								$aspenSiteStat->maxAvailableMemory = $availableMemory;
+								$statsChanged = true;
+							}
+							if (!$foundStats || $loadPerCpu < $aspenSiteStat->minLoadPerCPU){
+								$aspenSiteStat->minLoadPerCPU = $loadPerCpu;
+								$statsChanged = true;
+							}
+							if (!$foundStats || $loadPerCpu > $aspenSiteStat->maxLoadPerCPU){
+								$aspenSiteStat->maxLoadPerCPU = $loadPerCpu;
+								$statsChanged = true;
+							}
+							$waitTime = (float)$status['serverStats']['wait_time']['value'];
+							if (!$foundStats || $waitTime > $aspenSiteStat->maxWaitTime){
+								$aspenSiteStat->maxWaitTime = $waitTime;
+								$statsChanged = true;
+							}
+
+							if (!$foundStats){
+								$aspenSiteStat->insert();
+							}else if ($statsChanged){
+								$aspenSiteStat->update();
+							}
+
+							if($this->isOnline == 0) {
+								$status['wasOffline'] = true;
+							} else {
+								$status['wasOffline'] = false;
+							}
+
+							$this->isOnline = 1;
+							$this->lastOnlineTime = time();
+						}
+						$this->update();
 					}
-				}else {
-					$status['alive'] = false;
-					$status['checks'] = [];
-					if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-						$this->lastOfflineTime = time();
+				}catch (Exception $e) {
+					$retry = ($numTries <= 2);
+					if(!$retry) {
+						$status['alive'] = false;
+						$status['checks'] = [];
+						$status['wasOffline'] = false;
+						$this->isOnline = 0;
+						$this->lastOfflineNote = "Unable to connect to server";
+						if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
+							$this->lastOfflineTime = time();
+						}
 						$this->update();
 					}
 				}
-			}catch (Exception $e) {
-				$status['alive'] = false;
-				$status['checks'] = [];
-				if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
-					$this->lastOfflineTime = time();
-					$this->update();
+				if($retry) {
+					sleep(5);
 				}
 			}
 		}else{
 			$status['alive'] = false;
 			$status['checks'] = [];
+			$status['wasOffline'] = false;
+			$this->isOnline = 0;
+			$this->lastOfflineNote = "Base URL not set";
 			if((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 				$this->lastOfflineTime = time();
-				$this->update();
 			}
+			$this->update();
 		}
 
 		return $status;

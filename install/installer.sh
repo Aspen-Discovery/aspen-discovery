@@ -61,6 +61,10 @@ echo "Enter the timezone of the server"
 read timezone
 timedatectl set-timezone $timezone
 
+#Setup LogRotate
+cp install/logrotate.conf /etc/logrotate.d/aspen_discovery
+
+
 cd /usr/local/aspen-discovery/install
 bash ./setup_aspen_user.sh
 

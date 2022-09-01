@@ -19,6 +19,7 @@ class AccountSummary extends DataObject
 
 	protected $_materialsRequests;
 	protected $_readingHistory;
+	protected $_numUpdatedSearches;
 
 	public function getNumericColumnNames() : array
 	{
@@ -59,6 +60,11 @@ class AccountSummary extends DataObject
 	public function setReadingHistory($readingHistory): void
 	{
 		$this->_readingHistory = $readingHistory;
+	}
+
+	public function setNumUpdatedSearches($numUpdatedSearches) : void
+	{
+		$this->_numUpdatedSearches = $numUpdatedSearches;
 	}
 
 	private $_expired = null;
@@ -122,6 +128,11 @@ class AccountSummary extends DataObject
 		$return['expireClose'] = $this->isExpirationClose();
 		$return['expirationFinesNotice'] = $this->_expirationFinesNotice;
 		$return['numHolds'] = $this->getNumHolds();
+		if ($this->_numUpdatedSearches > 0){
+			$return['savedSearches'] = translate(['text'=> '%1% Updated', 1=>$this->_numUpdatedSearches, 'isPublicFacing' => true]);
+		}else{
+			$return['savedSearches'] = '';
+		}
 		return $return;
 	}
 

@@ -201,7 +201,7 @@ class CollectionSpotlight extends DataObject
 			'showViewMoreLink' => array(
 				'property' => 'showViewMoreLink',
 				'type' => 'checkbox',
-				'label' => 'Show the View More link on the title bar of the display.',
+				'label' => 'Show the View More link',
 				'storeDb' => true,
 				'hideInLists' => true,
 				'default' => false,

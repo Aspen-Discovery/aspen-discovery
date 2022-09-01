@@ -161,6 +161,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		$availabilityToggleId = null;
 		foreach ($this->filterList as $field => $filter) {
 			$multiSelect = false;
+			$fieldPrefix = '';
 			if (isset($facetConfig[$field])) {
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
@@ -544,8 +545,11 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 	{
 		$updatedFilterList = [];
 		$facetConfig = $this->getFacetConfig();
+		$validFields = $this->loadValidFields();
 		foreach ($filterList as $field => $fieldValue) {
 			if (isset($facetConfig[$field])) {
+				$updatedFilterList[$field] = $fieldValue;
+			}else if (in_array($field, $validFields)){
 				$updatedFilterList[$field] = $fieldValue;
 			} else {
 				//This is likely a field we need to convert from the old schema to new schema
@@ -738,7 +742,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$list[$field] = array();
 			$list[$field]['field_name'] = $field;
 			// Add the on-screen label
-			$list[$field]['label'] = $filter[$field];
+			if (is_object($filter[$field])){
+				$list[$field]['label'] = $filter[$field]->displayName;
+			}else{
+				$list[$field]['label'] = $filter[$field];
+			}
+
 			// Build our array of values for this field
 			$list[$field]['list'] = array();
 			$list[$field]['hasApplied'] = false;

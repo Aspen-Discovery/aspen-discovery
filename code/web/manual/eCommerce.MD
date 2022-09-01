@@ -1,7 +1,7 @@
 ## eCommerce
 
 - Users can pay fines, fees or other incurred charges via Aspen through PayPal. Paypal can be set up in administration. 
-- If the user has any charges they will appear under the Fines and Messages tab under My Account. 
+- If the user has any charges they will appear under the Fines and Messages tab under Your Account. 
   - They will be presented with a list of active fees or fines they owe. 
   - The checkboxes on the left hand side will allow them to select all or indivdual fees or fines to pay.
   

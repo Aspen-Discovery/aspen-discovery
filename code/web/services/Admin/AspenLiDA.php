@@ -21,7 +21,7 @@ class AspenLiDA extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage) : array {
 		$list = array();
 
-		$object = new AspenLiDASetting();
+		$object = new AppSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -39,7 +39,7 @@ class AspenLiDA extends ObjectEditor
 
 	function getObjectStructure() : array
 	{
-		return AspenLiDASetting::getObjectStructure();
+		return AppSetting::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn() : string

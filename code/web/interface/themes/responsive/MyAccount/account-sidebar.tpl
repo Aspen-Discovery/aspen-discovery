@@ -85,6 +85,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->hasInterlibraryLoan()}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=interlibrary_loan" id="holdsInterlibraryLoan" title="View Interlibrary Loan Requests">
+												{translate text="Interlibrary Loan Requests" isPublicFacing=true} {if !$offline}<span class="badge"><span class="interlibrary-loan-requests-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 									{if $user->isValidForEContentSource('overdrive')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
@@ -158,7 +166,7 @@
 								{/if}
 								{if $enableSavedSearches}
 									{* Only highlight saved searches as active if user is logged in: *}
-									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a> <span class="newSavedSearchBadge badge badge-success" style="display: none">{translate text="New Titles!" isPublicFacing=true}</span></div>
+									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a> <span class="label badge-updated newSavedSearchBadge" style="display: none"><span class="saved-searches-placeholder">??</span></span></div>
 								{/if}
 								{if $enableReadingHistory && $userHasCatalogConnection}
 									<div class="myAccountLink">

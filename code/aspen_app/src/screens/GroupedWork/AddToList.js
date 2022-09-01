@@ -1,14 +1,11 @@
 import React, {useState} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Button, Center, Modal, Box, Text, Icon, FormControl, Input, Radio, TextArea, Heading, Select, HStack, Stack } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import {addTitlesToList, createListFromTitle, getLists} from "../../util/loadPatron";
 import _ from "lodash";
-import {popAlert} from "../../components/loadError";
 
 export const AddToListFromItem = (props) => {
-	const { user, item, libraryUrl } = props;
-	const lastListUsed = user.lastListUsed;
+	const { item, libraryUrl, lastListUsed } = props;
 	const [showUseExistingModal, setShowUseExistingModal] = useState(false);
 	const [showCreateNewModal, setShowCreateNewModal] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -118,15 +115,11 @@ export const AddToListFromItem = (props) => {
 							<Button
 								isLoading={loading}
 								onPress={async () => {
+									setLoading(true);
 									await createListFromTitle(title, description, access, item, libraryUrl).then(res =>{
-										let status = "success"
-										if(!res.success) {
-											status = "danger"
-										}
-										setLoading(false)
-										popAlert("List created from item", res.message, status);
+										setLoading(false);
+										setShowCreateNewModal(false);
 									});
-									setShowCreateNewModal(false)
 								}}
 							>Create List</Button>
 						</Button.Group>

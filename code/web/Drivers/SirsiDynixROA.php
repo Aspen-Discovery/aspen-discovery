@@ -22,6 +22,12 @@ class SirsiDynixROA extends HorizonAPI
 			if (!empty($physicalLocation)) {
 				$workingLibraryId = $physicalLocation->code;
 			}
+			//If we still don't have a working library id, get the
+			if (empty($workingLibraryId)){
+				$libraryLocations = $library->getLocations();
+				$firstLocation = reset($libraryLocations);
+				$workingLibraryId = $firstLocation->code;
+			}
 		}
 		$logger->log('WebServiceURL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
@@ -481,7 +487,7 @@ class SirsiDynixROA extends HorizonAPI
 
 			$createPatronInfoParameters['fields']['profile'] = array(
 				'resource' => '/policy/userProfile',
-				'key' => 'SELFREG', //TODO: This needs to be configurable
+				'key' => $library->selfRegistrationUserProfile,
 			);
 
 			if (!empty($_REQUEST['firstName'])) {
@@ -681,7 +687,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @param string $sortOption
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate')
+	public function getCheckouts(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate') : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -764,7 +770,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron)
+	public function getHolds($patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -1122,7 +1128,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = [];
 		$sessionToken = $this->getSessionToken($patron);
@@ -1175,7 +1181,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $holdId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $holdId, $newPickupLocation) : array
 	{
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!$staffSessionToken) {
@@ -1239,7 +1245,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function freezeHold(User $patron, $recordId, $holdToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $holdToFreezeId, $dateToReactivate) : array
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
@@ -1325,7 +1331,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function thawHold($patron, $recordId, $holdToThawId)
+	function thawHold($patron, $recordId, $holdToThawId) : array
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
@@ -1471,9 +1477,9 @@ class SirsiDynixROA extends HorizonAPI
 	/**
 	 * @param User $patron
 	 * @param $includeMessages
-	 * @return array|AspenError
+	 * @return array
 	 */
-	public function getFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false) : array
 	{
 		$fines = array();
 		$sessionToken = $this->getSessionToken($patron);
@@ -2267,7 +2273,7 @@ class SirsiDynixROA extends HorizonAPI
 		return $result;
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return true;
 	}

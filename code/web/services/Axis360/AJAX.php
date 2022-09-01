@@ -173,7 +173,7 @@ class Axis360_AJAX extends JSON_Action
 		}
 	}
 
-	function cancelHold()
+	function cancelHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
@@ -268,7 +268,7 @@ class Axis360_AJAX extends JSON_Action
 		return $result;
 	}
 
-	function freezeHold()
+	function freezeHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
@@ -302,7 +302,7 @@ class Axis360_AJAX extends JSON_Action
 		return $result;
 	}
 
-	function thawHold()
+	function thawHold() : array
 	{
 		$user = UserAccount::getLoggedInUser();
 		$result = array( // set default response

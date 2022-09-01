@@ -66,7 +66,7 @@ class Enrichment_DPLASettings extends ObjectEditor
 
 	function getInstructions() : string
 	{
-		return '/Admin/HelpManual?page=DPLA';
+		return 'https://help.aspendiscovery.org/help/integration/enrichment';
 	}
 
 	function getBreadcrumbs() : array

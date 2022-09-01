@@ -3,7 +3,7 @@
 		{if $recordViewUrl && $showQuickCopy}
 			<div class="itemSummary">
 				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">
-					{translate text="Quick Copy View" isPublicFacing=true}
+					{translate text="Where is it?" isPublicFacing=true}
 				</a>
 			</div>
 		{/if}
@@ -37,7 +37,7 @@
 					<div class="itemSummary">
 						{* showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if !empty($recordViewUrl)}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if}); *}
 						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{$relatedManifestation->format|urlencode}', '{$itemSummaryId}');">
-							{translate text="Quick Copy View" isPublicFacing=true}
+							{translate text="Where is it?" isPublicFacing=true}
 						</a>
 					</div>
 				{/if}

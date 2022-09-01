@@ -1,5 +1,5 @@
 <?php
-/** @noinspection PhpUnused */
+/** @noinspection PhpUnused */ 
 function getUpdates22_08_00() : array
 {
 	return [
@@ -88,6 +88,35 @@ function getUpdates22_08_00() : array
 			'sql' => [
 				'ALTER TABLE overdrive_settings CHANGE COLUMN allowLargeDeletes allowLargeDeletes TINYINT(1) DEFAULT 1'
 			]
-		],
+		],//overdrive_enable_allow_large_deletes
+		'aspen_site_lastOfflineTracking' => [
+			'title' => 'More offline site monitoring data in Greenhouse',
+			'description' => 'Add tracking of why Greenhouse is unable to connect to an Aspen site and when it reconnects',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN lastOfflineNote VARCHAR(255)",
+				"ALTER TABLE aspen_sites ADD COLUMN lastOnlineTime INT",
+			]
+		],//aspen_site_lastOfflineTracking
+		'aspen_site_isOnline' => [
+			'title' => 'Add isOnline to aspen_sites',
+			'description' => 'Add isOnline for if a site is online or not',
+			'sql' => [
+				"ALTER TABLE aspen_sites ADD COLUMN isOnline TINYINT(1) DEFAULT 1",
+			]
+		],//aspen_site_isOnline
+		'alwaysFlagNewTitlesInSearchResults' => [
+			'title' => 'Always Flag New Titles in Search Results',
+			'description' => 'Add an option to Grouped Work Display Settings to always Flag New Titles',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN alwaysFlagNewTitles TINYINT(1) DEFAULT 0",
+			]
+		],//alwaysFlagNewTitlesInSearchResults
+		'showRelatedRecordLabels'  => [
+			'title' => 'Show Related Record Labels',
+			'description' => 'Add an for whether or not labels should be shown next to the values when showing information about records within a format',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN showRelatedRecordLabels TINYINT(1) DEFAULT 1",
+			]
+		],//showRelatedRecordLabels
 	];
 }

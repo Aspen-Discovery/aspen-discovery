@@ -1,11 +1,11 @@
 ## User Lists
-- Once the User is logged into "My Account" they can create a list to track titles they are currently reading, want to read, or a project they are researching. 
+- Once the User is logged into "Your Account" they can create a list to track titles they are currently reading, want to read, or a project they are researching. 
 - The first thing the user will be prompted to enter are: 
   - Title: the name of the list.
   - Description: a brief description of the list.
   - Access: choosing if the list is public or private. Public lists can be shared with other people by copying the URL of the list or using the Email List button when viewing the list.
   ![Create User List](/manual/images/create-user-list.png)
-- Once the list is created, a link to the list will appear in their "My Account" section under "My Lists".
+- Once the list is created, a link to the list will appear in their "Your Account" section under "Your Lists".
 - Now the user can perform the following functions:
   ![User List Actions](/manual/images/create-user-lists-2.png)
   - Edit List: make changes to the title and description. 

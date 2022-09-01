@@ -123,12 +123,18 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 				$browseCategory->browseCategoryGroupId = $this->id;
 				$browseCategory->orderBy('weight');
 				if($browseCategory->find()) {
-					do {
+					while($browseCategory->fetch()) {
+						if ($count >= $max){
+							break;
+						}
 						if ($browseCategory->isValidForDisplay($appUser)) {
-							$count++;
+							$thisCategory = $browseCategory->getBrowseCategory();
+							if($thisCategory->textId != "system_saved_searches" && $thisCategory->textId != "system_user_lists") {
+								$count++;
+							}
 							$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
 						}
-					} while ($browseCategory->fetch() && $count < $max);
+					}
 				}
 			} else {
 				$this->_browseCategories = array();
