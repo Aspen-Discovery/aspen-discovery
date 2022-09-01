@@ -26,7 +26,7 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "36",
+      "buildNumber": "1",
       "bundleIdentifier": "reverseDNS.bundleId",
       "supportsTablet": true,
       "requireFullScreen": true,
@@ -45,7 +45,7 @@
     },
     "android": {
       "package": "reverseDNS.bundleId",
-      "versionCode": 36,
+      "versionCode": 1,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -55,7 +55,8 @@
         "foregroundImage": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
         "backgroundColor": "bgColor"
       },
-      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
+      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
+      "googleServicesFile": "./google-services_appSlug.json"
     },
     "web": {
       "favicon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
