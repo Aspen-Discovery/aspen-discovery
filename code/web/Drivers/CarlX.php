@@ -154,14 +154,14 @@ class CarlX extends AbstractIlsDriver{
 		return null;
 	}
 
-	public function hasNativeReadingHistory() {
+	public function hasNativeReadingHistory() : bool {
 		return true;
 	}
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll() {
+	public function hasFastRenewAll() : bool {
 		return true;
 	}
 
@@ -357,7 +357,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds(User $patron) {
+	public function getHolds(User $patron) : array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$holds = array(
 			'available'   => array(),
@@ -522,12 +522,12 @@ class CarlX extends AbstractIlsDriver{
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) {
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array {
 		return $this->placeHoldViaSIP($patron, $cancelId, null, null, 'cancel');
 
 	}
 
-	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId); // "unavailable hold" is CarlX-speak for holds not yet on the hold shelf, i.e., "holds not yet ready for pickup"
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
@@ -539,7 +539,7 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
-	function thawHold(User $patron, $recordId, $itemToThawId) {
+	function thawHold(User $patron, $recordId, $itemToThawId) : array {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
@@ -549,7 +549,7 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $holdId, $newPickupLocation) {
+	function changeHoldPickupLocation(User $patron, $recordId, $holdId, $newPickupLocation) : array {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $holdId);
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$freeze = null;
@@ -562,7 +562,7 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
-	public function getCheckouts(User $patron) {
+	public function getCheckouts(User $patron) : array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
@@ -1208,7 +1208,7 @@ class CarlX extends AbstractIlsDriver{
 		}
 	}
 
-	public function getFines(User $patron, $includeMessages = false) {
+	public function getFines(User $patron, $includeMessages = false) : array {
 		$myFines = array();
 		$request = $this->getSearchbyPatronIdRequest($patron);
 
@@ -1831,7 +1831,7 @@ class CarlX extends AbstractIlsDriver{
 		return false;
 	}
 
-	public function getHoldsReportData($location) {
+	public function getHoldsReportData($location) : array {
 		$this->initDatabaseConnection();
 		$sql = <<<EOT
 			with holds_vs_items as (

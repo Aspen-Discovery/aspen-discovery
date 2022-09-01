@@ -185,7 +185,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		}
 	}
 
-	public function hasNativeReadingHistory() {
+	public function hasNativeReadingHistory() : bool {
 		return true;
 	}
 
@@ -284,7 +284,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($patron){
+	public function getCheckouts(User $patron) : array{
 		$transactions = array();
 		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)){
 			//Load transactions from LSS
@@ -345,7 +345,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $transactions;
 	}
 
-	public function hasFastRenewAll(){
+	public function hasFastRenewAll() : bool{
 		return false;
 	}
 
@@ -437,7 +437,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron){
+	public function getHolds($patron) : array {
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
@@ -596,7 +596,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   boolean $isIll      If the hold is an ILL hold
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array{
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -635,7 +635,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -662,7 +662,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId){
+	function thawHold($patron, $recordId, $itemToThawId) : array {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -676,7 +676,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation){
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -695,7 +695,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param User $patron patron to get fines for
 	 * @return array  Array of messages
 	 */
-	function getFines($patron, $includeMessages = false) {
+	function getFines($patron, $includeMessages = false) : array {
 		$fines = array();
 
 		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {

@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		hasInterlibraryLoanConnection: false,
 		isPrint: false,
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
@@ -4763,9 +4764,9 @@ var AspenDiscovery = (function(){
 		},
 
 		//// Quick Way to get a single URL parameter value (parameterName must be in the url query string)
-		//getQueryParameterValue: function (parameterName) {
-		//	return location.search.split(parameterName + '=')[1].split('&')[0]
-		//},
+		// getQueryParameterValue: function (parameterName) {
+		// 	return location.search.split(parameterName + '=')[1].split('&')[0];
+		// },
 
 		replaceQueryParam : function (param, newValue, search) {
 			if (typeof search == 'undefined') search = location.search;
@@ -5501,6 +5502,8 @@ AspenDiscovery.Account = (function(){
 				var label = 'Holds';
 				if (source === 'ils'){
 					label = 'Physical Holds';
+				}else if (source === 'interlibrary_loan'){
+					label = 'Interlibrary Loan Requests';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
 				}else if (source === 'cloud_library'){
@@ -5684,6 +5687,16 @@ AspenDiscovery.Account = (function(){
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
 						}
+					}
+				});
+			}
+			if (Globals.hasInterlibraryLoanConnection) {
+				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(interlibraryLoanUrl, function (data) {
+					if (data.success) {
+						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
 					}
 				});
 			}
@@ -5933,6 +5946,8 @@ AspenDiscovery.Account = (function(){
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
+					}else{
+						AspenDiscovery.showMessage("Cancelling hold failed", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
@@ -5989,6 +6004,32 @@ AspenDiscovery.Account = (function(){
 			} else {
 				this.ajaxLogin(null, this.cancelHoldAll, true);
 				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false;
+		},
+
+		cancelVdxRequest: function(patronId, requestId, cancelId){
+			if (confirm("Are you sure you want to cancel this request?")){
+				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function(data){
+						if (data.success){
+							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
+							//remove the row from the holds list
+							$("#vdxHold_" + overdriveId).hide();
+							AspenDiscovery.Account.loadMenuData();
+						}else{
+							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function(){
+						AspenDiscovery.showMessage("Error Cancelling Request", "An error occurred processing your request.  Please try again in a few minutes.", false);
+					}
+				});
 			}
 			return false;
 		},
@@ -6551,7 +6592,7 @@ AspenDiscovery.Account = (function(){
 					if(data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
-						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
 					if(data.isDonation) {
@@ -8358,12 +8399,20 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowspecifiedFormatBoost").show();
 				$("#propertyRowcheckRecordForLargePrint").hide();
 				$("#propertyRowformatMap").hide();
-			}else{
+			}
+			else if (formatSource === 'item'){
 				$("#propertyRowspecifiedFormat").hide();
 				$("#propertyRowspecifiedFormatCategory").hide();
 				$("#propertyRowspecifiedFormatBoost").hide();
 				$("#propertyRowformatMap").show();
 				$("#propertyRowcheckRecordForLargePrint").show();
+			}
+			else{
+				$("#propertyRowspecifiedFormat").hide();
+				$("#propertyRowspecifiedFormatCategory").hide();
+				$("#propertyRowspecifiedFormatBoost").hide();
+				$("#propertyRowformatMap").show();
+				$("#propertyRowcheckRecordForLargePrint").hide();
 			}
 		},
 		updateLayoutSettingsFields: function () {
@@ -11696,6 +11745,59 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
+		showVdxRequest: function(module, source, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getVdxRequestForm&recordSource=" + source;
+				$.getJSON(url, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
+		submitVdxRequest: function(module, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var module = module;
+				var params = {
+					'method': 'submitVdxRequest',
+					title: $('#title').val(),
+					author: $('#author').val(),
+					publisher: $('#publisher').val(),
+					isbn: $('#isbn').val(),
+					maximumFeeAmount: $('#maximumFeeAmount').val(),
+					acceptFee: $('#acceptFee').prop('checked'),
+					pickupLocation: $('#pickupLocationSelect').val(),
+					catalogKey: $('#catalogKey').val(),
+					note: $('#note').val()
+				};
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";
+				$.getJSON(url, params, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
 		showPlaceHoldEditions: function (module, source, id, volume) {
 			if (Globals.loggedIn){
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
@@ -12155,7 +12257,7 @@ AspenDiscovery.ResultsList = (function(){
 
 AspenDiscovery.Searches = (function(){
 	$(document).ready(function(){
-		AspenDiscovery.Searches.initAutoComplete();
+		AspenDiscovery.Searches.initAutoComplete({});
 
 		// Add Browser-stored showCovers setting to the search form if there is a stored value set, and
 		// this is not a OPAC Machine, and the user is not logged in, and there is not a hidden value
@@ -12219,8 +12321,7 @@ AspenDiscovery.Searches = (function(){
 
 		changeDropDownFacet: function (facetId) {
 			var selectedFacetDropdown = $('#' + facetId + ' option:selected');
-			var destination = selectedFacetDropdown.data('destination');
-			window.location = destination;
+			window.location = selectedFacetDropdown.data('destination');
 			return false;
 		},
 
@@ -12271,45 +12372,50 @@ AspenDiscovery.Searches = (function(){
 			return false;
 		},
 
-		initAutoComplete: function(){
-			try{
-				var searchTermInput = $("#lookfor");
-				if (searchTermInput.length){
-					searchTermInput.autocomplete({
-						source:function(request,response){
-							var url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
+		initAutoComplete: function(parameters){
+			var URLSearchParameters = new URLSearchParams(window.location.search);
+			var searchTermSelector = (parameters.searchTermSelector) ? '#' + parameters.searchTermSelector : "#lookfor";
+			try {
+				if ($(searchTermSelector).length) {
+					$(searchTermSelector).autocomplete({
+						source: function (request, response) {
+							var searchIndexSelected = $(searchTermSelector).closest('form').find('select#searchIndex option:selected').val();
+							var searchIndex = (parameters.searchIndex) ? parameters.searchIndex : (searchIndexSelected) ? searchIndexSelected : (URLSearchParameters.get('searchIndex')) ? URLSearchParameters.get('searchIndex') : '';
+							var searchSourceSelected = $(searchTermSelector).closest('form').find('select#searchSource option:selected').val();
+							var searchSource = (parameters.searchSource) ? parameters.searchSource : (searchSourceSelected) ? searchSourceSelected : (URLSearchParameters.get('searchSource')) ? URLSearchParameters.get('searchSource') : '';
+							var url = Globals.path + "/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $(searchTermSelector).val() + "&searchIndex=" + searchIndex + "&searchSource=" + searchSource;
 							$.ajax({
-								url:url,
-								dataType:"json",
-								success:function(data){
+								url: url,
+								dataType: "json",
+								success: function (data) {
 									response(data);
 								}
 							});
 						},
-						position:{
-							my:"left top",
-							at:"left bottom",
-							of:"#lookfor",
-							collision:"none"
+						position: {
+							my: "left top",
+							at: "left bottom",
+							of: $(searchTermSelector),
+							collision: "none"
 						},
-						minLength:4,
-						delay:600,
-						select: function(event, ui){
-							searchTermInput.val(ui.item.value);
-							$("#searchForm").submit();
+						minLength: 4,
+						delay: 600,
+						select: function (event, ui) {
+							var form = $(searchTermSelector).closest('form');
+							$(searchTermSelector).val(ui.item.value);
+							form.submit();
 							return false;
 						}
-					}).data('ui-autocomplete')._renderItem = function( ul, item ) {
-						return $( "<li></li>" )
-							.data( "ui-autocomplete-item", item.value )
-							.append( '<a>' + item.label + '</a>' )
-							.appendTo( ul );
+					}).data('ui-autocomplete')._renderItem = function (ul, item) {
+						return $("<li></li>")
+							.data("ui-autocomplete-item", item.value)
+							.append('<a>' + item.label + '</a>')
+							.appendTo(ul);
 					};
 				}
-
-			}catch(e){
-				alert("error during autocomplete setup"+e);
-			}
+			} catch (e) {
+				alert("error during autocomplete setup:\n" + e);
+			};
 		},
 
 		sendEmail: function(){

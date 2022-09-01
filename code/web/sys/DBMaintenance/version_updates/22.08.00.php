@@ -1,5 +1,5 @@
 <?php
-/** @noinspection PhpUnused */
+/** @noinspection PhpUnused */ 
 function getUpdates22_08_00() : array
 {
 	return [

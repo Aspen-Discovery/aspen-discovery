@@ -89,25 +89,42 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("series", series.values());
 			doc.addField("series2", series2.values());
 			doc.addField("series_with_volume", seriesWithVolume.values());
+
 			doc.addField("topic", topics);
+			topicFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("topic_facet", topicFacets);
+			subjects.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("subject_facet", subjects);
 			doc.addField("lc_subject", lcSubjects);
 			doc.addField("bisac_subject", bisacSubjects);
 			doc.addField("genre", genres);
+			genreFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("genre_facet", genreFacets);
 			doc.addField("geographic", geographic);
+			geographicFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("geographic_facet", geographicFacets);
+			eras.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("era", eras);
+			//Check default values and inconsistent forms
 			checkDefaultValue(literaryFormFull, "Not Coded");
 			checkDefaultValue(literaryFormFull, "Other");
 			checkDefaultValue(literaryFormFull, "Unknown");
 			checkInconsistentLiteraryFormsFull();
-			doc.addField("literary_form_full", literaryFormFull.keySet());
 			checkDefaultValue(literaryForm, "Not Coded");
 			checkDefaultValue(literaryForm, "Other");
 			checkDefaultValue(literaryForm, "Unknown");
 			checkInconsistentLiteraryForms();
+			//Check if .isHide
+			if (groupedWorkIndexer.isHideUnknownLiteraryForm()) {
+				literaryForm.remove("Unknown");
+				literaryFormFull.remove("Unknown");
+			}
+			if (groupedWorkIndexer.isHideNotCodedLiteraryForm()) {
+				literaryForm.remove("Not Coded");
+				literaryFormFull.remove("Not Coded");
+			}
+			//Add field
+			doc.addField("literary_form_full", literaryFormFull.keySet());
 			doc.addField("literary_form", literaryForm.keySet());
 			if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
 				targetAudienceFull.remove("Unknown");
@@ -539,7 +556,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 	private Long daysAddedSincePubDate = null;
 	private Long loadScopedDaysAdded(ItemInfo curItem) {
 		Long daysSinceAdded;
-		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon")))) {
+		if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon") || curItem.getGroupedStatus().equals("On Order")))) {
 			daysSinceAdded = -1L;
 		} else {
 			//Date Added To Catalog needs to be the earliest date added for the catalog.

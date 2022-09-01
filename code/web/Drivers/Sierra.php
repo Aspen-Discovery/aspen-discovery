@@ -223,7 +223,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function getHolds($patron)
+	public function getHolds($patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -559,7 +559,7 @@ class Sierra extends Millennium{
 		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
 	}
 
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -733,7 +733,7 @@ class Sierra extends Millennium{
 		return $id;
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToFreezeId}";
 		$params = [
 			'freeze' => true
@@ -755,7 +755,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId){
+	function thawHold($patron, $recordId, $itemToThawId) : array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToThawId}";
 		$params = [
 			'freeze' => false
@@ -777,7 +777,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation){
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToUpdateId}";
 		$params = [
 			'pickupLocation' => $newPickupLocation
@@ -806,7 +806,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
+	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array{
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$cancelId}";
 		$cancelHoldResponse = $this->_sendPage('sierra.cancelHold', 'DELETE', $sierraUrl, '');
 		if (!$cancelHoldResponse){
@@ -916,7 +916,7 @@ class Sierra extends Millennium{
 		return false;
 	}
 
-	public function hasFastRenewAll(){
+	public function hasFastRenewAll() : bool{
 		return false;
 	}
 
@@ -1149,7 +1149,7 @@ class Sierra extends Millennium{
 		// TODO: Use Sierra APIs to self register
 	}
 
-	public function getFines($patron = null, $includeMessages = false)
+	public function getFines($patron = null, $includeMessages = false) : array
 	{
 		$fines = [];
 

@@ -38,7 +38,6 @@ public class EvolveExportMain {
 	private static String serverName;
 	private static String baseUrl;
 	private static String integrationToken;
-	private static String accessToken;
 	private static String staffUsername;
 	private static String staffPassword;
 
@@ -47,18 +46,22 @@ public class EvolveExportMain {
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
-		@SuppressWarnings("unused")
+
 		String singleWorkId = null;
-		if (args.length == 0) {
+
+		if (args.length == 0)
+		//noinspection CommentedOutCode
+		{
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-//			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
-//			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
-//				extractSingleWork = true;
-//			}
+			/*String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}*/
+
 		} else {
 			serverName = args[0];
 			if (args.length > 1) {
@@ -142,9 +145,8 @@ public class EvolveExportMain {
 						//Update works that have changed since the last index
 						numChanges = updateRecords();
 					}else{
-						MarcFactory marcFactory = MarcFactory.newInstance();
 						//TODO: API to update an individual record?
-						numChanges = updateBibFromEvolve(singleWorkId, marcFactory, true);
+						numChanges = updateBibFromEvolve(singleWorkId);
 					}
 				}
 
@@ -249,14 +251,15 @@ public class EvolveExportMain {
 		} //Infinite loop
 	}
 
-	private static int updateBibFromEvolve(String singleWorkId, MarcFactory marcFactory, boolean incrementProductsInLog) {
+	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {
 		logEntry.incErrors("Cannot extract Single Works from Evolve.");
 		return 0;
 	}
 
-	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory, boolean incrementProductsInLog) {
-		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyHHmmss");
-		long lastExtractTime = 0;
+	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory) {
+		@SuppressWarnings("SpellCheckingInspection")
+		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyyHHmmss");
+		long lastExtractTime;
 		lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords() * 1000;
 		if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
 			//Give a small buffer (5 minute to account for server time differences)
@@ -268,8 +271,9 @@ public class EvolveExportMain {
 		}
 		String formattedExtractTime = lastExtractTimeFormatter.format(new Date(lastExtractTime));
 
-		//The integration token does not allow catalog search so we need to login with a patron.
+		//The integration token does not allow catalog search - so we need to log in with a patron.
 		String patronLoginUrl = baseUrl + "/Authenticate";
+		@SuppressWarnings("SpellCheckingInspection")
 		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername  + "\",\"Pwd\":\"" + staffPassword +"\"}";
 		WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
 		int numProcessed = 0;
@@ -277,12 +281,41 @@ public class EvolveExportMain {
 			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
 			JSONObject firstResponse = loginResponseData.getJSONObject(0);
 			String accessToken = firstResponse.getString("LoginToken");
+
+			//Get a list of holdings that have changed from the last update time
+			String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
+			WebServiceResponse changedHoldingsResponse = NetworkUtils.getURL(getChangedHoldingsUrl, logger);
+			if (changedHoldingsResponse.isSuccess()) {
+				String rawMessage = changedHoldingsResponse.getMessage();
+				rawMessage = rawMessage.replaceAll("u001e", "\u001e");
+				rawMessage = rawMessage.replaceAll("u001f", "\u001f");
+				rawMessage = rawMessage.replaceAll("u001d", "\u001d");
+
+				JSONArray responseAsArray = new JSONArray(rawMessage);
+				for (int i = 0; i < responseAsArray.length(); i++){
+					JSONObject curItem = responseAsArray.getJSONObject(i);
+					if (curItem.has("Status")){
+						//This really should be an error, but that would prevent incrementing the export date which will only make things worse.
+						logEntry.addNote(curItem.getString("Message"));
+						break;
+					}
+
+					String bibId = curItem.getString("ID");
+					//We can't get the Marc record for an individual MARC so we will load what we have and edit the correct item or insert it if we can't find it.
+					Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
+					if (marcRecord != null) {
+						logEntry.incRecordsRegrouped();
+						//Regroup the record
+						String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					}
+				}
+			}
+
 			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
 			//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
 
-			HashMap<String, String> headers = new HashMap<>();
-			headers.put("Content-type", "application/json");
-			headers.put("Accept", "application/json");
 			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
 			if (getBibsResponse.isSuccess()) {
 				String rawMessage = getBibsResponse.getMessage();
@@ -297,7 +330,8 @@ public class EvolveExportMain {
 					String rawMarc = curRow.getString("MARC");
 					try {
 						MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-						if (reader.hasNext()) {
+						if (reader.hasNext()) //noinspection GrazieInspection
+						{
 							String bibId = curRow.getString("ID");
 							Record marcRecord = reader.next();
 
@@ -376,6 +410,8 @@ public class EvolveExportMain {
 						logEntry.incErrors("Error parsing marc record", e);
 					}
 				}
+			}else{
+				logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
 			}
 
 			//Also ask for holdings modified from a specific date
@@ -473,7 +509,7 @@ public class EvolveExportMain {
 			logEntry.incErrors("Error regrouping all records", e);
 		}
 
-		int totalChanges = 0;
+		int totalChanges;
 
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
@@ -523,7 +559,7 @@ public class EvolveExportMain {
 		}else{
 			MarcFactory marcFactory = MarcFactory.newInstance();
 			//Update records based on the last change date
-			totalChanges = updateLastChangedBibsFromEvolve(marcFactory, true);
+			totalChanges = updateLastChangedBibsFromEvolve(marcFactory);
 		}
 
 		return totalChanges;
@@ -534,7 +570,7 @@ public class EvolveExportMain {
 	 * To see which records are deleted it needs to get a list of all records that are already in the database, so it can detect what has been deleted.
 	 *
 	 * @param exportedMarcFiles - An array of files to process
-	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param hasFullExportFile - Whether we are including a full export.  We will only delete records if we have a full export.
 	 * @param fullExportFile    - The file containing the full export
 	 * @param dbConn            - Connection to the Aspen database
 	 * @return - total number of changes that were found

@@ -1,0 +1,21 @@
+Extracting OverDrive info for a collection
+
+if (check for deleted records){
+    Load all products from the api (LOAD_ALL_PRODUCTS);
+}
+Load products with changes from the API (LOAD_PRODUCTS_WITH_ANY_CHANGES);
+
+if (not running full update) {
+    Load new products;
+}
+
+Remove any products that are only owned by libraries not connected to Aspen;
+
+loop (all products to update){
+    Get Metadata for the title;
+    Get Availability for the title;
+}
+
+if (checkForDeletedRecords) {
+    Remove any records that no longer exist;
+}

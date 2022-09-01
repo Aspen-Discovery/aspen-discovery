@@ -1,0 +1,11 @@
+Basic Flow for how reindexer works when doing a full (nightly index)
+
+Index starts - GroupedReindexMain.main;
+Check if all records need to be regrouped;
+Check if we are doing a full index or a single record;
+if (single record){
+  index that record - GroupedWorkIndexer.processGroupedWork;
+}else{
+  Process all records - GroupedWorkIndexer.processGroupedWorks;
+}
+finish indexing - GroupedWorkIndexer.finishIndexing;

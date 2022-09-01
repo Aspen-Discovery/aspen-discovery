@@ -34,7 +34,7 @@ class Evergreen extends AbstractIlsDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -53,6 +53,7 @@ class Evergreen extends AbstractIlsDriver
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
 			$index = 0;
+			ExternalRequestLogEntry::logRequest('evergreen.getCheckouts', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0])) {
@@ -89,6 +90,7 @@ class Evergreen extends AbstractIlsDriver
 		$request .= '&param=' . $checkoutId;
 		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
+		ExternalRequestLogEntry::logRequest('evergreen.loadCheckoutData', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
 			if (isset($apiResponse->payload[0])) {
@@ -134,18 +136,17 @@ class Evergreen extends AbstractIlsDriver
 	 * @param int $copyId
 	 * @return string[]|null
 	 */
-	private function getModsForCopy($copyId) {
+	private function getModsForCopy(int $copyId) :?array {
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$request = 'service=open-ils.search&method=open-ils.search.biblio.mods_from_copy';
 		$request .= '&param=' . $copyId;
 		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+		ExternalRequestLogEntry::logRequest('evergreen.getModsForCopy', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
 			if (isset($apiResponse->payload[0])) {
 				$mods = $apiResponse->payload[0]->__p;
-				$mods = $this->mapEvergreenFields($mods, $this->fetchIdl('mvr'));
-				return $mods;
+				return $this->mapEvergreenFields($mods, $this->fetchIdl('mvr'));
 			}
 		}
 		return null;
@@ -154,7 +155,7 @@ class Evergreen extends AbstractIlsDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -204,6 +205,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . json_encode($namedParams);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			ExternalRequestLogEntry::logRequest('evergreen.renewCheckout', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
@@ -236,9 +238,10 @@ class Evergreen extends AbstractIlsDriver
 	 * @param User $patron The User to cancel the hold for
 	 * @param string $recordId The id of the bib record
 	 * @param string $cancelId Information about the hold to be cancelled
+	 * @param bool $isIll If the hold was from ILL
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = [
 			'success' => false,
@@ -263,7 +266,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . json_encode("Hold cancelled in Aspen Discovery");
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+			ExternalRequestLogEntry::logRequest('evergreen.cancelHold', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
@@ -290,9 +293,6 @@ class Evergreen extends AbstractIlsDriver
 		return $result;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		return $this->placeItemHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
@@ -311,10 +311,6 @@ class Evergreen extends AbstractIlsDriver
 				'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true])
 			],
 		];
-
-		if (strpos($recordId, ':') !== false){
-			list(,$recordId) = explode(':', $recordId);
-		}
 
 		$authToken = $this->getAPIAuthToken($patron);
 		if ($authToken != null){
@@ -335,12 +331,12 @@ class Evergreen extends AbstractIlsDriver
 				if ($library->defaultNotNeededAfterDays == 0){
 					//Default to a date 6 months (half a year) in the future.
 					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
+					$cancelDate = date( DateTimeInterface::ISO8601, $sixMonthsFromNow);
 				}else{
 					//Default to a date 6 months (half a year) in the future.
 					if ($library->defaultNotNeededAfterDays > 0) {
 						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-						$cancelDate = date(DateTime::ISO8601, $nnaDate);
+						$cancelDate = date(DateTimeInterface::ISO8601, $nnaDate);
 					}
 				}
 			}
@@ -379,7 +375,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . json_encode([(int)$itemId]);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+			ExternalRequestLogEntry::logRequest('evergreen.placeItemHold', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
@@ -413,7 +409,7 @@ class Evergreen extends AbstractIlsDriver
 		return $hold_result;
 	}
 
-	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		$result = [
 			'success' => false,
@@ -443,7 +439,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . json_encode($namedParams);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+			ExternalRequestLogEntry::logRequest('evergreen.freezeHold', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
@@ -476,7 +472,7 @@ class Evergreen extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	function thawHold(User $patron, $recordId, $itemToThawId)
+	function thawHold(User $patron, $recordId, $itemToThawId) : array
 	{
 		$result = [
 			'success' => false,
@@ -506,7 +502,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . json_encode($namedParams);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+			ExternalRequestLogEntry::logRequest('evergreen.thawHold', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
@@ -532,7 +528,7 @@ class Evergreen extends AbstractIlsDriver
 		return $result;
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		$result = [
 			'success' => false,
@@ -569,7 +565,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . json_encode($namedParams);
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+			ExternalRequestLogEntry::logRequest('evergreen.changeHoldPickupLocation', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
@@ -600,15 +596,15 @@ class Evergreen extends AbstractIlsDriver
 		// TODO: Implement updatePatronInfo() method.
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
-		// TODO: Implement hasNativeReadingHistory() method.
+		return false;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getHolds(User $patron)
+	public function getHolds(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -633,6 +629,7 @@ class Evergreen extends AbstractIlsDriver
 			];
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
 
+			ExternalRequestLogEntry::logRequest('evergreen.getHolds', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				foreach ($apiResponse->payload[0] as $payload) {
@@ -755,12 +752,12 @@ class Evergreen extends AbstractIlsDriver
 				if ($library->defaultNotNeededAfterDays == 0){
 					//Default to a date 6 months (half a year) in the future.
 					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
+					$cancelDate = date( DateTimeInterface::ISO8601, $sixMonthsFromNow);
 				}else{
 					//Default to a date 6 months (half a year) in the future.
 					if ($library->defaultNotNeededAfterDays > 0) {
 						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-						$cancelDate = date(DateTime::ISO8601, $nnaDate);
+						$cancelDate = date(DateTimeInterface::ISO8601, $nnaDate);
 					}
 				}
 			}
@@ -810,6 +807,8 @@ class Evergreen extends AbstractIlsDriver
 			$requestB .= '&param=' . json_encode($namedParamsB);
 
 			$apiResponseB = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $requestB);
+
+			ExternalRequestLogEntry::logRequest('evergreen.isHoldPossible', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponseB, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponseB = json_decode($apiResponseB);
 				if ($apiResponseB->payload[0]->success == 0){
@@ -821,6 +820,8 @@ class Evergreen extends AbstractIlsDriver
 						];
 						$getPartsRequest .= '&param=' . json_encode($namedPartsParams);
 						$getPartsResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getPartsRequest);
+
+						ExternalRequestLogEntry::logRequest('evergreen.get_record_hold_parts', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getPartsRequest, $this->apiCurlWrapper->getResponseCode(), $getPartsResponse, []);
 						if ($this->apiCurlWrapper->getResponseCode() == 200) {
 							$getPartsResponse = json_decode($getPartsResponse);
 							$items = array();
@@ -850,7 +851,7 @@ class Evergreen extends AbstractIlsDriver
 			}
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
-
+			ExternalRequestLogEntry::logRequest('evergreen.placeHold', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
@@ -876,9 +877,6 @@ class Evergreen extends AbstractIlsDriver
 		return $hold_result;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function getAPIAuthToken(User $patron)
 	{
 		//Remove any spaces from the barcode
@@ -889,7 +887,7 @@ class Evergreen extends AbstractIlsDriver
 		return null;
 	}
 
-	public function getFines(User $patron, $includeMessages = false)
+	public function getFines(User $patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -918,6 +916,7 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . $patron->username;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
+			ExternalRequestLogEntry::logRequest('evergreen.getFines', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload)){
@@ -995,7 +994,7 @@ class Evergreen extends AbstractIlsDriver
 			];
 
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
-
+			ExternalRequestLogEntry::logRequest('evergreen.getStaffUserInfo', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, ['password' => $this->accountProfile->staffPassword]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				$session['userValid'] = true;
@@ -1009,6 +1008,10 @@ class Evergreen extends AbstractIlsDriver
 		return Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername];
 	}
 
+	/**
+	 * @param $patronBarcode
+	 * @return bool|User
+	 */
 	public function findNewUser($patronBarcode)
 	{
 		$sessionInfo = $this->getStaffUserInfo();
@@ -1027,7 +1030,7 @@ class Evergreen extends AbstractIlsDriver
 		return false;
 	}
 
-	private function loadPatronInformation($userData, $username, $password) {
+	private function loadPatronInformation($userData, $username, $password) : User {
 		$user = new User();
 		$user->username = $userData['id'];
 		if ($user->find(true)) {
@@ -1045,7 +1048,7 @@ class Evergreen extends AbstractIlsDriver
 			$forceDisplayNameUpdate = true;
 		}
 		if ($user->lastname != $lastName) {
-			$user->lastname = isset($lastName) ? $lastName : '';
+			$user->lastname = $lastName ?? '';
 			$forceDisplayNameUpdate = true;
 		}
 		if ($forceDisplayNameUpdate) {
@@ -1066,7 +1069,7 @@ class Evergreen extends AbstractIlsDriver
 		$user->patronType = $userData['usrgroup'];
 
 		//TODO: Figure out how to parse the address we will need to look it up in web services
-		$fullAddress = $userData['mailing_address'];
+		//$fullAddress = $userData['mailing_address'];
 
 		if (!empty($userData['expire_date'])){
 			$expireTime = $userData['expire_date'];
@@ -1127,14 +1130,14 @@ class Evergreen extends AbstractIlsDriver
 				'service' => 'open-ils.auth',
 				'method' => 'open-ils.auth.login',
 				'param' => json_encode([
-					'password' => (string)$password,
+					'password' => $password,
 					'type' => 'persist',
 					'org' => null,
-					'identifier' => (string)$username,
+					'identifier' => $username,
 				]),
 			];
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
-
+			ExternalRequestLogEntry::logRequest('evergreen.validatePatronAndGetAuthToken', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, ['password' => $password]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
 				if ($apiResponse->payload[0]->ilsevent == 0){
@@ -1148,7 +1151,7 @@ class Evergreen extends AbstractIlsDriver
 			return $session;
 		}
 	}
-	private function fetchSession($authToken){
+	private function fetchSession($authToken) : ?array {
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$headers  = array(
 			'Content-Type: application/x-www-form-urlencoded',
@@ -1161,6 +1164,7 @@ class Evergreen extends AbstractIlsDriver
 		];
 		$getSessionResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
 
+		ExternalRequestLogEntry::logRequest('evergreen.fetchSession', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $getSessionResponse, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
 			$getSessionResponse = json_decode($getSessionResponse);
 			if ($getSessionResponse->payload[0]->__c == 'au'){ //class
@@ -1170,7 +1174,7 @@ class Evergreen extends AbstractIlsDriver
 		return null;
 	}
 
-	private function mapEvergreenFields($rawResult, array $ahrFields)
+	private function mapEvergreenFields($rawResult, array $ahrFields) : array
 	{
 		$mappedResult = [];
 		foreach ($ahrFields as $position => $label){
@@ -1184,13 +1188,13 @@ class Evergreen extends AbstractIlsDriver
 		return $mappedResult;
 	}
 
-	private function getBibFromSuperCat($recordId)
+	private function getBibFromSuperCat($recordId) : ?SimpleXMLElement
 	{
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/opac/extras/supercat/retrieve/atom/record/' . $recordId;
 		$superCatResult = $this->apiCurlWrapper->curlGetPage($evergreenUrl);
+		ExternalRequestLogEntry::logRequest('evergreen.getBibFromSuperCat', 'GET', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $superCatResult, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
-			$bibParsed = simplexml_load_string($superCatResult);
-			return $bibParsed;
+			return simplexml_load_string($superCatResult);
 		}else{
 			return null;
 		}
@@ -1273,6 +1277,7 @@ class Evergreen extends AbstractIlsDriver
 
 		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 		$smsCarriers = [];
+		ExternalRequestLogEntry::logRequest('evergreen.getHoldNotificationTemplate', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
 			foreach ($apiResponse->payload[0] as $smsInfo){
@@ -1289,13 +1294,14 @@ class Evergreen extends AbstractIlsDriver
 		return 'Record/evergreenHoldNotifications.tpl';
 	}
 
-	function fetchIdl($className){
+	function fetchIdl($className) : array {
 		global $memCache;
 		$idl = $memCache->get('evergreen_idl_' . $className);
 		if ($idl == false){
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/reports/fm_IDL.xml?class=' . $className;
 			$apiResponse = $this->apiCurlWrapper->curlGetPage($evergreenUrl);
 			$idl = [];
+			ExternalRequestLogEntry::logRequest('evergreen.fetchIdl', 'GET', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$idlRaw = simplexml_load_string($apiResponse);
 				$fields = $idlRaw->class->fields;

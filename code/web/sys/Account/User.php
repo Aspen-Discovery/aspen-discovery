@@ -538,6 +538,26 @@ class User extends DataObject
 		return false;
 	}
 
+	function hasInterlibraryLoan() : bool {
+		try {
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)) {
+				$homeLocation = Location::getDefaultLocationForUser();
+				if ($homeLocation != null) {
+					//Get configuration for the form.
+					if ($homeLocation->vdxFormId != -1) {
+						return true;
+					}
+				}
+			}
+		}catch (Exception $e){
+			//This happens if the tables aren't setup, ignore
+		}
+		return false;
+	}
+
 	/**
 	 * Returns a list of users that can view this account
 	 *
@@ -981,7 +1001,7 @@ class User extends DataObject
 	 * @param string $source
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($includeLinkedUsers = true, $source = 'all'){
+	public function getCheckouts($includeLinkedUsers = true, $source = 'all') : array{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
 		//15 minutes ago or if the refresh option is selected
@@ -1113,7 +1133,7 @@ class User extends DataObject
 		}
 	}
 
-	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all')
+	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all') : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
@@ -1147,48 +1167,64 @@ class User extends DataObject
 			}
 
 			//Get holds from OverDrive
-			if ($this->isValidForEContentSource('overdrive')) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				$overDriveHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
-				if ($source == 'all' || $source == 'overdrive') {
+			if ($source == 'all' || $source == 'overdrive') {
+				if ($this->isValidForEContentSource('overdrive')) {
+					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+					$driver = new OverDriveDriver();
+					$overDriveHolds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
 				}
 			}
 
 			//Get holds from cloudLibrary
-			if ($this->isValidForEContentSource('cloud_library')) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				$cloudLibraryHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
-				if ($source == 'all' || $source == 'cloud_library') {
+			if ($source == 'all' || $source == 'cloud_library') {
+				if ($this->isValidForEContentSource('cloud_library')) {
+					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+					$driver = new CloudLibraryDriver();
+					$cloudLibraryHolds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
 				}
 			}
 
 			//Get holds from Axis 360
-			if ($this->isValidForEContentSource('axis360')) {
-				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-				$driver = new Axis360Driver();
-				$axis360Holds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $axis360Holds);
-				if ($source == 'all' || $source == 'axis360') {
+			if ($source == 'all' || $source == 'axis360') {
+				if ($this->isValidForEContentSource('axis360')) {
+					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+					$driver = new Axis360Driver();
+					$axis360Holds = $driver->getHolds($this);
+					$allHolds = array_merge_recursive($allHolds, $axis360Holds);
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
 				}
 			}
 
+			if ($source == 'all' || $source == 'interlibrary_loan') {
+				if ($this->hasInterlibraryLoan()) {
+					//For now, this is just VDX
+					require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+					$driver = new VdxDriver();
+					$vdxRequests = $driver->getRequests($this);
+					$allHolds = array_merge_recursive($allHolds, $vdxRequests);
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $vdxRequests);
+				}
+			}
 			//Delete all existing holds
 			$hold = new Hold();
 			$hold->userId = $this->id;
 			$hold->delete(true);
 
 			foreach ($allHolds['available'] as $holdToSave){
-				$holdToSave->insert();
+				if (!$holdToSave->insert()){
+					global $logger;
+					$logger->log('Could not save available hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+				}
 			}
 			foreach ($allHolds['unavailable'] as $holdToSave){
-				$holdToSave->insert();
+				if (!$holdToSave->insert()){
+					global $logger;
+					$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
+				}
 			}
 			$this->holdInfoLastLoaded = time();
 			$this->update();
@@ -1316,6 +1352,10 @@ class User extends DataObject
 			uasort($holdsToReturn['unavailable'], $holdSort);
 		}
 
+		if ($source == 'interlibrary_loan'){
+			unset($holdsToReturn['available']);
+		}
+
 		return $holdsToReturn;
 	}
 
@@ -1367,7 +1407,7 @@ class User extends DataObject
 	}
 
 	private $ilsFinesForUser;
-	public function getFines($includeLinkedUsers = true){
+	public function getFines($includeLinkedUsers = true, $APIRequest = false) : array {
 
 		if (!isset($this->ilsFinesForUser)){
 			$this->ilsFinesForUser = $this->getCatalogDriver()->getFines($this);
@@ -1375,7 +1415,12 @@ class User extends DataObject
 				$this->ilsFinesForUser = array();
 			}
 		}
-		$ilsFines[$this->id] = $this->ilsFinesForUser;
+
+		if($APIRequest && !$includeLinkedUsers) {
+			$ilsFines = $this->ilsFinesForUser;
+		} else {
+			$ilsFines[$this->id] = $this->ilsFinesForUser;
+		}
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
@@ -1589,15 +1634,23 @@ class User extends DataObject
 	 *
 	 * @return array            Information about the result of the cancellation process
 	 */
-	function cancelHold($recordId, $cancelId, $isIll){
+	function cancelHold($recordId, $cancelId, $isIll) : array {
 		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
 		$this->clearCache();
 		return $result;
 	}
 
-//		function changeHoldPickUpLocation($recordId, $itemToUpdateId, $newPickupLocation){
-			//$recordId is not used to update change hold pick up location in driver
-	function changeHoldPickUpLocation($itemToUpdateId, $newPickupLocation){
+	function cancelVdxRequest($requestId, $cancelId){
+		//For now, this is just VDX
+		require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+		$driver = new VdxDriver();
+		$result = $driver->cancelRequest($this, $requestId, $cancelId);
+
+		$this->clearCache();
+		return $result;
+	}
+
+	function changeHoldPickUpLocation($itemToUpdateId, $newPickupLocation) : array{
 		$result = $this->getCatalogDriver()->changeHoldPickupLocation($this, null, $itemToUpdateId, $newPickupLocation);
 		$this->clearCache();
 		return $result;
@@ -1764,7 +1817,7 @@ class User extends DataObject
 		return $tmpResult;
 	}
 
-	function thawHold($recordId, $holdId){
+	function thawHold($recordId, $holdId) : array{
 		$result = $this->getCatalogDriver()->thawHold($this, $recordId, $holdId);
 		$this->clearCache();
 		return $result;
@@ -2293,7 +2346,7 @@ class User extends DataObject
 	{
 		if ($this->hasIlsConnection()) {
 			$homeLibrary = $this->getHomeLibrary();
-			if ($homeLibrary->allowUsernameUpdates) {
+			if ($homeLibrary != null && $homeLibrary->allowUsernameUpdates) {
 				return $this->getCatalogDriver()->hasEditableUsername();
 			}
 		}
@@ -2390,8 +2443,6 @@ class User extends DataObject
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
-		$sections['primary_configuration']->addAction(new AdminAction('Aspen LiDA Settings', 'Administer Aspen LiDA settings', '/Admin/AspenLiDA'), 'Administer Aspen LiDA Settings');
-
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()){
@@ -2431,7 +2482,9 @@ class User extends DataObject
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Hidden Subjects', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Subject Facets');
 		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
+
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
@@ -2473,6 +2526,7 @@ class User extends DataObject
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
 		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
+		$sections['ecommerce']->addAction(new AdminAction('ACI Speedpay Settings', 'Define Settings for ACI Speedpay.', '/Admin/ACISpeedpaySettings'), 'Administer ACI Speedpay');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
@@ -2489,6 +2543,11 @@ class User extends DataObject
 		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
+
+		$sections['ill_integration'] = new AdminSection('Interlibrary Loan');
+		$sections['ill_integration']->addAction(new AdminAction('VDX Settings', 'Define Settings for VDX Integration', '/VDX/VDXSettings'), ['Administer VDX Settings']);
+		$sections['ill_integration']->addAction(new AdminAction('VDX Hold Groups', 'Modify Hold Groups for creating holds via VDX.', '/VDX/VDXHoldGroups'), 'Administer VDX Hold Groups');
+		$sections['ill_integration']->addAction(new AdminAction('VDX Forms', 'Configure Forms for submitting VDX information.', '/VDX/VDXForms'), ['Administer All VDX Forms', 'Administer Library VDX Forms']);
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
 		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), ['View Location Holds Reports', 'View All Holds Reports']);
@@ -2614,6 +2673,18 @@ class User extends DataObject
 			$sections['course_reserves']->addAction(new AdminAction('Settings', 'Define settings for indexing course reserves within Aspen Discovery.', '/CourseReserves/Settings'), 'Administer Course Reserves');
 			$sections['course_reserves']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Course Reserves.', '/CourseReserves/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 		}
+
+		$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
+		$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
+		$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
+		$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
+		$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
+		if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')){
+			$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
+		}else{
+			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+		}
+		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
 		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
@@ -2875,6 +2946,76 @@ class User extends DataObject
 	public function get2FAStatus(){
 		$status = $this->twoFactorStatus;
 		if($status == '1') {
+			return true;
+		}
+		return false;
+	}
+
+	public function canReceiveNotifications($user): bool
+	{
+		global $logger;
+		$userLibrary = Library::getPatronHomeLibrary($user);
+		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+		$settings = new NotificationSetting();
+		$settings->id = $userLibrary->lidaNotificationSettingId;
+		if($settings->find(true)) {
+			if($settings->sendTo == 2 || $settings->sendTo == '2') {
+				$logger->log("Sending notifications to all patron types", Logger::LOG_ERROR);
+				return true;
+			} elseif($settings->sendTo == 1 || $settings->sendTo == '1') {
+				$isStaff = 0;
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if($patronType->find(true)) {
+					$isStaff = $patronType->isStaff;
+				}
+				if($isStaff == 1 || $isStaff == '1') {
+					$logger->log("Sending notifications to only staff", Logger::LOG_ERROR);
+					return true;
+				}
+			}
+		}
+		$logger->log("Unable to find notification settings", Logger::LOG_ERROR);
+		return false;
+	}
+
+	public function saveNotificationPushToken($token, $device): bool{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$pushToken = new UserNotificationToken();
+		$pushToken->userId = $this->id;
+		$pushToken->pushToken = $token;
+		$pushToken->deviceModel = $device;
+		if($pushToken->find(true)) {
+			return true;
+		} else {
+			if($pushToken->insert()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function getNotificationPushToken(): array{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$tokens = [];
+		$obj = new UserNotificationToken();
+		$obj->userId = $this->id;
+		$obj->find();
+		while($obj->fetch()){
+			$token[$obj->pushToken] = $obj->pushToken;
+			$tokens[] = $token;
+		}
+		return $tokens;
+	}
+
+	public function deleteNotificationPushToken($token): bool{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$pushToken = new UserNotificationToken();
+		$pushToken->userId = $this->id;
+		$pushToken->pushToken = $token;
+		if($pushToken->find(true)) {
+			$pushToken->delete();
 			return true;
 		}
 		return false;

@@ -169,6 +169,11 @@ class Admin_Administrators extends ObjectEditor
 		return UserAccount::userHasPermission('Administer Users');
 	}
 
+	function canDelete()
+	{
+		return false;
+	}
+
 	function canBatchEdit()
 	{
 		return false;

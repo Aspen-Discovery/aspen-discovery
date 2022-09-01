@@ -253,7 +253,7 @@ if (isset($_REQUEST['lookfor'])) {
 				$_REQUEST['lookfor'][$i] = $cleanedSearchTerm;
 				$_GET['lookfor'][$i] = $cleanedSearchTerm;
 			}
-			if (strlen($searchTerm) >= 256) {
+			if (strlen($searchTerm) >= 500) {
 				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
 				$interface->setTemplate('../queryTooLong.tpl');
 				$interface->setPageTitle('An Error has occurred');
@@ -461,6 +461,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	if (isset($homeLibrary)){
 		$interface->assign('homeLibrary', $homeLibrary->displayName);
 	}
+	$interface->assign('hasInterlibraryLoanConnection', UserAccount::getUserHasInterLibraryLoan());
 	$timer->logTime('Load patron pType');
 }else{
 	$interface->assign('pType', 'logged out');
@@ -894,6 +895,13 @@ function aspen_autoloader($class) {
 		    return;
         }
 	}
+	// Don't get involved if we're being called for a SimpleSAML method
+	if (
+		substr($class, 0, 10) == 'SimpleSAML' ||
+		substr($class, 0, 6) == 'sspmod'
+	) {
+        return;
+	}
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
 	}
@@ -1133,6 +1141,7 @@ function initializeSession(){
     require_once $sessionClass;
 	if (class_exists($session_type)) {
 		/** @var SessionInterface $session */
+		session_name('aspen_session');
 		$session = new $session_type();
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}

@@ -19,6 +19,7 @@ class UserPayment extends DataObject
 	public $totalPaid;
 	public $transactionDate;
 	public $transactionType;
+	public $aciToken;
 
 	public static function getObjectStructure(){
 		return [
@@ -121,7 +122,7 @@ class UserPayment extends DataObject
 								$finePaymentCompleted = $user->completeFinePayment($userPayment);
 								if ($finePaymentCompleted['success']) {
 									$success = true;
-									$message = 'Your payment has been completed. ';
+									$message = translate(['text'=>'Your payment has been completed. ','isPublicFacing'=>true]);
 									$userPayment->message .= "Payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
 								} else {
 									$userPayment->error = true;
@@ -170,7 +171,7 @@ class UserPayment extends DataObject
 		if ($userPayment->find(true)){
 			if ($userPayment->completed == true){
 				$success = true;
-				$message = 'Your payment has been completed.';
+				$message = translate(['text'=>'Your payment has been completed. ','isPublicFacing'=>true]);
 			}else{
 				$user = new User();
 				$user->id = $userPayment->userId;
@@ -240,7 +241,7 @@ class UserPayment extends DataObject
 										$finePaymentCompleted = $user->completeFinePayment($userPayment);
 										if ($finePaymentCompleted['success']) {
 											$success = true;
-											$message = 'Your payment has been completed. ';
+											$message = translate(['text'=>'Your payment has been completed. ','isPublicFacing'=>true]);
 											$authCode = $jsonResponse->HostedTransaction->AuthCode;
 											$netAmt = $jsonResponse->HostedTransaction->NetAmt;
 											$transactionId = $jsonResponse->HostedTransaction->TransactionId;
@@ -339,7 +340,7 @@ class UserPayment extends DataObject
 							$finePaymentCompleted = $user->completeFinePayment($userPayment);
 							if ($finePaymentCompleted['success']) {
 								$success = true;
-								$message = 'Your payment has been completed. ';
+								$message = translate(['text'=>'Your payment has been completed. ','isPublicFacing'=>true]);
 								$userPayment->message .= "Payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
 							} else {
 								$userPayment->error = true;
@@ -412,7 +413,7 @@ class UserPayment extends DataObject
 							$finePaymentCompleted = $user->completeFinePayment($userPayment);
 							if ($finePaymentCompleted['success']) {
 								$success = true;
-								$message = 'Your payment has been completed. ';
+								$message = translate(['text'=>'Your payment has been completed. ','isPublicFacing'=>true]);
 								$userPayment->message .= "Payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId ";
 							} else {
 								$userPayment->error = true;
