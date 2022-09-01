@@ -367,7 +367,7 @@ class UserAccount
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
 					$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
-					if (UserAccount::isUserMasquerading() || $_SESSION['loggedInViaSSO']){
+					if (UserAccount::isUserMasquerading() || !empty($_SESSION['loggedInViaSSO'])){
 						return $userData;
 					}else {
 						$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);

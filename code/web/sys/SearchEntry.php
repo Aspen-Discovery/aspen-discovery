@@ -15,6 +15,7 @@ class SearchEntry extends DataObject
 	public $searchUrl;
 	public $title;
 	public $hasNewResults;
+	public $lastUpdated;
 
 	public function getNumericColumnNames(): array
 	{

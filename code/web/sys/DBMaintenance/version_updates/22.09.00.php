@@ -14,25 +14,25 @@ function getUpdates22_09_00() : array
 			'title' => 'SSO - Library config options',
 			'description' => 'Allow SSO configuration options to be specified',
 			'sql' => [
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoName VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoXmlUrl VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoUniqueAttribute VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoMetadataFilename VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoIdAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoUsernameAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoFirstnameAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoLastnameAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoEmailAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoDisplayNameAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoPhoneAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoPatronTypeAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoPatronTypeFallback VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoAddressAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoCityAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoLibraryIdAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoLibraryIdFallback VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoCategoryIdAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column IF NOT EXISTS ssoCategoryIdFallback VARCHAR(255)"
+				"ALTER TABLE library ADD column ssoName VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoXmlUrl VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoUniqueAttribute VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoMetadataFilename VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoUsernameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoFirstnameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoLastnameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoEmailAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoDisplayNameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoPhoneAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoPatronTypeAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoPatronTypeFallback VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoAddressAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoCityAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoLibraryIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoLibraryIdFallback VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoCategoryIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column ssoCategoryIdFallback VARCHAR(255)"
             ]
 		], //add_library_sso_config_options
 		'vdx_hold_groups' => [
@@ -318,10 +318,38 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE user_payments ADD COLUMN aciToken VARCHAR(255) default NULL",
 			]
 		], //add_aci_token_payment
+		'add_lastUpdated_search' => [
+			'title' => 'Add lastUpdated to search',
+			'description' => 'Add lastUpdated to search',
+			'sql' => [
+				"ALTER TABLE search ADD COLUMN lastUpdated date",
+			]
+		], //add_lastUpdated_search
 
 		//kodi
 
 		//other
+		'hide_subject_facet_permission' => [
+			'title' => 'Add permission for Hide Subject Facets',
+			'description' => 'Add permission for Hide Subject Facets',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Hide Subject Facets', '', 85, 'Controls if the user can hide subject facets.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Hide Subject Facets'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='cataloging'), (SELECT id from permissions where name='Hide Subject Facets'))"
+			]
+		], // hide_subject_facets_permission
+		'hide_subject_facets' => [
+			'title' => 'Add subjects to exclude from subject facet',
+			'description' => 'Add subjects to exclude from subject, era, genre, region, and topic facets',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS hide_subject_facets (
+                            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            subjectTerm VARCHAR(512) NOT NULL UNIQUE,
+                            subjectNormalized VARCHAR(512) NOT NULL UNIQUE,
+                            dateAdded INT(11)
+                        ) ENGINE INNODB',
+			],
+		], // hide_subject_facets
 	];
 }
 

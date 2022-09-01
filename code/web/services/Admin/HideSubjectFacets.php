@@ -12,7 +12,7 @@ class Admin_HideSubjectFacets extends ObjectEditor
 		return 'HideSubjectFacets';
 	}
 	function getPageTitle() : string{
-		return 'Hide Subject Facets';
+		return 'Hidden Subjects';
 	}
 	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new HideSubjectFacet();
@@ -48,7 +48,7 @@ class Admin_HideSubjectFacets extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
-		$breadcrumbs[] = new Breadcrumb('/Admin/HideSubjectFacets', 'Hide Subject Facets');
+		$breadcrumbs[] = new Breadcrumb('/Admin/HideSubjectFacets', 'Hidden Subjects');
 		return $breadcrumbs;
 	}
 

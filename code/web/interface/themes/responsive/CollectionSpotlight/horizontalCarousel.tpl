@@ -15,7 +15,7 @@
 	<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" isPublicFacing=true inAttribute=true}"><i class="fas fa-caret-right"></i></a>
 
 	{if $showViewMoreLink}
-		<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
+		<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}{if $showViewMoreListTitle} {translate text="$showViewMoreListTitle" isPublicFacing=true}{/if}</a></div>
 	{/if}
 </div>
 <script type="text/javascript">
