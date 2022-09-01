@@ -9,6 +9,7 @@ class ExpoNotification extends DataObject
 	private $expoCurlWrapper;
 
 	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType){
+		global $logger;
 		//https://docs.expo.dev/push-notifications/sending-notifications
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/send";
@@ -21,7 +22,9 @@ class ExpoNotification extends DataObject
 			'Authorization: Bearer ' . $bearerAuthToken
 		);
 		$this->expoCurlWrapper->addCustomHeaders($headers, true);
+		$logger->log("Sending notification to Expo servers", Logger::LOG_ERROR);
 		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
+		$logger->log("Expo server response code " . $this->expoCurlWrapper->getResponseCode(), Logger::LOG_ERROR);
 		if ($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
@@ -102,6 +105,8 @@ class ExpoNotification extends DataObject
 				$token = $data['token'];
 			}
 		}
+		global $logger;
+		$logger->log("Expo notification access token from greenhouse: " . $token, Logger::LOG_ERROR);
 		return $token;
 	}
 }

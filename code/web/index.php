@@ -895,6 +895,13 @@ function aspen_autoloader($class) {
 		    return;
         }
 	}
+	// Don't get involved if we're being called for a SimpleSAML method
+	if (
+		substr($class, 0, 10) == 'SimpleSAML' ||
+		substr($class, 0, 6) == 'sspmod'
+	) {
+        return;
+	}
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
 	}
@@ -1134,6 +1141,7 @@ function initializeSession(){
     require_once $sessionClass;
 	if (class_exists($session_type)) {
 		/** @var SessionInterface $session */
+		session_name('aspen_session');
 		$session = new $session_type();
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}

@@ -22,14 +22,16 @@
 		{if (!isset($canSave) || ($canSave == true))}
 			{* Show Recaptcha spam control if set. *}
 			{if !empty($captcha)}
-			<div class="form-group">
-				{$captcha}
-			</div>
+				<div class="form-group">
+					{$captcha}
+				</div>
 			{/if}
 
-			<div class="form-group" id="FloatingSave">
-				<button type="submit" name="submitStay" class="btn btn-primary"><i class="fas fa-save fa-2x"></i></button>
-			</div>
+			{if empty($saveButtonText)}
+				<div class="form-group" id="FloatingSave">
+					<button type="submit" name="submitStay" class="btn btn-primary"><i class="fas fa-save fa-2x"></i></button>
+				</div>
+			{/if}
 
 			<div class="form-group">
 				{if $saveButtonText}

@@ -228,7 +228,8 @@ class VdxDriver
 		$newRequest = new VdxRequest();
 		$newRequest->userId = $user->id;
 		$newRequest->datePlaced = time();
-		$newRequest->title = strip_tags($requestFields['title']);
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$newRequest->title = StringUtils::removeTrailingPunctuation(strip_tags($requestFields['title']));
 		$newRequest->author = strip_tags($requestFields['author']);
 		$newRequest->publisher = strip_tags($requestFields['publisher']);
 		$newRequest->isbn = strip_tags($requestFields['isbn']);

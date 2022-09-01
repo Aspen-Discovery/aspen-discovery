@@ -9,7 +9,32 @@ function getUpdates22_09_00() : array
 			'sql' => [
 				''
 			]
-		], //sample*/
+        ], //sample*/
+        'add_library_sso_config_options' => [
+			'title' => 'SSO - Library config options',
+			'description' => 'Allow SSO configuration options to be specified',
+			'sql' => [
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoName VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoXmlUrl VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoUniqueAttribute VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoMetadataFilename VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoUsernameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoFirstnameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoLastnameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoEmailAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoDisplayNameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoPhoneAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoPatronTypeAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoPatronTypeFallback VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoAddressAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoCityAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoLibraryIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoLibraryIdFallback VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoCategoryIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoCategoryIdFallback VARCHAR(255)"
+            ]
+		], //add_library_sso_config_options
 		'vdx_hold_groups' => [
 			'title' => 'VDX Hold Group setup',
 			'description' => 'Add the ability to add VDX Hold Groups to the site',
@@ -257,8 +282,42 @@ function getUpdates22_09_00() : array
 		], //add_additional_format_pickup_options
 
 		//mark
+		'symphony_self_registration_profile' => [
+			'title' => 'Add Self Registration Profile for Symphony',
+			'description' => 'Add Self Registration Profile for Symphony',
+			'sql' => [
+				"alter table library ADD COLUMN selfRegistrationUserProfile VARCHAR(20) DEFAULT 'SELFREG'",
+			]
+		], //symphony_self_registration_profile
 
 		//kirstien
+		'aci_speedpay_settings' => [
+			'title' => 'Add settings for ACI Speedpay',
+			'description' => 'Add settings for ACI Speedpay integration',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS aci_speedpay_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) UNIQUE,
+					sandboxMode TINYINT(1) DEFAULT 0,
+					clientId VARCHAR(100),
+					clientSecret VARCHAR(100),
+					apiAuthKey VARCHAR(100),
+					billerId VARCHAR(100),
+					billerAccountId VARCHAR(100)
+				) ENGINE INNODB",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer ACI Speedpay', '', 10, 'Controls if the user can change ACI Speedpay settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer ACI Speedpay'))",
+				"ALTER TABLE library ADD COLUMN aciSpeedpaySettingId INT(11) DEFAULT -1"
+			),
+		], //aci_speedpay_settings
+		'add_aci_token_payment' => [
+			'title' => 'Add aciToken to user_payments',
+			'description' => 'Add aciToken to user_payments',
+			'sql' => [
+				"ALTER TABLE user_payments ADD COLUMN aciToken VARCHAR(255) default NULL",
+			]
+		], //add_aci_token_payment
 
 		//kodi
 

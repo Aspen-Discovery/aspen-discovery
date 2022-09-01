@@ -52,6 +52,8 @@ systemctl start rngd
 
 apt install -y python-certbot-apache
 
+bash ./samlsso_installer_debian.sh
+
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
 mysql_secure_installation
 echo "Enter the timezone of the server"

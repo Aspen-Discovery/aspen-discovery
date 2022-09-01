@@ -40,7 +40,7 @@ class Koha extends AbstractIlsDriver
 		];
 		//Load required fields from Koha here to make sure we don't wipe them out
 		/** @noinspection SqlResolve */
-		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$address = '';
 		$city = '';
@@ -123,7 +123,7 @@ class Koha extends AbstractIlsDriver
 				//Load required fields from Koha here to make sure we don't wipe them out
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
-				$sql = "SELECT address, city FROM borrowers where borrowernumber = '{$patron->username}'";
+				$sql = "SELECT address, city FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 				$results = mysqli_query($this->dbConnection, $sql);
 				$address = '';
 				$city = '';
@@ -367,7 +367,7 @@ class Koha extends AbstractIlsDriver
 		$opacRenewalAllowed = $this->getKohaSystemPreference('OpacRenewalAllowed');
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			$curCheckout = new Checkout();
@@ -381,9 +381,9 @@ class Koha extends AbstractIlsDriver
 			$curCheckout->barcode = $curRow['barcode'];
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
-			if ($recordDriver->isValid()){
+			if ($recordDriver->isValid()) {
 				$curCheckout->updateFromRecordDriver($recordDriver);
-			}else{
+			} else {
 				$curCheckout->title = $curRow['title'];
 				$curCheckout->author = $curRow['author'];
 			}
@@ -417,7 +417,7 @@ class Koha extends AbstractIlsDriver
 				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
 					try {
 						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-						$curCheckout->returnClaim = translate(['text'=>'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y'), 'isPublicFacing'=> true]);
+						$curCheckout->returnClaim = translate(['text' => 'Title marked as returned on %1%, but the library is still processing', 1 => date_format($claimsReturnedDate, 'M j, Y'), 'isPublicFacing' => true]);
 					} catch (Exception $e) {
 						global $logger;
 						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
@@ -441,7 +441,7 @@ class Koha extends AbstractIlsDriver
 			$curCheckout->renewCount = $curRow['renewals'];
 
 			/** @noinspection SqlResolve */
-			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = {$patron->username}";
+			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
 			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
 				$renewPref = $renewPrefRow['autorenew_checkouts'];
@@ -455,10 +455,10 @@ class Koha extends AbstractIlsDriver
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
 
-			if ($curCheckout->autoRenew == 1){
+			if ($curCheckout->autoRenew == 1) {
 				$autoRenewError = $curRow['auto_renew_error'];
 				if ($autoRenewError == 'null') {
-					$curCheckout->autoRenewError = translate(['text' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate,'isPublicFacing'=>true]);
+					$curCheckout->autoRenewError = translate(['text' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate, 'isPublicFacing' => true]);
 				}
 			}
 
@@ -476,7 +476,7 @@ class Koha extends AbstractIlsDriver
 //			}
 
 			$library = $patron->getHomeLibrary();
-			if($library->displayHoldsOnCheckout) {
+			if ($library->displayHoldsOnCheckout) {
 				$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
 				if ($allowRenewals['success'] == true) {
 					$curCheckout->canRenew = false;
@@ -497,20 +497,20 @@ class Koha extends AbstractIlsDriver
 
 					if ($curCheckout->autoRenew == 1) {
 						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
-								$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, too many renewals','isPublicFacing'=>true]);
+							$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, too many renewals', 'isPublicFacing' => true]);
 						}
 					} else if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
 						$curCheckout->canRenew = "0";
-						$curCheckout->renewError = translate(['text' => 'Renewed too many times','isPublicFacing'=>true]);
+						$curCheckout->renewError = translate(['text' => 'Renewed too many times', 'isPublicFacing' => true]);
 					}
 				}
 				$issuingRulesRS->close();
 			}
 
 			//Get the patron expiration date to check for active card
-			if ($curCheckout->autoRenew == 1){
+			if ($curCheckout->autoRenew == 1) {
 				/** @noinspection SqlResolve */
-				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = {$patron->username}";
+				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
 
 				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
@@ -518,7 +518,7 @@ class Koha extends AbstractIlsDriver
 					$today = date("Y-m-d");
 
 					if ($expirationDate < $today) {
-						$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired','isPublicFacing'=>true]);
+						$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired', 'isPublicFacing' => true]);
 					}
 				}
 			}
@@ -672,13 +672,13 @@ class Koha extends AbstractIlsDriver
 				}
 				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
 				/** @noinspection SqlResolve */
-				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
+				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 
 				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 				if ($lookupUserResult->num_rows > 0) {
 					$userExistsInDB = true;
 					$lookupUserRow = $lookupUserResult->fetch_assoc();
-					if (UserAccount::isUserMasquerading()) {
+					if (UserAccount::isUserMasquerading() || $validatedViaSSO) {
 						$patronId = $lookupUserRow['borrowernumber'];
 						$newUser = $this->loadPatronInfoFromDB($patronId, null);
 						if (!empty($newUser) && !($newUser instanceof AspenError)) {
@@ -691,7 +691,7 @@ class Koha extends AbstractIlsDriver
 								$patronId = $lookupUserRow['borrowernumber'];
 
 								/** @noinspection SqlResolve */
-								$sql = "SELECT password_expiration_date from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
+								$sql = "SELECT password_expiration_date from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 								$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
 								if ($passwordExpirationResult->num_rows > 0) {
 									$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
@@ -745,7 +745,7 @@ class Koha extends AbstractIlsDriver
 		global $logger;
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = $patronId";
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patronId) . "';";
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
@@ -1022,7 +1022,7 @@ class Koha extends AbstractIlsDriver
 		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
 		//So assume that it is on if we don't get a good response
 		/** @noinspection SqlResolve */
-		$sql = "select disable_reading_history from borrowers where borrowernumber = {$patron->username}";
+		$sql = "select disable_reading_history from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$historyEnabledRS = mysqli_query($this->dbConnection, $sql);
 		if ($historyEnabledRS) {
 			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
@@ -1050,14 +1050,14 @@ class Koha extends AbstractIlsDriver
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
-				WHERE borrowernumber={$patron->username}
+				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "'
 				UNION ALL
 				SELECT old_issues.*,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM old_issues
 				LEFT JOIN items on items.itemnumber=old_issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
-				WHERE borrowernumber={$patron->username}";
+				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 			$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
 			if ($readingHistoryTitleRS) {
 				while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
@@ -1113,6 +1113,7 @@ class Koha extends AbstractIlsDriver
 			$historyEntry['coverUrl'] = null;
 			if (!empty($historyEntry['recordId'])) {
 				if ($systemVariables->storeRecordDetailsInDatabase){
+					/** @noinspection SqlResolve */
 					$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
 								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
@@ -1562,7 +1563,7 @@ class Koha extends AbstractIlsDriver
 		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			//Each row in the table represents a hold
@@ -1772,7 +1773,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username} AND issues.itemnumber = {$itemId} limit 1";
+		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
 		$renewResults = mysqli_query($this->dbConnection, $renewSql);
 		$maxRenewals = 0;
 
@@ -1863,7 +1864,7 @@ class Koha extends AbstractIlsDriver
 
 		//Get a list of outstanding fees
 		/** @noinspection SqlResolve */
-		$query = "SELECT * FROM accountlines WHERE borrowernumber = {$patron->username} and amountoutstanding > 0 ORDER BY date DESC";
+		$query = "SELECT * FROM accountlines WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' and amountoutstanding > 0 ORDER BY date DESC";
 
 		$allFeesRS = mysqli_query($this->dbConnection, $query);
 
@@ -1915,7 +1916,7 @@ class Koha extends AbstractIlsDriver
 		$amountOutstanding = 0;
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$amountOutstandingRS = mysqli_query($this->dbConnection, "SELECT SUM(amountoutstanding) FROM accountlines where borrowernumber = {$patron->username}");
+		$amountOutstandingRS = mysqli_query($this->dbConnection, "SELECT SUM(amountoutstanding) FROM accountlines where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'");
 		if ($amountOutstandingRS) {
 			$amountOutstanding = $amountOutstandingRS->fetch_array();
 			$amountOutstanding = $amountOutstanding[0];
@@ -2570,6 +2571,8 @@ class Koha extends AbstractIlsDriver
 			}
 
 			$postFields = [];
+			$postFields = $this->setPostField($postFields, 'userid', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'cardnumber', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
@@ -2655,7 +2658,7 @@ class Koha extends AbstractIlsDriver
 			if (!empty($_REQUEST['borrower_email']) && $selfRegistrationEmailMustBeUnique == '1'){
 				$this->initDatabaseConnection();
 				/** @noinspection SqlResolve */
-				$sql = "SELECT * FROM borrowers where email = '{$_REQUEST['borrower_email']}';";
+				$sql = "SELECT * FROM borrowers where email = '" . mysqli_escape_string($this->dbConnection, $_REQUEST['borrower_email']) . "';";
 				$results = mysqli_query($this->dbConnection, $sql);
 				if ($results) {
 					$hasDuplicateEmail = false;
@@ -2722,6 +2725,8 @@ class Koha extends AbstractIlsDriver
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'userid', 'userid', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'cardnumber', 'cardnumber', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 
 			// Patron extended attributes
@@ -3044,7 +3049,7 @@ class Koha extends AbstractIlsDriver
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT count(*) as numRequests FROM suggestions where suggestedby = {$user->username}";
+		$sql = "SELECT count(*) as numRequests FROM suggestions where suggestedby = '" . mysqli_escape_string($this->dbConnection, $user->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($curRow = $results->fetch_assoc()) {
 			$numRequests = $curRow['numRequests'];
@@ -3125,7 +3130,7 @@ class Koha extends AbstractIlsDriver
 		} else {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
-			$sql = "SELECT * FROM suggestions where suggestedby = {$user->username}";
+			$sql = "SELECT * FROM suggestions where suggestedby = '" . mysqli_escape_string($this->dbConnection, $user->username) . "'";
 			$results = mysqli_query($this->dbConnection, $sql);
 			$allRequests = [];
 			while ($curRow = $results->fetch_assoc()) {
@@ -3252,7 +3257,7 @@ class Koha extends AbstractIlsDriver
 		$this->initDatabaseConnection();
 		//Set default values
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $user->username);
+		$sql = "SELECT * FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($curRow = $results->fetch_assoc()) {
 			foreach ($curRow as $property => $value) {
@@ -3267,7 +3272,7 @@ class Koha extends AbstractIlsDriver
 
 		//Set default values for extended patron attributes
 		if($this->getKohaVersion() > 21.05) {
-			$extendedAttributes = $this->getUsersExtendedAttributesFromKoha($user->borrower_borrowernumber);
+			$extendedAttributes = $this->getUsersExtendedAttributesFromKoha($user->username);
 			foreach ($extendedAttributes as $attribute) {
 				$objectProperty = 'borrower_attribute_' . $attribute['type'];
 				$user->$objectProperty = $attribute['value'];
@@ -3284,7 +3289,7 @@ class Koha extends AbstractIlsDriver
 		$user->patronId = $user->id;
 
 		$library = $user->getHomeLibrary();
-		if (!$library->allowProfileUpdates){
+		if (is_null($library) || !$library->allowProfileUpdates){
 			$interface->assign('canSave', false);
 			foreach ($patronUpdateFields as $fieldName => &$fieldValue){
 				if ($fieldValue['type'] == 'section'){
@@ -3462,7 +3467,7 @@ class Koha extends AbstractIlsDriver
 
 		//Get the lists for the user from the database
 		/** @noinspection SqlResolve */
-		$listSql = "SELECT * FROM virtualshelves where owner = {$patron->username}";
+		$listSql = "SELECT * FROM virtualshelves where owner = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$listResults = mysqli_query($this->dbConnection, $listSql);
 		while ($curList = $listResults->fetch_assoc()) {
 			$shelfNumber = $curList['shelfnumber'];
@@ -3550,7 +3555,7 @@ class Koha extends AbstractIlsDriver
 
 		//Get number of items checked out
 		/** @noinspection SqlResolve */
-		$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+		$checkedOutItemsRS = mysqli_query($this->dbConnection, "SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'", MYSQLI_USE_RESULT);
 		if ($checkedOutItemsRS) {
 			$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
 			$summary->numCheckedOut = (int)$checkedOutItems['numCheckouts'];
@@ -3559,7 +3564,7 @@ class Koha extends AbstractIlsDriver
 
 		$now = date('Y-m-d H:i:s');
 		/** @noinspection SqlResolve */
-		$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+		$overdueItemsRS = mysqli_query($this->dbConnection, "SELECT count(*) as numOverdue FROM issues WHERE date_due < '" . $now . "' AND borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'", MYSQLI_USE_RESULT);
 		if ($overdueItemsRS) {
 			$overdueItems = $overdueItemsRS->fetch_assoc();
 			$summary->numOverdue = (int)$overdueItems['numOverdue'];
@@ -3570,7 +3575,7 @@ class Koha extends AbstractIlsDriver
 		//Get number of available holds
 		if ($library->availableHoldDelay > 0){
 			/** @noinspection SqlResolve */
-			$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+			$holdsRS = mysqli_query($this->dbConnection, "SELECT waitingdate, found FROM reserves WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'", MYSQLI_USE_RESULT);
 			if ($holdsRS) {
 				while ($curRow = $holdsRS->fetch_assoc()) {
 					if ($curRow['found'] !== 'W'){
@@ -3588,7 +3593,7 @@ class Koha extends AbstractIlsDriver
 			}
 		}else{
 			/** @noinspection SqlResolve */
-			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+			$availableHoldsRS = mysqli_query($this->dbConnection, "SELECT count(*) as numHolds FROM reserves WHERE found = 'W' and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'", MYSQLI_USE_RESULT);
 			if ($availableHoldsRS) {
 				$availableHolds = $availableHoldsRS->fetch_assoc();
 				$summary->numAvailableHolds = (int)$availableHolds['numHolds'];
@@ -3598,7 +3603,7 @@ class Koha extends AbstractIlsDriver
 
 			//Get number of unavailable
 			/** @noinspection SqlResolve */
-			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+			$waitingHoldsRS = mysqli_query($this->dbConnection, "SELECT count(*) as numHolds FROM reserves WHERE (found <> 'W' or found is null) and borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'", MYSQLI_USE_RESULT);
 			if ($waitingHoldsRS) {
 				$waitingHolds = $waitingHoldsRS->fetch_assoc();
 				$summary->numUnavailableHolds = (int)$waitingHolds['numHolds'];
@@ -3614,7 +3619,7 @@ class Koha extends AbstractIlsDriver
 
 		//Get expiration information
 		/** @noinspection SqlResolve */
-		$lookupUserQuery = "SELECT dateexpiry from borrowers where borrowernumber = {$patron->username}";
+		$lookupUserQuery = "SELECT dateexpiry from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$lookupUserResult = mysqli_query($this->dbConnection, $lookupUserQuery, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
@@ -3756,7 +3761,7 @@ class Koha extends AbstractIlsDriver
 		$interface->assign('enablePhoneMessaging', $enablePhoneMessaging);
 
 		/** @noinspection SqlResolve */
-		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$patron->username}";
+		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$borrowerRS = mysqli_query($this->dbConnection, $borrowerSql);
 		if ($borrowerRow = $borrowerRS->fetch_assoc()) {
 			$interface->assign('smsAlertNumber', $borrowerRow['smsalertnumber']);
@@ -3828,7 +3833,7 @@ class Koha extends AbstractIlsDriver
 			FROM   borrower_message_preferences
 			LEFT JOIN borrower_message_transport_preferences
 			ON     borrower_message_transport_preferences.borrower_message_preference_id = borrower_message_preferences.borrower_message_preference_id
-			WHERE  borrower_message_preferences.borrowernumber = {$patron->username}";
+			WHERE  borrower_message_preferences.borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$userMessagingSettingsRS = mysqli_query($this->dbConnection, $userMessagingSettingsSql);
 		while ($userMessagingSetting = $userMessagingSettingsRS->fetch_assoc()) {
 			$messageType = $userMessagingSetting['message_attribute_id'];
@@ -3851,7 +3856,7 @@ class Koha extends AbstractIlsDriver
 		$interface->assign('validNoticeDays', $validNoticeDays);
 
 		$library = $patron->getHomeLibrary();
-		if ($library->allowProfileUpdates){
+		if ($library != null && $library->allowProfileUpdates){
 			$interface->assign('canSave', true);
 		}else{
 			$interface->assign('canSave', false);
@@ -4025,7 +4030,7 @@ class Koha extends AbstractIlsDriver
 						}
 					} else {
 						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
-						$logger->log("Error updating payment withiin Koha response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
+						$logger->log("Error updating payment within Koha response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
 					}
 					$allPaymentsSucceed = false;
 				}
@@ -4061,11 +4066,9 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if ($allPaymentsSucceed){
-				$result = [
-					'success' => true,
-					'message' => 'Your fines have been paid successfully, thank you.'
-				];
-			}
+				$result['success'] = true;
+                $result['message'] = translate(['text' => 'Your fines have been paid successfully, thank you.', 'isPublicFacing'=>true]);
+            }
 		}
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $result;
@@ -4161,7 +4164,7 @@ class Koha extends AbstractIlsDriver
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT autorenew_checkouts FROM borrowers where borrowernumber = {$patron->username}";
+		$sql = "SELECT autorenew_checkouts FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$autoRenewEnabled = false;
 		if ($results !== false) {
@@ -4183,7 +4186,7 @@ class Koha extends AbstractIlsDriver
 		//Load required fields from Koha here to make sure we don't wipe them out
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$address = '';
 		$city = '';
@@ -4381,6 +4384,7 @@ class Koha extends AbstractIlsDriver
 		/** @noinspection SqlResolve */
 		$borrowerAttributeTypesSQL = "SELECT * FROM borrower_attribute_types where opac_display = '1' AND opac_editable = '1' order by code";
 		$borrowerAttributeTypesRS = mysqli_query($this->dbConnection, $borrowerAttributeTypesSQL);
+		$extendedAttributes = [];
 
 		while ($curRow = $borrowerAttributeTypesRS->fetch_assoc()) {
 			/** @noinspection SqlResolve */
@@ -4571,7 +4575,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT userId from borrowers where borrowernumber = {$user->username}";
+		$sql = "SELECT userId from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($results !== false) {
 			if ($curRow = $results->fetch_assoc()) {
@@ -4590,7 +4594,7 @@ class Koha extends AbstractIlsDriver
 		$this->initDatabaseConnection();
 		//Check to see if the username is already in use
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM borrowers where userId = '{$username}' and borrowernumber != {$patron->username}";
+		$sql = "SELECT * FROM borrowers where userId = '" . mysqli_escape_string($this->dbConnection, $username) . "' and borrowernumber != '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($results !== false) {
 			if ($results->fetch_assoc()){
@@ -4602,7 +4606,7 @@ class Koha extends AbstractIlsDriver
 		}
 		//Load required fields from Koha here to make sure we don't wipe them out
 		/** @noinspection SqlResolve */
-		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$address = '';
 		$city = '';
@@ -4681,7 +4685,7 @@ class Koha extends AbstractIlsDriver
 		if ($library->showBorrowerMessages) {
 			//Check to see if the username is already in use
 			/** @noinspection SqlResolve */
-			$sql = "SELECT message FROM messages where borrowernumber = {$user->username} and message_type='B'";
+			$sql = "SELECT message FROM messages where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->username) . "' and message_type='B'";
 			$results = mysqli_query($this->dbConnection, $sql);
 			if ($results !== false) {
 				while ($curRow = $results->fetch_assoc()) {
@@ -4694,7 +4698,7 @@ class Koha extends AbstractIlsDriver
 		}
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT debarred, debarredcomment, opacnote FROM borrowers where borrowernumber = {$user->username}";
+		$sql = "SELECT debarred, debarredcomment, opacnote FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $user->username) . "'";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($results !== false) {
 			if ($curRow = $results->fetch_assoc()) {
@@ -5122,6 +5126,7 @@ class Koha extends AbstractIlsDriver
 		$this->initDatabaseConnection();
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 		$escapedBarcode = mysqli_escape_string($this->dbConnection, $user->cat_username);
+		/** @noinspection SqlResolve */
 		$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$escapedBarcode' OR userId = '$escapedBarcode'";
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 		if ($lookupUserResult->num_rows > 0) {
@@ -5168,5 +5173,50 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		return $result;
+	}
+
+	/*
+		Map from the property names required for self registration to
+		the IdP property names returned from SAML2Authentication
+	*/
+	public function lmsToSso() {
+		return [
+			'userid' => [
+				'primary' => 'ssoUniqueAttribute'
+			],
+			'cardnumber' => [
+				'primary' => 'ssoUniqueAttribute'
+			],
+			'borrower_firstname' => [
+				'primary' => 'ssoFirstnameAttr',
+				'fallback' => ''
+			],
+			'borrower_surname' => [
+				'primary' => 'ssoLastnameAttr',
+				'fallback' => ''
+			],
+			'borrower_address' => [
+				'primary' => 'ssoAddressAttr',
+				'fallback' => ''
+			],
+			'borrower_city' => [
+				'primary' => 'ssoCityAttr',
+				'fallback' => ''
+			],
+			'borrower_email' => [
+				'primary' => 'ssoEmailAttr'
+			],
+			'borrower_phone' => [
+				'primary' => 'ssoPhoneAttr'
+			],
+			'borrower_branchcode' => [
+				'primary' => 'ssoLibraryIdAttr',
+				'fallback' => 'ssoLibraryIdFallback'
+			],
+			'category_id' => [
+				'primary' => 'ssoCategoryIdAttr',
+				'fallback' => 'ssoCategoryIdFallback'
+			]
+		];
 	}
 }

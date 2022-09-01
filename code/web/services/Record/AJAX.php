@@ -49,10 +49,9 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getVdxRequestForm()
+	function getVdxRequestForm() : array
 	{
 		global $interface;
-		global $library;
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
 			$id = $_REQUEST['id'];
@@ -116,7 +115,8 @@ class Record_AJAX extends Action
 		return $results;
 	}
 
-	function submitVdxRequest(){
+	/** @noinspection PhpUnused */
+	function submitVdxRequest() : array{
 		if (UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';

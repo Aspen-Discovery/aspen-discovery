@@ -64,7 +64,6 @@ class ExtractOverDriveInfo {
 	private PreparedStatement clearIdentifiersStmt;
 	private PreparedStatement addIdentifierStmt;
 	private PreparedStatement getExistingAvailabilityForProductStmt;
-	private PreparedStatement addAvailabilityStmt;
 	private PreparedStatement deleteAvailabilityStmt;
 	private PreparedStatement deleteAvailabilityForSettingStmt;
 	private PreparedStatement updateProductAvailabilityStmt;
@@ -226,7 +225,7 @@ class ExtractOverDriveInfo {
 										groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
 									}
 									if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-										//Metadata didn't change so we need to load from the database
+										//Metadata didn't change, so we need to load from the database
 										if (groupedWorkId == null) {
 											groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
 										}
@@ -249,7 +248,7 @@ class ExtractOverDriveInfo {
 
 					if (checkForDeletedRecords) {
 						//Remove any records that no longer exist
-						//There is currently an issue with OverDrive Search APIs that cause all records to not be returned
+						//There is currently an issue with OverDrive Search APIs that cause all records to not be returned,
 						//so we will avoid deleting records if we are deleting more than 500 records or 5% of the collection
 						int totalRecordsToDelete = 0;
 						getNumDeletedProductsStmt.setLong(1, settings.getId());
@@ -681,28 +680,6 @@ class ExtractOverDriveInfo {
 			String newProductsUrl = "https://api.overdrive.com/v1/collections/" + collectionInfo.getCollectionToken() + "/products/?daysSinceAdded=" + daysToLoad;
 			loadProductsFromUrl(collectionInfo, newProductsUrl, LOAD_NEW_PRODUCTS, startTime);
 		}
-
-//		WebServiceResponse newProductsResponse = callOverDriveURL("overdriveExtract.loadProducts", newProductsUrl);
-//		if (newProductsResponse.getResponseCode() == 200) {
-//			JSONObject productInfo = newProductsResponse.getJSONResponse();
-//			if (productInfo == null) {
-//				return;
-//			}
-//			long numProducts = productInfo.getLong("totalItems");
-//			for (int i = 0; i < numProducts; i += batchSize) {
-//				String newProductsBatchUrl = newProductsUrl + "&offset=" + i;
-//				int maxTries = Math.max(1, settings.getNumRetriesOnError() + 1);
-//				for (int tries = 0; tries < maxTries; tries++){
-//
-//				}
-//			}
-//		}
-//		for (int i = 0; i < numProducts; i += batchSize) {
-//			WebServiceResponse newProductsResponse = callOverDriveURL("overdriveExtract.loadProducts", newProductsUrl);
-//			if (newProductsResponse.getResponseCode() == 200 && newProductsResponse.getMessage() != null) {
-//
-//			}
-//		}
 	}
 
 	private final int LOAD_ALL_PRODUCTS = 0;
@@ -882,11 +859,11 @@ class ExtractOverDriveInfo {
 	}
 
 	/**
-	 * Get all products that are currently in OverDrive so we can determine what needs to be deleted.
+	 * Get all products that are currently in OverDrive, so we can determine what needs to be deleted.
 	 * We just get minimal information to start, the id and the list of collections that the product is valid for.
 	 *
 	 * @return boolean whether errors occurred
-	 * @throws SocketTimeoutException Error if we timeout getting data
+	 * @throws SocketTimeoutException Error if we get a timeout retrieving data
 	 */
 	private boolean loadAccountInformationFromAPI() throws SocketTimeoutException {
 		WebServiceResponse libraryInfoResponse = callOverDriveURL("overdriveExtract.loadLibraryAccount", "https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
@@ -1096,7 +1073,7 @@ class ExtractOverDriveInfo {
 		//Check to see if we need to load metadata
 		long curTime = new Date().getTime() / 1000;
 
-		//Get the url to call for meta data information (based on the first owning collection)
+		//Get the url to call for metadata information (based on the first owning collection)
 		AdvantageCollectionInfo collectionInfo = overDriveInfo.getCollections().iterator().next();
 		String apiKey = collectionInfo.getCollectionToken();
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
@@ -1405,7 +1382,7 @@ class ExtractOverDriveInfo {
 				//404 is a message that availability has been deleted.
 				if (availabilityResponse.getResponseCode() == 404) {
 					//Add a note and skip to the next collection, in reality, this is probably deleted,
-					//but Nashville was having issues with 404s coming incorrectly so we can just keep retrying
+					//but Nashville was having issues with 404s coming incorrectly, so we can just keep retrying
 					//No longer needed for logging
 					//logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
 				} else if (availabilityResponse.getResponseCode() != 200) {
@@ -1610,7 +1587,7 @@ class ExtractOverDriveInfo {
 			}
 		}
 		//If we got here, everything is good
-		return false;
+		return errorsEncountered[0];
 	}
 
 	private WebServiceResponse callOverDriveURL(String requestType, String overdriveUrl, boolean logFailures) throws SocketTimeoutException {
@@ -1773,7 +1750,6 @@ class ExtractOverDriveInfo {
 			clearIdentifiersStmt.close();
 			addIdentifierStmt.close();
 			getExistingAvailabilityForProductStmt.close();
-			addAvailabilityStmt.close();
 			deleteAvailabilityStmt.close();
 			updateProductAvailabilityStmt.close();
 		} catch (SQLException e) {

@@ -2346,7 +2346,7 @@ class User extends DataObject
 	{
 		if ($this->hasIlsConnection()) {
 			$homeLibrary = $this->getHomeLibrary();
-			if ($homeLibrary->allowUsernameUpdates) {
+			if ($homeLibrary != null && $homeLibrary->allowUsernameUpdates) {
 				return $this->getCatalogDriver()->hasEditableUsername();
 			}
 		}
@@ -2483,6 +2483,8 @@ class User extends DataObject
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
+        $sections['cataloging']->addAction(new AdminAction('Hide Subject Facets', 'Edit subjects to be excluded from the Subjects facet.', '/Admin/HideSubjectFacets'), 'Hide Subject Facets');
+
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
@@ -2524,7 +2526,7 @@ class User extends DataObject
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
 		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
-		$sections['ecommerce']->addAction(new AdminAction('ACI Speedway Settings', 'Define Settings for ACI Speedway.', '/Admin/ACISpeedwaySettings'), 'Administer ACI Speedway');
+		$sections['ecommerce']->addAction(new AdminAction('ACI Speedpay Settings', 'Define Settings for ACI Speedpay.', '/Admin/ACISpeedpaySettings'), 'Administer ACI Speedpay');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
@@ -2951,12 +2953,14 @@ class User extends DataObject
 
 	public function canReceiveNotifications($user): bool
 	{
+		global $logger;
 		$userLibrary = Library::getPatronHomeLibrary($user);
 		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 		$settings = new NotificationSetting();
 		$settings->id = $userLibrary->lidaNotificationSettingId;
 		if($settings->find(true)) {
 			if($settings->sendTo == 2 || $settings->sendTo == '2') {
+				$logger->log("Sending notifications to all patron types", Logger::LOG_ERROR);
 				return true;
 			} elseif($settings->sendTo == 1 || $settings->sendTo == '1') {
 				$isStaff = 0;
@@ -2967,10 +2971,12 @@ class User extends DataObject
 					$isStaff = $patronType->isStaff;
 				}
 				if($isStaff == 1 || $isStaff == '1') {
+					$logger->log("Sending notifications to only staff", Logger::LOG_ERROR);
 					return true;
 				}
 			}
 		}
+		$logger->log("Unable to find notification settings", Logger::LOG_ERROR);
 		return false;
 	}
 

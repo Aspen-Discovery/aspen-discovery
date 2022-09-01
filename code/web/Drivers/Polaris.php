@@ -1457,11 +1457,9 @@ class Polaris extends AbstractIlsDriver
 				$allPaymentsSucceed = false;
 			}
 		}
-		if ($allPaymentsSucceed){
-			$result = [
-				'success' => true,
-				'message' => 'Your fines have been paid successfully, thank you.'
-			];
+        if ($allPaymentsSucceed){
+            $result['success'] = true;
+            $result['message'] = translate(['text' => 'Your fines have been paid successfully, thank you.', 'isPublicFacing'=>true]);
 		}
 
 		global $logger;

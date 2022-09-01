@@ -252,9 +252,9 @@ var AspenDiscovery = (function(){
 		},
 
 		//// Quick Way to get a single URL parameter value (parameterName must be in the url query string)
-		//getQueryParameterValue: function (parameterName) {
-		//	return location.search.split(parameterName + '=')[1].split('&')[0]
-		//},
+		// getQueryParameterValue: function (parameterName) {
+		// 	return location.search.split(parameterName + '=')[1].split('&')[0];
+		// },
 
 		replaceQueryParam : function (param, newValue, search) {
 			if (typeof search == 'undefined') search = location.search;
