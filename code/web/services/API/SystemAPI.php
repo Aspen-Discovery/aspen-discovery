@@ -534,11 +534,14 @@ class SystemAPI extends Action
 				$fileName = $app->logoLogin;
 			} elseif ($type === "appIcon") {
 				$fileName = $app->logoAppIcon;
+			} elseif ($type === "appNotification") {
+				$fileName = $app->logoNotification;
 			} else {
 				die();
 			}
 
 			$fullPath = $dataPath . $fileName;
+			$extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
 			if ($file = @fopen($fullPath, 'r')) {
 				set_time_limit(300);
@@ -546,7 +549,11 @@ class SystemAPI extends Action
 
 				$size = intval(sprintf("%u", filesize($fullPath)));
 
-				header('Content-Type: image/png');
+				if($extension == 'svg'){
+					header('Content-Type: image/svg+xml');
+				} else {
+					header('Content-Type: image/png');
+				}
 				header('Content-Transfer-Encoding: binary');
 				header('Content-Length: ' . $size);
 
