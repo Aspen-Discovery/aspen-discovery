@@ -678,7 +678,7 @@ class Koha extends AbstractIlsDriver
 				if ($lookupUserResult->num_rows > 0) {
 					$userExistsInDB = true;
 					$lookupUserRow = $lookupUserResult->fetch_assoc();
-					if (UserAccount::isUserMasquerading()) {
+					if (UserAccount::isUserMasquerading() || $validatedViaSSO) {
 						$patronId = $lookupUserRow['borrowernumber'];
 						$newUser = $this->loadPatronInfoFromDB($patronId, null);
 						if (!empty($newUser) && !($newUser instanceof AspenError)) {
@@ -2571,6 +2571,8 @@ class Koha extends AbstractIlsDriver
 			}
 
 			$postFields = [];
+			$postFields = $this->setPostField($postFields, 'userid', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'cardnumber', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
 			$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
@@ -2723,6 +2725,8 @@ class Koha extends AbstractIlsDriver
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'userid', 'userid', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'cardnumber', 'cardnumber', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 
 			// Patron extended attributes
@@ -5169,5 +5173,50 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		return $result;
+	}
+
+	/*
+		Map from the property names required for self registration to
+		the IdP property names returned from SAML2Authentication
+	*/
+	public function lmsToSso() {
+		return [
+			'userid' => [
+				'primary' => 'ssoUniqueAttribute'
+			],
+			'cardnumber' => [
+				'primary' => 'ssoUniqueAttribute'
+			],
+			'borrower_firstname' => [
+				'primary' => 'ssoFirstnameAttr',
+				'fallback' => ''
+			],
+			'borrower_surname' => [
+				'primary' => 'ssoLastnameAttr',
+				'fallback' => ''
+			],
+			'borrower_address' => [
+				'primary' => 'ssoAddressAttr',
+				'fallback' => ''
+			],
+			'borrower_city' => [
+				'primary' => 'ssoCityAttr',
+				'fallback' => ''
+			],
+			'borrower_email' => [
+				'primary' => 'ssoEmailAttr'
+			],
+			'borrower_phone' => [
+				'primary' => 'ssoPhoneAttr'
+			],
+			'borrower_branchcode' => [
+				'primary' => 'ssoLibraryIdAttr',
+				'fallback' => 'ssoLibraryIdFallback'
+			],
+			'category_id' => [
+				'primary' => 'ssoCategoryIdAttr',
+				'fallback' => 'ssoCategoryIdFallback'
+			]
+		];
 	}
 }

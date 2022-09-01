@@ -9,7 +9,32 @@ function getUpdates22_09_00() : array
 			'sql' => [
 				''
 			]
-		], //sample*/
+        ], //sample*/
+        'add_library_sso_config_options' => [
+			'title' => 'SSO - Library config options',
+			'description' => 'Allow SSO configuration options to be specified',
+			'sql' => [
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoName VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoXmlUrl VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoUniqueAttribute VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoMetadataFilename VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoUsernameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoFirstnameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoLastnameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoEmailAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoDisplayNameAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoPhoneAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoPatronTypeAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoPatronTypeFallback VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoAddressAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoCityAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoLibraryIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoLibraryIdFallback VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoCategoryIdAttr VARCHAR(255)",
+				"ALTER TABLE library ADD column IF NOT EXISTS ssoCategoryIdFallback VARCHAR(255)"
+            ]
+		], //add_library_sso_config_options
 		'vdx_hold_groups' => [
 			'title' => 'VDX Hold Group setup',
 			'description' => 'Add the ability to add VDX Hold Groups to the site',
