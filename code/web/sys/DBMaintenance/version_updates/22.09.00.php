@@ -2,7 +2,8 @@
 /** @noinspection PhpUnused */
 function getUpdates22_09_00() : array
 {
-	return [
+    $curTime = time();
+    return [
 		/*'name' => [
 			'title' => '',
 			'description' => '',
@@ -334,6 +335,13 @@ function getUpdates22_09_00() : array
 		], //add_logoNotification
 
 		//kodi
+        'force_reindex_of_records_with_spaces' => [
+            'title' => 'Force records to reindex if there are spaces in the grouped work ID',
+            'description' => 'Force records to reindex if there are spaces in the grouped work ID',
+            'sql' => [
+                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id REGEXP '.*[\s]+$'",
+            ]
+        ], //force_reindex_of_records_with_spaces
 
 		//other
 		'hide_subject_facet_permission' => [
