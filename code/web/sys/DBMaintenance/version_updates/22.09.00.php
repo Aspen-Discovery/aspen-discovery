@@ -2,7 +2,8 @@
 /** @noinspection PhpUnused */
 function getUpdates22_09_00() : array
 {
-	return [
+    $curTime = time();
+    return [
 		/*'name' => [
 			'title' => '',
 			'description' => '',
@@ -325,8 +326,22 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE search ADD COLUMN lastUpdated date",
 			]
 		], //add_lastUpdated_search
+		'add_logoNotification' => [
+			'title' => 'Add notification logo for branded apps',
+			'description' => 'Add option to upload notification logo for branded apps - Android only',
+			'sql' => [
+				"ALTER TABLE aspen_lida_branded_settings ADD COLUMN logoNotification VARCHAR(100)",
+			]
+		], //add_logoNotification
 
 		//kodi
+        'force_reindex_of_records_with_spaces' => [
+            'title' => 'Force records to reindex if there are spaces in the grouped work ID',
+            'description' => 'Force records to reindex if there are spaces in the grouped work ID',
+            'sql' => [
+                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '% %'",
+            ]
+        ], //force_reindex_of_records_with_spaces
 
 		//other
 		'hide_subject_facet_permission' => [
