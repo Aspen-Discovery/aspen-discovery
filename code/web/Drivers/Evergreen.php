@@ -644,20 +644,25 @@ class Evergreen extends AbstractIlsDriver
 						$curHold->source = $this->getIndexingProfile()->name;
 
 						$curHold->sourceId = $holdInfo['id'];
-						//If the hold_type is P the target will be the part so we will need to lookup the bib record based on the part
-						if ($holdInfo['hold_type'] == 'P'){
+						//If the hold_type is P the target will be the part, so we will need to look up the bib record based on the part
+						if ($holdInfo['hold_type'] == 'P') {
 							require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 							$volumeInfo = new IlsVolumeInfo();
 							$volumeInfo->volumeId = $holdInfo['target'];
-							if ($volumeInfo->find(true)){
+							if ($volumeInfo->find(true)) {
 								$curHold->volume = $volumeInfo->displayLabel;
 								if (strpos($volumeInfo->recordId, ':') > 0) {
 									list (, $curHold->recordId) = explode(':', $volumeInfo->recordId);
-								}else{
+								} else {
 									$curHold->recordId = $volumeInfo->recordId;
 								}
 							}
+						}else if ($holdInfo['hold_type'] == 'C'){
+							//This is a copy level hold, need to look it up by the item number
+							$modsInfo = $this->getModsForCopy($holdInfo['target']);
+							$curHold->recordId = (string)$modsInfo['tcn'];
 						}else{
+							//Hold Type is T (Title
 							$curHold->recordId = $holdInfo['target'];
 						}
 						$curHold->cancelId = $holdInfo['id'];
@@ -699,7 +704,7 @@ class Evergreen extends AbstractIlsDriver
 						if ($recordDriver->isValid()){
 							$curHold->updateFromRecordDriver($recordDriver);
 						}else{
-							//Fetch title from supercat
+							//Fetch title from SuperCat
 							$titleInfo = $this->getBibFromSuperCat($curHold->recordId);
 						}
 
