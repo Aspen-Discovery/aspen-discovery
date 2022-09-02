@@ -339,7 +339,7 @@ function getUpdates22_09_00() : array
             'title' => 'Force records to reindex if there are spaces in the grouped work ID',
             'description' => 'Force records to reindex if there are spaces in the grouped work ID',
             'sql' => [
-                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id REGEXP '.*[\s]+$'",
+                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '% %'",
             ]
         ], //force_reindex_of_records_with_spaces
 
