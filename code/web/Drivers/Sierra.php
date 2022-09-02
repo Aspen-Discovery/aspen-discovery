@@ -1034,12 +1034,53 @@ class Sierra extends Millennium{
 
 	public function findNewUser($patronBarcode)
 	{
-		$patronId = $this->getPatronInfoByBarcode($patronBarcode);
+		$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
 
-		if (!$patronId){
+		if (!$patronInfo){
 			return false;
 		}
-		return parent::findNewUser($patronBarcode);
+
+		$userExistsInDB = false;
+		$user = new User();
+		$user->source = $this->accountProfile->name;
+		$user->username = $patronInfo->id;
+		if ($user->find(true)){
+			$userExistsInDB = true;
+		}
+		$user->cat_username = $patronBarcode;
+
+		$forceDisplayNameUpdate = false;
+		$primaryName = reset($patronInfo->names);
+		if (strpos($primaryName, ',') !== false){
+			list($firstName, $lastName) = explode(',', $primaryName, 2);
+		}else{
+			$lastName = $primaryName;
+			$firstName = '';
+		}
+		$firstName = trim($firstName);
+		$lastName = trim($lastName);
+		if ($user->firstname != $firstName) {
+			$user->firstname = $firstName;
+			$forceDisplayNameUpdate = true;
+		}
+		if ($user->lastname != $lastName) {
+			$user->lastname = isset($lastName) ? $lastName : '';
+			$forceDisplayNameUpdate = true;
+		}
+		if ($forceDisplayNameUpdate) {
+			$user->displayName = '';
+		}
+
+		$this->loadContactInformationFromApiResult($user, $patronInfo);
+
+		if ($userExistsInDB) {
+			$user->update();
+		} else {
+			$user->created = date('Y-m-d');
+			$user->insert();
+		}
+
+		return $user;
 	}
 
 	public function getAccountSummary(User $patron): AccountSummary
