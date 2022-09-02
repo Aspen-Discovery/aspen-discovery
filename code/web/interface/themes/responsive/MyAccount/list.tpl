@@ -133,7 +133,7 @@
 							</div>
 							{if $allowEdit}
 								<div class="btn-group btn-group-sm">
-									<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger listViewButton" onclick='return AspenDiscovery.Lists.deleteListAction();'>{translate text='Delete' isPublicFacing=true}</button>
+									<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger listViewButton" onclick='return AspenDiscovery.Lists.deleteListAction();'>{translate text='Delete List' isPublicFacing=true}</button>
 								</div>
 							{/if}
 						</div>

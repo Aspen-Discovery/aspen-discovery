@@ -34,7 +34,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		deleteListAction: function (){
-			if (confirm("Are you sure you want to delete this list?")){
+			if (confirm("Are you sure you want to delete this entire list?")){
 				this.submitListForm('deleteList');
 			}
 			return false;

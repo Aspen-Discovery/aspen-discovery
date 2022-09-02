@@ -901,7 +901,7 @@ public class RecordGroupingProcessor {
 				}
 			}
 		}
-		if (activeLanguage == null || activeLanguage.equals("|||") || activeLanguage.equals("   ")){
+		if (activeLanguage == null || activeLanguage.equals("|||") || activeLanguage.equals("   ") || activeLanguage.contains(" ")){
 			activeLanguage = "unk";
 		}
 		return activeLanguage;
