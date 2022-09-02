@@ -1562,7 +1562,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					recordInfo.addFormat(uniqueItemFormats.iterator().next());
 					recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
 					try {
-						if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().contains("Book")) {
+						if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().matches("^Book$")) {
 							LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
 							if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
 								String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
