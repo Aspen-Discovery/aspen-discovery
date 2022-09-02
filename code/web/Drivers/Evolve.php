@@ -454,7 +454,7 @@ class Evolve extends AbstractIlsDriver
 
 			$params = new stdClass();
 			$params->Token = $sessionInfo['accessToken'];
-			$params->CatalogItem  = str_replace('CA010', '', $recordId);
+			$params->CatalogItem  = $recordId;
 			$params->Action = "Create";
 			$postParams = json_encode($params);
 			//$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Location=' . $pickupBranch .  '|Action=Create';
