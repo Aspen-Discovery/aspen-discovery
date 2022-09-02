@@ -342,6 +342,13 @@ function getUpdates22_09_00() : array
                 "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '% %'",
             ]
         ], //force_reindex_of_records_with_spaces
+        'force_reindex_of_records_with_no_language' => [
+            'title' => 'Force records to reindex if there is no language and record ends with -',
+            'description' => 'Force records to reindex if there is no language and record ends with -',
+            'sql' => [
+                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '%-'",
+            ]
+        ], //force_reindex_of_records_with_no_language
 
 		//other
 		'hide_subject_facet_permission' => [
