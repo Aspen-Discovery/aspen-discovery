@@ -617,7 +617,7 @@ class SearchAPI extends Action
 			$jsonResults['facetSet'] = [];
 			foreach ($facetSet as $name => $facetInfo){
 				$jsonResults['facetSet'][$name] = [
-					'label' => $facetInfo['label']->displayName,
+					'label' => $facetInfo['label'],
 					'list' => $facetInfo['list'],
 					'hasApplied' => $facetInfo['hasApplied'],
 					'valuesToShow' => $facetInfo['valuesToShow'],
