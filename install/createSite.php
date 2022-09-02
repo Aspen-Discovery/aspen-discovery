@@ -391,6 +391,7 @@ echo($step++ . ") Login to the server as aspen_admin and run database updates\r\
 echo($step++ . ") Setup library(ies) within the admin interface\r\n");
 echo($step++ . ") Setup location(s) within the admin interface\r\n");
 echo($step++ . ") Start initial index\r\n");
+echo($step++ . ") Firewall Solr port to ensure that it is not accessible to the world\r\n");
 
 exit();
 
