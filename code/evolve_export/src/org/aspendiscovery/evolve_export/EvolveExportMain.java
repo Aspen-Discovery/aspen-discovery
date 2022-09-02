@@ -14,6 +14,7 @@ import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -287,29 +288,33 @@ public class EvolveExportMain {
 			WebServiceResponse changedHoldingsResponse = NetworkUtils.getURL(getChangedHoldingsUrl, logger);
 			if (changedHoldingsResponse.isSuccess()) {
 				String rawMessage = changedHoldingsResponse.getMessage();
-				rawMessage = rawMessage.replaceAll("u001e", "\u001e");
-				rawMessage = rawMessage.replaceAll("u001f", "\u001f");
-				rawMessage = rawMessage.replaceAll("u001d", "\u001d");
+				//rawMessage = rawMessage.replaceAll("u001e", "\u001e");
+				//rawMessage = rawMessage.replaceAll("u001f", "\u001f");
+				//rawMessage = rawMessage.replaceAll("u001d", "\u001d");
 
-				JSONArray responseAsArray = new JSONArray(rawMessage);
-				for (int i = 0; i < responseAsArray.length(); i++){
-					JSONObject curItem = responseAsArray.getJSONObject(i);
-					if (curItem.has("Status")){
-						//This really should be an error, but that would prevent incrementing the export date which will only make things worse.
-						logEntry.addNote(curItem.getString("Message"));
-						break;
-					}
+				try {
+					JSONArray responseAsArray = new JSONArray(rawMessage);
+					for (int i = 0; i < responseAsArray.length(); i++) {
+						JSONObject curItem = responseAsArray.getJSONObject(i);
+						if (curItem.has("Status") && curItem.has("Message")) {
+							//This really should be an error, but that would prevent incrementing the export date which will only make things worse.
+							logEntry.addNote(curItem.getString("Message"));
+							break;
+						}
 
-					String bibId = curItem.getString("ID");
-					//We can't get the Marc record for an individual MARC so we will load what we have and edit the correct item or insert it if we can't find it.
-					Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
-					if (marcRecord != null) {
-						logEntry.incRecordsRegrouped();
-						//Regroup the record
-						String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+						String bibId = curItem.getString("ID");
+						//We can't get the Marc record for an individual MARC so we will load what we have and edit the correct item or insert it if we can't find it.
+						Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
+						if (marcRecord != null) {
+							logEntry.incRecordsRegrouped();
+							//Regroup the record
+							String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+							//Reindex the record
+							getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+						}
 					}
+				}catch (JSONException e){
+					logEntry.incErrors("Unable to parse JSON for loading changed holdings", e);
 				}
 			}
 
@@ -319,96 +324,100 @@ public class EvolveExportMain {
 			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
 			if (getBibsResponse.isSuccess()) {
 				String rawMessage = getBibsResponse.getMessage();
-				rawMessage = rawMessage.replaceAll("u001e", "\u001e");
-				rawMessage = rawMessage.replaceAll("u001f", "\u001f");
-				rawMessage = rawMessage.replaceAll("u001d", "\u001d");
+				//rawMessage = rawMessage.replaceAll("u001e", "\u001e");
+				//rawMessage = rawMessage.replaceAll("u001f", "\u001f");
+				//rawMessage = rawMessage.replaceAll("u001d", "\u001d");
 
-				JSONArray responseAsArray = new JSONArray(rawMessage);
-				for (int i = 0; i < responseAsArray.length(); i++){
-					numProcessed++;
-					JSONObject curRow = responseAsArray.getJSONObject(i);
-					String rawMarc = curRow.getString("MARC");
-					try {
-						MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-						if (reader.hasNext()) //noinspection GrazieInspection
-						{
-							String bibId = curRow.getString("ID");
-							Record marcRecord = reader.next();
+				try {
+					JSONArray responseAsArray = new JSONArray(rawMessage);
+					for (int i = 0; i < responseAsArray.length(); i++) {
+						numProcessed++;
+						JSONObject curRow = responseAsArray.getJSONObject(i);
+						String rawMarc = curRow.getString("MARC");
+						try {
+							MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+							if (reader.hasNext()) //noinspection GrazieInspection
+							{
+								String bibId = curRow.getString("ID");
+								Record marcRecord = reader.next();
 
-							List<ControlField> controlFields = marcRecord.getControlFields();
-							ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
-							for (ControlField controlField : controlFieldsCopy){
-								if (controlField.getData().startsWith("\u001f")){
-									marcRecord.removeVariableField(controlField);
-									controlField.setData(controlField.getData().replaceAll("\u001f", ""));
-									marcRecord.addVariableField(controlField);
-								}
-							}
-							//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
-							DataField field950 = marcFactory.newDataField("950", ' ', ' ');
-							field950.addSubfield(marcFactory.newSubfield('a', bibId));
-							field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
-							marcRecord.addVariableField(field950);
-							//Also load holdings from the API
-							String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
-							WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
-							if (getHoldingsResponse.isSuccess()) {
-								JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
-								if (holdingsData != null) {
-									for (int j = 0; j < holdingsData.length(); j++) {
-										JSONObject holding = holdingsData.getJSONObject(j);
-										DataField field852 = marcFactory.newDataField("852", ' ', ' ');
-										double holdingId = holding.getDouble("HoldingID");
-										String formattedHoldingId = Double.toString(holdingId);
-										if (formattedHoldingId.indexOf('.') > 0) {
-											formattedHoldingId = formattedHoldingId.substring(0, formattedHoldingId.indexOf('.'));
-										}
-										field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
-										field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
-										field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
-										field852.addSubfield(marcFactory.newSubfield('k', holding.getString("Collection")));
-										if (!holding.isNull("DueDate")) {
-											field852.addSubfield(marcFactory.newSubfield('e', holding.getString("DueDate")));
-										}
-										field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
-										field852.addSubfield(marcFactory.newSubfield('d', holding.getString("Status")));
-
-										//TODO: Add these once the API returns them
-										//p - barcode
-										//q - Cost
-										//f - Created date time
-										//g - Last scan date
-
-										marcRecord.addVariableField(field852);
+								List<ControlField> controlFields = marcRecord.getControlFields();
+								ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
+								for (ControlField controlField : controlFieldsCopy) {
+									if (controlField.getData().startsWith("\u001f")) {
+										marcRecord.removeVariableField(controlField);
+										controlField.setData(controlField.getData().replaceAll("\u001f", ""));
+										marcRecord.addVariableField(controlField);
 									}
 								}
-							}
+								//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
+								DataField field950 = marcFactory.newDataField("950", ' ', ' ');
+								field950.addSubfield(marcFactory.newSubfield('a', bibId));
+								field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
+								marcRecord.addVariableField(field950);
+								//Also load holdings from the API
+								String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
+								WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
+								if (getHoldingsResponse.isSuccess()) {
+									JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
+									if (holdingsData != null) {
+										for (int j = 0; j < holdingsData.length(); j++) {
+											JSONObject holding = holdingsData.getJSONObject(j);
+											DataField field852 = marcFactory.newDataField("852", ' ', ' ');
+											double holdingId = holding.getDouble("HoldingID");
+											String formattedHoldingId = Double.toString(holdingId);
+											if (formattedHoldingId.indexOf('.') > 0) {
+												formattedHoldingId = formattedHoldingId.substring(0, formattedHoldingId.indexOf('.'));
+											}
+											field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
+											field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
+											field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
+											field852.addSubfield(marcFactory.newSubfield('k', holding.getString("Collection")));
+											if (!holding.isNull("DueDate")) {
+												field852.addSubfield(marcFactory.newSubfield('e', holding.getString("DueDate")));
+											}
+											field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
+											field852.addSubfield(marcFactory.newSubfield('d', holding.getString("Status")));
 
-							//Save the MARC record
-							RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
-							if (bibliographicRecordId != null) {
-								GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
-								if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
-									logEntry.incAdded();
-								}else {
-									logEntry.incUpdated();
+											//TODO: Add these once the API returns them
+											//p - barcode
+											//q - Cost
+											//f - Created date time
+											//g - Last scan date
+
+											marcRecord.addVariableField(field852);
+										}
+									}
 								}
 
-								//Regroup the record
-								String groupedWorkId =  getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
-								if (groupedWorkId != null) {
-									//Reindex the record
-									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+								//Save the MARC record
+								RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+								if (bibliographicRecordId != null) {
+									GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
+									if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+										logEntry.incAdded();
+									} else {
+										logEntry.incUpdated();
+									}
+
+									//Regroup the record
+									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+									if (groupedWorkId != null) {
+										//Reindex the record
+										getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+									}
+								}
+								if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
+									getGroupedWorkIndexer().commitChanges();
+									logEntry.saveResults();
 								}
 							}
-							if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
-								getGroupedWorkIndexer().commitChanges();
-								logEntry.saveResults();
-							}
+						} catch (Exception e) {
+							logEntry.incErrors("Error parsing marc record", e);
 						}
-					}catch (Exception e){
-						logEntry.incErrors("Error parsing marc record", e);
 					}
+				}catch (JSONException e){
+					logEntry.incErrors("Error parsing JSON from getting changed bib data");
 				}
 			}else{
 				logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
