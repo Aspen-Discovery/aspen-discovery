@@ -14,7 +14,7 @@ class HideSubjectFacet extends DataObject
     {
         return [
             'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-            'subjectTerm' => array('property' => 'subjectTerm', 'type' => 'text', 'label' => 'Hide Subject Term', 'description' => 'Subject term to hide', 'autocomplete' => 'off', 'forcesReindex' => true),
+            'subjectTerm' => array('property' => 'subjectTerm', 'type' => 'text', 'label' => 'Hide Subject Term', 'description' => 'Subject term to hide', 'autocomplete' => 'off'),
             'subjectNormalized' => array('property' => 'subjectNormalized', 'type' => 'text', 'label' => 'Hide Subject Term, normalized', 'description' => 'Subject term to hide, normalized', 'readOnly'=> true),
             'dateAdded' => array('property' => 'dateAdded', 'type' => 'timestamp', 'label' => 'Date Added', 'description' => 'The date the record was added', 'readOnly'=> true)
         ];
