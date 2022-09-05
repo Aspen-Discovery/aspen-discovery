@@ -140,13 +140,14 @@ class VdxForm extends DataObject
 		return parent::okToExport($selectedFilters);
 	}
 
-	public function getFormFields(?MarcRecordDriver $marcRecordDriver)
+	public function getFormFields(?MarcRecordDriver $marcRecordDriver) : array
 	{
 		$fields = [];
 		if ($this->introText){
 			$fields['introText'] =array('property' => 'introText', 'type' => 'label', 'label' => $this->introText, 'description' => '');
 		}
-		$fields['title'] =array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the title to be request', 'maxLength' => 255, 'required' => true, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getTitle() : ''));
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$fields['title'] =array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the title to be request', 'maxLength' => 255, 'required' => true, 'default' => ($marcRecordDriver != null ? StringUtils::removeTrailingPunctuation($marcRecordDriver->getTitle()) : ''));
 		$fields['author'] =array('property' => 'author', 'type' => ($this->showAuthor ? 'text' : 'hidden'), 'label' => 'Author', 'description' => 'The author of the title to request', 'maxLength' => 255, 'required' => false, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getAuthor() : ''));
 		$publisher = '';
 		if ($marcRecordDriver != null){
