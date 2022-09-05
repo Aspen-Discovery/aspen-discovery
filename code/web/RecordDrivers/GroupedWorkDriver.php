@@ -50,6 +50,29 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 	}
 
+	private static function compareOwnedEditions(Grouping_Record $a, Grouping_Record $b) : int
+	{
+		global $searchSource;
+		$searchLocation = Location::getSearchLocation($searchSource);
+		if ($searchLocation != null){
+			if (($a->isLocallyOwned() && $b->isLocallyOwned()) || (!$a->isLocallyOwned() && !$b->isLocallyOwned())){
+				return 0;
+			}elseif (!$a->isLocallyOwned() && $b->isLocallyOwned()){
+				return 1;
+			}else{
+				return -1;
+			}
+		}else{
+			if (($a->isLibraryOwned() && $b->isLibraryOwned()) || (!$a->isLibraryOwned() && !$b->isLibraryOwned())){
+				return 0;
+			}elseif (!$a->isLibraryOwned() && $b->isLibraryOwned()){
+				return 1;
+			}else{
+				return -1;
+			}
+		}
+	}
+
 	public function assignBasicTitleDetails()
 	{
 		global $interface;
@@ -300,57 +323,71 @@ class GroupedWorkDriver extends IndexRecordDriver
 				return 1;
 			}
 		}
+
+		global $library;
+		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 		if ($formatComparison == 0) {
-			//1) Put anything that is holdable first
-			$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
-			if ($holdabilityComparison == 0) {
-				//2) Compare by language to put english titles before spanish by default
-				$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
-				if ($languageComparison == 0) {
-					//3) Compare editions for non-fiction if available
-					$editionComparisonResult = GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b);
-					if ($editionComparisonResult == 0) {
-						//4) Put anything with locally available items first
-						$localAvailableItemComparisonResult = GroupedWorkDriver::compareLocalAvailableItemsForRecords($a, $b);
-						if ($localAvailableItemComparisonResult == 0) {
-							//5) Anything that is available elsewhere goes higher
-							$availabilityComparisonResults = GroupedWorkDriver::compareAvailabilityForRecords($a, $b);
-							if ($availabilityComparisonResults == 0) {
-								//6) Put anything with a local copy higher
-								$localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
-								if ($localItemComparisonResult == 0) {
-									//7) All else being equal, sort by hold ratio
-									if ($a->getHoldRatio() == $b->getHoldRatio()) {
-										//8) Hold Ratio is the same, last thing to check is the number of copies
-										if ($a->getCopies() == $b->getCopies()) {
-											return 0;
-										} elseif ($a->getCopies() > $b->getCopies()) {
+			//1) Optionally sort owned editions first
+			if ($groupedWorkDisplaySettings->sortOwnedEditionsFirst){
+				$ownedRecordComparison = GroupedWorkDriver::compareOwnedEditions($a, $b);
+			} else{
+				$ownedRecordComparison = 0;
+			}
+
+			if ($ownedRecordComparison == 0) {
+				//2) Put anything that is holdable first
+				$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
+				if ($holdabilityComparison == 0) {
+					//2) Compare by language to put english titles before spanish by default
+					$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
+					if ($languageComparison == 0) {
+						//3) Compare editions for non-fiction if available
+						$editionComparisonResult = GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b);
+						if ($editionComparisonResult == 0) {
+							//4) Put anything with locally available items first
+							$localAvailableItemComparisonResult = GroupedWorkDriver::compareLocalAvailableItemsForRecords($a, $b);
+							if ($localAvailableItemComparisonResult == 0) {
+								//5) Anything that is available elsewhere goes higher
+								$availabilityComparisonResults = GroupedWorkDriver::compareAvailabilityForRecords($a, $b);
+								if ($availabilityComparisonResults == 0) {
+									//6) Put anything with a local copy higher
+									$localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
+									if ($localItemComparisonResult == 0) {
+										//7) All else being equal, sort by hold ratio
+										if ($a->getHoldRatio() == $b->getHoldRatio()) {
+											//8) Hold Ratio is the same, last thing to check is the number of copies
+											if ($a->getCopies() == $b->getCopies()) {
+												return 0;
+											} elseif ($a->getCopies() > $b->getCopies()) {
+												return -1;
+											} else {
+												return 1;
+											}
+										} elseif ($a->getHoldRatio() < $b->getHoldRatio()) {
 											return -1;
 										} else {
 											return 1;
 										}
-									} elseif ($a->getHoldRatio() < $b->getHoldRatio()) {
-										return -1;
 									} else {
-										return 1;
+										return $localItemComparisonResult;
 									}
 								} else {
-									return $localItemComparisonResult;
+									return $availabilityComparisonResults;
 								}
 							} else {
-								return $availabilityComparisonResults;
+								return $localAvailableItemComparisonResult;
 							}
 						} else {
-							return $localAvailableItemComparisonResult;
+							return $editionComparisonResult;
 						}
 					} else {
-						return $editionComparisonResult;
+						return $languageComparison;
 					}
 				} else {
-					return $languageComparison;
+					return $holdabilityComparison;
 				}
-			} else {
-				return $holdabilityComparison;
+			}else{
+				return $ownedRecordComparison;
 			}
 		} else {
 			return $formatComparison;

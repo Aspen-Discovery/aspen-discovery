@@ -290,6 +290,13 @@ function getUpdates22_09_00() : array
 				"alter table library ADD COLUMN selfRegistrationUserProfile VARCHAR(20) DEFAULT 'SELFREG'",
 			]
 		], //symphony_self_registration_profile
+		'sort_owned_editions_first' => [
+			'title' => 'Sort Owned Editions First in Grouped Works',
+			'description' => 'Add the option to Sort Owned Editions First in Grouped Works',
+			'sql' => [
+				"alter table grouped_work_display_settings ADD COLUMN sortOwnedEditionsFirst TINYINT(1) DEFAULT 0",
+			]
+		], //symphony_self_registration_profile
 
 		//kirstien
 		'aci_speedpay_settings' => [
