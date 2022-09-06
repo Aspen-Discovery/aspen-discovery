@@ -127,7 +127,7 @@ class VdxDriver
 		$vdxRequest->userId = $patron->id;
 		$vdxRequest->find();
 		while ($vdxRequest->fetch()) {
-			if (empty($vdxRequest->vdxId) && $vdxRequest->status != 'Not found in VDX'){
+			if (empty($vdxRequest->vdxId) && ($vdxRequest->status != 'Not found in VDX' && $vdxRequest->status != 'Cancelled')){
 				$vdxRequestsToProcess[] = clone $vdxRequest;
 			}
 		}
@@ -187,7 +187,7 @@ class VdxDriver
 		foreach ($openRequests as $key => $request){
 			$recordDriver = null;
 			if (!empty($request->recordId)) {
-				$recordDriver = RecordDriverFactory::initRecordDriverById('ils:' . $curRequest->recordId);
+				$recordDriver = RecordDriverFactory::initRecordDriverById('ils:' . $request->recordId);
 				if ($recordDriver->isValid()) {
 					$request->updateFromRecordDriver($recordDriver);
 					$openRequests[$key] = $request;
@@ -387,7 +387,7 @@ class VdxDriver
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$cancelResponse = $this->curlWrapper->curlPostPage($cancelUrl, $postParams);
 			if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '302'){
-				if (preg_match("/Request # <span class=\"resultsbright\">&nbsp;.*?$requestId</span>&nbsp; has been cancelled/", $cancelResponse)){
+				if (preg_match('~Request # <span class="resultsbright">&nbsp;.*?' . $requestId .'</span>&nbsp; has been cancelled~', $cancelResponse)){
 					$result = [
 						'success' => 'true',
 						'message' => translate(['text'=>'Your request was cancelled successfully', 'isPublicFacing' => true])
