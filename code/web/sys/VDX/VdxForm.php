@@ -140,7 +140,7 @@ class VdxForm extends DataObject
 		return parent::okToExport($selectedFilters);
 	}
 
-	public function getFormFields(?MarcRecordDriver $marcRecordDriver) : array
+	public function getFormFields(?MarcRecordDriver $marcRecordDriver, ?String $volumeInfo) : array
 	{
 		$fields = [];
 		if ($this->introText){
@@ -178,7 +178,7 @@ class VdxForm extends DataObject
 			}
 		}
 		$fields['pickupLocation'] =array('property' => 'pickupLocation', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Pickup Location', 'description' => 'Where you would like to pickup the title', 'required' => true, 'default' => $user->getHomeLocationCode());
-		$fields['note'] =array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => 'Any additional information you want us to have about this request', 'required' => false);
+		$fields['note'] =array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => 'Any additional information you want us to have about this request', 'required' => false, 'default' => ($volumeInfo == null) ? '' : $volumeInfo);
 		$fields['catalogKey'] = array('property' => 'catalogKey', 'type' => (($this->showCatalogKey && $marcRecordDriver != null) ? 'text' : 'hidden'), 'label' => 'Record Number', 'description' => 'The record number to be requested', 'maxLength' => 20, 'required' => false, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getId() : ''));
 		return $fields;
 	}
