@@ -159,14 +159,19 @@ class Grouping_Record
 			$searchLocation = Location::getSearchLocation();
 			if ($searchLocation != null) {
 				if ($item->locallyOwned) {
+					$this->_statusInformation->setIsLocallyOwned(true);
 					$this->_statusInformation->addLocalCopies($item->numCopies);
 					if ($item->available) {
 						$this->_statusInformation->addLocalCopies($item->numCopies);
 						$this->_statusInformation->setAvailableHere(true);
 					}
 				}
+				if ($item->libraryOwned) {
+					$this->_statusInformation->setIsLibraryOwned(true);
+				}
 			} else {
 				if ($item->libraryOwned) {
+					$this->_statusInformation->setIsLibraryOwned(true);
 					$this->_statusInformation->addLocalCopies($item->numCopies);
 					if ($item->available) {
 						$this->_statusInformation->addAvailableCopies($item->numCopies);
@@ -668,6 +673,14 @@ class Grouping_Record
 		return $this->format;
 	}
 
+	public function isLocallyOwned()
+	{
+		return $this->_statusInformation->isLocallyOwned();
+	}
 
 
+	public function isLibraryOwned()
+	{
+		return $this->_statusInformation->isLibraryOwned();
+	}
 }

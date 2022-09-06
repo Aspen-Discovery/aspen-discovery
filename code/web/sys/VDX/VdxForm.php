@@ -140,13 +140,14 @@ class VdxForm extends DataObject
 		return parent::okToExport($selectedFilters);
 	}
 
-	public function getFormFields(?MarcRecordDriver $marcRecordDriver)
+	public function getFormFields(?MarcRecordDriver $marcRecordDriver, ?String $volumeInfo = null) : array
 	{
 		$fields = [];
 		if ($this->introText){
 			$fields['introText'] =array('property' => 'introText', 'type' => 'label', 'label' => $this->introText, 'description' => '');
 		}
-		$fields['title'] =array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the title to be request', 'maxLength' => 255, 'required' => true, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getTitle() : ''));
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$fields['title'] =array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the title to be request', 'maxLength' => 255, 'required' => true, 'default' => ($marcRecordDriver != null ? StringUtils::removeTrailingPunctuation($marcRecordDriver->getTitle()) : ''));
 		$fields['author'] =array('property' => 'author', 'type' => ($this->showAuthor ? 'text' : 'hidden'), 'label' => 'Author', 'description' => 'The author of the title to request', 'maxLength' => 255, 'required' => false, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getAuthor() : ''));
 		$publisher = '';
 		if ($marcRecordDriver != null){
@@ -177,7 +178,7 @@ class VdxForm extends DataObject
 			}
 		}
 		$fields['pickupLocation'] =array('property' => 'pickupLocation', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Pickup Location', 'description' => 'Where you would like to pickup the title', 'required' => true, 'default' => $user->getHomeLocationCode());
-		$fields['note'] =array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => 'Any additional information you want us to have about this request', 'required' => false);
+		$fields['note'] =array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => 'Any additional information you want us to have about this request', 'required' => false, 'default' => ($volumeInfo == null) ? '' : $volumeInfo);
 		$fields['catalogKey'] = array('property' => 'catalogKey', 'type' => (($this->showCatalogKey && $marcRecordDriver != null) ? 'text' : 'hidden'), 'label' => 'Record Number', 'description' => 'The record number to be requested', 'maxLength' => 20, 'required' => false, 'default' => ($marcRecordDriver != null ? $marcRecordDriver->getId() : ''));
 		return $fields;
 	}

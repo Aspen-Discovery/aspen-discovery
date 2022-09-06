@@ -290,6 +290,13 @@ function getUpdates22_09_00() : array
 				"alter table library ADD COLUMN selfRegistrationUserProfile VARCHAR(20) DEFAULT 'SELFREG'",
 			]
 		], //symphony_self_registration_profile
+		'sort_owned_editions_first' => [
+			'title' => 'Sort Owned Editions First in Grouped Works',
+			'description' => 'Add the option to Sort Owned Editions First in Grouped Works',
+			'sql' => [
+				"alter table grouped_work_display_settings ADD COLUMN sortOwnedEditionsFirst TINYINT(1) DEFAULT 0",
+			]
+		], //symphony_self_registration_profile
 
 		//kirstien
 		'aci_speedpay_settings' => [
@@ -342,6 +349,13 @@ function getUpdates22_09_00() : array
                 "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '% %'",
             ]
         ], //force_reindex_of_records_with_spaces
+        'force_reindex_of_records_with_no_language' => [
+            'title' => 'Force records to reindex if there is no language and record ends with -',
+            'description' => 'Force records to reindex if there is no language and record ends with -',
+            'sql' => [
+                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '%-'",
+            ]
+        ], //force_reindex_of_records_with_no_language
 
 		//other
 		'hide_subject_facet_permission' => [

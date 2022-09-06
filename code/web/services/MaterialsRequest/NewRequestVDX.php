@@ -27,7 +27,7 @@ class MaterialsRequest_NewRequestVDX extends Action
 			if ($vdxSettings->find(true)){
 				if (isset($_REQUEST['submit'])){
 					$vdxDriver = new VdxDriver();
-					$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
+					$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST, true);
 					if ($results['success']){
 						header('Location: /MyAccount/Holds#interlibrary_loan');
 						exit;

@@ -10550,7 +10550,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		deleteListAction: function (){
-			if (confirm("Are you sure you want to delete this list?")){
+			if (confirm("Are you sure you want to delete this entire list?")){
 				this.submitListForm('deleteList');
 			}
 			return false;
@@ -11881,6 +11881,8 @@ AspenDiscovery.Record = (function(){
 						requestTitleButton.removeClass('disabled');
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
+					}else if (data.needsIllRequest){
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
 						if (!data.autologout){
@@ -11978,6 +11980,8 @@ AspenDiscovery.Record = (function(){
 						requestTitleButton.removeClass('disabled');
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
+					}else if (data.needsIllRequest){
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 						AspenDiscovery.Account.loadMenuData();

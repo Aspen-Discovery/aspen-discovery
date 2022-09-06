@@ -19,6 +19,8 @@ class Grouping_StatusInformation
 	private $_localAvailableCopies = 0;
 	private $_isEcontent = false;
 	private $_isShowStatus = false;
+	private $_isLocallyOwned = false;
+	private $_isLibraryOwned = false;
 
 	/**
 	 * @return bool
@@ -354,5 +356,25 @@ class Grouping_StatusInformation
 	public function setIsShowStatus(bool $isShowStatus): void
 	{
 		$this->_isShowStatus = $isShowStatus;
+	}
+
+	public function isLocallyOwned()
+	{
+		return $this->_isLocallyOwned;
+	}
+
+	public function setIsLocallyOwned(bool $isLocallyOwned): void
+	{
+		$this->_isLocallyOwned = $isLocallyOwned;
+	}
+
+	public function isLibraryOwned()
+	{
+		return $this->_isLibraryOwned;
+	}
+
+	public function setIsLibraryOwned(bool $isLibraryOwned): void
+	{
+		$this->_isLibraryOwned = $isLibraryOwned;
 	}
 }

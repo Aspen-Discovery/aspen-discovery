@@ -1004,6 +1004,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							//Check to see if we have any items that are owned by any of the records in any of the groups.
 							//If we do, we don't need to use VDX
 							foreach ($relatedRecord->getItems() as $itemDetail) {
+								//The patron's home location is always valid!
+								if ($itemDetail->locationCode == $homeLocation->code){
+									$useVdxForRecord = false;
+									break;
+								}
 								foreach ($vdxGroups as $vdxGroup) {
 									if ($itemDetail->holdable && in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
 										$useVdxForRecord = false;

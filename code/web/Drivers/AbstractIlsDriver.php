@@ -66,7 +66,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	/**
 	 * @return IndexingProfile|null
 	 */
-	public function getIndexingProfile()
+	public function getIndexingProfile() : ?IndexingProfile
 	{
 		global $indexingProfiles;
 		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {

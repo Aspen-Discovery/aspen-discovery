@@ -124,7 +124,7 @@ class Record_AJAX extends Action
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$vdxDriver = new VdxDriver();
-				$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST);
+				$results = $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST, false);
 			}else{
 				$results = array(
 					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
@@ -552,7 +552,52 @@ class Record_AJAX extends Action
 							}
 						}else if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']){
 							$confirmationNeeded = true;
+						} else {
+							//Check to see if we can place the hold via Interlibrary Loan
+							require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+							require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+							$vdxSettings = new VdxSetting();
+							if ($vdxSettings->find(true)) {
+								$homeLocation = Location::getDefaultLocationForUser();
+								if ($homeLocation != null) {
+									//Get configuration for the form.
+									$vdxForm = new VdxForm();
+									$vdxForm->id = $homeLocation->vdxFormId;
+									$interface->assign('fromHoldError', true);
+									require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+									$marcRecord = new MarcRecordDriver($recordId);
+
+									$interface->assign('vdxForm', $vdxForm);
+
+									$volumeInfo = null;
+									if (isset($_REQUEST['volume'])){
+										//Get the name of the volume so we can add it as a note
+										require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+										$volumeData = array();
+										$volumeDataDB = new IlsVolumeInfo();
+										$volumeDataDB->volumeId = $_REQUEST['volume'];
+										if ($volumeDataDB->find(true)){
+											$volumeInfo = $volumeDataDB->displayLabel;
+										}else{
+											$volumeInfo = $_REQUEST['volume'];
+										}
+									}
+									$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeInfo);
+									$interface->assign('structure', $vdxFormFields);
+									$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+									if ($vdxForm->find(true)) {
+										return array(
+											'title' => translate(['text'=>'Hold Failed, Request Title?', 'isPublicFacing'=>true]),
+											'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+											'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate(['text'=>'Place Request','isPublicFacing'=>true]) . '</a>',
+											'success' => true,
+											'needsIllRequest' => true
+										);
+									}
+								}
+							}
 						}
+
 						$interface->assign('confirmationNeeded', $confirmationNeeded);
 
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
