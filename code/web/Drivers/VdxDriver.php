@@ -253,7 +253,7 @@ class VdxDriver
 		}
 	}
 
-	public function submitRequest(VdxSetting $settings, User $patron, array $requestFields) : array{
+	public function submitRequest(VdxSetting $settings, User $patron, array $requestFields, $isFromEmptyRequest = false) : array{
 		$catalogKeyRequested = strip_tags($requestFields['catalogKey']);
 		if (!empty($catalogKeyRequested)) {
 			//Check to see if we already have a request with this catalog key
@@ -327,7 +327,9 @@ class VdxDriver
 		$body .= "PickupLocation=" . $newRequest->pickupLocation . "\r\n";
 		$body .= "ReqVerifySource=$settings->reqVerifySource\r\n";
 
-
+		if ($isFromEmptyRequest){
+			$newRequest->note .= ' - Submitted from Aspen Materials Request';
+		}
 		if (!empty($newRequest->note)) {
 			$body .= "NOTE=" . $newRequest->note . "\r\n";
 			$body .= "AuthorisationStatus=MAUTH\r\n";
