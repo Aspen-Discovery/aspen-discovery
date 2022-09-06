@@ -140,7 +140,7 @@ class VdxForm extends DataObject
 		return parent::okToExport($selectedFilters);
 	}
 
-	public function getFormFields(?MarcRecordDriver $marcRecordDriver, ?String $volumeInfo) : array
+	public function getFormFields(?MarcRecordDriver $marcRecordDriver, ?String $volumeInfo = null) : array
 	{
 		$fields = [];
 		if ($this->introText){
