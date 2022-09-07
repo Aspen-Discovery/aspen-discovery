@@ -91,7 +91,7 @@ if ($search->getNumResults() > 0){
 							$body = array(
 								'to' => $notificationToken->pushToken,
 								'title' => 'New Titles',
-								'body' => 'New titles have been added to your saved search ' . $searchEntry->title . ' at the library. Check them out!',
+								'body' => 'New titles have been added to your saved search "' . $searchEntry->title . '" at the library. Check them out!',
 								'categoryId' => 'savedSearch',
 								'channelId' => 'savedSearch',
 								'data' => array('url' => urlencode('aspen-lida://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title))
