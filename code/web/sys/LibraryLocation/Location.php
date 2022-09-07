@@ -386,8 +386,8 @@ class Location extends DataObject
 			'browseCategoryGroupId' => array('property' => 'browseCategoryGroupId', 'required' => true, 'type' => 'enum', 'affectsLiDA' => true, 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'renderAsHeading' => true, 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true, 'permissions' => ['Location Browse Category Options']),
 
 			'interLibraryLoanSection' => array('property'=>'interLibraryLoanSectionSection', 'type' => 'section', 'label' =>'Interlibrary loans', 'hideInLists' => true, 'permissions' => ['Library ILL Options'],  'properties' => array(
-				'vdxLocation' => ['property' => 'name', 'type' => 'text', 'label' => 'VDX Location', 'description' => 'The location code to send in the VDX email', 'maxLength' => 50],
-				'vdxForm' => ['property' => 'name', 'type' => 'enum', 'values'=> $vdxForms, 'label' => 'VDX Form', 'description' => 'The form to use when submitting VDX requests'],
+				'vdxLocation' => ['property' => 'vdxLocation', 'type' => 'text', 'label' => 'VDX Location', 'description' => 'The location code to send in the VDX email', 'maxLength' => 50],
+				'vdxForm' => ['property' => 'vdxForm', 'type' => 'enum', 'values'=> $vdxForms, 'label' => 'VDX Form', 'description' => 'The form to use when submitting VDX requests'],
 			)),
 			'axis360Section' => array('property' => 'axis360Section', 'type' => 'section', 'label' => 'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
