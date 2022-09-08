@@ -336,87 +336,83 @@ class GreenhouseAPI extends Action
 		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 
 		$num = 0;
+		$enabledAccess = 0;
+		$releaseChannel = 0;
 		$location = new Location();
 		$location->find();
 		while($location->fetch()) {
-			$appSettings = new AppSetting();
-			$appSettings->id = $location->lidaGeneralSettingId;
-			if($appSettings->find(true)) {
-				if ($appSettings->enableAccess == 1 || $appSettings->enableAccess == "1") {
-					$libraryId = $location->libraryId;
-					$library = new Library();
-					$library->libraryId = $libraryId;
-					if ($library->find(true)) {
-						$version = $interface->getVariable('gitBranch');
-						$baseUrl = $library->baseUrl;
+			$library = new Library();
+			$library->libraryId = $location->libraryId;
+			if($library->find(true)) {
+				$version = $interface->getVariable('gitBranch');
+				if ($version >= "22.09.00") {
+					require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+					$appSettings = new AppSetting();
+					$appSettings->id = $location->lidaGeneralSettingId;
+					if ($appSettings->find(true)) {
+						$releaseChannel = $appSettings->releaseChannel;
+						$enabledAccess = $appSettings->enableAccess;
+					}
+				} else {
+					$releaseChannel = $location->appReleaseChannel;
+					$enabledAccess = $location->enableAppAccess;
+				}
 
-						if (empty($baseUrl)) {
-							$baseUrl = $configArray['Site']['url'];
-						}
+				if($enabledAccess == 1 || $enabledAccess == "1") {
+					$baseUrl = $library->baseUrl;
+					if (empty($baseUrl)) {
+						$baseUrl = $configArray['Site']['url'];
+					}
 
-						$solrScope = false;
+					$solrScope = false;
 
-						$searchLibrary = $library;
-						if ($searchLibrary) {
-							$solrScope = $searchLibrary->subdomain;
-						}
+					$searchLibrary = $library;
+					if ($searchLibrary) {
+						$solrScope = $searchLibrary->subdomain;
+					}
 
-						if (!empty($location->latitude) || !empty($location->longitude)) {
-							$latitude = $location->latitude;
-							$longitude = $location->longitude;
+					if (!empty($location->latitude) || !empty($location->longitude)) {
+						$latitude = $location->latitude;
+						$longitude = $location->longitude;
+					} else {
+						$latitude = 0;
+						$longitude = 0;
+					}
+
+					//TODO: We will eventually want to be able to search individual library branches in the app.
+					// i.e. for schools
+					//$searchLocation = $location;
+					/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
+						if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
+							$solrScope .= 'loc';
 						} else {
-							$latitude = 0;
-							$longitude = 0;
+							$solrScope = strtolower($searchLocation->code);
 						}
-
-						//TODO: We will eventually want to be able to search individual library branches in the app.
-						// i.e. for schools
-						//$searchLocation = $location;
-						/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
-							if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
-								$solrScope .= 'loc';
-							} else {
-								$solrScope = strtolower($searchLocation->code);
-							}
-							if (!empty($searchLocation->subLocation)) {
-								$solrScope = strtolower($searchLocation->subLocation);
-							}
-						}*/
-
-						//get the theme for the location
-						$themeArray = [];
-						$theme = new Theme();
-						if (isset($location) && $location->theme != -1) {
-							$theme->id = $location->theme;
-						} else {
-							$theme->id = $library->theme;
+						if (!empty($searchLocation->subLocation)) {
+							$solrScope = strtolower($searchLocation->subLocation);
 						}
-						if ($theme->find(true)) {
-							$theme->applyDefaults();
+					}*/
 
-							$themeArray['themeId'] = $theme->id;
-							$themeArray['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
-							$themeArray['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
-							$themeArray['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
-							$themeArray['primaryForegroundColor'] = $theme->primaryForegroundColor;
-							$themeArray['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
-							$themeArray['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
-							$themeArray['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
-							$themeArray['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
-						}
+					//get the theme for the location
+					$themeArray = [];
+					$theme = new Theme();
+					if (isset($location) && $location->theme != -1) {
+						$theme->id = $location->theme;
+					} else {
+						$theme->id = $library->theme;
+					}
+					if ($theme->find(true)) {
+						$theme->applyDefaults();
 
-						//get the app settings for the location
-						$releaseChannel = 0;
-						if ($version >= "22.09.00") {
-							require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-							$appSettings = new AppSetting();
-							$appSettings->id = $location->lidaGeneralSettingId;
-							if ($appSettings->find(true)) {
-								$releaseChannel = $appSettings->releaseChannel;
-							}
-						} else {
-							$releaseChannel = $location->appReleaseChannel;
-						}
+						$themeArray['themeId'] = $theme->id;
+						$themeArray['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+						$themeArray['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+						$themeArray['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
+						$themeArray['primaryForegroundColor'] = $theme->primaryForegroundColor;
+						$themeArray['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
+						$themeArray['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
+						$themeArray['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
+						$themeArray['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 
 						$return['library'][] = [
 							'latitude' => $latitude,
@@ -424,8 +420,8 @@ class GreenhouseAPI extends Action
 							'unit' => $location->unit,
 							'name' => $location->displayName,
 							'locationId' => $location->locationId,
-							'libraryId' => $libraryId,
-							'siteId' => $libraryId . '.' . $location->locationId,
+							'libraryId' => $library->libraryId,
+							'siteId' => $library->libraryId . '.' . $location->locationId,
 							'solrScope' => $solrScope,
 							'baseUrl' => $baseUrl,
 							'releaseChannel' => $releaseChannel,
