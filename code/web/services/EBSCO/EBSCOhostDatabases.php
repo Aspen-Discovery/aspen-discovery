@@ -41,7 +41,7 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor
 	}
 	function getDefaultSort() : string
 	{
-		return 'name asc';
+		return 'displayName asc';
 	}
 
 	function getObjectStructure() : array
