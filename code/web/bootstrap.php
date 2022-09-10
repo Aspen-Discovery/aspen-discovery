@@ -119,7 +119,7 @@ if ($aspenUsage->instance != 'aspen_internal'){
 	}
 	if (!$isValidServerName) {
 		http_response_code(404);
-		echo("Invalid Host Information, quitting");
+		echo("<html><head><title>Invalid Request</title></head><body>Invalid Host Information, quitting</body></html>");
 		die();
 	}
 }
