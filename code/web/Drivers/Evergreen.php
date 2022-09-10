@@ -593,7 +593,10 @@ class Evergreen extends AbstractIlsDriver
 
 	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
 	{
-		// TODO: Implement updatePatronInfo() method.
+		return [
+			'success' => false,
+			'messages' => ['Cannot update patron information with this ILS.']
+		];
 	}
 
 	public function hasNativeReadingHistory() : bool

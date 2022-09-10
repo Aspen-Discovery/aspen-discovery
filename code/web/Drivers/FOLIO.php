@@ -442,7 +442,10 @@ class FOLIO extends AbstractIlsDriver
 
 	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
-
+		return [
+			'success' => false,
+			'messages' => ['Cannot update patron information with this ILS.']
+		];
 	}
 
 	function updateHomeLibrary(User $patron, string $homeLibraryCode)
