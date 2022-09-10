@@ -577,10 +577,6 @@ function cleanUpInvalidInstances(/** @noinspection PhpUnusedParameterInspection 
 	$numRemoved = $aspen_db->exec($cleanupSQL);
 	$update['status'] .= "Removed $numRemoved api_usage<br/>";
 
-	$cleanupSQL = "DELETE from usage_by_ip_address where instance not in ($serverNamesToPreserve)";
-	$numRemoved = $aspen_db->exec($cleanupSQL);
-	$update['status'] .= "Removed $numRemoved usage_by_ip_address<br/>";
-
 	$cleanupSQL = "DELETE from web_builder_resource_usage where instance not in ($serverNamesToPreserve)";
 	$numRemoved = $aspen_db->exec($cleanupSQL);
 	$update['status'] .= "Removed $numRemoved web_builder_resource_usage<br/>";
