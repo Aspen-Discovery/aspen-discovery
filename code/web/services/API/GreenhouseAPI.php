@@ -352,6 +352,10 @@ class GreenhouseAPI extends Action
 					if ($appSettings->find(true)) {
 						$releaseChannel = $appSettings->releaseChannel;
 						$enabledAccess = $appSettings->enableAccess;
+					}else{
+						//There should be settings available, but if not disable access
+						$releaseChannel = 0;
+						$enabledAccess = 0;
 					}
 				} else {
 					$releaseChannel = $location->appReleaseChannel;
