@@ -333,20 +333,34 @@ class GreenhouseAPI extends Action
 
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
+		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 
 		$num = 0;
+		$enabledAccess = 0;
+		$releaseChannel = 0;
 		$location = new Location();
 		$location->find();
 		while($location->fetch()) {
-			if ($location->enableAppAccess == 1){
-				$libraryId = $location->libraryId;
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				if ($library->find(true)) {
-					$version = $interface->getVariable('gitBranch');
-					$baseUrl = $library->baseUrl;
+			$library = new Library();
+			$library->libraryId = $location->libraryId;
+			if($library->find(true)) {
+				$version = $interface->getVariable('gitBranch');
+				if ($version >= "22.09.00") {
+					require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+					$appSettings = new AppSetting();
+					$appSettings->id = $location->lidaGeneralSettingId;
+					if ($appSettings->find(true)) {
+						$releaseChannel = $appSettings->releaseChannel;
+						$enabledAccess = $appSettings->enableAccess;
+					}
+				} else {
+					$releaseChannel = $location->appReleaseChannel;
+					$enabledAccess = $location->enableAppAccess;
+				}
 
-					if (empty($baseUrl)){
+				if($enabledAccess == 1 || $enabledAccess == "1") {
+					$baseUrl = $library->baseUrl;
+					if (empty($baseUrl)) {
 						$baseUrl = $configArray['Site']['url'];
 					}
 
@@ -382,9 +396,9 @@ class GreenhouseAPI extends Action
 					//get the theme for the location
 					$themeArray = [];
 					$theme = new Theme();
-					if (isset($location) && $location->theme != -1){
+					if (isset($location) && $location->theme != -1) {
 						$theme->id = $location->theme;
-					}else {
+					} else {
 						$theme->id = $library->theme;
 					}
 					if ($theme->find(true)) {
@@ -399,38 +413,25 @@ class GreenhouseAPI extends Action
 						$themeArray['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
 						$themeArray['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
 						$themeArray['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
+
+						$return['library'][] = [
+							'latitude' => $latitude,
+							'longitude' => $longitude,
+							'unit' => $location->unit,
+							'name' => $location->displayName,
+							'locationId' => $location->locationId,
+							'libraryId' => $library->libraryId,
+							'siteId' => $library->libraryId . '.' . $location->locationId,
+							'solrScope' => $solrScope,
+							'baseUrl' => $baseUrl,
+							'releaseChannel' => $releaseChannel,
+							'favicon' => $themeArray['favicon'],
+							'logo' => $themeArray['logo'],
+							'theme' => $themeArray,
+						];
+
+						$num = $num + 1;
 					}
-
-					//get the app settings for the location
-					$releaseChannel = 0;
-					if($version >= "22.09.00") {
-						require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-						$appSettings = new AppSetting();
-						$appSettings->id = $location->lidaGeneralSettingId;
-						if($appSettings->find(true)) {
-							$releaseChannel = $appSettings->releaseChannel;
-						}
-					} else {
-						$releaseChannel = $location->appReleaseChannel;
-					}
-
-					$return['library'][] = [
-						'latitude' => $latitude,
-						'longitude' => $longitude,
-						'unit' => $location->unit,
-						'name' => $location->displayName,
-						'locationId' => $location->locationId,
-						'libraryId' => $libraryId,
-						'siteId' => $libraryId . '.' . $location->locationId,
-						'solrScope' => $solrScope,
-						'baseUrl' => $baseUrl,
-						'releaseChannel' => $releaseChannel,
-						'favicon' => $themeArray['favicon'],
-						'logo' => $themeArray['logo'],
-						'theme' => $themeArray,
-					];
-
-					$num = $num + 1;
 				}
 			}
 		}
