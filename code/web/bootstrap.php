@@ -10,6 +10,9 @@ require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 require_once ROOT_DIR . '/sys/Utils/EncryptionUtils.php';
 require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/Library.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
@@ -60,6 +63,66 @@ ob_start();
 
 initMemcache();
 initDatabase();
+
+if ($aspenUsage->instance != 'aspen_internal'){
+	$isValidServerName = true;
+	//Validate that we are getting a valid, non-spoofed name.
+	if (strip_tags($_SERVER['SERVER_NAME']) !== $_SERVER['SERVER_NAME']){
+		$isValidServerName = false;
+	}elseif (html_entity_decode($_SERVER['SERVER_NAME']) !== $_SERVER['SERVER_NAME']){
+		$isValidServerName = false;
+	}
+
+	if ($isValidServerName) {
+		$isValidServerName = false;
+		//Get a list of valid server names
+		$mainServer = $configArray['Site']['url'];
+		if (preg_match('~^https?://(.*?)/?$~', $mainServer, $matches)) {
+			$mainServer = $matches[1];
+		}
+		$validServerNames = [$mainServer];
+		$libraryInfo = new Library();
+		$libraryUrls = $libraryInfo->fetchAll('subdomain', 'baseUrl');
+		foreach ($libraryUrls as $subdomain => $libraryUrl) {
+			if (!empty($libraryUrl)) {
+				if (preg_match('~^https?://(.*?)/?$~', $libraryUrl, $matches)) {
+					$validServerNames[] = $matches[1];
+				}
+			}
+			$validServerNames[] = "$subdomain.$mainServer";
+		}
+		$locationInfo = new Location();
+		$locationUrls = $locationInfo->fetchAll('code');
+		foreach ($locationUrls as $code => $locationUrl) {
+			$validServerNames[] = "$code.$mainServer";
+		}
+		$locationSubdomains = $locationInfo->fetchAll('subdomain');
+		foreach ($locationSubdomains as $subdomain) {
+			if (!empty($subdomain)) {
+				$validServerNames[] = "$subdomain.$mainServer";
+			}
+		}
+		$hostInfo = new HostInformation();
+		$hosts = $hostInfo->fetchAll('host');
+		foreach ($hosts as $host) {
+			if (!empty($host)) {
+				$validServerNames[] = "$host";
+			}
+		}
+
+		foreach ($validServerNames as $validServerName) {
+			if (strcasecmp($aspenUsage->instance, $validServerName) === 0) {
+				$isValidServerName = true;
+				break;
+			}
+		}
+	}
+	if (!$isValidServerName) {
+		http_response_code(404);
+		echo("Invalid Host Information, quitting");
+		die();
+	}
+}
 
 //Check to see if timings should be enabled
 if (IPAddress::logTimingInformation()) {
