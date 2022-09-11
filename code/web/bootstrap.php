@@ -84,7 +84,11 @@ if ($aspenUsage->instance != 'aspen_internal'){
 	}
 	if (!$isValidServerName) {
 		http_response_code(404);
-		echo("<html><head><title>Invalid Request</title></head><body>Invalid Host $aspenUsage->instance, valid instances are " . implode(', ', $validServerNames) . "</body></html>");
+		if (IPAddress::showDebuggingInformation()) {
+			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host $aspenUsage->instance, valid instances are " . implode(', ', $validServerNames) . "</body></html>");
+		}else{
+			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host</body></html>");
+		}
 		die();
 	}
 }
@@ -258,14 +262,12 @@ function getValidServerNames() : array{
 	/* Memcache $memCache */
 	global $memCache;
 	$validServerNames = $memCache->get('validServerNames');
-	if ($validServerNames == false || empty($validServerNames)) {
+	if ($validServerNames == false || empty($validServerNames) || isset($_REQUEST['reload'])) {
 		global $configArray;
 		//Get a list of valid server names
-		$mainServer = $configArray['Site']['url'];
-		if (preg_match('~^https?://(.*?)/?$~', $mainServer, $matches)) {
-			$mainServer = $matches[1];
-		}
-		$validServerNames = [$mainServer];
+		global $instanceName;
+		$mainServer = $instanceName;
+		$validServerNames = [$instanceName];
 		$libraryInfo = new Library();
 		$libraryUrls = $libraryInfo->fetchAll('subdomain', 'baseUrl');
 		foreach ($libraryUrls as $subdomain => $libraryUrl) {
