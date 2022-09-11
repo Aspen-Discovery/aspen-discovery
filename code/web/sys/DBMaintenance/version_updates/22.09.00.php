@@ -468,7 +468,7 @@ function cleanUpInvalidInstances(/** @noinspection PhpUnusedParameterInspection 
 		if (strlen($serverNamesToPreserve) != 0){
 			$serverNamesToPreserve .= ', ';
 		}
-		$serverNamesToPreserve = "'" . $validServerName . "'";
+		$serverNamesToPreserve .= "'" . $validServerName . "'";
 	}
 
 	global $aspen_db;
