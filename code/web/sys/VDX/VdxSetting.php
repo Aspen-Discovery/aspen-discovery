@@ -11,8 +11,6 @@ class VdxSetting extends DataObject {
 
 	public static function getObjectStructure(): array
 	{
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer ILL Hold Groups'));
-
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
 			'name' => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The Name of the Hold Group', 'maxLength' => 50],

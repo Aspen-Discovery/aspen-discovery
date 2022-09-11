@@ -21,7 +21,7 @@ class VdxForm extends DataObject
 
 	public static function getObjectStructure(): array
 	{
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer ILL Hold Groups'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All VDX Forms'));
 
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
