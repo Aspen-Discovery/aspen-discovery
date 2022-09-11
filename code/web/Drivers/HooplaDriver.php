@@ -612,7 +612,8 @@ class HooplaDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php';
 		$userUsage = new UserHooplaUsage();
-		$userUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$userUsage->instance = $fullServerName;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -637,7 +638,8 @@ class HooplaDriver extends AbstractEContentDriver{
 		$product = new HooplaExtract();
 		$product->hooplaId = $hooplaId;
 		if ($product->find(true)) {
-			$recordUsage->instance = $_SERVER['SERVER_NAME'];
+			global $fullServerName;
+			$recordUsage->instance = $fullServerName;
 			$recordUsage->hooplaId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');

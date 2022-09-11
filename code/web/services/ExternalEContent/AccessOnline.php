@@ -68,7 +68,8 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
-		$recordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$recordUsage->instance = $fullServerName;
 		$recordUsage->sideloadId = $sideLoadId;
 		$recordUsage->recordId = $recordId;
 		$recordUsage->year = date('Y');
@@ -86,7 +87,8 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
-		$userUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$userUsage->instance = $fullServerName;
 		if (UserAccount::getActiveUserId() == false){
 			//User is not logged in
 			$userUsage->userId = -1;

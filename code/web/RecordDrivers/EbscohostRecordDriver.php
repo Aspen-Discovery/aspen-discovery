@@ -151,7 +151,8 @@ class EbscohostRecordDriver extends RecordInterface
 
 		require_once ROOT_DIR . '/sys/Ebsco/EbscohostRecordUsage.php';
 		$recordUsage = new EbscohostRecordUsage();
-		$recordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$recordUsage->instance = $fullServerName;
 		$recordUsage->ebscohostId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');

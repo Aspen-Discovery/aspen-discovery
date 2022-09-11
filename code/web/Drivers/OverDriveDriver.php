@@ -1359,7 +1359,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 		$userUsage = new UserOverDriveUsage();
-		$userUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$userUsage->instance = $fullServerName;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -1380,7 +1381,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 		$recordUsage = new OverDriveRecordUsage();
-		$recordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$recordUsage->instance = $fullServerName;
 		$recordUsage->overdriveId = $overDriveId;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -1401,7 +1403,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 		$recordUsage = new OverDriveRecordUsage();
-		$recordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$recordUsage->instance = $fullServerName;
 		$recordUsage->overdriveId = $overDriveId;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -1626,7 +1629,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 		$axis360Stats = new OverDriveStats();
-		$axis360Stats->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$axis360Stats->instance = $fullServerName;
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

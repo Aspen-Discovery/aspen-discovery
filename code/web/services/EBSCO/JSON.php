@@ -44,7 +44,8 @@ class EBSCO_JSON extends JSON_Action
 		//Track usage of the record
 		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 		$ebscoEdsRecordUsage = new EbscoEdsRecordUsage();
-		$ebscoEdsRecordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$ebscoEdsRecordUsage->instance = $fullServerName;
 		$ebscoEdsRecordUsage->ebscoId = $id;
 		$ebscoEdsRecordUsage->year = date('Y');
 		$ebscoEdsRecordUsage->month = date('n');
@@ -65,7 +66,8 @@ class EBSCO_JSON extends JSON_Action
 			//Track usage for the user
 			require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 			$userEbscoEdsUsage = new UserEbscoEdsUsage();
-			$userEbscoEdsUsage->instance = $_SERVER['SERVER_NAME'];
+			global $fullServerName;
+			$userEbscoEdsUsage->instance = $fullServerName;
 			$userEbscoEdsUsage->userId = $userId;
 			$userEbscoEdsUsage->year = date('Y');
 			$userEbscoEdsUsage->month = date('n');

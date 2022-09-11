@@ -14,6 +14,7 @@ require_once ROOT_DIR . '/sys/LibraryLocation/Library.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
 global $aspenUsage;
+global $serverName;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
 $aspenUsage->month = date('n');
@@ -28,24 +29,16 @@ require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
 
-if (isset($_SERVER['SERVER_NAME'])) {
-	$aspenUsage->instance = $_SERVER['SERVER_NAME'];
-}else{
-	$aspenUsage->instance = 'aspen_internal';
-}
+global $fullServerName;
+$aspenUsage->instance = $fullServerName;
 
 //This has to be done after reading configuration so we can get the servername
 global $usageByIPAddress;
-global $fullServerName;
 $usageByIPAddress = new UsageByIPAddress();
 $usageByIPAddress->year = date('Y');
 $usageByIPAddress->month = date('n');
 $usageByIPAddress->ipAddress = IPAddress::getClientIP();
-if (isset($_SERVER['SERVER_NAME'])) {
-	$usageByIPAddress->instance = $_SERVER['SERVER_NAME'];
-}else{
-	$usageByIPAddress->instance = 'aspen_internal';
-}
+$usageByIPAddress->instance = $fullServerName;
 
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;
@@ -67,10 +60,12 @@ initDatabase();
 if ($aspenUsage->instance != 'aspen_internal'){
 	$isValidServerName = true;
 	//Validate that we are getting a valid, non-spoofed name.
-	if (strip_tags($_SERVER['SERVER_NAME']) !== $_SERVER['SERVER_NAME']){
-		$isValidServerName = false;
-	}elseif (html_entity_decode($_SERVER['SERVER_NAME']) !== $_SERVER['SERVER_NAME']){
-		$isValidServerName = false;
+	if (!empty($_SERVER['SERVER_NAME'])) {
+		if (strip_tags($_SERVER['SERVER_NAME']) !== $_SERVER['SERVER_NAME']) {
+			$isValidServerName = false;
+		} elseif (html_entity_decode($_SERVER['SERVER_NAME']) !== $_SERVER['SERVER_NAME']) {
+			$isValidServerName = false;
+		}
 	}
 
 	if ($isValidServerName) {
@@ -86,7 +81,7 @@ if ($aspenUsage->instance != 'aspen_internal'){
 	}
 	if (!$isValidServerName) {
 		http_response_code(404);
-		echo("<html><head><title>Invalid Request</title></head><body>Invalid Host Information, quitting</body></html>");
+		echo("<html><head><title>Invalid Request</title></head><body>Invalid Host $aspenUsage->instance, valid instances are " . implode(', ', $validServerNames) . "</body></html>");
 		die();
 	}
 }
@@ -257,41 +252,46 @@ function array_remove_by_value($array, $value){
 }
 
 function getValidServerNames() : array{
-	global $configArray;
-	//Get a list of valid server names
-	$mainServer = $configArray['Site']['url'];
-	if (preg_match('~^https?://(.*?)/?$~', $mainServer, $matches)) {
-		$mainServer = $matches[1];
-	}
-	$validServerNames = [$mainServer];
-	$libraryInfo = new Library();
-	$libraryUrls = $libraryInfo->fetchAll('subdomain', 'baseUrl');
-	foreach ($libraryUrls as $subdomain => $libraryUrl) {
-		if (!empty($libraryUrl)) {
-			if (preg_match('~^https?://(.*?)/?$~', $libraryUrl, $matches)) {
-				$validServerNames[] = $matches[1];
-			}
+	/* Memcache $memCache */
+	global $memCache;
+	$validServerNames = $memCache->get('validServerNames');
+	if ($validServerNames == false || empty($validServerNames)) {
+		global $configArray;
+		//Get a list of valid server names
+		$mainServer = $configArray['Site']['url'];
+		if (preg_match('~^https?://(.*?)/?$~', $mainServer, $matches)) {
+			$mainServer = $matches[1];
 		}
-		$validServerNames[] = "$subdomain.$mainServer";
-	}
-	$locationInfo = new Location();
-	$locationUrls = $locationInfo->fetchAll('code');
-	foreach ($locationUrls as $code => $locationUrl) {
-		$validServerNames[] = "$code.$mainServer";
-	}
-	$locationSubdomains = $locationInfo->fetchAll('subdomain');
-	foreach ($locationSubdomains as $subdomain) {
-		if (!empty($subdomain)) {
+		$validServerNames = [$mainServer];
+		$libraryInfo = new Library();
+		$libraryUrls = $libraryInfo->fetchAll('subdomain', 'baseUrl');
+		foreach ($libraryUrls as $subdomain => $libraryUrl) {
+			if (!empty($libraryUrl)) {
+				if (preg_match('~^https?://(.*?)/?$~', $libraryUrl, $matches)) {
+					$validServerNames[] = $matches[1];
+				}
+			}
 			$validServerNames[] = "$subdomain.$mainServer";
 		}
-	}
-	$hostInfo = new HostInformation();
-	$hosts = $hostInfo->fetchAll('host');
-	foreach ($hosts as $host) {
-		if (!empty($host)) {
-			$validServerNames[] = "$host";
+		$locationInfo = new Location();
+		$locationUrls = $locationInfo->fetchAll('code');
+		foreach ($locationUrls as $code => $locationUrl) {
+			$validServerNames[] = "$code.$mainServer";
 		}
+		$locationSubdomains = $locationInfo->fetchAll('subdomain');
+		foreach ($locationSubdomains as $subdomain) {
+			if (!empty($subdomain)) {
+				$validServerNames[] = "$subdomain.$mainServer";
+			}
+		}
+		$hostInfo = new HostInformation();
+		$hosts = $hostInfo->fetchAll('host');
+		foreach ($hosts as $host) {
+			if (!empty($host)) {
+				$validServerNames[] = "$host";
+			}
+		}
+		$memCache->set('validServerNames', $validServerNames, 60 * 60);
 	}
-
 	return $validServerNames;
 }
