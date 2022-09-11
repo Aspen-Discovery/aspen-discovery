@@ -71,8 +71,8 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 		$openArchivesUsage = new OpenArchivesRecordUsage();
 		$openArchivesUsage->openArchivesRecordId = $this->getUniqueID();
-		global $fullServerName;
-		$openArchivesUsage->instance = $fullServerName;
+		global $aspenUsage;
+		$openArchivesUsage->instance = $aspenUsage->instance;
 		$openArchivesUsage->year = date('Y');
 		$openArchivesUsage->month = date('n');
 		if ($openArchivesUsage->find(true)) {

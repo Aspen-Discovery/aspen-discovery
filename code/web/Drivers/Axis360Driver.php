@@ -550,8 +550,8 @@ class Axis360Driver extends AbstractEContentDriver
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
-		global $fullServerName;
-		$userUsage->instance = $fullServerName;
+		global $aspenUsage;
+		$userUsage->instance = $aspenUsage->instance;
 
 		if ($userUsage->find(true)) {
 			$userUsage->usageCount++;
@@ -574,8 +574,8 @@ class Axis360Driver extends AbstractEContentDriver
 		$product->axis360Id = $recordId;
 		if ($product->find(true)) {
 			$recordUsage->axis360Id = $product->axis360Id;
-			global $fullServerName;
-			$recordUsage->instance = $fullServerName;
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -600,8 +600,8 @@ class Axis360Driver extends AbstractEContentDriver
 		$product = new Axis360Title();
 		$product->axis360Id = $recordId;
 		if ($product->find(true)){
-			global $fullServerName;
-			$recordUsage->instance = $fullServerName;
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -785,8 +785,8 @@ class Axis360Driver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 		$axis360Stats = new Axis360Stats();
-		global $fullServerName;
-		$axis360Stats->instance = $fullServerName;
+		global $aspenUsage;
+		$axis360Stats->instance = $aspenUsage->instance;
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

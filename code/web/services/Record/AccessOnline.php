@@ -57,8 +57,8 @@ class Record_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
-		global $fullServerName;
-		$recordUsage->instance = $fullServerName;
+		global $aspenUsage;
+		$recordUsage->instance = $aspenUsage->instance;
 		$recordUsage->sideloadId = $sideLoadId;
 		$recordUsage->recordId = $recordId;
 		$recordUsage->year = date('Y');
@@ -76,8 +76,8 @@ class Record_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
-		global $fullServerName;
-		$userUsage->instance = $fullServerName;
+		global $aspenUsage;
+		$userUsage->instance = $aspenUsage->instance;
 		if (UserAccount::getActiveUserId() == false){
 			//User is not logged in
 			$userUsage->userId = -1;

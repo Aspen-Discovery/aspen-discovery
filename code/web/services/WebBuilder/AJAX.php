@@ -746,8 +746,8 @@ class WebBuilder_AJAX extends JSON_Action
 			$webResourceUsage = new WebResourceUsage();
 			$webResourceUsage->year = date('Y');
 			$webResourceUsage->month = date('n');
-			global $fullServerName;
-			$webResourceUsage->instance = $fullServerName;
+			global $aspenUsage;
+			$webResourceUsage->instance = $aspenUsage->instance;
 			$webResourceUsage->resourceName = $webResource->name;
 			if($webResourceUsage->find(true)) {
 				$webResourceUsage->pageViews++;

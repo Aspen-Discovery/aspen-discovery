@@ -21,8 +21,8 @@ class OpenArchives_JSON extends JSON_Action
 		//Track usage of the record
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 		$openArchivesUsage = new OpenArchivesRecordUsage();
-		global $fullServerName;
-		$openArchivesUsage->instance = $fullServerName;
+		global $aspenUsage;
+		$openArchivesUsage->instance = $aspenUsage->instance;
 		$openArchivesUsage->openArchivesRecordId = $id;
 		$openArchivesUsage->year = date('Y');
 		$openArchivesUsage->month = date('n');
@@ -43,8 +43,8 @@ class OpenArchives_JSON extends JSON_Action
 			//Track usage for the user
 			require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
 			$userOpenArchivesUsage = new UserOpenArchivesUsage();
-			global $fullServerName;
-			$userOpenArchivesUsage->instance = $fullServerName;
+			global $aspenUsage;
+			$userOpenArchivesUsage->instance = $aspenUsage->instance;
 			$userOpenArchivesUsage->userId = $userId;
 			$userOpenArchivesUsage->year = date('Y');
 			$userOpenArchivesUsage->month = date('n');

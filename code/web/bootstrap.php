@@ -29,8 +29,11 @@ require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
 
-global $fullServerName;
-$aspenUsage->instance = $fullServerName;
+if (isset($_SERVER['SERVER_NAME'])) {
+	$aspenUsage->instance = $_SERVER['SERVER_NAME'];
+}else{
+	$aspenUsage->instance = 'aspen_internal';
+}
 
 //This has to be done after reading configuration so we can get the servername
 global $usageByIPAddress;
@@ -38,7 +41,7 @@ $usageByIPAddress = new UsageByIPAddress();
 $usageByIPAddress->year = date('Y');
 $usageByIPAddress->month = date('n');
 $usageByIPAddress->ipAddress = IPAddress::getClientIP();
-$usageByIPAddress->instance = $fullServerName;
+$usageByIPAddress->instance = $aspenUsage->instance;
 
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;
