@@ -26,7 +26,7 @@ class UserAPI extends Action
 				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile',
 					'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations',
 					'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage',
-					'initMasquerade', 'endMasquerade', 'saveNotificationPushToken', 'deleteNotificationPushToken', 'getNotificationPushToken'))) {
+					'initMasquerade', 'endMasquerade', 'saveNotificationPushToken', 'deleteNotificationPushToken', 'getNotificationPushToken', 'submitVdxRequest', 'cancelVdxRequest'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -2408,6 +2408,44 @@ class UserAPI extends Action
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			return $user->thawAllHolds();
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function submitVdxRequest() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)){
+				$vdxDriver = new VdxDriver();
+				return $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST, false);
+			}else{
+				return  array(
+					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+					'message' => translate(['text'=>"VDX Settings do not exist, please contact the library to make a request.", 'isPublicFacing'=>true]),
+					'success' => false
+				);
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function cancelVdxRequest() {
+		$user = $this->getUserForApiCall();
+		$title = translate(['text'=>'Error', 'isPublicFacing'=>true]);
+		if ($user && !($user instanceof AspenError)) {
+			$sourceId = $_REQUEST['sourceId'] ?? null;
+			$cancelId = $_REQUEST['cancelId'] ?? null;
+			$result = $user->cancelVdxRequest($sourceId, $cancelId);
+			if($result['success'] == true || $result['success'] == "true") {
+				$title = translate(['text'=>'Success', 'isPublicFacing'=>true]);
+			}
+			return array('success' => $result['success'], 'title' => $title, 'message' => $result['message']);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
