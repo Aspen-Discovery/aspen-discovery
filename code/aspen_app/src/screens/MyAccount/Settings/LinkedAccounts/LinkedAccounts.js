@@ -88,7 +88,7 @@ export default class LinkedAccounts extends Component {
 		return (
 			<HStack space={3} justifyContent="space-between" pt={2} pb={2} alignItems="center">
 				<Text bold>{item.displayName} - {item.homeLocation}</Text>
-				<Button colorScheme="warning" size="sm" onPress={async () => {await removeLinkedAccount(item.id, libraryUrl);}}>{translate('linked_accounts.remove')}</Button>
+				<Button colorScheme="warning" size="sm" onPress={async () => {await removeLinkedAccount(item.id, libraryUrl);}}>{translate('general.remove')}</Button>
 			</HStack>
 		);
 	};
@@ -104,7 +104,7 @@ export default class LinkedAccounts extends Component {
 	renderNoLinkedAccounts = () => {
 		return (
 			<Box pt={3} pb={5}>
-				<Text bold>{translate('linked_accounts.none')}</Text>
+				<Text bold>{translate('general.none')}</Text>
 			</Box>
 		);
 	};
@@ -123,9 +123,9 @@ export default class LinkedAccounts extends Component {
 		return (
 			<ScrollView>
 			<Box flex={1} safeArea={5}>
-				<DisplayMessage type="info" message="Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc. in the main account." />
-				<Heading fontSize="lg" pb={2}>Additional accounts to manage</Heading>
-				<Text>The following accounts can be managed from this account:</Text>
+				<DisplayMessage type="info" message={translate('linked_accounts.info_message')} />
+				<Heading fontSize="lg" pb={2}>{translate('linked_accounts.additional_accounts')}</Heading>
+				<Text>{translate('linked_accounts.following_accounts_can_manage')}</Text>
 				<FlatList
 					data={this.state.linkedAccounts}
 					renderItem={({item}) => this.renderLinkedAccounts(item, library.baseUrl)}
@@ -134,8 +134,8 @@ export default class LinkedAccounts extends Component {
 				/>
 				<AddLinkedAccount libraryUrl={library.baseUrl} />
 				<Divider my={4} />
-				<Heading fontSize="lg" pb={2}>Other accounts that can view this account</Heading>
-				<Text>The following accounts can view checkout and hold information from this account. If someone is viewing your account that you do not want to have access, please contact library staff.</Text>
+				<Heading fontSize="lg" pb={2}>{translate('linked_accounts.other_accounts')}</Heading>
+				<Text>{translate('linked_accounts.following_accounts_can_view')}</Text>
 				<FlatList
 					data={this.state.viewers}
 					renderItem={({item}) => this.renderViewers(item)}

@@ -80,7 +80,7 @@ export default class Contact extends Component {
 				<Center>
 					<Heading mb={1}>{library.displayName}</Heading>
 					{library.displayName != location.displayName ? (<Text mb={2}>{location.displayName}</Text>) : null}
-	io;				<Divider mb={2}/>
+					<Divider mb={2}/>
 					{location.showInLocationsAndHoursList === "1" ?
 						<HoursAndLocation hoursMessage={location.hoursMessage} hours={location.hours}
 						                  description={location.description}/> : null}

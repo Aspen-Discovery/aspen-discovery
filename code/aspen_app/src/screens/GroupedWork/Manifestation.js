@@ -8,7 +8,12 @@ import DisplayRecord, {Record} from "./Record";
 const Manifestation = (props) => {
 
 	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
-	const arrayToSearch = data[format];
+
+	let arrayToSearch = [];
+
+	if(typeof data[format] !== "undefined") {
+		arrayToSearch = data[format];
+	}
 
 	let locationCount = 1;
 	if(typeof locations !== "undefined") {
@@ -42,9 +47,11 @@ const Manifestation = (props) => {
 
 		let volumes = [];
 		let majorityOfItemsHaveVolumes = false;
+		let hasItemsWithoutVolumes = false;
 		if(discoveryVersion >= "22.06.00") {
 			volumes = item.volumes;
 			majorityOfItemsHaveVolumes = item.majorityOfItemsHaveVolumes;
+			hasItemsWithoutVolumes = item.hasItemsWithoutVolumes;
 		}
 
 		return (
@@ -71,6 +78,7 @@ const Manifestation = (props) => {
 				linkedAccounts = {linkedAccounts}
 				openCheckouts = {openCheckouts}
 				openHolds = {openHolds}
+				hasItemsWithoutVolumes = {hasItemsWithoutVolumes}
 				majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
 				volumes = {volumes}
 				discoveryVersion = {discoveryVersion}

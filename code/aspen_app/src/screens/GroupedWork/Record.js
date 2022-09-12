@@ -32,8 +32,9 @@ export class Record extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
-		const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes} = this.props;
+		const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes} = this.props;
 		let actionCount = 1;
+		console.log(actions);
 		if(typeof actions !== 'undefined') {
 			actionCount = _.size(actions);
 		}
@@ -103,6 +104,7 @@ export class Record extends Component {
 										linkedAccounts = {linkedAccounts}
 										linkedAccountsCount = {linkedAccountsCount}
 										updateProfile = {updateProfile}
+										hasItemsWithoutVolumes = {hasItemsWithoutVolumes}
 										majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
 										volumes = {volumes}
 									/>
@@ -173,8 +175,6 @@ const CheckOutEContent = (props) => {
 
 const ILS = (props) => {
 	const [loading, setLoading] = React.useState(false);
-
-	console.log(props.majorityOfItemsHaveVolumes);
 	if (props.locationCount && props.locationCount > 1) {
 		return (
 			<SelectPickupLocation
@@ -192,10 +192,11 @@ const ILS = (props) => {
 				majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
 				volumes = {props.volumes}
 				updateProfile = {props.updateProfile}
+				hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
 			/>
 		)
 	} else {
-		if(props.majorityOfItemsHaveVolumes) {
+		if(props.majorityOfItemsHaveVolumes || props.hasItemsWithoutVolumes) {
 			return (
 				<SelectVolumeHold
 					label={props.actionLabel}
@@ -209,6 +210,8 @@ const ILS = (props) => {
 					user = {props.user}
 					volumes = {props.volumes}
 					updateProfile = {props.updateProfile}
+					hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
+					majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
 				/>
 			)
 		} else {

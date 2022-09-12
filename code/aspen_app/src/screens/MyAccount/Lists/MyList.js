@@ -88,14 +88,15 @@ export default class MyList extends Component {
 		return (
 			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, this.state.libraryUrl)}>
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
-					<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
+					<VStack w="25%">
+						<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
+						<Button onPress={() => {
+							removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl)}} colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs"/>} size="sm" variant="ghost">{translate('general.delete')}</Button>
+					</VStack>
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "sm", lg: "md"}}>{item.title}</Text>
 						{item.author ? <Text _dark={{ color: "warmGray.50" }} color="coolGray.800" fontSize="xs">{translate('grouped_work.by')} {item.author}</Text> : null }
 					</VStack>
-					<IconButton icon={<Icon as={MaterialIcons} name="delete" />} _icon={{size: "xs", color: "gray.600"}} onPress={() => {
-						removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl)
-					}} style={{ justifyContent: "flex-end", textAlign: "right" }}/>
 				</HStack>
 			</Pressable>
 		)
@@ -109,7 +110,7 @@ export default class MyList extends Component {
 		return (
 			<Center mt={5} mb={5}>
 				<Text bold fontSize="lg">
-					This list is empty. Why not add something to it?
+					{translate('lists.empty')}
 				</Text>
 			</Center>
 		);

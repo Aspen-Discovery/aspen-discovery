@@ -404,7 +404,7 @@ export class DrawerContent extends Component {
 			numSavedSearchesNew = 0;
 		}
 
-		//console.log(library);
+		console.log(library);
 
 		return (
 			<DrawerContentScrollView>
@@ -577,7 +577,7 @@ function LogOutButton() {
 const ReloadProfileButton = (props) => {
 
 	return(
-		<Button size="xs" colorScheme="tertiary" onPress={() => props.handleRefreshProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
+		<Button size="xs" colorScheme="tertiary" onPress={() => props.handleRefreshProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>{translate('general.refresh_account')}</Button>
 	)
 }
 

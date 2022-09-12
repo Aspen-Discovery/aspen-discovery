@@ -8,6 +8,7 @@ import {loadingSpinner} from "../../../components/loadingSpinner";
 import CreateList from "./CreateList";
 import {getHolds, getLists} from "../../../util/loadPatron";
 import {userContext} from "../../../context/user";
+import {translate} from "../../../translations/translations";
 
 export default class MyLists extends Component {
 	constructor() {
@@ -54,9 +55,9 @@ export default class MyLists extends Component {
 	renderList = (item, libraryUrl) => {
 		let lastUpdated = moment.unix(item.dateUpdated);
 		lastUpdated = moment(lastUpdated).format("MMM D, YYYY");
-		let privacy = "Private";
+		let privacy = translate('general.private');
 		if(item.public === 1) {
-			privacy = "Public";
+			privacy = translate('general.public');
 		}
 		if(item.id !== "recommendations") {
 			return (
@@ -70,8 +71,8 @@ export default class MyLists extends Component {
 							<Box>
 								<Text bold fontSize="md">{item.title}</Text>
 								{item.description ? (<Text fontSize="xs" mb={2}>{item.description}</Text>) : null}
-								<Text fontSize="9px" italic>Last updated on {lastUpdated}</Text>
-								<Text fontSize="9px" italic>{item.numTitles} items</Text>
+								<Text fontSize="9px" italic>{translate('general.last_updated_on', {date: lastUpdated})}</Text>
+								<Text fontSize="9px" italic>{translate('lists.num_items_on_list', {num: item.numTitles})}</Text>
 							</Box>
 						</VStack>
 					</HStack>
@@ -88,7 +89,7 @@ export default class MyLists extends Component {
 		return (
 			<Center mt={5} mb={5}>
 				<Text bold fontSize="lg">
-					You have no lists. Why not create one?
+					{translate('lists.no_lists_yet')}
 				</Text>
 			</Center>
 		);
