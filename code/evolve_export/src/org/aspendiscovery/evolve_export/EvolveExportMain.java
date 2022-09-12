@@ -315,18 +315,23 @@ public class EvolveExportMain {
 								boolean isExistingItem = false;
 								try{
 									for (DataField existingItemField : existingItemFields){
-										if (StringUtils.equals(existingItemField.getSubfield(indexingProfile.getBarcodeSubfield()).getData(), itemBarcode)){
-											isExistingItem = true;
-											MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
-											MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
-											MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
-											if (curItem.isNull("DueDate")) {
-												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
-											}else{
-												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+										Subfield existingBarcodeSubfield = existingItemField.getSubfield(indexingProfile.getBarcodeSubfield());
+										if (existingBarcodeSubfield == null) {
+
+										}else{
+											if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
+												isExistingItem = true;
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+												if (curItem.isNull("DueDate")) {
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+												} else {
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+												}
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+												break;
 											}
-											MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
-											break;
 										}
 									}
 									if (!isExistingItem){
