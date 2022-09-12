@@ -931,7 +931,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			setDetailedStatus(itemInfo, itemField, itemStatus, recordInfo.getRecordIdentifier());
 		}
 
-		loadItemFormat(recordInfo, itemField, itemInfo);
+		if (formatSource.equals("item")){
+			loadItemFormat(recordInfo, itemField, itemInfo);
+		}
 
 		groupedWork.addKeywords(itemLocation);
 		if (itemSublocation.length() > 0){

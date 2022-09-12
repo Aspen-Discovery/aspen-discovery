@@ -126,7 +126,7 @@ public class RecordInfo {
 				relatedFormats.put(format, 1);
 			}
 			for (ItemInfo curItem : relatedItems){
-				if (curItem.getFormat() != null) {
+				if (curItem.getFormat() != null && !curItem.getFormat().equals("")) {
 					relatedFormats.put(curItem.getFormat(), relatedFormats.getOrDefault(curItem.getFormat(), 1));
 				}
 			}
