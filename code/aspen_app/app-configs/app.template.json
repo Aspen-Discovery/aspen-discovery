@@ -48,20 +48,22 @@
       "versionCode": 1,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "FOREGROUND_SERVICE"
+        "ACCESS_FINE_LOCATION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
         "backgroundColor": "bgColor"
       },
       "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
-      "googleServicesFile": "./google-services_appSlug.json"
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
     },
     "description": "",
+    "notification": {
+      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=logoNotification&slug=appSlug"
+    },
     "extra": {
       "apiUrl": "libraryUrl",
       "greenhouse": "https://aspen-test.bywatersolutions.com/",

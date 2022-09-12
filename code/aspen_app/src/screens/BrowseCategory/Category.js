@@ -3,6 +3,7 @@ import {Button, FlatList, HStack, Icon, Text, View, Center, Heading, SectionList
 import {MaterialIcons} from "@expo/vector-icons";
 import _ from "lodash";
 import * as Random from 'expo-random';
+import {translate} from "../../translations/translations";
 
 const DisplayBrowseCategory = (props) => {
 	const {id, user, renderRecords, header, libraryUrl, records, categoryLabel, categoryKey, hideCategory, loadMore, categorySource, discoveryVersion} = props;
@@ -27,7 +28,7 @@ const DisplayBrowseCategory = (props) => {
 						<Text maxWidth="80%" bold mb={1} fontSize={{base: "lg", lg: "2xl"}}>{categoryLabel}</Text>
 						<Button size="xs" colorScheme="trueGray" variant="ghost"
 						        onPress={() => hideCategory(libraryUrl, key, user)}
-						        startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>Hide</Button>
+						        startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>{translate('general.hide')}</Button>
 					</HStack>
 					<FlatList
 						horizontal

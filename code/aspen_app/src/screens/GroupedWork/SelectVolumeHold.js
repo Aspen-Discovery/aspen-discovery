@@ -1,14 +1,21 @@
 import React, {useState} from "react";
-import {Button, FormControl, Modal, Select, CheckIcon} from "native-base";
+import {Button, FormControl, Modal, Select, CheckIcon, Radio, Stack} from "native-base";
 import {translate} from "../../translations/translations";
 import {completeAction} from "./Record";
 
 const SelectVolumeHold = (props) => {
 
-	const {label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, volumes, updateProfile} = props;
+	const {label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, volumes, updateProfile, majorityOfItemsHaveVolumes, hasItemsWithoutVolumes} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState("");
+
+	let typeOfHold = "bib";
+	if(majorityOfItemsHaveVolumes) {
+		typeOfHold = "volume"
+	}
+
+	let [holdType, setHoldType] = React.useState(typeOfHold);
 	let [activeAccount, setActiveAccount] = React.useState(user.id);
 
 	const availableAccounts = Object.values(linkedAccounts);
@@ -23,7 +30,7 @@ const SelectVolumeHold = (props) => {
 					<Modal.Body>
 						{linkedAccountsCount > 0 ? (
 							<FormControl>
-								<FormControl.Label>Place hold for account</FormControl.Label>
+								<FormControl.Label>{translate('linked_accounts.place_hold_for_account')}</FormControl.Label>
 								<Select
 									name="linkedAccount"
 									selectedValue={activeAccount}
@@ -45,7 +52,7 @@ const SelectVolumeHold = (props) => {
 							</FormControl>
 						) : null}
 						<FormControl>
-							<FormControl.Label>Select volume</FormControl.Label>
+							<FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
 							<Select
 								name="volumeForHold"
 								selectedValue={volume}
