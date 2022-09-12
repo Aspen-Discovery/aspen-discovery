@@ -676,6 +676,11 @@ class ExtractOverDriveInfo {
 	private void loadNewProducts(long startTime) throws SocketTimeoutException {
 		int daysToLoad = (int)Math.ceil((double)(new Date().getTime() - lastExtractDate.getTime()) / (double)(24 * 60 * 60 * 1000));
 
+		//Only use a maximum of 90 days since that is all that OverDrive supports.
+		if (daysToLoad > 90){
+			daysToLoad = 90;
+		}
+
 		for (AdvantageCollectionInfo collectionInfo : allAdvantageCollections){
 			String newProductsUrl = "https://api.overdrive.com/v1/collections/" + collectionInfo.getCollectionToken() + "/products/?daysSinceAdded=" + daysToLoad;
 			loadProductsFromUrl(collectionInfo, newProductsUrl, LOAD_NEW_PRODUCTS, startTime);
