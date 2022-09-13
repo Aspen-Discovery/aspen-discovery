@@ -333,7 +333,7 @@ function getValidServerNames() : array{
 				$validServerNames[] = "$host";
 			}
 		}
-		$memCache->set('validServerNames', $validServerNames, 60 * 60);
+		$memCache->set('validServerNames', $validServerNames, 5 * 60 * 60);
 	}
 	return $validServerNames;
 }
