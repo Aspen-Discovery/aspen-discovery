@@ -773,11 +773,11 @@ abstract class MarcRecordProcessor {
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Letters");
-			}else if (subjectForm.equalsIgnoreCase("Short stories")
+			}else if (subjectForm.equalsIgnoreCase("Short Stories")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
-				addToMapWithCount(literaryFormsFull, "Short stories");
+				addToMapWithCount(literaryFormsFull, "Short Stories");
 			}else if (subjectForm.equalsIgnoreCase("essays")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
