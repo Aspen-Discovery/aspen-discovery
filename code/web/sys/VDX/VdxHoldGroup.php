@@ -13,7 +13,7 @@ class VdxHoldGroup extends DataObject
 
 	public static function getObjectStructure(): array
 	{
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer ILL Hold Groups'));
+		$locationList = Location::getLocationList(false);
 
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],

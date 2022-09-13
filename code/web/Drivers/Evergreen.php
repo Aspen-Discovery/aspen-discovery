@@ -369,7 +369,7 @@ class Evergreen extends AbstractIlsDriver
 				$namedParams['expire_time'] = $cancelDate;
 			}
 
-			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
+			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch.override';
 			$request .= '&param=' . json_encode($authToken);
 			$request .= '&param=' . json_encode($namedParams);
 			$request .= '&param=' . json_encode([(int)$itemId]);
@@ -593,7 +593,10 @@ class Evergreen extends AbstractIlsDriver
 
 	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
 	{
-		// TODO: Implement updatePatronInfo() method.
+		return [
+			'success' => false,
+			'messages' => ['Cannot update patron information with this ILS.']
+		];
 	}
 
 	public function hasNativeReadingHistory() : bool
@@ -795,7 +798,7 @@ class Evergreen extends AbstractIlsDriver
 				$namedParams['expire_time'] = $cancelDate;
 			}
 
-			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
+			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch.override';
 			$request .= '&param=' . json_encode($authToken);
 			$request .= '&param=' . json_encode($namedParams);
 			$request .= '&param=' . json_encode([(int)$recordId]);
@@ -807,7 +810,8 @@ class Evergreen extends AbstractIlsDriver
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'T',
-				"titleid" => (int)$recordId
+				"titleid" => (int)$recordId,
+				"oargs" => [ "all" => 1 ]
 			];
 			$requestB .= '&param=' . json_encode($namedParamsB);
 

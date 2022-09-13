@@ -297,6 +297,13 @@ function getUpdates22_09_00() : array
 				"alter table grouped_work_display_settings ADD COLUMN sortOwnedEditionsFirst TINYINT(1) DEFAULT 0",
 			]
 		], //symphony_self_registration_profile
+		'clean_up_invalid_instances' => [
+			'title' => 'Clean Up Invalid Instances',
+			'description' => 'Remove instances that are not valid for a given server',
+			'sql' => [
+				"cleanUpInvalidInstances",
+			]
+		], //clean_up_invalid_instances
 
 		//kirstien
 		'aci_speedpay_settings' => [
@@ -452,4 +459,133 @@ function moveLocationAppSettings(/** @noinspection PhpUnusedParameterInspection 
 
 		$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
 	}
+}
+
+function cleanUpInvalidInstances(/** @noinspection PhpUnusedParameterInspection */ &$update){
+	$validServerNames = getValidServerNames();
+	$serverNamesToPreserve = '';
+	foreach ($validServerNames as $validServerName){
+		if (strlen($serverNamesToPreserve) != 0){
+			$serverNamesToPreserve .= ', ';
+		}
+		$serverNamesToPreserve .= "'" . $validServerName . "'";
+	}
+
+	global $aspen_db;
+
+	$cleanupSQL = "DELETE from aspen_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved aspen_usage entries<br/>";
+
+	$cleanupSQL = "DELETE from axis360_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved axis360_record_usage entries<br/>";
+
+	$cleanupSQL = "DELETE from axis360_stats where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved axis360_stats<br/>";
+
+	$cleanupSQL = "DELETE from user_axis360_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_axis360_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_cloud_library_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_cloud_library_usage<br/>";
+
+	$cleanupSQL = "DELETE from cloud_library_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved cloud_library_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from ebsco_eds_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved ebsco_eds_usage<br/>";
+
+	$cleanupSQL = "DELETE from ebscohost_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved ebscohost_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_ebsco_eds_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_ebsco_eds_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_ebscohost_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_ebscohost_usage<br/>";
+
+	$cleanupSQL = "DELETE from hoopla_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved hoopla_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_hoopla_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_hoopla_usage<br/>";
+
+	$cleanupSQL = "DELETE from ils_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved ils_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_ils_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_ils_usage<br/>";
+
+	$cleanupSQL = "DELETE from sideload_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved sideload_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_sideload_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_sideload_usage<br/>";
+
+	$cleanupSQL = "DELETE from open_archives_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved open_archives_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_open_archives_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_open_archives_usage<br/>";
+
+	$cleanupSQL = "DELETE from overdrive_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved overdrive_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from overdrive_stats where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved overdrive_stats<br/>";
+
+	$cleanupSQL = "DELETE from user_overdrive_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_overdrive_usage<br/>";
+
+	$cleanupSQL = "DELETE from overdrive_stats where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved overdrive_stats<br/>";
+
+	$cleanupSQL = "DELETE from rbdigital_magazine_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved rbdigital_magazine_usage<br/>";
+
+	$cleanupSQL = "DELETE from rbdigital_record_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved rbdigital_record_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_rbdigital_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_rbdigital_usage<br/>";
+
+	$cleanupSQL = "DELETE from api_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved api_usage<br/>";
+
+	$cleanupSQL = "DELETE from web_builder_resource_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved web_builder_resource_usage<br/>";
+
+	$cleanupSQL = "DELETE from user_website_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved user_website_usage<br/>";
+
+	$cleanupSQL = "DELETE from website_page_usage where instance not in ($serverNamesToPreserve)";
+	$numRemoved = $aspen_db->exec($cleanupSQL);
+	$update['status'] .= "Removed $numRemoved website_page_usage<br/>";
 }

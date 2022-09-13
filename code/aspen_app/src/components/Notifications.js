@@ -131,10 +131,67 @@ async function createNotificationChannels() {
 }
 
 async function createNotificationCategories() {
-	Notifications.setNotificationCategoryAsync('savedSearch', {
-		identifier: 'Saved Searches',
-		buttonTitle: 'View',
+	Notifications.setNotificationCategoryAsync(
+		'savedSearch',
+		[{
+			identifier: 'Saved Searches',
+			buttonTitle: 'View',
+		}]
+	);
+}
+
+async function createNotificationChannelGroup(id, name, description = null) {
+	if (Platform.OS === 'android') {
+		Notifications.setNotificationChannelGroupAsync(`${id}`, {
+			name: `${name}`,
+			description: `${description}`
 		});
+	}
+}
+
+async function createNotificationChannel(id, name, groupId) {
+	if (Platform.OS === 'android') {
+		Notifications.setNotificationChannelAsync(`${id}`, {
+			name: `${name}`,
+			importance: Notifications.AndroidImportance.MAX,
+			vibrationPattern: [0, 250, 250, 250],
+			lightColor: '#FF231F7C',
+			groupId: `${groupId}`,
+			showBadge: true
+		});
+	}
+}
+
+async function getNotificationChannels() {
+	if (Platform.OS === 'android') {
+		return Notifications.getNotificationChannelAsync();
+	}
+	return false;
+}
+
+async function deleteNotificationChannel(channel) {
+	if (Platform.OS === 'android') {
+		return Notifications.deleteNotificationChannelAsync(`${channel}`);
+	}
+	return false;
+}
+
+async function createNotificationCategory(id, name, button) {
+	Notifications.setNotificationCategoryAsync(
+		`${id}`,
+		[{
+			identifier: `${name}`,
+			buttonTitle: `${button}`,
+		}]
+	);
+}
+
+async function getNotificationCategories() {
+	return Notifications.getNotificationCategoriesAsync();
+}
+
+async function deleteNotificationCategory(category) {
+	return Notifications.deleteNotificationCategoryAsync(`${category}`);
 }
 
 /** status/colorScheme options: success, error, info, warning **/

@@ -3,6 +3,7 @@ import {Button, Center, Modal, Box, Text, Icon, FormControl, Input, Radio, TextA
 import {MaterialIcons} from "@expo/vector-icons";
 import {addTitlesToList, createListFromTitle, getLists} from "../../util/loadPatron";
 import _ from "lodash";
+import { translate } from '../../translations/translations';
 
 export const AddToListFromItem = (props) => {
 	const { item, libraryUrl, lastListUsed } = props;
@@ -26,39 +27,39 @@ export const AddToListFromItem = (props) => {
 					});
 				}
 			} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1"/>}>
-				Add to list</Button>
+				{translate('lists.add_to_list')}</Button>
 			<Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full">
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>
-						<Heading size="sm">Add to List</Heading>
+						<Heading size="sm">{translate('lists.add_to_list')}</Heading>
 					</Modal.Header>
 					<Modal.Body>
 						<FormControl pb={5}>
 							{!_.isUndefined(lists)  ? (
 								<Box>
-									<FormControl.Label>Choose a List</FormControl.Label>
+									<FormControl.Label>{translate('lists.choose_a_list')}</FormControl.Label>
 									<Select selectedValue={listId} onValueChange={(itemValue) => {setListId(itemValue)}}>
 										{lists.map((item, index) => {
 											return (<Select.List value={item.id} label={item.title} />);
 										})}
 									</Select>
 									<HStack space={3} alignItems="center" pt={2}>
-										<Text>or</Text>
+										<Text>{translate('general.or')}</Text>
 										<Button size="sm" onPress={() => {
 											setShowUseExistingModal(false)
 											setShowCreateNewModal(true)
-										}}>Create a new list</Button>
+										}}>{translate('lists.create_new_list')}</Button>
 									</HStack>
 								</Box>
 							) : (
-								<Text>You have no lists yet</Text>
+								<Text>{translate('lists.no_lists_yet')}</Text>
 							)}
 						</FormControl>
 					</Modal.Body>
 					<Modal.Footer>
 						<Button.Group>
-							<Button variant="outline" onPress={() => setShowUseExistingModal(false)}>Cancel</Button>
+							<Button variant="outline" onPress={() => setShowUseExistingModal(false)}>{translate('general.cancel')}</Button>
 							{!_.isEmpty(lists) ? (<Button
 								isLoading={loading}
 								onPress={async () => {
@@ -67,10 +68,10 @@ export const AddToListFromItem = (props) => {
 										setLoading(false);
 										setShowUseExistingModal(false)
 									});
-								}}>Save to list</Button>) : (<Button onPress={() => {
+								}}>{translate('lists.save_to_list')}</Button>) : (<Button onPress={() => {
 								setShowUseExistingModal(false)
 								setShowCreateNewModal(true)
-							}}>Create a new list</Button>) }
+							}}>{translate('lists.create_new_list')}</Button>) }
 
 						</Button.Group>
 					</Modal.Footer>
@@ -80,11 +81,11 @@ export const AddToListFromItem = (props) => {
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>
-						<Heading size="sm">Create a new list from item</Heading>
+						<Heading size="sm">{translate('lists.create_new_list_item')}</Heading>
 					</Modal.Header>
 					<Modal.Body>
 						<FormControl pb={5}>
-							<FormControl.Label>Title</FormControl.Label>
+							<FormControl.Label>{translate('general.title')}</FormControl.Label>
 							<Input
 								id="title"
 								onChangeText={text => setTitle(text)}
@@ -92,7 +93,7 @@ export const AddToListFromItem = (props) => {
 							/>
 						</FormControl>
 						<FormControl pb={5}>
-							<FormControl.Label>Description</FormControl.Label>
+							<FormControl.Label>{translate('general.description')}</FormControl.Label>
 							<TextArea
 								id="description"
 								onChangeText={text => setDescription(text)}
@@ -100,18 +101,18 @@ export const AddToListFromItem = (props) => {
 							/>
 						</FormControl>
 						<FormControl>
-							<FormControl.Label>Access</FormControl.Label>
+							<FormControl.Label>{translate('general.access')}</FormControl.Label>
 							<Radio.Group defaultValue="1">
 								<Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px" onChange={nextValue => {setAccess(nextValue)}}>
-									<Radio value="1" my={1}>Private</Radio>
-									<Radio value="0" my={1}>Public</Radio>
+									<Radio value="1" my={1}>{translate('general.private')}</Radio>
+									<Radio value="0" my={1}>{translate('general.public')}</Radio>
 								</Stack>
 							</Radio.Group>
 						</FormControl>
 					</Modal.Body>
 					<Modal.Footer>
 						<Button.Group>
-							<Button variant="outline" onPress={() => setShowCreateNewModal(false)}>Cancel</Button>
+							<Button variant="outline" onPress={() => setShowCreateNewModal(false)}>{translate('general.cancel')}</Button>
 							<Button
 								isLoading={loading}
 								onPress={async () => {
@@ -121,7 +122,7 @@ export const AddToListFromItem = (props) => {
 										setShowCreateNewModal(false);
 									});
 								}}
-							>Create List</Button>
+							>{translate('lists.create_list')}</Button>
 						</Button.Group>
 					</Modal.Footer>
 				</Modal.Content>

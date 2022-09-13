@@ -19,7 +19,7 @@ class SystemAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLocationAppSettings', 'getTranslation', 'getLanguages'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLocationAppSettings', 'getTranslation', 'getLanguages', 'getVdxForm'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -674,6 +674,46 @@ class SystemAPI extends Action
 			'priorities' => $priorities,
 			'numActiveTickets' => $numActiveTickets,
 		);
+	}
+
+	function getVdxForm() {
+		$result = array(
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to load VDX form',
+		);
+
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+
+		if(isset($_REQUEST['formId'])) {
+			$formId = $_REQUEST['formId'];
+		} else {
+			return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'A VDX form id was not given.', 'isPublicFacing'=> true]));
+		}
+
+		$vdxSettings = new VdxSetting();
+		if($vdxSettings->find(true)) {
+			$vdxForm = new VdxForm();
+			$vdxForm->id = $formId;
+			if($vdxForm->find(true)) {
+				$vdxFormFields = $vdxForm->getFormFieldsForApi();
+				$result = array(
+					'success' => true,
+					'title' => translate(['text' => 'Request Title', 'isPublicFacing'=> true]),
+					'message' => translate(['text' => 'If you cannot find a title in our catalog, you can request the title via this form. Please enter as much information as possible so we can find the exact title you are looking for. For example, if you are looking for a specific season of a TV show, please include that information.', 'isPublicFacing' => true]),
+					'buttonLabel' => translate(['text' => 'Place Request', 'isPublicFacing'=> true]),
+					'buttonLabelProcessing' => translate(['text' => 'Placing Request', 'isPublicFacing'=> true]),
+					'fields' => $vdxFormFields,
+				);
+			} else {
+				return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'Unable to find the specified form.', 'isPublicFacing'=> true]));
+			}
+		} else {
+			return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'VDX Settings do not exist, please contact the library to make a request.', 'isPublicFacing'=> true]));
+		}
+
+		return $result;
 	}
 
 	function getBreadcrumbs() : array

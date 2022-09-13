@@ -125,6 +125,7 @@ export class Record extends Component {
 										linkedAccounts = {linkedAccounts}
 										linkedAccountsCount = {linkedAccountsCount}
 										updateProfile = {updateProfile}
+										hasItemsWithoutVolumes = {hasItemsWithoutVolumes}
 										majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
 										volumes = {volumes}
 									/>
@@ -232,10 +233,11 @@ const ILS = (props) => {
 				majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
 				volumes = {props.volumes}
 				updateProfile = {props.updateProfile}
+				hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
 			/>
 		)
 	} else {
-		if(props.majorityOfItemsHaveVolumes) {
+		if(props.majorityOfItemsHaveVolumes || props.hasItemsWithoutVolumes) {
 			return (
 				<SelectVolumeHold
 					label={props.actionLabel}
@@ -249,6 +251,8 @@ const ILS = (props) => {
 					user = {props.user}
 					volumes = {props.volumes}
 					updateProfile = {props.updateProfile}
+					hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
+					majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
 				/>
 			)
 		} else {

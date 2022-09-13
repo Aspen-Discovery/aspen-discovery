@@ -161,12 +161,12 @@ function readConfig()
 
 	global $fullServerName, $serverName, $instanceName;
 
-	if (isset($_SERVER['aspen_server'])) {
+	if (!empty($_SERVER['aspen_server'])) {
 		//Override withing the config file
 		$fullServerName = $_SERVER['aspen_server'];
 		//echo("Server name is set as server var $fullServerName\r\n");
 	} else {
-		if (isset($_SERVER['SERVER_NAME'])) {
+		if (!empty($_SERVER['SERVER_NAME'])) {
 			//Run from browser
 			$fullServerName = $_SERVER['SERVER_NAME'];
 		} elseif (count($_SERVER['argv']) > 1) {

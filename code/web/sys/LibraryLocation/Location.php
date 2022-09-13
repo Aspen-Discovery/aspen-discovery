@@ -1580,6 +1580,8 @@ class Location extends DataObject
 			'phone' => $this->phone,
 			'tty' => $this->tty,
 			'description' => $this->description,
+			'vdxFormId' => $this->vdxFormId,
+			'vdxLocation' => $this->vdxLocation,
 			'showInLocationsAndHoursList' => $this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []

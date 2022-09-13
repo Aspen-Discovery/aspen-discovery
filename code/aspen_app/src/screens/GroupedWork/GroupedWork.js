@@ -306,6 +306,11 @@ export default class GroupedWork extends Component {
 			return (loadError(this.state.error, this._fetchResults));
 		}
 
+		let displayTitle = this.state.data.title;
+		if(this.state.data.subtitle && this.state.data.subtitle !== "") {
+			displayTitle = displayTitle.concat(": ", this.state.data.subtitle)
+		}
+
 		let ratingCount = 0;
 		if(this.state.ratingData != null) {
 			ratingCount = this.state.ratingData.count;
@@ -341,7 +346,7 @@ export default class GroupedWork extends Component {
 							/>
 						</Box>
 						<Text fontSize={{base: "lg", lg: "2xl"}} bold pt={5} alignText="center">
-							{this.state.data.title} {this.state.data.subtitle}
+							{displayTitle}
 						</Text>
 						{this.showAuthor(library.baseUrl)}
 						{ratingCount > 0 ?
