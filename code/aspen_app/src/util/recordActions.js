@@ -8,7 +8,7 @@ import * as Sentry from 'sentry-expo';
 import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {getCheckedOutItems, getHolds, getProfile} from "./loadPatron";
-import {popToast} from "../components/loadError";
+import {popAlert, popAlertNew, popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
 import {userContext} from "../context/user";
 
@@ -214,6 +214,44 @@ export async function getItemDetails(libraryUrl, id, format) {
 	if (response.ok) {
 		//console.log(response);
 		return _.values(response.data);
+	} else {
+		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
+	}
+}
+
+export async function submitVdxRequest(libraryUrl, request) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {
+			'title': request.title,
+			'author': request.author,
+			'publisher': request.publisher,
+			'isbn': request.isbn,
+			'maximumFeeAmount': request.maximumFeeAmount,
+			'acceptFee': request.acceptFee,
+			'pickupLocation': request.pickupLocation,
+			'catalogKey': request.catalogKey,
+			'note': request.note,
+		}
+	});
+	const response = await api.post('/UserAPI?method=submitVdxRequest', postBody);
+	if (response.ok) {
+		console.log(response.data);
+		if(response.data.success === true) {
+
+		} else {
+			try {
+				popAlertNew("Unknown Error", response.data.message, "error")
+			} catch (e) {
+				console.log(e);
+			}
+		}
+		return response.data;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);

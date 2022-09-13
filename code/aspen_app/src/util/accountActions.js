@@ -796,3 +796,21 @@ export async function saveLanguage(code, libraryUrl) {
 		console.log(response);
 	}
 }
+
+export async function cancelVdxRequest(libraryUrl) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+	});
+	const response = await api.post('/UserAPI?method=cancelVdxRequest', postBody);
+	if (response.ok) {
+		console.log(response);
+		return response.data;
+	} else {
+		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
+	}
+}

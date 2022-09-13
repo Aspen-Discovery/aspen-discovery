@@ -6,10 +6,8 @@ import {translate} from '../../translations/translations';
 import DisplayRecord, {Record} from "./Record";
 
 const Manifestation = (props) => {
-
-	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
-
-	let arrayToSearch = [];
+	let arrayToSearch = data[format];
+	const {navigation, data, format, language, locations, showAlert, groupedWorkTitle, groupedWorkAuthor, groupedWorkISBN, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
 
 	if(typeof data[format] !== "undefined") {
 		arrayToSearch = data[format];
@@ -74,6 +72,8 @@ const Manifestation = (props) => {
 				itemDetails = {itemDetails}
 				user = {user}
 				groupedWorkId = {groupedWorkId}
+				groupedWorkAuthor = {groupedWorkAuthor}
+				groupedWorkISBN = {groupedWorkISBN}
 				library = {library}
 				linkedAccounts = {linkedAccounts}
 				openCheckouts = {openCheckouts}
@@ -83,6 +83,8 @@ const Manifestation = (props) => {
 				volumes = {volumes}
 				discoveryVersion = {discoveryVersion}
 				updateProfile = {updateProfile}
+				navigation = {navigation}
+				recordData = {item}
 			/>
 		)
 	})

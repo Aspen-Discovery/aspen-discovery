@@ -7,6 +7,7 @@ import SearchByCategory from "../../screens/Search/SearchByCategory";
 import SearchByList from "../../screens/Search/SearchByList";
 import SearchBySavedSearch from "../../screens/Search/SearchBySavedSearch";
 import Results from "../../screens/Search/Results";
+import CreateVDXRequest from "../../screens/GroupedWork/CreateVDXRequest";
 
 
 const BrowseStackNavigator = () => {
@@ -68,6 +69,14 @@ const BrowseStackNavigator = () => {
 				options={({ route }) => ({
 					title: translate('search.search_results_title') + route.params.categoryLabel,
 				})}
+			/>
+			<Stack.Screen
+				name="CreateVDXRequest"
+				component={CreateVDXRequest}
+				options={{
+					title: 'Request Title',
+					presentation: 'modal',
+				}}
 			/>
 		</Stack.Navigator>
 	)

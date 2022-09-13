@@ -13,17 +13,37 @@ import _ from "lodash";
 import SelectLinkedAccount from "./SelectLinkedAccount";
 import SelectVolumeHold from "./SelectVolumeHold";
 import {userContext} from "../../context/user";
+import {getVdxForm} from "../../util/loadLibrary";
 
 export class Record extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			loading: true,
+			vdxOptions: [],
 		}
 	}
 
 	componentDidMount = async () => {
+		await this._loadVDX().then(res => {
+			this.setState({
+				vdxOptions: res,
+			})
+		})
+	}
 
+	_loadVDX = async () => {
+		try {
+			const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
+			if(vdxFormFields === null) {
+				await getVdxForm(this.context.library.baseUrl, this.context.location.vdxFormId).then(res => {
+					return res;
+				});
+			}
+			return JSON.parse(vdxFormFields);
+		} catch(e) {
+			console.log(e);
+		}
 	}
 
 	static contextType = userContext;
@@ -32,9 +52,10 @@ export class Record extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
-		const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes} = this.props;
+
+		const {recordData, available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, groupedWorkISBN, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes, groupedWorkAuthor} = this.props;
 		let actionCount = 1;
-		console.log(actions);
+
 		if(typeof actions !== 'undefined') {
 			actionCount = _.size(actions);
 		}
@@ -125,6 +146,25 @@ export class Record extends Component {
 								return (
 									<OnHoldForYou title={thisAction.title} openHolds={openHolds} />
 								)
+							} else if (thisAction.type === "vdx_request") {
+								return (
+									<Button
+										onPress={() => this.props.navigation.navigate('CreateVDXRequest', {
+											record: recordData,
+											title: title,
+											author: groupedWorkAuthor,
+											publisher: recordData.publisher,
+											isbn: groupedWorkISBN,
+											acceptFee: false,
+											pickupLocation: user.pickupLocationId,
+											vdxOptions: this.state.vdxOptions,
+											catalogKey: id,
+											navigation: this.props.navigation
+										})}
+									>
+										{thisAction.title}
+									</Button>
+								)
 							} else {
 								return (
 									<CheckOutEContent
@@ -175,6 +215,7 @@ const CheckOutEContent = (props) => {
 
 const ILS = (props) => {
 	const [loading, setLoading] = React.useState(false);
+
 	if (props.locationCount && props.locationCount > 1) {
 		return (
 			<SelectPickupLocation
