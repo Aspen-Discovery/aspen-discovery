@@ -265,7 +265,13 @@ function getValidServerNames() : array{
 	if (empty($validServerNames) || isset($_REQUEST['reload'])) {
 		//Get a list of valid server names
 		global $instanceName;
+		global $configArray;
 		$mainServer = $instanceName;
+		$mainServerBase = null;
+		$isTestServer = !$configArray['Site']['isProduction'];
+		if (strpos($mainServer, '.') != strrpos($mainServer, '.')){
+			$mainServerBase = substr($mainServer, strpos($mainServer, '.'));
+		}
 		$validServerNames = [$instanceName];
 		$libraryInfo = new Library();
 		$libraryUrls = $libraryInfo->fetchAll('subdomain', 'baseUrl');
@@ -277,17 +283,46 @@ function getValidServerNames() : array{
 			}
 			$validServerNames[] = "$subdomain.$mainServer";
 			$validServerNames[] = "$subdomain.aspendiscovery.org";
+			if ($mainServerBase != null){
+				$validServerNames[] = "$subdomain.$mainServerBase";
+			}
+			if ($isTestServer){
+				$validServerNames[] = "{$subdomain}t.$mainServer";
+				if ($mainServerBase != null){
+					$validServerNames[] = "{$subdomain}t.$mainServerBase";
+				}
+			}
 		}
 		$locationInfo = new Location();
 		$locationUrls = $locationInfo->fetchAll('code');
 		foreach ($locationUrls as $code => $locationUrl) {
 			$validServerNames[] = "$code.$mainServer";
+			$validServerNames[] = "$code.aspendiscovery.org";
+			if ($mainServerBase != null){
+				$validServerNames[] = "$code.$mainServerBase";
+			}
+			if ($isTestServer){
+				$validServerNames[] = "{$code}t.$mainServer";
+				if ($mainServerBase != null){
+					$validServerNames[] = "{$code}t.$mainServerBase";
+				}
+			}
 		}
+		$locationInfo = new Location();
 		$locationSubdomains = $locationInfo->fetchAll('subdomain');
 		foreach ($locationSubdomains as $subdomain) {
 			if (!empty($subdomain)) {
 				$validServerNames[] = "$subdomain.$mainServer";
 				$validServerNames[] = "$subdomain.aspendiscovery.org";
+				if ($mainServerBase != null){
+					$validServerNames[] = "$subdomain.$mainServerBase";
+				}
+				if ($isTestServer){
+					$validServerNames[] = "{$subdomain}t.$mainServer";
+					if ($mainServerBase != null){
+						$validServerNames[] = "{$subdomain}t.$mainServerBase";
+					}
+				}
 			}
 		}
 		$hostInfo = new HostInformation();
