@@ -6,7 +6,7 @@ import _ from "lodash";
 import {getProfile} from "../../util/loadPatron";
 
 const SelectPickupLocation = (props) => {
-	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes, updateProfile, hasItemsWithoutVolumes} = props;
+	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes, updateProfile, hasItemsWithoutVolumes, volumeCount} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState(null);
@@ -14,6 +14,11 @@ const SelectPickupLocation = (props) => {
 	let typeOfHold = "bib";
 	if(majorityOfItemsHaveVolumes) {
 		typeOfHold = "volume"
+	}
+
+	let shouldAskHoldType = false;
+	if(!majorityOfItemsHaveVolumes && volumeCount >= 1) {
+		shouldAskHoldType = true;
 	}
 
 	let [holdType, setHoldType] = React.useState(typeOfHold);
@@ -34,7 +39,17 @@ const SelectPickupLocation = (props) => {
 					<Modal.CloseButton/>
 					<Modal.Header>{label}</Modal.Header>
 					<Modal.Body>
-						{majorityOfItemsHaveVolumes ? (
+						{shouldAskHoldType ? (
+							<Radio.Group name="holdTypeGroup" defaultValue={holdType} value={holdType} onChange={nextValue => {setHoldType(nextValue)}} accessibilityLabel="">
+								<Radio value="bib" my={1} size="sm">
+									{translate('grouped_work.first_available')}
+								</Radio>
+								<Radio value="volume" my={1} size="sm">
+									{translate('grouped_work.specific_volume')}
+								</Radio>
+							</Radio.Group>
+						) : null}
+						{holdType === "volume" ? (
 							<FormControl>
 								<FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
 								<Select

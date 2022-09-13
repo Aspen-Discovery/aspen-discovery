@@ -132,6 +132,7 @@ export default class Holds extends Component {
 				holds: r['holds'],
 				holdsNotReady: r['holdsNotReady'],
 				holdsReady: r['holdsReady'],
+				isLoading: false,
 			})
 		});
 	}
@@ -142,15 +143,10 @@ export default class Holds extends Component {
 		const locations = JSON.parse(tmp);
 		this.setState({
 			locations: locations,
-			isLoading: true,
 		})
 	}
 
 	_pickupLocations = async () => {
-		this.setState({
-			isLoading: true,
-		});
-
 		const { route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
 

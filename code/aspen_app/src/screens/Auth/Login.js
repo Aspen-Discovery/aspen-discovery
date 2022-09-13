@@ -70,8 +70,7 @@ export default class Login extends Component {
 		//await setGlobalVariables();
 
 		await getGreenhouseData(this.libraryData).then(async data => {
-			console.log("Data OK");
-			console.log(data);
+			//console.log(data);
 			this.libraryData = data.libraryData;
 			if (data.locationNum) {
 				this.locationNum = data.locationNum;
@@ -307,7 +306,7 @@ export default class Login extends Component {
 		this.libraryData = updatedData;
 		this.setState({query: text, isFetching: false});
 		this.uniqueLibraries = updatedData;
-		console.log(updatedData);
+		//console.log(updatedData);
 	};
 
 	// showLibraries: handles storing the states based on selected library to use later on in validation
@@ -358,7 +357,7 @@ export default class Login extends Component {
 		if(Constants.manifest.slug !== "aspen-lida") { isCommunity = false; }
 
 		//console.log(this.state);
-		console.log(this.locationNum);
+		//console.log(this.locationNum);
 
 		// TODO: Get library logo, fallback on LiDA
 		return (
@@ -605,7 +604,7 @@ async function getGreenhouseData(data) {
 			longitude: longitude,
 			release_channel: Updates.releaseChannel
 		});
-		console.log(response);
+		//console.log(response);
 		if (response.ok) {
 			let res = response.data;
 			if (Constants.manifest.slug === "aspen-lida") {
