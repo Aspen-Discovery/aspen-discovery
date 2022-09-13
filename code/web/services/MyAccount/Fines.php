@@ -108,6 +108,74 @@ class MyAccount_Fines extends MyAccount
 					$interface->assign('useLineItems', $useLineItems);
 				}
 
+				// ACI Speedpay data
+				if($userLibrary->finePaymentType == 8) {
+					$aspenUrl = $configArray['Site']['url'];
+					$interface->assign('aspenUrl', $aspenUrl);
+
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/ACISpeedpaySetting.php';
+					$aciSpeedpaySettings = new ACISpeedpaySetting();
+					$aciSpeedpaySettings->id = $library->aciSpeedpaySettingId;
+
+					if($aciSpeedpaySettings->find(true)){
+						// do things
+						if ($aciSpeedpaySettings->sandboxMode == 1) {
+							$baseUrl = 'https://sandbox-api.acispeedpay.com';
+							$sdkUrl = 'sandbox-cds.officialpayments.com';
+						} else {
+							$baseUrl = 'https://api.acispeedpay.com';
+							$sdkUrl = 'cds.officialpayments.com';
+						}
+
+						$apiAuthKey = $aciSpeedpaySettings->apiAuthKey;
+						$billerId = $aciSpeedpaySettings->billerId;
+						$billerAccountId = $aciSpeedpaySettings->billerAccountId;
+
+						$interface->assign('billerId', $billerId);
+						$interface->assign('billerAccountId', $billerAccountId);
+						$interface->assign('aciHost', $baseUrl);
+						$interface->assign('sdkUrl', $sdkUrl);
+						$interface->assign('apiAuthKey', $apiAuthKey);
+
+						require_once ROOT_DIR . '/sys/CurlWrapper.php';
+						$aciAuthRequest = new CurlWrapper();
+						$aciAuthRequest->addCustomHeaders([
+							"X-Auth-Key: bea43d8c-29f7-40ff-a03c-27887afc34ff",
+							"Content-Type: application/x-www-form-urlencoded",
+						], true);
+
+						$postParams = [
+							'grant_type' => 'client_credentials',
+							'client_id' => 'sandbox-apichanneldemo-jssdk',
+							'client_secret' => '5a050e37-7a07-4059-bb26-d5c6d58d6901',
+							'scope' => 'token_exchange',
+							'biller_id' => $aciSpeedpaySettings->billerId,
+							'account_number' => $aciSpeedpaySettings->billerAccountId,
+						];
+
+						$accessTokenUrl = $baseUrl . "/auth/v1/auth/token";
+						$accessTokenResults = $aciAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+						$accessTokenResults = json_decode($accessTokenResults, true);
+						if(empty($accessTokenResults['access_token'])) {
+							return ['success' => false, 'message' => 'Unable to authenticate with ACI, please try again in a few minutes.'];
+						} else {
+							$accessToken = $accessTokenResults['access_token'];
+							$interface->assign('accessToken', $accessToken);
+						}
+
+						$aciManifest = "https://cds.officialpayments.com/js-sdk/1.4.0/manifest.json";
+						$aciManifest = file_get_contents($aciManifest);
+						$aciManifest = json_decode($aciManifest, true);
+						if(empty($aciManifest['speedpay.js']['integrity'])) {
+							return ['success' => false, 'message' => 'Unable to authenticate with ACI, please try again in a few minutes.'];
+						} else {
+							$sriHash = $aciManifest['speedpay.js']['integrity'];
+							$interface->assign('sriHash', $sriHash);
+						}
+					}
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 
