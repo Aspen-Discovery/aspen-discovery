@@ -71,6 +71,7 @@ export default class Login extends Component {
 
 		await getGreenhouseData(this.libraryData).then(async data => {
 			console.log("Data OK");
+			console.log(data);
 			this.libraryData = data.libraryData;
 			if (data.locationNum) {
 				this.locationNum = data.locationNum;
@@ -80,7 +81,6 @@ export default class Login extends Component {
 			if (Constants.manifest.slug === "aspen-lida") {
 				this.uniqueLibraries = _.uniqBy(this.libraryData, v => [v.librarySystem, v.name].join());
 			} else {
-				//console.log(this.libraryData);
 				this.uniqueLibraries = _.values(this.libraryData);
 				this.uniqueLibraries = _.uniqBy(this.uniqueLibraries, v => [v.libraryId, v.name].join());
 				if (this.locationNum <= 1) {
@@ -596,6 +596,7 @@ async function getGreenhouseData(data) {
 			longitude: longitude,
 			release_channel: Updates.releaseChannel
 		});
+		console.log(response);
 		if (response.ok) {
 			let res = response.data;
 			if (Constants.manifest.slug === "aspen-lida") {

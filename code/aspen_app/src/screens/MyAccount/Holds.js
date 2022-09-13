@@ -43,6 +43,7 @@ import {getPickupLocations} from '../../util/loadLibrary';
 import {userContext} from "../../context/user";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {DisplayMessage} from "../../components/Notifications";
+import {loadError} from "../../components/loadError";
 
 export default class Holds extends Component {
 
@@ -115,7 +116,6 @@ export default class Holds extends Component {
 			holds: holds,
 			holdsNotReady: holdsNotReady,
 			holdsReady: holdsReady,
-			isLoading: false,
 		})
 	}
 
@@ -132,7 +132,6 @@ export default class Holds extends Component {
 				holds: r['holds'],
 				holdsNotReady: r['holdsNotReady'],
 				holdsReady: r['holdsReady'],
-				isLoading: false,
 			})
 		});
 	}
@@ -143,7 +142,7 @@ export default class Holds extends Component {
 		const locations = JSON.parse(tmp);
 		this.setState({
 			locations: locations,
-			isLoading: false,
+			isLoading: true,
 		})
 	}
 
@@ -171,14 +170,14 @@ export default class Holds extends Component {
 			});
 		}
 
-		this.setState({
-			isLoading: true,
-		})
-
 		await this._fetchHolds();
 		await this._pickupLocations();
 		await this.loadHolds();
 		await this.loadPickupLocations();
+
+		this.setState({
+			isLoading: false
+		})
 
 	};
 
@@ -302,24 +301,30 @@ export default class Holds extends Component {
 		const library = this.context.library;
 
 		if (this.state.isLoading) {
-			return (loadingSpinner(this.state.loadingMessage));
+			return (loadingSpinner());
+		}
+
+		if (this.state.hasError) {
+			return (loadError(this.state.error, this._fetchHolds));
 		}
 
 		return (
 			<ScrollView>
-			<Box>
-				<Checkbox.Group  defaultValue={this.state.groupValues} accessibilityLabel="choose multiple items" onChange={values => {this.setGroupValue(values)}}>
-				<FlatList
-					data={holds}
-					ListEmptyComponent={this._listEmptyComponent()}
-					ListFooterComponent={this._listHeaderComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
-					renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile, this._fetchHolds)}
-					keyExtractor={(item) => item.id.concat("_", item.position)}
-				/>
-				</Checkbox.Group>
-				<Center pt={5} pb={5}>
-					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
-					/>
+			<Box pt={10}>
+				<Center>
+					<Checkbox.Group  defaultValue={this.state.groupValues} accessibilityLabel="choose multiple items" onChange={values => {this.setGroupValue(values)}}>
+						<FlatList
+							data={holds}
+							ListEmptyComponent={this._listEmptyComponent()}
+							ListFooterComponent={this._listHeaderComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
+							renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile, this._fetchHolds)}
+							keyExtractor={(item) => item.id.concat("_", item.position)}
+						/>
+					</Checkbox.Group>
+					<Center pt={5} pb={5}>
+						<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
+						/>
+					</Center>
 				</Center>
 			</Box>
 			</ScrollView>

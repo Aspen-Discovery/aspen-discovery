@@ -1,15 +1,22 @@
 import React, {useState} from "react";
-import {Button, FormControl, Modal, Select, CheckIcon} from "native-base";
+import {Button, FormControl, Modal, Select, CheckIcon, Radio, Stack} from "native-base";
 import {translate} from "../../translations/translations";
 import {completeAction} from "./Record";
 import _ from "lodash";
 import {getProfile} from "../../util/loadPatron";
 
 const SelectPickupLocation = (props) => {
-	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes, updateProfile} = props;
+	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, majorityOfItemsHaveVolumes, volumes, updateProfile, hasItemsWithoutVolumes} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState(null);
+
+	let typeOfHold = "bib";
+	if(majorityOfItemsHaveVolumes) {
+		typeOfHold = "volume"
+	}
+
+	let [holdType, setHoldType] = React.useState(typeOfHold);
 
 	let pickupLocation = _.findIndex(locations, function(o) { return o.locationId == user.pickupLocationId; });
 	pickupLocation = _.nth(locations, pickupLocation);
@@ -29,7 +36,7 @@ const SelectPickupLocation = (props) => {
 					<Modal.Body>
 						{majorityOfItemsHaveVolumes ? (
 							<FormControl>
-								<FormControl.Label>Select a volume</FormControl.Label>
+								<FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
 								<Select
 									name="volumeForHold"
 									selectedValue={volume}
@@ -51,7 +58,7 @@ const SelectPickupLocation = (props) => {
 						) : null}
 						{linkedAccountsCount > 0 ? (
 							<FormControl>
-								<FormControl.Label>Place hold for account</FormControl.Label>
+								<FormControl.Label>{translate('linked_accounts.place_hold_for_account')}</FormControl.Label>
 								<Select
 									name="linkedAccount"
 									selectedValue={activeAccount}

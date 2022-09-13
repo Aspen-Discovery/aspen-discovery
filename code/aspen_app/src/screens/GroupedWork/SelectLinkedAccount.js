@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Button, Center, Modal, FormControl, Select, Heading, CheckIcon } from "native-base";
 import {completeAction} from "./Record";
-import {getProfile} from "../../util/loadPatron";
+import {translate} from "../../translations/translations";
 
 const SelectLinkedAccount = (props) => {
 	const {user, linkedAccounts, id, action, libraryUrl, showAlert, updateProfile} = props;
@@ -21,11 +21,11 @@ const SelectLinkedAccount = (props) => {
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>
-						<Heading size="md">Checkout Options</Heading>
+						<Heading size="md">{translate('grouped_work.checkout_options')}</Heading>
 					</Modal.Header>
 					<Modal.Body>
 						<FormControl pb={5}>
-							<FormControl.Label>Checkout to account</FormControl.Label>
+							<FormControl.Label>{translate('linked_accounts.checkout_to_account')}</FormControl.Label>
 							<Select
 								name="linkedAccount"
 								selectedValue={activeAccount}
@@ -52,7 +52,7 @@ const SelectLinkedAccount = (props) => {
 								setShowModal(false)
 								setLoading(false)
 							}
-							}>Cancel</Button>
+							}>{translate('general.cancel')}</Button>
 							<Button
 								isLoading={loading}
 								onPress={async () => {
@@ -64,7 +64,7 @@ const SelectLinkedAccount = (props) => {
 									});
 									setShowModal(false)
 								}}
-							>Checkout Title</Button>
+							>{translate('grouped_work.checkout_title')}</Button>
 						</Button.Group>
 					</Modal.Footer>
 				</Modal.Content>

@@ -70,7 +70,7 @@ class LoadingScreen extends Component {
 				//const patronProfile = await AsyncStorage.getItem('@patronProfile');
 				if (_.isEmpty(this.state.user)) {
 					//console.log("fetching getPatronProfile...");
-					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
+					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true&checkIfValid=false', postBody);
 					if (response.ok) {
 						let data = [];
 						if (response.data.result.profile) {

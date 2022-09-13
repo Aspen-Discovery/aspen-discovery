@@ -6,11 +6,13 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
@@ -288,9 +290,6 @@ public class EvolveExportMain {
 			WebServiceResponse changedHoldingsResponse = NetworkUtils.getURL(getChangedHoldingsUrl, logger);
 			if (changedHoldingsResponse.isSuccess()) {
 				String rawMessage = changedHoldingsResponse.getMessage();
-				//rawMessage = rawMessage.replaceAll("u001e", "\u001e");
-				//rawMessage = rawMessage.replaceAll("u001f", "\u001f");
-				//rawMessage = rawMessage.replaceAll("u001d", "\u001d");
 
 				try {
 					JSONArray responseAsArray = new JSONArray(rawMessage);
@@ -302,15 +301,67 @@ public class EvolveExportMain {
 							break;
 						}
 
-						String bibId = curItem.getString("ID");
-						//We can't get the Marc record for an individual MARC so we will load what we have and edit the correct item or insert it if we can't find it.
-						Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
-						if (marcRecord != null) {
-							logEntry.incRecordsRegrouped();
-							//Regroup the record
-							String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
-							//Reindex the record
-							getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+						try{
+							if (curItem.isNull("ID")){
+								//The item is not attached to an bib?
+								continue;
+							}
+							String bibId = curItem.getString("ID");
+							//We can't get the Marc record for an individual MARC, so we will load what we have and edit the correct item or insert it if we can't find it.
+							Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
+							if (marcRecord != null) {
+								String itemBarcode = curItem.getString("Barcode");
+								List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
+								boolean isExistingItem = false;
+								try{
+									for (DataField existingItemField : existingItemFields){
+										Subfield existingBarcodeSubfield = existingItemField.getSubfield(indexingProfile.getBarcodeSubfield());
+										if (existingBarcodeSubfield == null) {
+
+										}else{
+											if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
+												isExistingItem = true;
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+												if (curItem.isNull("DueDate")) {
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+												} else {
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+												}
+												MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+												break;
+											}
+										}
+									}
+									if (!isExistingItem){
+										//Add a new field for the item
+										DataField newItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+										@SuppressWarnings("WrapperTypeMayBePrimitive")
+										Double holdingId = curItem.getDouble("HoldingID");
+										MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), Integer.toString(holdingId.intValue()), marcFactory);
+										MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+										MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+										MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+										if (curItem.isNull("DueDate")) {
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+										}else{
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+										}
+										MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+										marcRecord.addVariableField(newItemField);
+									}
+								}catch (Exception e){
+									logEntry.incErrors("Error updating item field", e);
+								}
+								logEntry.incUpdated();
+								//Regroup the record
+								String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+								//Reindex the record
+								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+							}
+						}catch (JSONException e){
+							logEntry.incErrors("Error processing item", e);
 						}
 					}
 				}catch (JSONException e){
@@ -324,9 +375,6 @@ public class EvolveExportMain {
 			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
 			if (getBibsResponse.isSuccess()) {
 				String rawMessage = getBibsResponse.getMessage();
-				//rawMessage = rawMessage.replaceAll("u001e", "\u001e");
-				//rawMessage = rawMessage.replaceAll("u001f", "\u001f");
-				//rawMessage = rawMessage.replaceAll("u001d", "\u001d");
 
 				try {
 					JSONArray responseAsArray = new JSONArray(rawMessage);

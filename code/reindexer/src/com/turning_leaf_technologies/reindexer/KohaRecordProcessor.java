@@ -176,6 +176,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		if (itemInfo.isEContent()) {return;}
 
 		boolean foundFormatFromShelfLocation = false;
+		String formatBoost = null;
 		String shelfLocationCode = itemInfo.getShelfLocationCode();
 		if (shelfLocationCode != null) {
 			String shelfLocation = shelfLocationCode.toLowerCase().trim();
@@ -184,7 +185,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				if (translatedLocation != null && translatedLocation.length() > 0) {
 					foundFormatFromShelfLocation = true;
 					itemInfo.setFormat(translatedLocation);
-					itemInfo.setFormatCategory(translatedLocation);
+					String translatedLocationCategory = translateValue("format_category", shelfLocation, recordInfo.getRecordIdentifier());
+					itemInfo.setFormatCategory(translatedLocationCategory);
 				}
 			}
 		}
@@ -198,7 +200,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				if (translatedLocation != null && translatedLocation.length() > 0) {
 					foundFormatFromSublocation = true;
 					itemInfo.setFormat(translatedLocation);
-					itemInfo.setFormatCategory(translatedLocation);
+					String translatedLocationCategory = translateValue("format_category", subLocation, recordInfo.getRecordIdentifier());
+					itemInfo.setFormatCategory(translatedLocationCategory);
+					if (hasTranslation("format_boost", subLocation)) {
+						formatBoost = translateValue("format_boost", subLocation, recordInfo.getRecordIdentifier());
+					}
 				}
 			}
 		}
@@ -212,38 +218,55 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				if (translatedLocation != null && translatedLocation.length() > 0) {
 					foundFormatFromCollection = true;
 					itemInfo.setFormat(translatedLocation);
-					itemInfo.setFormatCategory(translatedLocation);
+					String translatedLocationCategory = translateValue("format_category", collectionCode, recordInfo.getRecordIdentifier());
+					itemInfo.setFormatCategory(translatedLocationCategory);
+					if (hasTranslation("format_boost", collectionCode)) {
+						formatBoost = translateValue("format_boost", collectionCode, recordInfo.getRecordIdentifier());
+					}
 				}
 			}
 		}
 
+		boolean foundFormatFromIType = false;
 		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection) {
 			String iTypeCode = itemInfo.getITypeCode();
 			if (iTypeCode != null) {
 				String iType = iTypeCode.toLowerCase().trim();
 				//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
 				String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-				if (translatedFormat == null) {
-					translatedFormat = "";
+				if (translatedFormat != null) {
+					foundFormatFromIType = true;
+					itemInfo.setFormat(translatedFormat);
+					String translatedLocationCategory = translateValue("format_category", iType, recordInfo.getRecordIdentifier());
+					itemInfo.setFormatCategory(translatedLocationCategory);
+					if (hasTranslation("format_boost", iType)) {
+						formatBoost = translateValue("format_boost", iType, recordInfo.getRecordIdentifier());
+					}
 				}
-				itemInfo.setFormat(translatedFormat);
-				itemInfo.setFormatCategory(translatedFormat);
 			}
 		}
 
-		String format = getItemSubfieldData(formatSubfield, itemField);
-		String formatBoost = null;
-		if (hasTranslation("format_boost", format)) {
-			formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection && !foundFormatFromIType) {
+			String format = getItemSubfieldData(formatSubfield, itemField);
+			String translatedFormat = translateValue("format", format, recordInfo.getRecordIdentifier());
+			if (translatedFormat != null) {
+				itemInfo.setFormat(translatedFormat);
+				String translatedLocationCategory = translateValue("format_category", format, recordInfo.getRecordIdentifier());
+				itemInfo.setFormatCategory(translatedLocationCategory);
+				if (hasTranslation("format_boost", format)) {
+					formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+				}
+			}
 		}
+
 		try {
 			if (formatBoost != null && formatBoost.length() > 0) {
 				recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 			}
 		} catch (Exception e) {
-			if (!unhandledFormatBoosts.contains(format)){
-				unhandledFormatBoosts.add(format);
-				logger.warn("Could not get boost for format " + format);
+			if (!unhandledFormatBoosts.contains(itemInfo.getFormat())){
+				unhandledFormatBoosts.add(itemInfo.getFormat());
+				logger.warn("Could not get boost for format " + itemInfo.getFormat());
 			}
 		}
 	}

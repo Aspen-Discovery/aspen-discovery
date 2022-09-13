@@ -51,7 +51,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		logger.info(note);
 	}
 	
-	private String getNotesHtml() {
+	private synchronized String getNotesHtml() {
 		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
 		for (String curNote : notes){
 			String cleanedNote = curNote;
@@ -73,7 +73,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	
 	private PreparedStatement insertLogEntry;
 	private PreparedStatement updateLogEntry;
-	public boolean saveResults() {
+	public synchronized boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);

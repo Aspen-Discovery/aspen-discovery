@@ -42,14 +42,14 @@ const ShowItemDetails = (props) => {
 				size="sm"
 				leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1"/>}
 			>
-				Where is it?</Button>
+				{translate('copy_details.where_is_it')}</Button>
 			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full">
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>
 						<HStack>
 							<Icon as={MaterialIcons} name="location-pin" size="xs" mt=".5" pr={5}/>
-							<Heading size="sm">Where is it?</Heading>
+							<Heading size="sm">{translate('copy_details.where_is_it')}</Heading>
 						</HStack>
 					</Modal.Header>
 					<Modal.Body>
@@ -70,9 +70,9 @@ const ShowItemDetails = (props) => {
 const renderHeader = () => {
 	return (
 		<HStack space={4} justifyContent="space-between" pb={2}>
-			<Text bold w="30%" fontSize="xs">Available Copies</Text>
-			<Text bold w="30%" fontSize="xs">Location</Text>
-			<Text bold w="30%" fontSize="xs">Call #</Text>
+			<Text bold w="30%" fontSize="xs">{translate('copy_details.available_copies')}</Text>
+			<Text bold w="30%" fontSize="xs">{translate('copy_details.location')}</Text>
+			<Text bold w="30%" fontSize="xs">{translate('copy_details.call_num')}</Text>
 		</HStack>
 	)
 }

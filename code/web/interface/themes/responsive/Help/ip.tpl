@@ -13,4 +13,13 @@
 			{translate text="You are currently at an OPAC station." isPublicFacing=true}
 		</p>
 	{/if}
+	{if !empty($instanceName)}
+		<p>{translate text="Instance Name is %1%" 1=$instanceName isPublicFacing=true}</p>
+		<h2>{translate text="Valid Server Names" isPublicFacing=true}</h2>
+		<ul>
+		{foreach from=$validServerNames item="validServerName"}
+			<li>{$validServerName}</li>
+		{/foreach}
+		</ul>
+	{/if}
 </div>

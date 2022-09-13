@@ -21,7 +21,8 @@ class Websites_JSON extends JSON_Action
 		//Track usage of the record
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
-		$webPageUsage->instance = $_SERVER['SERVER_NAME'];
+		global $fullServerName;
+		$webPageUsage->instance =$fullServerName;
 		$webPageUsage->webPageId = $id;
 		$webPageUsage->year = date('Y');
 		$webPageUsage->month = date('n');

@@ -610,4 +610,14 @@ public class MarcUtil {
 
 		return null;
 	}
+
+	public static void setSubFieldData(DataField field, char subFieldToSet, String newValue, MarcFactory marcFactory) {
+		Subfield subfield = field.getSubfield(subFieldToSet);
+		if (subfield == null){
+			subfield = marcFactory.newSubfield(subFieldToSet, newValue);
+			field.addSubfield(subfield);
+		}else{
+			subfield.setData(newValue);
+		}
+	}
 }

@@ -21,7 +21,7 @@ class VdxForm extends DataObject
 
 	public static function getObjectStructure(): array
 	{
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer ILL Hold Groups'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All VDX Forms'));
 
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
@@ -195,5 +195,131 @@ class VdxForm extends DataObject
 			}
 		}
 		return $this->_locations;
+	}
+
+	public function getFormFieldsForApi()
+	{
+		$fields['introText'] = array(
+			'type' => 'text',
+			'property' => 'introText',
+			'display' => $this->introText ? 'show' : 'hide',
+			'label' => $this->introText,
+			'description' => '',
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['title'] = array(
+			'type' => 'input',
+			'property' => 'title',
+			'display' => 'show',
+			'label' => translate(['text' => 'Title', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'The title to request', 'isPublicFacing'=> true]),
+			'required' => true,
+			'maxLength' => 255,
+		);
+
+		$fields['author'] = array(
+			'type' => 'input',
+			'property' => 'author',
+			'display' => $this->showAuthor ? 'show' : 'hide',
+			'label' => translate(['text' => 'Author', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'The author of the title to request', 'isPublicFacing'=> true]),
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['publisher'] = array(
+			'type' => 'input',
+			'property' => 'publisher',
+			'display' => 'show',
+			'label' => translate(['text' => 'Publisher', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'The publisher of the title to request', 'isPublicFacing'=> true]),
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['isbn'] = array(
+			'type' => 'input',
+			'property' => 'isbn',
+			'display' => $this->showIsbn ? 'show' : 'hide',
+			'label' => translate(['text' => 'ISBN', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'The ISBN of the title to request', 'isPublicFacing'=> true]),
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['fees']['feeInformationText'] = array(
+			'type' => 'text',
+			'property' => 'feeInformationText',
+			'display' => $this->showAcceptFee ? 'show' : 'hide',
+			'label' => $this->feeInformationText,
+			'description' => '',
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['fees']['showMaximumFee'] = array(
+			'type' => 'text',
+			'property' => 'showMaximumFee',
+			'display' => $this->showMaximumFee ? 'show' : 'hide',
+			'label' => translate(['text' => 'Maximum Fee', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'The maximum fee you are willing to pay to have this title transferred to the library.', 'isPublicFacing'=> true]),
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['fees']['acceptFee'] = array(
+			'type' => 'checkbox',
+			'property' => 'acceptFee',
+			'display' => $this->showMaximumFee ? 'show' : 'hide',
+			'label' => translate(['text' => 'I will pay any fees associated with this request up to the maximum amount defined above', 'isPublicFacing'=> true]),
+			'description' => '',
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['note'] = array(
+			'type' => 'textarea',
+			'property' => 'note',
+			'display' => $this->showMaximumFee ? 'show' : 'hide',
+			'label' => translate(['text' => 'Note', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'Any additional information you want us to have about this request', 'isPublicFacing'=> true]),
+			'required' => false,
+			'maxLength' => 255,
+		);
+
+		$fields['catalogKey'] = array(
+			'type' => 'text',
+			'property' => 'catalogKey',
+			'display' => $this->showCatalogKey ? 'show' : 'hide',
+			'label' => translate(['text' => 'Record Number', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'The record number to be requested', 'isPublicFacing'=> true]),
+			'required' => false,
+			'maxLength' => 20,
+		);
+
+		require_once ROOT_DIR . '/services/API/UserAPI.php';
+		$user = new UserAPI();
+
+		$pickupLocations = 'Unable to get pickup locations for given user';
+
+		$validPickupLocations = $user->getValidPickupLocations();
+		if($validPickupLocations['success'] == true) {
+			$pickupLocations = $user->getValidPickupLocations();
+			$pickupLocations = $pickupLocations['pickupLocations'];
+		}
+
+		$fields['pickupLocation'] = array(
+			'type' => 'select',
+			'display' => 'show',
+			'label' => translate(['text' => 'Pickup Location', 'isPublicFacing'=> true]),
+			'description' => translate(['text' => 'Where you would like to pickup the title', 'isPublicFacing'=> true]),
+			'required' => true,
+			'maxLength' => 255,
+			'options' => $pickupLocations,
+		);
+
+		return $fields;
 	}
 }

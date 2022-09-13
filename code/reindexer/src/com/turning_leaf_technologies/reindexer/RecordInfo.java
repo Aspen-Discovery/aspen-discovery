@@ -119,15 +119,18 @@ public class RecordInfo {
 	}
 
 	private String primaryFormat = null;
+	private String primaryFormatCategory = null;
 	String getPrimaryFormat() {
 		if (primaryFormat == null){
 			HashMap<String, Integer> relatedFormats = new HashMap<>();
 			for (String format : formats){
 				relatedFormats.put(format, 1);
 			}
+			HashMap<String, String> formatToFormatCategory = new HashMap<>();
 			for (ItemInfo curItem : relatedItems){
-				if (curItem.getFormat() != null) {
+				if (curItem.getFormat() != null && !curItem.getFormat().equals("")) {
 					relatedFormats.put(curItem.getFormat(), relatedFormats.getOrDefault(curItem.getFormat(), 1));
+					formatToFormatCategory.put(curItem.getFormat(), curItem.getFormatCategory());
 				}
 			}
 			int timesUsed = 0;
@@ -142,6 +145,7 @@ public class RecordInfo {
 				return "Unknown";
 			}else{
 				primaryFormat = mostUsedFormat;
+				primaryFormatCategory = formatToFormatCategory.get(mostUsedFormat);
 			}
 		}
 
@@ -149,27 +153,31 @@ public class RecordInfo {
 	}
 
 	public String getPrimaryFormatCategory() {
-		HashMap<String, Integer> relatedFormats = new HashMap<>();
-		for (String format : formatCategories){
-			relatedFormats.put(format, 1);
-		}
-		for (ItemInfo curItem : relatedItems){
-			if (curItem.getFormatCategory() != null) {
-				relatedFormats.put(curItem.getFormatCategory(), relatedFormats.getOrDefault(curItem.getFormatCategory(), 1));
+		if (primaryFormatCategory == null) {
+			HashMap<String, Integer> relatedFormats = new HashMap<>();
+			for (String format : formatCategories) {
+				relatedFormats.put(format, 1);
+			}
+			for (ItemInfo curItem : relatedItems) {
+				if (curItem.getFormatCategory() != null) {
+					relatedFormats.put(curItem.getFormatCategory(), relatedFormats.getOrDefault(curItem.getFormatCategory(), 1));
+				}
+			}
+			int timesUsed = 0;
+			String mostUsedFormat = null;
+			for (String curFormat : relatedFormats.keySet()) {
+				if (relatedFormats.get(curFormat) > timesUsed) {
+					mostUsedFormat = curFormat;
+					timesUsed = relatedFormats.get(curFormat);
+				}
+			}
+			if (mostUsedFormat == null) {
+				primaryFormatCategory = "Unknown";
+			}else{
+				primaryFormatCategory = mostUsedFormat;
 			}
 		}
-		int timesUsed = 0;
-		String mostUsedFormat = null;
-		for (String curFormat : relatedFormats.keySet()){
-			if (relatedFormats.get(curFormat) > timesUsed){
-				mostUsedFormat = curFormat;
-				timesUsed = relatedFormats.get(curFormat);
-			}
-		}
-		if (mostUsedFormat == null){
-			return "Unknown";
-		}
-		return mostUsedFormat;
+		return primaryFormatCategory;
 	}
 
 	public void addItem(ItemInfo itemInfo) {
