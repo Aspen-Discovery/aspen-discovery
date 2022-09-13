@@ -260,7 +260,7 @@ class VdxForm extends DataObject
 		);
 
 		$fields['fees']['showMaximumFee'] = array(
-			'type' => 'text',
+			'type' => 'number',
 			'property' => 'showMaximumFee',
 			'display' => $this->showMaximumFee ? 'show' : 'hide',
 			'label' => translate(['text' => 'Maximum Fee', 'isPublicFacing'=> true]),
