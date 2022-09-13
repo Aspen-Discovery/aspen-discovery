@@ -288,8 +288,10 @@ function getValidServerNames() : array{
 			}
 			if ($isTestServer){
 				$validServerNames[] = "{$subdomain}t.$mainServer";
+				$validServerNames[] = "{$subdomain}x.$mainServer";
 				if ($mainServerBase != null){
 					$validServerNames[] = "{$subdomain}t.$mainServerBase";
+					$validServerNames[] = "{$subdomain}x.$mainServerBase";
 				}
 			}
 		}
@@ -303,8 +305,10 @@ function getValidServerNames() : array{
 			}
 			if ($isTestServer){
 				$validServerNames[] = "{$code}t.$mainServer";
+				$validServerNames[] = "{$code}x.$mainServer";
 				if ($mainServerBase != null){
 					$validServerNames[] = "{$code}t.$mainServerBase";
+					$validServerNames[] = "{$code}x.$mainServerBase";
 				}
 			}
 		}
@@ -319,8 +323,10 @@ function getValidServerNames() : array{
 				}
 				if ($isTestServer){
 					$validServerNames[] = "{$subdomain}t.$mainServer";
+					$validServerNames[] = "{$subdomain}x.$mainServer";
 					if ($mainServerBase != null){
 						$validServerNames[] = "{$subdomain}t.$mainServerBase";
+						$validServerNames[] = "{$subdomain}x.$mainServerBase";
 					}
 				}
 			}
