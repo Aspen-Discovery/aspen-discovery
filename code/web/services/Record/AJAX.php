@@ -556,43 +556,45 @@ class Record_AJAX extends Action
 							//Check to see if we can place the hold via Interlibrary Loan
 							require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 							require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
-							$vdxSettings = new VdxSetting();
-							if ($vdxSettings->find(true)) {
-								$homeLocation = Location::getDefaultLocationForUser();
-								if ($homeLocation != null) {
-									//Get configuration for the form.
-									$vdxForm = new VdxForm();
-									$vdxForm->id = $homeLocation->vdxFormId;
-									$interface->assign('fromHoldError', true);
-									require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-									$marcRecord = new MarcRecordDriver($recordId);
+							//Check to see if we can use VDX.  We only allow VDX if the reason is: "hold not allowed"
+							if ($return['error_code'] == 'hatErrorResponse.17286') {
+								$vdxSettings = new VdxSetting();
+								if ($vdxSettings->find(true)) {
+									$homeLocation = Location::getDefaultLocationForUser();
+									if ($homeLocation != null) {
+										//Get configuration for the form.
+										$vdxForm = new VdxForm();
+										$vdxForm->id = $homeLocation->vdxFormId;
+										if ($vdxForm->find(true)) {
+											$interface->assign('fromHoldError', true);
+											require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+											$marcRecord = new MarcRecordDriver($recordId);
 
-									$interface->assign('vdxForm', $vdxForm);
+											$interface->assign('vdxForm', $vdxForm);
 
-									$volumeInfo = null;
-									if (isset($_REQUEST['volume'])){
-										//Get the name of the volume so we can add it as a note
-										require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-										$volumeData = array();
-										$volumeDataDB = new IlsVolumeInfo();
-										$volumeDataDB->volumeId = $_REQUEST['volume'];
-										if ($volumeDataDB->find(true)){
-											$volumeInfo = $volumeDataDB->displayLabel;
-										}else{
-											$volumeInfo = $_REQUEST['volume'];
+											$volumeInfo = null;
+											if (isset($_REQUEST['volume'])) {
+												//Get the name of the volume so we can add it as a note
+												require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+												$volumeDataDB = new IlsVolumeInfo();
+												$volumeDataDB->volumeId = $_REQUEST['volume'];
+												if ($volumeDataDB->find(true)) {
+													$volumeInfo = $volumeDataDB->displayLabel;
+												} else {
+													$volumeInfo = $_REQUEST['volume'];
+												}
+											}
+											$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeInfo);
+											$interface->assign('structure', $vdxFormFields);
+											$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+											return array(
+												'title' => translate(['text' => 'Hold Failed, Request Title?', 'isPublicFacing' => true]),
+												'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+												'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate(['text' => 'Place Request', 'isPublicFacing' => true]) . '</a>',
+												'success' => true,
+												'needsIllRequest' => true
+											);
 										}
-									}
-									$vdxFormFields = $vdxForm->getFormFields($marcRecord, $volumeInfo);
-									$interface->assign('structure', $vdxFormFields);
-									$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-									if ($vdxForm->find(true)) {
-										return array(
-											'title' => translate(['text'=>'Hold Failed, Request Title?', 'isPublicFacing'=>true]),
-											'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-											'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $recordId . '\')">' . translate(['text'=>'Place Request','isPublicFacing'=>true]) . '</a>',
-											'success' => true,
-											'needsIllRequest' => true
-										);
 									}
 								}
 							}
