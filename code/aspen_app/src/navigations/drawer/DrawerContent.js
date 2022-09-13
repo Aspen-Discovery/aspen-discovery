@@ -404,7 +404,7 @@ export class DrawerContent extends Component {
 			numSavedSearchesNew = 0;
 		}
 
-		console.log(library);
+		//console.log(library);
 
 		return (
 			<DrawerContentScrollView>

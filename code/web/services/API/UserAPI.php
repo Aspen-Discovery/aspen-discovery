@@ -2422,7 +2422,7 @@ class UserAPI extends Action
 			$vdxSettings = new VdxSetting();
 			if ($vdxSettings->find(true)){
 				$vdxDriver = new VdxDriver();
-				return $vdxDriver->submitRequest($vdxSettings, UserAccount::getActiveUserObj(), $_REQUEST, false);
+				return $vdxDriver->submitRequest($vdxSettings, $user, $_REQUEST, false);
 			}else{
 				return  array(
 					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
