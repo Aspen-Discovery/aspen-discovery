@@ -2,6 +2,7 @@
   "expo": {
     "name": "appName",
     "slug": "appSlug",
+    "scheme": "appSlug",
     "owner": "expoOwner",
     "privacy": "public",
     "platforms": [

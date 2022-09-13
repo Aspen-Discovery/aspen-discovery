@@ -30,7 +30,7 @@ export const AddToList = (props) => {
 				}
 			} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1"/>} size="sm" variant="ghost">
 				{translate('lists.add_to_list')}</Button>
-			<Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full">
+			<Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full" avoidKeyboard>
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>
@@ -80,7 +80,7 @@ export const AddToList = (props) => {
 					</Modal.Footer>
 				</Modal.Content>
 			</Modal>
-			<Modal isOpen={showCreateNewModal} onClose={() => setShowCreateNewModal(false)} size="full">
+			<Modal isOpen={showCreateNewModal} onClose={() => setShowCreateNewModal(false)} size="full" avoidKeyboard>
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>

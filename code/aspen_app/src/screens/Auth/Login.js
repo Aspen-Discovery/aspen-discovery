@@ -507,7 +507,7 @@ const GetLoginForm = (props) => {
 					variant="filled"
 					size="xl"
 					type={show ? "text" : "password"}
-					returnKeyType="next"
+					returnKeyType="go"
 					textContentType="password"
 					ref={passwordRef}
 					InputRightElement={
@@ -522,6 +522,15 @@ const GetLoginForm = (props) => {
 						/>
 					}
 					onChangeText={text => onChangeValueSecret(text)}
+					onSubmitEditing={(event) => {
+						setLoading(true);
+						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary});
+						setTimeout(
+							function () {
+								setLoading(false);
+							}.bind(this), 1500
+						);
+					}}
 					required
 				/>
 			</FormControl>
