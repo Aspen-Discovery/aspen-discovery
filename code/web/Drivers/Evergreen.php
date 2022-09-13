@@ -1075,7 +1075,7 @@ class Evergreen extends AbstractIlsDriver
 			$user->phone = $userData['other_phone'];
 		}
 
-		$user->patronType = $userData['usrgroup'];
+		$user->patronType = $userData['profile'];
 
 		//TODO: Figure out how to parse the address we will need to look it up in web services
 		//$fullAddress = $userData['mailing_address'];
