@@ -262,8 +262,7 @@ function getValidServerNames() : array{
 	/* Memcache $memCache */
 	global $memCache;
 	$validServerNames = $memCache->get('validServerNames');
-	if ($validServerNames == false || empty($validServerNames) || isset($_REQUEST['reload'])) {
-		global $configArray;
+	if (empty($validServerNames) || isset($_REQUEST['reload'])) {
 		//Get a list of valid server names
 		global $instanceName;
 		$mainServer = $instanceName;
@@ -277,6 +276,7 @@ function getValidServerNames() : array{
 				}
 			}
 			$validServerNames[] = "$subdomain.$mainServer";
+			$validServerNames[] = "$subdomain.aspendiscovery.org";
 		}
 		$locationInfo = new Location();
 		$locationUrls = $locationInfo->fetchAll('code');
@@ -287,6 +287,7 @@ function getValidServerNames() : array{
 		foreach ($locationSubdomains as $subdomain) {
 			if (!empty($subdomain)) {
 				$validServerNames[] = "$subdomain.$mainServer";
+				$validServerNames[] = "$subdomain.aspendiscovery.org";
 			}
 		}
 		$hostInfo = new HostInformation();
