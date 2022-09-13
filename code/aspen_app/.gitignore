@@ -29,7 +29,7 @@ web-build/
 /.pnp
 .pnp.js
 # @end @expo/next-adapter
-/app-configs/
+app-configs/**
 !/app-configs/app.template.json
 !/app-configs/bumpVersions.php
 !/app-configs/makeNew.sh
