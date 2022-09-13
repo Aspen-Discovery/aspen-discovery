@@ -83,8 +83,15 @@ export class Record extends Component {
 
 		let libraryUrl = library.baseUrl;
 
+		let volumeCount = 0;
+		if(typeof volumes !== "undefined") {
+			volumeCount = _.size(volumes);
+		}
+
+		console.log(volumeCount);
+
 		return (
-			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
+			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "100%"}}>
 				{publisher ? (<Text fontSize={10} bold pb={3}>{edition} {publisher}, {publicationDate}</Text>) : null}
 				<HStack justifyContent="space-around" alignItems="center" space={2} flex={1}>
 					<VStack space={1} alignItems="center" maxW="40%" flex={1}>
@@ -128,6 +135,7 @@ export class Record extends Component {
 										hasItemsWithoutVolumes = {hasItemsWithoutVolumes}
 										majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
 										volumes = {volumes}
+										volumeCount = {volumeCount}
 									/>
 								)
 							} else if (thisAction.title === "Access Online") {
@@ -234,10 +242,11 @@ const ILS = (props) => {
 				volumes = {props.volumes}
 				updateProfile = {props.updateProfile}
 				hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
+				volumeCount = {props.volumeCount}
 			/>
 		)
 	} else {
-		if(props.majorityOfItemsHaveVolumes || props.hasItemsWithoutVolumes) {
+		if(props.majorityOfItemsHaveVolumes || props.volumeCount >= 1) {
 			return (
 				<SelectVolumeHold
 					label={props.actionLabel}
@@ -253,6 +262,7 @@ const ILS = (props) => {
 					updateProfile = {props.updateProfile}
 					hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
 					majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
+					volumeCount = {props.volumeCount}
 				/>
 			)
 		} else {

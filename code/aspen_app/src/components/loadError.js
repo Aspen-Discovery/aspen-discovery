@@ -1,9 +1,11 @@
-import React from "react";
-import {Alert, Button, Center, Heading, HStack, Icon, ScrollView, Text, Toast, VStack} from "native-base";
+import React, {useCallback} from "react";
+import {Alert, Button, Center, Heading, HStack, Icon, ScrollView, Text, Toast, VStack, Box, AlertDialog, IconButton, CloseIcon} from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
+import _ from "lodash";
 
 // custom components and helper files
 import {translate} from "../translations/translations";
+import navigation from "./navigation";
 
 /**
  * Catch an error and display it to the user
@@ -115,6 +117,36 @@ export function popToast(title, description, status) {
 export function popAlert(title, description, status) {
 	return (
 		Toast.show({
+		duration: 5000,
+		accessibilityAnnouncement: description,
+		avoidKeyboard: true,
+		render: () => {
+			return (
+				<Center>
+					<Alert maxW="400" status={status} colorScheme={status}>
+						<VStack space={2} flexShrink={1} w="100%">
+							<HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
+								<HStack flexShrink={1} space={2} alignItems="center">
+									<Alert.Icon/>
+									<Text fontSize="md" fontWeight="medium" _dark={{color: "coolCray.800"}}>
+										{title}
+									</Text>
+								</HStack>
+							</HStack>
+							<Box pl="6" _dark={{_text: {color: "coolGray.600"}}}>
+								{description}
+							</Box>
+						</VStack>
+					</Alert>
+				</Center>
+			)
+		}
+	}))
+}
+
+/*export function popAlert(title, description, status) {
+	return (
+		Toast.show({
 			duration: 5000,
 			render: () => {
 				return (
@@ -140,3 +172,4 @@ export function popAlert(title, description, status) {
 		})
 	);
 }
+*/

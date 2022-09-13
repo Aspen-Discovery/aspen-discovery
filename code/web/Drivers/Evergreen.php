@@ -648,7 +648,7 @@ class Evergreen extends AbstractIlsDriver
 
 						$curHold->sourceId = $holdInfo['id'];
 						//If the hold_type is P the target will be the part, so we will need to look up the bib record based on the part
-						if ($holdInfo['hold_type'] == 'P') {
+						if ($holdInfo['hold_type'] == 'P' || $holdInfo['hold_type'] == 'V') {
 							require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 							$volumeInfo = new IlsVolumeInfo();
 							$volumeInfo->volumeId = $holdInfo['target'];
@@ -663,10 +663,13 @@ class Evergreen extends AbstractIlsDriver
 						}else if ($holdInfo['hold_type'] == 'C'){
 							//This is a copy level hold, need to look it up by the item number
 							$modsInfo = $this->getModsForCopy($holdInfo['target']);
-							$curHold->recordId = (string)$modsInfo['tcn'];
+							$curHold->recordId = (string)$modsInfo['doc_id'];
+							$curHold->title = (string)$modsInfo['title'];
+							$curHold->author = (string)$modsInfo['author'];
 						}else{
 							//Hold Type is T (Title
 							$curHold->recordId = $holdInfo['target'];
+
 						}
 						$curHold->cancelId = $holdInfo['id'];
 
@@ -1075,7 +1078,7 @@ class Evergreen extends AbstractIlsDriver
 			$user->phone = $userData['other_phone'];
 		}
 
-		$user->patronType = $userData['usrgroup'];
+		$user->patronType = $userData['profile'];
 
 		//TODO: Figure out how to parse the address we will need to look it up in web services
 		//$fullAddress = $userData['mailing_address'];
