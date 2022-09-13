@@ -589,6 +589,7 @@ class ItemAPI extends Action {
 			if($itemData['description'] == '') {
 				$itemData['description'] = "Description Not Provided";
 			}
+			$itemData['isbn'] = $groupedWorkDriver->getCleanISBN();
 			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
 
 			$ratingData = $groupedWorkDriver->getRatingData();
