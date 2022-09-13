@@ -16,7 +16,7 @@ import {saveLanguage} from "../../util/accountActions";
 import {userContext} from "../../context/user";
 import * as Notifications from 'expo-notifications';
 import * as ExpoLinking from 'expo-linking';
-import {Platform} from "react-native";
+import Constants from "expo-constants";
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -294,8 +294,10 @@ export class DrawerContent extends Component {
 		if(typeof library !== "undefined") {
 			if(library.logoApp) {
 				icon = library.logoApp;
-			} else {
+			} else if(library.favicon) {
 				icon = library.favicon;
+			} else {
+				icon = Constants.manifest.ios.icon;
 			}
 		}
 
@@ -420,9 +422,9 @@ export class DrawerContent extends Component {
 								rounded="8"
 							/>
 							<Box>
-								{user ? (<Text bold fontSize="14">{user.displayName}</Text>) : null}
+								{user && user.displayName ? (<Text bold fontSize="14">{user.displayName}</Text>) : null}
 
-								{library ? (<Text fontSize="12" fontWeight="500">{library.displayName}</Text>) : null}
+								{library && library.displayName ? (<Text fontSize="12" fontWeight="500">{library.displayName}</Text>) : null}
 								<HStack space={1} alignItems="center">
 									<Icon as={MaterialIcons} name="credit-card" size="xs"/>
 									{user ? (<Text fontSize="12" fontWeight="500">{user.cat_username}</Text>) : null}
