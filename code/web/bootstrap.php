@@ -270,7 +270,7 @@ function getValidServerNames() : array{
 		$mainServerBase = null;
 		$isTestServer = !$configArray['Site']['isProduction'];
 		if (strpos($mainServer, '.') != strrpos($mainServer, '.')){
-			$mainServerBase = substr($mainServer, strpos($mainServer, '.'));
+			$mainServerBase = substr($mainServer, strpos($mainServer, '.') + 1);
 		}
 		$validServerNames = [$instanceName];
 		$libraryInfo = new Library();
