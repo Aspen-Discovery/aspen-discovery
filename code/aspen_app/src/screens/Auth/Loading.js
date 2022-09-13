@@ -7,7 +7,7 @@ import {create} from 'apisauce';
 import {userContext} from "../../context/user";
 import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 import {GLOBALS} from "../../util/globals";
-import {getBrowseCategories} from "../../util/loadLibrary";
+import {getBrowseCategories, getVdxForm} from "../../util/loadLibrary";
 import {getPatronBrowseCategories} from "../../util/loadPatron";
 
 class LoadingScreen extends Component {
@@ -124,6 +124,19 @@ class LoadingScreen extends Component {
 								data = response.data.result.location;
 								this.setState({location: data});
 								this.context.location = data;
+
+								// fetch vdx form fields if vdx is set up for location
+								if(typeof data.vdxFormId !== "undefined" && !_.isNull(data.vdxFormId)) {
+									try {
+										const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
+										if(vdxFormFields === null) {
+											await getVdxForm(libraryUrl, data.vdxFormId);
+										}
+									} catch(e) {
+										console.log(e);
+									}
+								}
+
 								await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
 								console.log("location loaded into context");
 							}
