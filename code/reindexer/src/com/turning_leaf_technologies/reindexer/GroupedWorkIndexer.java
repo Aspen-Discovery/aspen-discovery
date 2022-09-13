@@ -546,7 +546,14 @@ public class GroupedWorkIndexer {
 	public synchronized void deleteRecord(String permanentId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
-			updateServer.deleteById(permanentId);
+			if (permanentId.length() >= 37 && permanentId.length() < 40){
+				StringBuilder permanentIdBuilder = new StringBuilder(permanentId);
+				while (permanentIdBuilder.length() < 40){
+					permanentIdBuilder.append(" ");
+				}
+				permanentId = permanentIdBuilder.toString();
+			}
+			updateServer.deleteByQuery("id:\"" + permanentId + "\"");
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
