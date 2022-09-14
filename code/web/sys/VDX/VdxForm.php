@@ -232,7 +232,7 @@ class VdxForm extends DataObject
 		$fields['publisher'] = array(
 			'type' => 'input',
 			'property' => 'publisher',
-			'display' => 'show',
+			'display' => $this->showPublisher ? 'show' : 'hide',
 			'label' => translate(['text' => 'Publisher', 'isPublicFacing'=> true]),
 			'description' => translate(['text' => 'The publisher of the title to request', 'isPublicFacing'=> true]),
 			'required' => false,
@@ -249,7 +249,7 @@ class VdxForm extends DataObject
 			'maxLength' => 255,
 		);
 
-		$fields['fees']['feeInformationText'] = array(
+		$fields['feeInformationText'] = array(
 			'type' => 'text',
 			'property' => 'feeInformationText',
 			'display' => $this->showAcceptFee ? 'show' : 'hide',
@@ -259,7 +259,7 @@ class VdxForm extends DataObject
 			'maxLength' => 255,
 		);
 
-		$fields['fees']['showMaximumFee'] = array(
+		$fields['showMaximumFee'] = array(
 			'type' => 'number',
 			'property' => 'showMaximumFee',
 			'display' => $this->showMaximumFee ? 'show' : 'hide',
@@ -269,7 +269,7 @@ class VdxForm extends DataObject
 			'maxLength' => 255,
 		);
 
-		$fields['fees']['acceptFee'] = array(
+		$fields['acceptFee'] = array(
 			'type' => 'checkbox',
 			'property' => 'acceptFee',
 			'display' => $this->showMaximumFee ? 'show' : 'hide',
