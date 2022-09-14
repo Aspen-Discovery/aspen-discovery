@@ -32,6 +32,16 @@
 			<a class="btn btn-primary" href="/MyAccount/Fines">{translate text="View Fines" isPublicFacing=true}</a>
 		</div>
 	</div>
+
+	{strip}
+    <script>
+        var pollStatus = setInterval(checkStatus, 2000);
+        function checkStatus() {ldelim}
+            return AspenDiscovery.Account.checkWorldPayStatus({$paymentId},{$currentStatus})
+        {rdelim}
+        checkStatus();
+    </script>
+    {/strip}
 {else}
 	{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 {/if}
