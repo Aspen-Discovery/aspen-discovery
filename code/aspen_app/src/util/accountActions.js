@@ -797,7 +797,7 @@ export async function saveLanguage(code, libraryUrl) {
 	}
 }
 
-export async function cancelVdxRequest(libraryUrl) {
+export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: libraryUrl + '/API',
@@ -807,10 +807,15 @@ export async function cancelVdxRequest(libraryUrl) {
 	});
 	const response = await api.post('/UserAPI?method=cancelVdxRequest', postBody);
 	if (response.ok) {
-		console.log(response);
-		return response.data;
+		if(response.data.result.success === "true") {
+			popAlert(response.data.result.title, response.data.result.message, "success");
+		} else {
+			console.log(response);
+			popAlert("Error", response.data.result.message, "error");
+		}
 	} else {
-		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		const problem = problemCodeMap(response.problem);
+		popAlert(problem.title, problem.message, "warning");
 		console.log(response);
 	}
 }

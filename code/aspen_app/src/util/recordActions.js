@@ -5,7 +5,7 @@ import _ from "lodash";
 import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
-import {createAuthTokens, getHeaders, postData} from "./apiAuth";
+import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {getCheckedOutItems, getHolds, getProfile} from "./loadPatron";
 import {popAlert, popAlertNew, popToast} from "../components/loadError";
@@ -241,19 +241,15 @@ export async function submitVdxRequest(libraryUrl, request) {
 	});
 	const response = await api.post('/UserAPI?method=submitVdxRequest', postBody);
 	if (response.ok) {
-		console.log(response.data);
-		if(response.data.success === true) {
-
+		if(response.data.result.success === true) {
+			popAlert(response.data.result.title, response.data.result.message, "success");
 		} else {
-			try {
-				popAlertNew("Unknown Error", response.data.message, "error")
-			} catch (e) {
-				console.log(e);
-			}
+			popAlert(response.data.result.title ?? "Unknown Error", response.data.result.message, "error")
 		}
 		return response.data;
 	} else {
-		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		const problem = problemCodeMap(response.problem);
+		popAlert(problem.title, problem.message, "warning");
 		console.log(response);
 	}
 }
