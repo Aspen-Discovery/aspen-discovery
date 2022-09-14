@@ -15,7 +15,7 @@ class MyAccount_WorldPayCompleted extends MyAccount
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
-				if ($userPayment->completed == true){
+				if ($userPayment->completed == true || $userPayment->completed == 1 || $userPayment->completed == "1"){
 					$message = 'Your payment has been completed.';
 				}else{
 					if (empty($userPayment->message)){
