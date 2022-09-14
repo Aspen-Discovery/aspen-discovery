@@ -479,7 +479,8 @@ class Koha extends AbstractIlsDriver
 			if ($library->displayHoldsOnCheckout) {
 				$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
 				if ($allowRenewals['success'] == true) {
-					$curCheckout->canRenew = false;
+					$curCheckout->canRenew = 0;
+					$curCheckout->autoRenew = 0;
 					$curCheckout->renewError = $allowRenewals['error'];
 				}
 			}
