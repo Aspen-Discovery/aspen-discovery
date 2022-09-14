@@ -390,6 +390,7 @@ class UserPayment extends DataObject
 					$userPayment->error = true;
 					$userPayment->message .= "This payment has already been completed. ";
 				}else{
+					$success = true;
 					$amountPaid = $queryParams['TotalPaymentAmountt'] ?? $queryParams['TransactionAmount'];
 					$transactionId = $queryParams['TransactionID'] ?? $queryParams['FISTransactionNumber'];
 					$userPayment->transactionId = $transactionId;
