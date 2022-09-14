@@ -3680,6 +3680,42 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function checkWorldPayOrderStatus() {
+		$result = [
+			'success' => false,
+			'message' => 'Unable to check user payment status'
+		];
+
+		if(empty($_REQUEST['paymentId'])) {
+			$result['message'] = 'No payment id was provided';
+		} else {
+			$paymentId = $_REQUEST['paymentId'];
+			$currentStatus = $_REQUEST['currentStatus'];
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$userPayment = new UserPayment();
+			$userPayment->id = $paymentId;
+			if($userPayment->find(true)) {
+				if($userPayment->completed != $currentStatus) {
+					global $interface;
+					$interface->assign('pendingStatus', false);
+
+					$result['success'] = true;
+					$result['message'] = translate(['text' => 'Your payment has been completed.', 'isPublicFacing' => 'true']);
+					if(!empty($userPayment->message)) {
+						$result['message'] .= ' ' . $userPayment->message;
+					}
+				} else {
+					$result['message'] = 'User payment has not changed';
+				}
+			} else {
+				$result['message'] = 'User payment not found with given id';
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function createXPressPayOrder() {
 		global $configArray;
 
