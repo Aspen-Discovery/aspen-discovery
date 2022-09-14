@@ -6,7 +6,7 @@ import {translate} from '../../translations/translations';
 import DisplayRecord, {Record} from "./Record";
 
 const Manifestation = (props) => {
-	let arrayToSearch = data[format];
+	let arrayToSearch = [];
 	const {navigation, data, format, language, locations, showAlert, groupedWorkTitle, groupedWorkAuthor, groupedWorkISBN, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
 
 	if(typeof data[format] !== "undefined") {

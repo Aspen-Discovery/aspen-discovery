@@ -232,6 +232,11 @@ export async function reloadHolds(libraryUrl) {
 		};
 	} else {
 		console.log(response);
+		return {
+			"holds": [],
+			"holdsReady": [],
+			"holdsNotReady": []
+		}
 	}
 }
 export async function getPatronBrowseCategories(libraryUrl, patronId = null) {

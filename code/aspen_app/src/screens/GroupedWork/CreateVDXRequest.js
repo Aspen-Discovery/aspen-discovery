@@ -1,12 +1,9 @@
 import React, {Component} from "react";
-import {Button, Center, Modal, Box, Text, Icon, FormControl, Input, CheckIcon, TextArea, KeyboardAvoidingView, Select, HStack, Stack, Checkbox, FlatList } from "native-base";
-import {MaterialIcons} from "@expo/vector-icons";
+import {Box, Button, Checkbox, CheckIcon, FlatList, FormControl, Input, Select, Text, TextArea} from "native-base";
 import _ from "lodash";
-import { translate } from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {userContext} from "../../context/user";
 import {submitVdxRequest} from "../../util/recordActions";
-import {Platform} from "react-native";
 
 class CreateVDXRequest extends Component {
 	static contextType = userContext;
@@ -23,7 +20,7 @@ class CreateVDXRequest extends Component {
 				'publisher': this.props.route.params?.publisher ?? null,
 				'isbn': null,
 				'acceptFee': false,
-				'maximumFeeAmount': null,
+				'maximumFeeAmount': 5.00,
 				'note': null,
 				'catalogKey': this.props.route.params?.catalogKey ?? null,
 				'pickupLocation': this.props.route.params?.pickupLocation ?? null,
@@ -61,12 +58,32 @@ class CreateVDXRequest extends Component {
 	}
 
 	updateValue = (field, value) => {
+		let newValue = value;
+		if(field === "showMaximumFee") {
+			newValue = this.formatCurrency(value);
+		}
+
 		let currentValues = [this.state.request];
-		_.set(currentValues[0], field, value);
+		_.set(currentValues[0], field, newValue);
 	}
 
 	getValue = (field) => {
 		return this.state.request[field];
+	}
+
+	returnField = (field, feeTable = false, key) => {
+		let currentFields = [this.state.fields];
+		if(feeTable) {
+			currentFields = [this.state.fees];
+		}
+
+		let matchedField = _.find(currentFields[0], _.matchesProperty('property', field));
+
+		return matchedField[key];
+	}
+
+	formatCurrency = (value) => {
+		return Number.parseFloat(value).toFixed(2);
 	}
 
 	getPlaceholder = (field) => {
@@ -74,20 +91,17 @@ class CreateVDXRequest extends Component {
 	}
 
 	onSubmit = async () => {
-		console.log(this.state.request);
 		await submitVdxRequest(this.context.library.baseUrl, this.state.request)
 	}
 
 	_renderField = (field) => {
-
 		if(field.type === "input" && field.display === "show") {
 			return (
-				<FormControl my={2}>
+				<FormControl my={2} isRequired={field.required}>
 					<FormControl.Label>{field.label}</FormControl.Label>
 					<Input
 						name={field.property}
 						defaultValue={this.getPlaceholder(field.property)}
-						isRequired={field.required}
 						accessibilityLabel={field.description ?? field.label}
 						onChangeText={(value) => {this.updateValue(field.property, value)}} />
 				</FormControl>
@@ -102,9 +116,13 @@ class CreateVDXRequest extends Component {
 						name={field.property}
 						value={this.getValue(field.property)}
 						accessibilityLabel={field.description ?? field.label}
-						isRequired={field.required}
 						onChangeText={(text) => {this.updateValue(field.property, text)}}
 					/>
+
+				{field.property === "title" ? (
+					<FormControl.HelperText>{this.returnField("feeInformationText", true, "label")}</FormControl.HelperText>
+				) : null}
+
 				</FormControl>
 			)
 		}
@@ -135,6 +153,21 @@ class CreateVDXRequest extends Component {
 			}
 		}
 
+		if(field.type === "number" && field.display === "show") {
+			return (
+				<FormControl my={2}>
+					<FormControl.Label>{field.label}</FormControl.Label>
+					<Input
+						name={field.property}
+						defaultValue={this.getPlaceholder(field.property)}
+						accessibilityLabel={field.description ?? field.label}
+						keyboardType="decimal-pad"
+						onChangeText={(value) => {this.updateValue(field.property, value)}}
+					/>
+				</FormControl>
+			)
+		}
+
 		if(field.type === "checkbox" && field.display === "show") {
 			return (
 				<FormControl my={2} maxW="90%">
@@ -159,17 +192,23 @@ class CreateVDXRequest extends Component {
 			)
 		}
 
-		if(field.type === "text" && field.display === "show" && field.property !== "introText") {
-			if(field.property === "feeInformationText") {
-				return (
-					<Text>{field.label}</Text>
-				)
-			}
-
+		if(field.property === "catalogKey" && field.display === "show") {
 			return (
-				<Text>{field.label}</Text>
+				<FormControl my={2} isDisabled>
+					<FormControl.Label>{field.label}</FormControl.Label>
+					<Input
+						name={field.property}
+						defaultValue={this.getPlaceholder(field.property)}
+						accessibilityLabel={field.description ?? field.label} />
+				</FormControl>
 			)
 		}
+	}
+
+	_renderHeader = () => {
+		return (
+			<Text fontSize="sm" pb={3}>{this.state.options.fields.introText.label}</Text>
+		)
 	}
 
 	_renderFooter = () => {
@@ -190,19 +229,15 @@ class CreateVDXRequest extends Component {
 		}
 
 		return(
-
-				<Box safeArea={5}>
-					<Text fontSize="sm" pb={3}>{this.state.options.fields.introText.label}</Text>
-					<KeyboardAvoidingView h={{base: "700px", lg: "auto"}} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-					<FlatList
-						data={this.state.fields}
-						renderItem={({ item }) => this._renderField(item)}
-						keyExtractor={(item) => item.property}
-						ListFooterComponent={this._renderFooter}
-					/>
-					</KeyboardAvoidingView>
-				</Box>
-
+			<Box safeArea={5}>
+				<FlatList
+					data={this.state.fields}
+					renderItem={({ item }) => this._renderField(item)}
+					keyExtractor={(item) => item.property}
+					ListHeaderComponent={this._renderHeader}
+					ListFooterComponent={this._renderFooter}
+				/>
+			</Box>
 		)
 	}
 }
