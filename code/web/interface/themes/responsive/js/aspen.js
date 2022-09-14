@@ -7183,9 +7183,12 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(Globals.path + '/MyAccount/AJAX?method=checkWorldPayOrderStatus', params, function(data) {
 					if(data.success) {
 						$('#successMessage').html(data.message);
+						clearInterval(pollStatus);
+						return true;
 					}
 				});
 			}
+			return false;
 		}
 	};
 }(AspenDiscovery.Account || {}));
