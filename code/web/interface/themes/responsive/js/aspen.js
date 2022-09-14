@@ -7174,6 +7174,19 @@ AspenDiscovery.Account = (function(){
 			});
 			return false;
 		},
+		checkWorldPayStatus: function (paymentId, status) {
+			if(Globals.activeAction === "WorldPayCompleted" && Globals.loggedIn) {
+				var params = {
+					paymentId: paymentId,
+					currentStatus: status
+				};
+				$.getJSON(Globals.path + '/MyAccount/AJAX?method=checkWorldPayOrderStatus', params, function(data) {
+					if(data.success) {
+						$('#successMessage').html(data.message);
+					}
+				});
+			}
+		}
 	};
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function(){

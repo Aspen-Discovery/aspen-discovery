@@ -22,7 +22,7 @@
 	{if !empty($message)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-success">{translate text=$message isPublicFacing=true}</div>
+				<div class="alert alert-success" id="successMessage">{translate text=$message isPublicFacing=true}</div>
 			</div>
 		</div>
 	{/if}
@@ -32,6 +32,18 @@
 			<a class="btn btn-primary" href="/MyAccount/Fines">{translate text="View Fines" isPublicFacing=true}</a>
 		</div>
 	</div>
+
+	{strip}
+    <script>
+    if(window.location.href.indexOf("WorldPayCompleted") > -1) {ldelim}
+        function checkStatus() {ldelim}
+            return AspenDiscovery.Account.checkWorldPayStatus({$paymentId},{$currentStatus});
+        {rdelim}
+        checkStatus();
+        setInterval(checkStatus, 2000);
+    {rdelim}
+    </script>
+    {/strip}
 {else}
 	{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 {/if}
