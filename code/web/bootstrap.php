@@ -288,10 +288,8 @@ function getValidServerNames() : array{
 			}
 			if ($isTestServer){
 				$validServerNames[] = "{$subdomain}t.$mainServer";
-				$validServerNames[] = "{$subdomain}x.$mainServer";
 				if ($mainServerBase != null){
 					$validServerNames[] = "{$subdomain}t.$mainServerBase";
-					$validServerNames[] = "{$subdomain}x.$mainServerBase";
 				}
 			}
 		}
@@ -308,13 +306,12 @@ function getValidServerNames() : array{
 				$validServerNames[] = "{$code}x.$mainServer";
 				if ($mainServerBase != null){
 					$validServerNames[] = "{$code}t.$mainServerBase";
-					$validServerNames[] = "{$code}x.$mainServerBase";
 				}
 			}
 		}
 		$locationInfo = new Location();
 		$locationSubdomains = $locationInfo->fetchAll('subdomain');
-		foreach ($locationSubdomains as $subdomain) {
+		foreach ($locationSubdomains as $subdomain => $subdomain2) {
 			if (!empty($subdomain)) {
 				$validServerNames[] = "$subdomain.$mainServer";
 				$validServerNames[] = "$subdomain.aspendiscovery.org";
@@ -323,10 +320,8 @@ function getValidServerNames() : array{
 				}
 				if ($isTestServer){
 					$validServerNames[] = "{$subdomain}t.$mainServer";
-					$validServerNames[] = "{$subdomain}x.$mainServer";
 					if ($mainServerBase != null){
 						$validServerNames[] = "{$subdomain}t.$mainServerBase";
-						$validServerNames[] = "{$subdomain}x.$mainServerBase";
 					}
 				}
 			}
@@ -338,7 +333,7 @@ function getValidServerNames() : array{
 				$validServerNames[] = "$host";
 			}
 		}
-		$memCache->set('validServerNames', $validServerNames, 60 * 60);
+		$memCache->set('validServerNames', $validServerNames, 5 * 60 * 60);
 	}
 	return $validServerNames;
 }

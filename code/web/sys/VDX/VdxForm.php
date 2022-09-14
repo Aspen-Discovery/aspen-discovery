@@ -260,7 +260,7 @@ class VdxForm extends DataObject
 		);
 
 		$fields['fees']['showMaximumFee'] = array(
-			'type' => 'text',
+			'type' => 'number',
 			'property' => 'showMaximumFee',
 			'display' => $this->showMaximumFee ? 'show' : 'hide',
 			'label' => translate(['text' => 'Maximum Fee', 'isPublicFacing'=> true]),
@@ -312,6 +312,7 @@ class VdxForm extends DataObject
 
 		$fields['pickupLocation'] = array(
 			'type' => 'select',
+			'property' => 'pickupLocation',
 			'display' => 'show',
 			'label' => translate(['text' => 'Pickup Location', 'isPublicFacing'=> true]),
 			'description' => translate(['text' => 'Where you would like to pickup the title', 'isPublicFacing'=> true]),

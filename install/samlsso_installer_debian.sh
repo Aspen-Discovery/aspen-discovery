@@ -7,6 +7,7 @@
      apt-get install -y simplesamlphp
      rm /etc/simplesamlphp/config.php
      rm /etc/simplesamlphp/authsources.php
+	 cp /usr/local/aspen-discovery/install/saml20-idp-remote.php /etc/simplesamlphp/metadata/
      read -p "Enter the SSO technical contact email: " ssoemail
      read -p "Enter a timezone (supported timezones can be found at http://php.net/manual/en/timezones.php): " ssotimezone
      read -p "Enter an SSO admin password: " ssoadminpwd

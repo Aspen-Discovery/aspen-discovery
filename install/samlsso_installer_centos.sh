@@ -5,10 +5,11 @@ SAMLSSO="${SAMLSSO:=n}"
 SAMLSSO=$(echo $SAMLSSO | tr '[:upper:]' '[:lower:]')
 if [ $SAMLSSO = "y" ]; then
 	mkdir /tmp/simplesamlphp
-	mkdir -p /etc/simplesamlphp/{cert,log,data}
+	mkdir -p /etc/simplesamlphp/{cert,log,data,metadata}
 	curl -sL https://github.com/simplesamlphp/simplesamlphp/releases/download/v1.16.3/simplesamlphp-1.16.3.tar.gz --output /tmp/simplesamlphp/simplesamlphp-1.16.3.tar.gz
 	tar xzf /tmp/simplesamlphp/simplesamlphp-1.16.3.tar.gz -C /usr/local
 	mv /usr/local/simplesamlphp-1.16.3 /usr/local/simplesamlphp
+	cp /usr/local/aspen-discovery/install/saml20-idp-remote.php /etc/simplesamlphp/metadata/
 	rm -rf /tmp/simplesamlphp
 
 	read -p "Enter the SSO technical contact email: " ssoemail

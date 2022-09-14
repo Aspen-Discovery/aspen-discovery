@@ -132,6 +132,7 @@ export default class Holds extends Component {
 				holds: r['holds'],
 				holdsNotReady: r['holdsNotReady'],
 				holdsReady: r['holdsReady'],
+				isLoading: false,
 			})
 		});
 	}
@@ -142,15 +143,10 @@ export default class Holds extends Component {
 		const locations = JSON.parse(tmp);
 		this.setState({
 			locations: locations,
-			isLoading: true,
 		})
 	}
 
 	_pickupLocations = async () => {
-		this.setState({
-			isLoading: true,
-		});
-
 		const { route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
@@ -312,7 +308,10 @@ export default class Holds extends Component {
 			<ScrollView>
 			<Box pt={10}>
 				<Center>
-					<Checkbox.Group  defaultValue={this.state.groupValues} accessibilityLabel="choose multiple items" onChange={values => {this.setGroupValue(values)}}>
+					<Checkbox.Group
+						defaultValue={this.state.groupValues}
+						accessibilityLabel="choose multiple items"
+						onChange={values => {this.setGroupValue(values)}}>
 						<FlatList
 							data={holds}
 							ListEmptyComponent={this._listEmptyComponent()}
@@ -449,7 +448,7 @@ function HoldItem(props) {
 					<VStack>
 						<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
 						{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
-							<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="This is a dummy checkbox"></Checkbox></Center>
+							<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md"></Checkbox></Center>
 						 : null}
 					</VStack>
 					<VStack maxW="75%">
