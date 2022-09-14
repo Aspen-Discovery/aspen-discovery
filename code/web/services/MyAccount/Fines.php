@@ -141,14 +141,14 @@ class MyAccount_Fines extends MyAccount
 						require_once ROOT_DIR . '/sys/CurlWrapper.php';
 						$aciAuthRequest = new CurlWrapper();
 						$aciAuthRequest->addCustomHeaders([
-							"X-Auth-Key: bea43d8c-29f7-40ff-a03c-27887afc34ff",
+							"X-Auth-Key: $aciSpeedpaySettings->apiAuthKey",
 							"Content-Type: application/x-www-form-urlencoded",
 						], true);
 
 						$postParams = [
 							'grant_type' => 'client_credentials',
-							'client_id' => 'sandbox-apichanneldemo-jssdk',
-							'client_secret' => '5a050e37-7a07-4059-bb26-d5c6d58d6901',
+							'client_id' => $aciSpeedpaySettings->sdkClientId,
+							'client_secret' => $aciSpeedpaySettings->sdkClientSecret,
 							'scope' => 'token_exchange',
 							'biller_id' => $aciSpeedpaySettings->billerId,
 							'account_number' => $aciSpeedpaySettings->billerAccountId,
