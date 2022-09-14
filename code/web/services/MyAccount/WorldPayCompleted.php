@@ -15,13 +15,19 @@ class MyAccount_WorldPayCompleted extends MyAccount
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
-				if ($userPayment->completed == true){
+				$interface->assign('paymentId', $paymentId);
+				$interface->assign('currentStatus', $userPayment->completed);
+				if ($userPayment->completed == true || $userPayment->completed == 1 || $userPayment->completed == "1"){
 					$message = 'Your payment has been completed.';
-				}else{
+				} else {
 					if (empty($userPayment->message)){
 						$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
 					}else {
 						$error = $userPayment->message;
+					}
+					if($userPayment->error == 0) {
+						$error = "";
+						$message = 'Your payment is processing within the system.';
 					}
 				}
 			}else{
@@ -30,7 +36,7 @@ class MyAccount_WorldPayCompleted extends MyAccount
 		}
 		$interface->assign('error', $error);
 		$interface->assign('message', $message);
-		$this->display('paymentCompleted.tpl', 'Payment Completed');
+		$this->display('worldPayPaymentComplete.tpl', 'Payment Completed');
 	}
 
 	function getBreadcrumbs() : array

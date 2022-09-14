@@ -390,8 +390,9 @@ class UserPayment extends DataObject
 					$userPayment->error = true;
 					$userPayment->message .= "This payment has already been completed. ";
 				}else{
-					$amountPaid = $queryParams['TotalPaymentAmountt'];
-					$transactionId = $queryParams['TransactionID'];
+					$success = true;
+					$amountPaid = $queryParams['TotalPaymentAmountt'] ?? $queryParams['TransactionAmount'];
+					$transactionId = $queryParams['TransactionID'] ?? $queryParams['FISTransactionNumber'];
 					$userPayment->transactionId = $transactionId;
 					if ($amountPaid != $userPayment->totalPaid){
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
