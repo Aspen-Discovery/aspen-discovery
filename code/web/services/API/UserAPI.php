@@ -526,6 +526,7 @@ class UserAPI extends Action
 				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 				$driver = new VdxDriver();
 				$vdxSummary = $driver->getAccountSummary($user);
+				$numHolds += (int)$vdxSummary->numUnavailableHolds;
 			}
 
 
