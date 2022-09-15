@@ -13,7 +13,6 @@ class CreateVDXRequest extends Component {
 			isLoading: true,
 			options: [],
 			fields: [],
-			fees: [],
 			request: {
 				'title': this.props.route.params?.title ?? null,
 				'author': this.props.route.params?.author ?? null,
@@ -33,23 +32,9 @@ class CreateVDXRequest extends Component {
 		const vdxOptions = route.params?.vdxOptions ?? null;
 
 		if(vdxOptions) {
-			let feeFields = _.values(vdxOptions['fields']['fees']);
-			let allFields =  _.values(vdxOptions['fields']);
-			feeFields.forEach(item => allFields.push({
-				'property': item.property,
-				'display': item.display,
-				'label': item.label,
-				'type': item.type,
-				'required': item.required,
-				'description': item.description,
-			}))
-
-			//allFields.push(feeFields);
-
 			this.setState({
 				options: vdxOptions,
-				fields: allFields,
-				fees: _.values(vdxOptions['fields']['fees']),
+				fields: _.values(vdxOptions['fields']),
 				isLoading: false,
 			})
 		} else {
@@ -71,14 +56,9 @@ class CreateVDXRequest extends Component {
 		return this.state.request[field];
 	}
 
-	returnField = (field, feeTable = false, key) => {
+	returnField = (field, key) => {
 		let currentFields = [this.state.fields];
-		if(feeTable) {
-			currentFields = [this.state.fees];
-		}
-
 		let matchedField = _.find(currentFields[0], _.matchesProperty('property', field));
-
 		return matchedField[key];
 	}
 
@@ -110,7 +90,7 @@ class CreateVDXRequest extends Component {
 
 		if(field.type === "textarea" && field.display === "show") {
 			return (
-				<FormControl my={2}>
+				<FormControl my={2} isRequired={field.required}>
 					<FormControl.Label>{field.label}</FormControl.Label>
 					<TextArea
 						name={field.property}
@@ -120,7 +100,7 @@ class CreateVDXRequest extends Component {
 					/>
 
 				{field.property === "title" ? (
-					<FormControl.HelperText>{this.returnField("feeInformationText", true, "label")}</FormControl.HelperText>
+					<FormControl.HelperText>{this.returnField("feeInformationText","label")}</FormControl.HelperText>
 				) : null}
 
 				</FormControl>
@@ -131,7 +111,7 @@ class CreateVDXRequest extends Component {
 			if(_.isArray(field.options)) {
 				const locations = field.options;
 				return (
-					<FormControl my={2}>
+					<FormControl my={2} isRequired={field.required}>
 						<FormControl.Label>{field.label}</FormControl.Label>
 						<Select
 							name='pickupLocation'
@@ -155,7 +135,7 @@ class CreateVDXRequest extends Component {
 
 		if(field.type === "number" && field.display === "show") {
 			return (
-				<FormControl my={2}>
+				<FormControl my={2} isRequired={field.required}>
 					<FormControl.Label>{field.label}</FormControl.Label>
 					<Input
 						name={field.property}
@@ -170,7 +150,7 @@ class CreateVDXRequest extends Component {
 
 		if(field.type === "checkbox" && field.display === "show") {
 			return (
-				<FormControl my={2} maxW="90%">
+				<FormControl my={2} maxW="90%" isRequired={field.required}>
 					<Checkbox
 						name={field.property}
 						defaultValue={this.getPlaceholder(field.property)}
@@ -185,7 +165,7 @@ class CreateVDXRequest extends Component {
 
 		if(field.type === "number" && field.display === "show") {
 			return (
-				<FormControl my={2}>
+				<FormControl my={2} isRequired={field.required}>
 					<FormControl.Label>{field.label}</FormControl.Label>
 					<Input defaultValue={5.00} keyboardType="decimal-pad" />
 				</FormControl>
@@ -194,7 +174,7 @@ class CreateVDXRequest extends Component {
 
 		if(field.property === "catalogKey" && field.display === "show") {
 			return (
-				<FormControl my={2} isDisabled>
+				<FormControl my={2} isDisabled isRequired={field.required}>
 					<FormControl.Label>{field.label}</FormControl.Label>
 					<Input
 						name={field.property}

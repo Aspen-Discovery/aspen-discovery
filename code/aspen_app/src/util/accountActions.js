@@ -804,6 +804,10 @@ export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
+		params: {
+			sourceId: sourceId,
+			cancelId: cancelId
+		}
 	});
 	const response = await api.post('/UserAPI?method=cancelVdxRequest', postBody);
 	if (response.ok) {
