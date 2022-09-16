@@ -15,6 +15,8 @@ class LiDANotificationPType extends DataObject
 		if($ptype->find(true)) {
 			return $ptype->pType;
 		}
+
+		return null;
 	}
 
 }

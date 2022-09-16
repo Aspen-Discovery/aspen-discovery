@@ -2,19 +2,8 @@
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../bootstrap_aspen.php';
 
-require_once ROOT_DIR . '/sys/Account/UserNotification.php';
-require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
-
-require_once ROOT_DIR . '/sys/Account/PType.php';
-require_once ROOT_DIR . '/sys/Account/User.php';
-
 require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotification.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotificationLibrary.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotificationLocation.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotificationPType.php';
-
-global $logger;
 
 $allNotifications = new LiDANotification();
 $allNotifications->sent = 0;
