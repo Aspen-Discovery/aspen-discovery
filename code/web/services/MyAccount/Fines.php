@@ -141,7 +141,7 @@ class MyAccount_Fines extends MyAccount
 						require_once ROOT_DIR . '/sys/CurlWrapper.php';
 						$aciAuthRequest = new CurlWrapper();
 						$aciAuthRequest->addCustomHeaders([
-							"X-Auth-Key: $aciSpeedpaySettings->apiAuthKey",
+							"X-Auth-Key: $aciSpeedpaySettings->sdkApiAuthKey",
 							"Content-Type: application/x-www-form-urlencoded",
 						], true);
 
