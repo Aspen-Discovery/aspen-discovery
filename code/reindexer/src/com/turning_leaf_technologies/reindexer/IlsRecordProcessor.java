@@ -1550,7 +1550,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		return new ResultWithNotes(false, suppressionNotes);
 	}
-
 	/**
 	 * Determine Record Format(s)
 	 */
@@ -1563,25 +1562,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
                 if (uniqueItemFormats.size() == 1) {
                     recordInfo.addFormat(uniqueItemFormats.iterator().next());
                     recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
-                }
+					largePrintCheck(recordInfo, record);
+				}
             }else {
-                HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
-                try {
-                    if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().equalsIgnoreCase("Book")) {
-                        LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
-                        if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
-                            String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
-                            //noinspection Java8MapApi
-                            for (String itemType : uniqueItemFormats) {
-                                uniqueItemFormats.remove(itemType);
-                                uniqueItemFormats.add(translatedFormat);
-                                recordInfo.addFormat(translatedFormat);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.error("Error checking record for large print");
-                }
+				largePrintCheck(recordInfo, record);
                 return;
             }
         }
@@ -1597,6 +1581,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			recordInfo.setFormatBoost(specifiedFormatBoost);
 		} else {
 			loadPrintFormatFromBib(recordInfo, record);
+		}
+	}
+
+	void largePrintCheck(RecordInfo recordInfo, Record record){
+		HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
+		try {
+			if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().equalsIgnoreCase("Book")) {
+				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+				if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
+					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+					//noinspection Java8MapApi
+					for (String itemType : uniqueItemFormats) {
+						uniqueItemFormats.remove(itemType);
+						uniqueItemFormats.add(translatedFormat);
+						recordInfo.addFormat(translatedFormat);
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error checking record for large print");
 		}
 	}
 
