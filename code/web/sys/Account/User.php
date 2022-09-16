@@ -2496,6 +2496,7 @@ class User extends DataObject
 		$sections['local_enrichment']->addAction(new AdminAction('JavaScript Snippets', 'JavaScript Snippets to be added to the site when pages are rendered.', '/Admin/JavaScriptSnippets'), ['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
 		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards', 'Edit Library Placards']);
 		$sections['local_enrichment']->addAction(new AdminAction('System Messages', 'System Messages allow you to display messages to your patrons in specific locations.', '/Admin/SystemMessages'), ['Administer All System Messages', 'Administer Library System Messages']);
+		$sections['local_enrichment']->addAction(new AdminAction('LiDA Notifications', 'System Messages allow you to display messages to your patrons in specific locations.', '/Admin/LiDANotifications'), ['Administer All System Messages', 'Administer Library System Messages']);
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
@@ -2951,7 +2952,7 @@ class User extends DataObject
 		return false;
 	}
 
-	public function canReceiveNotifications($user): bool
+	public function canReceiveNotifications($user, $alertType): bool
 	{
 		global $logger;
 		$userLibrary = Library::getPatronHomeLibrary($user);
@@ -2959,24 +2960,23 @@ class User extends DataObject
 		$settings = new NotificationSetting();
 		$settings->id = $userLibrary->lidaNotificationSettingId;
 		if($settings->find(true)) {
-			if($settings->sendTo == 2 || $settings->sendTo == '2') {
-				$logger->log("Sending notifications to all patron types", Logger::LOG_ERROR);
-				return true;
-			} elseif($settings->sendTo == 1 || $settings->sendTo == '1') {
-				$isStaff = 0;
-				require_once ROOT_DIR . '/sys/Account/PType.php';
-				$patronType = new PType();
-				$patronType->pType = $this->patronType;
-				if($patronType->find(true)) {
-					$isStaff = $patronType->isStaff;
-				}
-				if($isStaff == 1 || $isStaff == '1') {
-					$logger->log("Sending notifications to only staff", Logger::LOG_ERROR);
+			if($settings->$alertType == 1 || $settings->$alertType == "1"){
+				if($settings->sendTo == 2 || $settings->sendTo == '2') {
 					return true;
+				} elseif($settings->sendTo == 1 || $settings->sendTo == '1') {
+					$isStaff = 0;
+					require_once ROOT_DIR . '/sys/Account/PType.php';
+					$patronType = new PType();
+					$patronType->pType = $this->patronType;
+					if($patronType->find(true)) {
+						$isStaff = $patronType->isStaff;
+					}
+					if($isStaff == 1 || $isStaff == '1') {
+						return true;
+					}
 				}
 			}
 		}
-		$logger->log("Unable to find notification settings", Logger::LOG_ERROR);
 		return false;
 	}
 
@@ -3007,6 +3007,44 @@ class User extends DataObject
 			$tokens[] = $token;
 		}
 		return $tokens;
+	}
+
+	public function getNotificationPreferencesByToken($token): array{
+		$preferences = [];
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$obj = new UserNotificationToken();
+		$obj->userId = $this->id;
+		$obj->pushToken = $token;
+		if($obj->find(true)) {
+			$preferences = $obj;
+		}
+		return $preferences;
+	}
+
+	public function getNotificationPreference($option, $token): bool{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$obj = new UserNotificationToken();
+		$obj->userId = $this->id;
+		$obj->pushToken = $token;
+		if($obj->find(true)) {
+			if($obj->$option == 1 || $obj->$option == "1") {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function setNotificationPreference($option, $newValue, $token): bool{
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$obj = new UserNotificationToken();
+		$obj->userId = $this->id;
+		$obj->pushToken = $token;
+		if($obj->find(true)) {
+			$obj->$option = $newValue;
+			$obj->update();
+			return true;
+		}
+		return false;
 	}
 
 	public function deleteNotificationPushToken($token): bool{
