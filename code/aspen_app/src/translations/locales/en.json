@@ -141,7 +141,9 @@
     "position_queue": "Position",
     "hold_options": "Hold Options",
     "pickup_by": "Pickup By",
-    "cancel_request": "Cancel Request"
+    "cancel_request": "Cancel Request",
+    "status": "Status",
+    "type": "Type"
   },
   "lists": {
     "title": "Lists",

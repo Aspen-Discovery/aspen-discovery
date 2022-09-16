@@ -275,7 +275,7 @@ export default class Holds extends Component {
 		}
 
 		return (
-			<Center mt={5} mb={5}>
+			<Center mt={5} mb={2}>
 					<ManageAllHolds
 						data={this.state.holds}
 						libraryUrl={libraryUrl}
@@ -305,8 +305,8 @@ export default class Holds extends Component {
 		}
 
 		return (
-			<ScrollView>
-			<Box pt={10}>
+			<ScrollView py={10}>
+			<Box>
 				<Center>
 					<Checkbox.Group
 						defaultValue={this.state.groupValues}
@@ -320,7 +320,7 @@ export default class Holds extends Component {
 							keyExtractor={(item) => item.id.concat("_", item.position)}
 						/>
 					</Checkbox.Group>
-					<Center pt={5} pb={5}>
+					<Center pb={5}>
 						<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
 						/>
 					</Center>
@@ -443,26 +443,33 @@ function HoldItem(props) {
 		cancelLabel = translate('holds.cancel_request');
 	}
 
+	let type = "Unknown";
+	if(data.type === "interlibrary_loan") {
+		type = "Interlibrary Loan";
+	}
+
 	return (
 		<>
 			<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3}>
 
-					{data.coverUrl ? (
+					{data.coverUrl && data.source !== "vdx" ? (
 						<VStack>
 							<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
 							{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
 								<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md"></Checkbox></Center>
 								: null}
 						</VStack>
-					) : (
+					) : null}
+
+					{!data.coverUrl && data.source !== "vdx" ? (
 						<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md"></Checkbox></Center>
-					)}
+					) : null}
 
 					<VStack maxW="80%">
 						<Text bold mb={1} fontSize={{base: "sm", lg: "lg"}}>{title}</Text>
 							{data.frozen ?
-								<Text><Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge></Text> : <Text><Badge colorScheme="info" rounded="4px" mt={-.5}>{data.status}</Badge></Text>}
+								<Text><Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge></Text> : null}
 							{data.available ?
 								<Text><Badge colorScheme="green" rounded="4px" mt={-.5}>{readyMessage}</Badge></Text>
 								: null}
@@ -477,6 +484,7 @@ function HoldItem(props) {
 							<Text bold>{translations.format}:</Text> {data.format}
 							</Text>
 						: null}
+						{type !== "Unknown" ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.type')}:</Text> {type}</Text>) : null}
 						<Text fontSize={{base: "xs", lg: "sm"}}>
 							<Text bold>{translations.onHoldFor}:</Text> {data.user}
 						</Text>
@@ -485,9 +493,7 @@ function HoldItem(props) {
 						{data.available ? <Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.pickupBy}:</Text> {expirationDate}</Text> :
 							null}
 						{!data.available && data.position ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.position}:</Text> {data.position}</Text>) : null}
-						{data.type === "interlibrary_loan" ? (
-							<Text fontSize={{base: "xs", lg: "sm"}} bold>Interlibrary Loan Request</Text>
-						) : null}
+						{data.status && data.source === "vdx" ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.status')}:</Text> {data.status}</Text>) : null}
 					</VStack>
 				</HStack>
 			</Pressable>
@@ -885,8 +891,10 @@ const ManageAllHolds = (props) => {
 	let titlesToThaw = [];
 	let titlesToCancel = [];
 
+	//console.log(data);
+
 	const categorizedValues = data.map((item, index) => {
-		if(item.allowFreezeHolds && item.frozen) {
+		if(item.canFreeze && item.frozen && item.source !== "vdx") {
 			titlesToThaw.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
@@ -894,7 +902,7 @@ const ManageAllHolds = (props) => {
 				'patronId': item.userId,
 			})
 		}
-		if(item.allowFreezeHolds && !item.frozen) {
+		if(item.canFreeze && !item.frozen && item.source !== "vdx") {
 			titlesToFreeze.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
@@ -902,7 +910,7 @@ const ManageAllHolds = (props) => {
 				'patronId': item.userId,
 			})
 		}
-		if(item.cancelable) {
+		if(item.cancelable && item.source !== "vdx") {
 			titlesToCancel.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
@@ -916,9 +924,11 @@ const ManageAllHolds = (props) => {
 	let numToFreeze = titlesToFreeze.length;
 	let numToThaw = titlesToThaw.length;
 
+	let numToManage = (numToCancel + numToFreeze + numToThaw);
+
 	return (
 		<Center>
-			<Button onPress={onOpen}>Manage All</Button>
+			{numToManage >= 1 ? <Button onPress={onOpen}>Manage All</Button> : null}
 			<Actionsheet isOpen={isOpen} onClose={onClose}>
 				<Actionsheet.Content>
 					<Actionsheet.Item
