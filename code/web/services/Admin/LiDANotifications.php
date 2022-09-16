@@ -84,6 +84,6 @@ class Admin_LiDANotifications extends ObjectEditor
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
+		return UserAccount::userHasPermission('Send Notifications');
 	}
 }
