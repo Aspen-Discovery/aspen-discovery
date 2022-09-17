@@ -17,7 +17,7 @@ class Admin_LiDANotifications extends ObjectEditor
 		return 'LiDA Notifications';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
+		return UserAccount::userHasPermission('Send Notifications');
 	}
 	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new LiDANotification();
@@ -25,7 +25,7 @@ class Admin_LiDANotifications extends ObjectEditor
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingMessages = true;
-		if (!UserAccount::userHasPermission('Administer All System Messages')){
+		if (!UserAccount::userHasPermission('Send Notifications')){
 			$librarySystemMessage = new LiDANotificationLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			if ($library != null){
@@ -53,7 +53,7 @@ class Admin_LiDANotifications extends ObjectEditor
 	}
 	function getDefaultSort() : string
 	{
-		return 'title asc';
+		return 'id asc';
 	}
 	function getObjectStructure() : array{
 		return LiDANotification::getObjectStructure();
@@ -85,5 +85,15 @@ class Admin_LiDANotifications extends ObjectEditor
 	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Send Notifications');
+	}
+
+	public function getFilterFields($structure){
+		$filterFields = parent::getFilterFields($structure);
+
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
+		$filterFields['locations'] = array('property' => 'locations', 'type' => 'enum', 'label' => 'Location', 'values' => $locationList, 'description' => 'Whether or not closed tickets are shown', 'readOnly'=>true);
+
+		ksort($filterFields);
+		return $filterFields;
 	}
 }
