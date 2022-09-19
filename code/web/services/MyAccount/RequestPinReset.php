@@ -25,7 +25,7 @@ class RequestPinReset extends Action{
 			$template = $catalog->getEmailResetPinTemplate();
 		}
 
-		$this->display($template, 'Pin Reset');
+		$this->display($template, 'Pin Reset', null);
 	}
 
 	function getBreadcrumbs() : array
