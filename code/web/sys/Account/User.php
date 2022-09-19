@@ -3003,7 +3003,7 @@ class User extends DataObject
 		$obj->userId = $this->id;
 		$obj->find();
 		while($obj->fetch()){
-			$token[$obj->pushToken] = $obj->pushToken;
+			$token = $obj->pushToken;
 			$tokens[] = $token;
 		}
 		return $tokens;
