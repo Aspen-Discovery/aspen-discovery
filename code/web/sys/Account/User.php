@@ -3021,6 +3021,23 @@ class User extends DataObject
 		return $preferences;
 	}
 
+	public function getNotificationPreferencesByUser(): array{
+		$preferences = [];
+		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+		$obj = new UserNotificationToken();
+		$obj->userId = $this->id;
+		$obj->find();
+		while($obj->fetch()){
+			$preference['device'] = $obj->deviceModel;
+			$preference['token'] = $obj->pushToken;
+			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
+			$preference['notifyCustom'] = $obj->notifyCustom;
+
+			$preferences[] = $preference;
+		}
+		return $preferences;
+	}
+
 	public function getNotificationPreference($option, $token): bool{
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$obj = new UserNotificationToken();

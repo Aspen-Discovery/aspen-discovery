@@ -562,6 +562,7 @@ class UserAPI extends Action
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
+			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			return array('success' => true, 'profile' => $userData);
 		} else {
