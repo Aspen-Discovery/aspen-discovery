@@ -3358,7 +3358,7 @@ class UserAPI extends Action
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if (!empty($_REQUEST['type']) && !empty($_POST['pushToken'])) {
-				$allowNotificationType = $user->getNotificationPreference($_POST['type'], $_POST['pushToken']);
+				$allowNotificationType = $user->getNotificationPreference($_REQUEST['type'], $_POST['pushToken']);
 				return array('success' => true, 'type' => $_REQUEST['type'], 'allow' => $allowNotificationType);
 			} else {
 				return array('success' => false, 'message' => 'Preference type or push token not provided');
