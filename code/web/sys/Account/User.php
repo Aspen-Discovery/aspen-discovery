@@ -2954,7 +2954,6 @@ class User extends DataObject
 
 	public function canReceiveNotifications($user, $alertType): bool
 	{
-		global $logger;
 		$userLibrary = Library::getPatronHomeLibrary($user);
 		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 		$settings = new NotificationSetting();

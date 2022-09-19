@@ -87,13 +87,13 @@ class Admin_LiDANotifications extends ObjectEditor
 		return UserAccount::userHasPermission('Send Notifications');
 	}
 
-	public function getFilterFields($structure){
+/*	public function getFilterFields($structure){
 		$filterFields = parent::getFilterFields($structure);
 
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
 		$filterFields['locations'] = array('property' => 'locations', 'type' => 'enum', 'label' => 'Location', 'values' => $locationList, 'description' => 'Whether or not closed tickets are shown', 'readOnly'=>true);
 
 		ksort($filterFields);
 		return $filterFields;
-	}
+	}*/
 }

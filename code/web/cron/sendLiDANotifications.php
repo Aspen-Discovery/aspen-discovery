@@ -25,19 +25,15 @@ foreach($notifications as $notification) {
 				$body = array(
 					'to' => $user['token'],
 					'title' => $notificationToSend->title,
-					'body' => strip_tags($notificationToSend->message),
+					'body' => strip_tags(html_entity_decode($notificationToSend->message)),
 					'categoryId' => 'libraryAlert',
 					'channelId' => 'libraryAlert',
 					'expiration' => $expirationTime,
-					'data' => [
-						'sendOn' => $notificationToSend->sendOn,
-					]
 				);
 
 				if($notificationToSend->ctaUrl) {
 					$body['data'] = [
 						'url' => urlencode($notificationToSend->ctaUrl),
-						'label' => $notificationToSend->ctaLabel ?: 'View',
 					];
 				}
 
@@ -46,6 +42,7 @@ foreach($notifications as $notification) {
 			}
 
 			$notificationToSend->sent = 1;
+			$notificationToSend->expiresOn = $expirationTime;
 			$notificationToSend->update();
 		}
 	}
