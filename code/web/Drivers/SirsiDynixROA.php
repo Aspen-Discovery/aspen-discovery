@@ -2494,10 +2494,12 @@ class SirsiDynixROA extends HorizonAPI
 		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
 			//Valid pickup locations
 			$location->whereAdd('validHoldPickupBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
 		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
 			//Valid pickup locations
 			$location->libraryId = $library->libraryId;
 			$location->whereAdd('validHoldPickupBranch <> 2');
+			$location->orderBy('isMainBranch DESC, displayName');
 		}
 		if ($location->find()) {
 			while ($location->fetch()) {
