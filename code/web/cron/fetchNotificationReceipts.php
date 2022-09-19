@@ -9,7 +9,7 @@ $userNotification = new UserNotification();
 $userNotification->completed = 0;
 $userNotification->error = 0;
 
-$notifications = $userNotification->fetchAll('receiptId');
+$notifications = array_filter($userNotification->fetchAll('receiptId'));
 
 $numProcessed = 0;
 
