@@ -562,6 +562,7 @@ class UserAPI extends Action
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
+			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			return array('success' => true, 'profile' => $userData);
 		} else {
@@ -3358,7 +3359,7 @@ class UserAPI extends Action
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if (!empty($_REQUEST['type']) && !empty($_POST['pushToken'])) {
-				$allowNotificationType = $user->getNotificationPreference($_POST['type'], $_POST['pushToken']);
+				$allowNotificationType = $user->getNotificationPreference($_REQUEST['type'], $_POST['pushToken']);
 				return array('success' => true, 'type' => $_REQUEST['type'], 'allow' => $allowNotificationType);
 			} else {
 				return array('success' => false, 'message' => 'Preference type or push token not provided');
@@ -3371,8 +3372,13 @@ class UserAPI extends Action
 	function setNotificationPreference() : array{
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if (!empty($_POST['type']) && !empty($_POST['pushToken']) && !empty($_POST['value'])) {
-				$result = $user->setNotificationPreference($_POST['type'], $_POST['value'], $_POST['pushToken']);
+			if (!empty($_REQUEST['type']) && !empty($_REQUEST['pushToken']) && !empty($_REQUEST['value'])) {
+				if($_REQUEST['value'] === "false") {
+					$newValue = 0;
+				} else {
+					$newValue = 1;
+				}
+				$result = $user->setNotificationPreference($_REQUEST['type'], $newValue, $_REQUEST['pushToken']);
 				if($result) {
 					return array(
 						'success' => true,
