@@ -171,6 +171,7 @@ function initDatabase(){
 	try{
         $aspen_db = new PDO($configArray['Database']['database_dsn'],$configArray['Database']['database_user'],$configArray['Database']['database_password']);
         $aspen_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$aspen_db->exec("SET NAMES utf8mb4");
     } catch (PDOException $e) {
 	    global $serverName;
 	    echo("Server name: $serverName<br>\r\n");

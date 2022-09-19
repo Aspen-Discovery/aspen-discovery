@@ -80,11 +80,12 @@ if ($search->getNumResults() > 0){
 				}
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
-					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch)){
+					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch, 'notifySavedSearch')){
 						global $logger;
 						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
 						$notificationToken = new UserNotificationToken();
 						$notificationToken->userId = $userForSearch->id;
+						$notificationToken->notifySavedSearch = 1;
 						$notificationToken->find();
 						while($notificationToken->fetch()) {
 							$logger->log("Found notification push token for user " . $userForSearch->id, Logger::LOG_ERROR);
