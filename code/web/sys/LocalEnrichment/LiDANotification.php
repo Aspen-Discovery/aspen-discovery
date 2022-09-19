@@ -23,11 +23,10 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 	protected $_libraries;
 	protected $_locations;
 	protected $_ptypes;
-	protected $_preFormattedMessage;
 
 	static function getObjectStructure() : array{
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Send Notifications'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
 		$ptypeList = PType::getPatronTypeList();
 
 		return [
@@ -35,9 +34,8 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the notification', 'required' => true),
 			'message' => array('property'=>'message', 'type'=>'markdown', 'label'=>'Message', 'description'=>'The body of the notification', 'hideInLists' => true, 'required' => true, 'note' => 'HTML tags are not permitted and will be stripped out'),
 			'sendOn' => array('property'=>'sendOn', 'type'=>'timestamp','label'=>'Sends on', 'description'=> 'When to send the notification to users', 'required' => true),
-			'expireOn' => array('property'=>'expireOn', 'type'=>'timestamp','label'=>'Expires on', 'description'=> 'The time the notification will expire', 'note' => 'If left blank, expiration will be set to 7 days from send time'),
+			'expiresOn' => array('property'=>'expiresOn', 'type'=>'timestamp','label'=>'Expires on', 'description'=> 'The time the notification will expire', 'note' => 'If left blank, expiration will be set to 7 days from send time'),
 			'ctaUrl' => array('property' => 'ctaUrl', 'type' => 'text', 'label' => 'Call to Action URL', 'description' => 'A URL for users to be redirected to when opening the notification', 'hideInLists' => true),
-			'ctaLabel' => array('property' => 'ctaLabel', 'type' => 'text', 'label' => 'Call to Action Label', 'description' => 'The title of the button triggering the call to action URL', 'hideInLists' => true, 'default' => 'View'),
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -187,7 +185,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Send Notifications'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$obj = new LiDANotificationLibrary();
 				$obj->lidaNotificationId = $this->id;
@@ -207,7 +205,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
 			foreach ($locationList as $locationId => $displayName) {
 				$obj = new LiDANotificationLocation();
 				$obj->lidaNotificationId = $this->id;
@@ -245,39 +243,6 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function isValidForScope(){
-		global $library;
-		global $locationSingleton;
-		$location = $locationSingleton->getActiveLocation();
-
-		if ($location != null) {
-			$lidaNotificationLocation = new LiDANotificationLocation();
-			$lidaNotificationLocation->lidaNotificationId = $this->id;
-			$lidaNotificationLocation->locationId = $location->locationId;
-			return $lidaNotificationLocation->find(true);
-		}else {
-			$lidaNotificationLibrary = new LiDANotificationLibrary();
-			$lidaNotificationLibrary->lidaNotificationId = $this->id;
-			$lidaNotificationLibrary->libraryId = $library->libraryId;
-			return $lidaNotificationLibrary->find(true);
-		}
-	}
-
-	public function getFormattedMessage(){
-		if (empty($this->_preFormattedMessage)){
-			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-			$parsedown = AspenParsedown::instance();
-			$parsedown->setBreaksEnabled(true);
-			return translate(['text'=>$parsedown->parse($this->message),'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
-		}else{
-			return translate(['text'=>$this->_preFormattedMessage,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
-		}
-	}
-
-	public function setPreFormattedMessage($message){
-		$this->_preFormattedMessage = $message;
-	}
-
 	public function okToExport(array $selectedFilters) : bool{
 		return parent::okToExport($selectedFilters);
 	}
@@ -308,8 +273,10 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 			while($usersForPType->fetch()) {
 				$user = new User();
 				$user->patronType = $displayLabel;
-				if($user->find() && $user->canReceiveNotifications($user, 'notifyCustom')) {
-					$users[$displayLabel] = $user->fetchAll('id');
+				if($user->find()) {
+					if($user->canReceiveNotifications($user, 'notifyCustom')) {
+						$users[$displayLabel] = $user->fetchAll('id');
+					}
 				}
 			}
 		}
