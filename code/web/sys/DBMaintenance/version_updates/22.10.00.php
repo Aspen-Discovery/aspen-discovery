@@ -14,6 +14,13 @@ function getUpdates22_10_00() : array
 
 
 		//mark
+		'indexing_profile_statusesToSuppressLength' => [
+			'title' => 'Increase the length of statuses to suppress',
+			'description' => 'Increase the length of statuses to suppress',
+			'sql' => [
+				'ALTER TABLE indexing_profiles CHANGE COLUMN statusesToSuppress statusesToSuppress varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL'
+			]
+		], //indexing_profile_statusesToSuppressLength
 
 		//kirstien
 		'aci_speedpay_sdk_config' => [

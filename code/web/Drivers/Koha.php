@@ -2164,9 +2164,9 @@ class Koha extends AbstractIlsDriver
 				} else {
 					$hold_response = json_decode($response, false);
 					if (isset($hold_response->error)) {
-						$result['message'] = $hold_response->error;
+						$result['message'] = translate(['text'=>$hold_response->error, 'isPublicFacing'=>true]);
 						$result['success'] = false;
-						$result['api']['message'] = $hold_response->error;
+						$result['api']['message'] = translate(['text'=>$hold_response->error, 'isPublicFacing'=>true]);
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
 						$result['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
 						$result['success'] = false;
