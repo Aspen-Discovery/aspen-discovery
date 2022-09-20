@@ -385,7 +385,7 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 
 	public function canBatchDelete() {
-		return $this->getNumObjects() > 1 && $this->canDelete();
+		return $this->getNumObjects() > 1 && UserAccount::userHasPermission('Batch Delete');
 	}
 
 	public function canBatchEdit() {

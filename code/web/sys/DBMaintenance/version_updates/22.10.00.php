@@ -98,6 +98,15 @@ function getUpdates22_10_00() : array
 				"ALTER TABLE web_builder_portal_cell ADD COLUMN imgAlt VARCHAR(255)",
 			),
 		], //add_imgOptions
+		'add_batchDeletePermissions' => [
+			'title' => 'Add batchDelete permission',
+			'description' => 'Add permissions to allow users to batch delete objects',
+			'continueOnError' => true,
+			'sql' => array(
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'Batch Delete', '', 6, 'Controls if the user is able to batch delete.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Batch Delete'))",
+			),
+		], //add_batchDeletePermissions
 
 		//kodi
 
