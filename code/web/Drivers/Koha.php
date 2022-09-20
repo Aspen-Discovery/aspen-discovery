@@ -2991,21 +2991,22 @@ class Koha extends AbstractIlsDriver
 						$jsonResponse = json_decode($response);
 						if ($jsonResponse) {
 							if (!empty($jsonResponse->error)) {
-								$result['messages'][] = $jsonResponse->error;
+								$result['message'] = $jsonResponse->error;
 							}else{
+								$result['message'] = '';
 								foreach ($jsonResponse->errors as $error) {
-									$result['messages'][] = $error->message;
+									$result['message'] .= $error->message . '<br/>';
 								}
 							}
 						} else {
-							$result['messages'][] = $response;
+							$result['message'] = $response;
 						}
 					} else {
-						$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
 					}
 				} else {
 					$result['success'] = true;
-					$result['messages'][] = 'Successfully submitted your request.';
+					$result['message'] = 'Successfully submitted your request.';
 				}
 			}
 			return $result;
