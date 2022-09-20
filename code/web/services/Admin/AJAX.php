@@ -266,6 +266,19 @@ class Admin_AJAX extends JSON_Action
 	{
 		global $interface;
 		if (UserAccount::userHasPermission('Administer Permissions')) {
+
+			$roles = [];
+			require_once ROOT_DIR . '/sys/Administration/Role.php';
+			$role = new Role();
+			$role->orderBy('name');
+			$role->find();
+			while($role->fetch()) {
+				$roles[$role->roleId]['roleId'] = $role->roleId;
+				$roles[$role->roleId]['name'] = $role->name;
+			}
+
+			$interface->assign('permissionRoles', $roles);
+
 			return [
 				'title' => translate(['text'=>'Create New Role','isAdminFacing'=>true]),
 				'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
@@ -285,6 +298,7 @@ class Admin_AJAX extends JSON_Action
 			if (isset($_REQUEST['roleName'])){
 				$name = $_REQUEST['roleName'];
 				$description = $_REQUEST['description'];
+				$copyFrom = $_REQUEST['copyFrom'];
 				require_once ROOT_DIR . '/sys/Administration/Role.php';
 				$existingRole = new Role;
 				$existingRole->name = $name;
@@ -294,10 +308,35 @@ class Admin_AJAX extends JSON_Action
 						'message' => "$name already exists",
 					];
 				}else{
+					$curPermissions = [];
+					if($copyFrom != "-1" || $copyFrom != -1) {
+						$curRole = new Role();
+						$curRole->roleId = $copyFrom;
+						if ($curRole->find(true)) {
+							$curPermissions = $curRole->getPermissions();
+						}
+					}
+
 					$newRole = new Role();
 					$newRole->name = $name;
 					$newRole->description = $description;
 					$newRole->insert();
+
+					if(count($curPermissions) > 0) {
+						foreach($curPermissions as $curPermission) {
+							require_once ROOT_DIR . '/sys/Administration/Permission.php';
+							$permission = new Permission();
+							$permission->name = $curPermission;
+							if($permission->find(true)) {
+								require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+								$newPermission = new RolePermissions();
+								$newPermission->roleId = $newRole->roleId;
+								$newPermission->permissionId = $permission->id;
+								$newPermission->insert();
+							}
+						}
+					}
+
 					return [
 						'success' => true,
 						'message' => "$name was created successfully",

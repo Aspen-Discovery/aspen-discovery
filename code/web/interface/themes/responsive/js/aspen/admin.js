@@ -1393,7 +1393,8 @@ AspenDiscovery.Admin = (function(){
 			var params = {
 				method: 'createRole',
 				roleName: $('#roleName').val(),
-				description: $('#description').val()
+				description: $('#description').val(),
+				copyFrom: $('#roleCopySelector').val()
 			}
 			$.getJSON(url, params,
 				function(data) {
