@@ -26,6 +26,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('canSort', $this->canSort());
 		$interface->assign('canFilter', $this->canFilter($structure));
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
+		$interface->assign('canBatchDelete', $this->canBatchDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
 		$interface->assign('objectType', $this->getObjectType());
@@ -381,6 +382,10 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function canDelete(){
 		return true;
+	}
+
+	public function canBatchDelete() {
+		return $this->getNumObjects() > 1 && $this->canDelete();
 	}
 
 	public function canBatchEdit() {

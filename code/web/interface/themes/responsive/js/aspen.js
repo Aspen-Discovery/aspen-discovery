@@ -8412,6 +8412,135 @@ AspenDiscovery.Admin = (function(){
 				return false;
 			}
 		},
+		showCopyFacetGroupForm: function(id) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params =  {
+				method : 'getCopyFacetGroupForm',
+				facetGroupId : id
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyFacetGroupForm: function() {
+			var url = Globals.path + "/Admin/AJAX";
+			var applyToSettings = $('#displaySettingsSelector').val();
+			var newGroupName = $('#groupName').val();
+			var facetGroupId = $('#facetGroupId').val();
+			var params =  {
+				method : 'doCopyFacetGroup',
+				id: facetGroupId,
+				name: newGroupName,
+				displaySettings: applyToSettings
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true,true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		showBatchDeleteForm: function(module, toolName, batchDeleteScope) {
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchDeleteScope === 'all' || selectedObjects.length >= 1){
+				var url = Globals.path + "/Admin/AJAX";
+				var params =  {
+					method : 'getBatchDeleteForm',
+					moduleName : module,
+					toolName: toolName,
+					batchDeleteScope: batchDeleteScope
+				};
+				$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							$("#releaseNotes").html("Error + " + data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				return false;
+			}
+		},
+		processBatchDeleteForm: function(module, toolName, batchDeleteScope){
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchDeleteScope === 'all' || selectedObjects.length >= 1){
+				var url = Globals.path + "/Admin/AJAX";
+				var params =  {
+					method : 'doBatchDelete',
+					moduleName : module,
+					toolName: toolName,
+					batchDeleteScope: batchDeleteScope
+				};
+				selectedObjects.each(function(){
+					params[$(this).prop('name')] = 'on';
+				});
+				$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessage(data.title, data.message, true, true);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				return false;
+			}
+		},
+		showCopyDisplaySettingsForm: function(id) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params =  {
+				method : 'getCopyDisplaySettingsForm',
+				settingsId : id
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyDisplaySettingsForm: function() {
+			var url = Globals.path + "/Admin/AJAX";
+			var newName = $('#settingsName').val();
+			var settingsId = $('#settingsId').val();
+			var params =  {
+				method : 'doCopyDisplaySettings',
+				id: settingsId,
+				name: newName
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true,true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
 		addFilterRow: function(module, toolName) {
 			var url = Globals.path + "/Admin/AJAX";
 			var params =  {
