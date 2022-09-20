@@ -1524,6 +1524,8 @@ abstract class MarcRecordProcessor {
 					result.add("Book Club Kit");
 				}else if (editionData.contains("vox")) {
 					result.add("Vox");
+				}else if (editionData.contains("pop-up")|(editionData.contains("mini-pop-up"))) {
+					result.add("Pop-Up Book");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
@@ -1537,6 +1539,8 @@ abstract class MarcRecordProcessor {
 	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
 	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages).*$");
 	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$");
+	Pattern volumesPattern = Pattern.compile("^.*?\\d+\\s+(v\\.|volume|volumes).*$");
+	Pattern volumesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(v\\.|volume|volumes)[\\s\\W]*$");
 	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, 300);
@@ -1558,7 +1562,7 @@ abstract class MarcRecordProcessor {
 							result.add("Blu-ray");
 						}
 					} else if (physicalDescriptionData.contains("computer optical disc")) {
-						if (!pagesPattern.matcher(physicalDescriptionData).matches()){
+						if (!pagesPattern.matcher(physicalDescriptionData).matches()|!volumesPattern.matcher(physicalDescriptionData).matches()){
 							result.add("Software");
 						}
 					} else if (physicalDescriptionData.contains("sound cassettes")) {
@@ -1575,7 +1579,7 @@ abstract class MarcRecordProcessor {
 						}else{
 							result.add("SoundDisc");
 						}
-					} else if (subfield.getCode() == 'a' && pagesPattern2.matcher(physicalDescriptionData).matches()){
+					} else if (subfield.getCode() == 'a' && (pagesPattern2.matcher(physicalDescriptionData).matches()|volumesPattern2.matcher(physicalDescriptionData).matches())){
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
 							result.add("Book+DVD");
@@ -1586,7 +1590,7 @@ abstract class MarcRecordProcessor {
 						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
-					if (result.size() == 0 && subfield.getCode() == 'f' && pagesPattern.matcher(physicalDescriptionData).matches()) {
+					if (result.size() == 0 && subfield.getCode() == 'f' && (pagesPattern.matcher(physicalDescriptionData).matches()|volumesPattern.matcher(physicalDescriptionData).matches())) {
 						result.add("Book");
 					}
 				}
