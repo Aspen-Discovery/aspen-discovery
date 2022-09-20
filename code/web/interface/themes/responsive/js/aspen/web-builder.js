@@ -12,6 +12,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
@@ -19,6 +21,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
@@ -26,6 +30,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
@@ -33,6 +39,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
@@ -40,9 +48,12 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").show();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 				if (sourceType === 'image') {
-					$('#propertyRowimageURL').show();
+					$('#propertyRowimgAction').show();
+					$('#propertyRowimgAlt').show();
 				} else if (sourceType === 'pdf') {
 					$('#propertyRowpdfView').show();
 				}
@@ -66,6 +77,15 @@ AspenDiscovery.WebBuilder = function () {
 				});
 			}
 
+		},
+
+		getImageActionFields: function() {
+			var imgAction = $("#imgActionSelect").val();
+			if (imgAction === '1' || imgAction === '2') {
+				$('#propertyRowimageURL').show();
+			} else {
+				$('#propertyRowimageURL').hide();
+			}
 		},
 
 		getUploadImageForm: function(editorName) {

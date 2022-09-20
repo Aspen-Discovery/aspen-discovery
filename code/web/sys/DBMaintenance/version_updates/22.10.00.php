@@ -89,6 +89,15 @@ function getUpdates22_10_00() : array
 				'UPDATE user_notification_tokens SET notifySavedSearch = 1',
 			]
 		], //update_userAlertPreferences
+		'add_imgOptions' => [
+			'title' => 'Add additional options for web builder image cells',
+			'description' => 'Add options to enable click to enlarge and provide alt text',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE web_builder_portal_cell ADD COLUMN imgAction TINYINT(1) DEFAULT 0",
+				"ALTER TABLE web_builder_portal_cell ADD COLUMN imgAlt VARCHAR(255)",
+			),
+		], //add_imgOptions
 
 		//kodi
 
