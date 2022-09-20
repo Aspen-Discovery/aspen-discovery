@@ -1303,6 +1303,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
+		if (printFormats.contains("Wonderbook")){
+			printFormats.clear();
+			printFormats.add("Wonderbook");
+			return;
+		}
 		if (printFormats.contains("Kit")){
 			printFormats.clear();
 			printFormats.add("Kit");
@@ -1505,6 +1510,20 @@ abstract class MarcRecordProcessor {
 					result.add("Blu-ray/DVD");
 				}else if (editionData.contains("go reader")) {
 					result.add("GoReader");
+				}else if (editionData.contains("playaway")) {
+					result.add("Playaway");
+				}else if (editionData.contains("playaway view")) {
+					result.add("Playaway View");
+				}else if (editionData.contains("wonderbook")) {
+					result.add("Wonderbook");
+				}else if (editionData.contains("gamecube")) {
+					result.add("GameCube");
+				}else if (editionData.contains("nintendo switch")) {
+					result.add("Nintendo Switch");
+				}else if (editionData.contains("book club kit")) {
+					result.add("Book Club Kit");
+				}else if (editionData.contains("vox")) {
+					result.add("Vox");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
@@ -1594,6 +1613,8 @@ abstract class MarcRecordProcessor {
 						result.add("Blu-ray");
 					} else if (sysDetailsValue.contains("dvd") && !sysDetailsValue.contains("dvd-rom")) {
 						result.add("DVD");
+					} else if (sysDetailsValue.contains("4k ultra hd blu-ray")) {
+						result.add("4K Blu-ray");
 					} else if (sysDetailsValue.contains("vertical file")) {
 						result.add("VerticalFile");
 					}
@@ -1615,6 +1636,12 @@ abstract class MarcRecordProcessor {
 						break;
 					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
 						result.add("Blu-ray/DVD");
+						break;
+					} else if (noteValue.contains("playaway view")) {
+						result.add("Playaway View");
+						break;
+					} else if (noteValue.contains("wonderbook")) {
+						result.add("Wonderbook");
 						break;
 					}
 				}
@@ -1790,6 +1817,12 @@ abstract class MarcRecordProcessor {
 					String fieldData = subfieldA.getData().toLowerCase();
 					if (fieldData.contains("playaway view")) {
 						result.add("PlayawayView");
+					}else if (fieldData.contains("playaway launchpad")) {
+						result.add("Playaway Launchpad");
+					}else if (fieldData.contains("playaway bookpack")) {
+						result.add("Playaway Bookpack");
+					}else if (fieldData.contains("playaway wonderbook")) {
+						result.add("Playaway Wonderbook");
 					}else if (fieldData.contains("playaway digital audio") || fieldData.contains("findaway world")) {
 						result.add("Playaway");
 					}
