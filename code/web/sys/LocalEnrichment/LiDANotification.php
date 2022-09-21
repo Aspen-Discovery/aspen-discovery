@@ -54,8 +54,8 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 				'values' => $locationList,
 				'hideInLists' => true,
 			),
-			'patronTypes' => array(
-				'property' => 'patronTypes',
+			'ptypes' => array(
+				'property' => 'ptypes',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Patron Types',
@@ -77,53 +77,11 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 			return $this->getLibraries();
 		} elseif ($name == "locations") {
 			return $this->getLocations();
-		} elseif ($name == "patronTypes") {
+		} elseif ($name == "ptypes") {
 			return $this->getPatronTypes();
 		} else{
 			return $this->_data[$name];
 		}
-	}
-
-	public function getLocations(): ?array
-	{
-		if (!isset($this->_locations) && $this->id){
-			$this->_locations = [];
-			$obj = new LiDANotificationLocation();
-			$obj->lidaNotificationId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_locations[$obj->locationId] = $obj->locationId;
-			}
-		}
-		return $this->_locations;
-	}
-
-	public function getLibraries(): ?array
-	{
-		if (!isset($this->_libraries) && $this->id){
-			$this->_libraries = [];
-			$obj = new LiDANotificationLibrary();
-			$obj->lidaNotificationId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_libraries[$obj->libraryId] = $obj->libraryId;
-			}
-		}
-		return $this->_libraries;
-	}
-
-	public function getPatronTypes(): ?array
-	{
-		if (!isset($this->_ptypes) && $this->id){
-			$this->_ptypes = [];
-			$obj = new LiDANotificationPType();
-			$obj->lidaNotificationId = $this->id;
-			$obj->find();
-			while($obj->fetch()){
-				$this->_ptypes[$obj->id] = $obj->id;
-			}
-		}
-		return $this->_ptypes;
 	}
 
 	public function __set($name, $value){
@@ -131,18 +89,13 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
 			$this->_locations = $value;
-		}elseif ($name == "patronTypes") {
+		}elseif ($name == "ptypes") {
 			$this->_ptypes = $value;
 		}else{
 			$this->_data[$name] = $value;
 		}
 	}
 
-	/**
-	 * Override the update functionality to save related objects
-	 *
-	 * @see DB/DB_DataObject::update()
-	 */
 	public function update(){
 		$ret = parent::update();
 		if ($ret !== FALSE ){
@@ -168,79 +121,113 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 	{
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
-			$lidaNotificationLibrary = new LiDANotificationLibrary();
-			$lidaNotificationLibrary->lidaNotificationId = $this->id;
-			$lidaNotificationLibrary->delete(true);
-
-			$lidaNotificationLocation = new LiDANotificationLocation();
-			$lidaNotificationLocation->lidaNotificationId = $this->id;
-			$lidaNotificationLocation->delete(true);
-
-			$lidaNotificationPType = new LiDANotificationPType();
-			$lidaNotificationPType->lidaNotificationId = $this->id;
-			$lidaNotificationPType->delete(true);
+			$this->clearLibraries();
+			$this->clearLocations();
+			$this->clearPatronTypes();
 		}
 		return $ret;
 	}
 
+	public function getLocations(): ?array
+	{
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = array();
+			$locationLink = new LiDANotificationLocation();
+			$locationLink->lidaNotificationId = $this->id;
+			$locationLink->find();
+			while($locationLink->fetch()){
+				$this->_locations[$locationLink->locationId] = $locationLink->locationId;
+			}
+		}
+		return $this->_locations;
+	}
+
+	public function getLibraries(): ?array
+	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = array();
+			$libraryLink = new LiDANotificationLibrary();
+			$libraryLink->lidaNotificationId = $this->id;
+			$libraryLink->find();
+			while($libraryLink->fetch()){
+				$this->_libraries[$libraryLink->libraryId] = $libraryLink->libraryId;
+			}
+		}
+		return $this->_libraries;
+	}
+
+	public function getPatronTypes(): ?array
+	{
+		if (!isset($this->_ptypes) && $this->id){
+			$this->_ptypes = array();
+			$patronLink = new LiDANotificationPType();
+			$patronLink->lidaNotificationId = $this->id;
+			$patronLink->find();
+			while($patronLink->fetch()){
+				$this->_ptypes[$patronLink->patronTypeId] = $patronLink->patronTypeId;
+			}
+		}
+		return $this->_ptypes;
+	}
+
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Send Notifications'));
-			foreach ($libraryList as $libraryId => $displayName){
+			$this->clearLibraries();
+
+			foreach($this->_libraries as $libraryId) {
 				$obj = new LiDANotificationLibrary();
 				$obj->lidaNotificationId = $this->id;
 				$obj->libraryId = $libraryId;
-				if (in_array($libraryId, $this->_libraries)){
-					if (!$obj->find(true)){
-						$obj->insert();
-					}
-				}else{
-					if ($obj->find(true)){
-						$obj->delete();
-					}
-				}
+				$obj->insert();
 			}
+			unset($this->_libraries);
 		}
 	}
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
-			foreach ($locationList as $locationId => $displayName) {
+			$this->clearLocations();
+
+			foreach($this->_locations as $locationId) {
 				$obj = new LiDANotificationLocation();
 				$obj->lidaNotificationId = $this->id;
 				$obj->locationId = $locationId;
-				if (in_array($locationId, $this->_locations)) {
-					if (!$obj->find(true)) {
-						$obj->insert();
-					}
-				} else {
-					if ($obj->find(true)) {
-						$obj->delete();
-					}
-				}
+				$obj->insert();
 			}
+			unset($this->_locations);
 		}
 	}
 
 	public function savePatronTypes(){
 		if (isset ($this->_ptypes) && is_array($this->_ptypes)){
-			$patronTypesList = PType::getPatronTypeList();
-			foreach ($patronTypesList as $id => $pType) {
+			$this->clearPatronTypes();
+
+			foreach($this->_ptypes as $ptypeId) {
 				$obj = new LiDANotificationPType();
 				$obj->lidaNotificationId = $this->id;
-				$obj->patronTypeId = $id;
-				if (in_array($id, $this->_ptypes)) {
-					if (!$obj->find(true)) {
-						$obj->insert();
-					}
-				} else {
-					if ($obj->find(true)) {
-						$obj->delete();
-					}
-				}
+				$obj->patronTypeId = $ptypeId;
+				$obj->insert();
 			}
+			unset($this->_ptypes);
 		}
+	}
+
+	private function clearLibraries() {
+		$lib = new LiDANotificationLibrary();
+		$lib->lidaNotificationId = $this->id;
+		return $lib->delete(true);
+	}
+
+	private function clearLocations() {
+		$loc = new LiDANotificationLocation();
+		$loc->lidaNotificationId = $this->id;
+		return $loc->delete(true);
+	}
+
+	private function clearPatronTypes() {
+		$pType = new LiDANotificationPType();
+		$pType->lidaNotificationId = $this->id;
+		return $pType->delete(true);
 	}
 
 	public function okToExport(array $selectedFilters) : bool{
