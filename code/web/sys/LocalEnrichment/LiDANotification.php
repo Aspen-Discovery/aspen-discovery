@@ -29,13 +29,16 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
 		$ptypeList = PType::getPatronTypeList();
 
+		$messageLimits = "<p>Character limits before being truncated</p><ul><li>iOS: 178 characters (includes both title and message)</li><li>Android (if collapsed, default): 43 characters for message, 39 characters for title</li><li>Android (if expanded): 504 characters for message, 79 characters for title</li></ul>";
+
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the notification', 'required' => true),
 			'message' => array('property'=>'message', 'type'=>'markdown', 'label'=>'Message', 'description'=>'The body of the notification', 'hideInLists' => true, 'required' => true, 'note' => 'HTML tags are not permitted and will be stripped out'),
+			'messageLimits' => array('property'=>'messageLimits', 'type'=>'label', 'label'=> $messageLimits),
 			'sendOn' => array('property'=>'sendOn', 'type'=>'timestamp','label'=>'Sends on', 'description'=> 'When to send the notification to users', 'required' => true),
 			'expiresOn' => array('property'=>'expiresOn', 'type'=>'timestamp','label'=>'Expires on', 'description'=> 'The time the notification will expire', 'note' => 'If left blank, expiration will be set to 7 days from send time'),
-			'ctaUrl' => array('property' => 'ctaUrl', 'type' => 'text', 'label' => 'Call to Action URL', 'description' => 'A URL for users to be redirected to when opening the notification', 'hideInLists' => true),
+			'ctaUrl' => array('property' => 'ctaUrl', 'type' => 'url', 'label' => 'Call to Action URL', 'description' => 'A URL for users to be redirected to when opening the notification', 'hideInLists' => true),
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',
