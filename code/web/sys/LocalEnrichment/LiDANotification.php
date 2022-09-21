@@ -35,7 +35,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the notification', 'required' => true),
 			'message' => array('property'=>'message', 'type'=>'markdown', 'label'=>'Message', 'description'=>'The body of the notification', 'hideInLists' => true, 'required' => true, 'note' => 'HTML tags are not permitted and will be stripped out'),
-			'messageLimits' => array('property'=>'messageLimits', 'type'=>'label', 'label'=> $messageLimits),
+			'messageLimits' => array('property'=>'messageLimits', 'type'=>'label', 'label'=> $messageLimits, 'hideInLists' => true),
 			'sendOn' => array('property'=>'sendOn', 'type'=>'timestamp','label'=>'Sends on', 'description'=> 'When to send the notification to users', 'required' => true),
 			'expiresOn' => array('property'=>'expiresOn', 'type'=>'timestamp','label'=>'Expires on', 'description'=> 'The time the notification will expire', 'note' => 'If left blank, expiration will be set to 7 days from send time'),
 			'ctaUrl' => array('property' => 'ctaUrl', 'type' => 'url', 'label' => 'Call to Action URL', 'description' => 'A URL for users to be redirected to when opening the notification', 'hideInLists' => true),
