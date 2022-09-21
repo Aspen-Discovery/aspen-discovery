@@ -26,6 +26,8 @@ class PortalCell extends DataObject
 	public $frameHeight;
 	public $makeCellAccordion;
 	public $pdfView;
+	public $imgAction;
+	public $imgAlt;
 
 	public function getUniquenessFields(): array
 	{
@@ -71,6 +73,12 @@ class PortalCell extends DataObject
 			'secondary' => 'secondary',
 			'tertiary' => 'tertiary',
 		];
+		$imgActionOptions = [
+			'0' => 'None',
+			'1' => 'Open a URL in a new tab',
+			'2' => 'Open a URL in the same tab',
+			'3' => 'Enlarge the image in a pop-up modal'
+		];
 
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
@@ -95,7 +103,9 @@ class PortalCell extends DataObject
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
 			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell'],
 			'sourceInfo' => ['property' => 'sourceInfo', 'type' => 'text', 'label' => 'Source Info', 'description' => 'Additional information for the source'],
+			'imgAction' => ['property' => 'imgAction', 'type' => 'enum', 'values' => $imgActionOptions, 'label' => 'Image action', 'description' => 'What should happen when a user clicks on the image', 'onchange' => 'return AspenDiscovery.WebBuilder.getImageActionFields();'],
 			'imageURL' => ['property' => 'imageURL', 'type' => 'text', 'label' => 'URL to link image to', 'description' => 'URL to link image to'],
+			'imgAlt' => ['property' => 'imgAlt', 'type' => 'text', 'label' => 'Image alt description', 'description' => 'Text description of the image for ALT tag'],
 			'frameHeight' => ['property' => 'frameHeight', 'type' => 'integer', 'label' => 'Height for iFrame', 'description'=> 'Set the height for the iFrame in pixels'],
 			'pdfView' => ['property' => 'pdfView', 'type' => 'enum', 'values' => ['embedded' => 'Embedded in Cell', 'thumbnail' => 'Thumbnail Link'], 'label' => 'Display the PDF', 'description' => 'How the page should display the PDF']
 		];
@@ -182,7 +192,11 @@ class PortalCell extends DataObject
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$imageUpload = new ImageUpload();
 			$imageUpload->id = $this->sourceId;
-			$imageLinkURL = $this->imageURL;
+			$imageAction = $this->imgAction;
+			if($imageAction == 1 || $imageAction == 2) {
+				$imageLinkURL = $this->imageURL;
+			}
+			$imageAlt = $this->imgAlt ?? $imageUpload->title;
 			if ($imageUpload->find(true)) {
 				$size = '';
 				if ($this->widthMd <= 2) {
@@ -194,10 +208,17 @@ class PortalCell extends DataObject
 				}else{
 					$size .= '&size=x-large';
 				}
-				if (!empty($this->imageURL)) {
-					$contents .= "<a href='{$imageLinkURL}'><img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' alt='{$imageUpload->title}'></a>";
+				if(($imageAction == "1" || $imageAction == "2") && !empty($imageLinkURL)) {
+					if($imageAction == "1") {
+						$target = "_blank";
+					} else {
+						$target = "_self";
+					}
+					$contents .= "<a href='{$imageLinkURL}' target='{$target}'><img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' alt='{$imageAlt}'></a>";
+				} elseif($imageAction == "3") {
+					$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageAlt}'>";
 				} else {
-					$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
+					$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' alt='{$imageAlt}'>";
 				}
 			}
 		}elseif ($this->sourceType == 'pdf'){

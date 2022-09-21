@@ -5,6 +5,7 @@ const userContext = createContext({
 	location: [],
 	library: [],
 	browseCategories: [],
+	pushToken: null,
 	updateUser: () => {},
 	updateBrowseCategories: () => {},
 });

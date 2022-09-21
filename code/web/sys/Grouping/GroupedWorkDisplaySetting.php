@@ -550,4 +550,14 @@ class GroupedWorkDisplaySetting extends DataObject
 		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId');
 		unset($this->_locations);
 	}
+
+	function getAdditionalListJavascriptActions() : array{
+		$objectActions[] = array(
+			'text' => 'Copy',
+			'onClick' => "return AspenDiscovery.Admin.showCopyDisplaySettingsForm('$this->id')",
+			'icon' => 'fas fa-copy'
+		);
+
+		return $objectActions;
+	}
 }

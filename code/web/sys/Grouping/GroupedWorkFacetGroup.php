@@ -308,4 +308,14 @@ class GroupedWorkFacetGroup extends DataObject
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->facets = array();
 	}
+
+	function getAdditionalListJavascriptActions() : array{
+		$objectActions[] = array(
+			'text' => 'Copy',
+			'onClick' => "return AspenDiscovery.Admin.showCopyFacetGroupForm('$this->id')",
+			'icon' => 'fas fa-copy'
+		);
+
+		return $objectActions;
+	}
 }
