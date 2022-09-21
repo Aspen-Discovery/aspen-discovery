@@ -796,3 +796,30 @@ export async function saveLanguage(code, libraryUrl) {
 		console.log(response);
 	}
 }
+
+export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {
+			sourceId: sourceId,
+			cancelId: cancelId
+		}
+	});
+	const response = await api.post('/UserAPI?method=cancelVdxRequest', postBody);
+	if (response.ok) {
+		if(response.data.result.success === "true") {
+			popAlert(response.data.result.title, response.data.result.message, "success");
+		} else {
+			console.log(response);
+			popAlert("Error", response.data.result.message, "error");
+		}
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popAlert(problem.title, problem.message, "warning");
+		console.log(response);
+	}
+}

@@ -140,7 +140,10 @@
     "freeze_all_holds": "Freeze All",
     "position_queue": "Position",
     "hold_options": "Hold Options",
-    "pickup_by": "Pickup By"
+    "pickup_by": "Pickup By",
+    "cancel_request": "Cancel Request",
+    "status": "Status",
+    "type": "Type"
   },
   "lists": {
     "title": "Lists",

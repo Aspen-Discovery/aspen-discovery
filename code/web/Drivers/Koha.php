@@ -479,7 +479,8 @@ class Koha extends AbstractIlsDriver
 			if ($library->displayHoldsOnCheckout) {
 				$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
 				if ($allowRenewals['success'] == true) {
-					$curCheckout->canRenew = false;
+					$curCheckout->canRenew = 0;
+					$curCheckout->autoRenew = 0;
 					$curCheckout->renewError = $allowRenewals['error'];
 				}
 			}
@@ -2163,9 +2164,9 @@ class Koha extends AbstractIlsDriver
 				} else {
 					$hold_response = json_decode($response, false);
 					if (isset($hold_response->error)) {
-						$result['message'] = $hold_response->error;
+						$result['message'] = translate(['text'=>$hold_response->error, 'isPublicFacing'=>true]);
 						$result['success'] = false;
-						$result['api']['message'] = $hold_response->error;
+						$result['api']['message'] = translate(['text'=>$hold_response->error, 'isPublicFacing'=>true]);
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
 						$result['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
 						$result['success'] = false;
@@ -2990,21 +2991,22 @@ class Koha extends AbstractIlsDriver
 						$jsonResponse = json_decode($response);
 						if ($jsonResponse) {
 							if (!empty($jsonResponse->error)) {
-								$result['messages'][] = $jsonResponse->error;
+								$result['message'] = $jsonResponse->error;
 							}else{
+								$result['message'] = '';
 								foreach ($jsonResponse->errors as $error) {
-									$result['messages'][] = $error->message;
+									$result['message'] .= $error->message . '<br/>';
 								}
 							}
 						} else {
-							$result['messages'][] = $response;
+							$result['message'] = $response;
 						}
 					} else {
-						$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
 					}
 				} else {
 					$result['success'] = true;
-					$result['messages'][] = 'Successfully submitted your request.';
+					$result['message'] = 'Successfully submitted your request.';
 				}
 			}
 			return $result;
@@ -3431,18 +3433,9 @@ class Koha extends AbstractIlsDriver
 		if (strlen($date) == 0) {
 			return $date;
 		} else {
-			if (strpos($date, '/') !== false){
-				list($month, $day, $year) = explode('/', $date);
-				$formattedDate = "$year-$month-$day";
-				return $formattedDate;
-			} else if (strpos($date, '-') !== false) {
-				list($month, $day, $year) = explode('-', $date);
-				$formattedDate = "$year-$month-$day";
-				return $formattedDate;
-			}
-			else{
-				return $date;
-			}
+			$date = date_create($date);
+			$formattedDate = date_format($date, "Y-m-d");
+			return $formattedDate;
 		}
 
 	}

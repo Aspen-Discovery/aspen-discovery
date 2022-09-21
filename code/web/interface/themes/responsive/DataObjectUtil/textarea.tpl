@@ -4,8 +4,8 @@
 	{literal}
 	tinymce.init({
 		selector: '#{/literal}{$propName}{literal}',
-		plugins: 'anchor autolink autoresize autosave code codesample colorpicker contextmenu directionality fullscreen help hr image imagetools insertdatetime link lists media paste preview print save searchreplace spellchecker table textcolor textpattern toc visualblocks visualchars wordcount',
-		toolbar1: 'code | cut copy paste pastetext spellchecker | undo redo searchreplace | image table hr codesample insertdatetime | link anchor ',
+		plugins: 'anchor autolink autoresize autosave code codesample colorpicker contextmenu directionality fullscreen help hr image imagetools insertdatetime link lists media paste preview print save searchreplace spellchecker table textcolor textpattern toc visualblocks visualchars wordcount tinymceEmoji',
+		toolbar1: 'code | cut copy paste pastetext spellchecker | undo redo searchreplace | image table hr codesample insertdatetime | link anchor | tinymceEmoji',
 		toolbar2: 'bold italic underline strikethrough | formatselect fontselect fontsizeselect forecolor backcolor',
 		toolbar3: 'numlist bullist toc | alignleft aligncenter alignright | preview visualblocks fullscreen help',
 		toolbar: 'image',
@@ -18,7 +18,9 @@
 		extended_valid_elements : [
 			'*[*]',
 			'img[class=img-responsive|*]'
-		]
+		],
+	    emoji_show_groups: false,
+        emoji_show_subgroups: false,
 	});
 	{/literal}
 	</script>

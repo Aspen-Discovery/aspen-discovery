@@ -68,7 +68,7 @@ export default class Preferences extends Component {
 	};
 
 	onPressMenuItem = (path, patronId, libraryUrl) => {
-		this.props.navigation.navigate(path, {libraryUrl: libraryUrl, patronId: patronId});
+		this.props.navigation.navigate(path, {libraryUrl: libraryUrl, patronId: patronId, user: this.context.user, pushToken: this.context.pushToken});
 	};
 
 

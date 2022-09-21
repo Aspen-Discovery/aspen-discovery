@@ -26,18 +26,16 @@ export async function registerForPushNotificationsAsync(libraryUrl) {
 		}
 		token = (await Notifications.getExpoPushTokenAsync()).data;
 		await savePushToken(libraryUrl, token);
+		await createChannelsAndCategories();
 		console.log(token);
 	} else {
 		alert('Push notifications require a physical device');
 	}
 
-	await createNotificationChannels();
-	await createNotificationCategories();
-
 	return token;
 }
 
-async function savePushToken(libraryUrl, pushToken) {
+export async function savePushToken(libraryUrl, pushToken) {
 	let postBody = await postData();
 	postBody.append('pushToken', pushToken);
 	postBody.append('deviceModel', Device.modelName);
@@ -72,12 +70,11 @@ export async function getPushToken(libraryUrl) {
 	const response = await api.post('/UserAPI?method=getNotificationPushToken', postBody);
 	if(response.ok) {
 		if(response.data.result.success) {
-			return response.data.result.tokens[0];
+			return response.data.result.tokens;
 		} else {
 			return [];
 		}
 	} else {
-		const problem = problemCodeMap(response.problem);
 		console.log(response);
 		return [];
 	}
@@ -112,34 +109,6 @@ export async function deletePushToken(libraryUrl, pushToken, shouldAlert = false
 	}
 }
 
-async function createNotificationChannels() {
-	if (Platform.OS === 'android') {
-		Notifications.setNotificationChannelGroupAsync('updates', {
-			name: 'Updates',
-			description: null
-		});
-
-		Notifications.setNotificationChannelAsync('savedSearch', {
-			name: 'Saved Searches',
-			importance: Notifications.AndroidImportance.MAX,
-			vibrationPattern: [0, 250, 250, 250],
-			lightColor: '#FF231F7C',
-			groupId: 'updates',
-			showBadge: true
-		});
-	}
-}
-
-async function createNotificationCategories() {
-	Notifications.setNotificationCategoryAsync(
-		'savedSearch',
-		[{
-			identifier: 'Saved Searches',
-			buttonTitle: 'View',
-		}]
-	);
-}
-
 async function createNotificationChannelGroup(id, name, description = null) {
 	if (Platform.OS === 'android') {
 		Notifications.setNotificationChannelGroupAsync(`${id}`, {
@@ -147,6 +116,13 @@ async function createNotificationChannelGroup(id, name, description = null) {
 			description: `${description}`
 		});
 	}
+}
+
+async function getNotificationChannelGroup(group) {
+	if (Platform.OS === 'android') {
+		return Notifications.getNotificationChannelGroupAsync(`${group}`);
+	}
+	return false;
 }
 
 async function createNotificationChannel(id, name, groupId) {
@@ -162,9 +138,9 @@ async function createNotificationChannel(id, name, groupId) {
 	}
 }
 
-async function getNotificationChannels() {
+async function getNotificationChannel(channel) {
 	if (Platform.OS === 'android') {
-		return Notifications.getNotificationChannelAsync();
+		return Notifications.getNotificationChannelAsync(`${channel}`);
 	}
 	return false;
 }
@@ -186,12 +162,123 @@ async function createNotificationCategory(id, name, button) {
 	);
 }
 
-async function getNotificationCategories() {
+async function getNotificationCategory(category) {
 	return Notifications.getNotificationCategoriesAsync();
 }
 
 async function deleteNotificationCategory(category) {
 	return Notifications.deleteNotificationCategoryAsync(`${category}`);
+}
+
+export async function getNotificationPreferences(libraryUrl, pushToken) {
+	let postBody = await postData();
+	postBody.append('pushToken', pushToken);
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens()
+	});
+	const response = await api.post('/UserAPI?method=getNotificationPreferences', postBody);
+	if(response.ok) {
+		//console.log(response);
+		await createChannelsAndCategories();
+		return response.data.result;
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popToast(problem.title, problem.message, "warning");
+		console.log(response);
+		return false;
+	}
+}
+
+export async function getNotificationPreference(libraryUrl, pushToken, type) {
+	let postBody = await postData();
+	postBody.append('pushToken', pushToken);
+	postBody.append('type', type);
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {
+			type: type,
+		}
+	});
+	const response = await api.post('/UserAPI?method=getNotificationPreference', postBody);
+	if(response.ok) {
+		if(response.data.result.success === true) {
+			return response.data.result;
+		} else {
+			popAlert(response.data.result.title ?? "Unknown Error", response.data.result.message, "error")
+			return false;
+		}
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popToast(problem.title, problem.message, "warning");
+		console.log(response);
+		return false;
+	}
+}
+
+export async function setNotificationPreference(libraryUrl, pushToken, type, value) {
+	let postBody = await postData();
+	postBody.append('pushToken', pushToken);
+	postBody.append('type', type);
+	postBody.append('value', value);
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {
+			type: type,
+			value: value
+		}
+	});
+	const response = await api.post('/UserAPI?method=setNotificationPreference', postBody);
+	if(response.ok) {
+		//console.log(response);
+		if(response.data.result.success === true) {
+			popAlert(response.data.result.title, response.data.result.message, "success");
+			return response.data.result;
+		} else {
+			popAlert(response.data.result.title ?? "Unknown Error", response.data.result.message, "error")
+			return false;
+		}
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popToast(problem.title, problem.message, "warning");
+		//console.log(response);
+		return false;
+	}
+}
+
+async function createChannelsAndCategories() {
+	const updatesChannelGroup = await getNotificationChannelGroup('updates');
+	if(!updatesChannelGroup) {
+		await createNotificationChannelGroup('updates', 'Updates');
+	}
+
+	const savedSearchChannel = await getNotificationChannel('savedSearch');
+	if(!savedSearchChannel) {
+		await createNotificationChannel('savedSearch', 'Saved Searches', 'updates');
+	}
+
+	const libraryAlertChannel = await getNotificationChannel('libraryAlert');
+	if(!libraryAlertChannel) {
+		await createNotificationChannel('libraryAlert', 'Library Alert', 'updates');
+	}
+
+	const savedSearchCategory = await getNotificationCategory('savedSearch');
+	if(!savedSearchCategory) {
+		await createNotificationCategory('savedSearch', 'Saved Searches', 'View');
+	}
+
+	const libraryAlertCategory = await getNotificationCategory('libraryAlert');
+	if(!libraryAlertCategory) {
+		await createNotificationCategory('libraryAlert', 'Library Alert', 'Read More');
+	}
 }
 
 /** status/colorScheme options: success, error, info, warning **/

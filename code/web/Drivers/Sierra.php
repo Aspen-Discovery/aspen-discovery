@@ -7,7 +7,7 @@ class Sierra extends Millennium{
 
 	private $sierraToken = null;
 	private $lastResponseCode;
-	private $lastError;
+	private /** @noinspection PhpPropertyOnlyWrittenInspection */ $lastError;
 	private $lastErrorMessage;
 
 	private $_sierraDNAConnection;
@@ -217,7 +217,7 @@ class Sierra extends Millennium{
 	function getForgotPasswordType()
 	{
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
-			return 'emailResetLink';
+			return 'emailAspenResetLink';
 		} else {
 			return 'none';
 		}
@@ -261,7 +261,6 @@ class Sierra extends Millennium{
 		}
 		foreach ($holds->entries as $sierraHold) {
 			$curHold = new Hold();
-			$curHold->createDate = null;
 			$curHold->userId = $patron->id;
 			$curHold->type = 'ils';
 			$curHold->source = $this->accountProfile->getIndexingProfile()->name;
@@ -827,6 +826,7 @@ class Sierra extends Millennium{
 
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$hold_result = [
 			'success' => false,
 			'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
@@ -1256,6 +1256,7 @@ class Sierra extends Millennium{
 	}
 
 	public function completeFinePayment(User $patron, UserPayment $payment){
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
 			'message' => ''
@@ -1275,10 +1276,8 @@ class Sierra extends Millennium{
 
 			//Find the fine in the list of user payments so we can tell if it's fully paid or partially paid
 			$fineInvoiceNumber = '';
-			$oldTotal = 0;
 			foreach ($userFines as $userFine){
 				if ($userFine['fineId'] == $fineId){
-					$oldTotal = $userFine['amountOutstandingVal'];
 					$fineInvoiceNumber = $userFine['invoiceNumber'];
 					break;
 				}
@@ -1316,21 +1315,7 @@ class Sierra extends Millennium{
 		return $result;
 	}
 
-
-	public function getEmailResetPinTemplate(){
-		return 'requestPinReset.tpl';
-	}
-
-	public function getEmailResetPinResultsTemplate(){
-		return 'requestPinResetResults.tpl';
-	}
-
-	public function processEmailResetPinForm()
-	{
-		return parent::processEmailResetPinForm();
-		// TODO: Use Sierra APIs for PIN Reset
-	}
-
+	/** @noinspection PhpRedundantMethodOverrideInspection */
 	function importListsFromIls($patron)
 	{
 		//There is no way to do this from the APIs so we need to resort to screen scraping.
@@ -1469,11 +1454,12 @@ class Sierra extends Millennium{
 //		];
 //	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin) : array
 	{
 		if ($patron->cat_password != $oldPin) {
 			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
 		}
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = ['success' => false, 'message' => "Unknown error updating password."];
 		$params = [
 			'pin' => $newPin,

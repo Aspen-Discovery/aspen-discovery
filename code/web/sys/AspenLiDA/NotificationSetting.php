@@ -10,6 +10,7 @@ class NotificationSetting extends DataObject
 	public $name;
 	public $sendTo;
 	public $notifySavedSearch;
+	public $notifyCustom;
 
 	private $_libraries;
 
@@ -23,6 +24,7 @@ class NotificationSetting extends DataObject
 			'sendTo' => array('property' => 'sendTo', 'type' => 'enum', 'values' => $sendToOptions, 'label' => 'Send In-App Notifications To', 'description' => 'Determine who should receive in-app notifications.', 'hideInLists' => true),
 			'notificationTypeSection'=> array('property'=>'notificationTypeSection', 'type' => 'section', 'label' =>'Notification Types', 'renderAsHeading' => true, 'hideInLists' => true, 'properties' => array(
 				'notifySavedSearch' => array('property' => 'notifySavedSearch', 'type' => 'checkbox', 'label' => 'Saved Searches', 'description' => 'Whether or not to send notifications for saved search updates.'),
+				'notifyCustom' => array('property' => 'notifyCustom', 'type' => 'checkbox', 'label' => 'Custom Alerts', 'description' => 'Whether or not to send custom notifications.'),
 			)),
 			'libraries' => array(
 				'property' => 'libraries',

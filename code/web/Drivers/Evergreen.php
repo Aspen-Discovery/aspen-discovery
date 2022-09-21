@@ -932,23 +932,21 @@ class Evergreen extends AbstractIlsDriver
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload)){
-					foreach ($apiResponse->payload[0] as $transactionList){
-						foreach ($transactionList as $transactionObj){
-							$transaction = $transactionObj->__p;
-							$transactionObj = $this->mapEvergreenFields($transaction, $this->fetchIdl('mbts'));
-							$curFine = [
-								'fineId' => $transactionObj['id'],
-								'date' => strtotime($transactionObj['xact_start']),
-								'type' => $transactionObj['xact_type'],
-								'reason' => $transactionObj['last_billing_type'],
-								'message' => $transactionObj['last_billing_note'],
-								'amountVal' => $transactionObj['total_owed'],
-								'amountOutstandingVal' => $transactionObj['total_owed'] - $transactionObj['total_paid'],
-								'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
-								'amountOutstanding' => $currencyFormatter->formatCurrency($transactionObj['total_owed'] - $transactionObj['total_paid'], $currencyCode),
-							];
-							$fines[] = $curFine;
-						}
+					foreach ($apiResponse->payload[0] as $transactionObj){
+						$transaction = $transactionObj->transaction->__p;
+						$transactionObj = $this->mapEvergreenFields($transaction, $this->fetchIdl('mbts'));
+						$curFine = [
+							'fineId' => $transactionObj['id'],
+							'date' => strtotime($transactionObj['xact_start']),
+							'type' => $transactionObj['xact_type'],
+							'reason' => $transactionObj['last_billing_type'],
+							'message' => $transactionObj['last_billing_note'],
+							'amountVal' => $transactionObj['total_owed'],
+							'amountOutstandingVal' => $transactionObj['total_owed'] - $transactionObj['total_paid'],
+							'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
+							'amountOutstanding' => $currencyFormatter->formatCurrency($transactionObj['total_owed'] - $transactionObj['total_paid'], $currencyCode),
+						];
+						$fines[] = $curFine;
 					}
 				}
 			}

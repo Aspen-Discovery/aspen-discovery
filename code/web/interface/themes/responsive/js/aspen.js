@@ -6578,6 +6578,109 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
+		createACISpeedpayOrder: function(finesFormId, transactionType, tokenId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+
+			var params = {
+				method: "create" + paymentType + "Order",
+				patronId: $(finesFormId + " input[name=patronId]").val(),
+				type: transactionType,
+				token: tokenId
+			};
+			if(transactionType === 'donation') {
+				if($(finesFormId + " input[name=customAmount]").val()) {
+					params.amount = $(finesFormId + " input[name=customAmount]").val();
+				} else {
+					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
+				}
+				params.earmark = $(finesFormId + " select[name=earmark]").val();
+				params.toLocation = $(finesFormId + " select[name=toLocation]").val();
+				params.isDedicated = $(finesFormId + " input[name=shouldBeDedicated]:checked").val();
+				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
+				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
+				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.firstName = $(finesFormId + " input[name=firstName]").val();
+				params.lastName = $(finesFormId + " input[name=lastName]").val();
+				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
+				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
+				params.settingId = $(finesFormId + " input[name=settingId]").val();
+			}
+			$(finesFormId + " .selectedFine:checked").each(
+				function() {
+					var name = $(this).attr('name');
+					params[name] = $(this).val();
+
+					var fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
+					if (fineAmount){
+						params[fineAmount.attr('name')] = fineAmount.val();
+					}
+				}
+			);
+			var orderInfo = false;
+			// noinspection JSUnresolvedFunction
+			$.ajax({
+				url: url,
+				data: params,
+				dataType: 'json',
+				async: false,
+				method: 'GET'
+			}).success(
+				function (response){
+					if (response.success === false){
+						AspenDiscovery.showMessage("Error", response.message);
+						return false;
+					}else{
+						if(paymentType === 'PayPal') {
+							orderInfo = response.orderID;
+						} else if(paymentType === 'MSB') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'Comprise') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'ProPay') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'XpressPay') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'WorldPay') {
+							orderInfo = response.paymentId;
+						}
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return orderInfo;		},
+		completeACISpeedpayOrder: function(orderId, patronId, transactionType) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeACISpeedpayOrder",
+				patronId: patronId,
+				orderId: orderId,
+				type: transactionType
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					}
+				} else {
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message){
+							message = data.message;
+						}else{
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+		handleACISpeedpayError: function(error){
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+		},
 		completePayPalOrder: function(orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -7174,6 +7277,22 @@ AspenDiscovery.Account = (function(){
 			});
 			return false;
 		},
+		checkWorldPayStatus: function (paymentId, status) {
+			if(Globals.activeAction === "WorldPayCompleted" && Globals.loggedIn) {
+				var params = {
+					paymentId: paymentId,
+					currentStatus: status
+				};
+				$.getJSON(Globals.path + '/MyAccount/AJAX?method=checkWorldPayOrderStatus', params, function(data) {
+					if(data.success) {
+						$('#successMessage').html(data.message);
+						clearInterval(pollStatus);
+						return true;
+					}
+				});
+			}
+			return false;
+		}
 	};
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function(){
@@ -8293,6 +8412,135 @@ AspenDiscovery.Admin = (function(){
 				return false;
 			}
 		},
+		showCopyFacetGroupForm: function(id) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params =  {
+				method : 'getCopyFacetGroupForm',
+				facetGroupId : id
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyFacetGroupForm: function() {
+			var url = Globals.path + "/Admin/AJAX";
+			var applyToSettings = $('#displaySettingsSelector').val();
+			var newGroupName = $('#groupName').val();
+			var facetGroupId = $('#facetGroupId').val();
+			var params =  {
+				method : 'doCopyFacetGroup',
+				id: facetGroupId,
+				name: newGroupName,
+				displaySettings: applyToSettings
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true,true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		showBatchDeleteForm: function(module, toolName, batchDeleteScope) {
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchDeleteScope === 'all' || selectedObjects.length >= 1){
+				var url = Globals.path + "/Admin/AJAX";
+				var params =  {
+					method : 'getBatchDeleteForm',
+					moduleName : module,
+					toolName: toolName,
+					batchDeleteScope: batchDeleteScope
+				};
+				$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							$("#releaseNotes").html("Error + " + data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				return false;
+			}
+		},
+		processBatchDeleteForm: function(module, toolName, batchDeleteScope){
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchDeleteScope === 'all' || selectedObjects.length >= 1){
+				var url = Globals.path + "/Admin/AJAX";
+				var params =  {
+					method : 'doBatchDelete',
+					moduleName : module,
+					toolName: toolName,
+					batchDeleteScope: batchDeleteScope
+				};
+				selectedObjects.each(function(){
+					params[$(this).prop('name')] = 'on';
+				});
+				$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessage(data.title, data.message, true, true);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				return false;
+			}
+		},
+		showCopyDisplaySettingsForm: function(id) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params =  {
+				method : 'getCopyDisplaySettingsForm',
+				settingsId : id
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyDisplaySettingsForm: function() {
+			var url = Globals.path + "/Admin/AJAX";
+			var newName = $('#settingsName').val();
+			var settingsId = $('#settingsId').val();
+			var params =  {
+				method : 'doCopyDisplaySettings',
+				id: settingsId,
+				name: newName
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true,true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
 		addFilterRow: function(module, toolName) {
 			var url = Globals.path + "/Admin/AJAX";
 			var params =  {
@@ -8442,7 +8690,8 @@ AspenDiscovery.Admin = (function(){
 			var params = {
 				method: 'createRole',
 				roleName: $('#roleName').val(),
-				description: $('#description').val()
+				description: $('#description').val(),
+				copyFrom: $('#roleCopySelector').val()
 			}
 			$.getJSON(url, params,
 				function(data) {
@@ -12938,6 +13187,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
@@ -12945,6 +13196,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
@@ -12952,6 +13205,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
@@ -12959,6 +13214,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
@@ -12966,9 +13223,12 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").show();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 				if (sourceType === 'image') {
-					$('#propertyRowimageURL').show();
+					$('#propertyRowimgAction').show();
+					$('#propertyRowimgAlt').show();
 				} else if (sourceType === 'pdf') {
 					$('#propertyRowpdfView').show();
 				}
@@ -12992,6 +13252,15 @@ AspenDiscovery.WebBuilder = function () {
 				});
 			}
 
+		},
+
+		getImageActionFields: function() {
+			var imgAction = $("#imgActionSelect").val();
+			if (imgAction === '1' || imgAction === '2') {
+				$('#propertyRowimageURL').show();
+			} else {
+				$('#propertyRowimageURL').hide();
+			}
 		},
 
 		getUploadImageForm: function(editorName) {

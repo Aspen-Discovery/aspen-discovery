@@ -309,7 +309,6 @@ export function App() {
 
 										 if(url != null) {
 											 url = decodeURIComponent(url).replace( /\+/g, ' ' );
-											 url = url.concat("&results=[]");
 											 url = url.replace("aspen-lida://", prefix)
 											 //url = 'exp://192.168.1.27:19000/--/user/saved_search?search=245859&name=New Comics';
 											 //console.log(url);
@@ -318,7 +317,6 @@ export function App() {
 
 										 const response = await Notifications.getLastNotificationResponseAsync();
 										 url = decodeURIComponent(response?.notification.request.content.data.url).replace( /\+/g, ' ' );
-					                     url = url.concat("&results=[]");
 					                     url = url.replace("aspen-lida://", prefix)
 					                     //url = 'exp://192.168.1.27:19000/--/user/saved_search?search=245859&name=New Comics';
 					                     //console.log(url);

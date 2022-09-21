@@ -17,7 +17,7 @@ import {Rating} from "react-native-elements";
 import {translate} from '../../translations/translations';
 import Manifestation from "./Manifestation";
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {loadError} from "../../components/loadError";
+import {loadError, PopAlertWithAction} from "../../components/loadError";
 import {getGroupedWork, getItemDetails} from "../../util/recordActions";
 import {AddToListFromItem} from "./AddToList";
 import {userContext} from "../../context/user";
@@ -365,7 +365,7 @@ export default class GroupedWork extends Component {
 					{discoveryVersion >= "22.06.00" && this.state.data.language ? 					<Text fontSize={{base: "xs", lg: "md"}} mt={3}
 					                                                           mb={1}>{this.state.data.language}</Text> : null}
 
-					{this.state.variations ? <Manifestation data={this.state.variations} format={this.state.format}
+					{this.state.variations ? <Manifestation navigation={this.props.navigation} data={this.state.variations} format={this.state.format}
 					                                          language={this.state.language}
 					                                          patronId={user.id}
 					                                          locations={this.state.locations}
@@ -373,6 +373,8 @@ export default class GroupedWork extends Component {
 					                                          itemDetails={this.state.itemDetails}
 					                                          groupedWorkId={this.state.groupedWorkId}
 					                                          groupedWorkTitle={this.state.groupedWorkTitle}
+					                                          groupedWorkAuthor={this.state.data.author}
+					                                          groupedWorkISBN={this.state.data.isbn}
 					                                          user={user}
 					                                          library={library}
 					                                          linkedAccounts={this.state.linkedAccounts}

@@ -12,6 +12,9 @@ class ACISpeedpaySetting extends DataObject
 	public $clientId;
 	public $clientSecret;
 	public $apiAuthKey;
+	public $sdkClientId;
+	public $sdkClientSecret;
+	public $sdkApiAuthKey;
 	public $billerId;
 	public $billerAccountId;
 
@@ -28,6 +31,9 @@ class ACISpeedpaySetting extends DataObject
 			'clientId' => array('property' => 'clientId', 'type' => 'text', 'label' => 'Client ID', 'description' => 'Client identifier used for client authentication. This value is provided by ACI.', 'hideInLists' => true),
 			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client API token used for client authentication. This value is provided by ACI.', 'hideInLists' => true),
 			'apiAuthKey' => array('property' => 'apiAuthKey', 'type' => 'storedPassword', 'label' => 'API Auth Key', 'description' => 'The API key used to access the API. This value is provided by ACI.', 'hideInLists' => true),
+			'sdkClientId' => array('property' => 'sdkClientId', 'type' => 'text', 'label' => 'SDK Client ID', 'description' => 'Client identifier used for SDK client authentication. This value is provided by ACI.', 'hideInLists' => true),
+			'sdkClientSecret' => array('property' => 'sdkClientSecret', 'type' => 'storedPassword', 'label' => 'SDK Client Secret', 'description' => 'Client token used for SDK client authentication. This value is provided by ACI.', 'hideInLists' => true),
+			'sdkApiAuthKey' => array('property' => 'sdkApiAuthKey', 'type' => 'storedPassword', 'label' => 'SDK API Auth Key', 'description' => 'The API key used to access the SDK. This value is provided by ACI.', 'hideInLists' => true),
 			'billerId' => array('property' => 'billerId', 'type' => 'text', 'label' => 'Biller ID', 'description' => 'A unique identifier assigned by your ACI project manager.', 'hideInLists' => true),
 			'billerAccountId' => array('property' => 'billerAccountId', 'type' => 'text', 'label' => 'Biller Account ID', 'description' => 'A biller account identifier assigned by a biller to an obligor.', 'hideInLists' => true),
 

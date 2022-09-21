@@ -7,8 +7,9 @@ import {create} from 'apisauce';
 import {userContext} from "../../context/user";
 import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 import {GLOBALS} from "../../util/globals";
-import {getBrowseCategories} from "../../util/loadLibrary";
+import {getBrowseCategories, getVdxForm} from "../../util/loadLibrary";
 import {getPatronBrowseCategories} from "../../util/loadPatron";
+import * as Notifications from 'expo-notifications';
 
 class LoadingScreen extends Component {
 	constructor() {
@@ -20,12 +21,14 @@ class LoadingScreen extends Component {
 			library: [],
 			location: [],
 			browseCategories: [],
+			pushToken: null,
 		};
 		this.context = {
 			user: [],
 			library: [],
 			location: [],
 			browseCategories: [],
+			pushToken: null,
 		}
 	}
 
@@ -124,6 +127,19 @@ class LoadingScreen extends Component {
 								data = response.data.result.location;
 								this.setState({location: data});
 								this.context.location = data;
+
+								// fetch vdx form fields if vdx is set up for location
+								if(typeof data.vdxFormId !== "undefined" && !_.isNull(data.vdxFormId)) {
+									try {
+										const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
+										if(vdxFormFields === null) {
+											await getVdxForm(libraryUrl, data.vdxFormId);
+										}
+									} catch(e) {
+										console.log(e);
+									}
+								}
+
 								await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
 								console.log("location loaded into context");
 							}
@@ -171,6 +187,25 @@ class LoadingScreen extends Component {
 
 			} //end if libraryUrl
 
+			if(Constants.isDevice) {
+				const pushToken = await AsyncStorage.getItem('@pushToken');
+				if(pushToken === null) {
+					let expoToken = (await Notifications.getExpoPushTokenAsync()).data;
+					if(expoToken) {
+						await AsyncStorage.setItem('@pushToken', expoToken);
+						this.context.pushToken = expoToken;
+						this.setState({
+							pushToken: expoToken,
+						});
+					}
+				}
+				this.context.pushToken = pushToken;
+				this.setState({
+					pushToken: pushToken,
+				});
+				console.log("push token loaded into context");
+			}
+
 			this.setState({
 				isLoading: false,
 			})
@@ -194,6 +229,7 @@ class LoadingScreen extends Component {
 		const location = this.state.location;
 		const library = this.state.library;
 		const browseCategories = this.state.browseCategories;
+		const pushToken = this.state.pushToken;
 
 		if(_.isEmpty(user) || _.isEmpty(location) || _.isEmpty(library) || _.isEmpty(browseCategories)) {
 			return (

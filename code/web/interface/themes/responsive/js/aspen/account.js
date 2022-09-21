@@ -1324,6 +1324,109 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
+		createACISpeedpayOrder: function(finesFormId, transactionType, tokenId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+
+			var params = {
+				method: "create" + paymentType + "Order",
+				patronId: $(finesFormId + " input[name=patronId]").val(),
+				type: transactionType,
+				token: tokenId
+			};
+			if(transactionType === 'donation') {
+				if($(finesFormId + " input[name=customAmount]").val()) {
+					params.amount = $(finesFormId + " input[name=customAmount]").val();
+				} else {
+					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
+				}
+				params.earmark = $(finesFormId + " select[name=earmark]").val();
+				params.toLocation = $(finesFormId + " select[name=toLocation]").val();
+				params.isDedicated = $(finesFormId + " input[name=shouldBeDedicated]:checked").val();
+				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
+				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
+				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.firstName = $(finesFormId + " input[name=firstName]").val();
+				params.lastName = $(finesFormId + " input[name=lastName]").val();
+				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
+				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
+				params.settingId = $(finesFormId + " input[name=settingId]").val();
+			}
+			$(finesFormId + " .selectedFine:checked").each(
+				function() {
+					var name = $(this).attr('name');
+					params[name] = $(this).val();
+
+					var fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
+					if (fineAmount){
+						params[fineAmount.attr('name')] = fineAmount.val();
+					}
+				}
+			);
+			var orderInfo = false;
+			// noinspection JSUnresolvedFunction
+			$.ajax({
+				url: url,
+				data: params,
+				dataType: 'json',
+				async: false,
+				method: 'GET'
+			}).success(
+				function (response){
+					if (response.success === false){
+						AspenDiscovery.showMessage("Error", response.message);
+						return false;
+					}else{
+						if(paymentType === 'PayPal') {
+							orderInfo = response.orderID;
+						} else if(paymentType === 'MSB') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'Comprise') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'ProPay') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'XpressPay') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'WorldPay') {
+							orderInfo = response.paymentId;
+						}
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return orderInfo;		},
+		completeACISpeedpayOrder: function(orderId, patronId, transactionType) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeACISpeedpayOrder",
+				patronId: patronId,
+				orderId: orderId,
+				type: transactionType
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					}
+				} else {
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message){
+							message = data.message;
+						}else{
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+		handleACISpeedpayError: function(error){
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+		},
 		completePayPalOrder: function(orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -1920,5 +2023,21 @@ AspenDiscovery.Account = (function(){
 			});
 			return false;
 		},
+		checkWorldPayStatus: function (paymentId, status) {
+			if(Globals.activeAction === "WorldPayCompleted" && Globals.loggedIn) {
+				var params = {
+					paymentId: paymentId,
+					currentStatus: status
+				};
+				$.getJSON(Globals.path + '/MyAccount/AJAX?method=checkWorldPayOrderStatus', params, function(data) {
+					if(data.success) {
+						$('#successMessage').html(data.message);
+						clearInterval(pollStatus);
+						return true;
+					}
+				});
+			}
+			return false;
+		}
 	};
 }(AspenDiscovery.Account || {}));

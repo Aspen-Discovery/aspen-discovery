@@ -24,30 +24,37 @@ class ExpoNotification extends DataObject
 		$this->expoCurlWrapper->addCustomHeaders($headers, true);
 		$logger->log("Sending notification to Expo servers", Logger::LOG_ERROR);
 		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
-		$logger->log("Expo server response code " . $this->expoCurlWrapper->getResponseCode(), Logger::LOG_ERROR);
+		$notification = new UserNotification();
+		$notification->userId = $userId;
+		$notification->pushToken = $pushToken;
+		$notification->notificationType = $notificationType;
+		$notification->notificationDate = time();
+		$notification->completed = 0;
+		$notification->error = 0;
 		if ($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
-			$notification = new UserNotification();
-			$notification->userId = $userId;
-			$notification->pushToken = $pushToken;
-			$notification->notificationType = $notificationType;
-			$notification->notificationDate = time();
-			$notification->completed = 0;
-			$notification->error = 0;
-			if($data['id']) {
-				$notification->receiptId = $data['id'];
-			}
-			if(array_key_exists('errors', $json)) {
-				$error = $json['errors'][0];
+			if($data['status'] != "error") {
+				if($data['id']) {
+					$notification->receiptId = $data['id'];
+				}
+			} else {
+				$error = $data['details'];
 				$notification->error = 1;
-				$notification->message = $error['code'] . ": " . $error['message'];
+				$notification->message = $error['error'] . ": " . $data['message'];
+				if($error['error'] == "DeviceNotRegistered") {
+					// we need to delete the bad token to stop trying to send to it
+					UserNotificationToken::deleteToken($pushToken);
+				}
 			}
-			$notification->insert();
 		} else {
 			global $logger;
 			$logger->log('Error sending notification via Expo ' . $this->expoCurlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
+			$notification->error = 1;
+			$notification->message = 'Error sending notification via Expo ' . $this->expoCurlWrapper->getResponseCode();
 		}
+
+		$notification->insert();
 	}
 
 	public function getExpoNotificationReceipt($receiptId){
@@ -71,15 +78,15 @@ class ExpoNotification extends DataObject
 			$notification = new UserNotification();
 			$notification->receiptId = $receiptId;
 			if($notification->find(true)) {
-				if(!array_key_exists('errors', $data)) {
+				if(array_key_exists($receiptId, $data)) {
 					$notification->completed = 1;
 				} else {
-					$error = $json['errors'][0];
-					$notification->error = 1;
-					$notification->message = $error['code'] . ": " . $error['message'];
-					if($error['code'] == "DeviceNotRegistered") {
-						UserNotificationToken::deleteToken($notification->pushToken);
+					$error = $data['details'];
+					if($data['message']) {
+						$error .= ": " . $data['message'];
 					}
+					$notification->error = 1;
+					$notification->message = $error ?? 'There was an unknown error with sending the notification.';
 				}
 				$notification->update();
 			}
@@ -105,8 +112,6 @@ class ExpoNotification extends DataObject
 				$token = $data['token'];
 			}
 		}
-		global $logger;
-		$logger->log("Expo notification access token from greenhouse: " . $token, Logger::LOG_ERROR);
 		return $token;
 	}
 }

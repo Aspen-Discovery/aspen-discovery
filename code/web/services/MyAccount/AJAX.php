@@ -2861,6 +2861,11 @@ class MyAccount_AJAX extends JSON_Action
 		$payment->transactionType = "donation";
 		global $library;
 		$payment->paidFromInstance = $library->subdomain;
+
+		if (isset($_REQUEST['token'])) {
+			$payment->aciToken = $_REQUEST['token'];
+		}
+
 		$paymentId = $payment->insert();
 		$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
@@ -3080,10 +3085,17 @@ class MyAccount_AJAX extends JSON_Action
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
 			$payment->transactionType = "fine";
+
 			global $library;
 			$payment->paidFromInstance = $library->subdomain;
+
+			if (isset($_REQUEST['token'])) {
+				$payment->aciToken = $_REQUEST['token'];
+			}
+
 			$paymentId = $payment->insert();
 			$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
+
 
 			return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron];
 		}
@@ -3668,6 +3680,42 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function checkWorldPayOrderStatus() {
+		$result = [
+			'success' => false,
+			'message' => 'Unable to check user payment status'
+		];
+
+		if(empty($_REQUEST['paymentId'])) {
+			$result['message'] = 'No payment id was provided';
+		} else {
+			$paymentId = $_REQUEST['paymentId'];
+			$currentStatus = $_REQUEST['currentStatus'];
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$userPayment = new UserPayment();
+			$userPayment->id = $paymentId;
+			if($userPayment->find(true)) {
+				if($userPayment->completed != $currentStatus) {
+					global $interface;
+					$interface->assign('pendingStatus', false);
+
+					$result['success'] = true;
+					$result['message'] = translate(['text' => 'Your payment has been completed.', 'isPublicFacing' => 'true']);
+					if(!empty($userPayment->message)) {
+						$result['message'] .= ' ' . $userPayment->message;
+					}
+				} else {
+					$result['message'] = 'User payment has not changed';
+				}
+			} else {
+				$result['message'] = 'User payment not found with given id';
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function createXPressPayOrder() {
 		global $configArray;
 
@@ -3709,6 +3757,214 @@ class MyAccount_AJAX extends JSON_Action
 			$paymentRequestUrl .= "&uid=" . $payment->id;
 
 			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createACISpeedpayOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('aciSpeedpay');
+		} else {
+			$result = $this->createGenericOrder('aciSpeedpay');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function completeACISpeedpayOrder()
+	{
+		global $configArray;
+
+		$orderId = $_REQUEST['orderId'];
+		$patronId = $_REQUEST['patronId'];
+		$transactionType = $_REQUEST['type'];
+
+		global $library;
+		$paymentLibrary = $library;
+
+		if($transactionType == 'donation') {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->orderId = $orderId;
+			$payment->transactionType = 'donation';
+			if($payment->find(true)) {
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
+				$donation->paymentId = $payment->id;
+				if(!$donation->find(true)) {
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=aciSpeedpay&payment=' . $payment->id . '&donation=' . $donation->id);
+				}
+			} else {
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=aciSpeedpay&payment=' . $payment->id);
+			}
+		} else {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->orderId = $orderId;
+			$payment->userId = $patronId;
+			if ($payment->find(true)) {
+
+				$user = UserAccount::getLoggedInUser();
+				$patronId = $_REQUEST['patronId'];
+
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+				global $library;
+				$paymentLibrary = $library;
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 0) {
+					$paymentLibrary = $userLibrary;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/ACISpeedpaySetting.php';
+		$aciSpeedpaySettings = new ACISpeedpaySetting();
+		$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
+		if ($aciSpeedpaySettings->find(true)) {
+			//Get Payment details
+
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payPalAuthRequest = new CurlWrapper();
+			//Connect to ACI Speedpay
+			if ($aciSpeedpaySettings->sandboxMode == 1) {
+				$baseUrl = 'https://sandbox-cds.officialpayments.com';
+			} else {
+				$baseUrl = 'https://cds.officialpayments.com';
+			}
+
+			$apiAuthKey = $aciSpeedpaySettings->apiAuthKey;
+			$billerId = $aciSpeedpaySettings->billerId;
+			$billerAccountId = $aciSpeedpaySettings->billerAccountId;
+
+			$paymentAmount = $payment->totalPaid;
+			$paymentAmount = $paymentAmount.replace('.', '');
+			$fundingToken = $payment->aciToken;
+
+			// get the service fee amount from Fee API
+			$aciSpeedpayServiceFeeRequest = new CurlWrapper();
+			$aciSpeedpayServiceFeeRequest->addCustomHeaders([
+				"Host: api.acispeedpay.com",
+				"Accept: application/json",
+				"Content-Type: application/x-www-form-urlencoded",
+				"X-Auth-Key: $apiAuthKey",
+			], false);
+			$serviceFeeUrl = $baseUrl . '/fee/v3/fees/payments/servicefee';
+
+			$serviceParams = [
+				'billerId' => $billerId,
+				'paymentChannel' => 'Web',
+				'isPayerEnrolled' => false,
+				'fundingToken' => $fundingToken,
+				'paymentOptionKind' => 'OneTimeNow',
+				'paymentAmount' => [
+					'value' => $paymentAmount,
+					'currencyCode' => 'USD',
+					'precision' => 2,
+				],
+			];
+
+			$serviceFeeResponse = $aciSpeedpayServiceFeeRequest->curlPostPage($serviceFeeUrl, $serviceParams);
+			$serviceFeeResponse = json_decode($serviceFeeResponse, true);
+			// get the service fee returned
+			if($aciSpeedpayServiceFeeRequest->getResponseCode() == 200) {
+				$serviceFee = $serviceFeeResponse['feeAmount'];
+			} else {
+				// handle error
+			}
+
+
+			// make a payment request to Payments API
+			$aciSpeedpayPaymentRequest = new CurlWrapper();
+			$aciSpeedpayPaymentRequest->addCustomHeaders([
+				"Host: api.acispeedpay.com",
+				"Accept: application/json",
+				"Content-Type: application/x-www-form-urlencoded",
+				"X-Auth-Key: $apiAuthKey",
+			], false);
+			$paymentRequestUrl = $baseUrl . '/transaction-service/v6/payments';
+
+			$paymentParams = [
+				'paymentDate' => '',
+				'id' => $payment->id,
+				'origination' => [
+					'originator' => [
+						'id' => 'Aspen Discovery',
+						'kind' => 'AppServiceOriginator',
+					],
+					'paymentChannelKind' => 'Web',
+					'paymentOption' => 'OneTimeNow',
+				],
+				'fundingAccount' => [
+					'securityCode' => '',
+				],
+				'accountPayments' => [
+					'billerAccount' => [
+						'billerId' => $billerId,
+						'billerAccountId' => $billerAccountId,
+					],
+					'principalAmount' => [
+						'value' => $paymentAmount,
+						'currencyCode' => 'USD',
+						'precision' => 2,
+					],
+					'serviceFeeAmount' => [
+						'value' => $serviceFee['value'],
+						'currencyCode' => 'USD',
+						'precision' => 2,
+					],
+				],
+			];
+
+			$paymentResponse = $aciSpeedpayPaymentRequest->curlPostPage($paymentRequestUrl, $paymentParams);
+			$paymentResponse = json_decode($paymentResponse, true);
+			if($aciSpeedpayPaymentRequest->getResponseCode() == 200) {
+				if(substr($paymentResponse['message'], 0, 1) === 'S') {
+					// success
+					$payment->transactionId = $paymentResponse['confirmationCode'];
+					$payment->update();
+				} else {
+					// handle error
+					$payment->error = 1;
+					$payment->message = $paymentResponse['message']['default'];
+					$payment->update();
+				}
+			} else {
+				// handle error
+			}
+		}
+
+		if($transactionType == 'donation') {
+			$payment->completed = 1;
+			$payment->update();
+			return ['success' => true, 'isDonation' => true, 'paymentId' => $payment->id, 'donationId' => $donation->id];
+		} else {
+			if ($payment->completed) {
+				return ['success' => false, 'message' => 'This payment has already been processed'];
+			} else {
+				$user = UserAccount::getActiveUserObj();
+				$patron = $user->getUserReferredTo($patronId);
+
+				$result = $patron->completeFinePayment($payment);
+				if ($result['success'] == false){
+					//If the payment does not complete in the ILS, add information to the payment for tracking
+					//Also send an email to admin that it was completed in ACI Speedpay, but not the ILS
+					$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
+					$payment->update();
+					$result['message'] = $payment->message;
+				}
+				return $result;
+			}
 		}
 	}
 

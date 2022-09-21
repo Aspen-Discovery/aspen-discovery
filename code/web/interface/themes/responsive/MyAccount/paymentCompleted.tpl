@@ -22,7 +22,7 @@
 	{if !empty($message)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-success">{translate text=$message isPublicFacing=true}</div>
+				<div class="alert alert-success" id="successMessage">{translate text=$message isPublicFacing=true}</div>
 			</div>
 		</div>
 	{/if}

@@ -7,11 +7,13 @@ import {GLOBALS} from "./globals";
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {removeData} from "./logout";
+import {popToast} from "../components/loadError";
+import {translate} from "../translations/translations";
 
 /**
  * Fetch branch/location information
  **/
-export async function getLocationInfo(library, location) {
+export async function getLocationInfo(libraryInfo, location) {
 	let solrScope;
 	try {
 		solrScope = await AsyncStorage.getItem("@solrScope");
@@ -22,7 +24,7 @@ export async function getLocationInfo(library, location) {
 	let profile = [];
 
 	const api = create({
-		baseURL: library.baseUrl + '/API',
+		baseURL: libraryInfo.baseUrl + '/API',
 		timeout: 10000,
 		headers: getHeaders(),
 		auth: createAuthTokens()
@@ -36,7 +38,20 @@ export async function getLocationInfo(library, location) {
 		if(response.data.result.success) {
 			if(typeof response.data.result.location !== 'undefined') {
 				profile = response.data.result.location;
-				//console.log("Location profile saved")
+
+				// fetch vdx form fields if vdx is set up for location
+				if(typeof profile.vdxFormId !== "undefined" && !_.isNull(profile.vdxFormId)) {
+					try {
+						const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
+						if(vdxFormFields === null) {
+							await getVdxForm(libraryInfo.baseUrl, profile.vdxFormId);
+						} else {
+							console.log("Already saved VDX form fields.")
+						}
+					} catch(e) {
+						console.log(e);
+					}
+				}
 			} else {
 				console.log("Location undefined.")
 				console.log(response);
@@ -321,6 +336,26 @@ export async function getLanguages(libraryUrl) {
 			console.log("Library languages saved")
 		}
 	} else {
+		console.log(response);
+	}
+}
+
+export async function getVdxForm(libraryUrl, id) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {formId: id}
+	});
+	const response = await api.post('/SystemAPI?method=getVdxForm', postBody);
+	if (response.ok) {
+		const vdxFormFields = response.data.result;
+		await AsyncStorage.setItem('@vdxFormFields', JSON.stringify(vdxFormFields));
+		return response.data;
+	} else {
+		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);
 	}
 }
