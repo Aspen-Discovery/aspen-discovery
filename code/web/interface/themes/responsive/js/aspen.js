@@ -12008,7 +12008,7 @@ AspenDiscovery.Record = (function(){
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+					AspenDiscovery.Record.showVdxRequest(module, source, id);
 				}, false);
 			}
 			return false;
