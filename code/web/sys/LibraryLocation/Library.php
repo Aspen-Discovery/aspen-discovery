@@ -1840,6 +1840,7 @@ class Library extends DataObject
 		if($quickSearchSettings->find()) {
 			$quickSearch = new QuickSearch();
 			$quickSearch->quickSearchSettingId = $quickSearchSettings->id;
+			$quickSearch->orderBy('weight');
 			if ($quickSearch->find()) {
 				while ($quickSearch->fetch()) {
 					$quickSearches[$quickSearch->id] = clone $quickSearch;
