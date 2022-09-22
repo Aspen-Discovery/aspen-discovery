@@ -21,6 +21,28 @@ function getUpdates22_10_00() : array
 				'ALTER TABLE indexing_profiles CHANGE COLUMN statusesToSuppress statusesToSuppress varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL'
 			]
 		], //indexing_profile_statusesToSuppressLength
+		'indexing_profile_record_linking' => [
+			'title' => 'Indexing Profile - Record Linking',
+			'description' => 'Add toggle to process record linking',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN processRecordLinking TINYINT(1) DEFAULT 0'
+			]
+		], //indexing_profile_record_linking
+		'record_parents' => [
+			'title' => 'Record Parents',
+			'description' => 'Add a table to define parents for a record',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS record_parents(
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					childRecordId VARCHAR(50) collate utf8_bin,
+					parentRecordId VARCHAR(50) collate utf8_bin,
+					UNIQUE (childRecordId, parentRecordId)
+				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+			]
+		], //record_parents
+//		'add_childRecords_more_details_section' => [
+//
+//		], //add_childRecords_more_details_section
 
 		//kirstien
 		'aci_speedpay_sdk_config' => [

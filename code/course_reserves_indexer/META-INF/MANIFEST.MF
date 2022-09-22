@@ -6,7 +6,7 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../java
  /commons-text-1.6.jar ../java_shared_libraries/ini4j-0.5.5-SNAPSHOT.jar
   ../java_shared_libraries/log4j-api-2.11.2.jar ../java_shared_libraries
  /log4j-core-2.11.2.jar ../java_shared_libraries/mysql-connector-java-8.
- 0.15.jar ../java_shared_libraries/opencsv-4.5.jar ../../sites/default/s
+ 0.29.jar ../java_shared_libraries/opencsv-4.5.jar ../../sites/default/s
  olr-7.6.0/dist/solr-solrj-7.6.0.jar ../../sites/default/solr-7.6.0/dist
  /solrj-lib/commons-io-2.5.jar ../../sites/default/solr-7.6.0/dist/solrj
  -lib/commons-math3-3.6.1.jar ../../sites/default/solr-7.6.0/dist/solrj-

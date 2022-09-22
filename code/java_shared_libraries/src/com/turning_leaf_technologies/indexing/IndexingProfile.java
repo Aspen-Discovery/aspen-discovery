@@ -60,6 +60,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private Pattern suppressRecordsWithUrlsMatching;
 	private String fallbackFormatField;
 	private String customMarcFieldsToIndexAsKeyword;
+	private boolean processRecordLinking;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -142,6 +143,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 		this.customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
+		this.processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -609,5 +611,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public boolean getTreatLibraryUseOnlyGroupedStatusesAsAvailable() {
 		return treatLibraryUseOnlyGroupedStatusesAsAvailable;
+	}
+
+	public boolean isProcessRecordLinking() {
+		return processRecordLinking;
 	}
 }
