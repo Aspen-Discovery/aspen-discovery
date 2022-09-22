@@ -104,9 +104,15 @@ class VdxDriver
 										}
 									} elseif ($label == 'Date Completed') {
 										//Ignore this one
+									} elseif ($label == 'Date Due') {
+										//Ignore this one
+									} elseif ($label == 'Renew') {
+										//Ignore this one
 									} else {
 										//Unknown label
-										echo("Unknown label $label" );
+										if (IPAddress::showDebuggingInformation()) {
+											echo("Unknown label $label" );
+										}
 									}
 								}
 							}
