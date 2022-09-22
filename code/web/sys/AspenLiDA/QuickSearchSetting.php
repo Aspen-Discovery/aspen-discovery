@@ -129,6 +129,7 @@ class QuickSearchSetting extends DataObject
 
 			$quickSearches = new QuickSearch();
 			$quickSearches->quickSearchSettingId = $this->id;
+			$quickSearches->orderBy('weight');
 			if ($quickSearches->find()) {
 				while ($quickSearches->fetch()) {
 					$this->_quickSearches[$quickSearches->id] = clone $quickSearches;
