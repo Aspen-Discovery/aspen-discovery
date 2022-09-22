@@ -845,6 +845,10 @@ public abstract class AbstractGroupedWorkSolr {
 		this.contents.addAll(fieldList);
 	}
 
+	void addContents(String contents) {
+		this.contents.add(contents);
+	}
+
 	void addGenre(Set<String> fieldList) {
 		this.genres.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}

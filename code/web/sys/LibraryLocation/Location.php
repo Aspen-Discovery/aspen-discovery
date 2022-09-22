@@ -35,6 +35,7 @@ class Location extends DataObject
 	public $displayName;            //varchar(40)
 	public $createSearchInterface;
 	public $showInSelectInterface;
+	public $showOnDonationsPage;
 	public $enableAppAccess;
 	public $appReleaseChannel;
 	public $theme;

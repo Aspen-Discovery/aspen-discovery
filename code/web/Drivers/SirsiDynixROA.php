@@ -980,7 +980,10 @@ class SirsiDynixROA extends HorizonAPI
 			$webServiceURL = $this->getWebServiceURL();
 
 			$holdData = array(
-				'patronBarcode' => $patron->getBarcode(),
+				'patron' => array(
+					'resource' => '/user/patron',
+					'key' => $patron->username,
+				),
 				'pickupLibrary' => array(
 					'resource' => '/policy/library',
 					'key' => strtoupper($pickupBranch)

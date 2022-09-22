@@ -104,9 +104,15 @@ class VdxDriver
 										}
 									} elseif ($label == 'Date Completed') {
 										//Ignore this one
+									} elseif ($label == 'Date Due') {
+										//Ignore this one
+									} elseif ($label == 'Renew') {
+										//Ignore this one
 									} else {
 										//Unknown label
-										echo("Unknown label $label" );
+										if (IPAddress::showDebuggingInformation()) {
+											echo("Unknown label $label" );
+										}
 									}
 								}
 							}
@@ -324,7 +330,7 @@ class VdxDriver
 		$body .= "ControlNumbers.icn_control_number=" . $newRequest->catalogKey . "\r\n";
 		$body .= "ReqClassmark=\r\n";
 		$body .= "ReqPubPlace=\r\n";
-		$body .= "PickupLocation=" . $newRequest->pickupLocation . "\r\n";
+		$body .= "PickupLocation=" . $vdxLocation . "\r\n";
 		$body .= "ReqVerifySource=$settings->reqVerifySource\r\n";
 
 		if ($isFromEmptyRequest){

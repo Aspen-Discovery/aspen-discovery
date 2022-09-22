@@ -2078,7 +2078,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$groupedWork->permanent_id = $this->getUniqueID();
-			if ($groupedWork->find(true)){
+			if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)){
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 				$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
 				$primaryIdentifier->grouped_work_id = $groupedWork->id;
