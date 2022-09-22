@@ -191,7 +191,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable iTypes", e);
@@ -1518,11 +1518,17 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
+		return isItemSuppressed(curItem, itemIdentifier, suppressionNotes, true);
+	}
+
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes, boolean suppressBlankStatuses) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			if (statusSubfield == null) {
-				suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
-				return new ResultWithNotes(true, suppressionNotes);
+				if (suppressBlankStatuses) {
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
+					return new ResultWithNotes(true, suppressionNotes);
+				}
 			} else {
 				String statusValue = statusSubfield.getData();
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusValue).matches()) {
