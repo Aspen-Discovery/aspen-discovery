@@ -9,6 +9,7 @@ import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 import {GLOBALS} from "../../util/globals";
 import {getBrowseCategories, getVdxForm} from "../../util/loadLibrary";
 import {getPatronBrowseCategories} from "../../util/loadPatron";
+import * as Notifications from 'expo-notifications';
 
 class LoadingScreen extends Component {
 	constructor() {
@@ -20,12 +21,14 @@ class LoadingScreen extends Component {
 			library: [],
 			location: [],
 			browseCategories: [],
+			pushToken: null,
 		};
 		this.context = {
 			user: [],
 			library: [],
 			location: [],
 			browseCategories: [],
+			pushToken: null,
 		}
 	}
 
@@ -184,6 +187,25 @@ class LoadingScreen extends Component {
 
 			} //end if libraryUrl
 
+			if(Constants.isDevice) {
+				const pushToken = await AsyncStorage.getItem('@pushToken');
+				if(pushToken === null) {
+					let expoToken = (await Notifications.getExpoPushTokenAsync()).data;
+					if(expoToken) {
+						await AsyncStorage.setItem('@pushToken', expoToken);
+						this.context.pushToken = expoToken;
+						this.setState({
+							pushToken: expoToken,
+						});
+					}
+				}
+				this.context.pushToken = pushToken;
+				this.setState({
+					pushToken: pushToken,
+				});
+				console.log("push token loaded into context");
+			}
+
 			this.setState({
 				isLoading: false,
 			})
@@ -207,6 +229,7 @@ class LoadingScreen extends Component {
 		const location = this.state.location;
 		const library = this.state.library;
 		const browseCategories = this.state.browseCategories;
+		const pushToken = this.state.pushToken;
 
 		if(_.isEmpty(user) || _.isEmpty(location) || _.isEmpty(library) || _.isEmpty(browseCategories)) {
 			return (

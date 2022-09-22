@@ -3433,18 +3433,9 @@ class Koha extends AbstractIlsDriver
 		if (strlen($date) == 0) {
 			return $date;
 		} else {
-			if (strpos($date, '/') !== false){
-				list($month, $day, $year) = explode('/', $date);
-				$formattedDate = "$year-$month-$day";
-				return $formattedDate;
-			} else if (strpos($date, '-') !== false) {
-				list($month, $day, $year) = explode('-', $date);
-				$formattedDate = "$year-$month-$day";
-				return $formattedDate;
-			}
-			else{
-				return $date;
-			}
+			$date = date_create($date);
+			$formattedDate = date_format($date, "Y-m-d");
+			return $formattedDate;
 		}
 
 	}

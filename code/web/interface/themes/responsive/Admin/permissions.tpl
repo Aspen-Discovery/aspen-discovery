@@ -39,8 +39,13 @@
 							<table class="table table-striped table-sticky">
 								<thead>
 									<tr>
-										<th><strong>{translate text="Permission" isAdminFacing=true}</strong></th>
-										<th class="text-right" style="min-width: 200px">{translate text=$selectedRole->name isAdminFacing=true isAdminEnteredData=true}</th>
+										<th style="vertical-align: middle;"><strong>{translate text="Permissions for" isAdminFacing=true}</strong> {translate text=$selectedRole->name isAdminFacing=true isAdminEnteredData=true}</th>
+										<th style="min-width: 100px">
+                                            <label class="btn btn-default btn-sm pull-right">
+                                                <input style="position: absolute; clip: rect(0,0,0,0); pointer-events: none;" type="checkbox" name="permission[{$sectionName}]" id="allPermissions{$panelId}" title="{translate text="Toggle all permissions in %1 for %2%" 1=$sectionName 2=$selectedRole->name inAttribute=true isAdminFacing=true}" onclick="AspenDiscovery.toggleCheckboxes('.selectedPermission{$panelId}', '#allPermissions{$panelId}');" />
+                                                {translate text="Select All"}
+                                            </label>
+                                        </th>
 									</tr>
 								</thead>
 								<tbody>
@@ -52,7 +57,7 @@
 										</th>
 										<td class="text-right">
 											<div class="checkbox pull-right">
-												<input type="checkbox" name="permission[{$permission->id}]" title="{translate text="Toggle %1% for %2%" 1=$permission->name 2=$selectedRole->name inAttribute=true isAdminFacing=true}" {if $selectedRole->hasPermission($permission->name)}checked{/if}/>
+												<input type="checkbox" class="selectedPermission{$panelId}" name="permission[{$permission->id}]" title="{translate text="Toggle %1% for %2%" 1=$sectionName 2=$selectedRole->name inAttribute=true isAdminFacing=true}" {if $selectedRole->hasPermission($permission->name)}checked{/if}/>
 											</div>
 										</td>
 									</tr>

@@ -961,6 +961,10 @@ abstract class DataObject
 		return true;
 	}
 
+	public function canActiveUserCopy(){
+		return true;
+	}
+
 	public function getJSONString($includeLinks, $prettyPrint = false){
 		$flags = 0;
 		if ($prettyPrint){
@@ -1092,6 +1096,10 @@ abstract class DataObject
 	}
 
 	public function getAdditionalListActions() : array {
+		return [];
+	}
+
+	public function getAdditionalListJavascriptActions() : array {
 		return [];
 	}
 }

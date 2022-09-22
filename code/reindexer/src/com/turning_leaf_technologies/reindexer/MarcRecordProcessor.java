@@ -1327,6 +1327,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
+		if (printFormats.contains("Wonderbook")){
+			printFormats.clear();
+			printFormats.add("Wonderbook");
+			return;
+		}
 		if (printFormats.contains("Kit")){
 			printFormats.clear();
 			printFormats.add("Kit");
@@ -1529,6 +1534,22 @@ abstract class MarcRecordProcessor {
 					result.add("Blu-ray/DVD");
 				}else if (editionData.contains("go reader")) {
 					result.add("GoReader");
+				}else if (editionData.contains("playaway view")) {
+					result.add("Playaway View");
+				}else if (editionData.contains("playaway")) {
+					result.add("Playaway");
+				}else if (editionData.contains("wonderbook")) {
+					result.add("Wonderbook");
+				}else if (editionData.contains("gamecube")) {
+					result.add("GameCube");
+				}else if (editionData.contains("nintendo switch")) {
+					result.add("Nintendo Switch");
+				}else if (editionData.contains("book club kit")) {
+					result.add("Book Club Kit");
+				}else if (editionData.contains("vox")) {
+					result.add("Vox");
+				}else if (editionData.contains("pop-up")|(editionData.contains("mini-pop-up"))) {
+					result.add("Pop-Up Book");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
@@ -1540,8 +1561,8 @@ abstract class MarcRecordProcessor {
 	}
 
 	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
-	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages).*$");
-	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$");
+	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages|v\\.|volume|volumes).*$");
+	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages|v\\.|volume|volumes)[\\s\\W]*$");
 	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, 300);
@@ -1580,7 +1601,7 @@ abstract class MarcRecordProcessor {
 						}else{
 							result.add("SoundDisc");
 						}
-					} else if (subfield.getCode() == 'a' && pagesPattern2.matcher(physicalDescriptionData).matches()){
+					} else if (subfield.getCode() == 'a' && (pagesPattern2.matcher(physicalDescriptionData).matches())){
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
 							result.add("Book+DVD");
@@ -1591,7 +1612,7 @@ abstract class MarcRecordProcessor {
 						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
-					if (result.size() == 0 && subfield.getCode() == 'f' && pagesPattern.matcher(physicalDescriptionData).matches()) {
+					if (result.size() == 0 && subfield.getCode() == 'f' && (pagesPattern.matcher(physicalDescriptionData).matches())) {
 						result.add("Book");
 					}
 				}
@@ -1618,6 +1639,8 @@ abstract class MarcRecordProcessor {
 						result.add("Blu-ray");
 					} else if (sysDetailsValue.contains("dvd") && !sysDetailsValue.contains("dvd-rom")) {
 						result.add("DVD");
+					} else if (sysDetailsValue.contains("4k ultra hd blu-ray")) {
+						result.add("4K Blu-ray");
 					} else if (sysDetailsValue.contains("vertical file")) {
 						result.add("VerticalFile");
 					}
@@ -1639,6 +1662,12 @@ abstract class MarcRecordProcessor {
 						break;
 					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
 						result.add("Blu-ray/DVD");
+						break;
+					} else if (noteValue.contains("playaway view")) {
+						result.add("Playaway View");
+						break;
+					} else if (noteValue.contains("wonderbook")) {
+						result.add("Wonderbook");
 						break;
 					}
 				}
@@ -1814,6 +1843,12 @@ abstract class MarcRecordProcessor {
 					String fieldData = subfieldA.getData().toLowerCase();
 					if (fieldData.contains("playaway view")) {
 						result.add("PlayawayView");
+					}else if (fieldData.contains("playaway launchpad")) {
+						result.add("Playaway Launchpad");
+					}else if (fieldData.contains("playaway bookpack")) {
+						result.add("Playaway Bookpack");
+					}else if (fieldData.contains("playaway wonderbook")) {
+						result.add("Playaway Wonderbook");
 					}else if (fieldData.contains("playaway digital audio") || fieldData.contains("findaway world")) {
 						result.add("Playaway");
 					}
