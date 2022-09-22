@@ -6018,7 +6018,7 @@ AspenDiscovery.Account = (function(){
 						if (data.success){
 							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
 							//remove the row from the holds list
-							$("#vdxHold_" + overdriveId).hide();
+							$("#vdxHold_" + requestId + "_" + cancelId).hide();
 							AspenDiscovery.Account.loadMenuData();
 						}else{
 							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);

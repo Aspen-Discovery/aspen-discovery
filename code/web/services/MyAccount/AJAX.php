@@ -370,20 +370,7 @@ class MyAccount_AJAX extends JSON_Action
 			}
 		}
 
-		global $interface;
-		// if title come back a single item array, set as the title instead. likewise for message
-		if (isset($result['title'])) {
-			if (is_array($result['title']) && count($result['title']) == 1) $result['title'] = current($result['title']);
-		}
-		if (is_array($result['message']) && count($result['message']) == 1) $result['message'] = current($result['message']);
-
-		$interface->assign('cancelResults', $result);
-
-		return array(
-			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
-			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
-			'success' => $result['success']
-		);
+		return $result;
 	}
 
 	function cancelAllHolds()
