@@ -1368,14 +1368,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		if ($library->getGroupedWorkDisplaySettings()->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
-					'label' => 'Links',
-					'body' => $interface->fetch('Record/view-links.tpl'),
+				'label' => 'Links',
+				'body' => $interface->fetch('Record/view-links.tpl'),
 			);
 		}
 		$moreDetailsOptions['copies'] = array(
-				'label' => 'Copies',
-				'body' => $interface->fetch('Record/view-holdings.tpl'),
-				'openByDefault' => true
+			'label' => 'Copies',
+			'body' => $interface->fetch('Record/view-holdings.tpl'),
+			'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
@@ -1385,32 +1385,54 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$interface->assign('workId',$groupedWorkDriver->getPermanentId());
 				$moreDetailsOptions['otherEditions'] = array(
-						'label' => 'Other Editions and Formats',
-						'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-						'hideByDefault' => false
+					'label' => 'Other Editions and Formats',
+					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+					'hideByDefault' => false
 				);
 			}
 		}
 
 		$moreDetailsOptions['moreDetails'] = array(
-				'label' => 'More Details',
-				'body' => $interface->fetch('Record/view-more-details.tpl'),
+			'label' => 'More Details',
+			'body' => $interface->fetch('Record/view-more-details.tpl'),
 		);
 		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = array(
-				'label' => 'Subjects',
-				'body' => $interface->fetch('Record/view-subjects.tpl'),
+			'label' => 'Subjects',
+			'body' => $interface->fetch('Record/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
-				'label' => 'Citations',
-				'body' => $interface->fetch('Record/cite.tpl'),
+			'label' => 'Citations',
+			'body' => $interface->fetch('Record/cite.tpl'),
 		);
+
+		//Check to see if the record has children
+		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
+		$parentChildRecords = new RecordParent();
+		$parentChildRecords->parentRecordId = $this->id;
+		$parentChildRecords->find();
+		if ($parentChildRecords->getNumResults() > 0){
+			$childRecords = [];
+			while ($parentChildRecords->fetch()){
+				//TODO: Store the title in the database so we can load it more quickly here
+				$childRecords[] = [
+					'id' => $parentChildRecords->childRecordId,
+					'label' => $parentChildRecords->childRecordId,
+					'link' => '/Record/' . $parentChildRecords->childRecordId . '/Home',
+				];
+			}
+			$interface->assign('childRecords', $childRecords);
+			$moreDetailsOptions['containedRecords'] = array(
+				'label' => 'Contained Records',
+				'body' => $interface->fetch('Record/view-contained-records.tpl'),
+			);
+		}
 
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
-					'label' => 'Staff View',
-					'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
-					'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'label' => 'Staff View',
+				'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 

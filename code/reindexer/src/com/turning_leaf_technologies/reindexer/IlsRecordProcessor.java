@@ -94,9 +94,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashSet<String> nonHoldableFormats = new HashSet<>();
 	protected boolean suppressRecordsWithNoCollection = true;
 
+	protected boolean processRecordLinking = false;
+
 	private PreparedStatement loadHoldsStmt;
 	private PreparedStatement addTranslationMapValueStmt;
 	private PreparedStatement updateRecordSuppressionReasonStmt;
+	private PreparedStatement loadChildRecordsStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, logger);
@@ -263,9 +266,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
 			hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
 
+			processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
+
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 			updateRecordSuppressionReasonStmt = dbConn.prepareStatement("UPDATE ils_records set suppressed=?, suppressionNotes=? where source=? and ilsId=?");
+			loadChildRecordsStmt = dbConn.prepareStatement("SELECT * from record_parents where parentRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
@@ -363,6 +369,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
 
 		try{
+
 			//If the entire bib is suppressed, update stats and bail out now.
 			if (isBibSuppressed(record, identifier)){
 				return;
@@ -456,8 +463,33 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			for (RecordInfo recordInfoTmp: allRelatedRecords) {
 				scopeItems(recordInfoTmp, groupedWork, record);
 			}
+
+			//Check to see if we have child records to load
+			if (processRecordLinking){
+				loadChildRecords(groupedWork, identifier);
+			}
 		}catch (Exception e){
 			indexer.getLogEntry().incErrors("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
+		}
+	}
+
+	private void loadChildRecords(AbstractGroupedWorkSolr groupedWork, String identifier) {
+		try {
+			loadChildRecordsStmt.setString(1, identifier);
+			ResultSet childRecords = loadChildRecordsStmt.executeQuery();
+			while (childRecords.next()){
+				String childRecordId = childRecords.getString("childRecordId");
+				Record marcRecord = indexer.loadMarcRecordFromDatabase(profileType, childRecordId, indexer.getLogEntry());
+				if (marcRecord != null){
+					DataField titleField = marcRecord.getDataField(245);
+					if (titleField != null) {
+						String childTitle = titleField.getSubfieldsAsString("abfgnp");
+						groupedWork.addContents(childTitle);
+					}
+				}
+			}
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error loading child records for MARC record with identifier " + identifier, e);
 		}
 	}
 

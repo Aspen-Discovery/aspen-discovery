@@ -24,6 +24,7 @@ class IndexingProfile extends DataObject
 	public $recordDriver;
 	public $catalogDriver;
 	public $recordUrlComponent;
+	public $processRecordLinking;
 	public /** @noinspection PhpUnused */ $treatUnknownLanguageAs;
 	public /** @noinspection PhpUnused */ $treatUndeterminedLanguageAs;
 	public /** @noinspection PhpUnused */ $formatSource;
@@ -140,6 +141,8 @@ class IndexingProfile extends DataObject
 			'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The driver to use for ILS integration', 'required' => true, 'default' => 'AbstractIlsDriver', 'forcesReindex' => true),
 
 			'recordUrlComponent' => array('property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record'),
+
+			'processRecordLinking' => array('property' => 'processRecordLinking', 'type' => 'checkbox', 'label' => 'Process Record Linking', 'description' => 'Whether or not record linking between MARC records (in 760-787 fields) should be processed', 'forcesReindex' => true, 'default' => false),
 
 			'recordNumberTag' => array('property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true, 'forcesReindex' => true),
 			'recordNumberSubfield' => array('property' => 'recordNumberSubfield', 'type' => 'text', 'label' => 'Record Number Subfield', 'maxLength' => 1, 'description' => 'The subfield where the record number is stored', 'required' => true, 'default' => 'a', 'forcesReindex' => true),

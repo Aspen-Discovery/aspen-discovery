@@ -324,7 +324,7 @@ class VdxDriver
 		$body .= "ControlNumbers.icn_control_number=" . $newRequest->catalogKey . "\r\n";
 		$body .= "ReqClassmark=\r\n";
 		$body .= "ReqPubPlace=\r\n";
-		$body .= "PickupLocation=" . $newRequest->pickupLocation . "\r\n";
+		$body .= "PickupLocation=" . $vdxLocation . "\r\n";
 		$body .= "ReqVerifySource=$settings->reqVerifySource\r\n";
 
 		if ($isFromEmptyRequest){

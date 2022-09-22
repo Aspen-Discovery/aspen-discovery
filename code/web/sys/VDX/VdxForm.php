@@ -161,8 +161,10 @@ class VdxForm extends DataObject
 		if ($this->showAcceptFee){
 			$fields['feeInformationText'] =array('property' => 'feeInformationText', 'type' => 'label', 'label' => $this->feeInformationText, 'description' => '');
 			if ($this->showMaximumFee){
-				$fields['maximumFeeAmount'] =array('property' => 'maximumFeeAmount', 'type' => 'currency', 'label' => 'Maximum Fee ', 'description' => 'The maximum fee you are willing to pay to have this title transferred to the library.', 'default'=> 5, 'displayFormat'=>'%0.2f');
+				$fields['maximumFeeAmount'] =array('property' => 'maximumFeeAmount', 'type' => 'currency', 'label' => 'Maximum Fee ', 'description' => 'The maximum fee you are willing to pay to have this title transferred to the library.', 'default'=> 0, 'displayFormat'=>'%0.2f');
 				$fields['acceptFee'] =array('property' => 'acceptFee', 'type' => 'checkbox', 'label' => 'I will pay any fees associated with this request up to the maximum amount defined above', 'description' => '');
+			}else{
+				$fields['acceptFee'] =array('property' => 'acceptFee', 'type' => 'checkbox', 'label' => 'I will pay any fees associated with this request', 'description' => '');
 			}
 		}
 		$user = UserAccount::getLoggedInUser();

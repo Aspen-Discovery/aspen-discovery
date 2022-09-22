@@ -5,7 +5,7 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../java
  r ../java_shared_libraries/commons-text-1.6.jar ../java_shared_librarie
  s/ini4j-0.5.5-SNAPSHOT.jar ../java_shared_libraries/log4j-api-2.11.2.ja
  r ../java_shared_libraries/log4j-core-2.11.2.jar ../java_shared_librari
- es/mysql-connector-java-8.0.15.jar ../java_shared_libraries/opencsv-4.5
+ es/mysql-connector-java-8.0.29.jar ../java_shared_libraries/opencsv-4.5
  .jar ../marc4j/marc4j-turningleaftech.jar ../reindexer/reindexer.jar
 Main-Class: com.turning_leaf_technologies.symphony.SymphonyExportMain
 

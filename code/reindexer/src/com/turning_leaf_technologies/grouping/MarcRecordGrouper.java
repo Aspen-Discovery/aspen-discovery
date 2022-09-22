@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -14,10 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -31,6 +27,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private final int itemTagInt;
 	private final boolean useEContentSubfield;
 	private final char eContentDescriptor;
+	private PreparedStatement getExistingParentRecordsStmt;
+	private PreparedStatement addParentRecordStmt;
+	private PreparedStatement deleteParentRecordStmt;
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.
@@ -54,12 +53,20 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		loadTranslationMaps(dbConnection);
 
+		try {
+			getExistingParentRecordsStmt = dbConnection.prepareStatement("SELECT * FROM record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			addParentRecordStmt = dbConnection.prepareStatement("INSERT INTO record_parents (childRecordId, parentRecordId) VALUES (?, ?)");
+			deleteParentRecordStmt = dbConnection.prepareStatement("DELETE FROM record_parents WHERE childRecordId = ? AND parentRecordId = ?");
+		}catch (SQLException e) {
+			logEntry.incErrors("Error loading prepared statements for loading parent records", e);
+		}
+
 	}
 
 	private void loadTranslationMaps(Connection dbConnection) {
 		try {
-			PreparedStatement loadMapsStmt = dbConnection.prepareStatement("SELECT * FROM translation_maps where indexingProfileId = ?");
-			PreparedStatement loadMapValuesStmt = dbConnection.prepareStatement("SELECT * FROM translation_map_values where translationMapId = ?");
+			PreparedStatement loadMapsStmt = dbConnection.prepareStatement("SELECT * FROM translation_maps where indexingProfileId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement loadMapValuesStmt = dbConnection.prepareStatement("SELECT * FROM translation_map_values where translationMapId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			loadMapsStmt.setLong(1, profile.getId());
 			ResultSet translationMapsRS = loadMapsStmt.executeQuery();
 			while (translationMapsRS.next()){
@@ -126,6 +133,49 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
 
 		if (primaryIdentifier != null){
+			if (profile.isProcessRecordLinking()){
+				//Check to see if we have any 773 fields which identify the
+				List<DataField> analyticFields = marcRecord.getDataFields(773);
+				HashSet<String> parentRecords = new HashSet<>();
+				for (DataField analyticField : analyticFields){
+					Subfield linkingSubfield = analyticField.getSubfield('w');
+					if (linkingSubfield != null){
+						//Establish a link and suppress this record
+						String parentRecordId = linkingSubfield.getData();
+						//Remove anything in parentheses
+						parentRecordId = parentRecordId.replaceAll("\\(.*?\\)", "").trim();
+						parentRecords.add(parentRecordId);
+					}
+				}
+				if (parentRecords.size() > 0){
+					//Add the parent records to the database
+					try {
+						getExistingParentRecordsStmt.setString(1, primaryIdentifier.getIdentifier());
+						ResultSet existingParentsRS = getExistingParentRecordsStmt.executeQuery();
+						HashSet<String> existingParentRecords = new HashSet<>();
+						while (existingParentsRS.next()){
+							existingParentRecords.add(existingParentsRS.getString("parentRecordId"));
+						}
+						//Loop through the records to see if they need to be added
+						for (String parentRecordId : parentRecords){
+							if (existingParentRecords.contains(parentRecordId)){
+								existingParentRecords.remove(parentRecordId);
+							}else{
+								addParentRecordStmt.setString(1, primaryIdentifier.getIdentifier());
+								addParentRecordStmt.setString(2, parentRecordId);
+								addParentRecordStmt.executeUpdate();
+							}
+						}
+						for (String oldParentRecordId : existingParentRecords){
+							deleteParentRecordStmt.setString(1,oldParentRecordId);
+							deleteParentRecordStmt.executeUpdate();
+						}
+					}catch (Exception e){
+						logEntry.incErrors("Error adding parent records to the database", e);
+					}
+					return null;
+				}
+			}
 			//Get data for the grouped record
 			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
 
