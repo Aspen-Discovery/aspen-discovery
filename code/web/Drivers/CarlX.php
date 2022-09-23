@@ -2199,4 +2199,30 @@ EOT;
 	{
 		return 'emailAspenResetLink';
 	}
+
+	function getPatronIDChange($searchPatronID): array
+	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = <<<EOT
+			select
+				newpatronid
+			from patronidchange_v p
+			where oldpatronid = :searchpatronid
+			order by changetime desc 
+EOT;
+
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_bind_by_name($stid, ':searchpatronid', $searchPatronID);
+		oci_execute($stid);
+		$data = array();
+		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
+
 }
