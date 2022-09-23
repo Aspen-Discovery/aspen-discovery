@@ -1163,19 +1163,19 @@ class Record_AJAX extends Action
 						if ($locationForLocationCode->find(true)){
 							$libraryForLocation = $locationForLocationCode->getParentLibrary();
 							foreach ($libraryForLocation->getLocations() as $libraryBranch){
-								$itemLocations[$libraryBranch->code] = $libraryBranch->code;
+								$itemLocations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
 							}
 						}
 					}
 				}else{
 					//Item can be picked up at just the owning branch
-					$itemLocations[$item->locationCode] = $item->locationCode;
+					$itemLocations[strtolower($item->locationCode)] = strtolower($item->locationCode);
 				}
 			}
 
 
 			foreach($locations as $locationKey => $location){
-				if (is_object($location) && !in_array($location->code, $itemLocations)){
+				if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
 					unset($locations[$locationKey]);
 				}
 			}
