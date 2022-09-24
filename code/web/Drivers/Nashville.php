@@ -39,7 +39,7 @@ class Nashville extends CarlX {
 					if ($newPatronIds) {
 						foreach ($newPatronIds as $newPatronId) {
 							$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found " . $newPatronId['NEWPATRONID'], Logger::LOG_ERROR);
-							$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId);
+							$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
 							if ($response['success'] === false) {
 								$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
 								$allPaymentsSucceed = false;
