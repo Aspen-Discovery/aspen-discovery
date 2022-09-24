@@ -137,6 +137,10 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateRecordInDBStmt;
 	private PreparedStatement getHideSubjectsStmt;
 
+//	private PreparedStatement getExistingParentWorksStmt;
+//	private PreparedStatement addParentWorkStmt;
+//	private PreparedStatement deleteParentWorkStmt;
+
 	private final CRC32 checksumCalculator = new CRC32();
 
 	private boolean storeRecordDetailsInSolr = false;
@@ -269,6 +273,10 @@ public class GroupedWorkIndexer {
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressedNoMarcAvailable = 0, sourceData = COMPRESS(?), lastModified = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			getHideSubjectsStmt = dbConn.prepareStatement("SELECT subjectNormalized from hide_subject_facets", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+//			getExistingParentWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_parents where childWorkId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+//			addParentWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_parents (childWorkId, parentWorkId) VALUES (?, ?)");
+//			deleteParentWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_parents WHERE childWorkId = ? AND parentWorkId = ?");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -1017,14 +1025,21 @@ public class GroupedWorkIndexer {
 					groupedWork.saveRecordsToDatabase(id);
 				}
 
+				//Check to see if the grouped work has parent records and if so, skip it.
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
-				if (inputDocument == null){
+				if (inputDocument == null) {
 					logEntry.incErrors("Solr Input document was null for " + groupedWork.getId());
-				}else {
+				} else {
+					if (groupedWork.hasParentRecords()) {
+						//Remove edition info and availability toggle since this title should not show in search results
+						inputDocument.removeField("availability_toggle");
+						inputDocument.removeField("edition_info");
+					}
+
 					UpdateResponse response = updateServer.add(inputDocument);
-					if (response == null){
+					if (response == null) {
 						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + ", the response was null");
-					}else if (response.getException() != null) {
+					} else if (response.getException() != null) {
 						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
 					}
 
@@ -1049,11 +1064,10 @@ public class GroupedWorkIndexer {
 								getScheduledWorkRS.close();
 							}
 						}
-					}catch (Exception e){
+					} catch (Exception e) {
 						logEntry.incErrors("Error setting auto reindex times", e);
 					}
 				}
-
 			} catch (Exception e) {
 				logEntry.incErrors("Error adding grouped work to solr " + groupedWork.getId(), e);
 			}

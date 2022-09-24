@@ -239,6 +239,24 @@ public class DataFieldImpl extends VariableFieldImpl implements DataField {
         return buf.toString();
     }
 
+    @Override
+    public String getSubfieldsAsString(final String sfSpec, String separator) {
+        // TODO: after subfield spec is fully developed, optimize to avoid the
+        // extra loop and gc from calling getSubfields
+        final List<Subfield> sfList = this.getSubfields(sfSpec);
+        if (sfList.isEmpty()) {
+            return null;
+        }
+        final StringBuilder buf = new StringBuilder();
+        for (final Subfield sf : sfList) {
+            if (buf.length() != 0){
+                buf.append(separator);
+            }
+            buf.append(sf.getData());
+        }
+        return buf.toString();
+    }
+
     /**
      * Returns the first {@link Subfield} matching the supplied <code>char</code> code.
      *

@@ -40,9 +40,41 @@ function getUpdates22_10_00() : array
 				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
 			]
 		], //record_parents
-//		'add_childRecords_more_details_section' => [
-//
-//		], //add_childRecords_more_details_section
+		'add_childRecords_more_details_section' => [
+			'title' => 'Add Child Records Section to More Details',
+			'description' => 'Add Child Records Section to More Details',
+			'sql' => [
+				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 3",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'childRecords', 0, 3 from grouped_work_display_settings",
+			]
+		], //add_childRecords_more_details_section
+		'add_child_title_to_record_parents' => [
+			'title' => 'Add Child Title to Record Parents',
+			'description' => 'Add Child Title to Record Parents',
+			'sql' => [
+				'ALTER TABLE record_parents ADD COLUMN childTitle VARCHAR(750) NOT NULL'
+			]
+		], //add_child_title_to_record_parents
+		'add_parentRecords_more_details_section' => [
+			'title' => 'Add Parent Records Section to More Details',
+			'description' => 'Add Parent Records Section to More Details',
+			'sql' => [
+				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 2",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings",
+			]
+		], //add_parentRecords_more_details_section
+//		'grouped_work_parents' => [
+//			'title' => 'Grouped Work Parents',
+//			'description' => 'Add a table to define parents for a grouped work',
+//			'sql' => [
+//				'CREATE TABLE IF NOT EXISTS grouped_work_parents(
+//					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					childWorkId CHAR(40) collate utf8_bin,
+//					parentWorkId CHAR(40) collate utf8_bin,
+//					UNIQUE (childWorkId, parentWorkId)
+//				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+//			]
+//		], //grouped_work_parents
 
 		//kirstien
 		'aci_speedpay_sdk_config' => [

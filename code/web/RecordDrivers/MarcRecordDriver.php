@@ -222,20 +222,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($groupedWorkDriver != null) {
 			if ( $groupedWorkDriver->isValid()){
 				$interface->assign('hasValidGroupedWork', true);
+				$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+				require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+				$nonGroupedRecord = new NonGroupedRecord();
+				$nonGroupedRecord->source = $this->getRecordType();
+				$nonGroupedRecord->recordId = $this->getId();
+				if ($nonGroupedRecord->find(true)){
+					$interface->assign('isUngrouped', true);
+					$interface->assign('ungroupingId', $nonGroupedRecord->id);
+				}else{
+					$interface->assign('isUngrouped', false);
+				}
 			}else{
 				$interface->assign('hasValidGroupedWork', false);
-			}
-			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
-
-			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-			$nonGroupedRecord = new NonGroupedRecord();
-			$nonGroupedRecord->source = $this->getRecordType();
-			$nonGroupedRecord->recordId = $this->getId();
-			if ($nonGroupedRecord->find(true)){
-				$interface->assign('isUngrouped', true);
-				$interface->assign('ungroupingId', $nonGroupedRecord->id);
-			}else{
-				$interface->assign('isUngrouped', false);
 			}
 		}else{
 			$interface->assign('hasValidGroupedWork', false);
@@ -1406,24 +1406,22 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			'body' => $interface->fetch('Record/cite.tpl'),
 		);
 
+		//Check to see if the record has parents
+		$parentRecords = $this->getParentRecords();
+		if (count($parentRecords) > 0){
+			$interface->assign('parentRecords', $parentRecords);
+			$moreDetailsOptions['parentRecords'] = array(
+				'label' => 'Part Of',
+				'body' => $interface->fetch('Record/view-containing-records.tpl'),
+			);
+		}
+
 		//Check to see if the record has children
-		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
-		$parentChildRecords = new RecordParent();
-		$parentChildRecords->parentRecordId = $this->id;
-		$parentChildRecords->find();
-		if ($parentChildRecords->getNumResults() > 0){
-			$childRecords = [];
-			while ($parentChildRecords->fetch()){
-				//TODO: Store the title in the database so we can load it more quickly here
-				$childRecords[] = [
-					'id' => $parentChildRecords->childRecordId,
-					'label' => $parentChildRecords->childRecordId,
-					'link' => '/Record/' . $parentChildRecords->childRecordId . '/Home',
-				];
-			}
+		$childRecords = $this->getChildRecords();
+		if (count($childRecords) > 0){
 			$interface->assign('childRecords', $childRecords);
-			$moreDetailsOptions['containedRecords'] = array(
-				'label' => 'Contained Records',
+			$moreDetailsOptions['childRecords'] = array(
+				'label' => 'Contains',
 				'body' => $interface->fetch('Record/view-contained-records.tpl'),
 			);
 		}
@@ -1437,6 +1435,61 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
+	}
+
+	public function getChildRecords(){
+		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
+		$parentChildRecords = new RecordParent();
+		$parentChildRecords->parentRecordId = $this->id;
+		$parentChildRecords->orderBy('childTitle ASC');
+		$parentChildRecords->find();
+		$childRecords = [];
+		if ($parentChildRecords->getNumResults() > 0){
+			while ($parentChildRecords->fetch()){
+				$childRecords[] = [
+					'id' => $parentChildRecords->childRecordId,
+					'label' => empty($parentChildRecords->childTitle) ? $parentChildRecords->childRecordId : $parentChildRecords->childTitle,
+					'link' => '/Record/' . $parentChildRecords->childRecordId . '/Home',
+				];
+			}
+		}
+		return $childRecords;
+	}
+
+	public function getParentRecords(){
+		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
+		$parentChildRecords = new RecordParent();
+		$parentChildRecords->childRecordId = $this->id;
+		$parentChildRecords->find();
+		$parentRecords = [];
+		if ($parentChildRecords->getNumResults() > 0){
+			while ($parentChildRecords->fetch()){
+				//TODO: Store the title in the database so we can load it more quickly here
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
+				$parentTitle = $parentChildRecords->parentRecordId;
+				$parentRecord = new GroupedWorkRecord();
+				$parentRecord->recordIdentifier = $parentChildRecords->parentRecordId;
+				if ($parentRecord->find(true)){
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					$groupedWork = new GroupedWork();
+					$groupedWork->id = $parentRecord->groupedWorkId;
+					if ($groupedWork->find(true)){
+						$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
+						if ($groupedWorkDriver->isValid()){
+							$parentTitle = $groupedWorkDriver->getTitle();
+						}else{
+							$parentTitle = $groupedWork->full_title;
+						}
+					}
+				}
+				$parentRecords[] = [
+					'id' => $parentChildRecords->parentRecordId,
+					'label' => $parentTitle,
+					'link' => '/Record/' . $parentChildRecords->parentRecordId . '/Home',
+				];
+			}
+		}
+		return $parentRecords;
 	}
 
 	public function loadSubjects()
@@ -1879,6 +1932,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->statusSummary = array();
 				}
 			} else {
+				//This will happen for linked records where we are not indexing the grouped work
+
 				$this->holdings = array();
 				$this->holdingSections = array();
 				$this->statusSummary = array();
