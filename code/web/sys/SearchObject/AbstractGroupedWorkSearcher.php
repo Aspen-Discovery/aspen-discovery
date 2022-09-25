@@ -648,11 +648,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$curRow++;
 				$curCol = 0;
 				//Output the row to excel
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['id']) ? $curDoc['id'] : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['id'] ?? '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author'] ?? '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDateSort']) ? implode(', ', $curDoc['publishDateSort']) : '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['publishDateSort'] ?? '');
 				$callNumber = '';
 				if (isset($curDoc['local_callnumber_' . $solrScope])) {
 					$callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
