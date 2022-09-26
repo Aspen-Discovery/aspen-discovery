@@ -16,6 +16,20 @@
 			</div>
 		{/if}
 
+		{if !empty($replacedIndex)}
+			<div id="replacement-search-info-block">
+				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results using Keyword index" isPublicFacing=true}</span></div>
+				<div id="original-search-info"><span class="replacement-search-info-text"><a href='{$oldSearchUrl}'>{translate text="Search instead using %1% index" 1=$replacedIndexLabel isPublicFacing=true}</a></span></div>
+			</div>
+		{/if}
+
+		{if !empty($replacedScope)}
+			<div id="replacement-search-info-block">
+				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results for %1%" 1=$globalScopeLabel isPublicFacing=true}</span> {$replacementTerm}</div>
+				<div id="original-search-info"><span class="replacement-search-info-text"><a href='{$oldSearchUrl}'>{translate text="Search %1% instead" 1=$replacedScopeLabel isPublicFacing=true}</a></span></div>
+			</div>
+		{/if}
+
 		{if !empty($solrSearchDebug)}
 			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isAdminFacing=true}</div>
 			<div id="solrSearchOptions" style="display:none">

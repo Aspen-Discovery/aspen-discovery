@@ -7,6 +7,8 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	protected $searchSubType;
 	protected $searchVersion;
 
+	public $selectedAvailabilityToggleValue;
+
 	public function __construct($searchVersion)
 	{
 		parent::__construct();

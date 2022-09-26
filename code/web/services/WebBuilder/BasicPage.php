@@ -55,8 +55,6 @@ class WebBuilder_BasicPage extends Action{
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 
-		$requireLogin = 0;
-		$allowInLibrary = 0;
 		$id = strip_tags($_REQUEST['id']);
 		$page = new BasicPage();
 		$page->id = $id;
