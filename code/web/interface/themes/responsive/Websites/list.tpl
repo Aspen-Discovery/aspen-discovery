@@ -39,7 +39,11 @@
 		{/if}
 
 		{* User's viewing mode toggle switch *}
-		{include file="Search/results-displayMode-toggle.tpl"}
+		{if $showSearchToolsAtTop}
+			{include file="Search/search-toolbar.tpl"}
+		{else}
+			{include file="Search/results-displayMode-toggle.tpl"}
+		{/if}
 
 		<div class="clearer"></div>
 	</div>
@@ -63,7 +67,7 @@
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
+	{if ($showSearchTools || ($loggedIn && count($userPermissions) > 0)) && !$showSearchToolsAtTop}
 	<div class="search_tools well small">
 		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if $showSearchTools}

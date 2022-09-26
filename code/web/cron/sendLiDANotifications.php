@@ -31,9 +31,14 @@ foreach($notifications as $notification) {
 					'expiration' => $expirationTime,
 				);
 
-				if($notificationToSend->ctaUrl) {
+				if($notificationToSend->linkType == 1 || $notificationToSend->linkType == "1") {
 					$body['data'] = [
 						'url' => urlencode($notificationToSend->ctaUrl),
+					];
+				} else {
+					require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+					$body['data'] = [
+						'url' => urlencode(AppSetting::getDeepLinkByName($notificationToSend->deepLinkPath, $notificationToSend->deepLinkId ?? '')),
 					];
 				}
 

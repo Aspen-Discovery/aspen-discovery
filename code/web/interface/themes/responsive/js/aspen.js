@@ -6301,8 +6301,45 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
+		showSearchToolbar: function(displayMode, showCovers, rssLink, excelLink, searchId, sortList) {
+			var url = Globals.path + "/Search/AJAX";
+			var params = {
+				method: 'showSearchToolbar',
+				displayMode: AspenDiscovery.Searches.displayMode,
+				showCovers: showCovers ?? 0,
+				rssLink: rssLink,
+				excelLink: excelLink,
+				searchId: searchId,
+				sortList: sortList
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				AspenDiscovery.showMessage(data.title, data.modalBody, false);
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		showEmailSearchForm: function() {
+			if (Globals.loggedIn){
+				var url = Globals.path + "/Search/AJAX";
+				var params = {
+					method: 'getEmailForm'
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showEmailSearchForm();
+				}, false);
+			}
+
+			return false;
+		},
+
 		showSaveSearchForm: function(searchId) {
 			if (Globals.loggedIn){
+				$('#searchToolsModal').modal('hide');
 				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
@@ -8834,6 +8871,45 @@ AspenDiscovery.Admin = (function(){
 				$('#filterValue2_' + propertyName).show();
 			}
 		},
+		getUrlOptions: function() {
+			$('#propertyRowctaUrl').hide();
+			$('#propertyRowdeepLinkId').hide();
+			$('#propertyRowdeepLinkPath').hide();
+			$('#propertyRowdeepLinkFullPath').hide();
+
+			var linkType = $("#linkTypeSelect").val();
+			if(linkType === "0" || linkType === 0) {
+				$('#propertyRowctaUrl').hide();
+				$('#propertyRowdeepLinkId').hide();
+				$('#propertyRowdeepLinkPath').show();
+			} else {
+				$('#propertyRowctaUrl').show();
+				$('#propertyRowdeepLinkId').hide();
+				$('#propertyRowdeepLinkPath').hide();
+				$('#propertyRowdeepLinkFullPath').hide();
+			}
+		},
+		getDeepLinkFullPath: function (){
+			var selectedPath = $("#deepLinkPathSelect").val();
+			if(selectedPath === "search"){
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Search Term");
+			} else if(selectedPath === "search/grouped_work") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Grouped Work Id");
+			} else if(selectedPath === "search/browse_category") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Browse Category Text Id");
+			} else if(selectedPath === "search/author") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Author");
+			} else if(selectedPath === "search/list") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("List Id");
+			} else {
+				$('#propertyRowdeepLinkId').hide();
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -12598,7 +12674,13 @@ AspenDiscovery.Searches = (function(){
 			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('searchResultsDisplayMode', this.displayMode);
 			}
-			if (mode === 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
+			if (mode === 'list') {
+				$('#hideSearchCoversSwitch').show();
+				$('#hideSearchCoversSwitchModal').show();
+			} else {
+				$('#hideSearchCoversSwitch').hide();
+				$('#hideSearchCoversSwitchModal').hide();
+			}
 			location.replace(location.pathname + paramString); // reloads page without adding entry to history
 		},
 

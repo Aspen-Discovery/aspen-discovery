@@ -505,6 +505,20 @@ class AJAX extends Action {
 		return $response;
 	}
 
+	function showSearchToolbar() {
+		global $interface;
+		$interface->assign('displayMode', $_REQUEST['displayMode']);
+		$interface->assign('showCovers', $_REQUEST['showCovers']);
+		$interface->assign('excelLink', $_REQUEST['excelLink']);
+		$interface->assign('rssLink', $_REQUEST['rssLink']);
+		$interface->assign('searchId', $_REQUEST['searchId']);
+		$interface->assign('sortList', $_REQUEST['sortList']);
+		return array(
+			'title' => translate(['text' => 'Search Tools', 'isPublicFacing' => true]),
+			'modalBody' => $interface->fetch('Search/search-toolbar-popup.tpl'),
+		);
+	}
+
 	function getBreadcrumbs() : array
 	{
 		return [];

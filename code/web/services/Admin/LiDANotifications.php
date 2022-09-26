@@ -87,6 +87,11 @@ class Admin_LiDANotifications extends ObjectEditor
 		return UserAccount::userHasPermission('Send Notifications');
 	}
 
+	function getInitializationJs() : string
+	{
+		return 'AspenDiscovery.Admin.getUrlOptions(); AspenDiscovery.Admin.getDeepLinkFullPath()';
+	}
+
 /*	public function getFilterFields($structure){
 		$filterFields = parent::getFilterFields($structure);
 
