@@ -63,6 +63,18 @@ function getUpdates22_10_00() : array
 				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings",
 			]
 		], //add_parentRecords_more_details_section
+		'basic_page_allow_access_by_home_location' => [
+			'title' => 'Basic Page - Allow Access By Home Location',
+			'description' => 'Basic Page - Allow Access By Home Location',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_basic_page_home_location_access (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					basicPageId INT(11) NOT NULL, 
+					homeLocationId INT(11) NOT NULL,
+					UNIQUE INDEX (basicPageId, homeLocationId)
+				) ENGINE INNODB'
+			]
+		], //basic_page_allow_access_by_home_location
 //		'grouped_work_parents' => [
 //			'title' => 'Grouped Work Parents',
 //			'description' => 'Add a table to define parents for a grouped work',
