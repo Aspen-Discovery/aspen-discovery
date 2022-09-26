@@ -1047,8 +1047,45 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
+		showSearchToolbar: function(displayMode, showCovers, rssLink, excelLink, searchId, sortList) {
+			var url = Globals.path + "/Search/AJAX";
+			var params = {
+				method: 'showSearchToolbar',
+				displayMode: AspenDiscovery.Searches.displayMode,
+				showCovers: showCovers ?? 0,
+				rssLink: rssLink,
+				excelLink: excelLink,
+				searchId: searchId,
+				sortList: sortList
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				AspenDiscovery.showMessage(data.title, data.modalBody, false);
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		showEmailSearchForm: function() {
+			if (Globals.loggedIn){
+				var url = Globals.path + "/Search/AJAX";
+				var params = {
+					method: 'getEmailForm'
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showEmailSearchForm();
+				}, false);
+			}
+
+			return false;
+		},
+
 		showSaveSearchForm: function(searchId) {
 			if (Globals.loggedIn){
+				$('#searchToolsModal').modal('hide');
 				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {

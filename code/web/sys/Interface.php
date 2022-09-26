@@ -537,6 +537,7 @@ class UInterface extends Smarty
 		$this->assign('showRatings', $groupedWorkDisplaySettings->showRatings);
 		$this->assign('show856LinksAsTab', $groupedWorkDisplaySettings->show856LinksAsTab);
 		$this->assign('showSearchTools', $groupedWorkDisplaySettings->showSearchTools);
+		$this->assign('showSearchToolsAtTop', $groupedWorkDisplaySettings->showSearchToolsAtTop);
 		$this->assign('showQuickCopy', $groupedWorkDisplaySettings->showQuickCopy);
 		$this->assign('alwaysShowSearchResultsMainDetails', $groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails);
 		$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);

@@ -38,7 +38,11 @@
 		{/if}
 
 		{* User's viewing mode toggle switch *}
-		{include file="Search/results-displayMode-toggle.tpl"}
+		{if $showSearchToolsAtTop}
+			{include file="Search/search-toolbar.tpl"}
+		{else}
+			{include file="Search/results-displayMode-toggle.tpl"}
+		{/if}
 
 		<div class="clearer"></div>
 	</div>
@@ -106,7 +110,7 @@
 		</div>
 	{/if}
 
-	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
+	{if ($showSearchTools || ($loggedIn && count($userPermissions) > 0)) && !$showSearchToolsAtTop}
 	<div class="search_tools well small">
 		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if $showSearchTools}
@@ -154,6 +158,7 @@
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
 		$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#'+AspenDiscovery.Searches.displayMode+'Modal').parent('label').addClass('active'); {* show user which one is selected *}
 
 		{rdelim});
 </script>

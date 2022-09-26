@@ -23,6 +23,7 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	//Search Results Display
 	public $showSearchTools;
+	public $showSearchToolsAtTop;
 	public $showQuickCopy;
 	public $showInSearchResultsMainDetails;
 	public $alwaysShowSearchResultsMainDetails;
@@ -134,6 +135,7 @@ class GroupedWorkDisplaySetting extends DataObject
 					'includeOutOfSystemExternalLinks' => array('property' => 'includeOutOfSystemExternalLinks', 'type' => 'checkbox', 'label' => 'Include Out Of System External Links', 'description' => 'Whether or not to include external links from other library systems.  Should only be enabled for global scope.', 'hideInLists' => true, 'expandByDefault' => true, 'default' => 0),
 					'searchResultsSection' => array('property' => 'searchResultsSection', 'type' => 'section', 'label' => 'Search Results', 'hideInLists' => true, 'properties' => array(
 						'showSearchTools' => array('property' => 'showSearchTools', 'type' => 'checkbox', 'label' => 'Show Search Tools', 'description' => 'Turn on to activate search tools (save search, export to excel, rss feed, etc).', 'hideInLists' => true),
+						'showSearchToolsAtTop' => array('property'=>'showSearchToolsAtTop', 'type'=>'checkbox', 'label'=>'Show Search Tools at Top of Results', 'description'=>'Whether or not to move search tools to the top of the results page', 'hideInLists' => true),
 						'showQuickCopy' => array('property' => 'showQuickCopy', 'type' => 'checkbox', 'label' => 'Show Quick Copy', 'description' => 'Turn on to to show Quick Copy Link in search results.', 'hideInLists' => true),
 						'showInSearchResultsMainDetails' => array('property' => 'showInSearchResultsMainDetails', 'type' => 'multiSelect', 'label' => 'Optional details to show for a record in search results : ', 'description' => 'Selected details will be shown in the main details section of a record on a search results page.', 'listStyle' => 'checkboxSimple', 'values' => self::$searchResultsMainDetailsOptions),
 						'alwaysShowSearchResultsMainDetails' => array('property' => 'alwaysShowSearchResultsMainDetails', 'type' => 'checkbox', 'label' => 'Always Show Selected Search Results Main Details', 'description' => 'Turn on to always show the selected details even when there is no info supplied for a detail, or the detail varies due to multiple formats and/or editions). Does not apply to Series & Language', 'hideInLists' => true),
