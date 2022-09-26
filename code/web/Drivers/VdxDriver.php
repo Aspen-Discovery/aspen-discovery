@@ -290,10 +290,6 @@ class VdxDriver
 		$newRequest->note = strip_tags($requestFields['note']);
 		$newRequest->pickupLocation = strip_tags($requestFields['pickupLocation']);
 		$newRequest->status = 'New';
-		if (!$newRequest->insert()){
-			global $logger;
-			$logger->log("Could not insert new request " . $newRequest->getLastError(), Logger::LOG_ERROR);
-		}
 
 		//To submit, email the submission email address
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -344,6 +340,11 @@ class VdxDriver
 		}
 
 		if ($mailer->send($settings->submissionEmailAddress, 'Document_Request', $body, null, null)){
+			if (!$newRequest->insert()){
+				global $logger;
+				$logger->log("Could not insert new request " . $newRequest->getLastError(), Logger::LOG_ERROR);
+			}
+
 			$results = array(
 				'title' => translate(['text' => 'Request Sent', 'isPublicFacing' => true]),
 				'message' => translate(['text' => "Your request has been submitted. You can check the status of your request within your account.", 'isPublicFacing' => true]),
