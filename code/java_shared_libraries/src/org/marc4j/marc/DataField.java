@@ -133,6 +133,8 @@ public interface DataField extends VariableField {
      */
     public String getSubfieldsAsString(String sfSpec);
 
+    public String getSubfieldsAsString(final String sfSpec, String separator);
+
     /**
      * Returns the first <code>Subfield</code> with the given code.
      * 

@@ -2200,7 +2200,7 @@ EOT;
 		return 'emailAspenResetLink';
 	}
 
-	function getPatronIDChange($searchPatronID): array
+	public function getPatronIDChanges($searchPatronID): ?array
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
@@ -2210,6 +2210,7 @@ EOT;
 			from patronidchange_v p
 			where oldpatronid = :searchpatronid
 			order by changetime desc 
+			-- fetch first 1 rows only
 EOT;
 
 		$stid = oci_parse($this->dbConnection, $sql);

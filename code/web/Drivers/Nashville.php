@@ -34,11 +34,21 @@ class Nashville extends CarlX {
 				}
 				$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
 				// If failed with 'Invalid patron ID', check for changed patron ID
-				if ($response['success'] === false && $response['message'] == 'Invalid patron ID') {
-					$newPatronId = getPatronIDChange($patronId);
-					if ($newPatronId) {
-						$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId);
-						$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found $newPatronId", Logger::LOG_ERROR);
+				if ($response['success'] === false && $response['message'] == 'Invalid patron ID.') {
+					$newPatronIds = $this->getPatronIDChanges($patronId);
+					if ($newPatronIds) {
+						foreach ($newPatronIds as $newPatronId) {
+							$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found " . $newPatronId['NEWPATRONID'], Logger::LOG_ERROR);
+							$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
+							if ($response['success'] === false) {
+								$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
+								$allPaymentsSucceed = false;
+							} else {
+								$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
+								$allPaymentsSucceed = true;
+								break;
+							}
+						}
 					} else {
 						$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup... failed to find patron id change for $patronId", Logger::LOG_ERROR);
 					}

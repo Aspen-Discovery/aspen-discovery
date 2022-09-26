@@ -456,4 +456,9 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	function validateUniqueId(User $user){
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 	}
+
+	public function getPatronIDChanges($searchPatronID) : ?array
+	{
+		return null;
+	}
 }
