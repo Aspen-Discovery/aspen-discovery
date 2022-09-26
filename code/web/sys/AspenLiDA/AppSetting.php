@@ -104,4 +104,70 @@ class AppSetting extends DataObject
 	function getEditLink() : string{
 		return '/AspenLiDA/AppSettings?objectAction=edit&id=' . $this->id;
 	}
+
+	static function getDeepLinks(): array {
+		return [
+			'home' => 'Home Screen',
+			'search' => 'Search: Specific term',
+			'search/grouped_work' => 'Search: Grouped Work',
+			'search/browse_category' => 'Search: Browse Category',
+			'search/author' => 'Search: Specific Author',
+			'search/list' => 'Search: Public List',
+			'user' => 'User: Profile',
+			'user/preferences' => 'User: Preferences',
+			'user/linked_accounts' => 'User: Linked Accounts',
+			'user/library_card' => 'User: Library Card',
+			'user/holds' => 'User: Holds',
+			'user/checkouts' => 'User: Checkouts',
+			'user/saved_searches' => 'User: Saved Searches',
+			'user_lists' => 'User: Lists',
+		];
+	}
+
+	static function getDeepLinkByName($name, $id = null) {
+		$scheme = 'aspen-lida';
+		$title = 'Unknown';
+		$fullPath = '';
+
+		if(strpos($name, 'grouped_work')) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $id;
+			if($groupedWork->find(true)) {
+				$title = $groupedWork->full_title;
+			}
+		} elseif(strpos($name, 'browse_category')) {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $id;
+			if($browseCategory->find(true)) {
+				$title = $browseCategory->label;
+			}
+		} elseif(strpos($name, 'list')) {
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->id = $id;
+			if($list->find(true)) {
+				$title = $list->title;
+			}
+		}
+
+		switch($name) {
+			case "search":
+			case "search/author":
+				$fullPath = $scheme . '://' . $name . '?term=' . $id;
+				break;
+			case "search/grouped_work":
+				$fullPath = $scheme . '://' . $name . '?id=' . $id;
+				break;
+			case "search/browse_category":
+			case "search/list":
+				$fullPath = $scheme . '://' . $name . '?id=' . $id . '&title=' . $title;
+				break;
+			default:
+				$fullPath = $scheme . '://' . $name;
+		}
+
+		return $fullPath;
+	}
 }

@@ -7,6 +7,7 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotificationPType.php';
 
 require_once ROOT_DIR . '/sys/Account/User.php';
 require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 
 class LiDANotification extends DB_LibraryLocationLinkedObject
 {
@@ -17,7 +18,9 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 	public $sendOn;
 	public $expiresOn;
 	public $ctaUrl;
-	public $ctaLabel;
+	public $linkType;
+	public $deepLinkPath;
+	public $deepLinkId;
 	public $sent;
 
 	protected $_libraries;
@@ -29,6 +32,8 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
 		$ptypeList = PType::getPatronTypeList();
 
+		$ctaType = [0 => 'A specific screen in the app', 1 => 'An external website'];
+		$ctaScreens = AppSetting::getDeepLinks();
 		$messageLimits = "<p>Character limits before being truncated</p><ul><li>iOS: 178 characters (includes both title and message)</li><li>Android (if collapsed, default): 43 characters for message, 39 characters for title</li><li>Android (if expanded): 504 characters for message, 79 characters for title</li></ul>";
 
 		return [
@@ -38,7 +43,10 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 			'messageLimits' => array('property'=>'messageLimits', 'type'=>'label', 'label'=> $messageLimits, 'hideInLists' => true),
 			'sendOn' => array('property'=>'sendOn', 'type'=>'timestamp','label'=>'Sends on', 'description'=> 'When to send the notification to users', 'required' => true),
 			'expiresOn' => array('property'=>'expiresOn', 'type'=>'timestamp','label'=>'Expires on', 'description'=> 'The time the notification will expire', 'note' => 'If left blank, expiration will be set to 7 days from send time'),
-			'ctaUrl' => array('property' => 'ctaUrl', 'type' => 'url', 'label' => 'Call to Action URL', 'description' => 'A URL for users to be redirected to when opening the notification', 'hideInLists' => true),
+			'linkType' => array('property' => 'linkType', 'type'=>'enum', 'label' => 'On tap, send user to', 'values' => $ctaType, 'default' => 0, 'onchange'=>'return AspenDiscovery.Admin.getUrlOptions();'),
+			'deepLinkPath' => array('property' => 'deepLinkPath', 'type' => 'enum', 'label' => 'Aspen LiDA Screen', 'values' => $ctaScreens, 'default' => 'home', 'onchange'=>'return AspenDiscovery.Admin.getDeepLinkFullPath();'),
+			'deepLinkId' => array('property'=>'deepLinkId', 'type'=>'text', 'label'=>'Id for Object', 'hideInLists' => true),
+			'ctaUrl' => array('property' => 'ctaUrl', 'type' => 'url', 'label' => 'External URL', 'description' => 'A URL for users to be redirected to when opening the notification', 'hideInLists' => true),
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',

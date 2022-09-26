@@ -161,6 +161,16 @@ function getUpdates22_10_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Batch Delete'))",
 			),
 		], //add_batchDeletePermissions
+		'add_ctaDeepLinkOptions' => [
+			'title' => 'Add config to custom LiDA notifications',
+			'description' => 'Add options to easily link into screens within Aspen LiDA',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN linkType TINYINT(1) DEFAULT 0',
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN deepLinkPath VARCHAR(75)',
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN deepLinkId VARCHAR(255)',
+			]
+		], //add_ctaDeepLinkOptions
 
 		//kodi
 
