@@ -153,7 +153,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			}
 		}
 
-		$selectedAvailabilityToggleValue = null;
+		$this->selectedAvailabilityToggleValue = null;
 		$selectedAvailableAtValues = [];
 		$selectedFormatValues = [];
 		$selectedFormatCategoryValues = [];
@@ -192,7 +192,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$fieldValue = "";
 			foreach ($filter as $value) {
 				if ($facetName == 'availability_toggle' || $facetName == "availability_toggle_$solrScope"){
-					$selectedAvailabilityToggleValue = $value;
+					$this->selectedAvailabilityToggleValue = $value;
 					$availabilityToggleId = $facetInfo->id;
 				}elseif ($facetName == 'available_at' || $facetName == "available_at_$solrScope"){
 					$selectedAvailableAtValues[] = $value;
@@ -241,7 +241,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 		}
 
 		//Check to see if we should apply a default filter
-		if ($selectedAvailabilityToggleValue == null){
+		if ($this->selectedAvailabilityToggleValue == null){
 			global $library;
 			$location = Location::getSearchLocation(null);
 			if ($location != null){
@@ -250,7 +250,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 			}
 			$availabilityToggleValue = $groupedWorkDisplaySettings->defaultAvailabilityToggle;
-			$selectedAvailabilityToggleValue = $availabilityToggleValue;
+			$this->selectedAvailabilityToggleValue = $availabilityToggleValue;
 
 			if ($availabilityToggleId == null){
 				foreach ($facetConfig as $facetInfo){
@@ -266,8 +266,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 
 		$facetSet = array();
 
-		if (empty($selectedAvailabilityToggleValue)){
-			$selectedAvailabilityToggleValue = 'global';
+		if (empty($this->selectedAvailabilityToggleValue)){
+			$this->selectedAvailabilityToggleValue = 'global';
 		}
 		if (empty($selectedAvailableAtValues)){
 			$selectedAvailableAtValues[] = '*';
@@ -289,18 +289,18 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			foreach ($selectedFormatCategoryValues as $selectedFormatCategoryValue){
 				foreach ($selectedFormatValues as $selectedFormatValue){
 //					if ($selectedFormatValue != '*'){
-//						$editionFiltersFormat[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#*#$selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
+//						$editionFiltersFormat[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#*#$this->selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
 //					}
 //					if ($selectedFormatCategoryValue != '*'){
-//						$editionFiltersFormatCategory[] = str_replace(' ', '_', "edition_info:$solrScope#*#$selectedFormatValue#$selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
+//						$editionFiltersFormatCategory[] = str_replace(' ', '_', "edition_info:$solrScope#*#$selectedFormatValue#$this->selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
 //					}
-//					if ($selectedAvailabilityToggleValue != 'global'){
+//					if ($this->selectedAvailabilityToggleValue != 'global'){
 //						$editionFiltersFormatAvailability[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#*#$selectedAvailableAtValue#");
 //					}
 //					if ($selectedAvailableAtValue != '*'){
-//						$editionFiltersFormatAvailableAt[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#$selectedAvailabilityToggleValue#*#");
+//						$editionFiltersFormatAvailableAt[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#$this->selectedAvailabilityToggleValue#*#");
 //					}
-					$allEditionFilters[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#$selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
+					$allEditionFilters[] = str_replace(' ', '_', "edition_info:$solrScope#$selectedFormatCategoryValue#$selectedFormatValue#$this->selectedAvailabilityToggleValue#$selectedAvailableAtValue#");
 				}
 			}
 		}
@@ -660,15 +660,12 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			$filter = $this->getFacetConfig();
 		}
 
-		$selectedAvailabilityToggleValue = 'global';
 		$selectedAvailableAtValues = [];
 		$selectedFormatValues = [];
 		$selectedFormatCategoryValues = [];
 		foreach ($this->filterList as $field => $selectedValues) {
 			foreach ($selectedValues as $value) {
-				if ($field == 'availability_toggle') {
-					$selectedAvailabilityToggleValue = $value;
-				} elseif ($field == 'available_at') {
+				if ($field == 'available_at') {
 					$selectedAvailableAtValues[] = $value;
 				} elseif ($field == 'format_category') {
 					$selectedFormatCategoryValues[] = $value;
@@ -797,11 +794,11 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				if ($field == 'availability_toggle') {
 					$currentSettings['countIsApproximate'] = (count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0) && $facetValue != 'global';
 				} elseif ($field == 'available_at') {
-					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0;
+					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedFormatCategoryValues) > 0 || count($selectedFormatValues) > 0;
 				} elseif ($field == 'format_category') {
-					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatValues) > 0;
+					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatValues) > 0;
 				} elseif ($field == 'format') {
-					$currentSettings['countIsApproximate'] = $selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0;
+					$currentSettings['countIsApproximate'] = $this->selectedAvailabilityToggleValue != 'global' || count($selectedAvailableAtValues) > 0 || count($selectedFormatCategoryValues) > 0;
 				}else{
 					$currentSettings['countIsApproximate'] = false;
 				}

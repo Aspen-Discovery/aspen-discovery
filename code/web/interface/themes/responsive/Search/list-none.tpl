@@ -6,13 +6,47 @@
 		{/foreach}
 	{/if}
 
-	<h1>{translate text="No Results Found" isPublicFacing=true}</h1>
+	{if $hasGlobalResults}
+		<h1>{translate text="No \"%1%\" Results Found" 1=$originalScopeLabel isPublicFacing=true}</h1>
+	{else}
+		{if $hasKeywordResults}
+			<h1>{translate text="No \"%1%\" Results Found" 1=$originalSearchIndexLabel isPublicFacing=true}</h1>
+		{else}
+			<h1>{translate text="No Results Found" isPublicFacing=true}</h1>
+		{/if}
+	{/if}
 
 	<p class="alert alert-info">
-		{if (empty($lookfor))}
-			{translate text="Your search did not match any resources." isPublicFacing=true}
+		{if $hasGlobalResults}
+			{if (empty($lookfor))}
+				{translate text="Your %1% search did not match any resources." isPublicFacing=true 1=$originalScope}
+			{else}
+				{translate text="Your %1% search - <b>%2%</b> - did not match any resources." 1=$originalScopeLabel 2=$lookfor|escape:html isPublicFacing=true}
+			{/if}
+			{if !empty($globalResultsLink)}
+				&nbsp;
+				{translate text="There are <strong>%1%</strong> results when searching %2%, would you like to search all libraries?" 1=$globalResultsCount 2=$globalScopeLabel isPublicFacing=true}
+				&nbsp;<a class='btn btn-sm btn-primary' href="{$globalResultsLink}">{translate text="Search all libraries" isPublicFacing=true}</a>
+			{/if}
 		{else}
-			{translate text="Your search - <b>%1%</b> - did not match any resources." 1=$lookfor|escape:html isPublicFacing=true}
+			{if $hasKeywordResults}
+				{if (empty($lookfor))}
+					{translate text="Your %1% search did not match any resources." isPublicFacing=true 1=$originalSearchIndexLabel}
+				{else}
+					{translate text="Your %1% search - <b>%2%</b> - did not match any resources." 1=$originalSearchIndexLabel 2=$lookfor|escape:html isPublicFacing=true}
+				{/if}
+				{if !empty($keywordResultsLink)}
+					&nbsp;
+					{translate text="There are <strong>%1%</strong> results when searching by keyword, would you like to search by keyword?" 1=$keywordResultsCount isPublicFacing=true}
+					&nbsp;<a class='btn btn-sm btn-primary' href="{$keywordResultsLink}">{translate text="Search by Keyword" isPublicFacing=true}</a>
+				{/if}
+			{else}
+				{if (empty($lookfor))}
+					{translate text="Your search did not match any resources." isPublicFacing=true}
+				{else}
+					{translate text="Your search - <b>%1%</b> - did not match any resources." 1=$lookfor|escape:html isPublicFacing=true}
+				{/if}
+			{/if}
 		{/if}
 	</p>
 
@@ -41,14 +75,6 @@
 		{if !empty($parseError)}
 			<div class="alert alert-danger">
 				{$parseError}
-			</div>
-		{/if}
-
-		{if !empty($keywordResultsLink)}
-			<div class="correction">
-			<h3>{translate text="Try a Keyword Search?" isPublicFacing=true}</h3>
-                {translate text="Your search type is not set to Keyword.  There are <strong>%1%</strong> results when searching by keyword." 1=$keywordResultsCount isPublicFacing=true}
-				<a class='btn btn-primary' href="{$keywordResultsLink}">{translate text="Search by Keyword" isPublicFacing=true}</a>.
 			</div>
 		{/if}
 
