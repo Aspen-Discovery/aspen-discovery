@@ -199,28 +199,22 @@ function getUpdates22_10_00() : array
 				'ALTER TABLE themes ADD COLUMN fullWidth TINYINT(1) DEFAULT 0',
 			]
 		], //add_fullWidthTheme
-		'cleanupApiUsage' => [
+		'add_floatingCovers' => [
+			'title' => 'Add options to change style of cover images',
+			'description' => 'Add options to change style of cover images',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN coverStyle TINYINT(1) DEFAULT 0',
+			]
+		], //add_floatingCovers
+		'cleanupApiUsage_func' => [
 			'title' => 'Fix api_usage rows with incorrect modules',
 			'description' => 'Fixing where SearchAPI and ListAPI were incorrectly labeled as SystemAPI module',
 			'continueOnError' => true,
 			'sql' => [
-				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppBrowseCategoryResults"',
-				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppActiveBrowseCategories"',
-				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppSearchResults"',
-				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getListResults"',
-				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getSavedSearchResults"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getUserLists"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getListTitles"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "createList"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "deleteList"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "editList"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "addTitlesToList"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "removeTitlesFromList"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "clearListTitles"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getSavedSearchesForLiDA"',
-				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getSavedSearchTitles"'
+				'cleanupApiUsageTable',
 			]
-		], //cleanupApiUsage
+		], //cleanupApiUsage_func
 
 
 		//kodi
@@ -228,4 +222,53 @@ function getUpdates22_10_00() : array
 		//other
 
 	];
+}
+
+function cleanupApiUsageTable()
+{
+	require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+
+	$listApiUsage = new APIUsage();
+	$listApiUsage->module = "ListAPI";
+	$listApiUsage->find();
+	while($listApiUsage->fetch()) {
+		$row = new APIUsage();
+		$row->module = 'SystemAPI';
+		$row->method = $listApiUsage->method;
+		$row->instance = $listApiUsage->instance;
+		if($row->find(true)) {
+			$row->year = $listApiUsage->year;
+			$row->month = $listApiUsage->month;
+			if($row->find(true)) {
+				$listApiUsage->numCalls = ($listApiUsage->numCalls + $row->numCalls);
+				$listApiUsage->update();
+				$row->delete();
+			} else {
+				$row->module = 'ListAPI';
+				$row->update();
+			}
+		}
+	}
+
+	$searchApiUsage = new APIUsage();
+	$searchApiUsage->module = "SearchAPI";
+	$searchApiUsage->find();
+	while($searchApiUsage->fetch()) {
+		$row = new APIUsage();
+		$row->module = 'SystemAPI';
+		$row->method = $searchApiUsage->method;
+		$row->instance = $searchApiUsage->instance;
+		if($row->find(true)) {
+			$row->year = $searchApiUsage->year;
+			$row->month = $searchApiUsage->month;
+			if($row->find(true)) {
+				$searchApiUsage->numCalls = ($searchApiUsage->numCalls + $row->numCalls);
+				$searchApiUsage->update();
+				$row->delete();
+			} else {
+				$row->module = 'SearchAPI';
+				$row->update();
+			}
+		}
+	}
 }
