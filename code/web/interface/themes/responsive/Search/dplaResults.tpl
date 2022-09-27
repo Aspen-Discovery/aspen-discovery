@@ -9,7 +9,7 @@
 					<div class="col-xs-2">
 						{if !empty($result.object)}
 							<a href="{$result.link}" aria-hidden="true">
-								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="{$result.title}{if !empty($result.publisher)} {translate text="from" isPublicFacing=true} {$result.publisher}{/if}"/>
+								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive {$coverStyle}" alt="{$result.title}{if !empty($result.publisher)} {translate text="from" isPublicFacing=true} {$result.publisher}{/if}"/>
 							</a>
 						{/if}
 					</div>

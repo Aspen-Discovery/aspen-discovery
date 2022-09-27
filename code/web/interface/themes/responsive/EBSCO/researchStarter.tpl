@@ -12,7 +12,7 @@
 			<div class="col-tn-12 col-xs-4 col-md-3 text-center">
 				{if !empty($image)}
 					<a href="{$link}" target="_blank" class="researchStarter-link">
-					<img src="{$image}" class="researchStarter-image img-thumbnail" alt="{$title}">
+					<img src="{$image}" class="researchStarter-image img-thumbnail {$coverStyle}" alt="{$title}">
 					</a>
 				{/if}
 			</div>

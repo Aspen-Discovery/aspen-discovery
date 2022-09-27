@@ -4,7 +4,7 @@
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
 				<a href="{$pageUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Websites.trackUsage('{$id}')" tabindex="-1">
-					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}">
+					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}">
 				</a>
 			{/if}
 		</div>

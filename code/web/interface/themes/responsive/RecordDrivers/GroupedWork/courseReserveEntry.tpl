@@ -4,7 +4,7 @@
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				<a href="{$summUrl}" aria-hidden="true">
-					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*} {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 				</a>
 				{if $showRatings}
 					{include file="GroupedWork/title-rating.tpl" id=$summId ratingData=$summRating showNotInterested=false}
