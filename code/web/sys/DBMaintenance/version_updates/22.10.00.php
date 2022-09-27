@@ -199,14 +199,14 @@ function getUpdates22_10_00() : array
 				'ALTER TABLE themes ADD COLUMN fullWidth TINYINT(1) DEFAULT 0',
 			]
 		], //add_fullWidthTheme
-		'add_floatingCovers' => [
+		'add_coverStyle' => [
 			'title' => 'Add options to change style of cover images',
 			'description' => 'Add options to change style of cover images',
 			'continueOnError' => true,
 			'sql' => [
-				'ALTER TABLE themes ADD COLUMN coverStyle TINYINT(1) DEFAULT 0',
+				'ALTER TABLE themes ADD COLUMN coverStyle VARCHAR(50) DEFAULT "border" NOT NULL',
 			]
-		], //add_floatingCovers
+		], //add_coverStyle
 		'cleanupApiUsage_func' => [
 			'title' => 'Fix api_usage rows with incorrect modules',
 			'description' => 'Fixing where SearchAPI and ListAPI were incorrectly labeled as SystemAPI module',

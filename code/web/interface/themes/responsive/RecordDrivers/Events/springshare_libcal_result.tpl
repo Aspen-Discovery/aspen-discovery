@@ -5,7 +5,7 @@
 			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 				{if $disableCoverArt != 1}
 					<a href="{$eventUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Events.trackUsage('{$id}')" aria-hidden="true">
-						<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
+						<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 					</a>
 				{/if}
 			</div>
