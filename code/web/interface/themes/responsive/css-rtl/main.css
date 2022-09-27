@@ -720,6 +720,14 @@ pre code {
 .row:after {
   clear: both;
 }
+.row-no-gutters {
+  margin-right: 0;
+  margin-left: 0;
+}
+.row-no-gutters [class*="col-"] {
+  padding-right: 0;
+  padding-left: 0;
+}
 .col-tn-1,
 .col-xs-1,
 .col-sm-1,
@@ -7888,6 +7896,9 @@ hr.menu {
   margin-bottom: 0;
   padding-bottom: 1em;
 }
+#header-wrapper.fullWidth {
+  padding: 1em;
+}
 @media (max-width: 479px) {
   #header-logo-container {
     text-align: center;
@@ -8085,6 +8096,9 @@ hr.menu {
   margin-right: 5px;
   text-align: right;
   display: inline-block;
+}
+#horizontal-menu-bar-container.fullWidth {
+  padding: 0 1em 0 1em;
 }
 .menu-section-left {
   flex-grow: 10;
