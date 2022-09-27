@@ -5418,6 +5418,7 @@ CREATE TABLE `themes` (
   `modalDialogHeaderFooterBorderColor` char(7) COLLATE utf8mb4_general_ci DEFAULT '#e5e5e5',
   `modalDialogHeaderFooterBorderColorDefault` tinyint(1) DEFAULT '1',
   `footerLogoAlt` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `coverStyle` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'floating' NOT NULL,
   PRIMARY KEY (`id`),
   KEY `themeName` (`themeName`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

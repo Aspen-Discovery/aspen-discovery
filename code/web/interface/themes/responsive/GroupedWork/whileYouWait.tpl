@@ -8,7 +8,7 @@
 				<div class="row">
 					<div class="col-tn-12">
 						<a href="{$whileYouWaitTitle.url}">
-							<img src="{$whileYouWaitTitle.coverUrl}" class="listResultImage img-thumbnail" alt="{$whileYouWaitTitle.title|escape}">
+							<img src="{$whileYouWaitTitle.coverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$whileYouWaitTitle.title|escape}">
 						</a>
 						<div class="formatIcons" style="padding-top: 5px">
 							{foreach from=$whileYouWaitTitle.formatCategories item=formatCategory}

@@ -365,6 +365,14 @@ class UInterface extends Smarty
 
 			$this->assign('parentTheme', $theme->getParentTheme());
 			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('coverStyle', $theme->coverStyle);
+
+			$browseCategoryLayoutStyle = "masonry";
+			if($theme->browseImageLayout == 1) {
+				$browseCategoryLayoutStyle = "grid";
+			}
+
+			$this->assign('browseStyle', $browseCategoryLayoutStyle);
 
 			//Get Logo
 			$logoName = null;

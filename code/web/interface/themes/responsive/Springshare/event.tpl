@@ -3,7 +3,7 @@
 		<div class="col-sm-4">
 			<div class="panel active">
 				<div class="panel-body">
-					<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}"></a>
+					<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}"></a>
 				</div>
 			</div>
 			{if !empty($recordDriver->getCategories())}
