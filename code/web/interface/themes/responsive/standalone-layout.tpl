@@ -37,7 +37,7 @@
 	{include file="masquerade-top-navbar.tpl"}
 {/if}
 {strip}
-	<div class="container">
+	<div {if !$fullWidthTheme}class="container"{/if} id="page-container">
 {*
 		{if !empty($systemMessage)}
 			<div id="system-message-header" class="row">{$systemMessage}</div>
@@ -51,12 +51,15 @@
 			{include file="languagePreferences.tpl"}
 		{/if}
 
-		<div id="header-wrapper" class="row">
-			<div id="header-container" role="banner">
-				{include file='standalone-header_responsive.tpl'}
+		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-header">
+			<div id="header-wrapper" class="row {if $fullWidthTheme}row-no-gutters fullWidth{/if}">
+				<div id="header-container" role="banner">
+					{include file='standalone-header_responsive.tpl'}
+				</div>
 			</div>
 		</div>
 
+		{if $fullWidthTheme}<div class="container">{/if}
 		<div id="content-container">
 			<div class="row">
 				<div class="col-xs-12" id="main-content">
@@ -70,9 +73,12 @@
 				</div>
 			</div>
 		</div>
+		{if $fullWidthTheme}</div>{/if}
 
-		<div id="footer-container" class="row" role="contentinfo">
-			{include file="footer_responsive.tpl"}
+		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-footer">
+			<div id="footer-container" class="row {if $fullWidthTheme}row-no-gutters{/if}" role="contentinfo">
+				{include file="footer_responsive.tpl"}
+			</div>
 		</div>
 
 	</div>

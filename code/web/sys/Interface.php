@@ -364,6 +364,7 @@ class UInterface extends Smarty
 			}
 
 			$this->assign('parentTheme', $theme->getParentTheme());
+			$this->assign('fullWidthTheme', $theme->fullWidth);
 
 			//Get Logo
 			$logoName = null;
