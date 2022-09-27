@@ -1,7 +1,7 @@
 //
 // Variables
 // --------------------------------------------------
-
+@variable-prefix:       bs-;
 
 // Global values
 // --------------------------------------------------
@@ -169,6 +169,11 @@
 @input-group-addon-bg:           @gray-lighter;
 @input-group-addon-border-color: @input-border;
 
+@input-btn-focus-width:         .25rem;
+@input-btn-focus-color-opacity: .25;
+@input-btn-focus-color:         rgba(@component-active-bg, @input-btn-focus-color-opacity);
+@input-btn-focus-blur:          0;
+@input-btn-focus-box-shadow:    0 0 @input-btn-focus-blur @input-btn-focus-width @input-btn-focus-color;
 
 // Dropdowns
 // -------------------------
@@ -649,3 +654,61 @@
 // Large screen / wide desktop
 @container-large-desktop:      ((1140px + @grid-gutter-width));
 @container-lg:                 @container-large-desktop;
+
+
+// Form check
+@form-check-input-width:      1em;
+@form-check-min-height:       1rem * 1.5;
+@form-check-padding-start:    @form-check-input-width + .5em;
+@form-check-margin-bottom:    .125rem;
+@form-check-label-color:      null;
+@form-check-label-cursor:     null;
+@form-check-transition:       null;
+
+@form-check-input-active-filter:  brightness(90%);
+
+@form-check-input-bg:         @input-bg;
+@form-check-input-border:     1px solid rgba(@gray-dark, .25);
+@form-check-input-border-radius:  .25em;
+@form-check-radio-border-radius:  50%;
+@form-check-input-focus-border:   @input-border-focus;
+@form-check-input-focus-box-shadow:   @input-btn-focus-box-shadow;
+
+@form-check-input-checked-color:  @component-active-color;
+@form-check-input-checked-bg-color:   @component-active-bg;
+@form-check-input-checked-border-color:   @form-check-input-checked-bg-color;
+
+@form-check-input-checked-bg-image-url: escape(~"data:image/svg+xml,<?xml version='1.0'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/></svg>");
+@form-check-input-checked-bg-image: ~"url('@{form-check-input-checked-bg-image-url}')";
+
+@form-check-radio-checked-bg-image-url: escape(~"data:image/svg+xml,<?xml version='1.0'><svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2' fill='#fff'/></svg>");
+@form-check-radio-checked-bg-image: ~"url('@{form-check-radio-checked-bg-image-url}')";
+
+@form-check-input-indeterminate-color:  @component-active-color;
+@form-check-input-indeterminate-bg-color:   @component-active-bg;
+@form-check-input-indeterminate-border-color:   @form-check-input-indeterminate-bg-color;
+@form-check-input-indeterminate-bg-image:  url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#{@form-check-input-indeterminate-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/></svg>");
+
+@form-check-input-disabled-opacity:   .5;
+@form-check-label-disabled-opacity:   @form-check-input-disabled-opacity;
+@form-check-btn-check-disabled-opacity:     .65;
+
+@form-check-inline-margin-end:      1rem;
+
+// Form switch
+@form-switch-color:           rgba(0, 0, 0, .25);
+@form-switch-width:           2em;
+@form-switch-padding-start:   @form-switch-width + .5em;
+@form-switch-bg-image-url: escape(~"<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#0000003F'/></svg>");
+@form-switch-bg-image:        ~'url("data:image/svg+xml,@{form-switch-bg-image-url}")';
+@form-switch-border-radius:   @form-switch-width;
+@form-switch-transition:      background-position .15s ease-in-out;
+
+@form-switch-focus-color:     @input-border-focus;
+@form-switch-focus-bg-image-url: escape(~"<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#66AFE9FF'/></svg>");
+@form-switch-focus-bg-image:   ~'url("data:image/svg+xml,@{form-switch-focus-bg-image-url}")';
+
+@form-switch-checked-color:   @component-active-color;
+@form-switch-checked-bg-image-url: escape(~"<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#fff'/></svg>");
+@form-switch-checked-bg-image:   ~'url("data:image/svg+xml,@{form-switch-checked-bg-image-url}")';
+@form-switch-checked-bg-position:   right center;

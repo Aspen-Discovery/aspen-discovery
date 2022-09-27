@@ -182,6 +182,55 @@ function getUpdates22_10_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Batch Delete'))",
 			),
 		], //add_batchDeletePermissions
+		'add_ctaDeepLinkOptions' => [
+			'title' => 'Add config to custom LiDA notifications',
+			'description' => 'Add options to easily link into screens within Aspen LiDA',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN linkType TINYINT(1) DEFAULT 0',
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN deepLinkPath VARCHAR(75)',
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN deepLinkId VARCHAR(255)',
+			]
+		], //add_ctaDeepLinkOptions
+		'add_moveSearchTools' => [
+			'title' => 'Add option to move search tools to top',
+			'description' => 'Add option to move the search tools to the top of the search results in Grouped Work Display Settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN showSearchToolsAtTop TINYINT(1) DEFAULT 0',
+			]
+		], //add_moveSearchTools
+		'add_fullWidthTheme' => [
+			'title' => 'Add option to make header and footer full width',
+			'description' => 'Add option to make header and footer full width in theme',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN fullWidth TINYINT(1) DEFAULT 0',
+			]
+		], //add_fullWidthTheme
+		'cleanupApiUsage' => [
+			'title' => 'Fix api_usage rows with incorrect modules',
+			'description' => 'Fixing where SearchAPI and ListAPI were incorrectly labeled as SystemAPI module',
+			'continueOnError' => true,
+			'sql' => [
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppBrowseCategoryResults"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppActiveBrowseCategories"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppSearchResults"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getListResults"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getSavedSearchResults"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getUserLists"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getListTitles"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "createList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "deleteList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "editList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "addTitlesToList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "removeTitlesFromList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "clearListTitles"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getSavedSearchesForLiDA"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getSavedSearchTitles"'
+			]
+		], //cleanupApiUsage
+
 
 		//kodi
 

@@ -37,18 +37,12 @@
 
 // Optional: Group multiple button groups together for a toolbar
 .btn-toolbar {
-  .clearfix();
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 
-  .btn-group {
-    float: right;
-  }
-  // Space out series of button groups
-  > .btn,
-  > .btn-group {
-    + .btn,
-    + .btn-group {
-      margin-right: 5px;
-    }
+  .input-group {
+    width: auto;
   }
 }
 

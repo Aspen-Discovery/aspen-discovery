@@ -1,5 +1,5 @@
 {strip}
-<div id="horizontal-search-box" class="row">
+<div id="horizontal-search-box" class="row {if $fullWidthTheme}row-no-gutters{/if}">
 	<form method="get" action="/Union/Search" id="searchForm" class="form-inline">
 
 		{* Hidden Inputs *}
