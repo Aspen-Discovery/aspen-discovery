@@ -276,7 +276,7 @@ public class RecordGroupingProcessor {
 		}else{
 			String alternateGroupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
 			if (alternateGroupedWorkPermanentId != null) {
-				if (alternateGroupedWorkPermanentId.length() == 40) {
+				if (alternateGroupedWorkPermanentId.length() > 36) {
 					alternateGroupedWorkPermanentId = alternateGroupedWorkPermanentId.substring(0, 36);
 				}
 				alternateGroupedWorkPermanentId += "-" + groupedWork.getLanguage();
