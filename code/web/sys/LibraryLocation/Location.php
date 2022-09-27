@@ -52,6 +52,7 @@ class Location extends DataObject
 	public $isMainBranch; // tinyint(1)
 	public $showInLocationsAndHoursList;
 	public $validHoldPickupBranch;    //'1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid', '3' => 'Valid for patrons of this library only'
+	public $validSelfRegistrationBranch;
 	public $nearbyLocation1;        //int(11)
 	public $nearbyLocation2;        //int(11)
 	public $scope;
@@ -310,13 +311,14 @@ class Location extends DataObject
 				'scope' => array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default' => 0, 'forcesReindex' => true, 'permissions' => ['Location ILS Connection']),
 				'useScope' => array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true, 'forcesReindex' => true, 'permissions' => ['Location ILS Connection']),
 				array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '3' => 'Valid for patrons of this library only', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => '1', 'permissions' => ['Location ILS Options']),
+				array('property' => 'validSelfRegistrationBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all libraries', '3' => 'Valid for this library only', '2' => 'Not Valid'), 'label' => 'Valid Self Registration Branch?', 'description' => 'Determines if the location can be used for self registration.', 'hideInLists' => true, 'default' => '1', 'permissions' => ['Location ILS Options']),
 				array('property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true, 'permissions' => ['Location ILS Options']),
 				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew (Millennium/Sierra)', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*', 'permissions' => ['Location ILS Connection']),
 			)),
 
 			// Catalog Enrichment //
 			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'], 'properties' => [
-				'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+					'showFavorites' => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
 				]
 			],
 

@@ -75,6 +75,15 @@ function getUpdates22_10_00() : array
 				) ENGINE INNODB'
 			]
 		], //basic_page_allow_access_by_home_location
+		'location_self_registration_branch' => [
+			'title' => 'Location - Self Registration Branch',
+			'description' => 'Allow determination of which branches are valid for self registration',
+			'sql' => [
+				"ALTER TABLE location add column validSelfRegistrationBranch tinyint(4) NOT NULL DEFAULT '1'",
+				"ALTER TABLE location ADD INDEX ValidSelfRegistrationBranch (validSelfRegistrationBranch)",
+				"UPDATE location set validSelfRegistrationBranch = validHoldPickupBranch",
+			]
+		], //location_self_registration_branch
 //		'grouped_work_parents' => [
 //			'title' => 'Grouped Work Parents',
 //			'description' => 'Add a table to define parents for a grouped work',
