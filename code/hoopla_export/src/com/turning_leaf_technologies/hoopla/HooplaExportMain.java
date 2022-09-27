@@ -424,7 +424,7 @@ public class HooplaExportMain {
 				long rawChecksum = checksumCalculator.getValue();
 				boolean curTitleActive = curTitle.getBoolean("active");
 
-				long hooplaId = curTitle.getLong("titleId");
+				long hooplaId = curTitle.getLong("id"); //formerly titleId was used but this is not unique for tv series
 
 				HooplaTitle existingTitle = existingRecords.get(hooplaId);
 				boolean recordUpdated = false;
