@@ -1516,7 +1516,7 @@ abstract class MarcRecordProcessor {
 				String sysDetailsValue = publisherSubField.getData().toLowerCase();
 				if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
-				} else if (sysDetailsValue.contains("go reader")) {
+				} else if (sysDetailsValue.contains("go reader") || sysDetailsValue.contains("goreader")) {
 					result.add("GoReader");
 				}
 			}
@@ -1532,7 +1532,7 @@ abstract class MarcRecordProcessor {
 					result.add("LargePrint");
 				}else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
 					result.add("Blu-ray/DVD");
-				}else if (editionData.contains("go reader")) {
+				}else if (editionData.contains("go reader") || editionData.contains("goreader")) {
 					result.add("GoReader");
 				}else if (editionData.contains("playaway view")) {
 					result.add("Playaway View");
@@ -1548,7 +1548,7 @@ abstract class MarcRecordProcessor {
 					result.add("Book Club Kit");
 				}else if (editionData.contains("vox")) {
 					result.add("Vox");
-				}else if (editionData.contains("pop-up")|(editionData.contains("mini-pop-up"))) {
+				}else if (editionData.contains("pop-up") || (editionData.contains("mini-pop-up"))) {
 					result.add("Pop-Up Book");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
@@ -1605,6 +1605,8 @@ abstract class MarcRecordProcessor {
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
 							result.add("Book+DVD");
+						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd-rom")){
+							result.add("Book+CD-ROM");
 						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
 							result.add("Book+CD");
 						}else{
@@ -1759,6 +1761,8 @@ abstract class MarcRecordProcessor {
 							result.add("LargePrint");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
+						}else if (subfieldData.contains("toy and movable books") || subfieldData.contains("pop-up")) {
+							result.add("Pop-Up Book");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1796,6 +1800,8 @@ abstract class MarcRecordProcessor {
 							result.add("LibraryOfThings");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
+						}else if (subfieldData.contains("toy and movable books") || subfieldData.contains("pop-up")) {
+							result.add("Pop-Up Book");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){

@@ -6,6 +6,8 @@ import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -30,6 +32,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	private PreparedStatement getExistingParentRecordsStmt;
 	private PreparedStatement addParentRecordStmt;
 	private PreparedStatement deleteParentRecordStmt;
+	private PreparedStatement updateChildTitleStmt;
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.
@@ -55,8 +58,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		try {
 			getExistingParentRecordsStmt = dbConnection.prepareStatement("SELECT * FROM record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			addParentRecordStmt = dbConnection.prepareStatement("INSERT INTO record_parents (childRecordId, parentRecordId) VALUES (?, ?)");
+			addParentRecordStmt = dbConnection.prepareStatement("INSERT INTO record_parents (childRecordId, parentRecordId, childTitle) VALUES (?, ?, ?)");
 			deleteParentRecordStmt = dbConnection.prepareStatement("DELETE FROM record_parents WHERE childRecordId = ? AND parentRecordId = ?");
+			updateChildTitleStmt = dbConnection.prepareStatement("UPDATE record_parents set childTitle = ? where childRecordId = ? and parentRecordId = ?");
 		}catch (SQLException e) {
 			logEntry.incErrors("Error loading prepared statements for loading parent records", e);
 		}
@@ -133,6 +137,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
 
 		if (primaryIdentifier != null){
+			//Get data for the grouped record
+			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
+
 			if (profile.isProcessRecordLinking()){
 				//Check to see if we have any 773 fields which identify the
 				List<DataField> analyticFields = marcRecord.getDataFields(773);
@@ -152,32 +159,47 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					try {
 						getExistingParentRecordsStmt.setString(1, primaryIdentifier.getIdentifier());
 						ResultSet existingParentsRS = getExistingParentRecordsStmt.executeQuery();
-						HashSet<String> existingParentRecords = new HashSet<>();
+						HashMap<String, String> existingParentRecords = new HashMap<>();
 						while (existingParentsRS.next()){
-							existingParentRecords.add(existingParentsRS.getString("parentRecordId"));
+							existingParentRecords.put(existingParentsRS.getString("parentRecordId"), existingParentsRS.getString("childTitle"));
 						}
+						DataField titleField = marcRecord.getDataField(245);
+						String title;
+						if (titleField == null) {
+							title = "";
+						}else{
+							title = titleField.getSubfieldsAsString("abfgnp", " ");
+						}
+
 						//Loop through the records to see if they need to be added
 						for (String parentRecordId : parentRecords){
-							if (existingParentRecords.contains(parentRecordId)){
+							if (existingParentRecords.containsKey(parentRecordId)){
+								if (!existingParentRecords.get(parentRecordId).equals(title)){
+									updateChildTitleStmt.setString(1, title);
+									updateChildTitleStmt.setString(2, primaryIdentifier.getIdentifier());
+									updateChildTitleStmt.setString(3, parentRecordId);
+									updateChildTitleStmt.executeUpdate();
+								}
 								existingParentRecords.remove(parentRecordId);
 							}else{
 								addParentRecordStmt.setString(1, primaryIdentifier.getIdentifier());
 								addParentRecordStmt.setString(2, parentRecordId);
+								addParentRecordStmt.setString(3, AspenStringUtils.trimTo(750, title));
 								addParentRecordStmt.executeUpdate();
 							}
 						}
-						for (String oldParentRecordId : existingParentRecords){
+						for (String oldParentRecordId : existingParentRecords.keySet()){
 							deleteParentRecordStmt.setString(1,oldParentRecordId);
 							deleteParentRecordStmt.executeUpdate();
 						}
 					}catch (Exception e){
 						logEntry.incErrors("Error adding parent records to the database", e);
 					}
-					return null;
+					//MDN 9/24/22 even if the record has parents, we want to group it so we have information about
+					//the record, and it's items in the database.
+					//return null;
 				}
 			}
-			//Get data for the grouped record
-			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
 
 			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged, originalGroupedWorkId);
 			return workForTitle.getPermanentId();

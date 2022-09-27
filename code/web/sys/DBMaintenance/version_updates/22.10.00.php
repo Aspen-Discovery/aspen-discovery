@@ -40,9 +40,53 @@ function getUpdates22_10_00() : array
 				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
 			]
 		], //record_parents
-//		'add_childRecords_more_details_section' => [
-//
-//		], //add_childRecords_more_details_section
+		'add_childRecords_more_details_section' => [
+			'title' => 'Add Child Records Section to More Details',
+			'description' => 'Add Child Records Section to More Details',
+			'sql' => [
+				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 3",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'childRecords', 0, 3 from grouped_work_display_settings",
+			]
+		], //add_childRecords_more_details_section
+		'add_child_title_to_record_parents' => [
+			'title' => 'Add Child Title to Record Parents',
+			'description' => 'Add Child Title to Record Parents',
+			'sql' => [
+				'ALTER TABLE record_parents ADD COLUMN childTitle VARCHAR(750) NOT NULL'
+			]
+		], //add_child_title_to_record_parents
+		'add_parentRecords_more_details_section' => [
+			'title' => 'Add Parent Records Section to More Details',
+			'description' => 'Add Parent Records Section to More Details',
+			'sql' => [
+				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 2",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings",
+			]
+		], //add_parentRecords_more_details_section
+		'basic_page_allow_access_by_home_location' => [
+			'title' => 'Basic Page - Allow Access By Home Location',
+			'description' => 'Basic Page - Allow Access By Home Location',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_basic_page_home_location_access (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					basicPageId INT(11) NOT NULL, 
+					homeLocationId INT(11) NOT NULL,
+					UNIQUE INDEX (basicPageId, homeLocationId)
+				) ENGINE INNODB'
+			]
+		], //basic_page_allow_access_by_home_location
+//		'grouped_work_parents' => [
+//			'title' => 'Grouped Work Parents',
+//			'description' => 'Add a table to define parents for a grouped work',
+//			'sql' => [
+//				'CREATE TABLE IF NOT EXISTS grouped_work_parents(
+//					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					childWorkId CHAR(40) collate utf8_bin,
+//					parentWorkId CHAR(40) collate utf8_bin,
+//					UNIQUE (childWorkId, parentWorkId)
+//				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+//			]
+//		], //grouped_work_parents
 
 		//kirstien
 		'aci_speedpay_sdk_config' => [
@@ -129,6 +173,55 @@ function getUpdates22_10_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Batch Delete'))",
 			),
 		], //add_batchDeletePermissions
+		'add_ctaDeepLinkOptions' => [
+			'title' => 'Add config to custom LiDA notifications',
+			'description' => 'Add options to easily link into screens within Aspen LiDA',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN linkType TINYINT(1) DEFAULT 0',
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN deepLinkPath VARCHAR(75)',
+				'ALTER TABLE aspen_lida_notifications ADD COLUMN deepLinkId VARCHAR(255)',
+			]
+		], //add_ctaDeepLinkOptions
+		'add_moveSearchTools' => [
+			'title' => 'Add option to move search tools to top',
+			'description' => 'Add option to move the search tools to the top of the search results in Grouped Work Display Settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN showSearchToolsAtTop TINYINT(1) DEFAULT 0',
+			]
+		], //add_moveSearchTools
+		'add_fullWidthTheme' => [
+			'title' => 'Add option to make header and footer full width',
+			'description' => 'Add option to make header and footer full width in theme',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN fullWidth TINYINT(1) DEFAULT 0',
+			]
+		], //add_fullWidthTheme
+		'cleanupApiUsage' => [
+			'title' => 'Fix api_usage rows with incorrect modules',
+			'description' => 'Fixing where SearchAPI and ListAPI were incorrectly labeled as SystemAPI module',
+			'continueOnError' => true,
+			'sql' => [
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppBrowseCategoryResults"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppActiveBrowseCategories"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getAppSearchResults"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getListResults"',
+				'UPDATE api_usage SET module = "SearchAPI" WHERE method = "getSavedSearchResults"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getUserLists"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getListTitles"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "createList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "deleteList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "editList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "addTitlesToList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "removeTitlesFromList"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "clearListTitles"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getSavedSearchesForLiDA"',
+				'UPDATE api_usage SET module = "ListAPI" WHERE method = "getSavedSearchTitles"'
+			]
+		], //cleanupApiUsage
+
 
 		//kodi
 

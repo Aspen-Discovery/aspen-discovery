@@ -21,7 +21,7 @@ class SearchAPI extends Action
 				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SystemAPI', $method);
+					APIUsage::incrementStat('SearchAPI', $method);
 					$jsonOutput = json_encode(array('result' => $this->$method()));
 				} else {
 					$output = json_encode(array('error' => 'invalid_method'));

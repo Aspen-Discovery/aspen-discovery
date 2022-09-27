@@ -6,4 +6,5 @@ class RecordParent extends DataObject
 	public $id;
 	public $childRecordId;
 	public $parentRecordId;
+	public $childTitle;
 }

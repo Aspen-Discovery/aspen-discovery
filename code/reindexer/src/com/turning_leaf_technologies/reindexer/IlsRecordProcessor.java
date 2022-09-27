@@ -100,6 +100,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private PreparedStatement addTranslationMapValueStmt;
 	private PreparedStatement updateRecordSuppressionReasonStmt;
 	private PreparedStatement loadChildRecordsStmt;
+	private PreparedStatement loadParentRecordsStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, logger);
@@ -191,7 +192,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable iTypes", e);
@@ -272,6 +273,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 			updateRecordSuppressionReasonStmt = dbConn.prepareStatement("UPDATE ils_records set suppressed=?, suppressionNotes=? where source=? and ilsId=?");
 			loadChildRecordsStmt = dbConn.prepareStatement("SELECT * from record_parents where parentRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			loadParentRecordsStmt = dbConn.prepareStatement("SELECT * from record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
@@ -467,6 +469,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Check to see if we have child records to load
 			if (processRecordLinking){
 				loadChildRecords(groupedWork, identifier);
+				loadParentRecords(groupedWork, identifier);
 			}
 		}catch (Exception e){
 			indexer.getLogEntry().incErrors("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
@@ -476,20 +479,33 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void loadChildRecords(AbstractGroupedWorkSolr groupedWork, String identifier) {
 		try {
 			loadChildRecordsStmt.setString(1, identifier);
-			ResultSet childRecords = loadChildRecordsStmt.executeQuery();
-			while (childRecords.next()){
-				String childRecordId = childRecords.getString("childRecordId");
+			ResultSet childRecordsRS = loadChildRecordsStmt.executeQuery();
+			while (childRecordsRS.next()){
+				String childRecordId = childRecordsRS.getString("childRecordId");
 				Record marcRecord = indexer.loadMarcRecordFromDatabase(profileType, childRecordId, indexer.getLogEntry());
 				if (marcRecord != null){
 					DataField titleField = marcRecord.getDataField(245);
 					if (titleField != null) {
-						String childTitle = titleField.getSubfieldsAsString("abfgnp");
+						String childTitle = titleField.getSubfieldsAsString("abfgnp", " ");
 						groupedWork.addContents(childTitle);
 					}
 				}
 			}
 		}catch (Exception e){
 			indexer.getLogEntry().incErrors("Error loading child records for MARC record with identifier " + identifier, e);
+		}
+	}
+
+	private void loadParentRecords(AbstractGroupedWorkSolr groupedWork, String identifier){
+		try {
+			loadParentRecordsStmt.setString(1, identifier);
+			ResultSet parentRecordsRS = loadParentRecordsStmt.executeQuery();
+			while (parentRecordsRS.next()){
+				String parentRecordId = parentRecordsRS.getString("parentRecordId");
+				groupedWork.addParentRecord(parentRecordId);
+			}
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error loading parent records for MARC record with identifier " + identifier, e);
 		}
 	}
 
@@ -1518,11 +1534,17 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
+		return isItemSuppressed(curItem, itemIdentifier, suppressionNotes, true);
+	}
+
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes, boolean suppressBlankStatuses) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			if (statusSubfield == null) {
-				suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
-				return new ResultWithNotes(true, suppressionNotes);
+				if (suppressBlankStatuses) {
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
+					return new ResultWithNotes(true, suppressionNotes);
+				}
 			} else {
 				String statusValue = statusSubfield.getData();
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusValue).matches()) {

@@ -557,7 +557,7 @@ class Record_AJAX extends Action
 							require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 							require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 							//Check to see if we can use VDX.  We only allow VDX if the reason is: "hold not allowed"
-							if ($return['error_code'] == 'hatErrorResponse.17286') {
+							if (isset($return['error_code']) && ($return['error_code'] == 'hatErrorResponse.17286')) {
 								$vdxSettings = new VdxSetting();
 								if ($vdxSettings->find(true)) {
 									$homeLocation = Location::getDefaultLocationForUser();
@@ -1163,19 +1163,19 @@ class Record_AJAX extends Action
 						if ($locationForLocationCode->find(true)){
 							$libraryForLocation = $locationForLocationCode->getParentLibrary();
 							foreach ($libraryForLocation->getLocations() as $libraryBranch){
-								$itemLocations[$libraryBranch->code] = $libraryBranch->code;
+								$itemLocations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
 							}
 						}
 					}
 				}else{
 					//Item can be picked up at just the owning branch
-					$itemLocations[$item->locationCode] = $item->locationCode;
+					$itemLocations[strtolower($item->locationCode)] = strtolower($item->locationCode);
 				}
 			}
 
 
 			foreach($locations as $locationKey => $location){
-				if (is_object($location) && !in_array($location->code, $itemLocations)){
+				if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
 					unset($locations[$locationKey]);
 				}
 			}

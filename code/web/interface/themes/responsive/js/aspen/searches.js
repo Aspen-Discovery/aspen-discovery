@@ -88,7 +88,13 @@ AspenDiscovery.Searches = (function(){
 			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('searchResultsDisplayMode', this.displayMode);
 			}
-			if (mode === 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
+			if (mode === 'list') {
+				$('#hideSearchCoversSwitch').show();
+				$('#hideSearchCoversSwitchModal').show();
+			} else {
+				$('#hideSearchCoversSwitch').hide();
+				$('#hideSearchCoversSwitchModal').hide();
+			}
 			location.replace(location.pathname + paramString); // reloads page without adding entry to history
 		},
 

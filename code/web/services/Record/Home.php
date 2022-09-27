@@ -27,13 +27,18 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
+
+		$hasGroupedWork = false;
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			//If the record is invalid, we only want to show the staff view to staff even if the stff view is normally displayed to general public.
-			$interface->assign('showStaffView', $interface->getVariable('showStaffView') && UserAccount::isStaff());
-			$interface->assign('invalidWork', true);
-			$this->display('invalidRecord.tpl', 'Invalid Record', '');
-			die();
+			$parentRecords = $this->recordDriver->getParentRecords();
+			if (count($parentRecords) == 0){
+				//If the record is invalid, we only want to show the staff view to staff even if the stff view is normally displayed to general public.
+				$interface->assign('showStaffView', $interface->getVariable('showStaffView') && UserAccount::isStaff());
+				$interface->assign('invalidWork', true);
+				$this->display('invalidRecord.tpl', 'Invalid Record', '');
+				die();
+			}
 		}
 
 		// Process MARC Data

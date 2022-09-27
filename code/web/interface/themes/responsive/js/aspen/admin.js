@@ -1537,5 +1537,44 @@ AspenDiscovery.Admin = (function(){
 				$('#filterValue2_' + propertyName).show();
 			}
 		},
+		getUrlOptions: function() {
+			$('#propertyRowctaUrl').hide();
+			$('#propertyRowdeepLinkId').hide();
+			$('#propertyRowdeepLinkPath').hide();
+			$('#propertyRowdeepLinkFullPath').hide();
+
+			var linkType = $("#linkTypeSelect").val();
+			if(linkType === "0" || linkType === 0) {
+				$('#propertyRowctaUrl').hide();
+				$('#propertyRowdeepLinkId').hide();
+				$('#propertyRowdeepLinkPath').show();
+			} else {
+				$('#propertyRowctaUrl').show();
+				$('#propertyRowdeepLinkId').hide();
+				$('#propertyRowdeepLinkPath').hide();
+				$('#propertyRowdeepLinkFullPath').hide();
+			}
+		},
+		getDeepLinkFullPath: function (){
+			var selectedPath = $("#deepLinkPathSelect").val();
+			if(selectedPath === "search"){
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Search Term");
+			} else if(selectedPath === "search/grouped_work") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Grouped Work Id");
+			} else if(selectedPath === "search/browse_category") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Browse Category Text Id");
+			} else if(selectedPath === "search/author") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Author");
+			} else if(selectedPath === "search/list") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("List Id");
+			} else {
+				$('#propertyRowdeepLinkId').hide();
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));

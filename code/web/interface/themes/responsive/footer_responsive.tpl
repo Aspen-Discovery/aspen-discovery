@@ -1,7 +1,7 @@
 {strip}
 <div class="navbar navbar-static-bottom">
 	<div class="navbar-inner">
-		<div class="row">
+		<div class="row {if $fullWidthTheme}row-no-gutters{/if}">
 			<div class="col-tn-12 col-sm-5 col-md-4 text-left" id="install-info">
 				<small>{translate text='Powered By Aspen Discovery supported by ByWater Solutions' isPublicFacing=true}</small><br>
 				{if !$productionServer}

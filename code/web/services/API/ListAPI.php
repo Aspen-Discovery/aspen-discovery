@@ -22,7 +22,7 @@ class ListAPI extends Action
 					header('Content-type: application/json');
 					header("Cache-Control: max-age=300");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SystemAPI', $method);
+					APIUsage::incrementStat('ListAPI', $method);
 				} else {
 					$output = json_encode(array('error' => 'invalid_method'));
 				}

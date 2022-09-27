@@ -1303,4 +1303,10 @@ class CatalogConnection
 	public function getLmsToSso() {
 		return $this->driver->lmsToSso();
 	}
+
+	public function getPatronIDChanges($searchPatronID): ?array
+	{
+		return $this->driver->getPatronIDChanges($searchPatronID);
+	}
+
 }

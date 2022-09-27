@@ -1840,6 +1840,7 @@ class Library extends DataObject
 		if($quickSearchSettings->find()) {
 			$quickSearch = new QuickSearch();
 			$quickSearch->quickSearchSettingId = $quickSearchSettings->id;
+			$quickSearch->orderBy('weight');
 			if ($quickSearch->find()) {
 				while ($quickSearch->fetch()) {
 					$quickSearches[$quickSearch->id] = clone $quickSearch;
@@ -1859,7 +1860,7 @@ class Library extends DataObject
 
 		$notificationSettings = new NotificationSetting();
 		$notificationSettings->id = $this->lidaNotificationSettingId;
-		if($notificationSettings->find()) {
+		if($notificationSettings->find(true)) {
 			$lidaNotifications = clone $notificationSettings;
 		}
 
@@ -1874,9 +1875,11 @@ class Library extends DataObject
 			$filename = $this->fetchAndStoreSsoMetadata();
 			if (!$filename instanceof AspenError) {
 				// Update the ssoMetadataFilename in the DB
-				$this->ssoMetadataFilename = $fileName;
+				$this->ssoMetadataFilename = $filename;
 			}
 			return $filename;
+		}else{
+			return false;
 		}
 	}
 

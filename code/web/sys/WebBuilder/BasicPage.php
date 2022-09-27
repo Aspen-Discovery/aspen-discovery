@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPageCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAccess.php';
+require_once ROOT_DIR . '/sys/WebBuilder/BasicPageHomeLocationAccess.php';
 require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
 
 class BasicPage extends DB_LibraryLinkedObject
@@ -23,10 +24,12 @@ class BasicPage extends DB_LibraryLinkedObject
 	private $_audiences;
 	private $_categories;
 	private $_allowAccess;
+	private $_allowableHomeLocations;
 
 	static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Basic Pages'));
+		$locationsList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Basic Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 		$patronTypeList = PType::getPatronTypeList();
@@ -42,9 +45,18 @@ class BasicPage extends DB_LibraryLinkedObject
 				'property' => 'allowAccess',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
-				'label' => 'Allow Access',
+				'label' => 'Allow Access to patrons with these PTypes',
 				'description' => 'Define what patron types should have access to the page',
 				'values' => $patronTypeList,
+				'hideInLists' => false,
+			),
+			'allowableHomeLocations' => array(
+				'property' => 'allowableHomeLocations',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Allow Access to patrons of these home locations',
+				'description' => 'Define what home locations have access to the page',
+				'values' => $locationsList,
 				'hideInLists' => false,
 			),
 			'audiences' => array(
@@ -94,6 +106,7 @@ class BasicPage extends DB_LibraryLinkedObject
 			$this->saveAudiences();
 			$this->saveCategories();
 			$this->saveAccess();
+			$this->saveAllowableHomeLocations();
 		}
 		return $ret;
 	}
@@ -106,6 +119,7 @@ class BasicPage extends DB_LibraryLinkedObject
 			$this->saveAudiences();
 			$this->saveCategories();
 			$this->saveAccess();
+			$this->saveAllowableHomeLocations();
 		}
 		return $ret;
 	}
@@ -119,6 +133,8 @@ class BasicPage extends DB_LibraryLinkedObject
 			return $this->getCategories();
 		}elseif ($name == "allowAccess") {
 			return $this->getAccess();
+		}elseif ($name == "allowableHomeLocations") {
+			return $this->getAllowableHomeLocations();
 		}else{
 			return $this->_data[$name];
 		}
@@ -133,6 +149,8 @@ class BasicPage extends DB_LibraryLinkedObject
 			$this->_categories = $value;
 		}elseif ($name == "allowAccess") {
 			$this->_allowAccess = $value;
+		}elseif ($name == "allowableHomeLocations") {
+			$this->_allowableHomeLocations = $value;
 		}else{
 			$this->_data[$name] = $value;
 		}
@@ -146,6 +164,7 @@ class BasicPage extends DB_LibraryLinkedObject
 			$this->clearAudiences();
 			$this->clearCategories();
 			$this->clearAccess();
+			$this->clearAllowableHomeLocations();
 		}
 		return $ret;
 	}
@@ -200,6 +219,19 @@ class BasicPage extends DB_LibraryLinkedObject
 			}
 		}
 		return $this->_allowAccess;
+	}
+
+	public function getAllowableHomeLocations() {
+		if (!isset($this->_allowableHomeLocations) && $this->id){
+			$this->_allowableHomeLocations = array();
+			$homeLocationAccess = new BasicPageHomeLocationAccess();
+			$homeLocationAccess->basicPageId = $this->id;
+			$homeLocationAccess->find();
+			while($homeLocationAccess->fetch()){
+				$this->_allowableHomeLocations[$homeLocationAccess->homeLocationId] = $homeLocationAccess->homeLocationId;
+			}
+		}
+		return $this->_allowableHomeLocations;
 	}
 
 	public function saveLibraries(){
@@ -262,6 +294,21 @@ class BasicPage extends DB_LibraryLinkedObject
 		}
 	}
 
+	public function saveAllowableHomeLocations(){
+		if (isset($this->_allowableHomeLocations) && is_array($this->_allowableHomeLocations)){
+			$this->clearAllowableHomeLocations();
+
+			foreach ($this->_allowableHomeLocations as $homeLocationId) {
+				$link = new BasicPageHomeLocationAccess();
+
+				$link->basicPageId = $this->id;
+				$link->homeLocationId = $homeLocationId;
+				$link->insert();
+			}
+			unset($this->_allowableHomeLocations);
+		}
+	}
+
 	private function clearLibraries()
 	{
 		//Delete links to the libraries
@@ -290,6 +337,14 @@ class BasicPage extends DB_LibraryLinkedObject
 	{
 		//Delete links to the patron types
 		$link = new BasicPageAccess();
+		$link->basicPageId = $this->id;
+		return $link->delete(true);
+	}
+
+	private function clearAllowableHomeLocations()
+	{
+		//Delete links to the patron home locations
+		$link = new BasicPageHomeLocationAccess();
 		$link->basicPageId = $this->id;
 		return $link->delete(true);
 	}
@@ -379,31 +434,50 @@ class BasicPage extends DB_LibraryLinkedObject
 			if(!$user) {
 				return false;
 			} else {
+				$okToAccess = false;
 				$userPatronType = $user->patronType;
 
 				if ($userPatronType == NULL) {
-					return true;
+					$okToAccess = true;
 				} elseif (empty($this->getAccess())){
 					//No patron types defined, everyone can access
-					return true;
+					$okToAccess = true;
 				} else {
 					$patronType = new pType();
 					$patronType->pType = $userPatronType;
 					if ($patronType->find(true)){
 						$patronTypeId = $patronType->id;
+						$patronTypeLink = new BasicPageAccess();
+						$patronTypeLink->basicPageId = $this->id;
+						$patronTypeLink->patronTypeId = $patronTypeId;
+						if ($patronTypeLink->find(true)) {
+							$okToAccess = true;
+						} else {
+							$okToAccess = false;
+						}
 					}else{
-						return false;
-					}
-
-					$patronTypeLink = new BasicPageAccess();
-					$patronTypeLink->basicPageId = $this->id;
-					$patronTypeLink->patronTypeId = $patronTypeId;
-					if ($patronTypeLink->find(true)) {
-						return true;
-					} else {
-						return false;
+						$okToAccess = false;
 					}
 				}
+
+				if ($okToAccess){
+					//Access by PType is ok, check home location
+					if ($user->homeLocationId <= 0){
+						//admin user, allow access
+						$okToAccess = true;
+					} elseif (empty($this->getAllowableHomeLocations())){
+						//No home locations defined, everyone can access
+						$okToAccess = true;
+					} else{
+						if (array_key_exists($user->homeLocationId, $this->getAllowableHomeLocations())){
+							$okToAccess = true;
+						}else{
+							$okToAccess = false;
+						}
+					}
+				}
+
+				return $okToAccess;
 			}
 		} else {
 			return true;
