@@ -142,6 +142,8 @@ class Library extends DataObject
 	public $promptForBirthDateInSelfReg;
 	public $promptForParentInSelfReg;
 	public $promptForSMSNoticesInSelfReg;
+	public $selfRegRequirePhone;
+	public $selfRegRequireEmail;
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $availableHoldDelay;
@@ -737,6 +739,8 @@ class Library extends DataObject
 					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Self Registration Locations', 3 => 'Self Registration Locations for the library'], 'label' => 'Valid Self Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
 					'selfRegistrationPasswordNotes' => array('property'=>'selfRegistrationPasswordNotes', 'type'=>'text', 'label'=>'Self Registration Password Notes', 'description'=>'Notes to be displayed when setting the password for self registration', 'hideInLists' => true, 'default' => ''),
 					'promptForBirthDateInSelfReg' => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
+					'selfRegRequirePhone' => array('property' => 'selfRegRequirePhone', 'type' => 'checkbox', 'label' => 'Self Registration requires Phone Number (Symphony Only)', 'description'=>'Whether or not phone number is required when self registering'),
+					'selfRegRequireEmail' => array('property' => 'selfRegRequireEmail', 'type' => 'checkbox', 'label' => 'Self Registration requires Email (Symphony Only)', 'description'=>'Whether or not email is required when self registering'),
 					'promptForParentInSelfReg' => array('property' => 'promptForParentInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Parent Information (Symphony Only)', 'description'=>'Whether or not parent information should be requested if the person registering is a juvenile.'),
 					'promptForSMSNoticesInSelfReg' => array('property' => 'promptForSMSNoticesInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For SMS Notices (Symphony Only)', 'description'=>'Whether or not SMS Notification information should be requested'),
 					'useAllCapsWhenSubmittingSelfRegistration' => array('property' => 'useAllCapsWhenSubmittingSelfRegistration', 'type' => 'checkbox', 'label' => 'Use All Caps When Submitting Self Registration', 'description'=>'Whether or not self registration will be submitted using all caps'),

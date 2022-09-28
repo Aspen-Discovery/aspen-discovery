@@ -91,7 +91,15 @@ function getUpdates22_10_00() : array
 				"ALTER TABLE library add column promptForParentInSelfReg tinyint(1) NOT NULL DEFAULT '0'",
 				"ALTER TABLE library ADD column promptForSMSNoticesInSelfReg tinyint(1) NOT NULL DEFAULT '0'",
 			]
-		], //location_self_registration_branch
+		], //self_registration_parent_sms
+		'self_registration_require_phone_and_email' => [
+			'title' => 'Library - Self Registration Require Phone and email',
+			'description' => 'Allow determination of if phone and email are required for self registration',
+			'sql' => [
+				"ALTER TABLE library add column selfRegRequirePhone tinyint(1) NOT NULL DEFAULT '0'",
+				"ALTER TABLE library ADD column selfRegRequireEmail tinyint(1) NOT NULL DEFAULT '1'",
+			]
+		], //self_registration_require_phone_and_email
 //		'grouped_work_parents' => [
 //			'title' => 'Grouped Work Parents',
 //			'description' => 'Add a table to define parents for a grouped work',

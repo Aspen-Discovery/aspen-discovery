@@ -2595,13 +2595,13 @@ class SirsiDynixROA extends HorizonAPI
 		}
 
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
-		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=> $library->selfRegRequirePhone);
 		if ($library->promptForSMSNoticesInSelfReg){
 			$fields['contactInformationSection']['properties'][] = array('property'=>'smsNotices',  'type'=>'checkbox', 'label'=>'Receive notices via text', 'onchange'=>'AspenDiscovery.Account.updateSelfRegistrationFields()');
 			$fields['contactInformationSection']['properties'][] = array('property'=>'cellPhone', 'type'=>'text',  'label'=>'Cell Phone', 'maxLength'=>15, 'required'=>false, 'hiddenByDefault'=>true);
 		}
-		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
-		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => $library->selfRegRequireEmail);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => $library->selfRegRequireEmail);
 		return $fields;
 	}
 
