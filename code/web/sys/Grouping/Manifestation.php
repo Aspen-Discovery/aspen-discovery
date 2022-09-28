@@ -375,6 +375,12 @@ class Grouping_Manifestation
 		return $this->_statusInformation->getCopies();
 	}
 
+	public function getNumAvailableCopies()
+	{
+		return $this->_statusInformation->getAvailableCopies();
+	}
+
+
 	function getNumberOfCopiesMessage()
 	{
 		return $this->_statusInformation->getNumberOfCopiesMessage();
