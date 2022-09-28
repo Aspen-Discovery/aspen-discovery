@@ -1262,6 +1262,47 @@ class SearchAPI extends Action
 		return $response;
 	}
 
+	private function getAppSuggestionsBrowseCategoryResults(int $pageToLoad, int $pageSize, &$response = [])
+	{
+		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+			return array('success' => false, 'message' => 'The username and password must be provided to load system recommendations.');
+		}
+
+		$username = $_REQUEST['username'];
+		$password = $_REQUEST['password'];
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user == false) {
+			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+		}
+
+			$response['label'] = translate(['text' => 'Recommended for you', 'isPublicFacing'=>true]);
+			$response['searchUrl'] = '/MyAccount/SuggestedTitles';
+
+			require_once ROOT_DIR . '/sys/Suggestions.php';
+			$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,$pageSize, $user);
+			$records = array();
+			foreach ($suggestions as $suggestedItemId => $suggestionData) {
+				$record = $suggestionData['titleInfo'];
+				unset($record['auth_author']);
+				unset($record['auth_authorStr']);
+				unset($record['callnumber-first-code']);
+				unset($record['spelling']);
+				unset($record['callnumber-first']);
+				unset($record['title_auth']);
+				unset($record['callnumber-subject']);
+				unset($record['author-letter']);
+				unset($record['marc_error']);
+				unset($record['shortId']);
+				$records[] = $record;
+			}
+
+			$response['records'] = $records;
+			$response['numRecords'] = count($suggestions);
+
+		return $response;
+	}
+
 	private function getSavedSearchBrowseCategoryResults(int $pageSize, $id = null, $appUser = null)
 	{
 
@@ -1642,7 +1683,9 @@ class SearchAPI extends Action
 
 			if ($browseCategory->find(true)) {
 				if ($browseCategory->textId == 'system_recommended_for_you') {
-					$this->getSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
+					$records = $this->getAppSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
+					$response['key'] = $browseCategory->textId;
+					$response['records'] = $records['records'];
 				} else {
 					if ($browseCategory->source == 'List') {
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
