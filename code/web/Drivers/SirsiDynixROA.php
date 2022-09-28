@@ -505,11 +505,12 @@ class SirsiDynixROA extends HorizonAPI
 			if (!empty($_REQUEST['birthDate'])) {
 				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
-			if (isset($_REQUEST['parentName'])) {
-				$createPatronInfoParameters['fields']['CAREOF'] = $this->getPatronFieldValue(trim($_REQUEST['parentName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
 
 			// Update Address Field with new data supplied by the user
+			if (isset($_REQUEST['parentName'])) {
+				$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['parentName'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+			}
+
 			if (isset($_REQUEST['email'])) {
 				$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
@@ -540,6 +541,36 @@ class SirsiDynixROA extends HorizonAPI
 						'resource' => '/policy/library'
 					);
 				}
+			}
+
+			//If the user is opted in to SMS messages, set up their notifications automatically.
+			if (!empty($_REQUEST['smsNotices']) && !empty($_REQUEST['cellPhone'])){
+				$defaultCountryCode = '';
+				$getCountryCodesResponse = $this->getWebServiceResponse('getMessagingSettings', $webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $staffSessionToken);
+				foreach ($getCountryCodesResponse as $countryCodeInfo){
+					//This gets flipped later
+					if ($countryCodeInfo->fields->isDefault) {
+						$defaultCountryCode = $countryCodeInfo->key;
+						break;
+					}
+				}
+				$cellPhoneInfo = [
+					'resource' => '/user/patron/phone',
+					'fields' => [
+						'label' => 'Cell phone',
+						'countryCode' => [
+							'resource' => '/policy/countryCode',
+							'key' => $defaultCountryCode,
+						],
+						'number' => $_REQUEST['cellPhone'],
+						'bills' => false,
+						'general' => false,
+						'holds' => true,
+						'manual' => true,
+						'overdues' => true
+					]
+				];
+				$createPatronInfoParameters['fields']['phoneList'][] = $cellPhoneInfo;
 			}
 
 			//TODO: We should be able to create either a random barcode or a barcode starting with a specific prefix and choose the length.
