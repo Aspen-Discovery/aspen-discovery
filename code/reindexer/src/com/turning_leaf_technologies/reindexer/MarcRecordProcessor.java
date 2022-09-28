@@ -1635,14 +1635,14 @@ abstract class MarcRecordProcessor {
 				} else {
 					if (sysDetailsValue.contains("playaway")) {
 						result.add("Playaway");
+					} else if (sysDetailsValue.contains("4k") && (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray"))) {
+						result.add("4K Blu-ray");
 					} else if (dvdBlurayComboRegex.matcher(sysDetailsValue).matches()) {
 						result.add("Blu-ray/DVD");
 					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 						result.add("Blu-ray");
 					} else if (sysDetailsValue.contains("dvd") && !sysDetailsValue.contains("dvd-rom")) {
 						result.add("DVD");
-					} else if (sysDetailsValue.contains("4k ultra hd blu-ray")) {
-						result.add("4K Blu-ray");
 					} else if (sysDetailsValue.contains("vertical file")) {
 						result.add("VerticalFile");
 					}
