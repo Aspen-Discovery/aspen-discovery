@@ -84,6 +84,14 @@ function getUpdates22_10_00() : array
 				"UPDATE location set validSelfRegistrationBranch = validHoldPickupBranch",
 			]
 		], //location_self_registration_branch
+		'self_registration_parent_sms' => [
+			'title' => 'Library - Self Registration Parent & SMS Notices',
+			'description' => 'Allow determination of which branches are valid for self registration',
+			'sql' => [
+				"ALTER TABLE library add column promptForParentInSelfReg tinyint(1) NOT NULL DEFAULT '0'",
+				"ALTER TABLE library ADD column promptForSMSNoticesInSelfReg tinyint(1) NOT NULL DEFAULT '0'",
+			]
+		], //location_self_registration_branch
 //		'grouped_work_parents' => [
 //			'title' => 'Grouped Work Parents',
 //			'description' => 'Add a table to define parents for a grouped work',

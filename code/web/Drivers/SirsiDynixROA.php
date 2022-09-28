@@ -505,6 +505,9 @@ class SirsiDynixROA extends HorizonAPI
 			if (!empty($_REQUEST['birthDate'])) {
 				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
+			if (isset($_REQUEST['parentName'])) {
+				$createPatronInfoParameters['fields']['CAREOF'] = $this->getPatronFieldValue(trim($_REQUEST['parentName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+			}
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
@@ -2529,9 +2532,15 @@ class SirsiDynixROA extends HorizonAPI
 		}
 
 		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
-		$fields['identitySection']['properties'][] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
-		$fields['identitySection']['properties'][] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
-		$fields['identitySection']['properties'][] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
+		if ($library->promptForParentInSelfReg){
+			$fields['identitySection']['properties'][] = array('property'=>'cardType', 'type'=>'enum', 'values'=>['adult'=>'Adult (18 and Over)', 'minor'=>'Minor (Under 18)'], 'label'=>'Type of Card', 'onchange'=>'AspenDiscovery.Account.updateSelfRegistrationFields()');
+		}
+		$fields['identitySection']['properties'][] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 255, 'required' => true);
+		$fields['identitySection']['properties'][] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 255, 'required' => false);
+		$fields['identitySection']['properties'][] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 255, 'required' => true);
+		if ($library->promptForParentInSelfReg){
+			$fields['identitySection']['properties'][] = array('property'=>'parentName', 'type'=>'text', 'label'=>'Parent/Guardian Name', 'maxLength' => 255, 'required' => false, 'hiddenByDefault'=>true);
+		}
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
@@ -2539,8 +2548,8 @@ class SirsiDynixROA extends HorizonAPI
 		}
 
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
-		$fields['mainAddressSection']['properties'][] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
-		$fields['mainAddressSection']['properties'][] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 255, 'required' => true);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 255, 'required' => true);
 		if (empty($library->validSelfRegistrationStates)){
 			$fields['mainAddressSection']['properties'][] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
 		}else{
@@ -2548,7 +2557,7 @@ class SirsiDynixROA extends HorizonAPI
 			$validStates = array_combine($validStates, $validStates);
 			$fields['mainAddressSection']['properties'][] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
-		$fields['mainAddressSection']['properties']['zip'] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		$fields['mainAddressSection']['properties']['zip'] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 10, 'required' => true);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
 			$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
@@ -2556,6 +2565,10 @@ class SirsiDynixROA extends HorizonAPI
 
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
 		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
+		if ($library->promptForSMSNoticesInSelfReg){
+			$fields['contactInformationSection']['properties'][] = array('property'=>'smsNotices',  'type'=>'checkbox', 'label'=>'Receive notices via text', 'onchange'=>'AspenDiscovery.Account.updateSelfRegistrationFields()');
+			$fields['contactInformationSection']['properties'][] = array('property'=>'cellPhone', 'type'=>'text',  'label'=>'Cell Phone', 'maxLength'=>15, 'required'=>false, 'hiddenByDefault'=>true);
+		}
 		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
 		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
 		return $fields;

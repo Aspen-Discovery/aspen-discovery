@@ -1601,7 +1601,25 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-
+		updateSelfRegistrationFields:function(){
+			var cardTypeSelect = $('#cardTypeSelect');
+			if (cardTypeSelect){
+				var selectedValue = $('#cardTypeSelect option:selected').val();
+				if (selectedValue === 'adult'){
+					$('#propertyRowparentName').hide();
+				}else{
+					$('#propertyRowparentName').show();
+				}
+			}
+			var smsNotices = $("#smsNotices");
+			if (smsNotices){
+				if (smsNotices.prop("checked")){
+					$('#propertyRowcellPhone').show();
+				}else{
+					$('#propertyRowcellPhone').hide();
+				}
+			}
+		},
 		showSaveToListForm:function (trigger, source, id) {
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();
