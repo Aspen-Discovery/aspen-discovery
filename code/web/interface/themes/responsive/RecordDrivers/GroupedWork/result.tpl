@@ -9,7 +9,7 @@
 			{if $showCovers}
 				<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center" aria-hidden="true" role="presentation">
 					{if $disableCoverArt != 1}
-						<div class="listResultImage img-thumbnail">
+						<div class="listResultImage img-thumbnail {$coverStyle}">
 							<a href="{$summUrl}" tabindex="-1">
 								{if $isNew}<span class="list-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
 								<img src="{$bookCoverUrlMedium}" alt="{$summTitle|removeTrailingPunctuation|escape:css}">

@@ -2491,25 +2491,27 @@ class SirsiDynixROA extends HorizonAPI
 
 		$pickupLocations = array();
 		$location = new Location();
+		//0 = no restrictions (ignore location setting)
 		if ($library->selfRegistrationLocationRestrictions == 1) {
-			//Library Locations
+			//All Library Locations (ignore location setting)
 			$location->libraryId = $library->libraryId;
 		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
 			//Valid pickup locations
-			$location->whereAdd('validHoldPickupBranch <> 2');
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
 			$location->orderBy('isMainBranch DESC, displayName');
 		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
 			//Valid pickup locations
 			$location->libraryId = $library->libraryId;
-			$location->whereAdd('validHoldPickupBranch <> 2');
+			$location->whereAdd('validSelfRegistrationBranch <> 2');
 			$location->orderBy('isMainBranch DESC, displayName');
 		}
 		if ($location->find()) {
 			while ($location->fetch()) {
 				$pickupLocations[$location->code] = $location->displayName;
 			}
-			asort($pickupLocations);
-			array_unshift($pickupLocations, translate(['text'=>'Please select a location', 'isPublicFacing'=>true]));
+			if (count($pickupLocations) > 1) {
+				array_unshift($pickupLocations, translate(['text' => 'Please select a location', 'isPublicFacing' => true]));
+			}
 		}
 
 		global $library;

@@ -301,6 +301,8 @@ class Theme extends DataObject
 	public $bodyFontDefault;
 	public $customBodyFont;
 
+	public $coverStyle;
+
 	public $additionalCssType;
 	public $additionalCss;
 
@@ -359,6 +361,11 @@ class Theme extends DataObject
 			'Ubuntu',
 		];
 
+		$coverStyles = [
+			"border" => 'Border / Picture Frame',
+			"floating" => 'Shadow / Floating'
+		];
+
 		$themesToExtend = [];
 		$themesToExtend[''] = 'None';
 		$theme = new Theme();
@@ -375,6 +382,7 @@ class Theme extends DataObject
 			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (1170 x 250px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'thumbWidth' => 750, 'maxWidth' => 1170, 'maxHeight' => 250, 'hideInLists' => true],
 			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab (.jpg and .png files supported)', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
 			'logoApp' => ['property' => 'logoApp', 'type' => 'image', 'label' => 'Logo for Aspen LiDA (512x512 pixels)', 'description' => 'The logo for use in Aspen LiDA, if none provided will use favicon', 'required' => false, 'thumbWidth' => 180, 'maxWidth' => 512, 'maxHeight' => 512, 'hideInLists' => true],
+			'coverStyle' => ['property' => 'coverStyle', 'type' => 'enum', 'values' => $coverStyles, 'label' => 'Cover Image Style', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'required' => false, 'hideInLists' => true],
 
 			//Overall page colors
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
