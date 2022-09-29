@@ -45,7 +45,7 @@ function getUpdates22_10_00() : array
 			'description' => 'Add Child Records Section to More Details',
 			'sql' => [
 				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 3",
-				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'childRecords', 0, 3 from grouped_work_display_settings",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'childRecords', 0, 3 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
 			]
 		], //add_childRecords_more_details_section
 		'add_child_title_to_record_parents' => [
@@ -60,7 +60,7 @@ function getUpdates22_10_00() : array
 			'description' => 'Add Parent Records Section to More Details',
 			'sql' => [
 				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 2",
-				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
 			]
 		], //add_parentRecords_more_details_section
 		'basic_page_allow_access_by_home_location' => [
@@ -100,6 +100,14 @@ function getUpdates22_10_00() : array
 				"ALTER TABLE library ADD column selfRegRequireEmail tinyint(1) NOT NULL DEFAULT '1'",
 			]
 		], //self_registration_require_phone_and_email
+		'add_holdings_more_details_section' => [
+			'title' => 'Add Holdings Records Section to More Details',
+			'description' => 'Add Holdings Records Section to More Details',
+			'sql' => [
+				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 4",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'marcHoldings', 0, 4 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
+			]
+		], //add_parentRecords_more_details_section
 //		'grouped_work_parents' => [
 //			'title' => 'Grouped Work Parents',
 //			'description' => 'Add a table to define parents for a grouped work',

@@ -1430,6 +1430,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			);
 		}
 
+		//Check to see if the record has marc holdings (in 852, 853, 866)
+		$marcHoldings = $this->getMarcHoldings();
+		if (count($marcHoldings) > 0){
+			$interface->assign('marcHoldings', $marcHoldings);
+			$moreDetailsOptions['marcHoldings'] = array(
+				'label' => 'Library Holdings',
+				'body' => $interface->fetch('Record/view-marc-holdings.tpl'),
+			);
+		}
+
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
@@ -2185,6 +2195,74 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getRelatedRecord() {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+	}
+
+	private function getMarcHoldings()
+	{
+		$marcHoldings = [];
+		$marcRecord = $this->getMarcRecord();
+		if ($marcRecord){
+			//Get holdings information
+			$marc852Fields = $marcRecord->getFields('852');
+			if (count($marc852Fields) > 0){
+				$location = new Location();
+				$libraryCodeToDisplayName = $location->fetchAll('code', 'displayName', true);
+
+				$indexingProfile = $this->getIndexingProfile();
+				$shelfLocationTranslationMap = new TranslationMap();
+				$shelfLocationTranslationMap->indexingProfileId = $indexingProfile->id;
+				$shelfLocationTranslationMap->name = 'shelf_location';
+				$shelfLocationTranslationMapValues = [];
+				if (!$shelfLocationTranslationMap->find(true)){
+					$shelfLocationTranslationMap = null;
+				}else{
+					$shelfLocationTranslationMapValue = new TranslationMapValue();
+					$shelfLocationTranslationMapValue->translationMapId = $shelfLocationTranslationMap->id;
+					$shelfLocationTranslationMapValues = $shelfLocationTranslationMapValue->fetchAll('value', 'translation', true);
+				}
+
+				//$marc853Fields = $marcRecord->getFields('853');
+				$marc866Fields = $marcRecord->getFields('866');
+				//@var File_MARC_Data_Field $marc82Field
+				foreach ($marc852Fields as $marc852Field){
+					$marc852subfield6 = $marc852Field->getSubfield('6');
+					if ($marc852subfield6 != false){
+						$marc852subfield6Data = $marc852subfield6->getData();
+						$marcHolding = [];
+						$owningLibrary = strtolower($marc852Field->getSubfield('b')->getData());
+						if (array_key_exists($owningLibrary, $libraryCodeToDisplayName)){
+							$owningLibrary = $libraryCodeToDisplayName[$owningLibrary];
+						}
+						$marcHolding['library'] = $owningLibrary;
+						$shelfLocation = strtolower($marc852Field->getSubfield('c')->getData());
+						if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)){
+							$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+						}
+						$marcHolding['shelfLocation'] = $shelfLocation;
+						//Nothing super useful in 853, ignore it for now
+						//Load what is held in the 866
+						foreach ($marc866Fields as $marc866Field) {
+							$marc866subfield6 = $marc866Field->getSubfield('6');
+							if ($marc866subfield6 != false) {
+								$marc866subfield6Data = $marc866subfield6->getData();
+								if ($marc866subfield6Data == $marc852subfield6Data){
+									$marc866subfieldA = $marc866Field->getSubfield('a');
+									if ($marc866subfieldA != false) {
+										$marcHolding['holdings'] = $marc866subfieldA->getData();
+									}
+								}
+							}
+						}
+						$marcHoldings[] = $marcHolding;
+					}
+					$sorter = function($a, $b) {
+						return strcasecmp($a['library'], $b['library']);
+					};
+					uasort($marcHoldings, $sorter);
+				}
+			}
+		}
+		return $marcHoldings;
 	}
 }
 
