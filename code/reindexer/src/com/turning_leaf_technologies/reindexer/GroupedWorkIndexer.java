@@ -2350,8 +2350,8 @@ public class GroupedWorkIndexer {
 
 			List<DataField> additional866s = recordWithAdditionalItems.getDataFields(866);
 			for (DataField additionalItem : additional866s) {
-				if (marcFactory != null && additionalItem.getSubfield('8') == null){
-					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('8', marcIndex));
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
 				}
 				mergedRecord.addVariableField(additionalItem);
 			}
