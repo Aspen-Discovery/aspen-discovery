@@ -531,6 +531,7 @@ public class EvolveExportMain {
 			}catch (SQLException e){
 				logEntry.incErrors("Error updating when the records were last indexed", e);
 			}
+			logEntry.saveResults();
 		}
 
 		try {
