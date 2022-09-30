@@ -564,7 +564,7 @@ class SirsiDynixROA extends HorizonAPI
 						],
 						'number' => $_REQUEST['cellPhone'],
 						'bills' => false,
-						'general' => false,
+						'general' => true,
 						'holds' => true,
 						'manual' => true,
 						'overdues' => true
