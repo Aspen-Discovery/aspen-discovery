@@ -2199,6 +2199,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	private function getMarcHoldings()
 	{
+		$localMarcHoldings = [];
 		$marcHoldings = [];
 		$marcRecord = $this->getMarcRecord();
 		if ($marcRecord){
@@ -2207,6 +2208,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			if (count($marc852Fields) > 0){
 				$location = new Location();
 				$libraryCodeToDisplayName = $location->fetchAll('code', 'displayName', true);
+
+				global $library;
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$localLocationCodes = $location->fetchAll('code', 'displayName', true);
 
 				$indexingProfile = $this->getIndexingProfile();
 				$shelfLocationTranslationMap = new TranslationMap();
@@ -2229,9 +2235,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if ($marc852subfield6 != false){
 						$marc852subfield6Data = $marc852subfield6->getData();
 						$marcHolding = [];
-						$owningLibrary = strtolower($marc852Field->getSubfield('b')->getData());
-						if (array_key_exists($owningLibrary, $libraryCodeToDisplayName)){
-							$owningLibrary = $libraryCodeToDisplayName[$owningLibrary];
+						$owningLibraryCode = strtolower($marc852Field->getSubfield('b')->getData());
+						if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)){
+							$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+						}else{
+							$owningLibrary = $owningLibraryCode;
 						}
 						$marcHolding['library'] = $owningLibrary;
 						$shelfLocation = strtolower($marc852Field->getSubfield('c')->getData());
@@ -2253,12 +2261,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 								}
 							}
 						}
-						$marcHoldings[] = $marcHolding;
+						if (array_key_exists($owningLibraryCode, $localLocationCodes)){
+							$localMarcHoldings[] = $marcHolding;
+						}else{
+							$marcHoldings[] = $marcHolding;
+						}
 					}
 					$sorter = function($a, $b) {
 						return strcasecmp($a['library'], $b['library']);
 					};
 					uasort($marcHoldings, $sorter);
+					uasort($localMarcHoldings, $sorter);
+					$marcHoldings = $localMarcHoldings + $marcHoldings;
 				}
 			}
 		}
