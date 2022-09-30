@@ -290,8 +290,8 @@ public class EvolveExportMain {
 
 				//Get a list of holdings that have changed from the last update time
 				String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
-				//We'll extract in no more than one hour increments
-				long endTime = lastExtractTime + (60 * 60 * 1000L);
+				//We'll extract in no more than 6 hour increments
+				long endTime = lastExtractTime + (6 * 60 * 60 * 1000L);
 				String formattedEndTime = null;
 				if (endTime > now){
 					moreToLoad = false;
@@ -320,7 +320,7 @@ public class EvolveExportMain {
 
 							try {
 								if (curItem.isNull("ID")) {
-									//The item is not attached to an bib?
+									//The item is not attached to a bib?
 									continue;
 								}
 								String bibId = curItem.getString("ID");
@@ -334,7 +334,7 @@ public class EvolveExportMain {
 										for (DataField existingItemField : existingItemFields) {
 											Subfield existingBarcodeSubfield = existingItemField.getSubfield(indexingProfile.getBarcodeSubfield());
 											if (existingBarcodeSubfield == null) {
-
+												//Just skip this item
 											} else {
 												if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
 													isExistingItem = true;
