@@ -56,7 +56,13 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$searchLocation = Location::getSearchLocation($searchSource);
 		if ($searchLocation != null){
 			if (($a->isLocallyOwned() && $b->isLocallyOwned()) || (!$a->isLocallyOwned() && !$b->isLocallyOwned())){
-				return 0;
+				if (($a->isLocallyHoldable() && $b->isLocallyHoldable()) || (!$a->isLocallyHoldable() && !$b->isLocallyHoldable())){
+					return 0;
+				}elseif (!$a->isLocallyHoldable() && $b->isLocallyHoldable()){
+					return 1;
+				}else{
+					return -1;
+				}
 			}elseif (!$a->isLocallyOwned() && $b->isLocallyOwned()){
 				return 1;
 			}else{
@@ -64,7 +70,13 @@ class GroupedWorkDriver extends IndexRecordDriver
 			}
 		}else{
 			if (($a->isLibraryOwned() && $b->isLibraryOwned()) || (!$a->isLibraryOwned() && !$b->isLibraryOwned())){
-				return 0;
+				if (($a->isLocallyHoldable() && $b->isLocallyHoldable()) || (!$a->isLocallyHoldable() && !$b->isLocallyHoldable())){
+					return 0;
+				}elseif (!$a->isLocallyHoldable() && $b->isLocallyHoldable()){
+					return 1;
+				}else{
+					return -1;
+				}
 			}elseif (!$a->isLibraryOwned() && $b->isLibraryOwned()){
 				return 1;
 			}else{
