@@ -270,6 +270,7 @@ public class EvolveExportMain {
 		}
 		long ninetyDaysAgo = new Date().getTime() - (90 * 24 * 60 * 60 * 1000L);
 		if (lastExtractTime < ninetyDaysAgo){
+			logEntry.addNote("Last Extract Time is more than 90 days ago, resetting to only load the next 90 days. ");
 			lastExtractTime = ninetyDaysAgo;
 		}
 		int numProcessed = 0;
@@ -290,8 +291,8 @@ public class EvolveExportMain {
 
 				//Get a list of holdings that have changed from the last update time
 				String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
-				//We'll extract in no more than 6 hour increments
-				long endTime = lastExtractTime + (6 * 60 * 60 * 1000L);
+				//We'll extract in no more than 8 hour increments
+				long endTime = lastExtractTime + (8 * 60 * 60 * 1000L);
 				String formattedEndTime = null;
 				if (endTime > now){
 					moreToLoad = false;
@@ -392,6 +393,10 @@ public class EvolveExportMain {
 					} catch (JSONException e) {
 						logEntry.incErrors("Unable to parse JSON for loading changed holdings", e);
 					}
+				}else{
+					logEntry.incErrors("Error searching catalog for recently changed holdings " + changedHoldingsResponse.getResponseCode() + " " + changedHoldingsResponse.getMessage());
+					//Just quit, we can try again on the next run
+					break;
 				}
 
 				String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
@@ -418,7 +423,13 @@ public class EvolveExportMain {
 								if (reader.hasNext()) //noinspection GrazieInspection
 								{
 									String bibId = curRow.getString("ID");
-									Record marcRecord = reader.next();
+									Record marcRecord;
+									try {
+										marcRecord = reader.next();
+									} catch (Exception e){
+										logEntry.incErrors("Error loading existing marc record for bib " + bibId);
+										continue;
+									}
 
 									List<ControlField> controlFields = marcRecord.getControlFields();
 									ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
@@ -500,12 +511,25 @@ public class EvolveExportMain {
 					}
 				} else {
 					logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
+					//Just quit, we can try again on the next run
+					break;
 				}
 
 				//Also ask for holdings modified from a specific date
 
 			} else {
 				logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
+			}
+			try {
+				if (!logEntry.hasErrors()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+					updateVariableStmt.setLong(1, lastExtractTime  / 1000);
+					updateVariableStmt.setLong(2, indexingProfile.getId());
+					updateVariableStmt.executeUpdate();
+					updateVariableStmt.close();
+				}
+			}catch (SQLException e){
+				logEntry.incErrors("Error updating when the records were last indexed", e);
 			}
 		}
 
