@@ -339,7 +339,11 @@ public class EvolveExportMain {
 												if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
 													isExistingItem = true;
 													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+													if (curItem.isNull("CallNumber")){
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
+													}else{
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+													}
 													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
 													if (curItem.isNull("DueDate")) {
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
@@ -358,7 +362,11 @@ public class EvolveExportMain {
 											Double holdingId = curItem.getDouble("HoldingID");
 											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), Integer.toString(holdingId.intValue()), marcFactory);
 											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+											if (curItem.isNull("CallNumber")){
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
+											}else{
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+											}
 											MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
 											if (curItem.isNull("DueDate")) {
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
@@ -389,7 +397,7 @@ public class EvolveExportMain {
 				String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
 				if (formattedEndTime != null){
 					getBibUrl += "|ModifiedToDTM=" + formattedEndTime;
-					logEntry.addNote("Loading changed items from " + formattedExtractTime + " to " + formattedEndTime);
+					logEntry.addNote("Loading changed bibs from " + formattedExtractTime + " to " + formattedEndTime);
 				}else{
 					logEntry.addNote("Loading changed bibs from " + formattedExtractTime);
 				}
