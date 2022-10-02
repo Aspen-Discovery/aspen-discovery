@@ -60,6 +60,7 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	//Full record display
 	public $show856LinksAsTab;
+	public $show856LinksAsAccessOnlineButtons;
 	public $showCheckInGrid;
 	public $showStaffView;
 	public $showLCSubjects; // Library of Congress Subjects
@@ -176,6 +177,7 @@ class GroupedWorkDisplaySetting extends DataObject
 			'fullRecordSection' => array('property' => 'fullRecordSection', 'type' => 'section', 'label' => 'Full Record Display', 'renderAsHeading' => true, 'hideInLists' => true,
 				'helpLink' => '', 'properties' => array(
 					'show856LinksAsTab' => array('property' => 'show856LinksAsTab', 'type' => 'checkbox', 'label' => 'Show 856 Links in their own section', 'description' => 'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.', 'hideInLists' => true, 'default' => 1),
+					'show856LinksAsAccessOnlineButtons' => array('property' => 'show856LinksAsAccessOnlineButtons', 'type' => 'checkbox', 'label' => 'Show 856 Links as Access Online Buttons', 'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.', 'hideInLists' => true, 'default' => 0),
 					'showCheckInGrid' => array('property' => 'showCheckInGrid', 'type' => 'checkbox', 'label' => 'Show Check-in Grid', 'description' => 'Whether or not the check-in grid is shown for periodicals.', 'default' => 1, 'hideInLists' => true,),
 					'showStaffView' => array('property' => 'showStaffView', 'type' => 'enum', 'values' => [0 => 'Do not show', 1 => 'Show for all users', 2 => 'Show for staff only'], 'label' => 'Show Staff View', 'description' => 'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default' => 1),
 					'showLCSubjects' => array('property' => 'showLCSubjects', 'type' => 'checkbox', 'label' => 'Show Library of Congress Subjects', 'description' => 'Whether or not standard (LC) subjects are displayed in full record view.', 'hideInLists' => true, 'default' => true),

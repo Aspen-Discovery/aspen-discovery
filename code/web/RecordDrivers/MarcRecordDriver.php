@@ -943,7 +943,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($this->_actions === null) {
 			$this->_actions = array();
 			global $interface;
-			global $library;
 
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
@@ -953,6 +952,36 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$treatVolumeHoldsAsItemHolds = $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
 
 			if (isset($interface)) {
+				global $library;
+				$searchLocation = Location::getSearchLocation(null);
+
+				if ($searchLocation) {
+					$show856LinksAsAccessOnlineButtons = $searchLocation->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+				} else {
+					$show856LinksAsAccessOnlineButtons = $library->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+				}
+
+				if ($show856LinksAsAccessOnlineButtons){
+					//Get any 856 links for the marc record
+					$marcRecord = $this->getMarcRecord();
+					$marc856Fields = $marcRecord->getFields('856');
+					/** @var File_MARC_Data_Field $marc856Field */
+					foreach ($marc856Fields as $marc856Field){
+						if ($marc856Field->getIndicator(1) == '4' && $marc856Field->getIndicator(2) == '0'){
+							$subfieldU = $marc856Field->getSubfield('u');
+							if ($subfieldU != null){
+								$linkDestination = $subfieldU->getData();
+								$this->_actions[] = array(
+									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+									'url' => $linkDestination,
+									'requireLogin' => false,
+									'type' => 'marc_access_online'
+								);
+							}
+						}
+					}
+				}
+
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
 				} else {

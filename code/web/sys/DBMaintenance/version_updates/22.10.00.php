@@ -107,19 +107,14 @@ function getUpdates22_10_00() : array
 				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 4",
 				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'marcHoldings', 0, 4 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
 			]
-		], //add_parentRecords_more_details_section
-//		'grouped_work_parents' => [
-//			'title' => 'Grouped Work Parents',
-//			'description' => 'Add a table to define parents for a grouped work',
-//			'sql' => [
-//				'CREATE TABLE IF NOT EXISTS grouped_work_parents(
-//					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					childWorkId CHAR(40) collate utf8_bin,
-//					parentWorkId CHAR(40) collate utf8_bin,
-//					UNIQUE (childWorkId, parentWorkId)
-//				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
-//			]
-//		], //grouped_work_parents
+		], //add_holdings_more_details_section
+		'grouped_work_display_856_as_access_online' => [
+			'title' => 'Add 856 links as access online buttons to grouped work display settings',
+			'description' => 'Allow 856 links to be shown as access online buttons',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN show856LinksAsAccessOnlineButtons TINYINT(1) DEFAULT 0",
+			]
+		], //grouped_work_display_856_as_access_online
 
 		//kirstien
 		'aci_speedpay_sdk_config' => [
