@@ -614,7 +614,7 @@ class Search_Results extends ResultsAction {
 					$globalSearchObject->processSearch(false, false, false);
 					if ($globalSearchObject->getResultTotal() > 0) {
 						$interface->assign('hasGlobalResults', true);
-						$interface->assign('globalResultsLink', $globalSearchObject->renderSearchUrl());
+						$interface->assign('globalResultsLink', $globalSearchObject->renderLinkWithFilter('availability_toggle', 'global'));
 						$interface->assign('globalResultsCount', $globalSearchObject->getResultTotal());
 						$interface->assign('globalScopeLabel', $superScopeLabel);
 						return true;
