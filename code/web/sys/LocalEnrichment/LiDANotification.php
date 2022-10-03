@@ -28,8 +28,8 @@ class LiDANotification extends DB_LibraryLocationLinkedObject
 	protected $_ptypes;
 
 	static function getObjectStructure() : array{
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Send Notifications'));
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Send Notifications to All Libraries'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications to All Locations') || UserAccount::userHasPermission('Send Notifications to Home Library Locations'));
 		$ptypeList = PType::getPatronTypeList();
 
 		$ctaType = [0 => 'A specific screen in the app', 1 => 'An external website'];
