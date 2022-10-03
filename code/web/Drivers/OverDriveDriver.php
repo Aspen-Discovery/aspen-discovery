@@ -837,6 +837,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 			$user->clearCache();
 			$user->clearCachedAccountSummaryForSource('overdrive');
+			$user->forceReloadOfHolds();
 		}else{
 			$holdResult['message'] = translate(['text' => 'Sorry, but we could not place a hold for you on this title.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";

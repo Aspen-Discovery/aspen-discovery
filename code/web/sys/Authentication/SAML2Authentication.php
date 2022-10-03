@@ -7,10 +7,12 @@ class SAML2Authentication {
     public $as;
 	public $configProperties;
 	public $requestMap;
+	public $returnTo;
 
-    public function __construct() {
+    public function __construct($returnUrl = '/saml2auth.php') {
         $this->as = new \SimpleSAML\Auth\Simple('default-sp');
 		$this->configProperties = $this->SAMLConfigProperties();
+		$this->returnTo = $returnUrl;
     }
 
     public function authenticate($idp) {
@@ -18,7 +20,7 @@ class SAML2Authentication {
             $this->as->login(array(
                 'saml:idp' => $idp,
                 'KeepPost' => FALSE,
-                'ReturnTo' => '/saml2auth.php',
+                'ReturnTo' => $this->returnTo
             ));
         } else {
             return false;

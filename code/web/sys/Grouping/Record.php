@@ -31,6 +31,7 @@ class Grouping_Record
 	public $_holdRatio = 0;
 	public $_shelfLocation = '';
 	public $_holdable = false;
+	public $_locallyHoldable = false;
 	public $_itemSummary = [];
 	public $_itemsDisplayedByDefault = null;
 	public $_itemDetails = [];
@@ -147,6 +148,9 @@ class Grouping_Record
 		}
 		if ($item->holdable) {
 			$this->_holdable = true;
+			if ($item->locallyOwned || $item->libraryOwned){
+				$this->_locallyHoldable = true;
+			}
 		}
 
 		if ($this->_isOverDrive == false) {
@@ -330,6 +334,22 @@ class Grouping_Record
 	public function setHoldable(bool $holdable): void
 	{
 		$this->_holdable = $holdable;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isLocallyHoldable(): bool
+	{
+		return $this->_locallyHoldable;
+	}
+
+	/**
+	 * @param bool $locallyHoldable
+	 */
+	public function setLocallyHoldable(bool $locallyHoldable): void
+	{
+		$this->_locallyHoldable = $locallyHoldable;
 	}
 
 	/**

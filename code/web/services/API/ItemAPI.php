@@ -728,6 +728,8 @@ class ItemAPI extends Action {
 							'shelfLocation' => $shelfLocation,
 							'callNumber' => $callNumber,
 							'copiesMessage' => $relatedManifestation->getNumberOfCopiesMessage(),
+							'totalCopies' => $relatedRecord->getCopies(),
+							'availableCopies' => $relatedRecord->getAvailableCopies(),
 							'edition' => $edition,
 							'publisher' => $publisher,
 							'publicationDate' => $publicationDate,

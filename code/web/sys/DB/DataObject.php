@@ -169,11 +169,12 @@ abstract class DataObject
 	 * Retrieves all objects for the current query if name and value are null
 	 * Retrieves a list of all field values if only fieldName is provided
 	 * Retrieves an associated array if both fieldName and fieldValue are provided
-	 * @param null $fieldName
-	 * @param null $fieldValue
+	 * @param string? $fieldName
+	 * @param string? $fieldValue
+	 * @param bool $lowerCaseKey - Forces the key to be lower cased
 	 * @return DataObject[]
 	 */
-	public function fetchAll($fieldName = null, $fieldValue = null) : array
+	public function fetchAll($fieldName = null, $fieldValue = null, $lowerCaseKey = false) : array
 	{
 		$this->__fetchingFromDB = true;
 		$results = array();
@@ -181,9 +182,11 @@ abstract class DataObject
 			$result = $this->fetch();
 			while ($result != null) {
 				if ($fieldName != null && $fieldValue != null) {
-					$results[$result->$fieldName] = $result->$fieldValue;
+					$key = $lowerCaseKey ? strtolower($result->$fieldName) : $result->$fieldName;
+					$results[$key] = $result->$fieldValue;
 				}elseif ($fieldName != null) {
-					$results[$result->$fieldName] = $result->$fieldName;
+					$key = $lowerCaseKey ? strtolower($result->$fieldName) : $result->$fieldName;
+					$results[$key] = $result->$fieldName;
 				} else {
 					$results[] = clone $result;
 				}

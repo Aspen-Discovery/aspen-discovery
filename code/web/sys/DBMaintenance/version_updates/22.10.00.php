@@ -45,7 +45,7 @@ function getUpdates22_10_00() : array
 			'description' => 'Add Child Records Section to More Details',
 			'sql' => [
 				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 3",
-				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'childRecords', 0, 3 from grouped_work_display_settings",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'childRecords', 0, 3 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
 			]
 		], //add_childRecords_more_details_section
 		'add_child_title_to_record_parents' => [
@@ -60,7 +60,7 @@ function getUpdates22_10_00() : array
 			'description' => 'Add Parent Records Section to More Details',
 			'sql' => [
 				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 2",
-				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'parentRecords', 0, 2 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
 			]
 		], //add_parentRecords_more_details_section
 		'basic_page_allow_access_by_home_location' => [
@@ -84,18 +84,37 @@ function getUpdates22_10_00() : array
 				"UPDATE location set validSelfRegistrationBranch = validHoldPickupBranch",
 			]
 		], //location_self_registration_branch
-//		'grouped_work_parents' => [
-//			'title' => 'Grouped Work Parents',
-//			'description' => 'Add a table to define parents for a grouped work',
-//			'sql' => [
-//				'CREATE TABLE IF NOT EXISTS grouped_work_parents(
-//					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					childWorkId CHAR(40) collate utf8_bin,
-//					parentWorkId CHAR(40) collate utf8_bin,
-//					UNIQUE (childWorkId, parentWorkId)
-//				) ENGINE INNODB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
-//			]
-//		], //grouped_work_parents
+		'self_registration_parent_sms' => [
+			'title' => 'Library - Self Registration Parent & SMS Notices',
+			'description' => 'Allow determination of which branches are valid for self registration',
+			'sql' => [
+				"ALTER TABLE library add column promptForParentInSelfReg tinyint(1) NOT NULL DEFAULT '0'",
+				"ALTER TABLE library ADD column promptForSMSNoticesInSelfReg tinyint(1) NOT NULL DEFAULT '0'",
+			]
+		], //self_registration_parent_sms
+		'self_registration_require_phone_and_email' => [
+			'title' => 'Library - Self Registration Require Phone and email',
+			'description' => 'Allow determination of if phone and email are required for self registration',
+			'sql' => [
+				"ALTER TABLE library add column selfRegRequirePhone tinyint(1) NOT NULL DEFAULT '0'",
+				"ALTER TABLE library ADD column selfRegRequireEmail tinyint(1) NOT NULL DEFAULT '1'",
+			]
+		], //self_registration_require_phone_and_email
+		'add_holdings_more_details_section' => [
+			'title' => 'Add Holdings Records Section to More Details',
+			'description' => 'Add Holdings Records Section to More Details',
+			'sql' => [
+				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 4",
+				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'marcHoldings', 0, 4 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
+			]
+		], //add_holdings_more_details_section
+		'grouped_work_display_856_as_access_online' => [
+			'title' => 'Add 856 links as access online buttons to grouped work display settings',
+			'description' => 'Allow 856 links to be shown as access online buttons',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings ADD COLUMN show856LinksAsAccessOnlineButtons TINYINT(1) DEFAULT 0",
+			]
+		], //grouped_work_display_856_as_access_online
 
 		//kirstien
 		'aci_speedpay_sdk_config' => [

@@ -897,6 +897,10 @@ class Koha extends AbstractIlsDriver
 					}
 				}
 				if (isset($location)) {
+					$homeLocationChanged = false;
+					if ($user->homeLocationId != $location->locationId){
+						$homeLocationChanged = true;
+					}
 					$user->homeLocationId = $location->locationId;
 					if (empty($user->myLocation1Id)) {
 						$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
@@ -921,6 +925,12 @@ class Koha extends AbstractIlsDriver
 						}
 						$myLocation2->__destruct();
 						$myLocation2 = null;
+					}
+
+					if ($homeLocationChanged){
+						//reset the patrons preferred pickup location to their new home library
+						$user->pickupLocationId = $user->homeLocationId;
+						$user->rememberHoldPickupLocation = false;
 					}
 				}
 			}

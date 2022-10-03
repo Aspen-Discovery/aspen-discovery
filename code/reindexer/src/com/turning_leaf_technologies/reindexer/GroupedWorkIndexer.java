@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcWriter;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
 public class GroupedWorkIndexer {
@@ -2319,7 +2320,7 @@ public class GroupedWorkIndexer {
 		UNCHANGED, CHANGED, NEW
 	}
 
-	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber) {
+	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber, MarcFactory marcFactory, String marcIndex) {
 		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
 		//Copy the record to the individual marc path
 		Record mergedRecord = recordWithAdditionalItems;
@@ -2333,16 +2334,25 @@ public class GroupedWorkIndexer {
 
 			List<DataField> additional852s = recordWithAdditionalItems.getDataFields(852);
 			for (DataField additionalItem : additional852s) {
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
+				}
 				mergedRecord.addVariableField(additionalItem);
 			}
 
 			List<DataField> additional853s = recordWithAdditionalItems.getDataFields(853);
 			for (DataField additionalItem : additional853s) {
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
+				}
 				mergedRecord.addVariableField(additionalItem);
 			}
 
 			List<DataField> additional866s = recordWithAdditionalItems.getDataFields(866);
 			for (DataField additionalItem : additional866s) {
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
+				}
 				mergedRecord.addVariableField(additionalItem);
 			}
 
