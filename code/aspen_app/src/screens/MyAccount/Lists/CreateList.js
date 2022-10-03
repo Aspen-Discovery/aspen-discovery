@@ -5,6 +5,7 @@ import {createList} from "../../../util/loadPatron";
 import {popAlert} from "../../../components/loadError";
 
 const CreateList = (props) => {
+	const {_fetchLists} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 
@@ -66,10 +67,11 @@ const CreateList = (props) => {
 										if(!res.success) {
 											status = "danger"
 										}
-										setLoading(false)
+										setLoading(false);
 										popAlert("List created", res.message, status);
+										_fetchLists();
+										setShowModal(false);
 									});
-									setShowModal(false)
 								}}
 							>Create List</Button>
 						</Button.Group>

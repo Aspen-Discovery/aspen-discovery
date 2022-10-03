@@ -26,6 +26,23 @@ const Manifestation = (props) => {
 		return (item.language === language);
 	});
 
+	let copyDetails = [];
+	match.map((item) => {
+		let copyDetail = [];
+		if(discoveryVersion >= "22.09.00") {
+			copyDetail = {
+				'id': item.id,
+				'format': item.format,
+				'totalCopies': 18,
+				'availableCopies': 8,
+				'shelfLocation': item.shelfLocation,
+				'callNumber': item.callNumber,
+			};
+		};
+
+		copyDetails.push(copyDetail)
+	})
+
 	if (match.length === 0) {
 		return (
 			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px">
@@ -85,6 +102,7 @@ const Manifestation = (props) => {
 				updateProfile = {updateProfile}
 				navigation = {navigation}
 				recordData = {item}
+				copyDetails = {copyDetails}
 			/>
 		)
 	})

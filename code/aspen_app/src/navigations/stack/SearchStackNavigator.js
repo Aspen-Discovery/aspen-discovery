@@ -27,7 +27,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
 				name="SearchResults"
 				component={Results}
 				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.searchTerm,
+					title: translate('search.search_results_title') + route.params.term,
 				})}
 			/>
 			<Stack.Screen

@@ -24,8 +24,7 @@ import { translate } from '../../translations/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
 import { searchResults } from "../../util/search";
-import _ from "lodash";
-import {getLists, removeTitlesFromList} from "../../util/loadPatron";
+import {getLists} from "../../util/loadPatron";
 import {AddToList} from "./AddToList";
 import {userContext} from "../../context/user";
 
@@ -51,6 +50,7 @@ export default class Results extends React.Component {
 			scrollPosition: 0,
 		};
 		//this._getLastListUsed();
+		this._isMounted = false;
 		this.lastListUsed = 0;
 		this.solrScope = null;
 		this.locRef = React.createRef({});
@@ -58,15 +58,16 @@ export default class Results extends React.Component {
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		//const level      = this.props.navigation.state.params.level;
 		//const format     = this.props.navigation.state.params.format;
 		//const searchType = this.props.navigation.state.params.searchType;
 		const { navigation, route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const libraryUrl = this.context.library.baseUrl;
 
-		await getLists(libraryUrl);
+		this._isMounted && await getLists(libraryUrl);
 		this._getLastListUsed();
-		await this._fetchResults();
+		this._isMounted && await this._fetchResults();
 	};
 
 
@@ -88,6 +89,10 @@ export default class Results extends React.Component {
 			const page = this.locRef.current;
 			page.scrollTop = page.scrollHeight - snapshot;
 		}
+	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
 	}
 
 	_getLastListUsed = () => {
@@ -112,8 +117,8 @@ export default class Results extends React.Component {
 	_fetchResults = async () => {
 	    const { page } = this.state;
 		const { navigation, route } = this.props;
-		const givenSearch = route.params?.searchTerm ?? '%20';
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const givenSearch = route.params?.term ?? '%20';
+		const libraryUrl = this.context.library.baseUrl;
         const searchTerm = givenSearch.replace(/" "/g, "%20");
 
         await searchResults(searchTerm, 100, page, libraryUrl).then(response => {
@@ -146,7 +151,7 @@ export default class Results extends React.Component {
                             isLoading: false,
                             isLoadingMore: false,
                             refreshing: false,
-                            dataMessage: response.data.result.message,
+                            dataMessage: response.data.result.message ?? "Unknown error fetching results",
 	                        endOfResults: true,
                         });
                     }
@@ -170,7 +175,7 @@ export default class Results extends React.Component {
 
 	renderItem = (item, library, user, lastListUsed) => {
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library, item.title)}>
 				<HStack space={3}>
 					<VStack>
 						<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "90px", lg: "120px"}} />
@@ -198,13 +203,14 @@ export default class Results extends React.Component {
 	}
 
 	// handles the on press action
-	onPressItem = (item, library) => {
+	onPressItem = (item, library, title) => {
 		const { navigation, route } = this.props;
 		const libraryUrl = library.baseUrl;
 		navigation.dispatch(CommonActions.navigate({
 			name: 'GroupedWork',
 			params: {
-				item: item,
+				id: item,
+				title: title,
 				libraryUrl: libraryUrl,
 			},
 		}));
@@ -216,7 +222,7 @@ export default class Results extends React.Component {
 		return (
             <Center flex={1}>
                 <Heading pt={5}>{translate('search.no_results')}</Heading>
-                <Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+                <Text bold w="75%" textAlign="center">{route.params?.term}</Text>
                 <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
             </Center>
 		);
@@ -248,7 +254,7 @@ export default class Results extends React.Component {
             return (
                 <Center flex={1}>
                     <Heading pt={5}>{translate('search.no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+                    <Text bold w="75%" textAlign="center">{route.params?.term}</Text>
                     <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
                 </Center>
             );

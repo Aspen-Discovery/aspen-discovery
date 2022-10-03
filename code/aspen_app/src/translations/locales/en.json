@@ -19,7 +19,7 @@
     "close_window": "Close",
     "privacy_policy": "Privacy Policy",
     "contact": "Contact",
-    "new": "New",
+    "new": "New!",
     "delete": "Delete",
     "cancel": "Cancel",
     "public": "Public",
@@ -32,7 +32,8 @@
     "remove": "Remove",
     "none": "None",
     "hide": "Hide",
-    "refresh_account": "Refresh Account"
+    "refresh_account": "Refresh Account",
+    "load_more": "Load More"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -46,7 +47,10 @@
     "no_session_created": "Unable to start a user session. Please try to log in again."
   },
   "browse_category": {
-    "empty": "No items to load"
+    "empty": "No items to load",
+    "manage_categories": "Manage Categories",
+    "refresh_categories": "Refresh Categories",
+    "load_all_categories": "Load All Categories"
   },
   "grouped_work": {
     "title": "Item Details",

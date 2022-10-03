@@ -168,7 +168,6 @@ export async function getBrowseCategories(libraryUrl, discoveryVersion, limit = 
 		const hiddenCategories = [];
 		if(discoveryVersion < "22.07.00") {
 			const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
-			console.log(responseHiddenCategories.data);
 			if(responseHiddenCategories.ok) {
 				if(typeof responseHiddenCategories.data.result !== "undefined") {
 					const categories = responseHiddenCategories.data.result.categories;
