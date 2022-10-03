@@ -313,6 +313,9 @@ class Library extends DataObject
 	//2FA settings ID
 	public $twoFactorAuthSettingId;
 
+	//SSO
+	public $ssoSettingId;
+
 	public $defaultRememberMe;
 
 	//LiDA settings

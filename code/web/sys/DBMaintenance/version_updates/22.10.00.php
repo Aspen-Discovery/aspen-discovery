@@ -277,7 +277,6 @@ function getUpdates22_10_00(): array
 					clientId VARCHAR(255), 
 					clientSecret VARCHAR(255),
 					oAuthGateway VARCHAR(75),
-					staffOnly TINYINT(1),
 					ssoName VARCHAR(255),
 					ssoXmlUrl VARCHAR(255), 
 					ssoUniqueAttribute VARCHAR(255),
@@ -296,7 +295,11 @@ function getUpdates22_10_00(): array
 					ssoLibraryIdAttr VARCHAR(255),
 					ssoLibraryIdFallback VARCHAR(255),
 					ssoCategoryIdAttr VARCHAR(255),
-					ssoCategoryIdFallback VARCHAR(255)
+					ssoCategoryIdFallback VARCHAR(255),
+					loginOptions TINYINT(1) DEFAULT 0,
+					loginHelpText VARCHAR(255),
+					oAuthButtonBackgroundColor CHAR(7) DEFAULT "#232323",
+					oAuthButtonTextColor CHAR(7) DEFAULT "#ffffff"
 				) ENGINE INNODB',
 				'ALTER TABLE library ADD COLUMN ssoSettingId TINYINT(11) DEFAULT -1'
 			]
