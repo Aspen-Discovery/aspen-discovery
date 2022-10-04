@@ -255,16 +255,26 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 		$interface->assign('object', $existingObject);
 		//Check to see if the request should be multipart/form-data
-		$contentType = null;
-		foreach ($structure as $property){
-			if ($property['type'] == 'image' || $property['type'] == 'file'){
-				$contentType = 'multipart/form-data';
-			}
-		}
+		$contentType = $this->getFormContentType($structure);
 		$interface->assign('contentType', $contentType);
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->setTemplate('../Admin/objectEditor.tpl');
+	}
+
+	function getFormContentType($structure, $contentType = null) {
+		if ($contentType != null) {
+			return $contentType;
+		}
+		//Check to see if the request should be multipart/form-data
+		foreach ($structure as $property){
+			if ($property['type'] == 'section') {
+				$contentType = $this->getFormContentType($property['properties'], $contentType);
+			} else if ($property['type'] == 'image' || $property['type'] == 'file'){
+				$contentType = 'multipart/form-data';
+			}
+		}
+		return $contentType;
 	}
 
 	function editObject($objectAction, $structure){
