@@ -331,6 +331,16 @@ function getUpdates22_10_00(): array
 				) ENGINE INNODB',
 			]
 		], //add_oauth_mapping
+		'add_account_display_options' => [
+			'title' => 'Add options to hide modules in My Account',
+			'description' => 'Add options to hide modules in My Account within Library Settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showUserCirculationModules TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN showUserPreferences TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN showUserContactInformation TINYINT(1) DEFAULT 1'
+			]
+		], //add_account_display_options
 
 		//kodi
 
