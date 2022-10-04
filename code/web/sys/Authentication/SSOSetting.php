@@ -250,4 +250,99 @@ class SSOSetting extends DataObject
 	{
 		return ['staffOnly'];
 	}
+
+	public function genericOAuthProvider()
+	{
+		global $configArray;
+		$redirectUri = $configArray['Site']['url'] . '/Authentication/OAuth';
+		return array(
+			'urlAuthorize' => $this->oAuthAuthorizeUrl,
+			'urlAccessToken' => $this->oAuthAccessTokenUrl,
+			'clientId' => $this->clientId,
+			'clientSecret' => $this->clientSecret ?? '',
+			'redirectUri' => $redirectUri,
+			'urlResourceOwnerDetails' => $this->oAuthResourceOwnerUrl,
+			'scopes' => $this->oAuthScope
+		);
+	}
+
+	public function getAuthorizationUrl()
+	{
+		if ($this->oAuthGateway == "google") {
+			return "https://accounts.google.com/o/oauth2/v2/auth";
+		}
+
+		return $this->oAuthAuthorizeUrl;
+	}
+
+	public function getAccessTokenUrl()
+	{
+		if ($this->oAuthGateway == "google") {
+			return "https://oauth2.googleapis.com/token";
+		}
+
+		return $this->oAuthAccessTokenUrl;
+	}
+
+	public function getResourceOwnerDetailsUrl()
+	{
+		if ($this->oAuthGateway == "google") {
+			return "https://openidconnect.googleapis.com/v1/userinfo";
+		}
+
+		return $this->oAuthResourceOwnerUrl;
+	}
+
+	public function getScope()
+	{
+		if ($this->oAuthGateway == "google") {
+			return "openid email profile";
+		}
+
+		return $this->oAuthScope;
+	}
+
+	public function getRedirectUrl()
+	{
+		global $configArray;
+		$baseUrl = $configArray['Site']['url'];
+		if ($this->service == "oauth") {
+			return $baseUrl . '/Authentication/OAuth';
+		}
+
+		return false;
+	}
+
+	public function getMatchpoints()
+	{
+		$matchpoints = [
+			'email' => 'email',
+			'userId' => 'sub',
+			'firstName' => 'given_name',
+			'lastName' => 'family_name'
+		];
+
+		$mappings = new SSOMapping();
+		$mappings->ssoSettingId = $this->id;
+		$mappings->find();
+		while ($mappings->fetch()) {
+			if ($mappings->aspenField == "email") {
+				$matchpoints['email'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == "user_id") {
+				$matchpoints['userId'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == "first_name") {
+				$matchpoints['firstName'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == "last_name") {
+				$matchpoints['lastName'] = $mappings->responseField;
+			}
+		}
+
+		return $matchpoints;
+	}
+
+	public function getBasicAuthToken()
+	{
+		return base64_encode($this->clientId . ":" . $this->clientSecret);
+	}
+
 }

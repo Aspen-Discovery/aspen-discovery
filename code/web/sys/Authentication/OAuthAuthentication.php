@@ -1,18 +1,55 @@
 <?php
 
 require_once 'bootstrap.php';
-require_once ROOT_DIR . '/services/Authentication/vendor/autoload.php';
-
+require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
-
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 
-class OAuthAuthentication extends DataObject
+class OAuthAuthentication extends Action
 {
-	/**
-	 * @throws UnknownAuthenticationMethodException
-	 */
+	/** @var CurlWrapper */
+	private $curlWrapper;
+
+	protected $basicAuth;
+	protected $state;
+	protected $accessToken;
+	protected $resourceOwner;
+	protected $redirectUri;
+	protected $matchpoints;
+
+	public function __construct()
+	{
+		parent::__construct();
+
+		global $library;
+		$ssoSettings = new SSOSetting();
+		$ssoSettings->id = $library->ssoSettingId;
+		$ssoSettings->service = "oauth";
+		if ($ssoSettings->find(true)) {
+			$this->state = $this->getRandomState();
+			$this->basicAuth = $ssoSettings->getBasicAuthToken();
+			$this->redirectUri = $ssoSettings->getRedirectUrl();
+			$this->matchpoints = $ssoSettings->getMatchpoints();
+		} else {
+			global $logger;
+			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT);
+			echo("Single sign-on settings must be configured to use OAuth 2.0 for user authentication.");
+			die();
+		}
+	}
+
+	public function initCurlWrapper()
+	{
+		$this->curlWrapper = new CurlWrapper();
+		$this->curlWrapper->timeout = 5;
+		$this->curlWrapper->addCustomHeaders([
+			"Authorization: Basic $this->basicAuth",
+			"Cache-Control: no-cache",
+			"Content-Type: application/x-www-form-urlencoded"
+		], true);
+	}
+
 	public function verifyIdToken($payload): array
 	{
 		$success = false;
@@ -21,34 +58,50 @@ class OAuthAuthentication extends DataObject
 		$returnTo = '';
 
 		global $library;
-		global $logger;
 
 		if (isset($payload['code'])) {
-			$id_token = $payload['code'];
 			$ssoSettings = new SSOSetting();
 			$ssoSettings->id = $library->ssoSettingId;
 			$ssoSettings->service = "oauth";
 			if ($ssoSettings->find(true)) {
-				$gateway = $ssoSettings->oAuthGateway;
-				$provider = require_once ROOT_DIR . '/sys/Authentication/OAuthProvider.php';
-				$token = $provider->getAccessToken('authorization_code', [
-					'code' => $payload['code']
-				]);
-				$user = $provider->getResourceOwner($token);
-				if ($user) {
-					$account = $this->validateAccount($user);
-					if ($account) {
-						$success = true;
-						$message = 'Login successful.';
-						$returnTo = '/MyAccount/Home';
-					} else {
-						$error = 'Unable to match provided credentials within the system.';
-					}
-				} else {
-					$error = 'Unable to verify id token OAuth Client';
+				$requestOptions = [
+					'client_id' => $ssoSettings->clientId,
+					'client_secret' => $ssoSettings->clientSecret,
+					'grant_type' => 'authorization_code',
+					'code' => $payload['code'],
+					'redirect_uri' => $this->redirectUri,
+				];
+
+				$requestToken = $this->getAccessToken($ssoSettings->getAccessTokenUrl(), $requestOptions);
+				if (!$requestToken) {
+					return [
+						'success' => false,
+						'message' => "Did not get expected JSON results from OAuth to get a valid Access Token",
+					];
 				}
+
+				$resourceOwner = $this->getResourceOwner($ssoSettings->getResourceOwnerDetailsUrl());
+				if (!$resourceOwner) {
+					return [
+						'success' => false,
+						'message' => "Did not get expected JSON results from OAuth to get Resource Owner details",
+					];
+				}
+
+				$account = $this->validateAccount();
+				if (!$account) {
+					return [
+						'success' => false,
+						'message' => "Unable to find and/or register user with provided credentials",
+					];
+				}
+
+				$success = true;
+				$message = 'Successfully logged in using OAuth';
+				$returnTo = '/MyAccount/Home';
+
 			} else {
-				$error = 'oAuth is not setup for library.';
+				$error = 'OAuth is not setup for library.';
 			}
 		} else {
 			$error = 'No data from OAuth provided, unable to log into system.';
@@ -61,38 +114,31 @@ class OAuthAuthentication extends DataObject
 		];
 	}
 
-	private function validateAccount($response): bool
+	private function validateAccount(): bool
 	{
 		global $logger;
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
-		$resourceOwner = [
-			'id' => $response->getId(),
-			'email' => $response->getEmail(),
-			'firstname' => $response->getFirstName(),
-			'lastname' => $response->getLastName(),
-		];
-
-		$user = $catalogConnection->findNewUser($resourceOwner['id']);
+		$user = $catalogConnection->findNewUser($this->getUserId());
 
 		if (!$user instanceof User) {
 			$selfReg = $catalogConnection->selfRegister();
 			if ($selfReg['success'] != '1') {
 				//unable to register the user
-				$logger->log("Error self registering user " . $resourceOwner['id'], Logger::LOG_ERROR);
+				$logger->log("Error self registering user " . $this->getUserId(), Logger::LOG_ERROR);
 				return false;
 			}
 		}
 
-		$user->email = $resourceOwner['email'];
-		$user->firstname = $resourceOwner['firstname'];
-		$user->lastname = $resourceOwner['lastname'];
+		$user->email = $this->getEmail();
+		$user->firstname = $this->getFirstName();
+		$user->lastname = $this->getLastName();
 		$user->updatePatronInfo(true);
 
-		$user = $catalogConnection->findNewUser($resourceOwner['id']);
+		$user = $catalogConnection->findNewUser($this->getUserId());
 
 		if ($user instanceof User) {
-			$_REQUEST['username'] = $resourceOwner['id'];
+			$_REQUEST['username'] = $this->getUserId();
 			$_REQUEST['password'] = $user->password;
 			$login = UserAccount::login(true);
 			$this->newSSOSession($login->id);
@@ -125,33 +171,99 @@ class OAuthAuthentication extends DataObject
 		$_SESSION['loggedInViaSSO'] = true;
 	}
 
-	private function getResponseValue($key)
+	public function getAuthorizationRequestUrl(SSOSetting $settings)
 	{
-		return $this->resourceOwner[$key] ?? null;
+		$authorizationUrl = $settings->getAuthorizationUrl();
+		$requestOptions = [
+			'client_id' => $settings->clientId,
+			'response_type' => 'code',
+			'redirect_uri' => $this->redirectUri,
+			'state' => $this->state,
+			'scope' => $settings->getScope()
+		];
+
+		$queryString = $this->buildQueryString($requestOptions);
+		return $this->appendQuery($authorizationUrl, $queryString);
 	}
 
-	private function setMatchpoints()
+	public function getAccessToken($accessTokenUrl, array $options = [], $returnToken = false)
 	{
-		global $library;
-		$settings = new SSOSetting();
-		$settings->id = $library->ssoSettingId;
-		$settings->service = "oauth";
-		if ($settings->find(true)) {
-			$mappings = new SSOMapping();
-			$mappings->ssoSettingId = $settings->id;
-			$mappings->find();
-			while ($mappings->fetch()) {
-				if ($mappings->aspenField == "email") {
-					$this->matchpoint_email = $mappings->responseField;
-				} elseif ($mappings->aspenField == "user_id") {
-					$this->matchpoint_id = $mappings->responseField;
-				} elseif ($mappings->aspenField == "first_name") {
-					$this->matchpoint_firstname = $mappings->responseField;
-				} elseif ($mappings->aspenField == "last_name") {
-					$this->matchpoint_lastname = $mappings->responseField;
-				}
+		$queryString = $this->buildQueryString($options);
+		$url = $this->appendQuery($accessTokenUrl, $queryString);
+		$this->initCurlWrapper();
+		$response = $this->curlWrapper->curlPostPage($url, '');
+		$options = json_decode($response, true);
+		if (!empty($options['access_token'])) {
+			$this->accessToken = $options['access_token'];
+			if ($returnToken) {
+				return $options['access_token'];
 			}
+			return true;
 		}
+		return false;
 	}
 
+	private function getResourceOwner($resourceOwnerDetailsUrl)
+	{
+		$url = $resourceOwnerDetailsUrl . "?access_token=" . $this->accessToken;
+		$this->initCurlWrapper();
+		$response = $this->curlWrapper->curlGetPage($url);
+		$options = json_decode($response, true);
+		if ($options[$this->matchpoints['userId']]) {
+			$this->resourceOwner = $options;
+			return true;
+		}
+		return false;
+	}
+
+	private function getUserId()
+	{
+		return $this->resourceOwner[$this->matchpoints['userId']];
+	}
+
+	private function getFirstName()
+	{
+		return $this->resourceOwner[$this->matchpoints['firstName']];
+	}
+
+	private function getLastName()
+	{
+		return $this->resourceOwner[$this->matchpoints['lastName']];
+	}
+
+	private function getEmail()
+	{
+		return $this->resourceOwner[$this->matchpoints['email']];
+	}
+
+	protected function getRandomState($length = 32): string
+	{
+		return bin2hex(random_bytes($length / 2));
+	}
+
+	protected function buildQueryString(array $params): string
+	{
+		return http_build_query($params, '', '&', \PHP_QUERY_RFC3986);
+	}
+
+	protected function appendQuery($url, $query)
+	{
+		$query = trim($query, '?&');
+
+		if ($query) {
+			$glue = strstr($url, '?') === false ? '?' : '&';
+			return $url . $glue . $query;
+		}
+
+		return $url;
+	}
+
+	function launch()
+	{
+	}
+
+	function getBreadcrumbs(): array
+	{
+		return [];
+	}
 }
