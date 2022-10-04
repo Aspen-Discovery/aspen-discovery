@@ -575,7 +575,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
-		if (orderTag.length() == 0){
+		if (orderTag == null || orderTag.length() == 0){
 			return;
 		}
 		List<DataField> orderFields = MarcUtil.getDataFields(record, orderTag);
