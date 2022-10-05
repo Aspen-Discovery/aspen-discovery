@@ -733,7 +733,7 @@ public class SymphonyExportMain {
 			}
 		}
 
-		if (latestFile != null) {
+		if (latestFile != null && latestFile.length() > 0) {
 			filesToProcess.add(latestFile);
 			hasFullExportFile = true;
 			fullExportFile = latestFile;
