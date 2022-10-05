@@ -32,6 +32,9 @@ systemctl start mariadb
 systemctl enable mariadb
 yum -y install java-1.8.0-openjdk
 yum -y install unzip
+yum -y install strace
+yum -y install mytop
+yum -y install mysqltuner
 
 #Create temp smarty directories
 cd /usr/local/aspen-discovery
