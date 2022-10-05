@@ -652,6 +652,42 @@ public class IndexingUtils {
 		}
 	}
 
+	public static boolean isIndexerRunning(String indexerName, Ini configIni, String serverName, Logger logger) {
+		if (configIni.get("System", "operatingSystem").equalsIgnoreCase("windows")){
+			try {
+				String line;
+				Process p = Runtime.getRuntime().exec("tasklist.exe /fo csv /nh /v /fi \"IMAGENAME eq cmd.exe\"");
+				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = input.readLine()) != null) {
+					//logger.info(line);
+					if (line.matches(".*" + indexerName + "\\.jar " + serverName + " nightly.*")){
+						return true;
+					}
+				}
+				input.close();
+			} catch (IOException e) {
+				logger.error("Error checking to see if the " + indexerName + " reindexer is running", e);
+			}
+
+		}else{
+			try {
+				String line;
+				Process p = Runtime.getRuntime().exec("ps -ef");
+				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = input.readLine()) != null) {
+					//logger.info(line);
+					if (line.matches(".*" + indexerName + "\\.jar " + serverName + " nightly.*")){
+						return true;
+					}
+				}
+				input.close();
+			} catch (IOException e) {
+				logger.error("Error checking to see if the " + indexerName + " indexer is running", e);
+			}
+		}
+		return false;
+	}
+
 	public static boolean isNightlyIndexRunning(Ini configIni, String serverName, Logger logger) {
 		if (configIni.get("System", "operatingSystem").equalsIgnoreCase("windows")){
 			try {
