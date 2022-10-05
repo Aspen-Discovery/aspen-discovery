@@ -9,7 +9,6 @@ php /usr/local/aspen-discovery/install/updateCron_22_10.php $1
 
 
 #upgrade openssh to 9.0
-
 yum groupinstall "Development Tools" -y
 yum install zlib-devel openssl-devel -y
 
@@ -27,3 +26,8 @@ yum install pam-devel libselinux-devel -y
 
 make
 make install
+
+
+# Disable Apache serversignature
+cp install/httpd.conf /etc/httpd/conf/httpd.conf
+sudo systemctl restart httpd.service
