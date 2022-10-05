@@ -93,6 +93,7 @@ public class IndexingUtils {
 				hooplaScope.setExcludeAbridged(hooplaScopesRS.getBoolean("excludeAbridged"));
 				hooplaScope.setExcludeParentalAdvisory(hooplaScopesRS.getBoolean("excludeParentalAdvisory"));
 				hooplaScope.setExcludeProfanity(hooplaScopesRS.getBoolean("excludeProfanity"));
+				hooplaScope.setGenreFilters(hooplaScopesRS.getString("genresToExclude"));
 
 				hooplaScopes.put(hooplaScope.getId(), hooplaScope);
 			}
