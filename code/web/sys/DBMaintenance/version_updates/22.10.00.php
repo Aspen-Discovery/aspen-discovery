@@ -353,6 +353,13 @@ function getUpdates22_10_00(): array
 		], //add_theme_header_image
 
 		//kodi
+        'force_reload_of_hoopla_22_10' => [
+            'title' => 'Force reload of Hoopla',
+            'description' => 'Force Hoopla to be reloaded for 22.10',
+            'sql' => [
+                "UPDATE hoopla_settings set runFullUpdate = 1",
+            ]
+        ], //force_reload_of_hoopla_22_10
 
 		//other
 
