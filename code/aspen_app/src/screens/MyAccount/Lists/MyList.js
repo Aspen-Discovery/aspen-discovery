@@ -1,39 +1,32 @@
 import React, {Component} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SafeAreaView} from 'react-native';
 import {
-	Actionsheet,
-	Avatar,
-	Badge,
 	Box,
 	Button,
 	Center,
-	Divider,
 	FlatList,
-	IconButton,
 	Icon,
 	Pressable,
 	Text,
-	Container,
 	HStack,
 	VStack,
 	Image
 } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
-import moment from "moment";
-import * as WebBrowser from 'expo-web-browser';
+import { CommonActions } from '@react-navigation/native';
 
 // custom components and helper files
 import {translate} from '../../../translations/translations';
 import {loadingSpinner} from "../../../components/loadingSpinner";
-import {removeLinkedAccount, renewAllCheckouts} from "../../../util/accountActions";
 import {getListTitles, removeTitlesFromList} from "../../../util/loadPatron";
 import EditList from "./EditList";
 import {ScrollView} from "react-native";
 import {userContext} from "../../../context/user";
+import {GLOBALS} from "../../../util/globals";
 
 export default class MyList extends Component {
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -43,44 +36,51 @@ export default class MyList extends Component {
 			listDetails: [],
 			id: null,
 		};
+		this._isMounted = false;
 	}
 
 	loadList = async () => {
+		this.setState({
+			isLoading: true,
+		})
 		const { route } = this.props;
-		const givenListId = route.params?.list ?? 0;
-		const libraryUrl = route.params?.libraryUrl ?? 0;
+		const givenListId = route.params?.id ?? 0;
+		const libraryUrl = this.context.library.baseUrl;
 
 		await getListTitles(givenListId, libraryUrl).then(response => {
 			this.setState({
 				list: response,
 				id: givenListId,
+				isLoading: false,
 			})
 		});
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		const { route } = this.props;
 		const givenList = route.params?.details ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? '';
 
-		this.setState({
-			isLoading: false,
-			listDetails: givenList,
-			libraryUrl: libraryUrl
-		});
-
-		await this.loadList();
-
-		this.interval = setInterval(() => {
-			this.loadList();
-		}, 5000)
-
-		return () => clearInterval(this.interval)
+		this._isMounted && await this.loadList().then(res => {
+			this.setState({
+				isLoading: false,
+				listDetails: givenList,
+				libraryUrl: this.context.library.baseUrl
+			});
+		})
 
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
+	}
+
+	_updateRouteParam = (newTitle) => {
+		const { navigation, route } = this.props;
+		navigation.dispatch({
+			...CommonActions.setParams({ title: newTitle }),
+			source: route.key,
+		});
 	}
 
 	// renders the items on the screen
@@ -91,7 +91,7 @@ export default class MyList extends Component {
 					<VStack w="25%">
 						<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
 						<Button onPress={() => {
-							removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl)}} colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs"/>} size="sm" variant="ghost">{translate('general.delete')}</Button>
+							removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl); this.loadList()}} colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs"/>} size="sm" variant="ghost">{translate('general.delete')}</Button>
 					</VStack>
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "sm", lg: "md"}}>{item.title}</Text>
@@ -103,7 +103,7 @@ export default class MyList extends Component {
 	};
 
 	openItem = (id, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {item: id, libraryUrl: this.state.libraryUrl}});
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {id: id, libraryUrl: this.state.libraryUrl}});
 	};
 
 	_listEmpty = () => {
@@ -124,23 +124,23 @@ export default class MyList extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 		const { route } = this.props;
-		const givenListId = route.params?.list ?? 0;
+		const givenListId = route.params?.id ?? 0;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
 		return (
-			<ScrollView>
-			<Box safeArea={2}>
-				<EditList data={this.state.listDetails} listId={givenListId} navigation={this.props.navigation} libraryUrl={this.state.libraryUrl}/>
+			<SafeAreaView style={{flex: 1}}>
+			<Box safeArea={2} pb={10}>
+				<EditList data={this.state.listDetails} listId={givenListId} navigation={this.props.navigation} libraryUrl={this.state.libraryUrl} loadList={this.loadList} _updateRouteParam={this._updateRouteParam}/>
 				<FlatList
 					data={this.state.list}
 					renderItem={({ item }) => this.renderItem(item, this.state.libraryUrl)}
 					keyExtractor={(item) => item.id}
 				/>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 
 	}

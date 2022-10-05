@@ -1,4 +1,5 @@
 import React, {Component, useEffect} from "react";
+import {SafeAreaView} from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MaterialIcons} from "@expo/vector-icons";
 import {
@@ -17,7 +18,7 @@ import {Rating} from "react-native-elements";
 import {translate} from '../../translations/translations';
 import Manifestation from "./Manifestation";
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {loadError, PopAlertWithAction} from "../../components/loadError";
+import {loadError} from "../../components/loadError";
 import {getGroupedWork, getItemDetails} from "../../util/recordActions";
 import {AddToListFromItem} from "./AddToList";
 import {userContext} from "../../context/user";
@@ -57,7 +58,7 @@ export default class GroupedWork extends Component {
 	authorSearch = (author, libraryUrl) => {
 		const { navigation } = this.props;
 		this.props.navigation.navigate("SearchByAuthor", {
-			searchTerm: author,
+			term: author,
 			libraryUrl: libraryUrl,
 		})
 	};
@@ -96,8 +97,8 @@ export default class GroupedWork extends Component {
 		});
 
 		const { navigation, route } = this.props;
-		const givenItem = route.params?.item ?? 'null';
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const givenItem = route.params?.id ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await getGroupedWork(libraryUrl, givenItem).then(response => {
 			if (response === "TIMEOUT_ERROR") {
@@ -144,7 +145,7 @@ export default class GroupedWork extends Component {
 
 	_fetchLinkedAccounts = async () => {
 		const { navigation, route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await getLinkedAccounts(libraryUrl).then(response => {
 			this.setState({
@@ -333,108 +334,110 @@ export default class GroupedWork extends Component {
 		//console.log(this.state.data);
 
 		return (
-			<ScrollView>
-				<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900" }} zIndex={-1} position="absolute" left={0}
-				     top={0}></Box>
-				<Box flex={1} safeArea={5}>
-					<Center mt={5}>
-						<Box w={{base: 200, lg: 300}} h={{base: 250, lg: 350}} shadow={3}>
-							<Image
-								alt={this.state.data.title}
-								source={{ uri:  this.state.data.cover }}
-								style={{width: '100%', height: '100%', borderRadius: 4}}
-							/>
-						</Box>
-						<Text fontSize={{base: "lg", lg: "2xl"}} bold pt={5} alignText="center">
-							{displayTitle}
+			<SafeAreaView style={{flex: 1}}>
+				<ScrollView>
+					<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900" }} zIndex={-1} position="absolute" left={0}
+					     top={0}></Box>
+					<Box flex={1} safeArea={5}>
+						<Center mt={5}>
+							<Box w={{base: 200, lg: 300}} h={{base: 250, lg: 350}} shadow={3}>
+								<Image
+									alt={this.state.data.title}
+									source={{ uri:  this.state.data.cover }}
+									style={{width: '100%', height: '100%', borderRadius: 4}}
+								/>
+							</Box>
+							<Text fontSize={{base: "lg", lg: "2xl"}} bold pt={5} alignText="center">
+								{displayTitle}
+							</Text>
+							{this.showAuthor(library.baseUrl)}
+							{ratingCount > 0 ?
+								<Rating imageSize={20} readonly count={ratingCount}
+								        startingValue={ratingAverage} type='custom' tintColor="white"
+								        ratingBackgroundColor="#E5E5E5" style={{paddingTop: 5}}/> : null}
+						</Center>
+						<Text fontSize={{base: "xs", lg: "md"}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
+						{this.state.formats ?
+							<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
+						<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
+						      mb={1}>{translate('grouped_work.language')}</Text>
+						{this.state.languages && discoveryVersion <= "22.05.00" ?
+							<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
+
+						{discoveryVersion >= "22.06.00" && this.state.data.language ? 					<Text fontSize={{base: "xs", lg: "md"}} mt={3}
+						                                                                                       mb={1}>{this.state.data.language}</Text> : null}
+
+						{this.state.variations ? <Manifestation navigation={this.props.navigation} data={this.state.variations} format={this.state.format}
+						                                        language={this.state.language}
+						                                        patronId={user.id}
+						                                        locations={this.state.locations}
+						                                        showAlert={this.showAlert}
+						                                        itemDetails={this.state.itemDetails}
+						                                        groupedWorkId={this.state.groupedWorkId}
+						                                        groupedWorkTitle={this.state.groupedWorkTitle}
+						                                        groupedWorkAuthor={this.state.data.author}
+						                                        groupedWorkISBN={this.state.data.isbn}
+						                                        user={user}
+						                                        library={library}
+						                                        linkedAccounts={this.state.linkedAccounts}
+						                                        discoveryVersion={discoveryVersion}
+						                                        updateProfile={this.updateProfile}
+						                                        openHolds={this.openHolds}
+						                                        openCheckouts={this.openCheckouts}/> : null}
+
+						<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} lastListUsed={this.state.lastListUsed} />
+
+						<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
+							{this.state.data.description}
 						</Text>
-						{this.showAuthor(library.baseUrl)}
-						{ratingCount > 0 ?
-							<Rating imageSize={20} readonly count={ratingCount}
-							        startingValue={ratingAverage} type='custom' tintColor="white"
-							        ratingBackgroundColor="#E5E5E5" style={{paddingTop: 5}}/> : null}
-					</Center>
-					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
-					{this.state.formats ?
-						<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
-					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
-					                                                          mb={1}>{translate('grouped_work.language')}</Text>
-					{this.state.languages && discoveryVersion <= "22.05.00" ?
-						<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
-
-					{discoveryVersion >= "22.06.00" && this.state.data.language ? 					<Text fontSize={{base: "xs", lg: "md"}} mt={3}
-					                                                           mb={1}>{this.state.data.language}</Text> : null}
-
-					{this.state.variations ? <Manifestation navigation={this.props.navigation} data={this.state.variations} format={this.state.format}
-					                                          language={this.state.language}
-					                                          patronId={user.id}
-					                                          locations={this.state.locations}
-					                                          showAlert={this.showAlert}
-					                                          itemDetails={this.state.itemDetails}
-					                                          groupedWorkId={this.state.groupedWorkId}
-					                                          groupedWorkTitle={this.state.groupedWorkTitle}
-					                                          groupedWorkAuthor={this.state.data.author}
-					                                          groupedWorkISBN={this.state.data.isbn}
-					                                          user={user}
-					                                          library={library}
-					                                          linkedAccounts={this.state.linkedAccounts}
-					                                          discoveryVersion={discoveryVersion}
-					                                          updateProfile={this.updateProfile}
-					                                          openHolds={this.openHolds}
-					                                          openCheckouts={this.openCheckouts}/> : null}
-
-					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} lastListUsed={this.state.lastListUsed} />
-
-					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
-						{this.state.data.description}
-					</Text>
-				</Box>
-				<Center>
-					<AlertDialog
-						leastDestructiveRef={this.cancelRef}
-						isOpen={this.state.alert}
-					>
-						<AlertDialog.Content>
-							<AlertDialog.Header fontSize="lg" fontWeight="bold">
-								{this.state.alertTitle}
-							</AlertDialog.Header>
-							<AlertDialog.Body>
-								{this.state.alertMessage}
-							</AlertDialog.Body>
-							<AlertDialog.Footer>
-								{this.state.alertAction ?
-									<Button onPress={() => {
-										this.setState({alert: false})
-										this.props.navigation.navigate("AccountScreenTab", {
-											screen: this.state.alertNavigateTo,
-											params: {libraryUrl: library.baseUrl}
-										})
-									}}>
-										{this.state.alertAction}
+					</Box>
+					<Center>
+						<AlertDialog
+							leastDestructiveRef={this.cancelRef}
+							isOpen={this.state.alert}
+						>
+							<AlertDialog.Content>
+								<AlertDialog.Header fontSize="lg" fontWeight="bold">
+									{this.state.alertTitle}
+								</AlertDialog.Header>
+								<AlertDialog.Body>
+									{this.state.alertMessage}
+								</AlertDialog.Body>
+								<AlertDialog.Footer>
+									{this.state.alertAction ?
+										<Button onPress={() => {
+											this.setState({alert: false})
+											this.props.navigation.navigate("AccountScreenTab", {
+												screen: this.state.alertNavigateTo,
+												params: {libraryUrl: library.baseUrl}
+											})
+										}}>
+											{this.state.alertAction}
+										</Button>
+										: null}
+									<Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
+										{translate('general.button_ok')}
 									</Button>
-									: null}
-								<Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
-									{translate('general.button_ok')}
-								</Button>
-							</AlertDialog.Footer>
-						</AlertDialog.Content>
-					</AlertDialog>
-				</Center>
-				<GetOverDriveSettings
-					promptTitle={this.state.promptTitle}
-					promptItemId={this.state.promptItemId}
-					promptSource={this.state.promptSource}
-					promptPatronId={this.state.promptPatronId}
-					overdriveEmail={this.state.overdriveEmail}
-					promptForOverdriveEmail={this.state.promptForOverdriveEmail}
-					showAlert={this.showAlert}
-					setEmail={this.setEmail}
-					setRememberPrompt={this.setRememberPrompt}
-					showOverDriveSettings={this.state.showOverDriveSettings}
-					handleOverDriveSettings={this.handleOverDriveSettings}
-					libraryUrl={library.baseUrl}
-				/>
-			</ScrollView>
+								</AlertDialog.Footer>
+							</AlertDialog.Content>
+						</AlertDialog>
+					</Center>
+					<GetOverDriveSettings
+						promptTitle={this.state.promptTitle}
+						promptItemId={this.state.promptItemId}
+						promptSource={this.state.promptSource}
+						promptPatronId={this.state.promptPatronId}
+						overdriveEmail={this.state.overdriveEmail}
+						promptForOverdriveEmail={this.state.promptForOverdriveEmail}
+						showAlert={this.showAlert}
+						setEmail={this.setEmail}
+						setRememberPrompt={this.setRememberPrompt}
+						showOverDriveSettings={this.state.showOverDriveSettings}
+						handleOverDriveSettings={this.handleOverDriveSettings}
+						libraryUrl={library.baseUrl}
+					/>
+				</ScrollView>
+			</SafeAreaView>
 		);
 	}
 }

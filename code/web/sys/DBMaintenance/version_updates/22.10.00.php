@@ -1,6 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates22_10_00() : array
+function getUpdates22_10_00(): array
 {
 	$curTime = time();
 	return [
@@ -243,7 +243,104 @@ function getUpdates22_10_00() : array
 				'cleanupApiUsageTable',
 			]
 		], //cleanupApiUsage_func
-
+		'update_notification_permissions' => [
+			'title' => 'Add permissions for LiDA notifications',
+			'description' => 'Add more defined permissions for LiDA notifications',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'Send Notifications to Home Library', '', 6, 'Controls if the user can send notifications to Aspen LiDA users from their home library.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'Send Notifications to Home Location', '', 6, 'Controls if the user can send notifications to Aspen LiDA users from their home location.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'Send Notifications to Home Library Locations', '', 6, 'Controls if the user can send notifications to Aspen LiDA users for all locations that are part of their home library.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'Send Notifications to All Locations', '', 6, 'Controls if the user can send notifications to Aspen LiDA users from all locations.')",
+				"UPDATE permissions set name = 'Send Notifications to All Libraries' where name = 'Send Notifications'",
+				"UPDATE permissions set description = 'Controls if the user can send notifications to Aspen LiDA users from all libraries' where name = 'Send Notifications to All Libraries'"
+			]
+		], //update_notification_permissions
+		'add_sso_permissions' => [
+			'title' => 'Add permissions for SSO config',
+			'description' => 'Add permissions for SSO config',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration', 'Administer Single Sign-on', '', 6, 'Controls if the user can change single sign-on (SSO) settings.<em>This has potential security implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Single Sign-on'))",
+			]
+		], //add_sso_permissions
+		'add_sso_table' => [
+			'title' => 'Add table to store SSO config',
+			'description' => 'Add table to store SSO config',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS sso_setting (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(50) UNIQUE NOT NULL,
+					service VARCHAR(75) NOT NULL,
+					clientId VARCHAR(255), 
+					clientSecret VARCHAR(255),
+					oAuthGateway VARCHAR(75),
+					ssoName VARCHAR(255),
+					ssoXmlUrl VARCHAR(255), 
+					ssoUniqueAttribute VARCHAR(255),
+					ssoMetadataFilename VARCHAR(255),
+					ssoIdAttr VARCHAR(255),
+					ssoUsernameAttr VARCHAR(255),
+					ssoFirstnameAttr VARCHAR(255),
+					ssoLastnameAttr VARCHAR(255),
+					ssoEmailAttr VARCHAR(255),
+					ssoDisplayNameAttr VARCHAR(255),
+					ssoPhoneAttr VARCHAR(255),
+					ssoPatronTypeAttr VARCHAR(255),
+					ssoPatronTypeFallback VARCHAR(255),
+					ssoAddressAttr VARCHAR(255),
+					ssoCityAttr VARCHAR(255),
+					ssoLibraryIdAttr VARCHAR(255),
+					ssoLibraryIdFallback VARCHAR(255),
+					ssoCategoryIdAttr VARCHAR(255),
+					ssoCategoryIdFallback VARCHAR(255),
+					loginOptions TINYINT(1) DEFAULT 0,
+					loginHelpText VARCHAR(255),
+					oAuthButtonBackgroundColor CHAR(7) DEFAULT "#232323",
+					oAuthButtonTextColor CHAR(7) DEFAULT "#ffffff"
+				) ENGINE INNODB',
+				'ALTER TABLE library ADD COLUMN ssoSettingId TINYINT(11) DEFAULT -1'
+			]
+		], //add_sso_table
+		'add_oauth_gateway_options' => [
+			'title' => 'Add custom OAuth gateway options',
+			'description' => 'Add options for setting up a custom OAuth gateway',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN oAuthGatewayLabel VARCHAR(75)',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthAuthorizeUrl VARCHAR(255)',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthAccessTokenUrl VARCHAR(255)',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthResourceOwnerUrl VARCHAR(255)',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthGatewayIcon VARCHAR(255)',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthScope VARCHAR(255)'
+			]
+		], //add_oauth_gateway_options
+		'add_oauth_mapping' => [
+			'title' => 'Add custom OAuth mapping for user data',
+			'description' => 'Add custom OAuth mapping for user data',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS sso_mapping (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					aspenField VARCHAR(75) NOT NULL,
+					responseField VARCHAR(255) NOT NULL,
+					ssoSettingId TINYINT(11) DEFAULT -1,
+                    UNIQUE (aspenField, responseField)
+				) ENGINE INNODB',
+			]
+		], //add_oauth_mapping
+		'add_account_display_options' => [
+			'title' => 'Add options to hide modules in My Account',
+			'description' => 'Add options to hide modules in My Account within Library Settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showUserCirculationModules TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN showUserPreferences TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN showUserContactInformation TINYINT(1) DEFAULT 1'
+			]
+		], //add_account_display_options
 
 		//kodi
 
@@ -259,15 +356,15 @@ function cleanupApiUsageTable()
 	$listApiUsage = new APIUsage();
 	$listApiUsage->module = "ListAPI";
 	$listApiUsage->find();
-	while($listApiUsage->fetch()) {
+	while ($listApiUsage->fetch()) {
 		$row = new APIUsage();
 		$row->module = 'SystemAPI';
 		$row->method = $listApiUsage->method;
 		$row->instance = $listApiUsage->instance;
-		if($row->find(true)) {
+		if ($row->find(true)) {
 			$row->year = $listApiUsage->year;
 			$row->month = $listApiUsage->month;
-			if($row->find(true)) {
+			if ($row->find(true)) {
 				$listApiUsage->numCalls = ($listApiUsage->numCalls + $row->numCalls);
 				$listApiUsage->update();
 				$row->delete();
@@ -281,15 +378,15 @@ function cleanupApiUsageTable()
 	$searchApiUsage = new APIUsage();
 	$searchApiUsage->module = "SearchAPI";
 	$searchApiUsage->find();
-	while($searchApiUsage->fetch()) {
+	while ($searchApiUsage->fetch()) {
 		$row = new APIUsage();
 		$row->module = 'SystemAPI';
 		$row->method = $searchApiUsage->method;
 		$row->instance = $searchApiUsage->instance;
-		if($row->find(true)) {
+		if ($row->find(true)) {
 			$row->year = $searchApiUsage->year;
 			$row->month = $searchApiUsage->month;
-			if($row->find(true)) {
+			if ($row->find(true)) {
 				$searchApiUsage->numCalls = ($searchApiUsage->numCalls + $row->numCalls);
 				$searchApiUsage->update();
 				$row->delete();

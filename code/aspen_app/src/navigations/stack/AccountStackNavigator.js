@@ -73,7 +73,7 @@ const AccountStackNavigator = () => {
 			<Stack.Screen
 				name="List"
 				component={MyList}
-				options={({ route }) => ({ title: route.params.name })}
+				options={({ route }) => ({ title: route.params.title })}
 			/>
 			<Stack.Screen
 				name="SavedSearches"
@@ -83,7 +83,7 @@ const AccountStackNavigator = () => {
 			<Stack.Screen
 				name="SavedSearch"
 				component={SavedSearchScreen}
-				options={({ route }) => ({ title: route.params.name })}
+				options={({ route }) => ({ title: route.params.title })}
 			/>
 			<Stack.Screen
 				name="ItemDetails"

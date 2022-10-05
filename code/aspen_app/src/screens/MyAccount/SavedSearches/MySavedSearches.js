@@ -1,11 +1,10 @@
 import React, {Component} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Badge, Box, Center, FlatList, Image, Pressable, Text, HStack, VStack, ScrollView} from "native-base";
-import moment from "moment";
+import {SafeAreaView} from 'react-native';
+import {Badge, Box, Center, FlatList, Pressable, Text, HStack, VStack, ScrollView} from "native-base";
 
 // custom components and helper files
 import {loadingSpinner} from "../../../components/loadingSpinner";
-import {getHolds, getLists, getSavedSearches} from "../../../util/loadPatron";
+import {getSavedSearches} from "../../../util/loadPatron";
 import {userContext} from "../../../context/user";
 
 export default class MySavedSearches extends Component {
@@ -18,11 +17,12 @@ export default class MySavedSearches extends Component {
 			libraryUrl: '',
 			searches: []
 		};
+		this._isMounted = false;
 	}
 
 	_fetchSearches = async () => {
 		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await getSavedSearches(libraryUrl).then(response =>
 			this.setState({
@@ -32,21 +32,17 @@ export default class MySavedSearches extends Component {
 	}
 
 	componentDidMount = async () => {
-		await this._fetchSearches().then(r => {
+		this._isMounted = true;
+
+		this._isMounted && await this._fetchSearches().then(r => {
 			this.setState({
 				isLoading: false
 			})
 		});
-
-		this.interval = setInterval(() => {
-			this._fetchSearches();
-		}, 1000)
-		return () => clearInterval(this.interval)
-
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// renders the items on the screen
@@ -75,7 +71,7 @@ export default class MySavedSearches extends Component {
 	};
 
 	openList = (id, item, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'SavedSearch', params: { search: id, details: item, name: item.title, libraryUrl: libraryUrl }});
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'SavedSearch', params: { id: id, details: item, title: item.title, libraryUrl: libraryUrl }});
 	};
 
 	_listEmptyComponent = () => {
@@ -102,7 +98,7 @@ export default class MySavedSearches extends Component {
 		}
 
 		return (
-			<ScrollView>
+			<SafeAreaView style={{flex: 1}}>
 				<Box safeArea={2} h="100%">
 					<FlatList
 						data={searches}
@@ -111,7 +107,7 @@ export default class MySavedSearches extends Component {
 						keyExtractor={(item) => item.id}
 					/>
 				</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 
 	}

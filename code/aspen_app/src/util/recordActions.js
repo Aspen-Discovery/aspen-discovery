@@ -60,7 +60,6 @@ export async function checkoutItem(libraryUrl, itemId, source, patronId) {
 		params: {itemId: itemId, itemSource: source, userId: patronId}
 	});
 	const response = await api.post('/UserAPI?method=checkoutItem', postBody);
-	console.log(response);
 	if (response.ok) {
 		const responseData = response.data;
 		const results = responseData.result;
@@ -212,7 +211,6 @@ export async function getItemDetails(libraryUrl, id, format) {
 	});
 	const response = await api.post('/ItemAPI?method=getItemDetails', postBody);
 	if (response.ok) {
-		//console.log(response);
 		return _.values(response.data);
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");

@@ -293,7 +293,31 @@ export function App() {
 																	 SavedSearches: 'user/saved_searches',
 																	 LoadSavedSearch: 'user/saved_search',
 																	 Lists: 'user/lists',
-																	 List: 'user/list'
+																	 List: 'user/list',
+																	 LinkedAccounts: 'user/linked_accounts',
+																	 Holds: 'user/holds',
+																	 CheckedOut: 'user/checkouts',
+																	 Preferences: 'user/preferences',
+																	 ProfileScreen: 'user'
+																 }
+															 },
+															 LibraryCardTab: {
+																 screens: {
+																	 LibraryCard: 'user/library_card'
+																 }
+															 },
+															 SearchTab: {
+																 screens: {
+																	 SearchResults: 'search'
+																 }
+															 },
+															 HomeTab: {
+																 screens: {
+																	 HomeScreen: 'home',
+																	 GroupedWorkScreen: 'search/grouped_work',
+																	 SearchByCategory: 'search/browse_category',
+																	 SearchByAuthor: 'search/author',
+																	 SearchByList: 'search/list'
 																 }
 															 }
 														 }

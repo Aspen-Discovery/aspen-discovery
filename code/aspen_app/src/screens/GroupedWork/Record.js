@@ -53,7 +53,7 @@ export class Record extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 
-		const {recordData, available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, groupedWorkISBN, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes, groupedWorkAuthor} = this.props;
+		const {recordData, available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, groupedWorkISBN, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes, groupedWorkAuthor, copyDetails} = this.props;
 		let actionCount = 1;
 
 		if(typeof actions !== 'undefined') {
@@ -88,7 +88,6 @@ export class Record extends Component {
 			volumeCount = _.size(volumes);
 		}
 
-		console.log(volumeCount);
 
 		return (
 			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "100%"}}>
@@ -97,7 +96,7 @@ export class Record extends Component {
 					<VStack space={1} alignItems="center" maxW="40%" flex={1}>
 						<Badge colorScheme={statusColor} rounded="4px" _text={{fontSize: 14}} mb={.5}>{status}</Badge>
 						{copiesMessage ? (<Text fontSize={8} textAlign="center" italic={1} maxW="75%">{copiesMessage}</Text>) : null}
-						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl}/> : null}
+						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl} copyDetails={copyDetails} discoveryVersion={discoveryVersion}/> : null}
 					</VStack>
 					<Button.Group maxW="50%" direction={actionCount > 1 ? "column" : "row"} alignItems="stretch">
 						{actions.map((thisAction) => {

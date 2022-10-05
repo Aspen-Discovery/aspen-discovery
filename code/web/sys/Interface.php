@@ -584,7 +584,11 @@ class UInterface extends Smarty
 		$this->assign('enableSavedSearches', $library->enableSavedSearches);
 		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
 
-		if ($location != null){ // library and location
+		$this->assign('showUserCirculationModules', $library->showUserCirculationModules);
+		$this->assign('showUserContactInformation', $library->showUserContactInformation);
+		$this->assign('showUserPreferences', $library->showUserPreferences);
+
+		if ($location != null) { // library and location
 			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $groupedWorkDisplaySettings->showComments);

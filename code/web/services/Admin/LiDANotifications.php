@@ -17,7 +17,7 @@ class Admin_LiDANotifications extends ObjectEditor
 		return 'LiDA Notifications';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Send Notifications');
+		return UserAccount::userHasPermission(['Send Notifications to All Libraries', 'Send Notifications to All Locations', 'Send Notifications to Home Library', 'Send Notifications to Home Location', 'Send Notifications to Home Library Locations']);
 	}
 	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new LiDANotification();
@@ -25,7 +25,7 @@ class Admin_LiDANotifications extends ObjectEditor
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingMessages = true;
-		if (!UserAccount::userHasPermission('Send Notifications')){
+		if (!UserAccount::userHasPermission('Send Notifications to All Libraries')){
 			$librarySystemMessage = new LiDANotificationLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			if ($library != null){
@@ -84,7 +84,7 @@ class Admin_LiDANotifications extends ObjectEditor
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission('Send Notifications');
+		return UserAccount::userHasPermission(['Send Notifications to All Libraries', 'Send Notifications to All Locations', 'Send Notifications to Home Library', 'Send Notifications to Home Location', 'Send Notifications to Home Library Locations']);
 	}
 
 	function getInitializationJs() : string
