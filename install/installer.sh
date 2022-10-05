@@ -71,4 +71,18 @@ cp install/logrotate.conf /etc/logrotate.d/aspen_discovery
 cd /usr/local/aspen-discovery/install
 bash ./setup_aspen_user.sh
 
+#upgrade OpenSSH to 9.0
 
+yum groupinstall "Development Tools" -y
+yum install zlib-devel openssl-devel -y
+
+cp /etc/ssh/sshd_config  /etc/ssh/sshd_config
+wget -c  https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.0p1.tar.gz
+tar -xzf  openssh-9.0p1.tar.gz
+
+cd openssh-9.0p1/
+yum install pam-devel libselinux-devel -y
+./configure  --with-pam --with-selinux --with-privsep-path=/var/lib/sshd/ --sysconfdir=/etc/ssh
+
+make
+make install
