@@ -341,6 +341,16 @@ function getUpdates22_10_00(): array
 				'ALTER TABLE library ADD COLUMN showUserContactInformation TINYINT(1) DEFAULT 1'
 			]
 		], //add_account_display_options
+		'add_theme_header_image' => [
+			'title' => 'Add option to upload a header background image for theme',
+			'description' => 'Add option to upload a header background image for theme',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN headerBackgroundImage VARCHAR(255)',
+				'ALTER TABLE themes ADD COLUMN headerBackgroundImageSize VARCHAR(75)',
+				'ALTER TABLE themes ADD COLUMN headerBackgroundImageRepeat VARCHAR(75)'
+			]
+		], //add_theme_header_image
 
 		//kodi
 
