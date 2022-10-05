@@ -72,7 +72,6 @@ cd /usr/local/aspen-discovery/install
 bash ./setup_aspen_user.sh
 
 #upgrade OpenSSH to 9.0
-
 yum groupinstall "Development Tools" -y
 yum install zlib-devel openssl-devel -y
 
@@ -86,3 +85,7 @@ yum install pam-devel libselinux-devel -y
 
 make
 make install
+
+# Disable apache server signature
+cp install/httpd.conf /etc/httpd/conf/httpd.conf
+sudo systemctl restart httpd.service
