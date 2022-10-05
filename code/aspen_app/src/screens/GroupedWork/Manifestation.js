@@ -10,7 +10,10 @@ const Manifestation = (props) => {
 	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
 	const arrayToSearch = data[format];
 
-	const locationCount = locations.length;
+	let locationCount = 1;
+	if(typeof locations !== "undefined") {
+		locationCount = locations.length;
+	}
 
 	let match = arrayToSearch.filter(function (item) {
 		return (item.format === format);

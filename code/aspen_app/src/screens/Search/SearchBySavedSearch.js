@@ -13,7 +13,7 @@ import {
 	Avatar,
 	Pressable,
 	Image,
-	Icon
+	Container
 } from "native-base";
 import { CommonActions } from '@react-navigation/native';
 import {MaterialIcons} from "@expo/vector-icons";
@@ -42,8 +42,11 @@ export default class SearchBySavedSearch extends Component {
 			refreshing: false,
 			filtering: false,
 			endOfResults: false,
-			dataMessage: null
+			dataMessage: null,
+			lastListUsed: 0,
 		};
+		this.lastListUsed = 0;
+		this.updateLastListUsed = this.updateLastListUsed.bind(this);
 	}
 
 	componentDidMount = async () => {
@@ -53,8 +56,29 @@ export default class SearchBySavedSearch extends Component {
 		const { navigation, route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? '';
 
+		await getLists(libraryUrl);
 		await this._fetchResults();
+		this._getLastListUsed();
 	};
+
+	_getLastListUsed = () => {
+		if(this.context.user) {
+			const user = this.context.user;
+			this.lastListUsed = user.lastListUsed;
+		}
+	}
+
+	updateLastListUsed = (id) => {
+		this.setState({
+			isLoading: true,
+		})
+
+		this.lastListUsed = id;
+
+		this.setState({
+			isLoading: false,
+		})
+	}
 
 	_fetchResults = async () => {
 		const { page } = this.state;
@@ -116,20 +140,31 @@ export default class SearchBySavedSearch extends Component {
 		)
 	};
 
-	renderItem = (item, library) => {
+	renderItem = (item, library, lastListUsed) => {
 		//console.log(item);
 		const imageUrl = library.baseUrl + item.image;
 		let formats = [];
 		if(item.format) {
 			formats = this.getFormats(item.format);
 		}
+
+		let isNew = false;
+		if(typeof item.isNew !== "undefined") {
+			isNew = item.isNew;
+		};
+
 		return (
 			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library)}>
 				<HStack space={3}>
 					<VStack>
-						<Image source={{ uri: imageUrl }} alt={item.title} borderRadius="md" size={{base: "80px", lg: "120px"}} />
-						<Badge mt={1} _text={{fontSize: 10}}>{item.language}</Badge>
-						<AddToList item={item.id} libraryUrl={library.baseUrl}/>
+						{isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{fontSize: 9}}>New!</Badge></Container>) : null}
+						<Image source={{ uri: imageUrl }} alt={item.title} borderRadius="md" size={{base: "90px", lg: "120px"}} />
+						<Badge mt={1} _text={{fontSize: 10, color: "coolGray.600"}} bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900", _text: {color: "warmGray.400"}}}>{item.language}</Badge>
+						<AddToList item={item.id}
+						           libraryUrl={library.baseUrl}
+						           lastListUsed={lastListUsed}
+						           updateLastListUsed={this.updateLastListUsed}
+						/>
 					</VStack>
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "md", lg: "lg"}}>{item.title}</Text>
@@ -198,7 +233,7 @@ export default class SearchBySavedSearch extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 
-		console.log(this.state.data);
+		//console.log(this.state.data);
 
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );

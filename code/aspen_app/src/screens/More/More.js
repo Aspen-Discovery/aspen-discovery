@@ -1,13 +1,12 @@
 import React, {Component} from "react";
 import {Box, Button, Center, FlatList, Text, Pressable, HStack} from "native-base";
-import {Ionicons} from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
 import {translate} from "../../translations/translations";
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
-import {UseColorMode} from "../../themes/theme";
 import {AuthContext} from "../../components/navigation";
 import {GLOBALS} from "../../util/globals";
 import {userContext} from "../../context/user";
@@ -19,6 +18,21 @@ export default class More extends Component {
 			isLoading: true,
 			hasError: false,
 			error: null,
+		};
+	}
+
+	componentDidMount = async () => {
+		let privacyPolicy;
+
+		try {
+			let tmp = await AsyncStorage.getItem("@appSettings");
+			let appSettings = JSON.parse(tmp);
+			privacyPolicy = appSettings.privacyPolicy;
+		} catch (e) {
+			console.log(e);
+		}
+
+		this.setState({
 			defaultMenuItems: [
 				{
 					key: '0',
@@ -29,15 +43,10 @@ export default class More extends Component {
 				{
 					key: '1',
 					title: translate('general.privacy_policy'),
-					path: global.privacyPolicy,
+					path: privacyPolicy,
 					external: true,
 				}
-			]
-		};
-	}
-
-	componentDidMount = async () => {
-		this.setState({
+			],
 			isLoading: false,
 		});
 	};

@@ -1,4 +1,3 @@
-{strip}
 	<div id="dplaSearchResults">
 		{if $showDplaDescription}
 		<h2>{translate text="More from Digital Public Library of America" isPublicFacing=true}</h2>
@@ -8,7 +7,7 @@
 			<div class="dplaResult row result">
 				{if $showCovers}
 					<div class="col-xs-2">
-						{if $result.object}
+						{if !empty($result.object)}
 							<a href="{$result.link}" aria-hidden="true">
 								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="{$result.title}{if !empty($result.publisher)} {translate text="from" isPublicFacing=true} {$result.publisher}{/if}"/>
 							</a>
@@ -51,4 +50,3 @@
 			</div>
 		{/foreach}
 	</div>
-{/strip}

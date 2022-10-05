@@ -22,7 +22,7 @@ import {getBrowseCategories} from "./src/util/loadLibrary";
 enableScreens();
 
 // Hide log error/warning popups in simulator (useful for demoing)
-//LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
 
 export default class AppContainer extends Component {
@@ -66,10 +66,10 @@ export default class AppContainer extends Component {
 				console.log(e);
 			}
 
-			console.log(userToken);
+			//console.log(userToken);
 
 			if(userToken) {
-				console.log("USER TOKEN FOUND");
+				//console.log("USER TOKEN FOUND");
 				if(_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
 					//console.log("Trying to run async login...");
 					//await this.login(userToken);
