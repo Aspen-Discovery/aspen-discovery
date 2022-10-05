@@ -1403,18 +1403,20 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			$finesRows = $jsonResponse->PatronAccountGetRows;
 			foreach ($finesRows as $fineRow){
-				$curFine = [
-					'fineId' => $fineRow->TransactionID,
-					'date' => $this->parsePolarisDate($fineRow->TransactionDate),
-					'type' => $fineRow->TransactionTypeDescription,
-					'reason' => $fineRow->FeeDescription,
-					'message' => $fineRow->Title . " " . $fineRow->Author . ' ' . $fineRow->FreeTextNote,
-					'amountVal' => $fineRow->TransactionAmount,
-					'amountOutstandingVal' => $fineRow->OutstandingAmount,
-					'amount' => $currencyFormatter->formatCurrency($fineRow->TransactionAmount, $currencyCode),
-					'amountOutstanding' => $currencyFormatter->formatCurrency($fineRow->OutstandingAmount, $currencyCode),
-				];
-				$fines[] = $curFine;
+				if ($fineRow->TransactionTypeDescription != "Credit") {
+					$curFine = [
+						'fineId' => $fineRow->TransactionID,
+						'date' => $this->parsePolarisDate($fineRow->TransactionDate),
+						'type' => $fineRow->TransactionTypeDescription,
+						'reason' => $fineRow->FeeDescription,
+						'message' => $fineRow->Title . " " . $fineRow->Author . ' ' . $fineRow->FreeTextNote,
+						'amountVal' => $fineRow->TransactionAmount,
+						'amountOutstandingVal' => $fineRow->OutstandingAmount,
+						'amount' => $currencyFormatter->formatCurrency($fineRow->TransactionAmount, $currencyCode),
+						'amountOutstanding' => $currencyFormatter->formatCurrency($fineRow->OutstandingAmount, $currencyCode),
+					];
+					$fines[] = $curFine;
+				}
 			}
 		}
 		return $fines;
