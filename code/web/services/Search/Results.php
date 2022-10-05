@@ -36,6 +36,47 @@ class Search_Results extends ResultsAction {
 			$oldSearchUrl = str_replace('replacementTerm=' . urlencode($replacementTerm), 'disallowReplacements', $oldSearchUrl);
 			$interface->assign('oldSearchUrl', $oldSearchUrl);
 		}
+		if (isset($_REQUEST['replacedIndex'])){
+			$replacedIndex = $_REQUEST['replacedIndex'];
+			$interface->assign('replacedIndex', $replacedIndex);
+
+			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchIndexes = $searchObject->getSearchIndexes();
+			$interface->assign('replacedIndexLabel', $searchIndexes[$replacedIndex]);
+
+			$oldSearchUrl = $_SERVER['REQUEST_URI'];
+			$oldSearchUrl = preg_replace('/searchIndex=Keyword/', 'searchIndex=' . $replacedIndex, $oldSearchUrl);
+			$oldSearchUrl = preg_replace("/[?&]replacedIndex=$replacedIndex/", '', $oldSearchUrl);
+			$interface->assign('oldSearchUrl', $oldSearchUrl);
+		}
+		if (isset($_REQUEST['replacedScope'])){
+			$replacedScope = $_REQUEST['replacedScope'];
+			$interface->assign('replacedScope', $replacedScope);
+
+			list($superScopeLabel, $localLabel, $availableLabel, $availableOnlineLabel) = $this->getAvailabilityToggleLabels();
+			switch ($replacedScope) {
+				case 'local':
+					$replacedScopeLabel = $localLabel;
+					break;
+				case 'available':
+					$replacedScopeLabel = $availableLabel;
+					break;
+				case 'available_online':
+					$replacedScopeLabel = $availableOnlineLabel;
+					break;
+				default:
+					$replacedScopeLabel = 'Unknown';
+			}
+			$interface->assign('replacedScope', $replacedScope);
+			$interface->assign('replacedScopeLabel', $replacedScopeLabel);
+			$interface->assign('globalScopeLabel', $superScopeLabel);
+
+			$oldSearchUrl = urldecode($_SERVER['REQUEST_URI']);
+			$oldSearchUrl = preg_replace('/availability_toggle:"global"/', 'availability_toggle:"' . $replacedScope . '"', $oldSearchUrl);
+			$oldSearchUrl = preg_replace("/[?&]replacedScope=$replacedScope/", '', $oldSearchUrl);
+			$interface->assign('oldSearchUrl', $oldSearchUrl);
+		}
 
 		$interface->assign('showDplaLink', false);
 		try {
@@ -267,7 +308,9 @@ class Search_Results extends ResultsAction {
 			}
 
 			$interface->assign('searchError', $result);
-			$this->getKeywordSearchResults($searchObject, $interface);
+			if (!$this->getGlobalSearchResults($searchObject, $interface)){
+				$this->getKeywordSearchResults($searchObject, $interface);
+			}
 			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
 		}
@@ -332,6 +375,38 @@ class Search_Results extends ResultsAction {
 			//Check to see if we can automatically replace the search with a spelling result
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
 
+			//These are ok to do even if facets are applied
+			if ($library->allowAutomaticSearchReplacements) {
+				if (!$this->getGlobalSearchResults($searchObject, $interface)) {
+					if ($this->getKeywordSearchResults($searchObject, $interface)) {
+						if (!$disallowReplacements) {
+							//We can automatically redirect to the keyword scope
+							$newUrl = $interface->getVariable('keywordResultsLink');
+							if (strpos($newUrl, '?') !== false) {
+								$newUrl .= '&disallowReplacements&replacedIndex=' . $interface->getVariable('originalSearchIndex');
+							} else {
+								$newUrl .= '?disallowReplacements&replacedIndex=' . $interface->getVariable('originalSearchIndex');
+							}
+							header("Location: " . $newUrl);
+							exit();
+						}
+					}
+				} else {
+					if (!$disallowReplacements) {
+						//We can automatically redirect to the global results
+						$newUrl = $interface->getVariable('globalResultsLink');
+						if (strpos($newUrl, '?') !== false) {
+							$newUrl .= '&disallowReplacements&replacedScope=' . $interface->getVariable('originalScope');
+						} else {
+							$newUrl .= '?disallowReplacements&replacedScope=' . $interface->getVariable('originalScope');
+						}
+						header("Location: " . $newUrl);
+						exit();
+					}
+				}
+			}
+
+			//Spelling checks we will only do with no applied facets
 			if (!$disallowReplacements && !$hasAppliedFacets){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
 				if (strpos($searchObject->displayQuery(), '"') === false){
@@ -360,8 +435,6 @@ class Search_Results extends ResultsAction {
 					}
 				}
 			}
-
-			$this->getKeywordSearchResults($searchObject, $interface);
 
 			// No record found
 			$interface->assign('recordCount', 0);
@@ -472,13 +545,19 @@ class Search_Results extends ResultsAction {
 	/**
 	 * @param SearchObject_AbstractGroupedWorkSearcher $searchObject
 	 * @param UInterface $interface
+	 *
+	 * @return bool true if there are keyword results
 	 */
-	private function getKeywordSearchResults(SearchObject_AbstractGroupedWorkSearcher $searchObject, UInterface $interface): void
+	private function getKeywordSearchResults(SearchObject_AbstractGroupedWorkSearcher $searchObject, UInterface $interface): bool
 	{
 		//Check to see if we are not using a Keyword search and the Keyword search would provide results
+		$interface->assign('hasKeywordResults', false);
 		if (!$searchObject->isAdvanced()) {
 			$searchTerms = $searchObject->getSearchTerms();
 			if (count($searchTerms) == 1 && $searchTerms[0]['index'] != 'Keyword') {
+				$searchIndexes = $searchObject->getSearchIndexes();
+				$interface->assign('originalSearchIndex', $searchTerms[0]['index']);
+				$interface->assign('originalSearchIndexLabel', $searchIndexes[$searchTerms[0]['index']]);
 				$keywordSearchObject = clone $searchObject;
 				$keywordSearchObject->setPrimarySearch(false);
 				$keywordSearchObject->setSearchTerms(['index' => 'Keyword', 'lookfor' => $searchTerms[0]['lookfor']]);
@@ -486,11 +565,64 @@ class Search_Results extends ResultsAction {
 				$keywordSearchObject->clearFacets();
 				$keywordSearchObject->processSearch(false, false, false);
 				if ($keywordSearchObject->getResultTotal() > 0) {
+					$interface->assign('hasKeywordResults', true);
 					$interface->assign('keywordResultsLink', $keywordSearchObject->renderSearchUrl());
 					$interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
+					return true;
 				}
 			}
 		}
+		return false;
+	}
+
+	/**
+	 * @param SearchObject_AbstractGroupedWorkSearcher $searchObject
+	 * @param UInterface $interface
+	 *
+	 * @return bool true if there are keyword results
+	 */
+	private function getGlobalSearchResults(SearchObject_AbstractGroupedWorkSearcher $searchObject, UInterface $interface): bool
+	{
+		//Check to see if we are not using a Global search and the Global search would provide results
+		if (!$searchObject->isAdvanced()) {
+			$searchTerms = $searchObject->getSearchTerms();
+			if (count($searchTerms) == 1) {
+				if ($searchObject->selectedAvailabilityToggleValue != 'global') {
+					list($superScopeLabel, $localLabel, $availableLabel, $availableOnlineLabel) = $this->getAvailabilityToggleLabels();
+					switch ($searchObject->selectedAvailabilityToggleValue) {
+						case 'local':
+							$originalScopeLabel = $localLabel;
+							break;
+						case 'available':
+							$originalScopeLabel = $availableLabel;
+							break;
+						case 'available_online':
+							$originalScopeLabel = $availableOnlineLabel;
+							break;
+						default:
+							$originalScopeLabel = 'Unknown';
+					}
+
+					$interface->assign('originalScope', $searchObject->selectedAvailabilityToggleValue);
+					$interface->assign('originalScopeLabel', $originalScopeLabel);
+					$globalSearchObject = clone $searchObject;
+					$globalSearchObject->setPrimarySearch(false);
+					$globalSearchObject->setSearchTerms(['index' => $searchTerms[0]['index'], 'lookfor' => $searchTerms[0]['lookfor']]);
+					$globalSearchObject->removeFilter('availability_toggle');
+					$globalSearchObject->addFilter('availability_toggle:global');
+					$globalSearchObject->disableSpelling();
+					$globalSearchObject->processSearch(false, false, false);
+					if ($globalSearchObject->getResultTotal() > 0) {
+						$interface->assign('hasGlobalResults', true);
+						$interface->assign('globalResultsLink', $globalSearchObject->renderLinkWithFilter('availability_toggle', 'global'));
+						$interface->assign('globalResultsCount', $globalSearchObject->getResultTotal());
+						$interface->assign('globalScopeLabel', $superScopeLabel);
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private function loadPlacards()
@@ -555,6 +687,34 @@ class Search_Results extends ResultsAction {
 	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Catalog Search');
+	}
+
+	/**
+	 * @return array
+	 */
+	private function getAvailabilityToggleLabels(): array
+	{
+		$searchLibrary = Library::getSearchLibrary(null);
+		$searchLocation = Location::getSearchLocation(null);
+
+		if ($searchLocation) {
+			$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+			$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+			$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+			$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+			$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+		} else {
+			$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+			$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+			$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
+			$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
+			$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+		}
+		return array($superScopeLabel, $localLabel, $availableLabel, $availableOnlineLabel);
 	}
 
 }

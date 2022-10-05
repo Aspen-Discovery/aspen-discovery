@@ -276,7 +276,7 @@ public class RecordGroupingProcessor {
 		}else{
 			String alternateGroupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
 			if (alternateGroupedWorkPermanentId != null) {
-				if (alternateGroupedWorkPermanentId.length() == 40) {
+				if (alternateGroupedWorkPermanentId.length() > 36) {
 					alternateGroupedWorkPermanentId = alternateGroupedWorkPermanentId.substring(0, 36);
 				}
 				alternateGroupedWorkPermanentId += "-" + groupedWork.getLanguage();
@@ -901,7 +901,7 @@ public class RecordGroupingProcessor {
 				}
 			}
 		}
-		if (activeLanguage == null || activeLanguage.equals("|||") || activeLanguage.equals("   ")){
+		if (activeLanguage == null || activeLanguage.equals("|||") || activeLanguage.equals("   ") || activeLanguage.contains(" ")){
 			activeLanguage = "unk";
 		}
 		return activeLanguage;

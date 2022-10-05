@@ -55,7 +55,7 @@
 				{if $showCovers == true}
 				<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 						<a href="/MyAccount/MyList/{$list->id}" class="alignleft listResultImage">
-							<img src="/bookcover.php?type=list&amp;id={$list->id}&amp;size=medium" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
+							<img src="/bookcover.php?type=list&amp;id={$list->id}&amp;size=medium" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 						</a>
 				</div>
 				{/if}

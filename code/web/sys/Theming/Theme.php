@@ -10,6 +10,7 @@ class Theme extends DataObject
 	public $logoName;
 	public $favicon;
 	public $logoApp;
+	public $fullWidth;
 
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */ $headerBackgroundColorDefault;
@@ -300,6 +301,8 @@ class Theme extends DataObject
 	public $bodyFontDefault;
 	public $customBodyFont;
 
+	public $coverStyle;
+
 	public $additionalCssType;
 	public $additionalCss;
 
@@ -358,6 +361,11 @@ class Theme extends DataObject
 			'Ubuntu',
 		];
 
+		$coverStyles = [
+			"border" => 'Border / Picture Frame',
+			"floating" => 'Shadow / Floating'
+		];
+
 		$themesToExtend = [];
 		$themesToExtend[''] = 'None';
 		$theme = new Theme();
@@ -370,9 +378,11 @@ class Theme extends DataObject
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id', 'uniqueProperty' => true],
 			'themeName' => ['property' => 'themeName', 'type' => 'text', 'label' => 'Theme Name', 'description' => 'The Name of the Theme', 'maxLength' => 50, 'required' => true, 'uniqueProperty' => true],
 			'extendsTheme' => ['property' => 'extendsTheme', 'type' => 'enum', 'values' => $themesToExtend, 'label' => 'Extends Theme', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'maxLength' => 50, 'required' => false],
+			'fullWidth' => ['property' => 'fullWidth', 'type' => 'checkbox', 'label' => 'Make Header & Footer Full Width', 'description' => 'Whether or not the header and footer should be full width', 'required' => false, 'hideInLists' => true],
 			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (1170 x 250px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'thumbWidth' => 750, 'maxWidth' => 1170, 'maxHeight' => 250, 'hideInLists' => true],
-			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
+			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab (.jpg and .png files supported)', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
 			'logoApp' => ['property' => 'logoApp', 'type' => 'image', 'label' => 'Logo for Aspen LiDA (512x512 pixels)', 'description' => 'The logo for use in Aspen LiDA, if none provided will use favicon', 'required' => false, 'thumbWidth' => 180, 'maxWidth' => 512, 'maxHeight' => 512, 'hideInLists' => true],
+			'coverStyle' => ['property' => 'coverStyle', 'type' => 'enum', 'values' => $coverStyles, 'label' => 'Cover Image Style', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'required' => false, 'hideInLists' => true],
 
 			//Overall page colors
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
@@ -384,7 +394,7 @@ class Theme extends DataObject
 			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
 
 			//Header Colors
-			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'headerForegroundColor'],
+			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerForegroundColor'],
 			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'headerBackgroundColor'],
 			'headerBottomBorderWidth' => ['property' => 'headerBottomBorderWidth', 'type' => 'text', 'label' => 'Header Bottom Border Width', 'description' => 'Header Bottom Border Width', 'required' => false, 'hideInLists' => true],
 
@@ -445,7 +455,7 @@ class Theme extends DataObject
 
 			//Browse category theming
 			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
-				'browseCategoryPanelColor' => ['property' => 'browseCategoryPanelColor', 'type' => 'color', 'label' => 'Browse Category Panel Color', 'description' => 'Background Color of the Browse Category Panel', 'required' => false, 'hideInLists' => true, 'default' => '#d7dce3'],
+				'browseCategoryPanelColor' => ['property' => 'browseCategoryPanelColor', 'type' => 'color', 'label' => 'Browse Category Panel Color', 'description' => 'Background Color of the Browse Category Panel', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'],
 
 				'selectedBrowseCategoryBackgroundColor' => ['property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB', 'checkContrastWith'=>'selectedBrowseCategoryForegroundColor'],
 				'selectedBrowseCategoryForegroundColor' => ['property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Text Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'selectedBrowseCategoryBackgroundColor'],
@@ -467,11 +477,11 @@ class Theme extends DataObject
 			]],
 
 			'panels' => ['property'=>'panelsSection', 'type' => 'section', 'label' =>'Panels', 'hideInLists' => true, 'properties' => [
-				'closedPanelBackgroundColor' => ['property' => 'closedPanelBackgroundColor', 'type' => 'color', 'label' => 'Closed Panel Background Color', 'description' => 'Panel Background Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#e7e7e7', 'checkContrastWith'=>'closedPanelForegroundColor'],
+				'closedPanelBackgroundColor' => ['property' => 'closedPanelBackgroundColor', 'type' => 'color', 'label' => 'Closed Panel Background Color', 'description' => 'Panel Background Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'closedPanelForegroundColor'],
 				'closedPanelForegroundColor' => ['property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'closedPanelBackgroundColor'],
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
 				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'openPanelBackgroundColor'],
-				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f8f8f8', 'checkContrastWith'=>'panelBodyForegroundColor'],
+				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'panelBodyForegroundColor'],
 				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Panel Body Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 

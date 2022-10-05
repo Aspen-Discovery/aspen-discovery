@@ -266,6 +266,19 @@ class Admin_AJAX extends JSON_Action
 	{
 		global $interface;
 		if (UserAccount::userHasPermission('Administer Permissions')) {
+
+			$roles = [];
+			require_once ROOT_DIR . '/sys/Administration/Role.php';
+			$role = new Role();
+			$role->orderBy('name');
+			$role->find();
+			while($role->fetch()) {
+				$roles[$role->roleId]['roleId'] = $role->roleId;
+				$roles[$role->roleId]['name'] = $role->name;
+			}
+
+			$interface->assign('permissionRoles', $roles);
+
 			return [
 				'title' => translate(['text'=>'Create New Role','isAdminFacing'=>true]),
 				'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
@@ -285,6 +298,7 @@ class Admin_AJAX extends JSON_Action
 			if (isset($_REQUEST['roleName'])){
 				$name = $_REQUEST['roleName'];
 				$description = $_REQUEST['description'];
+				$copyFrom = $_REQUEST['copyFrom'];
 				require_once ROOT_DIR . '/sys/Administration/Role.php';
 				$existingRole = new Role;
 				$existingRole->name = $name;
@@ -294,10 +308,35 @@ class Admin_AJAX extends JSON_Action
 						'message' => "$name already exists",
 					];
 				}else{
+					$curPermissions = [];
+					if($copyFrom != "-1" || $copyFrom != -1) {
+						$curRole = new Role();
+						$curRole->roleId = $copyFrom;
+						if ($curRole->find(true)) {
+							$curPermissions = $curRole->getPermissions();
+						}
+					}
+
 					$newRole = new Role();
 					$newRole->name = $name;
 					$newRole->description = $description;
 					$newRole->insert();
+
+					if(count($curPermissions) > 0) {
+						foreach($curPermissions as $curPermission) {
+							require_once ROOT_DIR . '/sys/Administration/Permission.php';
+							$permission = new Permission();
+							$permission->name = $curPermission;
+							if($permission->find(true)) {
+								require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+								$newPermission = new RolePermissions();
+								$newPermission->roleId = $newRole->roleId;
+								$newPermission->permissionId = $permission->id;
+								$newPermission->insert();
+							}
+						}
+					}
+
 					return [
 						'success' => true,
 						'message' => "$name was created successfully",
@@ -460,6 +499,264 @@ class Admin_AJAX extends JSON_Action
 				'success' => false,
 				'title' => 'Error Processing Update',
 				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCopyFacetGroupForm(){
+		if(!empty($_REQUEST['facetGroupId'])) {
+			global $interface;
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
+			$facetGroup = new GroupedWorkFacetGroup();
+			$facetGroup->id = $_REQUEST['facetGroupId'];
+			if($facetGroup->find(true)) {
+				$facetId = $facetGroup->id;
+				$facetLabel = $facetGroup->name;
+				$interface->assign('facetId', $facetId);
+				$interface->assign('facetLabel', $facetLabel);
+
+				$displaySettings = [];
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+				$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+				$groupedWorkDisplaySettings->find();
+				while($groupedWorkDisplaySettings->fetch()) {
+					$displaySettings[$groupedWorkDisplaySettings->id]['id'] = $groupedWorkDisplaySettings->id;
+					$displaySettings[$groupedWorkDisplaySettings->id]['name'] = $groupedWorkDisplaySettings->name;
+				}
+
+				$interface->assign('displaySettings', $displaySettings);
+
+				$modalBody = $interface->fetch('Admin/copyFacetGroupForm.tpl');
+
+				return [
+					'success' => true,
+					'title' => translate(['text' => "Copy {$facetLabel} Grouped Work Facet Group", 'isAdminFacing'=>true]),
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processCopyFacetGroupForm();\" class=\"modal-buttons btn btn-primary\">" . translate(['text' => 'Copy', 'isAdminFacing'=>true]) . "</button>"
+				];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function doCopyFacetGroup(){
+
+		if(!empty($_REQUEST['name'])) {
+			$facetsProcessed = 0;
+			$id = $_REQUEST['id'];
+			$name = $_REQUEST['name'];
+			$updateDisplaySettings = false;
+
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
+			$curObj = new GroupedWorkFacetGroup();
+			$curObj->id = $id;
+			if($curObj->find(true)) {
+				$curObjFacets = $curObj->getFacets();
+				$newGroup = new GroupedWorkFacetGroup();
+				$newGroup->name = $name;
+				if($newGroup->insert()) {
+					foreach($curObjFacets as $curFacet) {
+						$newFacet = $curFacet;
+						$newFacet->id = null;
+						$newFacet->facetGroupId = $newGroup->id;
+						$newFacet->insert();
+						$facetsProcessed++;
+					}
+
+					if($facetsProcessed > 0) {
+						if(!empty($_REQUEST['displaySettings']) && $_REQUEST['displaySettings'] != "-1") {
+							require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+							$displaySettingId = $_REQUEST['displaySettings'];
+							$displaySettings = new GroupedWorkDisplaySetting();
+							$displaySettings->id = $displaySettingId;
+							if($displaySettings->find(true)) {
+								$displaySettings->facetGroupId = $newGroup->id;
+								if($displaySettings->update()) {
+									$updateDisplaySettings = true;
+								}
+							}
+						}
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => "Unable to create new facet group",
+					];
+				}
+			}
+
+			if($updateDisplaySettings && $facetsProcessed > 0) {
+				return [
+					'success' => true,
+					'title' => 'Success',
+					'message' => "Copied {$facetsProcessed} facets to {$name} and updated Grouped Work Display Settings",
+				];
+			} elseif($facetsProcessed > 0) {
+				return [
+					'success' => true,
+					'title' => 'Success',
+					'message' => "Copied {$facetsProcessed} facets to {$name}",
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Unable to copy existing facets into {$name}",
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "A name was not provided for the new facet group",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCopyDisplaySettingsForm(){
+		if(!empty($_REQUEST['settingsId'])) {
+			global $interface;
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+			$displaySettings = new GroupedWorkDisplaySetting();
+			$displaySettings->id = $_REQUEST['settingsId'];
+			if($displaySettings->find(true)) {
+				$settingsId = $displaySettings->id;
+				$settingsName = $displaySettings->name;
+				$interface->assign('settingsId', $settingsId);
+				$interface->assign('settingsName', $settingsName);
+
+				$modalBody = $interface->fetch('Admin/copyGroupedWorkDisplaySettings.tpl');
+
+				return [
+					'success' => true,
+					'title' => translate(['text' => "Copy {$settingsName} Grouped Work Display Settings", 'isAdminFacing'=>true]),
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processCopyDisplaySettingsForm();\" class=\"modal-buttons btn btn-primary\">" . translate(['text' => 'Copy', 'isAdminFacing'=>true]) . "</button>"
+				];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function doCopyDisplaySettings(){
+
+		if(!empty($_REQUEST['name'])) {
+			$id = $_REQUEST['id'];
+			$name = $_REQUEST['name'];
+
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+			$curObj = new GroupedWorkDisplaySetting();
+			$curObj->id = $id;
+			if($curObj->find(true)) {
+				$newDisplaySetting = clone $curObj;
+				$newDisplaySetting->id = null;
+				$newDisplaySetting->name = $name;
+				if($newDisplaySetting->insert()) {
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Copied Grouped Work Display Settings to {$name}",
+					];
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => "Unable to create new Grouped Work Display Setting",
+					];
+				}
+			}
+
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "A name was not provided for the new Grouped Work Display Setting",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getBatchDeleteForm(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$batchDeleteScope = $_REQUEST['batchDeleteScope'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canBatchDelete()) {
+			$numObjects = $tool->getNumObjects();
+			global $interface;
+			$interface->assign('batchScope', $batchDeleteScope);
+			$interface->assign('numObjects', $numObjects);
+
+			$modalBody = $interface->fetch('Admin/batchDeleteForm.tpl');
+			return [
+				'success' => true,
+				'title' => translate(['text' => "Batch Delete {$tool->getPageTitle()}", 'isAdminFacing'=>true]),
+				'modalBody' => $modalBody,
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchDeleteForm('{$moduleName}', '{$toolName}', '{$batchDeleteScope}');\" class=\"modal-buttons btn btn-danger\">" . translate(['text' => 'Yes, Delete', 'isAdminFacing'=>true]) . "</button>"
+			];
+		}else{
+			return [
+				'success' => false,
+				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
+
+	function doBatchDelete(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$batchDeleteScope = $_REQUEST['batchDeleteScope'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canBatchEdit()) {
+			if ($batchDeleteScope == 'all') {
+				$numObjects = $tool->getNumObjects();
+				$recordsPerPage = 100;
+				$numBatches = ceil($numObjects / $recordsPerPage);
+				for ($i = 0; $i < $numBatches; $i++) {
+					$objectsForBatch = $tool->getAllObjects($i + 1, 1000);
+					foreach ($objectsForBatch as $dataObject) {
+						$dataObject->delete();
+					}
+				}
+				return [
+					'success' => true,
+					'title' => 'Success',
+					'message' => "Deleted all {$tool->getPageTitle()} objects",
+				];
+			} else {
+				foreach ($_REQUEST['selectedObject'] as $id => $value){
+					$dataObject = $tool->getExistingObjectById($id);
+					if ($dataObject != null) {
+						$dataObject->delete();
+					}
+				}
+				return [
+					'success' => true,
+					'title' => 'Success',
+					'message' => "Deleted selected {$tool->getPageTitle()} objects.",
+				];
+			}
+
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error Processing Update',
+				'message' => "Sorry, you don't have permission to batch delete",
 			];
 		}
 	}

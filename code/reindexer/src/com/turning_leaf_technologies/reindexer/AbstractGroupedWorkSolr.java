@@ -98,6 +98,8 @@ public abstract class AbstractGroupedWorkSolr {
 	protected final HashSet<Long> userRatingLink = new HashSet<>();
 	protected final HashSet<Long> userNotInterestedLink = new HashSet<>();
 
+	protected final HashSet<String> parentRecords = new HashSet<>();
+
 	//Store a list of scopes for the work
 	protected HashMap<String, ArrayList<ScopingInfo>> relatedScopes = new HashMap<>();
 
@@ -845,6 +847,10 @@ public abstract class AbstractGroupedWorkSolr {
 		this.contents.addAll(fieldList);
 	}
 
+	void addContents(String contents) {
+		this.contents.add(contents);
+	}
+
 	void addGenre(Set<String> fieldList) {
 		this.genres.addAll(AspenStringUtils.normalizeSubjects(fieldList));
 	}
@@ -1428,5 +1434,13 @@ public abstract class AbstractGroupedWorkSolr {
 			}
 		}
 		return targetAudiencesAsString;
+	}
+
+	public boolean hasParentRecords() {
+		return parentRecords.size() > 0;
+	}
+
+	public void addParentRecord(String workId){
+		this.parentRecords.add(workId);
 	}
 }

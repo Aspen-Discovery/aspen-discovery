@@ -63,3 +63,8 @@
 ############################
 */15 * * * * root chown aspen:aspen_apache /data/aspen-discovery/{sitename}/covers/original/*
 */15 * * * * root chmod g+rw /data/aspen-discovery/{sitename}/covers/original/*
+
+#############################
+# Refresh SAML SSO metadata #
+#############################
+00 05  * * * www-data php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php {sitename}

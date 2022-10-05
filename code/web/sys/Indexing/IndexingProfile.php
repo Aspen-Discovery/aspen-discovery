@@ -24,6 +24,7 @@ class IndexingProfile extends DataObject
 	public $recordDriver;
 	public $catalogDriver;
 	public $recordUrlComponent;
+	public $processRecordLinking;
 	public /** @noinspection PhpUnused */ $treatUnknownLanguageAs;
 	public /** @noinspection PhpUnused */ $treatUndeterminedLanguageAs;
 	public /** @noinspection PhpUnused */ $formatSource;
@@ -141,6 +142,8 @@ class IndexingProfile extends DataObject
 
 			'recordUrlComponent' => array('property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record'),
 
+			'processRecordLinking' => array('property' => 'processRecordLinking', 'type' => 'checkbox', 'label' => 'Process Record Linking', 'description' => 'Whether or not record linking between MARC records (in 760-787 fields) should be processed', 'forcesReindex' => true, 'default' => false),
+
 			'recordNumberTag' => array('property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true, 'forcesReindex' => true),
 			'recordNumberSubfield' => array('property' => 'recordNumberSubfield', 'type' => 'text', 'label' => 'Record Number Subfield', 'maxLength' => 1, 'description' => 'The subfield where the record number is stored', 'required' => true, 'default' => 'a', 'forcesReindex' => true),
 			'recordNumberPrefix' => array('property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist', 'forcesReindex' => true),
@@ -184,7 +187,7 @@ class IndexingProfile extends DataObject
 				'barcode' => array('property' => 'barcode', 'type' => 'text', 'label' => 'Barcode', 'maxLength' => 1, 'description' => 'Subfield for barcode', 'forcesReindex' => true),
 				'status' => array('property' => 'status', 'type' => 'text', 'label' => 'Status', 'maxLength' => 1, 'description' => 'Subfield for status', 'forcesReindex' => true),
 				'nonHoldableStatuses' => array('property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds', 'forcesReindex' => true),
-				'statusesToSuppress' => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed', 'forcesReindex' => true),
+				'statusesToSuppress' => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should be suppressed', 'forcesReindex' => true),
 				'treatLibraryUseOnlyGroupedStatusesAsAvailable' => array('property' => 'treatLibraryUseOnlyGroupedStatusesAsAvailable', 'type' => 'checkbox', 'label' => 'Treat Library Use Only Grouped Statuses As Available', 'description' => 'Should items that have a grouped status of Library Use Only be treated as Available', 'forcesReindex' => true, 'default'=>1),
 				'totalCheckouts' => array('property' => 'totalCheckouts', 'type' => 'text', 'label' => 'Total Checkouts', 'maxLength' => 1, 'description' => 'Subfield for total checkouts', 'forcesReindex' => true),
 				'lastYearCheckouts' => array('property' => 'lastYearCheckouts', 'type' => 'text', 'label' => 'Last Year Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts done last year', 'forcesReindex' => true),

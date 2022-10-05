@@ -1,14 +1,26 @@
 import React, {useState} from "react";
-import {Button, FormControl, Modal, Select, CheckIcon} from "native-base";
+import {Button, FormControl, Modal, Select, CheckIcon, Radio, Stack, Text} from "native-base";
 import {translate} from "../../translations/translations";
 import {completeAction} from "./Record";
 
 const SelectVolumeHold = (props) => {
 
-	const {label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, volumes, updateProfile} = props;
+	const {label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user, volumes, updateProfile, majorityOfItemsHaveVolumes, hasItemsWithoutVolumes, volumeCount} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [volume, setVolume] = React.useState("");
+
+	let typeOfHold = "bib";
+	if(majorityOfItemsHaveVolumes) {
+		typeOfHold = "volume"
+	}
+
+	let shouldAskHoldType = false;
+	if(!majorityOfItemsHaveVolumes && volumeCount >= 1) {
+		shouldAskHoldType = true;
+	}
+
+	let [holdType, setHoldType] = React.useState(typeOfHold);
 	let [activeAccount, setActiveAccount] = React.useState(user.id);
 
 	const availableAccounts = Object.values(linkedAccounts);
@@ -21,9 +33,19 @@ const SelectVolumeHold = (props) => {
 					<Modal.CloseButton/>
 					<Modal.Header>{label}</Modal.Header>
 					<Modal.Body>
+						{shouldAskHoldType ? (
+							<Radio.Group name="holdTypeGroup" defaultValue={holdType} value={holdType} onChange={nextValue => {setHoldType(nextValue)}} accessibilityLabel="">
+								<Radio value="bib" my={1} size="sm">
+									{translate('grouped_work.first_available')}
+								</Radio>
+								<Radio value="volume" my={1} size="sm">
+									{translate('grouped_work.specific_volume')}
+								</Radio>
+							</Radio.Group>
+						) : null}
 						{linkedAccountsCount > 0 ? (
 							<FormControl>
-								<FormControl.Label>Place hold for account</FormControl.Label>
+								<FormControl.Label>{translate('linked_accounts.place_hold_for_account')}</FormControl.Label>
 								<Select
 									name="linkedAccount"
 									selectedValue={activeAccount}
@@ -44,26 +66,28 @@ const SelectVolumeHold = (props) => {
 								</Select>
 							</FormControl>
 						) : null}
-						<FormControl>
-							<FormControl.Label>Select volume</FormControl.Label>
-							<Select
-								name="volumeForHold"
-								selectedValue={volume}
-								minWidth="200"
-								accessibilityLabel="Select a Volume"
-								_selectedItem={{
-									bg: "tertiary.300",
-									endIcon: <CheckIcon size="5"/>
-								}}
-								mt={1}
-								mb={2}
-								onValueChange={itemValue => setVolume(itemValue)}
-							>
-								{volumes.map((item, index) => {
-									return <Select.Item label={item.displayLabel} value={item.volumeId} />;
-								})}
-							</Select>
-						</FormControl>
+						{holdType === "volume" ? (
+							<FormControl>
+								<FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
+								<Select
+									name="volumeForHold"
+									selectedValue={volume}
+									minWidth="200"
+									accessibilityLabel="Select a Volume"
+									_selectedItem={{
+										bg: "tertiary.300",
+										endIcon: <CheckIcon size="5"/>
+									}}
+									mt={1}
+									mb={2}
+									onValueChange={itemValue => setVolume(itemValue)}
+								>
+									{volumes.map((item, index) => {
+										return <Select.Item label={item.displayLabel} value={item.volumeId} />;
+									})}
+								</Select>
+							</FormControl>
+						) : null}
 					</Modal.Body>
 					<Modal.Footer>
 						<Button.Group space={2} size="md">

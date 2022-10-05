@@ -2,13 +2,14 @@
   "expo": {
     "name": "appName",
     "slug": "appSlug",
+    "scheme": "appSlug",
     "owner": "expoOwner",
     "privacy": "public",
     "platforms": [
       "ios",
       "android"
     ],
-    "version": "22.07.00",
+    "version": "22.09.00",
     "sdkVersion": "45.0.0",
     "orientation": "default",
     "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
@@ -20,13 +21,13 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 5000
+      "fallbackToCacheTimeout": 10000
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "buildNumber": "19",
+      "buildNumber": "1",
       "bundleIdentifier": "reverseDNS.bundleId",
       "supportsTablet": true,
       "requireFullScreen": true,
@@ -45,22 +46,25 @@
     },
     "android": {
       "package": "reverseDNS.bundleId",
-      "versionCode": 19,
+      "versionCode": 1,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "FOREGROUND_SERVICE"
+        "ACCESS_FINE_LOCATION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
         "backgroundColor": "bgColor"
       },
-      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
+      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
     },
     "description": "",
+    "notification": {
+      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=logoNotification&slug=appSlug"
+    },
     "extra": {
       "apiUrl": "libraryUrl",
       "greenhouse": "https://aspen-test.bywatersolutions.com/",

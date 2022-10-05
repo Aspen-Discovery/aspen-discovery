@@ -7,6 +7,7 @@ import {translate} from "../../../../translations/translations";
 // custom components and helper files
 
 const AddLinkedAccount = (props) => {
+	const {_updateLinkedAccounts} = props;
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
@@ -69,6 +70,7 @@ const AddLinkedAccount = (props) => {
 										await addLinkedAccount(user, password, props.libraryUrl).then(r => {
 											setShowModal(false);
 											setLoading(false);
+											_updateLinkedAccounts();
 										})
 									}
 								}>{translate('linked_accounts.add')}</Button>

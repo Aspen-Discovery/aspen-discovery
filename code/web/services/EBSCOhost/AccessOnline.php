@@ -25,7 +25,8 @@ class EBSCOhost_AccessOnline extends Action{
 				//Track usage of the record
 				require_once ROOT_DIR . '/sys/Ebsco/EbscohostRecordUsage.php';
 				$ebscoEdsRecordUsage = new EbscohostRecordUsage();
-				$ebscoEdsRecordUsage->instance = $_SERVER['SERVER_NAME'];
+				global $aspenUsage;
+				$ebscoEdsRecordUsage->instance = $aspenUsage->instance;
 				$ebscoEdsRecordUsage->ebscohostId = $id;
 				$ebscoEdsRecordUsage->year = date('Y');
 				$ebscoEdsRecordUsage->month = date('n');
@@ -46,7 +47,8 @@ class EBSCOhost_AccessOnline extends Action{
 					//Track usage for the user
 					require_once ROOT_DIR . '/sys/Ebsco/UserEbscohostUsage.php';
 					$userEbscohostUsage = new UserEbscohostUsage();
-					$userEbscohostUsage->instance = $_SERVER['SERVER_NAME'];
+					global $aspenUsage;
+					$userEbscohostUsage->instance = $aspenUsage->instance;
 					$userEbscohostUsage->userId = $userId;
 					$userEbscohostUsage->year = date('Y');
 					$userEbscohostUsage->month = date('n');

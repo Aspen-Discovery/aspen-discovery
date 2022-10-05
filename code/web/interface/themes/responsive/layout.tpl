@@ -58,39 +58,46 @@
 	{if $shouldShowAdminAlert}
 		{include file="adminMessages.tpl"}
 	{/if}
-	<div class="container">
-		{if !empty($systemMessages)}
-			<div id="system-message-header" class="row">
-				{include file="systemMessages.tpl" messages=$systemMessages}
-			</div>
-		{/if}
+	<div {if !$fullWidthTheme}class="container"{/if} id="page-container">
+		<div {if $fullWidthTheme}class="container-fluid"{/if} id="system-messages">
+			{if !empty($systemMessages)}
+				<div id="system-message-header" class="row">
+					{include file="systemMessages.tpl" messages=$systemMessages}
+				</div>
+			{/if}
 
-		{foreach from=$messages item="message"}
-			<div class="alert alert-{$message->messageLevel} row alert-dismissable">
-				<button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
-				{translate text=$message->message isPublicFacing=true}
-				{if !empty($message->action1Title) && !empty($message->action1)}
-					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{translate text=$message->action1Title isPublicFacing=true}</a>
-				{/if}
-				{if !empty($message->action2Title) && !empty($message->action2)}
-					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{translate text=$message->action2Title isPublicFacing=true}</a>
-				{/if}
-			</div>
-		{/foreach}
-
-		<div id="header-wrapper" class="row" role="banner">
-			{include file='header_responsive.tpl'}
+			{foreach from=$messages item="message"}
+				<div class="alert alert-{$message->messageLevel} row alert-dismissable">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
+					{translate text=$message->message isPublicFacing=true}
+					{if !empty($message->action1Title) && !empty($message->action1)}
+						&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{translate text=$message->action1Title isPublicFacing=true}</a>
+					{/if}
+					{if !empty($message->action2Title) && !empty($message->action2)}
+						<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{translate text=$message->action2Title isPublicFacing=true}</a>
+					{/if}
+				</div>
+			{/foreach}
 		</div>
 
-		<div id="horizontal-menu-bar-wrapper" class="row">
-			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
-				{include file='horizontal-menu-bar.tpl'}
-			</div>
-			<div id="horizontal-search-container" class="col-tn-12" role="search">
-				{include file="Search/horizontal-searchbox.tpl"}
+		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-header">
+			<div id="header-wrapper" role="banner" class="row {if $fullWidthTheme}row-no-gutters fullWidth{/if}">
+				{include file='header_responsive.tpl'}
 			</div>
 		</div>
 
+		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-menu-bar">
+			<div id="{if $fullWidthTheme}horizontal-menu-bar-wrapper-fullWidth{else}horizontal-menu-bar-wrapper{/if}" class="row {if $fullWidthTheme}row-no-gutters{/if}">
+				<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar {if $fullWidthTheme}fullWidth{/if}" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
+					{include file='horizontal-menu-bar.tpl'}
+				</div>
+				<div id="horizontal-search-container" class="col-tn-12 {if $fullWidthTheme}fullWidth{/if}" role="search">
+					{include file="Search/horizontal-searchbox.tpl"}
+				</div>
+			</div>
+		</div>
+
+	{if $fullWidthTheme}<div class="container">{/if}
 		<div id="content-container">
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}
@@ -130,9 +137,12 @@
 				{/if}
 			</div>
 		</div>
+	{if $fullWidthTheme}</div>{/if}
 
-		<div id="footer-container" class="row" role="contentinfo">
-			{include file="footer_responsive.tpl"}
+		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-footer">
+			<div id="footer-container" role="contentinfo" class="row {if $fullWidthTheme}row-no-gutters{/if}">
+				{include file="footer_responsive.tpl"}
+			</div>
 		</div>
 
 	</div>

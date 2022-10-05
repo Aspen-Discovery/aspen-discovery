@@ -1,0 +1,9 @@
+Get the product url to
+
+if (LOAD_PRODUCTS_WITH_ANY_CHANGES){
+    Get a list of products from the main OverDrive collection that have changed since we last updated;
+}else if (LOAD_ALL_PRODUCTS) {
+    Get a list of all products from the main from OverDrive collection
+}
+
+loop (all advantage accounts)

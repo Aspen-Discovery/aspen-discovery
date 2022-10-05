@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import {SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Box, Divider, HStack, Button, Text, Heading, FlatList} from "native-base";
 
@@ -14,13 +15,15 @@ import {ScrollView} from "react-native";
 import {userContext} from "../../../../context/user";
 
 export default class LinkedAccounts extends Component {
-	constructor(props) {
-		super(props);
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			linkedAccounts: [],
 			viewers: [],
+			removingLink: false,
 		};
+		this._isMounted = false;
 		this._fetchLinkedAccounts();
 		this._fetchViewers();
 		this.loadLinkedAccounts();
@@ -48,47 +51,51 @@ export default class LinkedAccounts extends Component {
 	}
 
 	_fetchLinkedAccounts = async () => {
-		const { navigation, route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
-
-		await getLinkedAccounts(libraryUrl);
+		await getLinkedAccounts(this.context.library.baseUrl);
 	}
 
 	_fetchViewers = async () => {
-		const { navigation, route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		await getViewers(this.context.library.baseUrl);
+	}
 
-		await getViewers(libraryUrl);
+	_updateLinkedAccounts = async () => {
+		this._isMounted && await this._fetchLinkedAccounts();
+		this._isMounted && await this._fetchViewers();
+		this._isMounted && await this.loadLinkedAccounts();
+		this._isMounted && await this.loadViewers();
 	}
 
 	componentDidMount = async () => {
-		this.setState({
+		this._isMounted = true;
+
+		this._isMounted && this.setState({
 			isLoading: true,
 		});
 
-		await this._fetchLinkedAccounts();
-		await this._fetchViewers();
-		await this.loadLinkedAccounts();
-		await this.loadViewers();
-
-		this.interval = setInterval(() => {
-			this.loadLinkedAccounts()
-			this.loadViewers();
-		}, 1000)
-
-		return () => clearInterval(this.interval)
-
+		this._isMounted && await this._updateLinkedAccounts();
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	renderLinkedAccounts = (item, libraryUrl) => {
 		return (
 			<HStack space={3} justifyContent="space-between" pt={2} pb={2} alignItems="center">
 				<Text bold>{item.displayName} - {item.homeLocation}</Text>
-				<Button colorScheme="warning" size="sm" onPress={async () => {await removeLinkedAccount(item.id, libraryUrl);}}>{translate('linked_accounts.remove')}</Button>
+				<Button
+					isLoading={this.state.removingLink}
+					isLoadingText="Removing..."
+					colorScheme="warning"
+					size="sm"
+					onPress={async () => {
+						this.setState({removingLink: true});
+						removeLinkedAccount(item.id, libraryUrl).then(res => {
+							this._updateLinkedAccounts();
+							this.setState({removingLink: false});
+						});
+					}}
+				>{translate('general.remove')}</Button>
 			</HStack>
 		);
 	};
@@ -104,7 +111,7 @@ export default class LinkedAccounts extends Component {
 	renderNoLinkedAccounts = () => {
 		return (
 			<Box pt={3} pb={5}>
-				<Text bold>{translate('linked_accounts.none')}</Text>
+				<Text bold>{translate('general.none')}</Text>
 			</Box>
 		);
 	};
@@ -121,21 +128,21 @@ export default class LinkedAccounts extends Component {
 		}
 
 		return (
-			<ScrollView>
+			<SafeAreaView style={{flex: 1}}>
 			<Box flex={1} safeArea={5}>
-				<DisplayMessage type="info" message="Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc. in the main account." />
-				<Heading fontSize="lg" pb={2}>Additional accounts to manage</Heading>
-				<Text>The following accounts can be managed from this account:</Text>
+				<DisplayMessage type="info" message={translate('linked_accounts.info_message')} />
+				<Heading fontSize="lg" pb={2}>{translate('linked_accounts.additional_accounts')}</Heading>
+				<Text>{translate('linked_accounts.following_accounts_can_manage')}</Text>
 				<FlatList
 					data={this.state.linkedAccounts}
 					renderItem={({item}) => this.renderLinkedAccounts(item, library.baseUrl)}
 					ListEmptyComponent={() => this.renderNoLinkedAccounts()}
 					keyExtractor={(item) => item.id}
 				/>
-				<AddLinkedAccount libraryUrl={library.baseUrl} />
+				<AddLinkedAccount libraryUrl={library.baseUrl} _updateLinkedAccounts={this._updateLinkedAccounts} />
 				<Divider my={4} />
-				<Heading fontSize="lg" pb={2}>Other accounts that can view this account</Heading>
-				<Text>The following accounts can view checkout and hold information from this account. If someone is viewing your account that you do not want to have access, please contact library staff.</Text>
+				<Heading fontSize="lg" pb={2}>{translate('linked_accounts.other_accounts')}</Heading>
+				<Text>{translate('linked_accounts.following_accounts_can_view')}</Text>
 				<FlatList
 					data={this.state.viewers}
 					renderItem={({item}) => this.renderViewers(item)}
@@ -143,7 +150,7 @@ export default class LinkedAccounts extends Component {
 					keyExtractor={(item) => item.id}
 				/>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		)
 	}
 }

@@ -1,9 +1,8 @@
 import React from "react";
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DrawerActions } from '@react-navigation/native';
-import { useToken, useColorModeValue, IconButton, Pressable } from 'native-base';
-import {Ionicons, MaterialIcons} from "@expo/vector-icons";
-import { BlurView } from 'expo-blur';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {DrawerActions} from '@react-navigation/native';
+import {useToken, useColorModeValue} from 'native-base';
+import {Ionicons} from "@expo/vector-icons";
 
 import {translate} from "../../translations/translations";
 
@@ -13,7 +12,6 @@ import LibraryCardStackNavigator from "../stack/LibraryCardStackNavigator";
 import AccountStackNavigator from "../stack/AccountStackNavigator";
 import MoreStackNavigator from "../stack/MoreStackNavigator";
 import DrawerNavigator from "../drawer/DrawerNavigator";
-import Login from "../../screens/Auth/Login";
 
 export default function TabNavigator() {
 	const Tab = createBottomTabNavigator();
@@ -57,7 +55,7 @@ export default function TabNavigator() {
 				component={BrowseStackNavigator}
 				options={{
 					tabBarLabel: translate('navigation.home'),
-					unmountOnBlur: false,
+					unmountOnBlur: true,
 				}}
 				screenOptions={{
 					headerShown: false,
@@ -94,15 +92,7 @@ export default function TabNavigator() {
 				name="AccountScreenTab"
 				component={AccountStackNavigator}
 				options={{
-					tabBarButton: () => null,
-				}}
-			/>
-			<Tab.Screen
-				name="Login"
-				component={Login}
-				options={{
-					tabBarButton: () => null,
-					lazy: true
+					tabBarButton: () => null
 				}}
 			/>
 			<Tab.Screen

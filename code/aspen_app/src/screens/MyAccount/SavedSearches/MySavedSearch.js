@@ -1,15 +1,9 @@
-import React, {Component} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from "react";
+import {SafeAreaView} from 'react-native';
 import {
-	Actionsheet,
-	Avatar,
 	Badge,
 	Box,
-	Button,
-	Center,
-	Divider,
 	FlatList,
-	IconButton,
 	Container,
 	Pressable,
 	Text,
@@ -18,23 +12,19 @@ import {
 	VStack,
 	Image
 } from "native-base";
-import {MaterialIcons} from "@expo/vector-icons";
-import moment from "moment";
-import * as WebBrowser from 'expo-web-browser';
+import { useIsFocused } from '@react-navigation/native';
 
 // custom components and helper files
 import {translate} from '../../../translations/translations';
 import {loadingSpinner} from "../../../components/loadingSpinner";
-import {removeLinkedAccount, renewAllCheckouts} from "../../../util/accountActions";
-import {getListTitles, getSavedSearchTitles, removeTitlesFromList} from "../../../util/loadPatron";
-import {ScrollView} from "react-native";
+import {getSavedSearchTitles} from "../../../util/loadPatron";
 import {userContext} from "../../../context/user";
 import _ from "lodash";
 import AddToList from "../../Search/AddToList";
 
-export default class MySavedSearch extends Component {
-	constructor() {
-		super();
+class MySavedSearch extends React.PureComponent {
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -42,46 +32,41 @@ export default class MySavedSearch extends Component {
 			user: [],
 			search: [],
 			searchDetails: [],
-			id: null,
+			id: 0,
 		};
+		this._isMounted = false;
 	}
 
 	loadSearch = async () => {
-		const { route } = this.props;
-		const givenSearchId = route.params?.search ?? 0;
-		const libraryUrl = route.params?.libraryUrl ?? 0;
+		this.setState({
+			isLoading: true,
+		})
 
-		await getSavedSearchTitles(givenSearchId, libraryUrl).then(response => {
-			this.setState({
+		const { route } = this.props;
+		const givenSearchId = route.params?.id ?? 0;
+		const libraryUrl = this.context.library.baseUrl;
+
+		this._isMounted && await getSavedSearchTitles(givenSearchId, libraryUrl).then(response => {
+			this._isMounted && this.setState({
 				search: response,
 				id: givenSearchId,
+				libraryUrl: libraryUrl,
+				isLoading: false,
 			})
 		});
 	}
 
 	componentDidMount = async () => {
-		const { route } = this.props;
-		const givenSearch = route.params?.details ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		this._isMounted = true;
+		this._isMounted && await this.loadSearch();
 
 		this.setState({
 			isLoading: false,
-			searchDetails: givenSearch,
-			libraryUrl: libraryUrl
-		});
-
-		await this.loadSearch();
-
-		this.interval = setInterval(() => {
-			this.loadSearch();
-		}, 100000)
-
-		return () => clearInterval(this.interval)
-
+		})
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// renders the items on the screen
@@ -96,7 +81,7 @@ export default class MySavedSearch extends Component {
 			isNew = item.isNew;
 		};
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, this.state.libraryUrl)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, libraryUrl)}>
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
 					<VStack>
 						{isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{fontSize: 9}}>New!</Badge></Container>) : null}
@@ -134,46 +119,35 @@ export default class MySavedSearch extends Component {
 	}
 
 	openItem = (id, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {item: id, libraryUrl: this.state.libraryUrl}});
-	};
-
-	_listEmpty = () => {
-		return (
-			<Center mt={5} mb={5}>
-				<Text bold fontSize="lg">
-					No search results.
-				</Text>
-			</Center>
-		);
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {id: id, libraryUrl: libraryUrl}});
 	};
 
 	static contextType = userContext;
 
 	render() {
-		const {search} = this.state;
-		const user = this.context.user;
-		const location = this.context.location;
+		const {isFocused} = this.props;
 		const library = this.context.library;
-		const { route } = this.props;
-		const givenSearchId = route.params?.search ?? 0;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
-		//console.log(this.state.search);
-
 		return (
-			<ScrollView>
-				<Box safeArea={2}>
+			<SafeAreaView style={{flex: 1}}>
+				<Box safeArea={2} isFocused={isFocused}>
 					<FlatList
 						data={this.state.search}
-						renderItem={({ item }) => this.renderItem(item, this.state.libraryUrl)}
+						renderItem={({ item }) => this.renderItem(item, library.baseUrl)}
 						keyExtractor={(item) => item.id}
 					/>
 				</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 
 	}
+}
+
+export default function SavedSearchScreen(props) {
+	const isFocused = useIsFocused();
+	return <MySavedSearch {...props} isFocused={isFocused} />;
 }

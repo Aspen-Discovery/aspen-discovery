@@ -15,7 +15,11 @@ class MyAccount_CheckedOut extends MyAccount{
 		}
 		$interface->assign('tab', $tab);
 		if ($library->showLibraryHoursNoticeOnAccountPages) {
-			$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
+			if ($user->homeLocationId != null) {
+				$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
+			}else{
+				$libraryHoursMessage = '';
+			}
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 

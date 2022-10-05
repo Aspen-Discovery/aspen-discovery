@@ -7,7 +7,7 @@ class Sierra extends Millennium{
 
 	private $sierraToken = null;
 	private $lastResponseCode;
-	private $lastError;
+	private /** @noinspection PhpPropertyOnlyWrittenInspection */ $lastError;
 	private $lastErrorMessage;
 
 	private $_sierraDNAConnection;
@@ -217,13 +217,13 @@ class Sierra extends Millennium{
 	function getForgotPasswordType()
 	{
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
-			return 'emailResetLink';
+			return 'emailAspenResetLink';
 		} else {
 			return 'none';
 		}
 	}
 
-	public function getHolds($patron)
+	public function getHolds($patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -261,7 +261,6 @@ class Sierra extends Millennium{
 		}
 		foreach ($holds->entries as $sierraHold) {
 			$curHold = new Hold();
-			$curHold->createDate = null;
 			$curHold->userId = $patron->id;
 			$curHold->type = 'ils';
 			$curHold->source = $this->accountProfile->getIndexingProfile()->name;
@@ -559,7 +558,7 @@ class Sierra extends Millennium{
 		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
 	}
 
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -733,7 +732,7 @@ class Sierra extends Millennium{
 		return $id;
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToFreezeId}";
 		$params = [
 			'freeze' => true
@@ -755,7 +754,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId){
+	function thawHold($patron, $recordId, $itemToThawId) : array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToThawId}";
 		$params = [
 			'freeze' => false
@@ -777,7 +776,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation){
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToUpdateId}";
 		$params = [
 			'pickupLocation' => $newPickupLocation
@@ -806,7 +805,7 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false){
+	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array{
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$cancelId}";
 		$cancelHoldResponse = $this->_sendPage('sierra.cancelHold', 'DELETE', $sierraUrl, '');
 		if (!$cancelHoldResponse){
@@ -827,6 +826,7 @@ class Sierra extends Millennium{
 
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$hold_result = [
 			'success' => false,
 			'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
@@ -916,7 +916,7 @@ class Sierra extends Millennium{
 		return false;
 	}
 
-	public function hasFastRenewAll(){
+	public function hasFastRenewAll() : bool{
 		return false;
 	}
 
@@ -1034,12 +1034,53 @@ class Sierra extends Millennium{
 
 	public function findNewUser($patronBarcode)
 	{
-		$patronId = $this->getPatronInfoByBarcode($patronBarcode);
+		$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
 
-		if (!$patronId){
+		if (!$patronInfo){
 			return false;
 		}
-		return parent::findNewUser($patronBarcode);
+
+		$userExistsInDB = false;
+		$user = new User();
+		$user->source = $this->accountProfile->name;
+		$user->username = $patronInfo->id;
+		if ($user->find(true)){
+			$userExistsInDB = true;
+		}
+		$user->cat_username = $patronBarcode;
+
+		$forceDisplayNameUpdate = false;
+		$primaryName = reset($patronInfo->names);
+		if (strpos($primaryName, ',') !== false){
+			list($firstName, $lastName) = explode(',', $primaryName, 2);
+		}else{
+			$lastName = $primaryName;
+			$firstName = '';
+		}
+		$firstName = trim($firstName);
+		$lastName = trim($lastName);
+		if ($user->firstname != $firstName) {
+			$user->firstname = $firstName;
+			$forceDisplayNameUpdate = true;
+		}
+		if ($user->lastname != $lastName) {
+			$user->lastname = isset($lastName) ? $lastName : '';
+			$forceDisplayNameUpdate = true;
+		}
+		if ($forceDisplayNameUpdate) {
+			$user->displayName = '';
+		}
+
+		$this->loadContactInformationFromApiResult($user, $patronInfo);
+
+		if ($userExistsInDB) {
+			$user->update();
+		} else {
+			$user->created = date('Y-m-d');
+			$user->insert();
+		}
+
+		return $user;
 	}
 
 	public function getAccountSummary(User $patron): AccountSummary
@@ -1149,7 +1190,7 @@ class Sierra extends Millennium{
 		// TODO: Use Sierra APIs to self register
 	}
 
-	public function getFines($patron = null, $includeMessages = false)
+	public function getFines($patron = null, $includeMessages = false) : array
 	{
 		$fines = [];
 
@@ -1215,6 +1256,7 @@ class Sierra extends Millennium{
 	}
 
 	public function completeFinePayment(User $patron, UserPayment $payment){
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
 			'message' => ''
@@ -1234,10 +1276,8 @@ class Sierra extends Millennium{
 
 			//Find the fine in the list of user payments so we can tell if it's fully paid or partially paid
 			$fineInvoiceNumber = '';
-			$oldTotal = 0;
 			foreach ($userFines as $userFine){
 				if ($userFine['fineId'] == $fineId){
-					$oldTotal = $userFine['amountOutstandingVal'];
 					$fineInvoiceNumber = $userFine['invoiceNumber'];
 					break;
 				}
@@ -1275,21 +1315,7 @@ class Sierra extends Millennium{
 		return $result;
 	}
 
-
-	public function getEmailResetPinTemplate(){
-		return 'requestPinReset.tpl';
-	}
-
-	public function getEmailResetPinResultsTemplate(){
-		return 'requestPinResetResults.tpl';
-	}
-
-	public function processEmailResetPinForm()
-	{
-		return parent::processEmailResetPinForm();
-		// TODO: Use Sierra APIs for PIN Reset
-	}
-
+	/** @noinspection PhpRedundantMethodOverrideInspection */
 	function importListsFromIls($patron)
 	{
 		//There is no way to do this from the APIs so we need to resort to screen scraping.
@@ -1428,11 +1454,12 @@ class Sierra extends Millennium{
 //		];
 //	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin) : array
 	{
 		if ($patron->cat_password != $oldPin) {
 			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
 		}
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = ['success' => false, 'message' => "Unknown error updating password."];
 		$params = [
 			'pin' => $newPin,

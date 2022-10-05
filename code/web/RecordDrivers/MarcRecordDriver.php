@@ -222,20 +222,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($groupedWorkDriver != null) {
 			if ( $groupedWorkDriver->isValid()){
 				$interface->assign('hasValidGroupedWork', true);
+				$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+				require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+				$nonGroupedRecord = new NonGroupedRecord();
+				$nonGroupedRecord->source = $this->getRecordType();
+				$nonGroupedRecord->recordId = $this->getId();
+				if ($nonGroupedRecord->find(true)){
+					$interface->assign('isUngrouped', true);
+					$interface->assign('ungroupingId', $nonGroupedRecord->id);
+				}else{
+					$interface->assign('isUngrouped', false);
+				}
 			}else{
 				$interface->assign('hasValidGroupedWork', false);
-			}
-			$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
-
-			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
-			$nonGroupedRecord = new NonGroupedRecord();
-			$nonGroupedRecord->source = $this->getRecordType();
-			$nonGroupedRecord->recordId = $this->getId();
-			if ($nonGroupedRecord->find(true)){
-				$interface->assign('isUngrouped', true);
-				$interface->assign('ungroupingId', $nonGroupedRecord->id);
-			}else{
-				$interface->assign('isUngrouped', false);
 			}
 		}else{
 			$interface->assign('hasValidGroupedWork', false);
@@ -943,7 +943,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($this->_actions === null) {
 			$this->_actions = array();
 			global $interface;
-			global $library;
 
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
@@ -953,6 +952,36 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$treatVolumeHoldsAsItemHolds = $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
 
 			if (isset($interface)) {
+				global $library;
+				$searchLocation = Location::getSearchLocation(null);
+
+				if ($searchLocation) {
+					$show856LinksAsAccessOnlineButtons = $searchLocation->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+				} else {
+					$show856LinksAsAccessOnlineButtons = $library->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+				}
+
+				if ($show856LinksAsAccessOnlineButtons){
+					//Get any 856 links for the marc record
+					$marcRecord = $this->getMarcRecord();
+					$marc856Fields = $marcRecord->getFields('856');
+					/** @var File_MARC_Data_Field $marc856Field */
+					foreach ($marc856Fields as $marc856Field){
+						if ($marc856Field->getIndicator(1) == '4' && $marc856Field->getIndicator(2) == '0'){
+							$subfieldU = $marc856Field->getSubfield('u');
+							if ($subfieldU != null){
+								$linkDestination = $subfieldU->getData();
+								$this->_actions[] = array(
+									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+									'url' => $linkDestination,
+									'requireLogin' => false,
+									'type' => 'marc_access_online'
+								);
+							}
+						}
+					}
+				}
+
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
 				} else {
@@ -976,47 +1005,109 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($volumeData == null) {
 					$volumeData = $relatedRecord->getVolumeData();
 				}
-				if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
-					//Check the items to see which volumes are holdable
-					$hasItemsWithoutVolumes = false;
-					$holdableVolumes = [];
-					foreach ($relatedRecord->getItems() as $itemDetail) {
-						if ($itemDetail->holdable) {
-							if (!empty($itemDetail->volumeId)) {
-								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = ['volumeName' => $itemDetail->volume, 'volumeId'=>$itemDetail->volumeId];
-							} else {
-								$hasItemsWithoutVolumes = true;
+				//See if we have VDX integration. If so, we will either be placing a hold or requesting depending on if there is a copy local to the hold group (whether available or not)
+				$useVdxForRecord = false;
+				$vdxGroupsForLocation = [];
+				try {
+					require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+					$vdxSettings = new VdxSetting();
+					if ($vdxSettings->find(true)) {
+						require_once ROOT_DIR . '/sys/VDX/VdxHoldGroup.php';
+						require_once ROOT_DIR . '/sys/VDX/VdxHoldGroupLocation.php';
+						$useVdxForRecord = true;
+						$homeLocation = Location::getDefaultLocationForUser();
+						if ($homeLocation != null) {
+							//Get the VDX Group(s) that we will interact with
+							$vdxGroupsForLocation = new VdxHoldGroupLocation();
+							$vdxGroupsForLocation->locationId = $homeLocation->locationId;
+							$vdxGroupIds = $vdxGroupsForLocation->fetchAll('vdxHoldGroupId');
+							$vdxGroups = [];
+							foreach ($vdxGroupIds as $vdxGroupId) {
+								$vdxGroup = new VdxHoldGroup();
+								$vdxGroup->id = $vdxGroupId;
+								if ($vdxGroup->find(true)) {
+									$vdxGroups[] = clone $vdxGroup;
+								}
+							}
+
+							//Check to see if we have any items that are owned by any of the records in any of the groups.
+							//If we do, we don't need to use VDX
+							foreach ($relatedRecord->getItems() as $itemDetail) {
+								//Only check holdable items
+								if ($itemDetail->holdable) {
+									//The patron's home location is always valid!
+									if ($itemDetail->locationCode == $homeLocation->code){
+										$useVdxForRecord = false;
+										break;
+									}
+
+									foreach ($vdxGroups as $vdxGroup) {
+										if (in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+											$useVdxForRecord = false;
+											break;
+										}
+									}
+								}
+								if (!$useVdxForRecord) {
+									break;
+								}
 							}
 						}
 					}
-					if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
-						//Show a dialog to enable the patron to select a volume to place a hold on
-						$this->_actions[] = array(
-							'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
-							'url' => '',
-							'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
-							'requireLogin' => false,
-							'type' => 'ils_hold'
-						);
-					} else {
-						ksort($holdableVolumes);
-						foreach ($holdableVolumes as $volumeId => $volumeInfo) {
+				}catch (Exception $e){
+					//This happens if the tables are not installed yet
+				}
+				if (!$useVdxForRecord){
+					if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
+						//Check the items to see which volumes are holdable
+						$hasItemsWithoutVolumes = false;
+						$holdableVolumes = [];
+						foreach ($relatedRecord->getItems() as $itemDetail) {
+							if ($itemDetail->holdable) {
+								if (!empty($itemDetail->volumeId)) {
+									$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = ['volumeName' => $itemDetail->volume, 'volumeId'=>$itemDetail->volumeId];
+								} else {
+									$hasItemsWithoutVolumes = true;
+								}
+							}
+						}
+						if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
+							//Show a dialog to enable the patron to select a volume to place a hold on
 							$this->_actions[] = array(
-								'title' => translate(['text' => 'Hold %1%', 1=> $volumeInfo['volumeName'], 'isPublicFacing'=>true]),
+								'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
 								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '{$volumeInfo['volumeId']}');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
 								'requireLogin' => false,
 								'type' => 'ils_hold'
 							);
+						} else {
+							ksort($holdableVolumes);
+							foreach ($holdableVolumes as $volumeId => $volumeInfo) {
+								$this->_actions[] = array(
+									'title' => translate(['text' => 'Hold %1%', 1=> $volumeInfo['volumeName'], 'isPublicFacing'=>true]),
+									'url' => '',
+									'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '{$volumeInfo['volumeId']}');",
+									'requireLogin' => false,
+									'type' => 'ils_hold'
+								);
+							}
 						}
+					} else {
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Place Hold', 'isPublicFacing' => true]),
+							'url' => '',
+							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+							'requireLogin' => false,
+							'type' => 'ils_hold'
+						);
 					}
-				} else {
+				}else{
 					$this->_actions[] = array(
-						'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
+						'title' => translate(['text' => 'Request', 'isPublicFacing'=>true]),
 						'url' => '',
-						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+						'onclick' => "return AspenDiscovery.Record.showVdxRequest('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
-						'type' => 'ils_hold'
+						'type' => 'vdx_request'
 					);
 				}
 			}
@@ -1310,14 +1401,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		if ($library->getGroupedWorkDisplaySettings()->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
-					'label' => 'Links',
-					'body' => $interface->fetch('Record/view-links.tpl'),
+				'label' => 'Links',
+				'body' => $interface->fetch('Record/view-links.tpl'),
 			);
 		}
 		$moreDetailsOptions['copies'] = array(
-				'label' => 'Copies',
-				'body' => $interface->fetch('Record/view-holdings.tpl'),
-				'openByDefault' => true
+			'label' => 'Copies',
+			'body' => $interface->fetch('Record/view-holdings.tpl'),
+			'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
@@ -1327,36 +1418,121 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$interface->assign('workId',$groupedWorkDriver->getPermanentId());
 				$moreDetailsOptions['otherEditions'] = array(
-						'label' => 'Other Editions and Formats',
-						'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-						'hideByDefault' => false
+					'label' => 'Other Editions and Formats',
+					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+					'hideByDefault' => false
 				);
 			}
 		}
 
 		$moreDetailsOptions['moreDetails'] = array(
-				'label' => 'More Details',
-				'body' => $interface->fetch('Record/view-more-details.tpl'),
+			'label' => 'More Details',
+			'body' => $interface->fetch('Record/view-more-details.tpl'),
 		);
 		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = array(
-				'label' => 'Subjects',
-				'body' => $interface->fetch('Record/view-subjects.tpl'),
+			'label' => 'Subjects',
+			'body' => $interface->fetch('Record/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
-				'label' => 'Citations',
-				'body' => $interface->fetch('Record/cite.tpl'),
+			'label' => 'Citations',
+			'body' => $interface->fetch('Record/cite.tpl'),
 		);
+
+		//Check to see if the record has parents
+		$parentRecords = $this->getParentRecords();
+		if (count($parentRecords) > 0){
+			$interface->assign('parentRecords', $parentRecords);
+			$moreDetailsOptions['parentRecords'] = array(
+				'label' => 'Part Of',
+				'body' => $interface->fetch('Record/view-containing-records.tpl'),
+			);
+		}
+
+		//Check to see if the record has children
+		$childRecords = $this->getChildRecords();
+		if (count($childRecords) > 0){
+			$interface->assign('childRecords', $childRecords);
+			$moreDetailsOptions['childRecords'] = array(
+				'label' => 'Contains',
+				'body' => $interface->fetch('Record/view-contained-records.tpl'),
+			);
+		}
+
+		//Check to see if the record has marc holdings (in 852, 853, 866)
+		$marcHoldings = $this->getMarcHoldings();
+		if (count($marcHoldings) > 0){
+			$interface->assign('marcHoldings', $marcHoldings);
+			$moreDetailsOptions['marcHoldings'] = array(
+				'label' => 'Library Holdings',
+				'body' => $interface->fetch('Record/view-marc-holdings.tpl'),
+			);
+		}
 
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
-					'label' => 'Staff View',
-					'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
-					'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'label' => 'Staff View',
+				'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
+	}
+
+	public function getChildRecords(){
+		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
+		$parentChildRecords = new RecordParent();
+		$parentChildRecords->parentRecordId = $this->id;
+		$parentChildRecords->orderBy('childTitle ASC');
+		$parentChildRecords->find();
+		$childRecords = [];
+		if ($parentChildRecords->getNumResults() > 0){
+			while ($parentChildRecords->fetch()){
+				$childRecords[] = [
+					'id' => $parentChildRecords->childRecordId,
+					'label' => empty($parentChildRecords->childTitle) ? $parentChildRecords->childRecordId : $parentChildRecords->childTitle,
+					'link' => '/Record/' . $parentChildRecords->childRecordId . '/Home',
+				];
+			}
+		}
+		return $childRecords;
+	}
+
+	public function getParentRecords(){
+		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
+		$parentChildRecords = new RecordParent();
+		$parentChildRecords->childRecordId = $this->id;
+		$parentChildRecords->find();
+		$parentRecords = [];
+		if ($parentChildRecords->getNumResults() > 0){
+			while ($parentChildRecords->fetch()){
+				//TODO: Store the title in the database so we can load it more quickly here
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
+				$parentTitle = $parentChildRecords->parentRecordId;
+				$parentRecord = new GroupedWorkRecord();
+				$parentRecord->recordIdentifier = $parentChildRecords->parentRecordId;
+				if ($parentRecord->find(true)){
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					$groupedWork = new GroupedWork();
+					$groupedWork->id = $parentRecord->groupedWorkId;
+					if ($groupedWork->find(true)){
+						$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
+						if ($groupedWorkDriver->isValid()){
+							$parentTitle = $groupedWorkDriver->getTitle();
+						}else{
+							$parentTitle = $groupedWork->full_title;
+						}
+					}
+				}
+				$parentRecords[] = [
+					'id' => $parentChildRecords->parentRecordId,
+					'label' => $parentTitle,
+					'link' => '/Record/' . $parentChildRecords->parentRecordId . '/Home',
+				];
+			}
+		}
+		return $parentRecords;
 	}
 
 	public function loadSubjects()
@@ -1782,9 +1958,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 								}
 							}
 						}
-						if ($copyInfo['shelfLocation'] != '') {
+						//if ($copyInfo['shelfLocation'] != '') {
 							$this->holdingSections[$sectionName]['holdings'][] = $copyInfo;
-						}
+						//}
 
 					}
 
@@ -1799,6 +1975,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->statusSummary = array();
 				}
 			} else {
+				//This will happen for linked records where we are not indexing the grouped work
+
 				$this->holdings = array();
 				$this->holdingSections = array();
 				$this->statusSummary = array();
@@ -2046,6 +2224,88 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getRelatedRecord() {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+	}
+
+	private function getMarcHoldings()
+	{
+		$localMarcHoldings = [];
+		$marcHoldings = [];
+		$marcRecord = $this->getMarcRecord();
+		if ($marcRecord){
+			//Get holdings information
+			$marc852Fields = $marcRecord->getFields('852');
+			if (count($marc852Fields) > 0){
+				$location = new Location();
+				$libraryCodeToDisplayName = $location->fetchAll('code', 'displayName', true);
+
+				global $library;
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$localLocationCodes = $location->fetchAll('code', 'displayName', true);
+
+				$indexingProfile = $this->getIndexingProfile();
+				$shelfLocationTranslationMap = new TranslationMap();
+				$shelfLocationTranslationMap->indexingProfileId = $indexingProfile->id;
+				$shelfLocationTranslationMap->name = 'shelf_location';
+				$shelfLocationTranslationMapValues = [];
+				if (!$shelfLocationTranslationMap->find(true)){
+					$shelfLocationTranslationMap = null;
+				}else{
+					$shelfLocationTranslationMapValue = new TranslationMapValue();
+					$shelfLocationTranslationMapValue->translationMapId = $shelfLocationTranslationMap->id;
+					$shelfLocationTranslationMapValues = $shelfLocationTranslationMapValue->fetchAll('value', 'translation', true);
+				}
+
+				//$marc853Fields = $marcRecord->getFields('853');
+				$marc866Fields = $marcRecord->getFields('866');
+				//@var File_MARC_Data_Field $marc82Field
+				foreach ($marc852Fields as $marc852Field){
+					$marc852subfield6 = $marc852Field->getSubfield('6');
+					if ($marc852subfield6 != false){
+						$marc852subfield6Data = $marc852subfield6->getData();
+						$marcHolding = [];
+						$owningLibraryCode = strtolower($marc852Field->getSubfield('b')->getData());
+						if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)){
+							$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+						}else{
+							$owningLibrary = $owningLibraryCode;
+						}
+						$marcHolding['library'] = $owningLibrary;
+						$shelfLocation = strtolower($marc852Field->getSubfield('c')->getData());
+						if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)){
+							$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+						}
+						$marcHolding['shelfLocation'] = $shelfLocation;
+						//Nothing super useful in 853, ignore it for now
+						//Load what is held in the 866
+						foreach ($marc866Fields as $marc866Field) {
+							$marc866subfield6 = $marc866Field->getSubfield('6');
+							if ($marc866subfield6 != false) {
+								$marc866subfield6Data = $marc866subfield6->getData();
+								if ($marc866subfield6Data == $marc852subfield6Data){
+									$marc866subfieldA = $marc866Field->getSubfield('a');
+									if ($marc866subfieldA != false) {
+										$marcHolding['holdings'] = $marc866subfieldA->getData();
+									}
+								}
+							}
+						}
+						if (array_key_exists($owningLibraryCode, $localLocationCodes)){
+							$localMarcHoldings[] = $marcHolding;
+						}else{
+							$marcHoldings[] = $marcHolding;
+						}
+					}
+					$sorter = function($a, $b) {
+						return strcasecmp($a['library'], $b['library']);
+					};
+					uasort($marcHoldings, $sorter);
+					uasort($localMarcHoldings, $sorter);
+					$marcHoldings = $localMarcHoldings + $marcHoldings;
+				}
+			}
+		}
+		return $marcHoldings;
 	}
 }
 

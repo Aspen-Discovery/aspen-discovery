@@ -26,6 +26,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('canSort', $this->canSort());
 		$interface->assign('canFilter', $this->canFilter($structure));
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
+		$interface->assign('canBatchDelete', $this->canBatchDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
 		$interface->assign('objectType', $this->getObjectType());
@@ -255,16 +256,26 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 		$interface->assign('object', $existingObject);
 		//Check to see if the request should be multipart/form-data
-		$contentType = null;
-		foreach ($structure as $property){
-			if ($property['type'] == 'image' || $property['type'] == 'file'){
-				$contentType = 'multipart/form-data';
-			}
-		}
+		$contentType = $this->getFormContentType($structure);
 		$interface->assign('contentType', $contentType);
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->setTemplate('../Admin/objectEditor.tpl');
+	}
+
+	function getFormContentType($structure, $contentType = null) {
+		if ($contentType != null) {
+			return $contentType;
+		}
+		//Check to see if the request should be multipart/form-data
+		foreach ($structure as $property){
+			if ($property['type'] == 'section') {
+				$contentType = $this->getFormContentType($property['properties'], $contentType);
+			} else if ($property['type'] == 'image' || $property['type'] == 'file'){
+				$contentType = 'multipart/form-data';
+			}
+		}
+		return $contentType;
 	}
 
 	function editObject($objectAction, $structure){
@@ -381,6 +392,10 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function canDelete(){
 		return true;
+	}
+
+	public function canBatchDelete() {
+		return $this->getNumObjects() > 1 && UserAccount::userHasPermission('Batch Delete');
 	}
 
 	public function canBatchEdit() {

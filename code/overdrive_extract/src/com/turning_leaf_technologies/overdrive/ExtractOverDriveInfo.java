@@ -64,11 +64,8 @@ class ExtractOverDriveInfo {
 	private PreparedStatement clearIdentifiersStmt;
 	private PreparedStatement addIdentifierStmt;
 	private PreparedStatement getExistingAvailabilityForProductStmt;
-	private PreparedStatement updateAvailabilityStmt;
-	private PreparedStatement addAvailabilityStmt;
 	private PreparedStatement deleteAvailabilityStmt;
 	private PreparedStatement deleteAvailabilityForSettingStmt;
-	private PreparedStatement deleteAllAvailabilityStmt;
 	private PreparedStatement updateProductAvailabilityStmt;
 	private PreparedStatement updateLastSeenStmt;
 	private PreparedStatement getDeletedProductsStmt;
@@ -129,10 +126,12 @@ class ExtractOverDriveInfo {
 					//and metadata updated for it.  So we need to call again to figure out which records have
 					//availability and/or metadata updated
 					logger.info("Loading products with any changes (to get availability)");
+					logEntry.addNote("Loading products with any changes (to get availability)");
 					loadProductsFromAPI(LOAD_PRODUCTS_WITH_ANY_CHANGES, extractStartTime);
 
 					//Look for any records that are new
 					if (!settings.isRunFullUpdate()) {
+						logEntry.addNote("Loading new products");
 						loadNewProducts(extractStartTime);
 					}
 
@@ -188,94 +187,68 @@ class ExtractOverDriveInfo {
 					logEntry.setNumProducts(totalRecordsWithChanges);
 					logEntry.saveResults();
 
-					//Update, regroup, and reindex records
-					int numExtractionThreads = settings.getNumExtractionThreads();
-					if (numExtractionThreads > 10) {
-						numExtractionThreads = 10;
-					}else if (numExtractionThreads < 1){
-						numExtractionThreads = 1;
-					}
-
-					//ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(numExtractionThreads);
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
-						//es.execute(() -> {
-							numProcessed[0]++;
-							try {
-								//Extract data from overdrive and update the database
-								final boolean[] errorsEncountered = {false};
-								if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-									//Load Metadata for the record
-									Thread metadataThread = new Thread(() -> {
-										try {
-											updateOverDriveMetaData(curRecord);
-										} catch (SocketTimeoutException e) {
-											settings.addProductToUpdateNextTime(curRecord.getId());
-											logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
-											errorsEncountered[0] = true;
-										}
-									});
-									//Load availability for all collections since we will currently only have collections where the record changed.
-									for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
-										curRecord.addCollection(collectionInfo);
+						numProcessed[0]++;
+						try {
+							//Extract data from overdrive and update the database
+							final boolean[] errorsEncountered = {false};
+							if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+								//Load Metadata for the record
+								Thread metadataThread = new Thread(() -> {
+									try {
+										updateOverDriveMetaData(curRecord);
+									} catch (SocketTimeoutException e) {
+										settings.addProductToUpdateNextTime(curRecord.getId());
+										logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
+										errorsEncountered[0] = true;
 									}
-									//Load availability for the record
-									Thread availabilityThread = new Thread(() -> {
-										try {
-											updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
-										} catch (SocketTimeoutException e) {
-											settings.addProductToUpdateNextTime(curRecord.getId());
-											logEntry.addNote("Error loading availability for " + curRecord.getId() + " " + e.getMessage());
-											errorsEncountered[0] = true;
-										}
-									});
-									metadataThread.start();
-									availabilityThread.start();
-									metadataThread.join();
-									availabilityThread.join();
+								});
+								//Load availability for all collections since we will currently only have collections where the record changed.
+								for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
+									curRecord.addCollection(collectionInfo);
+								}
+								//Load availability for the record
+								Thread availabilityThread = new Thread(() -> {
+									if (updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false)){
+										errorsEncountered[0] = true;
+									}
+								});
+								metadataThread.start();
+								availabilityThread.start();
+								metadataThread.join();
+								availabilityThread.join();
 
-									if (!errorsEncountered[0]){
-										String groupedWorkId = null;
-										if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-											//Regroup the record
-											groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
+								if (!errorsEncountered[0]){
+									String groupedWorkId = null;
+									if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+										//Regroup the record
+										groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
+									}
+									if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+										//Metadata didn't change, so we need to load from the database
+										if (groupedWorkId == null) {
+											groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
 										}
-										if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-											//Metadata didn't change so we need to load from the database
-											if (groupedWorkId == null) {
-												groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
-											}
-											//Reindex the record
-											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-											logEntry.incUpdated();
-										}else{
-											logEntry.incSkipped();
-										}
+										//Reindex the record
+										getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+										logEntry.incUpdated();
+									}else{
+										logEntry.incSkipped();
 									}
 								}
-							}catch (Exception e){
-								logEntry.incErrors("Error processing record " + curRecord.getId(), e);
 							}
-							if (numProcessed[0] % 100 == 0) {
-								logEntry.addNote("Processed " + numProcessed[0]);
-								logEntry.saveResults();
-							}
-						//});
+						}catch (Exception e){
+							logEntry.incErrors("Error processing record " + curRecord.getId(), e);
+						}
+						if (numProcessed[0] % 100 == 0) {
+							logEntry.addNote("Processed " + numProcessed[0]);
+							logEntry.saveResults();
+						}
 					}
-//					es.shutdown();
-//					while (true) {
-//						try {
-//							boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
-//							if (terminated){
-//								break;
-//							}
-//						} catch (InterruptedException e) {
-//							logger.error("Error waiting for all extracts to finish");
-//						}
-//					}
 
 					if (checkForDeletedRecords) {
 						//Remove any records that no longer exist
-						//There is currently an issue with OverDrive Search APIs that cause all records to not be returned
+						//There is currently an issue with OverDrive Search APIs that cause all records to not be returned,
 						//so we will avoid deleting records if we are deleting more than 500 records or 5% of the collection
 						int totalRecordsToDelete = 0;
 						getNumDeletedProductsStmt.setLong(1, settings.getId());
@@ -545,11 +518,8 @@ class ExtractOverDriveInfo {
 		clearIdentifiersStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers where productId = ?");
 		addIdentifierStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_identifiers set productId = ?, type = ?, value = ?");
 		getExistingAvailabilityForProductStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and settingId = ?");
-		updateAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_availability set available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared =? WHERE id = ?");
-		addAvailabilityStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_availability set productId = ?, settingId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared = ?");
 		deleteAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where id = ?");
 		deleteAvailabilityForSettingStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability WHERE productId = ? and settingId = ?");
-		deleteAllAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where productId = ? and libraryId = ? and settingId = ?");
 		updateProductAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? where id = ?");
 		logExternalRequestStmt = dbConn.prepareStatement("INSERT INTO external_request_log (requestType, requestMethod, requestUrl, requestHeaders, requestBody, responseCode, response, requestTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -706,32 +676,15 @@ class ExtractOverDriveInfo {
 	private void loadNewProducts(long startTime) throws SocketTimeoutException {
 		int daysToLoad = (int)Math.ceil((double)(new Date().getTime() - lastExtractDate.getTime()) / (double)(24 * 60 * 60 * 1000));
 
+		//Only use a maximum of 90 days since that is all that OverDrive supports.
+		if (daysToLoad > 90){
+			daysToLoad = 90;
+		}
+
 		for (AdvantageCollectionInfo collectionInfo : allAdvantageCollections){
 			String newProductsUrl = "https://api.overdrive.com/v1/collections/" + collectionInfo.getCollectionToken() + "/products/?daysSinceAdded=" + daysToLoad;
 			loadProductsFromUrl(collectionInfo, newProductsUrl, LOAD_NEW_PRODUCTS, startTime);
 		}
-
-//		WebServiceResponse newProductsResponse = callOverDriveURL("overdriveExtract.loadProducts", newProductsUrl);
-//		if (newProductsResponse.getResponseCode() == 200) {
-//			JSONObject productInfo = newProductsResponse.getJSONResponse();
-//			if (productInfo == null) {
-//				return;
-//			}
-//			long numProducts = productInfo.getLong("totalItems");
-//			for (int i = 0; i < numProducts; i += batchSize) {
-//				String newProductsBatchUrl = newProductsUrl + "&offset=" + i;
-//				int maxTries = Math.max(1, settings.getNumRetriesOnError() + 1);
-//				for (int tries = 0; tries < maxTries; tries++){
-//
-//				}
-//			}
-//		}
-//		for (int i = 0; i < numProducts; i += batchSize) {
-//			WebServiceResponse newProductsResponse = callOverDriveURL("overdriveExtract.loadProducts", newProductsUrl);
-//			if (newProductsResponse.getResponseCode() == 200 && newProductsResponse.getMessage() != null) {
-//
-//			}
-//		}
 	}
 
 	private final int LOAD_ALL_PRODUCTS = 0;
@@ -794,7 +747,7 @@ class ExtractOverDriveInfo {
 								JSONObject curAdvantageAccount = advantageAccounts.getJSONObject(i);
 								es.execute(() -> {
 									try {
-										extractProductsForAdvantageAccount(loadType, curAdvantageAccount, startTime, finalLoadCollectionInfo);
+										loadProductsForAdvantageAccount(loadType, curAdvantageAccount, startTime, finalLoadCollectionInfo);
 									} catch (SocketTimeoutException e) {
 										logEntry.incErrors("Socket timeout loading information from OverDrive API ", e);
 										hadTimeoutsFromOverDrive = true;
@@ -841,7 +794,7 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private void extractProductsForAdvantageAccount(int loadType, JSONObject curAdvantageAccount, long startTime, boolean loadCollectionInfo) throws SocketTimeoutException {
+	private void loadProductsForAdvantageAccount(int loadType, JSONObject curAdvantageAccount, long startTime, boolean loadCollectionInfo) throws SocketTimeoutException {
 		AdvantageCollectionInfo collectionInfo = null;
 		if (loadType == LOAD_ALL_PRODUCTS || loadCollectionInfo) {
 			collectionInfo = new AdvantageCollectionInfo();
@@ -882,6 +835,7 @@ class ExtractOverDriveInfo {
 		}
 		if (processCollection) {
 			//Need to load products for all advantage libraries since they can be shared with the entire consortium.
+			//Get the product URL for just the advantage account
 			String advantageSelfUrl = curAdvantageAccount.getJSONObject("links").getJSONObject("self").getString("href");
 			WebServiceResponse advantageWebServiceResponse = callOverDriveURL("overdriveExtract.loadAdvantageProducts", advantageSelfUrl);
 			if (advantageWebServiceResponse.getResponseCode() == 200) {
@@ -910,11 +864,11 @@ class ExtractOverDriveInfo {
 	}
 
 	/**
-	 * Get all products that are currently in OverDrive so we can determine what needs to be deleted.
+	 * Get all products that are currently in OverDrive, so we can determine what needs to be deleted.
 	 * We just get minimal information to start, the id and the list of collections that the product is valid for.
 	 *
 	 * @return boolean whether errors occurred
-	 * @throws SocketTimeoutException Error if we timeout getting data
+	 * @throws SocketTimeoutException Error if we get a timeout retrieving data
 	 */
 	private boolean loadAccountInformationFromAPI() throws SocketTimeoutException {
 		WebServiceResponse libraryInfoResponse = callOverDriveURL("overdriveExtract.loadLibraryAccount", "https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
@@ -983,6 +937,8 @@ class ExtractOverDriveInfo {
 		if  (loadType == LOAD_ALL_PRODUCTS && collectionInfo.getAspenLibraryId() == 0) {
 			logger.info("Not loading products for " + collectionInfo.getName() + " since it is not part of Aspen");
 		}
+		int numProductsLoaded = 0;
+		int numProductsPreviouslyLoaded = 0;
 		WebServiceResponse productsResponse = callOverDriveURL("overdriveExtract.loadProducts", mainProductUrl);
 		if (productsResponse.getResponseCode() == 200) {
 			JSONObject productInfo = productsResponse.getJSONResponse();
@@ -1034,11 +990,13 @@ class ExtractOverDriveInfo {
 										previouslyLoadedProduct = curRecord;
 										logger.debug("    No previously loaded product for " + curRecord.getId());
 									} else {
+										numProductsPreviouslyLoaded++;
 										previouslyLoadedProduct.hasChanges = true;
 										logger.debug("    Found previously loaded product for " + curRecord.getId());
 									}
 									previouslyLoadedProduct.addCollection(collectionInfo);
 								}
+								numProductsLoaded++;
 							}
 							//Get out of the number of tries
 							if (loadType == LOAD_ALL_PRODUCTS) {
@@ -1068,6 +1026,14 @@ class ExtractOverDriveInfo {
 					}
 				}
 			}
+			if (loadType == LOAD_ALL_PRODUCTS) {
+				logEntry.addNote(collectionInfo.getName() + " has " + numProductsLoaded + " products in it, " + numProductsPreviouslyLoaded + " were loaded previously.");
+			}else if (loadType == LOAD_PRODUCTS_WITH_ANY_CHANGES) {
+				logEntry.addNote(collectionInfo.getName() + " has " + numProductsLoaded + " changed products in it, " + numProductsPreviouslyLoaded + " were loaded previously.");
+			}else if (loadType == LOAD_NEW_PRODUCTS) {
+				logEntry.addNote(collectionInfo.getName() + " has " + numProductsLoaded + " new products in it, " + numProductsPreviouslyLoaded + " were loaded previously.");
+			}
+			logEntry.saveResults();
 		}else{
 			logEntry.incErrors("Unable to load products from " + collectionInfo.getName() + " " + mainProductUrl);
 			logger.error(productsResponse.getResponseCode() + " " + productsResponse.getMessage());
@@ -1112,7 +1078,7 @@ class ExtractOverDriveInfo {
 		//Check to see if we need to load metadata
 		long curTime = new Date().getTime() / 1000;
 
-		//Get the url to call for meta data information (based on the first owning collection)
+		//Get the url to call for metadata information (based on the first owning collection)
 		AdvantageCollectionInfo collectionInfo = overDriveInfo.getCollections().iterator().next();
 		String apiKey = collectionInfo.getCollectionToken();
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
@@ -1363,11 +1329,12 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private synchronized void updateOverDriveAvailability(OverDriveRecordInfo overDriveInfo, long databaseId, boolean singleWork) throws SocketTimeoutException {
+	private synchronized boolean updateOverDriveAvailability(OverDriveRecordInfo overDriveInfo, long databaseId, boolean singleWork) {
 		//Don't need to load availability if we already have availability and the availability was checked within the last hour
 		long curTime = new Date().getTime() / 1000;
 
-		boolean changesMade = false;
+		final boolean[] changesMade = {false};
+		final boolean[] errorsEncountered = {false};
 
 		//Get existing availability
 		HashMap<Long, OverDriveAvailabilityInfo> existingAvailabilities = new HashMap<>();
@@ -1394,173 +1361,204 @@ class ExtractOverDriveInfo {
 			logger.warn("Could not load existing availability for overdrive product " + databaseId);
 		}
 
+		BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(overDriveInfo.getCollections().size());
+		ThreadPoolExecutor es = new ThreadPoolExecutor(overDriveInfo.getCollections().size() / 2, overDriveInfo.getCollections().size(), 5000, TimeUnit.MILLISECONDS, blockingQueue);
 		//We need to load availability for every collection because sharing can vary, but we only need to do the shared collection
 		//and any of our libraries that have Advantage collections
 		for (AdvantageCollectionInfo collectionInfo : overDriveInfo.getCollections()){
 			if (collectionInfo.getAspenLibraryId() == 0){
 				continue;
 			}
-			String apiKey = collectionInfo.getCollectionToken();
+			es.execute(() -> {
+				//System.out.println(new Date().getTime()  + " processing availability " + overDriveInfo.getId() + " collection " + collectionInfo.getName());
+				String apiKey = collectionInfo.getCollectionToken();
 
-			String url = "https://api.overdrive.com/v2/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/availability";
-			WebServiceResponse availabilityResponse = callOverDriveURL("overdriveExtract.getProductAvailability", url, false);
-
-			//404 is a message that availability has been deleted.
-			if (availabilityResponse.getResponseCode() == 404) {
-				//Add a note and skip to the next collection, in reality, this is probably deleted,
-				//but Nashville was having issues with 404s coming incorrectly so we can just keep retrying
-				//No longer needed for logging
-				//logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
-			}else if (availabilityResponse.getResponseCode() != 200){
-				//We got an error calling the OverDrive API, do nothing.
-				if (singleWork) {
-					logEntry.addNote("Found availability for api key " + apiKey);
-				}
-				settings.addProductToUpdateNextTime(overDriveInfo.getId());
-				logEntry.addNote("Error availability API for product " + overDriveInfo.getId() + " collection " + collectionInfo.getName() + " response code " + availabilityResponse.getResponseCode());
-				logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
-				//Skip updating the availability to make sure we don't delete availability due to errors, we'll just process next time
-				return;
-			}else if (availabilityResponse.getMessage() == null){
-				//Delete all availability for this record
-				if (singleWork) {
-					logEntry.addNote("Availability response had no message " + apiKey + " response code " + availabilityResponse.getResponseCode());
-				}
-				if (existingAvailabilities.containsKey(collectionInfo.getAspenLibraryId())) {
-					try {
-						deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
-						deleteAllAvailabilityStmt.setLong(2, collectionInfo.getAspenLibraryId());
-						deleteAllAvailabilityStmt.setLong(3, settings.getId());
-						deleteAllAvailabilityStmt.executeUpdate();
-						changesMade = true;
-						existingAvailabilities.remove(collectionInfo.getAspenLibraryId());
-					} catch (SQLException e) {
-						logEntry.incErrors("SQL Error deleting all availability for title " + overDriveInfo.getId(), e);
-					}
-				}
-			}else {
-				if (singleWork) {
-					logEntry.addNote("Got availability response for " + collectionInfo.getAspenLibraryId() + " code was " + availabilityResponse.getResponseCode());
-					logEntry.addNote(availabilityResponse.getMessage());
-				}
+				String url = "https://api.overdrive.com/v2/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/availability";
+				WebServiceResponse availabilityResponse;
 				try {
-					JSONObject availability = availabilityResponse.getJSONResponse();
+					availabilityResponse = callOverDriveURL("overdriveExtract.getProductAvailability", url, false);
+				} catch (SocketTimeoutException e) {
+					settings.addProductToUpdateNextTime(overDriveInfo.getId());
+					logEntry.addNote("Error loading availability for " + overDriveInfo.getId() + " " + e.getMessage());
+					errorsEncountered[0] = true;
+					return;
+				}
 
-					if (!availability.has("errorCode")){
-						boolean available = false;
-						if (availability.has("available")){
-							Object availableObj = availability.get("available");
-							if (availableObj instanceof Boolean){
-								available = (Boolean)availableObj;
-							}else if (availableObj instanceof String){
-								available = availability.getString("available").equals("true");
-							}
+				//404 is a message that availability has been deleted.
+				if (availabilityResponse.getResponseCode() == 404) {
+					//Add a note and skip to the next collection, in reality, this is probably deleted,
+					//but Nashville was having issues with 404s coming incorrectly, so we can just keep retrying
+					//No longer needed for logging
+					//logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
+				} else if (availabilityResponse.getResponseCode() != 200) {
+					//We got an error calling the OverDrive API, do nothing.
+					if (singleWork) {
+						logEntry.addNote("Found availability for api key " + apiKey);
+					}
+					settings.addProductToUpdateNextTime(overDriveInfo.getId());
+					logEntry.addNote("Error availability API for product " + overDriveInfo.getId() + " collection " + collectionInfo.getName() + " response code " + availabilityResponse.getResponseCode());
+					logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
+					//Skip updating the availability to make sure we don't delete availability due to errors, we'll just process next time
+					errorsEncountered[0] = true;
+				} else if (availabilityResponse.getMessage() == null) {
+					//Delete all availability for this record
+					if (singleWork) {
+						logEntry.addNote("Availability response had no message " + apiKey + " response code " + availabilityResponse.getResponseCode());
+					}
+					if (existingAvailabilities.containsKey(collectionInfo.getAspenLibraryId())) {
+						try {
+							PreparedStatement deleteAllAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where productId = ? and libraryId = ? and settingId = ?");
+							deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
+							deleteAllAvailabilityStmt.setLong(2, collectionInfo.getAspenLibraryId());
+							deleteAllAvailabilityStmt.setLong(3, settings.getId());
+							deleteAllAvailabilityStmt.executeUpdate();
+							changesMade[0] = true;
+							existingAvailabilities.remove(collectionInfo.getAspenLibraryId());
+							deleteAllAvailabilityStmt.close();
+						} catch (SQLException e) {
+							logEntry.incErrors("SQL Error deleting all availability for title " + overDriveInfo.getId(), e);
 						}
+					}
+				} else {
+					if (singleWork) {
+						logEntry.addNote("Got availability response for " + collectionInfo.getAspenLibraryId() + " code was " + availabilityResponse.getResponseCode());
+						logEntry.addNote(availabilityResponse.getMessage());
+					}
+					try {
+						JSONObject availability = availabilityResponse.getJSONResponse();
 
-						//Check to see if we have a default account.  There is a case where a library can own a title, but the
-						//consortium doesn't.  If the title is shared with the consortium, we need to add availability for the
-						//consortium even though OverDrive doesn't provide it.
-						JSONArray allAccounts = availability.getJSONArray("accounts");
-						int numCopiesOwned = 0;
-						int numConsortiumCopies = 0;
-						int numSharedCopies = 0;
-						int numCopiesAvailable = 0;
-						int numConsortiumCopiesAvailable = 0;
-						int numSharedCopiesAvailable = 0;
-						for (int i = 0; i < allAccounts.length(); i++){
-							JSONObject accountData = allAccounts.getJSONObject(i);
-							long libraryId = accountData.getLong("id");
-							if (libraryId == -1){
-								numConsortiumCopies += accountData.getInt("copiesOwned");
-								numConsortiumCopiesAvailable += accountData.getInt("copiesAvailable");
-							}else if (libraryId == collectionInfo.getAdvantageId()){
-								numCopiesOwned += accountData.getInt("copiesOwned");
-								numCopiesAvailable += accountData.getInt("copiesAvailable");
-							}else{
-								if (accountData.has("shared")){
-									if (accountData.getBoolean("shared") && accountData.getInt("copiesOwned") > 0){
-										numSharedCopies += accountData.getInt("copiesOwned");
-										numSharedCopiesAvailable += accountData.getInt("copiesAvailable");
+						if (!availability.has("errorCode")) {
+							boolean available = false;
+							if (availability.has("available")) {
+								Object availableObj = availability.get("available");
+								if (availableObj instanceof Boolean) {
+									available = (Boolean) availableObj;
+								} else if (availableObj instanceof String) {
+									available = availability.getString("available").equals("true");
+								}
+							}
+
+							//Check to see if we have a default account.  There is a case where a library can own a title, but the
+							//consortium doesn't.  If the title is shared with the consortium, we need to add availability for the
+							//consortium even though OverDrive doesn't provide it.
+							JSONArray allAccounts = availability.getJSONArray("accounts");
+							int numCopiesOwned = 0;
+							int numConsortiumCopies = 0;
+							int numSharedCopies = 0;
+							int numCopiesAvailable = 0;
+							int numConsortiumCopiesAvailable = 0;
+							int numSharedCopiesAvailable = 0;
+							for (int i = 0; i < allAccounts.length(); i++) {
+								JSONObject accountData = allAccounts.getJSONObject(i);
+								long libraryId = accountData.getLong("id");
+								if (libraryId == -1) {
+									numConsortiumCopies += accountData.getInt("copiesOwned");
+									numConsortiumCopiesAvailable += accountData.getInt("copiesAvailable");
+								} else if (libraryId == collectionInfo.getAdvantageId()) {
+									numCopiesOwned += accountData.getInt("copiesOwned");
+									numCopiesAvailable += accountData.getInt("copiesAvailable");
+								} else {
+									if (accountData.has("shared")) {
+										if (accountData.getBoolean("shared") && accountData.getInt("copiesOwned") > 0) {
+											numSharedCopies += accountData.getInt("copiesOwned");
+											numSharedCopiesAvailable += accountData.getInt("copiesAvailable");
+										}
 									}
 								}
 							}
-						}
 
-						if (singleWork) {
-							logEntry.addNote("Updating availability for library " + collectionInfo.getAspenLibraryId());
-						}
-						//Update availability for this library/collection
-						try {
-							int numberOfHolds = availability.getInt("numberOfHolds");
-							String availabilityType = availability.getString("availabilityType");
-
-							int totalCopiesOwned;
-							int totalAvailableCopies;
-							if (collectionInfo.getAspenLibraryId() == -1){
-								totalCopiesOwned = numConsortiumCopies;
-								totalAvailableCopies = numConsortiumCopiesAvailable;
-							}else{
-								totalCopiesOwned = numCopiesOwned + numConsortiumCopies + numSharedCopies;
-								totalAvailableCopies = numCopiesAvailable + numConsortiumCopiesAvailable + numSharedCopiesAvailable;
+							if (singleWork) {
+								logEntry.addNote("Updating availability for library " + collectionInfo.getAspenLibraryId());
 							}
+							//Update availability for this library/collection
+							try {
+								int numberOfHolds = availability.getInt("numberOfHolds");
+								String availabilityType = availability.getString("availabilityType");
 
-							OverDriveAvailabilityInfo existingAvailability = existingAvailabilities.get(collectionInfo.getAspenLibraryId());
-							if (existingAvailability != null) {
-								if (singleWork) {
-									logEntry.addNote("Updating existing availability");
+								int totalCopiesOwned;
+								int totalAvailableCopies;
+								if (collectionInfo.getAspenLibraryId() == -1) {
+									totalCopiesOwned = numConsortiumCopies;
+									totalAvailableCopies = numConsortiumCopiesAvailable;
+								} else {
+									totalCopiesOwned = numCopiesOwned + numConsortiumCopies + numSharedCopies;
+									totalAvailableCopies = numCopiesAvailable + numConsortiumCopiesAvailable + numSharedCopiesAvailable;
 								}
-								//Check to see if the availability has changed
-								if (available != existingAvailability.isAvailable() ||
-										totalCopiesOwned != existingAvailability.getCopiesOwned() ||
-										totalAvailableCopies != existingAvailability.getCopiesAvailable() ||
-										numberOfHolds != existingAvailability.getNumberOfHolds() ||
-										!availabilityType.equals(existingAvailability.getAvailabilityType())
-								) {
-									updateAvailabilityStmt.setBoolean(1, available);
-									updateAvailabilityStmt.setInt(2, totalCopiesOwned);
-									updateAvailabilityStmt.setInt(3, totalAvailableCopies);
-									updateAvailabilityStmt.setInt(4, numberOfHolds);
-									updateAvailabilityStmt.setString(5, availabilityType);
-									updateAvailabilityStmt.setBoolean(6, false);
-									long existingId = existingAvailability.getId();
-									updateAvailabilityStmt.setLong(7, existingId);
-									updateAvailabilityStmt.executeUpdate();
-									changesMade = true;
-								}else if (singleWork) {
-									logEntry.addNote("Availability did not change, did not update the database");
+
+								OverDriveAvailabilityInfo existingAvailability = existingAvailabilities.get(collectionInfo.getAspenLibraryId());
+								if (existingAvailability != null) {
+									if (singleWork) {
+										logEntry.addNote("Updating existing availability");
+									}
+									//Check to see if the availability has changed
+									if (available != existingAvailability.isAvailable() ||
+											totalCopiesOwned != existingAvailability.getCopiesOwned() ||
+											totalAvailableCopies != existingAvailability.getCopiesAvailable() ||
+											numberOfHolds != existingAvailability.getNumberOfHolds() ||
+											!availabilityType.equals(existingAvailability.getAvailabilityType())
+									) {
+										PreparedStatement updateAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_availability set available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared =? WHERE id = ?");
+										updateAvailabilityStmt.setBoolean(1, available);
+										updateAvailabilityStmt.setInt(2, totalCopiesOwned);
+										updateAvailabilityStmt.setInt(3, totalAvailableCopies);
+										updateAvailabilityStmt.setInt(4, numberOfHolds);
+										updateAvailabilityStmt.setString(5, availabilityType);
+										updateAvailabilityStmt.setBoolean(6, false);
+										long existingId = existingAvailability.getId();
+										updateAvailabilityStmt.setLong(7, existingId);
+										updateAvailabilityStmt.executeUpdate();
+										updateAvailabilityStmt.close();
+										changesMade[0] = true;
+									} else if (singleWork) {
+										logEntry.addNote("Availability did not change, did not update the database");
+									}
+									existingAvailability.setNewAvailabilityLoaded();
+								} else {
+									if (singleWork) {
+										logEntry.addNote("Adding availability to the database");
+									}
+									PreparedStatement addAvailabilityStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_availability set productId = ?, settingId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared = ?");
+									addAvailabilityStmt.setLong(1, databaseId);
+									addAvailabilityStmt.setLong(2, settings.getId());
+									addAvailabilityStmt.setLong(3, collectionInfo.getAspenLibraryId());
+									addAvailabilityStmt.setBoolean(4, available);
+									addAvailabilityStmt.setInt(5, totalCopiesOwned);
+									addAvailabilityStmt.setInt(6, totalAvailableCopies);
+									addAvailabilityStmt.setInt(7, numberOfHolds);
+									addAvailabilityStmt.setString(8, availabilityType);
+									addAvailabilityStmt.setBoolean(9, false);
+									addAvailabilityStmt.executeUpdate();
+									addAvailabilityStmt.close();
+									changesMade[0] = true;
 								}
-								existingAvailability.setNewAvailabilityLoaded();
-							} else {
-								if (singleWork) {
-									logEntry.addNote("Adding availability to the database");
-								}
-								addAvailabilityStmt.setLong(1, databaseId);
-								addAvailabilityStmt.setLong(2, settings.getId());
-								addAvailabilityStmt.setLong(3, collectionInfo.getAspenLibraryId());
-								addAvailabilityStmt.setBoolean(4, available);
-								addAvailabilityStmt.setInt(5, totalCopiesOwned);
-								addAvailabilityStmt.setInt(6, totalAvailableCopies);
-								addAvailabilityStmt.setInt(7, numberOfHolds);
-								addAvailabilityStmt.setString(8, availabilityType);
-								addAvailabilityStmt.setBoolean(9, false);
-								addAvailabilityStmt.executeUpdate();
-								changesMade = true;
+							} catch (SQLException e) {
+								logEntry.incErrors("SQL Error adding availability for title " + overDriveInfo.getId(), e);
 							}
-						} catch (SQLException e) {
-							logEntry.incErrors("SQL Error adding availability for title " + overDriveInfo.getId(), e);
+						} else {
+							if (singleWork) {
+								logEntry.addNote("Availability has an error code " + availability.get("errorCode"));
+							}
+							//We get NotFound when an advantage library owns the title, but they don't share it.
+							if (!availability.get("errorCode").equals("NotFound")) {
+								logger.info("Error loading availability " + availability.get("errorCode") + " " + availability.get("message"));
+							}
 						}
-					}else{
-						if (singleWork) {
-							logEntry.addNote("Availability has an error code " + availability.get("errorCode"));
-						}
-						//We get NotFound when an advantage library owns the title, but they don't share it.
-						if (!availability.get("errorCode").equals("NotFound")){
-							logger.info("Error loading availability " + availability.get("errorCode") + " " + availability.get("message"));
-						}
+					} catch (JSONException e) {
+						logEntry.incErrors("JSON Error loading availability for title " + overDriveInfo.getId(), e);
 					}
-				} catch (JSONException e) {
-					logEntry.incErrors("JSON Error loading availability for title " + overDriveInfo.getId(), e);
 				}
+			});
+		}
+
+		es.shutdown();
+		while (true) {
+			try {
+				boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
+				if (terminated){
+					break;
+				}
+			} catch (InterruptedException e) {
+				logger.error("Error waiting for all extracts to finish");
 			}
 		}
 
@@ -1571,7 +1569,7 @@ class ExtractOverDriveInfo {
 					long existingId = existingAvailability.getId();
 					deleteAvailabilityStmt.setLong(1, existingId);
 					deleteAvailabilityStmt.executeUpdate();
-					changesMade = true;
+					changesMade[0] = true;
 					if (singleWork) {
 						logEntry.addNote("Deleting availability for library " + existingAvailability.getLibraryId());
 					}
@@ -1582,7 +1580,7 @@ class ExtractOverDriveInfo {
 		}
 
 		//Update the product to indicate that we checked availability
-		if (changesMade){
+		if (changesMade[0]){
 			try {
 				updateProductAvailabilityStmt.setLong(1, curTime);
 				updateProductAvailabilityStmt.setLong(2, curTime);
@@ -1593,6 +1591,8 @@ class ExtractOverDriveInfo {
 				logEntry.incErrors("Error updating product availability status " + overDriveInfo.getId(), e);
 			}
 		}
+		//If we got here, everything is good
+		return errorsEncountered[0];
 	}
 
 	private WebServiceResponse callOverDriveURL(String requestType, String overdriveUrl, boolean logFailures) throws SocketTimeoutException {
@@ -1755,10 +1755,7 @@ class ExtractOverDriveInfo {
 			clearIdentifiersStmt.close();
 			addIdentifierStmt.close();
 			getExistingAvailabilityForProductStmt.close();
-			updateAvailabilityStmt.close();
-			addAvailabilityStmt.close();
 			deleteAvailabilityStmt.close();
-			deleteAllAvailabilityStmt.close();
 			updateProductAvailabilityStmt.close();
 		} catch (SQLException e) {
 			logger.error("Error closing overdrive extractor", e);

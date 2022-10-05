@@ -34,7 +34,6 @@ class WorldPaySetting extends DataObject
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
 				'hideInLists' => true,
-				'forcesReindex' => true
 			),
 		);
 

@@ -16,6 +16,20 @@
 			</div>
 		{/if}
 
+		{if !empty($replacedIndex)}
+			<div id="replacement-search-info-block">
+				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results using Keyword index" isPublicFacing=true}</span></div>
+				<div id="original-search-info"><span class="replacement-search-info-text"><a href='{$oldSearchUrl}'>{translate text="Search instead using %1% index" 1=$replacedIndexLabel isPublicFacing=true}</a></span></div>
+			</div>
+		{/if}
+
+		{if !empty($replacedScope)}
+			<div id="replacement-search-info-block">
+				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results for %1%" 1=$globalScopeLabel isPublicFacing=true}</span> {$replacementTerm}</div>
+				<div id="original-search-info"><span class="replacement-search-info-text"><a href='{$oldSearchUrl}'>{translate text="Search %1% instead" 1=$replacedScopeLabel isPublicFacing=true}</a></span></div>
+			</div>
+		{/if}
+
 		{if !empty($solrSearchDebug)}
 			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isAdminFacing=true}</div>
 			<div id="solrSearchOptions" style="display:none">
@@ -38,7 +52,11 @@
 		{/if}
 
 		{* User's viewing mode toggle switch *}
-		{include file="Search/results-displayMode-toggle.tpl"}
+		{if $showSearchToolsAtTop}
+			{include file="Search/search-toolbar.tpl"}
+		{else}
+			{include file="Search/results-displayMode-toggle.tpl"}
+		{/if}
 
 		<div class="clearer"></div>
 	</div>
@@ -106,7 +124,7 @@
 		</div>
 	{/if}
 
-	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
+	{if ($showSearchTools || ($loggedIn && count($userPermissions) > 0)) && !$showSearchToolsAtTop}
 	<div class="search_tools well small">
 		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if $showSearchTools}
@@ -154,6 +172,7 @@
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
 		$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#'+AspenDiscovery.Searches.displayMode+'Modal').parent('label').addClass('active'); {* show user which one is selected *}
 
 		{rdelim});
 </script>

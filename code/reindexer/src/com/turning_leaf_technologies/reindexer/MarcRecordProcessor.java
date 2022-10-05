@@ -388,6 +388,7 @@ abstract class MarcRecordProcessor {
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
+		boolean foundSeriesIn800or830 = false;
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, 830);
 		for (DataField seriesField : seriesFields){
 			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
@@ -401,6 +402,7 @@ abstract class MarcRecordProcessor {
 				volume = seriesField.getSubfield('v').getData();
 			}
 			groupedWork.addSeriesWithVolume(series, volume);
+			foundSeriesIn800or830 = true;
 		}
 		seriesFields = MarcUtil.getDataFields(record, 800);
 		for (DataField seriesField : seriesFields){
@@ -416,13 +418,35 @@ abstract class MarcRecordProcessor {
 				volume = seriesField.getSubfield('v').getData();
 			}
 			groupedWork.addSeriesWithVolume(series, volume);
+			foundSeriesIn800or830 = true;
+		}
+		if (!foundSeriesIn800or830){
+			seriesFields = MarcUtil.getDataFields(record, 490);
+			for (DataField seriesField : seriesFields){
+				String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "a","")).toString();
+				//Remove anything in parenthesis since it's normally just the format
+				series = series.replaceAll("\\s+\\(.*?\\)", "");
+				//Remove the word series at the end since this gets cataloged inconsistently
+				series = series.replaceAll("(?i)\\s+series$", "");
+
+				String volume = "";
+				if (seriesField.getSubfield('v') != null){
+					//Separate out the volume so we can link specially
+					volume = seriesField.getSubfield('v').getData();
+				}
+				groupedWork.addSeriesWithVolume(series, volume);
+			}
 		}
 
-
-		groupedWork.addSeries(MarcUtil.getFieldList(record, "830ap:800pqt"));
-		groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
+		if (foundSeriesIn800or830) {
+			groupedWork.addSeries(MarcUtil.getFieldList(record, "830ap:800pqt"));
+			groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
+		}else{
+			groupedWork.addSeries(MarcUtil.getFieldList(record, "490a"));
+		}
 		groupedWork.addDateSpan(MarcUtil.getFieldList(record, "362a"));
 		groupedWork.addContents(MarcUtil.getFieldList(record, "505a:505t"));
+		//Check to see if we have any child records and if so add them as well
 		groupedWork.addIssns(MarcUtil.getFieldList(record, "022a"));
 		groupedWork.addOclcNumbers(MarcUtil.getFieldList(record, "035a"));
 		groupedWork.addIsbns(MarcUtil.getFieldList(record, "020a"), format);
@@ -773,11 +797,11 @@ abstract class MarcRecordProcessor {
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Letters");
-			}else if (subjectForm.equalsIgnoreCase("Short stories")
+			}else if (subjectForm.equalsIgnoreCase("Short Stories")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Fiction");
-				addToMapWithCount(literaryFormsFull, "Short stories");
+				addToMapWithCount(literaryFormsFull, "Short Stories");
 			}else if (subjectForm.equalsIgnoreCase("essays")
 					){
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
@@ -1303,6 +1327,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
+		if (printFormats.contains("Wonderbook")){
+			printFormats.clear();
+			printFormats.add("Wonderbook");
+			return;
+		}
 		if (printFormats.contains("Kit")){
 			printFormats.clear();
 			printFormats.add("Kit");
@@ -1487,7 +1516,7 @@ abstract class MarcRecordProcessor {
 				String sysDetailsValue = publisherSubField.getData().toLowerCase();
 				if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
-				} else if (sysDetailsValue.contains("go reader")) {
+				} else if (sysDetailsValue.contains("go reader") || sysDetailsValue.contains("goreader")) {
 					result.add("GoReader");
 				}
 			}
@@ -1503,8 +1532,24 @@ abstract class MarcRecordProcessor {
 					result.add("LargePrint");
 				}else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
 					result.add("Blu-ray/DVD");
-				}else if (editionData.contains("go reader")) {
+				}else if (editionData.contains("go reader") || editionData.contains("goreader")) {
 					result.add("GoReader");
+				}else if (editionData.contains("playaway view")) {
+					result.add("Playaway View");
+				}else if (editionData.contains("playaway")) {
+					result.add("Playaway");
+				}else if (editionData.contains("wonderbook")) {
+					result.add("Wonderbook");
+				}else if (editionData.contains("gamecube")) {
+					result.add("GameCube");
+				}else if (editionData.contains("nintendo switch")) {
+					result.add("Nintendo Switch");
+				}else if (editionData.contains("book club kit")) {
+					result.add("Book Club Kit");
+				}else if (editionData.contains("vox")) {
+					result.add("Vox");
+				}else if (editionData.contains("pop-up") || (editionData.contains("mini-pop-up"))) {
+					result.add("Pop-Up Book");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
@@ -1516,8 +1561,8 @@ abstract class MarcRecordProcessor {
 	}
 
 	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
-	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages).*$");
-	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$");
+	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages|v\\.|volume|volumes).*$");
+	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages|v\\.|volume|volumes)[\\s\\W]*$");
 	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, 300);
@@ -1556,10 +1601,12 @@ abstract class MarcRecordProcessor {
 						}else{
 							result.add("SoundDisc");
 						}
-					} else if (subfield.getCode() == 'a' && pagesPattern2.matcher(physicalDescriptionData).matches()){
+					} else if (subfield.getCode() == 'a' && (pagesPattern2.matcher(physicalDescriptionData).matches())){
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
 							result.add("Book+DVD");
+						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd-rom")){
+							result.add("Book+CD-ROM");
 						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
 							result.add("Book+CD");
 						}else{
@@ -1567,7 +1614,7 @@ abstract class MarcRecordProcessor {
 						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
-					if (result.size() == 0 && subfield.getCode() == 'f' && pagesPattern.matcher(physicalDescriptionData).matches()) {
+					if (result.size() == 0 && subfield.getCode() == 'f' && (pagesPattern.matcher(physicalDescriptionData).matches())) {
 						result.add("Book");
 					}
 				}
@@ -1588,6 +1635,8 @@ abstract class MarcRecordProcessor {
 				} else {
 					if (sysDetailsValue.contains("playaway")) {
 						result.add("Playaway");
+					} else if (sysDetailsValue.contains("4k") && (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray"))) {
+						result.add("4K Blu-ray");
 					} else if (dvdBlurayComboRegex.matcher(sysDetailsValue).matches()) {
 						result.add("Blu-ray/DVD");
 					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
@@ -1615,6 +1664,12 @@ abstract class MarcRecordProcessor {
 						break;
 					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
 						result.add("Blu-ray/DVD");
+						break;
+					} else if (noteValue.contains("playaway view")) {
+						result.add("Playaway View");
+						break;
+					} else if (noteValue.contains("wonderbook")) {
+						result.add("Wonderbook");
 						break;
 					}
 				}
@@ -1706,6 +1761,8 @@ abstract class MarcRecordProcessor {
 							result.add("LargePrint");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
+						}else if (subfieldData.contains("toy and movable books") || subfieldData.contains("pop-up")) {
+							result.add("Pop-Up Book");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1743,6 +1800,8 @@ abstract class MarcRecordProcessor {
 							result.add("LibraryOfThings");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
+						}else if (subfieldData.contains("toy and movable books") || subfieldData.contains("pop-up")) {
+							result.add("Pop-Up Book");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1790,6 +1849,12 @@ abstract class MarcRecordProcessor {
 					String fieldData = subfieldA.getData().toLowerCase();
 					if (fieldData.contains("playaway view")) {
 						result.add("PlayawayView");
+					}else if (fieldData.contains("playaway launchpad")) {
+						result.add("Playaway Launchpad");
+					}else if (fieldData.contains("playaway bookpack")) {
+						result.add("Playaway Bookpack");
+					}else if (fieldData.contains("playaway wonderbook")) {
+						result.add("Playaway Wonderbook");
 					}else if (fieldData.contains("playaway digital audio") || fieldData.contains("findaway world")) {
 						result.add("Playaway");
 					}

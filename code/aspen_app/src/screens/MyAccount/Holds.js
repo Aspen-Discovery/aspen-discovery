@@ -1,8 +1,8 @@
 import React, {Component, useState} from "react";
+import {SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
 	Actionsheet,
-	Avatar,
 	Badge,
 	Box,
 	Button,
@@ -32,7 +32,7 @@ import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {getHolds, getProfile, reloadHolds} from '../../util/loadPatron';
 import {
-	cancelHold, cancelHolds,
+	cancelHold, cancelHolds, cancelVdxRequest,
 	changeHoldPickUpLocation,
 	freezeHold,
 	freezeHolds,
@@ -43,6 +43,7 @@ import {getPickupLocations} from '../../util/loadLibrary';
 import {userContext} from "../../context/user";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {DisplayMessage} from "../../components/Notifications";
+import {loadError} from "../../components/loadError";
 
 export default class Holds extends Component {
 
@@ -84,6 +85,7 @@ export default class Holds extends Component {
 			selectThaw: [],
 			selectCancel: [],
 		};
+		this._isMounted = false;
 		this.onDateChange = this.onDateChange.bind(this);
 		this.onAllDateChange = this.onAllDateChange.bind(this);
 		//this._fetchHolds();
@@ -111,11 +113,10 @@ export default class Holds extends Component {
 		const holds = JSON.parse(tmpHolds);
 		const holdsNotReady = JSON.parse(tmpHoldsNotReady);
 		const holdsReady = JSON.parse(tmpHoldsReady);
-		this.setState({
+		this._isMounted && this.setState({
 			holds: holds,
 			holdsNotReady: holdsNotReady,
 			holdsReady: holdsReady,
-			isLoading: false,
 		})
 	}
 
@@ -124,10 +125,22 @@ export default class Holds extends Component {
 			isLoading: true,
 		})
 
-		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		this._isMounted && await getHolds(this.context.library.baseUrl).then(r => {
+			this.setState({
+				holds: r['holds'],
+				holdsNotReady: r['holdsNotReady'],
+				holdsReady: r['holdsReady'],
+				isLoading: false,
+			})
+		});
+	}
 
-		await reloadHolds(libraryUrl).then(r => {
+	_reloadHolds = async () => {
+		this.setState({
+			isLoading: true,
+		})
+
+		this._isMounted && await reloadHolds(this.context.library.baseUrl).then(r => {
 			this.setState({
 				holds: r['holds'],
 				holdsNotReady: r['holdsNotReady'],
@@ -141,24 +154,20 @@ export default class Holds extends Component {
 	loadPickupLocations = async () => {
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
 		const locations = JSON.parse(tmp);
-		this.setState({
+		this._isMounted && this.setState({
 			locations: locations,
-			isLoading: false,
 		})
 	}
 
 	_pickupLocations = async () => {
-		this.setState({
-			isLoading: true,
-		});
-
 		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 
-		await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
+		this._isMounted && await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
@@ -171,19 +180,18 @@ export default class Holds extends Component {
 			});
 		}
 
-		this.setState({
-			isLoading: true,
-		})
+		this._isMounted && await this._fetchHolds();
+		this._isMounted && await this._pickupLocations();
+		this._isMounted && await this.loadPickupLocations();
 
-		await this._fetchHolds();
-		await this._pickupLocations();
-		await this.loadHolds();
-		await this.loadPickupLocations();
+		this.setState({
+			isLoading: false
+		})
 
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// Handles opening the GroupedWork screen with the item data
@@ -235,14 +243,12 @@ export default class Holds extends Component {
 
 	// Trigger a context refresh
 	updateProfile = async () => {
-		console.log("Getting new profile data from holds...");
-		await getProfile().then(response => {
+		this._isMounted && await getProfile().then(response => {
 			this.context.user = response;
 			this.setState({
 				groupValues: [],
 			})
 		});
-
 	}
 
 	_listEmptyComponent = () => {
@@ -255,8 +261,7 @@ export default class Holds extends Component {
 		);
 	};
 
-	_listHeaderComponent = (libraryUrl, updateProfile, _fetchHolds) => {
-
+	_listFooterComponent = (libraryUrl, updateProfile, _fetchHolds) => {
 		const groupValues = this.state.groupValues;
 		let showSelectOptions = false;
 		if(groupValues.length >= 1) {
@@ -275,12 +280,14 @@ export default class Holds extends Component {
 						selectedReactivationDate={this.state.selectedStartDate}
 						clearGroupValue={this.clearGroupValue}
 					/>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadHolds()}}
+					/>
 				</Center>
 			);
 		}
 
 		return (
-			<Center mt={5} mb={5}>
+			<Center mt={5} mb={2}>
 					<ManageAllHolds
 						data={this.state.holds}
 						libraryUrl={libraryUrl}
@@ -288,6 +295,8 @@ export default class Holds extends Component {
 						_fetchHolds={_fetchHolds}
 						onDateChange={this.onDateChange}
 						selectedReactivationDate={this.state.selectedStartDate}
+					/>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadHolds()}}
 					/>
 			</Center>
 		);
@@ -302,27 +311,32 @@ export default class Holds extends Component {
 		const library = this.context.library;
 
 		if (this.state.isLoading) {
-			return (loadingSpinner(this.state.loadingMessage));
+			return (loadingSpinner());
+		}
+
+		if (this.state.hasError) {
+			return (loadError(this.state.error, this._reloadHolds));
 		}
 
 		return (
-			<ScrollView>
+			<SafeAreaView style={{flex: 1}}>
 			<Box>
-				<Checkbox.Group  defaultValue={this.state.groupValues} accessibilityLabel="choose multiple items" onChange={values => {this.setGroupValue(values)}}>
-				<FlatList
-					data={holds}
-					ListEmptyComponent={this._listEmptyComponent()}
-					ListFooterComponent={this._listHeaderComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
-					renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile, this._fetchHolds)}
-					keyExtractor={(item) => item.id.concat("_", item.position)}
-				/>
-				</Checkbox.Group>
-				<Center pt={5} pb={5}>
-					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
-					/>
+				<Center pt={5} pb={10}>
+					<Checkbox.Group
+						defaultValue={this.state.groupValues}
+						accessibilityLabel="Choose multiple holds to manage"
+						onChange={values => {this.setGroupValue(values)}}>
+						<FlatList
+							data={holds}
+							ListEmptyComponent={this._listEmptyComponent()}
+							ListFooterComponent={this._listFooterComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
+							renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile, this._fetchHolds)}
+							keyExtractor={(item) => item.id.concat("_", item.position)}
+						/>
+					</Checkbox.Group>
 				</Center>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 	}
 }
@@ -429,25 +443,40 @@ function HoldItem(props) {
 
 	let cancelable = false;
 	if (!data.available && source !== 'ils') {
-		cancelable = true;
+		cancelable = data.cancelable;
 	} else if (!data.available && source === 'ils') {
 		cancelable = true;
 	}
 
-	console.log(data.coverUrl);
+	let cancelLabel = translate('holds.cancel_hold');
+	if(data.type === "interlibrary_loan") {
+		cancelLabel = translate('holds.cancel_request');
+	}
+
+	let type = "Unknown";
+	if(data.type === "interlibrary_loan") {
+		type = "Interlibrary Loan";
+	}
 
 	return (
 		<>
 			<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3}>
 
-					<VStack>
-						<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
-						{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
-							<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="This is a dummy checkbox"></Checkbox></Center>
-						 : null}
-					</VStack>
-					<VStack maxW="75%">
+					{data.coverUrl && data.source !== "vdx" ? (
+						<VStack>
+							<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
+							{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
+								<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
+								: null}
+						</VStack>
+					) : null}
+
+					{!data.coverUrl && data.source !== "vdx" ? (
+						<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
+					) : null}
+
+					<VStack maxW="80%">
 						<Text bold mb={1} fontSize={{base: "sm", lg: "lg"}}>{title}</Text>
 							{data.frozen ?
 								<Text><Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge></Text> : null}
@@ -460,16 +489,21 @@ function HoldItem(props) {
 								<Text bold>{translations.author}:</Text> {author}
 							</Text>
 							: null}
-						<Text fontSize={{base: "xs", lg: "sm"}}>
+						{data.format ?
+							<Text fontSize={{base: "xs", lg: "sm"}}>
 							<Text bold>{translations.format}:</Text> {data.format}
-						</Text>
+							</Text>
+						: null}
+						{type !== "Unknown" ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.type')}:</Text> {type}</Text>) : null}
 						<Text fontSize={{base: "xs", lg: "sm"}}>
 							<Text bold>{translations.onHoldFor}:</Text> {data.user}
 						</Text>
 						{data.source === "ils" ? (<Text fontSize={{base: "xs", lg: "sm"}}>
 								<Text bold>{translations.pickUpLocation}:</Text> {data.currentPickupName}</Text>) : null}
 						{data.available ? <Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.pickupBy}:</Text> {expirationDate}</Text> :
-							<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.position}:</Text> {data.position}</Text>}
+							null}
+						{!data.available && data.position ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.position}:</Text> {data.position}</Text>) : null}
+						{data.status && data.source === "vdx" ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.status')}:</Text> {data.status}</Text>) : null}
 					</VStack>
 				</HStack>
 			</Pressable>
@@ -497,7 +531,7 @@ function HoldItem(props) {
 						</Actionsheet.Item>
 						: ""
 					}
-					{cancelable && allowLinkedAccountAction ?
+					{cancelable && allowLinkedAccountAction && data.source !== "vdx" ?
 						<Actionsheet.Item
 							isLoading={loading}
 							isLoadingText="Cancelling..."
@@ -512,9 +546,27 @@ function HoldItem(props) {
 								});
 							}}
 						>
-							{translations.cancelHold}
+							{cancelLabel}
 						</Actionsheet.Item>
 						: ""}
+					{cancelable && allowLinkedAccountAction && data.source === "vdx" ? (
+						<Actionsheet.Item
+							isLoading={loading}
+							isLoadingText="Cancelling..."
+							startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
+							onPress={() => {
+								setLoading(true);
+								cancelVdxRequest(libraryUrl, data.sourceId, data.cancelId).then(r => {
+									updateProfile();
+									_fetchHolds();
+									onClose(onClose);
+									setLoading(false);
+								});
+							}}
+						>
+							{cancelLabel}
+						</Actionsheet.Item>
+					) : ""}
 					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === false ?
 						<SelectThawDate
 							handleOnDateChange={onDateChange}
@@ -812,9 +864,9 @@ const ManageSelectedHolds = (props) => {
 							numToThaw = [];
 							numToCancel = [];
 							numToFreeze = [];
-							updateProfile();
 							_fetchHolds();
 							onClose(onClose);
+							updateProfile();
 							startCancelling(false);
 						})
 					}}><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item>}
@@ -849,8 +901,10 @@ const ManageAllHolds = (props) => {
 	let titlesToThaw = [];
 	let titlesToCancel = [];
 
+	//console.log(data);
+
 	const categorizedValues = data.map((item, index) => {
-		if(item.allowFreezeHolds && item.frozen) {
+		if(item.canFreeze && item.frozen && item.source !== "vdx") {
 			titlesToThaw.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
@@ -858,7 +912,7 @@ const ManageAllHolds = (props) => {
 				'patronId': item.userId,
 			})
 		}
-		if(item.allowFreezeHolds && !item.frozen) {
+		if(item.canFreeze && !item.frozen && item.source !== "vdx") {
 			titlesToFreeze.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
@@ -866,7 +920,7 @@ const ManageAllHolds = (props) => {
 				'patronId': item.userId,
 			})
 		}
-		if(item.cancelable) {
+		if(item.cancelable && item.source !== "vdx") {
 			titlesToCancel.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
@@ -880,9 +934,11 @@ const ManageAllHolds = (props) => {
 	let numToFreeze = titlesToFreeze.length;
 	let numToThaw = titlesToThaw.length;
 
+	let numToManage = (numToCancel + numToFreeze + numToThaw);
+
 	return (
 		<Center>
-			<Button onPress={onOpen}>Manage All</Button>
+			{numToManage >= 1 ? <Button onPress={onOpen}>Manage All</Button> : null}
 			<Actionsheet isOpen={isOpen} onClose={onClose}>
 				<Actionsheet.Content>
 					<Actionsheet.Item
@@ -891,10 +947,10 @@ const ManageAllHolds = (props) => {
 						onPress={() => {
 							startCancelling(true);
 							cancelHolds(titlesToCancel, libraryUrl).then(r => {
-								updateProfile();
 								_fetchHolds();
 								onClose(onClose);
 								startCancelling(false);
+								updateProfile();
 							})
 						}}
 					>

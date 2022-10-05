@@ -1,11 +1,8 @@
 <div id="list-{$wrapperId}"{if !empty($display) && $display == 'false'} style="display:none"{/if} class="titleScroller tab-pane{if !empty($active)} active{/if}{if !empty($collectionSpotlight) && $collectionSpotlight->coverSize == 'medium'} mediumScroller{/if}{if !empty($collectionSpotlight) && $collectionSpotlight->showRatings} scrollerWithRatings{/if}">
-{if $showCollectionSpotlightTitle || $showViewMoreLink}
+{if $showCollectionSpotlightTitle}
 	<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 		{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
 			<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
-		{/if}
-		{if $showViewMoreLink}
-			<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 		{/if}
 	</div>
 {/if}
@@ -16,6 +13,10 @@
 
 	<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" isPublicFacing=true inAttribute=true}"><i class="fas fa-caret-left"></i></a>
 	<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" isPublicFacing=true inAttribute=true}"><i class="fas fa-caret-right"></i></a>
+
+	{if $showViewMoreLink}
+		<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}{if $showViewMoreListTitle} {translate text="$showViewMoreListTitle" isPublicFacing=true}{/if}</a></div>
+	{/if}
 </div>
 <script type="text/javascript">
 	$(document).ready(function(){ldelim}

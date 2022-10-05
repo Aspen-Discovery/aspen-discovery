@@ -5,10 +5,10 @@ import _ from "lodash";
 import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
-import {createAuthTokens, getHeaders, postData} from "./apiAuth";
+import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {getCheckedOutItems, getHolds, getProfile} from "./loadPatron";
-import {popToast} from "../components/loadError";
+import {popAlert, popAlertNew, popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
 import {userContext} from "../context/user";
 
@@ -60,7 +60,6 @@ export async function checkoutItem(libraryUrl, itemId, source, patronId) {
 		params: {itemId: itemId, itemSource: source, userId: patronId}
 	});
 	const response = await api.post('/UserAPI?method=checkoutItem', postBody);
-	console.log(response);
 	if (response.ok) {
 		const responseData = response.data;
 		const results = responseData.result;
@@ -212,10 +211,43 @@ export async function getItemDetails(libraryUrl, id, format) {
 	});
 	const response = await api.post('/ItemAPI?method=getItemDetails', postBody);
 	if (response.ok) {
-		//console.log(response);
 		return _.values(response.data);
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
+	}
+}
+
+export async function submitVdxRequest(libraryUrl, request) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {
+			'title': request.title,
+			'author': request.author,
+			'publisher': request.publisher,
+			'isbn': request.isbn,
+			'maximumFeeAmount': request.maximumFeeAmount,
+			'acceptFee': request.acceptFee,
+			'pickupLocation': request.pickupLocation,
+			'catalogKey': request.catalogKey,
+			'note': request.note,
+		}
+	});
+	const response = await api.post('/UserAPI?method=submitVdxRequest', postBody);
+	if (response.ok) {
+		if(response.data.result.success === true) {
+			popAlert(response.data.result.title, response.data.result.message, "success");
+		} else {
+			popAlert(response.data.result.title ?? "Unknown Error", response.data.result.message, "error")
+		}
+		return response.data;
+	} else {
+		const problem = problemCodeMap(response.problem);
+		popAlert(problem.title, problem.message, "warning");
 		console.log(response);
 	}
 }

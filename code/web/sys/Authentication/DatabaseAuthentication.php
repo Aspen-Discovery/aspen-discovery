@@ -23,16 +23,20 @@ class DatabaseAuthentication implements Authentication {
 		if (($username == '') || ($password == '')) {
 			$user = new AspenError('Login information cannot be blank.');
 		} else {
-			$user = new User();
-			$user->username = $username;
-			if (!$user->find(true)) {
-				$user = null;
-			}else{
-				if ($user->password != $password){
-					$user = new AspenError('Sorry that login information was not recognized, please try again.');
-				}else{
-					$user->lastLoginValidation = time();
-					$user->update();
+			if ($username == 'nyt_user'){
+				$user = new AspenError('Cannot login as the New York Times User');
+			}else {
+				$user = new User();
+				$user->username = $username;
+				if (!$user->find(true)) {
+					$user = null;
+				} else {
+					if ($user->password != $password) {
+						$user = new AspenError('Sorry that login information was not recognized, please try again.');
+					} else {
+						$user->lastLoginValidation = time();
+						$user->update();
+					}
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Button, Center, Icon, Heading, Text} from "native-base";
+import {Box, Button, Center, Icon, Heading, Text, Divider} from "native-base";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MaterialIcons} from "@expo/vector-icons";
 import * as SecureStore from 'expo-secure-store';
@@ -78,8 +78,9 @@ export default class Contact extends Component {
 		return (
 			<Box safeArea={5}>
 				<Center>
-					<Heading>{library.displayName}</Heading>
-					<Text mb={2}>{location.displayName}</Text>
+					<Heading mb={1}>{library.displayName}</Heading>
+					{library.displayName != location.displayName ? (<Text mb={2}>{location.displayName}</Text>) : null}
+					<Divider mb={2}/>
 					{location.showInLocationsAndHoursList === "1" ?
 						<HoursAndLocation hoursMessage={location.hoursMessage} hours={location.hours}
 						                  description={location.description}/> : null}

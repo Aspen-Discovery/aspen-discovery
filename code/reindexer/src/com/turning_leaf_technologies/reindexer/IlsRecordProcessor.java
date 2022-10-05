@@ -94,9 +94,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashSet<String> nonHoldableFormats = new HashSet<>();
 	protected boolean suppressRecordsWithNoCollection = true;
 
+	protected boolean processRecordLinking = false;
+
 	private PreparedStatement loadHoldsStmt;
 	private PreparedStatement addTranslationMapValueStmt;
 	private PreparedStatement updateRecordSuppressionReasonStmt;
+	private PreparedStatement loadChildRecordsStmt;
+	private PreparedStatement loadParentRecordsStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, logger);
@@ -166,7 +170,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
@@ -188,7 +192,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
 				if (pattern != null && pattern.length() > 0) {
-					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$");
+					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
 				}
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable iTypes", e);
@@ -263,9 +267,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
 			hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
 
+			processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
+
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 			updateRecordSuppressionReasonStmt = dbConn.prepareStatement("UPDATE ils_records set suppressed=?, suppressionNotes=? where source=? and ilsId=?");
+			loadChildRecordsStmt = dbConn.prepareStatement("SELECT * from record_parents where parentRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			loadParentRecordsStmt = dbConn.prepareStatement("SELECT * from record_parents where childRecordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
@@ -363,6 +371,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
 
 		try{
+
 			//If the entire bib is suppressed, update stats and bail out now.
 			if (isBibSuppressed(record, identifier)){
 				return;
@@ -456,8 +465,47 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			for (RecordInfo recordInfoTmp: allRelatedRecords) {
 				scopeItems(recordInfoTmp, groupedWork, record);
 			}
+
+			//Check to see if we have child records to load
+			if (processRecordLinking){
+				loadChildRecords(groupedWork, identifier);
+				loadParentRecords(groupedWork, identifier);
+			}
 		}catch (Exception e){
 			indexer.getLogEntry().incErrors("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
+		}
+	}
+
+	private void loadChildRecords(AbstractGroupedWorkSolr groupedWork, String identifier) {
+		try {
+			loadChildRecordsStmt.setString(1, identifier);
+			ResultSet childRecordsRS = loadChildRecordsStmt.executeQuery();
+			while (childRecordsRS.next()){
+				String childRecordId = childRecordsRS.getString("childRecordId");
+				Record marcRecord = indexer.loadMarcRecordFromDatabase(profileType, childRecordId, indexer.getLogEntry());
+				if (marcRecord != null){
+					DataField titleField = marcRecord.getDataField(245);
+					if (titleField != null) {
+						String childTitle = titleField.getSubfieldsAsString("abfgnp", " ");
+						groupedWork.addContents(childTitle);
+					}
+				}
+			}
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error loading child records for MARC record with identifier " + identifier, e);
+		}
+	}
+
+	private void loadParentRecords(AbstractGroupedWorkSolr groupedWork, String identifier){
+		try {
+			loadParentRecordsStmt.setString(1, identifier);
+			ResultSet parentRecordsRS = loadParentRecordsStmt.executeQuery();
+			while (parentRecordsRS.next()){
+				String parentRecordId = parentRecordsRS.getString("parentRecordId");
+				groupedWork.addParentRecord(parentRecordId);
+			}
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error loading parent records for MARC record with identifier " + identifier, e);
 		}
 	}
 
@@ -527,7 +575,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
-		if (orderTag.length() == 0){
+		if (orderTag == null || orderTag.length() == 0){
 			return;
 		}
 		List<DataField> orderFields = MarcUtil.getDataFields(record, orderTag);
@@ -931,6 +979,23 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			setDetailedStatus(itemInfo, itemField, itemStatus, recordInfo.getRecordIdentifier());
 		}
 
+		if (formatSource.equals("item")){
+			loadItemFormat(recordInfo, itemField, itemInfo);
+		}
+
+		groupedWork.addKeywords(itemLocation);
+		if (itemSublocation.length() > 0){
+			groupedWork.addKeywords(itemSublocation);
+		}
+
+		itemInfo.setMarcField(itemField);
+
+		recordInfo.addItem(itemInfo);
+
+		return new ItemInfoWithNotes(itemInfo, suppressionNotes);
+	}
+
+	protected void loadItemFormat(RecordInfo recordInfo, DataField itemField, ItemInfo itemInfo) {
 		if (formatSource.equals("item") && formatSubfield != ' '){
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			if (format != null) {
@@ -957,17 +1022,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
-
-		groupedWork.addKeywords(itemLocation);
-		if (itemSublocation.length() > 0){
-			groupedWork.addKeywords(itemSublocation);
-		}
-
-		itemInfo.setMarcField(itemField);
-
-		recordInfo.addItem(itemInfo);
-
-		return new ItemInfoWithNotes(itemInfo, suppressionNotes);
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
@@ -1480,11 +1534,17 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
+		return isItemSuppressed(curItem, itemIdentifier, suppressionNotes, true);
+	}
+
+	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes, boolean suppressBlankStatuses) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			if (statusSubfield == null) {
-				suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
-				return new ResultWithNotes(true, suppressionNotes);
+				if (suppressBlankStatuses) {
+					suppressionNotes.append("Item ").append(itemIdentifier).append(" - no status<br>");
+					return new ResultWithNotes(true, suppressionNotes);
+				}
 			} else {
 				String statusValue = statusSubfield.getData();
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusValue).matches()) {
@@ -1544,16 +1604,27 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		return new ResultWithNotes(false, suppressionNotes);
 	}
-
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
-		//We should already have formats based on the items
-		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
-			return;
-		}
+    public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
+        //We should already have formats based on the items
+        if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
+            //Check to see if all items have formats.
+            if (!recordInfo.allItemsHaveFormats()){
+                HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
+                if (uniqueItemFormats.size() == 1) {
+                    recordInfo.addFormat(uniqueItemFormats.iterator().next());
+                    recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
+					largePrintCheck(recordInfo, record);
+				}
+            }else {
+				largePrintCheck(recordInfo, record);
+                return;
+            }
+        }
 
+		//If not, we will assign format based on bib level data
 		if (formatSource.equals("specified")){
 			HashSet<String> translatedFormats = new HashSet<>();
 			translatedFormats.add(specifiedFormat);
@@ -1564,6 +1635,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			recordInfo.setFormatBoost(specifiedFormatBoost);
 		} else {
 			loadPrintFormatFromBib(recordInfo, record);
+		}
+	}
+
+	void largePrintCheck(RecordInfo recordInfo, Record record){
+		HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
+		try {
+			if (checkRecordForLargePrint && (uniqueItemFormats.size() == 1) && uniqueItemFormats.iterator().next().equalsIgnoreCase("Book")) {
+				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+				if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
+					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+					//noinspection Java8MapApi
+					for (String itemType : uniqueItemFormats) {
+						uniqueItemFormats.remove(itemType);
+						uniqueItemFormats.add(translatedFormat);
+						recordInfo.addFormat(translatedFormat);
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error checking record for large print");
 		}
 	}
 

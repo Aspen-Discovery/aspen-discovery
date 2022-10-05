@@ -384,10 +384,12 @@ abstract class SearchObject_BaseSearcher
 		$oldFilterList = $this->filterList;
 		$oldPage = $this->page;
 		// Availability facet can have only one item selected at a time
+		$disallowReplacements = false;
 		if (strpos($field, 'availability_toggle') === 0) {
 			foreach ($this->filterList as $name => $value) {
 				if (strpos($name, 'availability_toggle') === 0) {
 					unset ($this->filterList[$name]);
+					$disallowReplacements = true;
 				}
 			}
 		}
@@ -402,6 +404,9 @@ abstract class SearchObject_BaseSearcher
 		// Restore the old data
 		$this->filterList = $oldFilterList;
 		$this->page = $oldPage;
+		if ($disallowReplacements){
+			$url .= '&disallowReplacements';
+		}
 		// Return the URL
 		return $url;
 	}

@@ -6,13 +6,18 @@ class Suggestions{
 	 * Get suggestions for titles that a user might like based on their rating history
 	 * and related titles from Novelist.
 	 */
-	static function getSuggestions($userId = -1, $page = 1, $limit = 25){
+	static function getSuggestions($userId = -1, $page = 1, $limit = 25, $appUser = null){
 		global $timer;
 
 		//Configuration for suggestions
-		if ($userId == -1 || $userId == UserAccount::getActiveUserId()){
-			$userId = UserAccount::getActiveUserId();
-			$user = UserAccount::getActiveUserObj();
+		if ($userId == -1 || $userId == UserAccount::getActiveUserId() || $appUser != null){
+			if(is_null($appUser)) {
+				$userId = UserAccount::getActiveUserId();
+				$user = UserAccount::getActiveUserObj();
+			} else {
+				$userId = $appUser->id;
+				$user = $appUser;
+			}
 		}else{
 			$user = new User();
 			$user->id = $userId;
@@ -26,10 +31,14 @@ class Suggestions{
 
 		$holds = $user->getHolds(false);
 		foreach ($holds['available'] as $hold){
-			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			if (!empty($hold->groupedWorkId)) {
+				$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			}
 		}
 		foreach ($holds['unavailable'] as $hold){
-			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			if (!empty($hold->groupedWorkId)) {
+				$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			}
 		}
 
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated

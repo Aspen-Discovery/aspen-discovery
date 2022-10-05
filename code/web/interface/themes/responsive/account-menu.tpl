@@ -1,10 +1,10 @@
 {strip}
 	{if $loggedIn}
-		{* Setup the accoridon *}
+		{* Setup the accordion *}
 		<!--suppress HtmlUnknownTarget -->
 		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown" aria-label="{translate text="Account Menu" isPublicFacing=true inAttribute=true}">
 			<span class="expirationFinesNotice-placeholder"></span>
-			{if $userHasCatalogConnection}
+			{if $userHasCatalogConnection && $showUserCirculationModules}
 				<a href="/MyAccount/CheckedOut">
 					<div class="header-menu-option" >
 						{translate text="Checked Out Titles" isPublicFacing=true}
@@ -35,7 +35,7 @@
 					<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
 				</div>
 			{/if}
-			{if $userHasCatalogConnection}
+			{if $userHasCatalogConnection && $showUserCirculationModules}
 				<div class="header-menu-option" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a></div>
 			{/if}
 			{if $showRatings}
@@ -64,8 +64,8 @@
 					</a>
 				</div>
 			{/if}
-			<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>
-			<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>
+			{if $showUserPreferences}<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
+			{if $showUserContactInformation}<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 			{if $user->showMessagingSettings()}
 				<div class="header-menu-option" ><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
 			{/if}
@@ -77,13 +77,13 @@
 			{elseif $allowPinReset && !$offline}
 				<div class="header-menu-option" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
 			{/if}
-			{if $user->isValidForEContentSource('overdrive')}
+			{if $user->isValidForEContentSource('overdrive') && $showUserCirculationModules}
 				<div class="header-menu-option" ><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
 			{/if}
-			{if $user->isValidForEContentSource('hoopla')}
+			{if $user->isValidForEContentSource('hoopla') && $showUserCirculationModules}
 				<div class="header-menu-option" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>
 			{/if}
-			{if $user->isValidForEContentSource('axis360')}
+			{if $user->isValidForEContentSource('axis360') && $showUserCirculationModules}
 				<div class="header-menu-option" ><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
 			{/if}
 			{if $userIsStaff}

@@ -791,6 +791,7 @@ public class SymphonyExportMain {
 			return totalChanges;
 		}
 
+		MarcFactory marcFactory = MarcFactory.newInstance();
 		logEntry.addNote("Processing " + exportedMarcFiles.size() + " MARC files");
 		logEntry.saveResults();
 		//The files are sorted by date, we just need to make sure the last is not changing
@@ -901,7 +902,7 @@ public class SymphonyExportMain {
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									AppendItemsToRecordResult appendItemsToRecordResult = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									AppendItemsToRecordResult appendItemsToRecordResult = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, marcFactory, Integer.toString(numRecordsRead));
 									marcStatus = appendItemsToRecordResult.getMarcStatus();
 									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {

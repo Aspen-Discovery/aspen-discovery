@@ -22,13 +22,13 @@
 				</div>
 
 				<p class="alert alert-info">
-					{if $mustPickupAtHoldingBranch}
+					{if $pickupAt > 0}
 						{translate text="Holds allow you to request that a title be put aside for you to pick up at the library." isPublicFacing=true}&nbsp;
 					{else}
 						{translate text="Holds allow you to request that a title be delivered to your home library." isPublicFacing=true}&nbsp;
 					{/if}
 						{translate text="Once the title arrives at your library you will receive a notification informing you that the title is ready for you." isPublicFacing=true}&nbsp;
-					{if $mustPickupAtHoldingBranch}
+					{if $pickupAt > 0}
 						{translate text="You will then have 7 days to pick up the title at the library." isPublicFacing=true}&nbsp;
 					{else}
 						{translate text="You will then have 7 days to pick up the title from your home library." isPublicFacing=true}&nbsp;
@@ -164,7 +164,7 @@
 					<br>
 					{if $showLogMeOut == 1}
 					<div class="form-group">
-						<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" idN="autologout" {if $logMeOutDefault == true}checked="checked"{/if}> {translate text="Log me out after requesting the item." isPublicFacing=true}</label>
+						<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" id="autologout" {if $logMeOutDefault == true}checked="checked"{/if}> {translate text="Log me out after requesting the item." isPublicFacing=true}</label>
 					</div>
 					{/if}
 				</div>

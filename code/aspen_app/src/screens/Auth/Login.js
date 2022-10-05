@@ -52,7 +52,7 @@ export default class Login extends Component {
 			locationNum: 0,
 			showModal: false
 		};
-
+		this._isMounted = false;
 		// create arrays to store Greenhouse data from
 		this.arrayHolder = [];
 		this.filteredLibraries = [];
@@ -66,11 +66,11 @@ export default class Login extends Component {
 
 	// handles the mount information, setting session variables, etc
 	componentDidMount = async () => {
-
+		this._isMounted = true;
 		//await setGlobalVariables();
 
-		await getGreenhouseData(this.libraryData).then(async data => {
-			console.log("Data OK");
+		this._isMounted && await getGreenhouseData(this.libraryData).then(async data => {
+			//console.log(data);
 			this.libraryData = data.libraryData;
 			if (data.locationNum) {
 				this.locationNum = data.locationNum;
@@ -80,7 +80,6 @@ export default class Login extends Component {
 			if (Constants.manifest.slug === "aspen-lida") {
 				this.uniqueLibraries = _.uniqBy(this.libraryData, v => [v.librarySystem, v.name].join());
 			} else {
-				//console.log(this.libraryData);
 				this.uniqueLibraries = _.values(this.libraryData);
 				this.uniqueLibraries = _.uniqBy(this.uniqueLibraries, v => [v.libraryId, v.name].join());
 				if (this.locationNum <= 1) {
@@ -92,17 +91,21 @@ export default class Login extends Component {
 			}
 		});
 
-		this.setState({
+		this._isMounted && this.setState({
 			isLoading: false,
 			isFetching: false,
 		});
 
 		if(Constants.manifest.slug === "aspen-lida") {
 			// fetch greenhouse data to populate libraries for community app
-			await this.makeFullGreenhouseRequest();
+			this._isMounted && await this.makeFullGreenhouseRequest();
 		}
 
 	};
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	}
 
 	// handles the opening or closing of the showLibraries() modal
 	handleModal = (newState) => {
@@ -307,7 +310,7 @@ export default class Login extends Component {
 		this.libraryData = updatedData;
 		this.setState({query: text, isFetching: false});
 		this.uniqueLibraries = updatedData;
-		console.log(updatedData);
+		//console.log(updatedData);
 	};
 
 	// showLibraries: handles storing the states based on selected library to use later on in validation
@@ -358,7 +361,7 @@ export default class Login extends Component {
 		if(Constants.manifest.slug !== "aspen-lida") { isCommunity = false; }
 
 		//console.log(this.state);
-		console.log(this.locationNum);
+		//console.log(this.locationNum);
 
 		// TODO: Get library logo, fallback on LiDA
 		return (
@@ -507,7 +510,7 @@ const GetLoginForm = (props) => {
 					variant="filled"
 					size="xl"
 					type={show ? "text" : "password"}
-					returnKeyType="next"
+					returnKeyType="go"
 					textContentType="password"
 					ref={passwordRef}
 					InputRightElement={
@@ -522,6 +525,15 @@ const GetLoginForm = (props) => {
 						/>
 					}
 					onChangeText={text => onChangeValueSecret(text)}
+					onSubmitEditing={(event) => {
+						setLoading(true);
+						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary});
+						setTimeout(
+							function () {
+								setLoading(false);
+							}.bind(this), 1500
+						);
+					}}
 					required
 				/>
 			</FormControl>
@@ -596,6 +608,7 @@ async function getGreenhouseData(data) {
 			longitude: longitude,
 			release_channel: Updates.releaseChannel
 		});
+		//console.log(response);
 		if (response.ok) {
 			let res = response.data;
 			if (Constants.manifest.slug === "aspen-lida") {

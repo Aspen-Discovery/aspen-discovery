@@ -150,7 +150,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private function _connectToAPI($forceNewConnection, $methodName){
-		/** @var Memcache $memCache */
 		global $memCache;
 		$settings = $this->getSettings();
 		if ($settings == false){
@@ -541,7 +540,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param bool $forSummary
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($patron, $forSummary = false){
+	public function getCheckouts(User $patron, bool $forSummary = false) : array{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		global $logger;
 		if (!$this->isUserValidForOverDrive($patron)){
@@ -684,7 +683,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param bool $forSummary
 	 * @return array
 	 */
-	public function getHolds($patron, $forSummary = false){
+	public function getHolds($patron, $forSummary = false) : array{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Cache holds for the user just for this call.
 		if (isset($this->holds[$patron->id])){
@@ -838,6 +837,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 			$user->clearCache();
 			$user->clearCachedAccountSummaryForSource('overdrive');
+			$user->forceReloadOfHolds();
 		}else{
 			$holdResult['message'] = translate(['text' => 'Sorry, but we could not place a hold for you on this title.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
@@ -852,7 +852,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $holdResult;
 	}
 
-	function freezeHold(User $patron, $overDriveId, $reactivationDate)
+	function freezeHold(User $patron, $overDriveId, $reactivationDate) : array
 	{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
 		$params = array(
@@ -903,7 +903,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $holdResult;
 	}
 
-	function thawHold(User $patron, $overDriveId)
+	function thawHold(User $patron, $overDriveId) : array
 	{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
 		$response = $this->_callPatronDeleteUrl($patron, $url, "thawHold");
@@ -946,7 +946,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param string $overDriveId
 	 * @return array
 	 */
-	function cancelHold($patron, $overDriveId, $cancelId = null, $isIll = false){
+	function cancelHold($patron, $overDriveId, $cancelId = null, $isIll = false) : array{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($patron, $url, "cancelHold");
 
@@ -1280,12 +1280,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}
 
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -1360,7 +1360,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 		$userUsage = new UserOverDriveUsage();
-		$userUsage->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$userUsage->instance = $aspenUsage->instance;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -1381,7 +1382,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 		$recordUsage = new OverDriveRecordUsage();
-		$recordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$recordUsage->instance = $aspenUsage->instance;
 		$recordUsage->overdriveId = $overDriveId;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -1402,7 +1404,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 		$recordUsage = new OverDriveRecordUsage();
-		$recordUsage->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$recordUsage->instance = $aspenUsage->instance;
 		$recordUsage->overdriveId = $overDriveId;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -1627,7 +1630,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 		$axis360Stats = new OverDriveStats();
-		$axis360Stats->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$axis360Stats->instance = $aspenUsage->instance;
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

@@ -7,6 +7,7 @@ import SearchByCategory from "../../screens/Search/SearchByCategory";
 import SearchByList from "../../screens/Search/SearchByList";
 import SearchBySavedSearch from "../../screens/Search/SearchBySavedSearch";
 import Results from "../../screens/Search/Results";
+import CreateVDXRequest from "../../screens/GroupedWork/CreateVDXRequest";
 
 
 const BrowseStackNavigator = () => {
@@ -30,44 +31,52 @@ const BrowseStackNavigator = () => {
 			<Stack.Screen
 				name="GroupedWorkScreen"
 				component={GroupedWork}
-				options={{
-					title: translate('grouped_work.title'),
-				}}
+				options={({ route }) => ({
+					title: route.params.title ?? translate('grouped_work.title'),
+				})}
 			/>
 			<Stack.Screen
 				name="SearchByCategory"
 				component={SearchByCategory}
 				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.categoryLabel,
+					title: translate('search.search_results_title') + route.params.title,
 				})}
 			/>
 			<Stack.Screen
 				name="SearchByAuthor"
 				component={Results}
 				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.searchTerm,
+					title: translate('search.search_results_title') + route.params.term,
 				})}
 			/>
 			<Stack.Screen
 				name="SearchByList"
 				component={SearchByList}
 				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.categoryLabel,
+					title: translate('search.search_results_title') + route.params.title,
 				})}
 			/>
 			<Stack.Screen
 				name="ListResults"
 				component={SearchByList}
 				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.categoryLabel,
+					title: translate('search.search_results_title') + route.params.title,
 				})}
 			/>
 			<Stack.Screen
 				name="SearchBySavedSearch"
 				component={SearchBySavedSearch}
 				options={({ route }) => ({
-					title: translate('search.search_results_title') + route.params.categoryLabel,
+					title: translate('search.search_results_title') + route.params.title,
 				})}
+			/>
+			<Stack.Screen
+				name="CreateVDXRequest"
+				component={CreateVDXRequest}
+				options={{
+					title: 'Request Title',
+					presentation: 'modal',
+				}}
 			/>
 		</Stack.Navigator>
 	)

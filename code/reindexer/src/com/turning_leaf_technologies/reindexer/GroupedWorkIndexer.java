@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcWriter;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
 public class GroupedWorkIndexer {
@@ -45,6 +46,7 @@ public class GroupedWorkIndexer {
 	private HooplaProcessor hooplaProcessor;
 	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
+	protected static final HashSet<String> hideSubjects = new HashSet<>();
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
@@ -134,6 +136,12 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getRecordForIdentifierStmt;
 	private PreparedStatement addRecordToDBStmt;
 	private PreparedStatement updateRecordInDBStmt;
+	private PreparedStatement getHideSubjectsStmt;
+
+//	private PreparedStatement getExistingParentWorksStmt;
+//	private PreparedStatement addParentWorkStmt;
+//	private PreparedStatement deleteParentWorkStmt;
+
 	private final CRC32 checksumCalculator = new CRC32();
 
 	private boolean storeRecordDetailsInSolr = false;
@@ -265,6 +273,11 @@ public class GroupedWorkIndexer {
 			getRecordForIdentifierStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(sourceData) as sourceData FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressedNoMarcAvailable = 0, sourceData = COMPRESS(?), lastModified = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			getHideSubjectsStmt = dbConn.prepareStatement("SELECT subjectNormalized from hide_subject_facets", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+//			getExistingParentWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_parents where childWorkId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+//			addParentWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_parents (childWorkId, parentWorkId) VALUES (?, ?)");
+//			deleteParentWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_parents WHERE childWorkId = ? AND parentWorkId = ?");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -433,6 +446,9 @@ public class GroupedWorkIndexer {
 		//Load translation maps
 		loadSystemTranslationMaps();
 
+		//Load subject facets to hide
+		loadHideSubjects();
+
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
@@ -464,6 +480,7 @@ public class GroupedWorkIndexer {
 		hooplaProcessor = null;
 		translationMaps.clear();
 		lexileInformation.clear();
+		hideSubjects.clear();
 		scopes.clear();
 		try {
 			getRatingStmt.close();
@@ -538,7 +555,14 @@ public class GroupedWorkIndexer {
 	public synchronized void deleteRecord(String permanentId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
-			updateServer.deleteById(permanentId);
+			if (permanentId.length() >= 37 && permanentId.length() < 40){
+				StringBuilder permanentIdBuilder = new StringBuilder(permanentId);
+				while (permanentIdBuilder.length() < 40){
+					permanentIdBuilder.append(" ");
+				}
+				permanentId = permanentIdBuilder.toString();
+			}
+			updateServer.deleteByQuery("id:\"" + permanentId + "\"");
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
@@ -1002,14 +1026,21 @@ public class GroupedWorkIndexer {
 					groupedWork.saveRecordsToDatabase(id);
 				}
 
+				//Check to see if the grouped work has parent records and if so, skip it.
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
-				if (inputDocument == null){
+				if (inputDocument == null) {
 					logEntry.incErrors("Solr Input document was null for " + groupedWork.getId());
-				}else {
+				} else {
+					if (groupedWork.hasParentRecords()) {
+						//Remove edition info and availability toggle since this title should not show in search results
+						inputDocument.removeField("availability_toggle");
+						inputDocument.removeField("edition_info");
+					}
+
 					UpdateResponse response = updateServer.add(inputDocument);
-					if (response == null){
+					if (response == null) {
 						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + ", the response was null");
-					}else if (response.getException() != null) {
+					} else if (response.getException() != null) {
 						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
 					}
 
@@ -1034,11 +1065,10 @@ public class GroupedWorkIndexer {
 								getScheduledWorkRS.close();
 							}
 						}
-					}catch (Exception e){
+					} catch (Exception e) {
 						logEntry.incErrors("Error setting auto reindex times", e);
 					}
 				}
-
 			} catch (Exception e) {
 				logEntry.incErrors("Error adding grouped work to solr " + groupedWork.getId(), e);
 			}
@@ -1350,6 +1380,17 @@ public class GroupedWorkIndexer {
 					}
 			}
 		return  translatedCollection;
+	}
+
+	private void loadHideSubjects() {
+		try {
+			ResultSet hideSubjectsRS = getHideSubjectsStmt.executeQuery();
+			while (hideSubjectsRS.next()) {
+				hideSubjects.add(hideSubjectsRS.getString("subjectNormalized"));
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading subjects to hide: ", e);
+		}
 	}
 
 	TreeSet<Scope> getScopes() {
@@ -2279,7 +2320,7 @@ public class GroupedWorkIndexer {
 		UNCHANGED, CHANGED, NEW
 	}
 
-	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber) {
+	public AppendItemsToRecordResult appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber, MarcFactory marcFactory, String marcIndex) {
 		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
 		//Copy the record to the individual marc path
 		Record mergedRecord = recordWithAdditionalItems;
@@ -2293,16 +2334,25 @@ public class GroupedWorkIndexer {
 
 			List<DataField> additional852s = recordWithAdditionalItems.getDataFields(852);
 			for (DataField additionalItem : additional852s) {
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
+				}
 				mergedRecord.addVariableField(additionalItem);
 			}
 
 			List<DataField> additional853s = recordWithAdditionalItems.getDataFields(853);
 			for (DataField additionalItem : additional853s) {
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
+				}
 				mergedRecord.addVariableField(additionalItem);
 			}
 
 			List<DataField> additional866s = recordWithAdditionalItems.getDataFields(866);
 			for (DataField additionalItem : additional866s) {
+				if (marcFactory != null && additionalItem.getSubfield('6') == null){
+					additionalItem.addSubfield(MarcFactory.newInstance().newSubfield('6', marcIndex));
+				}
 				mergedRecord.addVariableField(additionalItem);
 			}
 

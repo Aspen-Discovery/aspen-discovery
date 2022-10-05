@@ -5,7 +5,7 @@ import {clearListTitles, deleteList, editList} from "../../../util/loadPatron";
 import {popAlert} from "../../../components/loadError";
 
 const EditList = (props) => {
-	const { data, listId, navigation, libraryUrl } = props;
+	const { data, listId, navigation, libraryUrl, loadList, _updateRouteParam} = props;
 	const [showModal, setShowModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [title, setTitle] = useState(null);
@@ -16,9 +16,6 @@ const EditList = (props) => {
 	if(data.public === true) {
 		isPublic = "true";
 	}
-	console.log("isPublic: " + isPublic);
-	console.log("dataPublic: " + data.public);
-	console.log("access: " + access);
 
 	return (
 		<Center>
@@ -41,7 +38,8 @@ const EditList = (props) => {
 							<FormControl.Label>Name</FormControl.Label>
 							<Input
 								id="title"
-								value={data.title}
+								defaultValue={data.title}
+								autoComplete="off"
 								onChangeText={text => setTitle(text)}
 							/>
 						</FormControl>
@@ -49,7 +47,8 @@ const EditList = (props) => {
 							<FormControl.Label>Description</FormControl.Label>
 							<TextArea
 								id="description"
-								value={data.description}
+								defaultValue={data.description}
+								autoComplete="off"
 								onChangeText={text => setDescription(text)}
 							/>
 						</FormControl>
@@ -66,11 +65,16 @@ const EditList = (props) => {
 					<Modal.Footer>
 						<Button.Group>
 							<Button variant="outline" onPress={() => setShowModal(false)}>Cancel</Button>
-							<Button onPress={() => {
+							<Button
+								isLoading={loading}
+								isLoadingText="Saving..."
+								onPress={() => {
 								setLoading(true);
 								editList(data.id, title, description, access, libraryUrl).then(r => {
 									setLoading(false);
-									setShowModal(false)
+									setShowModal(false);
+									_updateRouteParam(title);
+									loadList();
 								})
 							}}>Save</Button>
 						</Button.Group>

@@ -5,6 +5,9 @@ require_once __DIR__ . '/../bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/SearchUpdateLogEntry.php';
 
+require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+
 //Create a log entry
 $searchUpdateLogEntry = new SearchUpdateLogEntry();
 $searchUpdateLogEntry->startTime = time();
@@ -20,6 +23,8 @@ $search->find();
 
 global $library;
 global $solrScope;
+global $configArray;
+
 $defaultSolrScope = $solrScope;
 if ($search->getNumResults() > 0){
 	$searchUpdateLogEntry->numSearches = $search->getNumResults();
@@ -60,11 +65,41 @@ if ($search->getNumResults() > 0){
 				$numResults = $searchObject->getResultTotal();
 				$hasNewResults = $numResults > 0;
 				$searchEntry->hasNewResults = $hasNewResults;
+				if(!empty($searchEntry->lastUpdated)) {
+					$lastUpdated = strtotime($searchEntry->lastUpdated);
+					$oneWeekLater = strtotime("+7 day", $lastUpdated);
+					$oneWeekLater = date("Y-m-d", $oneWeekLater);
+					$today = date("Y-m-d");
+					if($oneWeekLater == $today) {
+						$searchEntry->lastUpdated = $today;
+					} else {
+						$searchEntry->hasNewResults = 0;
+					}
+				} else {
+					$searchEntry->lastUpdated = date("Y-m-d");
+				}
 				if ($searchEntry->update() > 0){
 					$searchUpdateLogEntry->numUpdated++;
-					if ($hasNewResults){
-						//TODO: Trigger notification here
-
+					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch, 'notifySavedSearch')){
+						global $logger;
+						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
+						$notificationToken = new UserNotificationToken();
+						$notificationToken->userId = $userForSearch->id;
+						$notificationToken->notifySavedSearch = 1;
+						$notificationToken->find();
+						while($notificationToken->fetch()) {
+							$logger->log("Found notification push token for user " . $userForSearch->id, Logger::LOG_ERROR);
+							$body = array(
+								'to' => $notificationToken->pushToken,
+								'title' => 'New Titles',
+								'body' => 'New titles have been added to your saved search "' . $searchEntry->title . '" at the library. Check them out!',
+								'categoryId' => 'savedSearch',
+								'channelId' => 'savedSearch',
+								'data' => array('url' => urlencode('aspen-lida://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title))
+							);
+							$expoNotification = new ExpoNotification();
+							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
+						}
 					}
 				}
 			}else{

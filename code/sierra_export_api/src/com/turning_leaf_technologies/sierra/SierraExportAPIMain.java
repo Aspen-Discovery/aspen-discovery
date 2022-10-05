@@ -1250,7 +1250,7 @@ public class SierraExportAPIMain {
 				"inner join sierra_view.order_record_cmf on order_record_cmf.order_record_id = order_view.id " +
 				"where (" + orderStatusCodesSQL + ") and order_view.is_suppressed = 'f' and location_code != 'multi' and ocode4 != 'n'";
 		if (suppressOrderRecordsThatAreReceivedAndCataloged){
-			activeOrderSQL += " and (catalog_date_gmt IS NULL or received_date_gmt IS NULL) ";
+			activeOrderSQL += " and (catalog_date_gmt IS NULL and received_date_gmt IS NULL) ";
 		}else if (suppressOrderRecordsThatAreCataloged){
 			activeOrderSQL += " and (catalog_date_gmt IS NULL) ";
 		}else if (suppressOrderRecordsThatAreReceived){

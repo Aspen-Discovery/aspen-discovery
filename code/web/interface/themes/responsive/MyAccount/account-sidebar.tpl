@@ -1,9 +1,15 @@
 {strip}
 	{if $loggedIn}
-		{* Setup the accoridon *}
+		{if $showUserCirculationModules || $showCurbsidePickups || $showFines || $showRatings || $showFavorites || $enableSavedSearches || $displayMaterialsRequest || $enableReadingHistory}
+			{assign var='showMyAccount' value='true'}
+		{else}
+			{assign var='showMyAccount' value='false'}
+		{/if}
+		{* Setup the accordion *}
 		<!--suppress HtmlUnknownTarget -->
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
+				{if $showMyAccount == 'true'}
 				<div class="panel active">
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
@@ -22,7 +28,7 @@
 							{if !$offline}
 								<span class="expirationFinesNotice-placeholder"></span>
 							{/if}
-							{if $userHasCatalogConnection && (!$offline || $enableEContentWhileOffline)}
+							{if $userHasCatalogConnection && (!$offline || $enableEContentWhileOffline) && $showUserCirculationModules}
 								<div class="myAccountLink">
 									<a href="/MyAccount/CheckedOut" id="checkedOut">
 										{translate text="Checked Out Titles" isPublicFacing=true}
@@ -85,6 +91,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->hasInterlibraryLoan()}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=interlibrary_loan" id="holdsInterlibraryLoan" title="View Interlibrary Loan Requests">
+												{translate text="Interlibrary Loan Requests" isPublicFacing=true} {if !$offline}<span class="badge"><span class="interlibrary-loan-requests-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 									{if $user->isValidForEContentSource('overdrive')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
@@ -124,7 +138,7 @@
 									{/if}
 								{/if}
 							{/if}
-							{if !$offline && $userHasCatalogConnection}
+							{if !$offline && $userHasCatalogConnection && $showUserCirculationModules}
 								{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
 									<div class="myAccountLink materialsRequestLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
 										<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
@@ -135,7 +149,8 @@
 									</div>
 								{/if}
 							{/if}
-							{if $userHasCatalogConnection}
+
+							{if $userHasCatalogConnection && $showUserCirculationModules}
 								<div class="myAccountLink libraryCardLink" title="{translate text='Your Library Card(s)' inAttribute=true isPublicFacing=true}">
 									<a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a>
 								</div>
@@ -171,12 +186,14 @@
 						</div>
 					</div>
 				</div>
+
 				{if $action=='MyPreferences' || $action=='ContactInformation' || $action=='MessagingSettings' || $action=='LinkedAccounts' || $action=='Security' || $action=='ResetPinPage' || $action=='OverDriveOptions' || $action=='HooplaOptions' || $action=='Axis360Options' || $action=='StaffSettings'}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
 				{/if}
-				<div class="panel {if $curSection}active{/if}">
+				{/if}
+				<div class="panel {if ($curSection || $showMyAccount == 'false')}active{/if}">
 					{* Clickable header for account settings section *}
 					<a data-toggle="collapse" href="#mySettingsPanel" aria-label="{translate text="Account Settings Menu" inAttribute="true" isPublicFacing=true}">
 						<div class="panel-heading">
@@ -185,11 +202,11 @@
 							</div>
 						</div>
 					</a>
-					<div id="mySettingsPanel" class="panel-collapse collapse{if  $curSection} in{/if}">
+					<div id="mySettingsPanel" class="panel-collapse collapse {if ($curSection || $showMyAccount == 'false')}in{/if}">
 						<div class="panel-body">
 							{if !$offline}
-								<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>
-								<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>
+								{if $showUserPreferences}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
+								{if $showUserContactInformation}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 								{if $user->showMessagingSettings()}
 									<div class="myAccountLink"><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
 								{/if}
@@ -202,13 +219,13 @@
 								{if $allowPinReset}
 									<div class="myAccountLink" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
 								{/if}
-								{if $user->isValidForEContentSource('overdrive')}
+								{if $user->isValidForEContentSource('overdrive') && $showUserCirculationModules}
 									<div class="myAccountLink"><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
 								{/if}
-								{if $user->isValidForEContentSource('hoopla')}
+								{if $user->isValidForEContentSource('hoopla') && $showUserCirculationModules}
 									<div class="myAccountLink"><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>
 								{/if}
-								{if $user->isValidForEContentSource('axis360')}
+								{if $user->isValidForEContentSource('axis360') && $showUserCirculationModules}
 									<div class="myAccountLink"><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
 								{/if}
 								{if $userIsStaff}

@@ -6,14 +6,17 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -38,7 +41,6 @@ public class EvolveExportMain {
 	private static String serverName;
 	private static String baseUrl;
 	private static String integrationToken;
-	private static String accessToken;
 	private static String staffUsername;
 	private static String staffPassword;
 
@@ -47,18 +49,22 @@ public class EvolveExportMain {
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
-		@SuppressWarnings("unused")
+
 		String singleWorkId = null;
-		if (args.length == 0) {
+
+		if (args.length == 0)
+		//noinspection CommentedOutCode
+		{
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-//			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
-//			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
-//				extractSingleWork = true;
-//			}
+			/*String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}*/
+
 		} else {
 			serverName = args[0];
 			if (args.length > 1) {
@@ -142,9 +148,8 @@ public class EvolveExportMain {
 						//Update works that have changed since the last index
 						numChanges = updateRecords();
 					}else{
-						MarcFactory marcFactory = MarcFactory.newInstance();
 						//TODO: API to update an individual record?
-						numChanges = updateBibFromEvolve(singleWorkId, marcFactory, true);
+						numChanges = updateBibFromEvolve(singleWorkId);
 					}
 				}
 
@@ -249,139 +254,284 @@ public class EvolveExportMain {
 		} //Infinite loop
 	}
 
-	private static int updateBibFromEvolve(String singleWorkId, MarcFactory marcFactory, boolean incrementProductsInLog) {
+	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {
 		logEntry.incErrors("Cannot extract Single Works from Evolve.");
 		return 0;
 	}
 
-	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory, boolean incrementProductsInLog) {
-		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyHHmmss");
-		long lastExtractTime = 0;
+	private static int updateLastChangedBibsFromEvolve(MarcFactory marcFactory) {
+		@SuppressWarnings("SpellCheckingInspection")
+		SimpleDateFormat lastExtractTimeFormatter = new SimpleDateFormat("MMddyyyyHHmmss");
+		long lastExtractTime;
 		lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords() * 1000;
 		if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
 			//Give a small buffer (5 minute to account for server time differences)
-			lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 5 * 60 * 1000 ;
+			lastExtractTime = (indexingProfile.getLastUpdateOfAllRecords() - (5 * 60)) * 1000 ;
 		}
-		long sixtyDaysAgo = new Date().getTime() - (60 * 24 * 60 * 60 * 1000L);
-		if (lastExtractTime < sixtyDaysAgo){
-			lastExtractTime = sixtyDaysAgo;
+		long ninetyDaysAgo = new Date().getTime() - (90 * 24 * 60 * 60 * 1000L);
+		if (lastExtractTime < ninetyDaysAgo){
+			logEntry.addNote("Last Extract Time is more than 90 days ago, resetting to only load the next 90 days. ");
+			lastExtractTime = ninetyDaysAgo;
 		}
-		String formattedExtractTime = lastExtractTimeFormatter.format(new Date(lastExtractTime));
-
-		//The integration token does not allow catalog search so we need to login with a patron.
-		String patronLoginUrl = baseUrl + "/Authenticate";
-		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername  + "\",\"Pwd\":\"" + staffPassword +"\"}";
-		WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
 		int numProcessed = 0;
-		if (loginResponse.isSuccess()){
-			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
-			JSONObject firstResponse = loginResponseData.getJSONObject(0);
-			String accessToken = firstResponse.getString("LoginToken");
-			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
-			//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
+		long now = new Date().getTime();
+		boolean moreToLoad = true;
+		while (moreToLoad) {
+			String formattedExtractTime = lastExtractTimeFormatter.format(new Date(lastExtractTime));
 
-			HashMap<String, String> headers = new HashMap<>();
-			headers.put("Content-type", "application/json");
-			headers.put("Accept", "application/json");
-			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
-			if (getBibsResponse.isSuccess()) {
-				String rawMessage = getBibsResponse.getMessage();
-				rawMessage = rawMessage.replaceAll("u001e", "\u001e");
-				rawMessage = rawMessage.replaceAll("u001f", "\u001f");
-				rawMessage = rawMessage.replaceAll("u001d", "\u001d");
+			//The integration token does not allow catalog search - so we need to log in with a patron.
+			String patronLoginUrl = baseUrl + "/Authenticate";
+			@SuppressWarnings("SpellCheckingInspection")
+			String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername + "\",\"Pwd\":\"" + staffPassword + "\"}";
+			WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
+			if (loginResponse.isSuccess()) {
+				JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
+				JSONObject firstResponse = loginResponseData.getJSONObject(0);
+				String accessToken = firstResponse.getString("LoginToken");
 
-				JSONArray responseAsArray = new JSONArray(rawMessage);
-				for (int i = 0; i < responseAsArray.length(); i++){
-					numProcessed++;
-					JSONObject curRow = responseAsArray.getJSONObject(i);
-					String rawMarc = curRow.getString("MARC");
+				//Get a list of holdings that have changed from the last update time
+				String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
+				//We'll extract in no more than 8 hour increments
+				long endTime = lastExtractTime + (8 * 60 * 60 * 1000L);
+				String formattedEndTime = null;
+				if (endTime > now){
+					moreToLoad = false;
+					logEntry.addNote("Loading changed items from " + formattedExtractTime);
+				}else{
+					formattedEndTime = lastExtractTimeFormatter.format(new Date(endTime));
+					getChangedHoldingsUrl += "|ModifiedToDTM=" + formattedEndTime;
+
+					logEntry.addNote("Loading changed items from " + formattedExtractTime + " to " + formattedEndTime);
+					lastExtractTime = endTime;
+				}
+
+				WebServiceResponse changedHoldingsResponse = NetworkUtils.getURL(getChangedHoldingsUrl, logger);
+				if (changedHoldingsResponse.isSuccess()) {
+					String rawMessage = changedHoldingsResponse.getMessage();
+
 					try {
-						MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-						if (reader.hasNext()) {
-							String bibId = curRow.getString("ID");
-							Record marcRecord = reader.next();
-
-							List<ControlField> controlFields = marcRecord.getControlFields();
-							ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
-							for (ControlField controlField : controlFieldsCopy){
-								if (controlField.getData().startsWith("\u001f")){
-									marcRecord.removeVariableField(controlField);
-									controlField.setData(controlField.getData().replaceAll("\u001f", ""));
-									marcRecord.addVariableField(controlField);
-								}
+						JSONArray responseAsArray = new JSONArray(rawMessage);
+						for (int i = 0; i < responseAsArray.length(); i++) {
+							JSONObject curItem = responseAsArray.getJSONObject(i);
+							if (curItem.has("Status") && curItem.has("Message")) {
+								//This really should be an error, but that would prevent incrementing the export date which will only make things worse.
+								logEntry.addNote(curItem.getString("Message"));
+								break;
 							}
-							//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
-							DataField field950 = marcFactory.newDataField("950", ' ', ' ');
-							field950.addSubfield(marcFactory.newSubfield('a', bibId));
-							field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
-							marcRecord.addVariableField(field950);
-							//Also load holdings from the API
-							String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
-							WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
-							if (getHoldingsResponse.isSuccess()) {
-								JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
-								if (holdingsData != null) {
-									for (int j = 0; j < holdingsData.length(); j++) {
-										JSONObject holding = holdingsData.getJSONObject(j);
-										DataField field852 = marcFactory.newDataField("852", ' ', ' ');
-										double holdingId = holding.getDouble("HoldingID");
-										String formattedHoldingId = Double.toString(holdingId);
-										if (formattedHoldingId.indexOf('.') > 0) {
-											formattedHoldingId = formattedHoldingId.substring(0, formattedHoldingId.indexOf('.'));
-										}
-										field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
-										field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
-										field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
-										field852.addSubfield(marcFactory.newSubfield('k', holding.getString("Collection")));
-										if (!holding.isNull("DueDate")) {
-											field852.addSubfield(marcFactory.newSubfield('e', holding.getString("DueDate")));
-										}
-										field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
-										field852.addSubfield(marcFactory.newSubfield('d', holding.getString("Status")));
 
-										//TODO: Add these once the API returns them
-										//p - barcode
-										//q - Cost
-										//f - Created date time
-										//g - Last scan date
-
-										marcRecord.addVariableField(field852);
+							try {
+								if (curItem.isNull("ID")) {
+									//The item is not attached to a bib?
+									continue;
+								}
+								String bibId = curItem.getString("ID");
+								//We can't get the Marc record for an individual MARC, so we will load what we have and edit the correct item or insert it if we can't find it.
+								Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
+								if (marcRecord != null) {
+									String itemBarcode = curItem.getString("Barcode");
+									List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
+									boolean isExistingItem = false;
+									try {
+										for (DataField existingItemField : existingItemFields) {
+											Subfield existingBarcodeSubfield = existingItemField.getSubfield(indexingProfile.getBarcodeSubfield());
+											if (existingBarcodeSubfield == null) {
+												//Just skip this item
+											} else {
+												if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
+													isExistingItem = true;
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+													if (curItem.isNull("CallNumber")){
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
+													}else{
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+													}
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+													if (curItem.isNull("DueDate")) {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+													} else {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+													}
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+													break;
+												}
+											}
+										}
+										if (!isExistingItem) {
+											//Add a new field for the item
+											DataField newItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+											@SuppressWarnings("WrapperTypeMayBePrimitive")
+											Double holdingId = curItem.getDouble("HoldingID");
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), Integer.toString(holdingId.intValue()), marcFactory);
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+											if (curItem.isNull("CallNumber")){
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
+											}else{
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+											}
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+											if (curItem.isNull("DueDate")) {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+											} else {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+											}
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+											marcRecord.addVariableField(newItemField);
+										}
+									} catch (Exception e) {
+										logEntry.incErrors("Error updating item field", e);
 									}
-								}
-							}
-
-							//Save the MARC record
-							RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
-							if (bibliographicRecordId != null) {
-								GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
-								if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
-									logEntry.incAdded();
-								}else {
 									logEntry.incUpdated();
-								}
-
-								//Regroup the record
-								String groupedWorkId =  getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
-								if (groupedWorkId != null) {
+									//Regroup the record
+									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
 									//Reindex the record
 									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 								}
-							}
-							if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
-								getGroupedWorkIndexer().commitChanges();
-								logEntry.saveResults();
+							} catch (JSONException e) {
+								logEntry.incErrors("Error processing item", e);
 							}
 						}
-					}catch (Exception e){
-						logEntry.incErrors("Error parsing marc record", e);
+					} catch (JSONException e) {
+						logEntry.incErrors("Unable to parse JSON for loading changed holdings", e);
 					}
+				}else{
+					logEntry.incErrors("Error searching catalog for recently changed holdings " + changedHoldingsResponse.getResponseCode() + " " + changedHoldingsResponse.getMessage());
+					//Just quit, we can try again on the next run
+					break;
 				}
+
+				String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime + "|Marc=Yes";
+				if (formattedEndTime != null){
+					getBibUrl += "|ModifiedToDTM=" + formattedEndTime;
+					logEntry.addNote("Loading changed bibs from " + formattedExtractTime + " to " + formattedEndTime);
+				}else{
+					logEntry.addNote("Loading changed bibs from " + formattedExtractTime);
+				}
+				//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
+
+				WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
+				if (getBibsResponse.isSuccess()) {
+					String rawMessage = getBibsResponse.getMessage();
+
+					try {
+						JSONArray responseAsArray = new JSONArray(rawMessage);
+						for (int i = 0; i < responseAsArray.length(); i++) {
+							numProcessed++;
+							JSONObject curRow = responseAsArray.getJSONObject(i);
+							String rawMarc = curRow.getString("MARC");
+							try {
+								MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+								if (reader.hasNext()) //noinspection GrazieInspection
+								{
+									String bibId = curRow.getString("ID");
+									Record marcRecord;
+									try {
+										marcRecord = reader.next();
+									} catch (Exception e){
+										logEntry.incErrors("Error loading existing marc record for bib " + bibId);
+										continue;
+									}
+
+									List<ControlField> controlFields = marcRecord.getControlFields();
+									ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
+									for (ControlField controlField : controlFieldsCopy) {
+										if (controlField.getData().startsWith("\u001f")) {
+											marcRecord.removeVariableField(controlField);
+											controlField.setData(controlField.getData().replaceAll("\u001f", ""));
+											marcRecord.addVariableField(controlField);
+										}
+									}
+									//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
+									DataField field950 = marcFactory.newDataField("950", ' ', ' ');
+									field950.addSubfield(marcFactory.newSubfield('a', bibId));
+									field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
+									marcRecord.addVariableField(field950);
+									//Also load holdings from the API
+									String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
+									WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
+									if (getHoldingsResponse.isSuccess()) {
+										JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
+										if (holdingsData != null) {
+											for (int j = 0; j < holdingsData.length(); j++) {
+												JSONObject holding = holdingsData.getJSONObject(j);
+												DataField field852 = marcFactory.newDataField("852", ' ', ' ');
+												double holdingId = holding.getDouble("HoldingID");
+												String formattedHoldingId = Double.toString(holdingId);
+												if (formattedHoldingId.indexOf('.') > 0) {
+													formattedHoldingId = formattedHoldingId.substring(0, formattedHoldingId.indexOf('.'));
+												}
+												field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
+												field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
+												field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
+												field852.addSubfield(marcFactory.newSubfield('k', holding.getString("Collection")));
+												if (!holding.isNull("DueDate")) {
+													field852.addSubfield(marcFactory.newSubfield('e', holding.getString("DueDate")));
+												}
+												field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
+												field852.addSubfield(marcFactory.newSubfield('d', holding.getString("Status")));
+
+												//TODO: Add these once the API returns them
+												//p - barcode
+												//q - Cost
+												//f - Created date time
+												//g - Last scan date
+
+												marcRecord.addVariableField(field852);
+											}
+										}
+									}
+
+									//Save the MARC record
+									RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+									if (bibliographicRecordId != null) {
+										GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
+										if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+											logEntry.incAdded();
+										} else {
+											logEntry.incUpdated();
+										}
+
+										//Regroup the record
+										String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+										if (groupedWorkId != null) {
+											//Reindex the record
+											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+										}
+									}
+									if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
+										getGroupedWorkIndexer().commitChanges();
+										logEntry.saveResults();
+									}
+								}
+							} catch (Exception e) {
+								logEntry.incErrors("Error parsing marc record", e);
+							}
+						}
+					} catch (JSONException e) {
+						logEntry.incErrors("Error parsing JSON from getting changed bib data");
+					}
+				} else {
+					logEntry.incErrors("Error searching catalog for recently changed titles " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
+					//Just quit, we can try again on the next run
+					break;
+				}
+
+				//Also ask for holdings modified from a specific date
+
+			} else {
+				logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
 			}
-
-			//Also ask for holdings modified from a specific date
-
-		}else{
-			logEntry.incErrors("Could not connect to APIs with integration token " + loginResponse.getResponseCode() + " " + loginResponse.getMessage());
+			try {
+				if (!logEntry.hasErrors()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+					updateVariableStmt.setLong(1, lastExtractTime  / 1000);
+					updateVariableStmt.setLong(2, indexingProfile.getId());
+					updateVariableStmt.executeUpdate();
+					updateVariableStmt.close();
+				}
+			}catch (SQLException e){
+				logEntry.incErrors("Error updating when the records were last indexed", e);
+			}
+			logEntry.saveResults();
 		}
 
 		try {
@@ -473,7 +623,7 @@ public class EvolveExportMain {
 			logEntry.incErrors("Error regrouping all records", e);
 		}
 
-		int totalChanges = 0;
+		int totalChanges;
 
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
@@ -523,7 +673,7 @@ public class EvolveExportMain {
 		}else{
 			MarcFactory marcFactory = MarcFactory.newInstance();
 			//Update records based on the last change date
-			totalChanges = updateLastChangedBibsFromEvolve(marcFactory, true);
+			totalChanges = updateLastChangedBibsFromEvolve(marcFactory);
 		}
 
 		return totalChanges;
@@ -534,7 +684,7 @@ public class EvolveExportMain {
 	 * To see which records are deleted it needs to get a list of all records that are already in the database, so it can detect what has been deleted.
 	 *
 	 * @param exportedMarcFiles - An array of files to process
-	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param hasFullExportFile - Whether we are including a full export.  We will only delete records if we have a full export.
 	 * @param fullExportFile    - The file containing the full export
 	 * @param dbConn            - Connection to the Aspen database
 	 * @return - total number of changes that were found

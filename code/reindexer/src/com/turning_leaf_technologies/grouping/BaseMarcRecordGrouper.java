@@ -584,7 +584,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		if (activeLanguage == null){
 			if (treatUnknownLanguageAs.length() > 0){
 				activeLanguage = translateValue("language_to_three_letter_code", treatUnknownLanguageAs);
-				if (activeLanguage.length() != 3){
+				if (activeLanguage.length() != 3 || activeLanguage.contains(" ")){
 					activeLanguage = "unk";
 				}
 			}else {
@@ -602,6 +602,15 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return existingRecords;
 	}
 
+	public int getNumRemainingRecordsToDelete() {
+		int numRemainingRecordsToDelete = 0;
+		for (IlsTitle title : existingRecords.values()){
+			if (!title.isDeleted()){
+				numRemainingRecordsToDelete++;
+			}
+		}
+		return numRemainingRecordsToDelete;
+	}
 
 	private Long getExistingChecksum(String recordNumber) {
 		IlsTitle curTitle = existingRecords.get(recordNumber);

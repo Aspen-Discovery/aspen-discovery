@@ -117,23 +117,30 @@ class AJAX extends Action {
 		$searchObject->init();
 		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-		//Load results from Prospector
-		$prospector = new Prospector();
+        if (!empty($searchObject->id)) {
+            //Load results from Prospector
+            $prospector = new Prospector();
 
-		// Only show prospector results within search results if enabled
-		if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-			$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-			$interface->assign('prospectorResults', $prospectorResults['records']);
-		}
+            // Only show prospector results within search results if enabled
+            if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch) {
+                $prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+                $interface->assign('prospectorResults', $prospectorResults['records']);
+            }
 
-		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-		$interface->assign('prospectorLink', $prospectorLink);
-		$timer->logTime('load Prospector titles');
-		//echo $interface->fetch('Search/ajax-innreach.tpl');
-		return array(
-			'numTitles' => count($prospectorResults),
-			'formattedData' => $interface->fetch('Search/ajax-innreach.tpl')
-		);
+            $prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
+            $interface->assign('prospectorLink', $prospectorLink);
+            $timer->logTime('load Prospector titles');
+            //echo $interface->fetch('Search/ajax-innreach.tpl');
+            return array(
+                'numTitles' => count($prospectorResults),
+                'formattedData' => $interface->fetch('Search/ajax-innreach.tpl')
+            );
+        }else{
+            return array(
+                'numTitles' => 0,
+                'formattedData' => ''
+            );
+        }
 	}
 
 	/**
@@ -503,6 +510,20 @@ class AJAX extends Action {
 		}
 
 		return $response;
+	}
+
+	function showSearchToolbar() {
+		global $interface;
+		$interface->assign('displayMode', $_REQUEST['displayMode']);
+		$interface->assign('showCovers', $_REQUEST['showCovers']);
+		$interface->assign('excelLink', $_REQUEST['excelLink']);
+		$interface->assign('rssLink', $_REQUEST['rssLink']);
+		$interface->assign('searchId', $_REQUEST['searchId']);
+		$interface->assign('sortList', $_REQUEST['sortList']);
+		return array(
+			'title' => translate(['text' => 'Search Tools', 'isPublicFacing' => true]),
+			'modalBody' => $interface->fetch('Search/search-toolbar-popup.tpl'),
+		);
 	}
 
 	function getBreadcrumbs() : array

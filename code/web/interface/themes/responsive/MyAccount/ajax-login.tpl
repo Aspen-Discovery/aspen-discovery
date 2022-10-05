@@ -14,6 +14,15 @@
 				{translate text="$offlineMessage" isPublicFacing=true}
 			</div>
 		{/if}
+		{if !(empty($ssoService))}
+            {include file='MyAccount/sso-login.tpl'}
+            {if $ssoLoginOptions == 0}
+	            <div class="hr-label">
+	                <span class="text">{translate text="or" isPublicFacing=true}</span>
+	            </div>
+            {/if}
+        {/if}
+        {if $ssoLoginOptions == 0}
 		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
 			<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel isPublicFacing=true translateParameters=true}</div>
 			<div id="loginUsernameRow" class="form-group">
@@ -60,6 +69,15 @@
 					</div>
 				</div>
 			{/if}
+			{if !(empty($ssoXmlUrl))}
+			<div id="SAMLLoginRow" class="form-group">
+				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+					<p class="help-block">
+						<a href="/saml2auth.php?samlLogin=y&idp={$ssoXmlUrl}">Log in using {$ssoName}</a>
+					</p>
+				</div>
+			</div>
+			{/if}
 			<div id="loginPasswordRow2" class="form-group">
 				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 					<label for="showPwd" class="checkbox">
@@ -76,12 +94,13 @@
 				</div>
 			</div>
 		</form>
+		{/if}
 	</div>
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close isPublicFacing=true}</button>
 		<span class="modal-buttons">
 		<input type="hidden" id="multiStep" name="multiStep" value="{if !empty($multiStep)}true{else}false{/if}"/>
-		<input type="submit" name="submit" value="{if !empty($multiStep)}{translate text="Continue" isPublicFacing=true inAttribute=true}{else}{translate text="Sign In" isPublicFacing=true inAttribute=true}{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
+		{if $ssoLoginOptions == 0}<input type="submit" name="submit" value="{if !empty($multiStep)}{translate text="Continue" isPublicFacing=true inAttribute=true}{else}{translate text="Sign In" isPublicFacing=true inAttribute=true}{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">{/if}
 	</span>
 	</div>
 {/strip}

@@ -1,0 +1,32 @@
+Make sure the files are not changing still;
+block (Validate that the files should be processed){
+    Check that there are less than .03% records with errors;
+    Check that at least 90% of the records that existed previously still exist;
+    Check that the highest Bib ID in the export is greater than or equal to the highest bib found previously;
+}
+if files should not be processed, write an error and rename the files;
+
+block (Process first the full export file and then the partial export file) {
+    while (file has more records) {
+        read the bib
+        if (Skip record based on previous run - only in full file){
+            continue;
+        }else{
+            Get the primary identifier;
+            if (record identifier is suppressed - based on 856 or item suppression){
+                Mark it as needing to be deleted;
+            }else{
+                Save the record to the database;
+                Groupe the record;
+                Index the record;
+            }
+            if (delete record) {
+                Remove from grouped work;
+                Remove from index;
+            }
+        }
+    }
+    delete the file now that it has been processed
+}
+
+delete any records that no longer exist

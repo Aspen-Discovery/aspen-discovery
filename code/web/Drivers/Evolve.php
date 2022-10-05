@@ -34,7 +34,7 @@ class Evolve extends AbstractIlsDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -87,7 +87,7 @@ class Evolve extends AbstractIlsDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -171,7 +171,7 @@ class Evolve extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = [
 			'success' => false,
@@ -255,7 +255,7 @@ class Evolve extends AbstractIlsDriver
 		return $hold_result;
 	}
 
-	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		$result = [
 			'success' => false,
@@ -276,7 +276,7 @@ class Evolve extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	function thawHold(User $patron, $recordId, $itemToThawId)
+	function thawHold(User $patron, $recordId, $itemToThawId) : array
 	{
 		$result = [
 			'success' => false,
@@ -290,7 +290,7 @@ class Evolve extends AbstractIlsDriver
 		return $result;
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		$result = [
 			'success' => false,
@@ -352,18 +352,21 @@ class Evolve extends AbstractIlsDriver
 
 	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
 	{
-		// TODO: Implement updatePatronInfo() method.
+		return [
+			'success' => false,
+			'messages' => ['Cannot update patron information with this ILS.']
+		];
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
-		// TODO: Implement hasNativeReadingHistory() method.
+		return false;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getHolds(User $patron)
+	public function getHolds(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -408,8 +411,15 @@ class Evolve extends AbstractIlsDriver
 					$curHold->author = $holdInfo->Author;
 					$curHold->callNumber = $holdInfo->CallNumber;
 					$curHold->format = $holdInfo->Form;
-					//TODO: Pickup location id
-					$curHold->pickupLocationName = $holdInfo->Location;
+
+					$pickupLocation = new Location();
+					$pickupLocation->code = $holdInfo->Location;
+					if ($pickupLocation->find(true)){
+						$curHold->pickupLocationId = $pickupLocation->locationId;
+						$curHold->pickupLocationName = $pickupLocation->displayName;
+					}else{
+						$curHold->pickupLocationName = $holdInfo->Location;
+					}
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($curHold->recordId);
@@ -454,7 +464,7 @@ class Evolve extends AbstractIlsDriver
 
 			$params = new stdClass();
 			$params->Token = $sessionInfo['accessToken'];
-			$params->CatalogItem  = str_replace('CA010', '', $recordId);
+			$params->CatalogItem  = $recordId;
 			$params->Action = "Create";
 			$postParams = json_encode($params);
 			//$postParams = 'Token=' .  $sessionInfo['accessToken'] . '|CatalogItem=' . $recordId . '|Location=' . $pickupBranch .  '|Action=Create';
@@ -494,7 +504,7 @@ class Evolve extends AbstractIlsDriver
 		return null;
 	}
 
-	public function getFines(User $patron, $includeMessages = false)
+	public function getFines(User $patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -608,11 +618,16 @@ class Evolve extends AbstractIlsDriver
 			$user->phone = $accountDetails->Phone;
 			$user->email = $accountDetails->Email;
 
-			//TODO: Figure out home library
-			//While we figure this out, we need to set the home library to the main library
+			//Load home location for the user
 			global $library;
-			$locationsForLibrary = $library->getLocations();
-			$user->homeLocationId = reset($locationsForLibrary)->locationId;
+			$homeLocation = new Location();
+			$homeLocation->code = $accountDetails->Location;
+			if ($homeLocation->find(true)){
+				$user->homeLocationId = $homeLocation->locationId;
+			}else{
+				$locationsForLibrary = $library->getLocations();
+				$user->homeLocationId = reset($locationsForLibrary)->locationId;
+			}
 
 			if ($userExistsInDB) {
 				$user->update();
@@ -708,91 +723,6 @@ class Evolve extends AbstractIlsDriver
 	{
 
 		//For Evergreen, this can only be called when initiating masquerade
-		return false;
-	}
-
-	private function loadPatronInformation($userData, $username, $password) {
-		$user = new User();
-		$user->username = $userData['id'];
-		if ($user->find(true)) {
-			$insert = false;
-		} else {
-			$insert = true;
-		}
-
-		$firstName = $userData['first_given_name'];
-		$lastName = $userData['family_name'];
-		$user->_fullname = $lastName . ',' . $firstName;
-		$forceDisplayNameUpdate = false;
-		if ($user->firstname != $firstName) {
-			$user->firstname = $firstName;
-			$forceDisplayNameUpdate = true;
-		}
-		if ($user->lastname != $lastName) {
-			$user->lastname = isset($lastName) ? $lastName : '';
-			$forceDisplayNameUpdate = true;
-		}
-		if ($forceDisplayNameUpdate) {
-			$user->displayName = '';
-		}
-
-		$user->cat_username = $username;
-		$user->cat_password = $password;
-		$user->email = $userData['email'];
-		if (!empty($userData['day_phone'])){
-			$user->phone = $userData['day_phone'];
-		}elseif (!empty($userData['evening_phone'])){
-			$user->phone = $userData['evening_phone'];
-		}elseif (!empty($userData['other_phone'])){
-			$user->phone = $userData['other_phone'];
-		}
-
-		$user->patronType = $userData['usrgroup'];
-
-		//TODO: Figure out how to parse the address we will need to look it up in web services
-		$fullAddress = $userData['mailing_address'];
-
-		if (!empty($userData['expire_date'])){
-			$expireTime = $userData['expire_date'];
-			$expireTime = strtotime($expireTime);
-			$user->_expires = date('n-j-Y', $expireTime);
-			if (!empty($user->_expires)) {
-				$timeNow = time();
-				$timeToExpire = $expireTime - $timeNow;
-				if ($timeToExpire <= 30 * 24 * 60 * 60) {
-					if ($timeToExpire <= 0) {
-						$user->_expired = 1;
-					}
-					$user->_expireClose = 1;
-				}
-			}
-		}
-
-		//Get home location
-		$location = new Location();
-		$location->historicCode = $userData['home_ou'];
-
-		if ($location->find(true)){
-			if ($user->homeLocationId != $location->locationId){
-				$user->homeLocationId = $location->locationId;
-				$user->pickupLocationId = $user->homeLocationId;
-			}
-		}else{
-			$user->homeLocationId = 0;
-		}
-
-		if ($insert) {
-			$user->created = date('Y-m-d');
-			$user->insert();
-		} else {
-			$user->update();
-		}
-
-		return $user;
-	}
-
-	private function validatePatronAndGetAuthToken(string $username, string $password)
-	{
 		return false;
 	}
 

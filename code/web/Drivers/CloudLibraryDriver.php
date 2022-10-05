@@ -13,7 +13,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$this->curlWrapper->connectTimeout = 4;
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}
@@ -29,7 +29,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		if (isset($this->checkouts[$patron->id])){
 			return $this->checkouts[$patron->id];
@@ -88,7 +88,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -184,7 +184,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron)
+	public function getHolds($patron) : array
 	{
 		if (isset($this->holds[$patron->id])){
 			return $this->holds[$patron->id];
@@ -348,7 +348,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$settings = $this->getSettings($patron);
@@ -592,7 +592,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$product = new CloudLibraryProduct();
 		$product->cloudLibraryId = $recordId;
 		if ($product->find(true)) {
-			$recordUsage->instance = $_SERVER['SERVER_NAME'];
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->cloudLibraryId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -618,7 +619,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$product = new CloudLibraryProduct();
 		$product->cloudLibraryId = $recordId;
 		if ($product->find(true)){
-			$recordUsage->instance = $_SERVER['SERVER_NAME'];
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->cloudLibraryId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');

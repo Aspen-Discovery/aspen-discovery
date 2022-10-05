@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		hasInterlibraryLoanConnection: false,
 		isPrint: false,
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
@@ -4763,9 +4764,9 @@ var AspenDiscovery = (function(){
 		},
 
 		//// Quick Way to get a single URL parameter value (parameterName must be in the url query string)
-		//getQueryParameterValue: function (parameterName) {
-		//	return location.search.split(parameterName + '=')[1].split('&')[0]
-		//},
+		// getQueryParameterValue: function (parameterName) {
+		// 	return location.search.split(parameterName + '=')[1].split('&')[0];
+		// },
 
 		replaceQueryParam : function (param, newValue, search) {
 			if (typeof search == 'undefined') search = location.search;
@@ -5251,7 +5252,7 @@ if (!String.prototype.startsWith) {
 		}
 	});
 }
-AspenDiscovery.Account = (function(){
+AspenDiscovery.Account = (function () {
 
 	// noinspection JSUnusedGlobalSymbols
 	return {
@@ -5261,7 +5262,7 @@ AspenDiscovery.Account = (function(){
 		currentHoldSource: null,
 		currentCheckoutsSource: null,
 
-		addAccountLink: function(){
+		addAccountLink: function () {
 			var url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
 			AspenDiscovery.Account.ajaxLightbox(url, true);
 		},
@@ -5272,21 +5273,21 @@ AspenDiscovery.Account = (function(){
 		 * Called from createListForm.tpl
 		 * @returns {boolean}
 		 */
-		addList: function(){
+		addList: function () {
 			var form = $("#addListForm");
 			var source = form.find("input[name=source]").val();
 			var sourceId = form.find("input[name=sourceId]").val();
 			var isPublic = form.find("#public").prop("checked");
 			var isSearchable = false;
 			var searchableControl = $("#searchable");
-			if (searchableControl){
+			if (searchableControl) {
 				isSearchable = searchableControl.prop("checked");
 			}
 			var title = form.find("input[name=title]").val();
 			var desc = $("#listDesc").val();
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				'method':'addList',
+				'method': 'addList',
 				title: title,
 				public: isPublic,
 				searchable: isSearchable,
@@ -5295,7 +5296,7 @@ AspenDiscovery.Account = (function(){
 				sourceId: sourceId
 			};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params,function (data) {
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					AspenDiscovery.showMessage("Added Successfully", data.message, true, true);
 				} else {
@@ -5317,16 +5318,16 @@ AspenDiscovery.Account = (function(){
 		 */
 		ajaxLogin: function (trigger, ajaxCallback, closeModalOnAjaxSuccess) {
 			if (Globals.loggedIn) {
-				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+				if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
 					ajaxCallback();
-				} else if (AspenDiscovery.Account.ajaxCallback != null && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+				} else if (AspenDiscovery.Account.ajaxCallback != null && typeof (AspenDiscovery.Account.ajaxCallback) === "function") {
 					AspenDiscovery.Account.ajaxCallback();
 					AspenDiscovery.Account.ajaxCallback = null;
 				}
 			} else {
 				var multiStep = false;
 				var loginLink = false;
-				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+				if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
 					multiStep = true;
 				}
 				AspenDiscovery.Account.ajaxCallback = ajaxCallback;
@@ -5337,7 +5338,7 @@ AspenDiscovery.Account = (function(){
 					loginLink = trigger.data('login');
 				}
 				var dialogDestination = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
-				if (multiStep && !loginLink){
+				if (multiStep && !loginLink) {
 					dialogDestination += "&multiStep=true";
 				}
 				var modalDialog = $("#modalDialog");
@@ -5350,26 +5351,26 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		changeLinkedAccount: function(){
+		changeLinkedAccount: function () {
 			var patronId = $("#patronId option:selected").val();
 			document.location.href = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'patronId', patronId);
 		},
 
-		exportCheckouts: function(source, sort){
+		exportCheckouts: function (source, sort) {
 			var url = Globals.path + "/MyAccount/AJAX?method=exportCheckouts&source=" + source;
-			if (sort !== undefined){
+			if (sort !== undefined) {
 				url += "&sort=" + sort;
 			}
 			document.location.href = url;
 			return false;
 		},
 
-		exportHolds: function(source, availableHoldsSort, unavailableHoldsSort){
+		exportHolds: function (source, availableHoldsSort, unavailableHoldsSort) {
 			var url = Globals.path + "/MyAccount/AJAX?method=exportHolds&source=" + source;
-			if (availableHoldsSort !== undefined){
+			if (availableHoldsSort !== undefined) {
 				url += "&availableHoldsSort=" + availableHoldsSort;
 			}
-			if (unavailableHoldsSort !== undefined){
+			if (unavailableHoldsSort !== undefined) {
 				url += "&unavailableHoldsSort=" + unavailableHoldsSort;
 			}
 			document.location.href = url;
@@ -5391,33 +5392,33 @@ AspenDiscovery.Account = (function(){
 		},
 
 		//Force the current page to be reloaded from the source
-		reloadCheckouts: function(){
+		reloadCheckouts: function () {
 			var source = 'all';
-			if (AspenDiscovery.Account.currentCheckoutsSource != null){
+			if (AspenDiscovery.Account.currentCheckoutsSource != null) {
 				source = AspenDiscovery.Account.currentCheckoutsSource;
 			}
 			document.body.style.cursor = "wait";
 			var url = Globals.path + "/MyAccount/AJAX?method=getCheckouts&source=" + source + "&refreshCheckouts=true";
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				document.body.style.cursor = "default";
-				if (data.success){
+				if (data.success) {
 					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.checkouts);
-				}else{
+				} else {
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		loadCheckouts: function(source, sort, showCovers){
+		loadCheckouts: function (source, sort, showCovers) {
 			AspenDiscovery.Account.currentCheckoutsSource = source;
 			var url = Globals.path + "/MyAccount/AJAX?method=getCheckouts&source=" + source;
-			if (sort !== undefined){
+			if (sort !== undefined) {
 				url += "&sort=" + sort;
 			}
-			if (showCovers !== undefined){
+			if (showCovers !== undefined) {
 				url += "&showCovers=" + showCovers;
 			}
 			var stateObj = {
@@ -5427,29 +5428,29 @@ AspenDiscovery.Account = (function(){
 				showCovers: showCovers
 			};
 			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'source', source);
-			if (document.location.href ){
+			if (document.location.href) {
 				var label = 'Checkouts';
-				if (source === 'ils'){
+				if (source === 'ils') {
 					label = 'Physical Checkouts';
-				}else if (source === 'overdrive'){
+				} else if (source === 'overdrive') {
 					label = 'OverDrive Checkouts';
-				}else if (source === 'hoopla'){
+				} else if (source === 'hoopla') {
 					label = 'Hoopla Checkouts';
-				}else if (source === 'cloud_library'){
+				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Checkouts';
-				}else if (source === 'axis360'){
+				} else if (source === 'axis360') {
 					label = 'Axis 360 Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
 			document.body.style.cursor = "wait";
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				document.body.style.cursor = "default";
-				if (data.success){
+				if (data.success) {
 					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.checkouts);
-				}else{
+				} else {
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
@@ -5457,36 +5458,36 @@ AspenDiscovery.Account = (function(){
 		},
 
 		//Force the current page to be reloaded from the source
-		reloadHolds: function(){
+		reloadHolds: function () {
 			var source = 'all';
-			if (AspenDiscovery.Account.currentHoldSource != null){
+			if (AspenDiscovery.Account.currentHoldSource != null) {
 				source = AspenDiscovery.Account.currentHoldSource;
 			}
 			document.body.style.cursor = "wait";
 			var url = Globals.path + "/MyAccount/AJAX?method=getHolds&source=" + source + "&refreshHolds=true";
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				document.body.style.cursor = "default";
-				if (data.success){
+				if (data.success) {
 					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
-				}else{
+				} else {
 					$("#" + source + "HoldsPlaceholder").html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		loadHolds: function(source, availableHoldSort, unavailableHoldSort, showCovers){
+		loadHolds: function (source, availableHoldSort, unavailableHoldSort, showCovers) {
 			AspenDiscovery.Account.currentHoldSource = source;
 			var url = Globals.path + "/MyAccount/AJAX?method=getHolds&source=" + source;
-			if (availableHoldSort !== undefined){
+			if (availableHoldSort !== undefined) {
 				url += "&availableHoldSort=" + availableHoldSort;
 			}
-			if (unavailableHoldSort !== undefined){
+			if (unavailableHoldSort !== undefined) {
 				url += "&unavailableHoldSort=" + unavailableHoldSort;
 			}
-			if (showCovers !== undefined){
+			if (showCovers !== undefined) {
 				url += "&showCovers=" + showCovers;
 			}
 			var stateObj = {
@@ -5497,47 +5498,49 @@ AspenDiscovery.Account = (function(){
 				showCovers: showCovers
 			};
 			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'source', source);
-			if (document.location.href ){
+			if (document.location.href) {
 				var label = 'Holds';
-				if (source === 'ils'){
+				if (source === 'ils') {
 					label = 'Physical Holds';
-				}else if (source === 'overdrive'){
+				} else if (source === 'interlibrary_loan') {
+					label = 'Interlibrary Loan Requests';
+				} else if (source === 'overdrive') {
 					label = 'OverDrive Holds';
-				}else if (source === 'cloud_library'){
+				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Holds';
-				}else if (source === 'axis360'){
+				} else if (source === 'axis360') {
 					label = 'Axis 360 Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
 			document.body.style.cursor = "wait";
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				document.body.style.cursor = "default";
-				if (data.success){
+				if (data.success) {
 					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
-				}else{
+				} else {
 					$("#" + source + "HoldsPlaceholder").html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		loadReadingHistory: function(selectedUser, sort, page, showCovers, filter){
+		loadReadingHistory: function (selectedUser, sort, page, showCovers, filter) {
 			var url = Globals.path + "/MyAccount/AJAX?method=getReadingHistory&patronId=" + selectedUser;
-			if (sort !== undefined){
+			if (sort !== undefined) {
 				url += "&sort=" + sort;
 			}
-			if (page !== undefined){
+			if (page !== undefined) {
 				url += "&page=" + page;
-			}else{
+			} else {
 				page = 1;
 			}
-			if (showCovers !== undefined){
+			if (showCovers !== undefined) {
 				url += "&showCovers=" + showCovers;
 			}
-			if (filter !== undefined){
+			if (filter !== undefined) {
 				url += "&readingHistoryFilter=" + filter;
 			}
 			var stateObj = {
@@ -5550,43 +5553,43 @@ AspenDiscovery.Account = (function(){
 			};
 			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'selectedUser', selectedUser);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'page', page);
-			if (filter !== undefined){
+			if (filter !== undefined) {
 				newUrl = AspenDiscovery.buildUrl(newUrl, 'readingHistoryFilter', filter);
 			}
-			if (document.location.href ){
-				var label = 'Reading History page ' . page;
+			if (document.location.href) {
+				var label = 'Reading History page '.page;
 				history.pushState(stateObj, label, newUrl);
 			}
 			document.body.style.cursor = "wait";
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				document.body.style.cursor = "default";
-				if (data.success){
+				if (data.success) {
 					$("#readingHistoryListPlaceholder").html(data.readingHistory);
-				}else{
+				} else {
 					$("#readingHistoryListPlaceholder").html(data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		loadListData: function (){
+		loadListData: function () {
 			var url = Globals.path + "/MyAccount/AJAX?method=getListData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				$("#lists-placeholder").html(data.lists);
 			});
 			return false;
 		},
 
-		loadRatingsData: function (){
+		loadRatingsData: function () {
 			var url = Globals.path + "/MyAccount/AJAX?method=getRatingsData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(url, function(data){
+			$.getJSON(url, function (data) {
 				$(".ratings-placeholder").html(data.ratings);
 			});
 			return false;
 		},
 
-		loadMenuData: function (){
+		loadMenuData: function () {
 			var totalCheckouts = 0;
 			var totalHolds = 0;
 			if (Globals.hasILSConnection) {
@@ -5601,7 +5604,7 @@ AspenDiscovery.Account = (function(){
 						if (summary.numOverdue > 0) {
 							$(".ils-overdue-placeholder").html(summary.numOverdue);
 							$(".ils-overdue").show();
-						}else{
+						} else {
 							$(".ils-overdue-placeholder").html("0");
 						}
 						$(".ils-holds-placeholder").html(summary.numHolds);
@@ -5610,14 +5613,14 @@ AspenDiscovery.Account = (function(){
 						if (summary.numAvailableHolds > 0) {
 							$(".ils-available-holds-placeholder").html(summary.numAvailableHolds);
 							$(".ils-available-holds").show();
-						}else{
+						} else {
 							$(".ils-available-holds-placeholder").html("0");
 						}
 						$(".readingHistory-placeholder").html(summary.readingHistory);
-						if (summary.hasUpdatedSavedSearches){
+						if (summary.hasUpdatedSavedSearches) {
 							$(".saved-searches-placeholder").html(summary.savedSearches);
 							$(".newSavedSearchBadge").show();
-						}else{
+						} else {
 							$(".newSavedSearchBadge").hide();
 						}
 
@@ -5687,29 +5690,39 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			}
+			if (Globals.hasInterlibraryLoanConnection) {
+				var interlibraryLoanUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataInterlibraryLoan&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(interlibraryLoanUrl, function (data) {
+					if (data.success) {
+						$(".interlibrary-loan-requests-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+					}
+				});
+			}
 
 			return false;
 		},
 
-		preProcessLogin: function (){
+		preProcessLogin: function () {
 			var username = $("#username").val(),
 				password = $("#password").val(),
 				loginErrorElem = $('#loginError');
 			if (!username || !password) {
 				loginErrorElem
-						.text($("#missingLoginPrompt").text())
-						.show();
+					.text($("#missingLoginPrompt").text())
+					.show();
 				return false;
 			}
-			if (AspenDiscovery.hasLocalStorage()){
+			if (AspenDiscovery.hasLocalStorage()) {
 				var rememberMe = $("#rememberMe").prop('checked');
 				var showPwd = $('#showPwd').prop('checked');
-				if (rememberMe){
+				if (rememberMe) {
 					window.localStorage.setItem('lastUserName', username);
 					window.localStorage.setItem('lastPwd', password);
 					window.localStorage.setItem('showPwd', showPwd);
 					window.localStorage.setItem('rememberMe', rememberMe);
-				}else{
+				} else {
 					window.localStorage.removeItem('lastUserName');
 					window.localStorage.removeItem('lastPwd');
 					window.localStorage.removeItem('showPwd');
@@ -5720,7 +5733,7 @@ AspenDiscovery.Account = (function(){
 		},
 
 		processAjaxLogin: function (ajaxCallback) {
-			if(this.preProcessLogin()) {
+			if (this.preProcessLogin()) {
 				var username = $("#username").val();
 				var password = $("#password").val();
 				var rememberMe = $("#rememberMe").prop('checked');
@@ -5729,7 +5742,7 @@ AspenDiscovery.Account = (function(){
 				var multiStep = $('#multiStep').val();
 				var url = Globals.path + "/AJAX/JSON?method=loginUser";
 				var params = {username: username, password: password, rememberMe: rememberMe};
-				if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
+				if (!Globals.opac && AspenDiscovery.hasLocalStorage()) {
 					var showCovers = window.localStorage.getItem('showCovers') || false;
 					if (showCovers && showCovers.length > 0) { // if there is a set value, pass it back with the login info
 						params.showCovers = showCovers
@@ -5739,7 +5752,7 @@ AspenDiscovery.Account = (function(){
 				var action = Globals.activeAction;
 
 				var referer;
-				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))){
+				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))) {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
@@ -5752,7 +5765,7 @@ AspenDiscovery.Account = (function(){
 				loginErrorElem.hide();
 				loadingElem.show();
 				// noinspection JSUnresolvedFunction
-				$.post(url, params, function(response){
+				$.post(url, params, function (response) {
 					if (response.result.success === true) {
 						loadingElem.hide();
 						$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
@@ -5764,21 +5777,21 @@ AspenDiscovery.Account = (function(){
 						}
 
 						Globals.loggedIn = true;
-						if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+						if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
 							ajaxCallback();
-						} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+						} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof (AspenDiscovery.Account.ajaxCallback) === "function") {
 							AspenDiscovery.Account.ajaxCallback();
 							AspenDiscovery.Account.ajaxCallback = null;
 						}
 						if (multiStep !== 'true') {
 							window.location.replace(referer);
 						}
-					} else if(response.result.success === false && response.result.passwordExpired === true) {
+					} else if (response.result.success === false && response.result.passwordExpired === true) {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 						$('#resetPin').validate();
-					} else if(response.result.success === false && response.result.enroll2FA === true) {
+					} else if (response.result.success === false && response.result.enroll2FA === true) {
 						AspenDiscovery.showMessageWithButtons('Error', 'Your patron type requires that you enroll into two-factor authentication before logging in.', '<button class=\'tool btn btn-primary\' onclick=\'AspenDiscovery.Account.show2FAEnrollment(true); return false;\'>Continue</button>');
-					} else if(response.result.success === false && response.result.has2FA === true) {
+					} else if (response.result.success === false && response.result.has2FA === true) {
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
 							if (data.success) {
 								AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
@@ -5787,15 +5800,15 @@ AspenDiscovery.Account = (function(){
 					} else {
 						loginErrorElem.html(response.result.message).show();
 					}
-				}, 'json').fail(function(){
+				}, 'json').fail(function () {
 					loginErrorElem.text("There was an error processing your login, please try again.").show();
 				})
 			}
 			return false;
 		},
 
-		processAddLinkedUser: function (){
-			if(this.preProcessLogin()) {
+		processAddLinkedUser: function () {
+			if (this.preProcessLogin()) {
 				var username = $("#username").val();
 				var password = $("#password").val();
 				var loginErrorElem = $('#loginError');
@@ -5814,7 +5827,7 @@ AspenDiscovery.Account = (function(){
 					},
 					error: function () {
 						loginErrorElem.text("There was an error processing the account, please try again.")
-								.show();
+							.show();
 					},
 					dataType: 'json',
 					type: 'post'
@@ -5824,13 +5837,13 @@ AspenDiscovery.Account = (function(){
 		},
 
 
-		removeLinkedUser: function(idToRemove){
-			if (confirm("Are you sure you want to stop managing this account?")){
+		removeLinkedUser: function (idToRemove) {
+			if (confirm("Are you sure you want to stop managing this account?")) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
-				$.getJSON(url, function(data){
-					if (data.result === true){
+				$.getJSON(url, function (data) {
+					if (data.result === true) {
 						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
-					}else{
+					} else {
 						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
 					}
 				});
@@ -5838,11 +5851,11 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		renewTitle: function(patronId, recordId, renewIndicator) {
+		renewTitle: function (patronId, recordId, renewIndicator) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator=" + renewIndicator, function (data) {
 					AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
@@ -5853,7 +5866,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		renewAll: function() {
+		renewAll: function () {
 			if (Globals.loggedIn) {
 				if (confirm('Renew All Items?')) {
 					AspenDiscovery.loadingMessage();
@@ -5885,7 +5898,7 @@ AspenDiscovery.Account = (function(){
 				}
 			} else {
 				this.ajaxLogin(null, this.renewSelectedTitles, true);
-				 //auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
+				//auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
 			}
 			return false
 		},
@@ -5901,8 +5914,8 @@ AspenDiscovery.Account = (function(){
 			} else {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(urlToDisplay, function(data){
-					if (data.success){
+				$.getJSON(urlToDisplay, function (data) {
+					if (data.success) {
 						data = data.result;
 					}
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -5911,28 +5924,30 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		confirmCancelHold: function(patronId, recordId, holdIdToCancel, isIll) {
+		confirmCancelHold: function (patronId, recordId, holdIdToCancel, isIll) {
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel + "&isIll="+isIll, function(data){
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId=" + holdIdToCancel + "&isIll=" + isIll, function (data) {
 				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 			}).fail(AspenDiscovery.ajaxFail);
 
 			return false
 		},
 
-		cancelHold: function(patronId, recordId, holdIdToCancel, isIll){
+		cancelHold: function (patronId, recordId, holdIdToCancel, isIll) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel + "&isIll=" + isIll, function(data){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId=" + holdIdToCancel + "&isIll=" + isIll, function (data) {
 					AspenDiscovery.showMessage(data.title, data.body, data.success);
-					if (data.success){
+					if (data.success) {
 						var tmpRecordId = recordId.replace('.', '_').replace('~', '_');
 						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_').replace(' ', '_').replace(':', '_');
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Cancelling hold failed", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
@@ -5944,7 +5959,7 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
-		cancelHoldSelectedTitles: function(patronId, recordId, holdIdToCancel, caller){
+		cancelHoldSelectedTitles: function (patronId, recordId, holdIdToCancel, caller) {
 			if (Globals.loggedIn) {
 				var selectedTitles = AspenDiscovery.getSelectedTitles();
 				var popUpBoxTitle = $(caller).text() || "Canceling Holds";
@@ -5970,7 +5985,7 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
-		cancelHoldAll: function(caller){
+		cancelHoldAll: function (caller) {
 			if (Globals.loggedIn) {
 				var popUpBoxTitle = $(caller).text() || "Canceling Holds";
 				if (confirm('Cancel all holds?')) {
@@ -5993,7 +6008,33 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		changeAccountSort: function (newSort, sortParameterName){
+		cancelVdxRequest: function (patronId, requestId, cancelId) {
+			if (confirm("Are you sure you want to cancel this request?")) {
+				var ajaxUrl = Globals.path + "/MyAccount/AJAX?method=cancelVdxRequest&patronId=" + patronId + "&requestId=" + requestId + "&cancelId=" + cancelId;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function (data) {
+						if (data.success) {
+							AspenDiscovery.showMessage("Request Cancelled", data.message, true);
+							//remove the row from the holds list
+							$("#vdxHold_" + requestId + "_" + cancelId).hide();
+							AspenDiscovery.Account.loadMenuData();
+						} else {
+							AspenDiscovery.showMessage("Error Cancelling Request", data.message, false);
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						AspenDiscovery.showMessage("Error Cancelling Request", "An error occurred processing your request.  Please try again in a few minutes.", false);
+					}
+				});
+			}
+			return false;
+		},
+
+		changeAccountSort: function (newSort, sortParameterName) {
 			if (typeof sortParameterName === 'undefined') {
 				sortParameterName = 'accountSort'
 			}
@@ -6001,30 +6042,30 @@ AspenDiscovery.Account = (function(){
 			location.replace(location.pathname + paramString)
 		},
 
-		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation){
-			if (Globals.loggedIn){
+		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation) {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation, function(data){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
-			}else{
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.changeHoldPickupLocation(patronId, recordId, holdId, currentLocation);
 				}, false);
 			}
 			return false;
 		},
 
-		deleteSearch: function(searchId){
-			if (!Globals.loggedIn){
+		deleteSearch: function (searchId) {
+			if (!Globals.loggedIn) {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
 					AspenDiscovery.Searches.saveSearch(searchId);
 				}, false);
-			}else{
+			} else {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = "method=deleteSearch&searchId=" + encodeURIComponent(searchId);
 				$.getJSON(url + '?' + params,
-					function(data) {
+					function (data) {
 						if (data.result) {
 							AspenDiscovery.showMessage("Success", data.message);
 						} else {
@@ -6036,18 +6077,18 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		doChangeHoldLocation: function(){
+		doChangeHoldLocation: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				'method': 'changeHoldLocation'
-				,patronId : $('#patronId').val()
-				,recordId : $('#recordId').val()
-				,holdId : $('#holdId').val()
-				,newLocation : $('#newPickupLocation').val()
+				, patronId: $('#patronId').val()
+				, recordId: $('#recordId').val()
+				, holdId: $('#holdId').val()
+				, newLocation: $('#newPickupLocation').val()
 			};
 
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data) {
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				} else {
@@ -6056,28 +6097,28 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		freezeHold: function(patronId, recordId, holdId, promptForReactivationDate, caller){
+		freezeHold: function (patronId, recordId, holdId, promptForReactivationDate, caller) {
 			AspenDiscovery.loadingMessage();
 			var url = Globals.path + '/MyAccount/AJAX';
 			var params = {
-				patronId : patronId
-				,recordId : recordId
-				,holdId : holdId
+				patronId: patronId
+				, recordId: recordId
+				, holdId: holdId
 			};
-			if (promptForReactivationDate){
+			if (promptForReactivationDate) {
 				//Prompt the user for the date they want to reactivate the hold
 				params['method'] = 'getReactivationDateForm'; // set method for this form
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
+				$.getJSON(url, params, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				}).fail(AspenDiscovery.ajaxFail);
 
-			}else{
+			} else {
 				var popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
 				AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 				params['method'] = 'freezeHold'; //set method for this ajax call
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
+				$.getJSON(url, params, function (data) {
 					if (data.success) {
 						AspenDiscovery.Account.reloadHolds();
 						AspenDiscovery.showMessage("Success", data.message, true, true);
@@ -6089,19 +6130,19 @@ AspenDiscovery.Account = (function(){
 		},
 
 		// called by ReactivationDateForm when fn freezeHold above has promptForReactivationDate is set
-		doFreezeHoldWithReactivationDate: function(caller){
+		doFreezeHoldWithReactivationDate: function (caller) {
 			var popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
 			var params = {
-				'method' : 'freezeHold'
-				,patronId : $('#patronId').val()
-				,recordId : $('#recordId').val()
-				,holdId : $("#holdId").val()
-				,reactivationDate : $("#reactivationDate").val()
+				'method': 'freezeHold'
+				, patronId: $('#patronId').val()
+				, recordId: $('#recordId').val()
+				, holdId: $("#holdId").val()
+				, reactivationDate: $("#reactivationDate").val()
 			};
 			var url = Globals.path + '/MyAccount/AJAX';
 			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				} else {
@@ -6110,7 +6151,7 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		freezeHoldSelected: function(patronId, recordId, holdId, caller) {
+		freezeHoldSelected: function (patronId, recordId, holdId, caller) {
 			if (Globals.loggedIn) {
 				var selectedTitles = AspenDiscovery.getSelectedTitles();
 				var popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
@@ -6136,7 +6177,7 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
-		freezeHoldAll: function(userId, caller){
+		freezeHoldAll: function (userId, caller) {
 			if (Globals.loggedIn) {
 				var popUpBoxTitle = $(caller).text() || "Freezing Holds";
 				if (confirm('Freeze all holds?')) {
@@ -6159,7 +6200,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		thawHoldSelected: function(patronId, recordId, holdId, caller) {
+		thawHoldSelected: function (patronId, recordId, holdId, caller) {
 			if (Globals.loggedIn) {
 				var selectedTitles = AspenDiscovery.getSelectedTitles();
 				var popUpBoxTitle = $(caller).text() || "Thawing Hold";
@@ -6185,7 +6226,7 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
-		thawHoldAll: function(userId, caller){
+		thawHoldAll: function (userId, caller) {
 			if (Globals.loggedIn) {
 				var popUpBoxTitle = $(caller).text() || "Thawing Holds";
 				if (confirm('Thaw all holds?')) {
@@ -6207,9 +6248,9 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
-		
-		getSelectedTitles: function(promptForSelectAll){
-			if (promptForSelectAll === undefined){
+
+		getSelectedTitles: function (promptForSelectAll) {
+			if (promptForSelectAll === undefined) {
 				promptForSelectAll = true;
 			}
 			var selectedTitles = $("input.titleSelect:checked ");
@@ -6218,28 +6259,28 @@ AspenDiscovery.Account = (function(){
 					.attr('checked', 'checked');
 			}
 			// noinspection UnnecessaryLocalVariableJS
-			var queryString = selectedTitles.map(function() {
+			var queryString = selectedTitles.map(function () {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 
 			return queryString;
 		},
-		getSelectedLists: function(promptForSelectAll){
+		getSelectedLists: function (promptForSelectAll) {
 			var selectedLists = $("input.listSelect:checked ");
 			// noinspection UnnecessaryLocalVariableJS
-			var queryString = selectedLists.map(function() {
+			var queryString = selectedLists.map(function () {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 
 			return queryString;
 		},
 
-		saveSearch: function(searchId){
-			if (!Globals.loggedIn){
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+		saveSearch: function (searchId) {
+			if (!Globals.loggedIn) {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					AspenDiscovery.Account.saveSearch(searchId);
 				}, false);
-			}else{
+			} else {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
 					'method': 'saveSearch',
@@ -6248,20 +6289,57 @@ AspenDiscovery.Account = (function(){
 				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params,
-						function(data){
-							if (data.success) {
-								AspenDiscovery.showMessage("Saved Successfully", data.message, data.modalButtons);
-							} else {
-								AspenDiscovery.showMessage("Error", data.message);
-							}
+					function (data) {
+						if (data.success) {
+							AspenDiscovery.showMessage("Saved Successfully", data.message, data.modalButtons);
+						} else {
+							AspenDiscovery.showMessage("Error", data.message);
 						}
+					}
 				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
 
-		showSaveSearchForm: function(searchId) {
-			if (Globals.loggedIn){
+		showSearchToolbar: function (displayMode, showCovers, rssLink, excelLink, searchId, sortList) {
+			var url = Globals.path + "/Search/AJAX";
+			var params = {
+				method: 'showSearchToolbar',
+				displayMode: AspenDiscovery.Searches.displayMode,
+				showCovers: showCovers ?? 0,
+				rssLink: rssLink,
+				excelLink: excelLink,
+				searchId: searchId,
+				sortList: sortList
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.modalBody, false);
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		showEmailSearchForm: function () {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/Search/AJAX";
+				var params = {
+					method: 'getEmailForm'
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function (data) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.showEmailSearchForm();
+				}, false);
+			}
+
+			return false;
+		},
+
+		showSaveSearchForm: function (searchId) {
+			if (Globals.loggedIn) {
+				$('#searchToolsModal').modal('hide');
 				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
@@ -6270,51 +6348,51 @@ AspenDiscovery.Account = (function(){
 				};
 
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
+				$.getJSON(url, params, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
-			}else{
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.showSaveSearchForm(searchId);
 				}, false);
 			}
 			return false;
 		},
 
-		showCreateListForm: function(source, sourceId){
-			if (Globals.loggedIn){
+		showCreateListForm: function (source, sourceId) {
+			if (Globals.loggedIn) {
 				var url = Globals.path + "/MyAccount/AJAX";
-				var params = {method:"getCreateListForm"};
-				if (source !== undefined){
-					params.source= source;
+				var params = {method: "getCreateListForm"};
+				if (source !== undefined) {
+					params.source = source;
 				}
-				if (sourceId !== undefined){
-					params.sourceId= sourceId;
+				if (sourceId !== undefined) {
+					params.sourceId = sourceId;
 				}
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
+				$.getJSON(url, params, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
-			}else{
-				AspenDiscovery.Account.ajaxLogin($trigger, function(){
+			} else {
+				AspenDiscovery.Account.ajaxLogin($trigger, function () {
 					return AspenDiscovery.Account.showCreateListForm(source, sourceId);
 				}, false);
 			}
 			return false;
 		},
 
-		thawHold: function(patronId, recordId, holdId, caller){
+		thawHold: function (patronId, recordId, holdId, caller) {
 			var popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
 			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 			var url = Globals.path + '/MyAccount/AJAX';
 			var params = {
-				'method' : 'thawHold'
-				,patronId : patronId
-				,recordId : recordId
-				,holdId : holdId
+				'method': 'thawHold'
+				, patronId: patronId
+				, recordId: recordId
+				, holdId: holdId
 			};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					AspenDiscovery.Account.reloadHolds();
 					AspenDiscovery.showMessage("Success", data.message, true, true);
@@ -6324,17 +6402,17 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		toggleShowCovers: function(showCovers){
+		toggleShowCovers: function (showCovers) {
 			this.showCovers = showCovers;
-			var paramString = AspenDiscovery.replaceQueryParam('showCovers', this.showCovers ? 'on': 'off'); // set variable
+			var paramString = AspenDiscovery.replaceQueryParam('showCovers', this.showCovers ? 'on' : 'off'); // set variable
 			if (!Globals.opac && AspenDiscovery.hasLocalStorage()) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('showCovers', this.showCovers ? 'on' : 'off');
 			}
 			location.replace(location.pathname + paramString); // reloads page without adding entry to history
 		},
 
-		validateCookies: function(){
-			if (navigator.cookieEnabled === false){
+		validateCookies: function () {
+			if (navigator.cookieEnabled === false) {
 				$("#cookiesError").show();
 			}
 		},
@@ -6342,24 +6420,24 @@ AspenDiscovery.Account = (function(){
 		getMasqueradeForm: function () {
 			AspenDiscovery.loadingMessage();
 			var url = Globals.path + "/MyAccount/AJAX";
-			var params = {method:"getMasqueradeAsForm"};
+			var params = {method: "getMasqueradeAsForm"};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		initiateMasquerade: function() {
+		initiateMasquerade: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method:"initiateMasquerade",
-				cardNumber:$('#cardNumber').val()
+				method: "initiateMasquerade",
+				cardNumber: $('#cardNumber').val()
 			};
 			$('#masqueradeAsError').hide();
 			$('#masqueradeLoading').show();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					location.href = Globals.path + '/MyAccount/Home';
 				} else {
@@ -6372,15 +6450,15 @@ AspenDiscovery.Account = (function(){
 
 		endMasquerade: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
-			var params = {method:"endMasquerade"};
+			var params = {method: "endMasquerade"};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params).done(function(){
+			$.getJSON(url, params).done(function () {
 				location.href = Globals.path + '/MyAccount/Home';
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		dismissMessage: function(messageId) {
+		dismissMessage: function (messageId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "dismissMessage",
@@ -6391,7 +6469,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		dismissSystemMessage: function(messageId) {
+		dismissSystemMessage: function (messageId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "dismissSystemMessage",
@@ -6402,7 +6480,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		enableAccountLinking: function(){
+		enableAccountLinking: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "enableAccountLinking"
@@ -6412,7 +6490,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		stopAccountLinking: function(){
+		stopAccountLinking: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "stopAccountLinking"
@@ -6422,7 +6500,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createGenericOrder: function(finesFormId, paymentType, transactionType) {
+		createGenericOrder: function (finesFormId, paymentType, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 
 			var params = {
@@ -6430,9 +6508,9 @@ AspenDiscovery.Account = (function(){
 				patronId: $(finesFormId + " input[name=patronId]").val(),
 				type: transactionType
 			};
-			if(transactionType === 'donation') {
+			if (transactionType === 'donation') {
 
-				if($(finesFormId + " input[name=customAmount]").val()) {
+				if ($(finesFormId + " input[name=customAmount]").val()) {
 					params.amount = $(finesFormId + " input[name=customAmount]").val();
 				} else {
 					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
@@ -6450,12 +6528,12 @@ AspenDiscovery.Account = (function(){
 				params.settingId = $(finesFormId + " input[name=settingId]").val();
 			}
 			$(finesFormId + " .selectedFine:checked").each(
-				function() {
+				function () {
 					var name = $(this).attr('name');
 					params[name] = $(this).val();
 
 					var fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
-					if (fineAmount){
+					if (fineAmount) {
 						params[fineAmount.attr('name')] = fineAmount.val();
 					}
 				}
@@ -6469,22 +6547,22 @@ AspenDiscovery.Account = (function(){
 				async: false,
 				method: 'GET'
 			}).success(
-				function (response){
-					if (response.success === false){
+				function (response) {
+					if (response.success === false) {
 						AspenDiscovery.showMessage("Error", response.message);
 						return false;
-					}else{
-						if(paymentType === 'PayPal') {
+					} else {
+						if (paymentType === 'PayPal') {
 							orderInfo = response.orderID;
-						} else if(paymentType === 'MSB') {
+						} else if (paymentType === 'MSB') {
 							orderInfo = response.paymentRequestUrl;
-						} else if(paymentType === 'Comprise') {
+						} else if (paymentType === 'Comprise') {
 							orderInfo = response.paymentRequestUrl;
-						} else if(paymentType === 'ProPay') {
+						} else if (paymentType === 'ProPay') {
 							orderInfo = response.paymentRequestUrl;
-						} else if(paymentType === 'XpressPay') {
+						} else if (paymentType === 'XpressPay') {
 							orderInfo = response.paymentRequestUrl;
-						} else if(paymentType === 'WorldPay') {
+						} else if (paymentType === 'WorldPay') {
 							orderInfo = response.paymentId;
 						}
 					}
@@ -6493,7 +6571,7 @@ AspenDiscovery.Account = (function(){
 			return orderInfo;
 		},
 
-		createMSBOrder: function(finesFormId, transactionType) {
+		createMSBOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'MSB', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
@@ -6502,15 +6580,15 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		createPayPalOrder: function(finesFormId, transactionType) {
+		createPayPalOrder: function (finesFormId, transactionType) {
 			return this.createGenericOrder(finesFormId, 'PayPal', transactionType);
 		},
 
-		createWorldPayOrder: function(finesFormId, transactionType) {
+		createWorldPayOrder: function (finesFormId, transactionType) {
 			return this.createGenericOrder(finesFormId, 'WorldPay', transactionType);
 		},
 
-		createCompriseOrder: function(finesFormId, transactionType) {
+		createCompriseOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
@@ -6519,7 +6597,7 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		createProPayOrder: function(finesFormId, transactionType) {
+		createProPayOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'ProPay', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
@@ -6528,7 +6606,7 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		createXpressPayOrder: function(finesFormId, transactionType) {
+		createXpressPayOrder: function (finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'XpressPay', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
@@ -6537,7 +6615,111 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		completePayPalOrder: function(orderId, patronId, transactionType) {
+		createACISpeedpayOrder: function (finesFormId, transactionType, tokenId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+
+			var params = {
+				method: "create" + paymentType + "Order",
+				patronId: $(finesFormId + " input[name=patronId]").val(),
+				type: transactionType,
+				token: tokenId
+			};
+			if (transactionType === 'donation') {
+				if ($(finesFormId + " input[name=customAmount]").val()) {
+					params.amount = $(finesFormId + " input[name=customAmount]").val();
+				} else {
+					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
+				}
+				params.earmark = $(finesFormId + " select[name=earmark]").val();
+				params.toLocation = $(finesFormId + " select[name=toLocation]").val();
+				params.isDedicated = $(finesFormId + " input[name=shouldBeDedicated]:checked").val();
+				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
+				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
+				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.firstName = $(finesFormId + " input[name=firstName]").val();
+				params.lastName = $(finesFormId + " input[name=lastName]").val();
+				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
+				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
+				params.settingId = $(finesFormId + " input[name=settingId]").val();
+			}
+			$(finesFormId + " .selectedFine:checked").each(
+				function () {
+					var name = $(this).attr('name');
+					params[name] = $(this).val();
+
+					var fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
+					if (fineAmount) {
+						params[fineAmount.attr('name')] = fineAmount.val();
+					}
+				}
+			);
+			var orderInfo = false;
+			// noinspection JSUnresolvedFunction
+			$.ajax({
+				url: url,
+				data: params,
+				dataType: 'json',
+				async: false,
+				method: 'GET'
+			}).success(
+				function (response) {
+					if (response.success === false) {
+						AspenDiscovery.showMessage("Error", response.message);
+						return false;
+					} else {
+						if (paymentType === 'PayPal') {
+							orderInfo = response.orderID;
+						} else if (paymentType === 'MSB') {
+							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'Comprise') {
+							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'ProPay') {
+							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'XpressPay') {
+							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'WorldPay') {
+							orderInfo = response.paymentId;
+						}
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return orderInfo;
+		},
+		completeACISpeedpayOrder: function (orderId, patronId, transactionType) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeACISpeedpayOrder",
+				patronId: patronId,
+				orderId: orderId,
+				type: transactionType
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					}
+				} else {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=aciSpeedpay&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message) {
+							message = data.message;
+						} else {
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+		handleACISpeedpayError: function (error) {
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+		},
+		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completePayPalOrder",
@@ -6546,21 +6728,21 @@ AspenDiscovery.Account = (function(){
 				type: transactionType
 			};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
-					if(data.isDonation) {
+					if (data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
-						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
 					}
 				} else {
-					if(data.isDonation) {
+					if (data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCancelled?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
 						var message;
-						if (data.message){
+						if (data.message) {
 							message = data.message;
-						}else{
+						} else {
 							message = 'Unable to process your payment, please visit the library with your receipt';
 						}
 						AspenDiscovery.showMessage('Error', message, false);
@@ -6568,21 +6750,21 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-		handlePayPalError: function(error){
+		handlePayPalError: function (error) {
 			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
 		},
-		cancelPayPalError: function(){
+		cancelPayPalError: function () {
 			AspenDiscovery.showMessage('Payment cancelled', 'Your payment has successfully been cancelled.', true);
 		},
-		updateFineTotal: function(finesFormId, userId, paymentType) {
+		updateFineTotal: function (finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(
-				function() {
-					if (paymentType === "1"){
+				function () {
+					if (paymentType === "1") {
 						totalFineAmt += $(this).data('fine_amt') * 1;
 						totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
-					}else{
+					} else {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
 						totalFineAmt += fineAmountInput.val() * 1;
@@ -6593,7 +6775,7 @@ AspenDiscovery.Account = (function(){
 			AspenDiscovery.formatCurrency(totalFineAmt, $('#formattedTotal' + userId));
 			AspenDiscovery.formatCurrency(totalOutstandingAmt, $('#formattedOutstandingTotal' + userId));
 		},
-		dismissPlacard:function(patronId, placardId) {
+		dismissPlacard: function (patronId, placardId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "dismissPlacard",
@@ -6601,7 +6783,7 @@ AspenDiscovery.Account = (function(){
 				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					$("#placard" + placardId).hide();
 				} else {
@@ -6610,7 +6792,7 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		dismissBrowseCategory:function(patronId, browseCategoryId) {
+		dismissBrowseCategory: function (patronId, browseCategoryId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "dismissBrowseCategory",
@@ -6618,7 +6800,7 @@ AspenDiscovery.Account = (function(){
 				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					window.location = window.location.href.split("?")[0];
 				} else {
@@ -6627,8 +6809,8 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		showHiddenBrowseCategories: function(patronId) {
-			if (Globals.loggedIn){
+		showHiddenBrowseCategories: function (patronId) {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
@@ -6637,13 +6819,13 @@ AspenDiscovery.Account = (function(){
 				};
 
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
+				$.getJSON(url, params, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
-		showBrowseCategory:function() {
+		showBrowseCategory: function () {
 			if (Globals.loggedIn) {
 				var selectedCategories = AspenDiscovery.getSelectedBrowseCategories();
 				var patronId = $("#updateBrowseCategories input[name=patronId]").val();
@@ -6657,7 +6839,7 @@ AspenDiscovery.Account = (function(){
 			}
 			return false
 		},
-		updateAutoRenewal:function(patronId) {
+		updateAutoRenewal: function (patronId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "updateAutoRenewal",
@@ -6665,7 +6847,7 @@ AspenDiscovery.Account = (function(){
 				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params, function(data){
+			$.getJSON(url, params, function (data) {
 				if (data.success) {
 					AspenDiscovery.showMessage('Success', data.message, true);
 				} else {
@@ -6674,9 +6856,27 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-
-		showSaveToListForm:function (trigger, source, id) {
-			if (Globals.loggedIn){
+		updateSelfRegistrationFields: function () {
+			var cardTypeSelect = $('#cardTypeSelect');
+			if (cardTypeSelect) {
+				var selectedValue = $('#cardTypeSelect option:selected').val();
+				if (selectedValue === 'adult') {
+					$('#propertyRowparentName').hide();
+				} else {
+					$('#propertyRowparentName').show();
+				}
+			}
+			var smsNotices = $("#smsNotices");
+			if (smsNotices) {
+				if (smsNotices.prop("checked")) {
+					$('#propertyRowcellPhone').show();
+				} else {
+					$('#propertyRowcellPhone').hide();
+				}
+			}
+		},
+		showSaveToListForm: function (trigger, source, id) {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
@@ -6685,29 +6885,29 @@ AspenDiscovery.Account = (function(){
 					source: source
 				};
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
+				$.getJSON(url, params, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
 				}, false);
 			}
 			return false;
 		},
 
-		saveToList: function(){
-			if (Globals.loggedIn){
+		saveToList: function () {
+			if (Globals.loggedIn) {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
-					'method':'saveToList',
-					'notes':$('#addToList-notes').val(),
-					'listId':$('#addToList-list').val(),
-					'source':$('#source').val(),
-					'sourceId':$('#sourceId').val()
+					'method': 'saveToList',
+					'notes': $('#addToList-notes').val(),
+					'listId': $('#addToList-list').val(),
+					'source': $('#source').val(),
+					'sourceId': $('#sourceId').val()
 				};
 				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params,function(data) {
+				$.getJSON(url, params, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
 						AspenDiscovery.Account.loadListData();
@@ -6718,19 +6918,19 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
-		deleteAll: function(id){
-			if (confirm("Are you sure you want to delete all items in this list?")){
+		deleteAll: function (id) {
+			if (confirm("Are you sure you want to delete all items in this list?")) {
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id;
-				$.getJSON(url, function(){
+				$.getJSON(url, function () {
 					location.reload();
 				});
 			}
 			return false;
 		},
-		deleteSelected: function(id){
+		deleteSelected: function (id) {
 			var selectedTitles = AspenDiscovery.getSelectedTitles();
 			if (selectedTitles) {
-				if (confirm("Are you sure you want to delete the selected items from this list?")){
+				if (confirm("Are you sure you want to delete the selected items from this list?")) {
 					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function () {
 						location.reload();
 					});
@@ -6738,10 +6938,10 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
-		deleteSelectedLists: function(id){
+		deleteSelectedLists: function (id) {
 			var selectedLists = AspenDiscovery.getSelectedLists();
 			if (selectedLists) {
-				if (confirm("Are you sure you want to delete the selected lists?")){
+				if (confirm("Are you sure you want to delete the selected lists?")) {
 					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function () {
 						location.reload();
 					});
@@ -6749,15 +6949,15 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
-		getEditListForm: function(listEntryId, listId) {
+		getEditListForm: function (listEntryId, listId) {
 			var url = Globals.path + "/MyAccount/AJAX?method=getEditListForm&listEntryId=" + listEntryId + "&listId=" + listId;
-			$.getJSON(url, function (data){
+			$.getJSON(url, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
 			);
 			return false;
 		},
-		editListItem: function (){
+		editListItem: function () {
 			var url = Globals.path + '/MyAccount/AJAX?method=editListItem';
 			var newData = new FormData($("#listEntryEditForm")[0]);
 			$.ajax({
@@ -6765,7 +6965,7 @@ AspenDiscovery.Account = (function(){
 				type: 'POST',
 				data: newData,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
 				},
 				async: false,
@@ -6776,15 +6976,15 @@ AspenDiscovery.Account = (function(){
 		},
 		loadRecommendations: function () {
 			var url = Globals.path + "/MyAccount/AJAX",
-				params = {'method':'getSuggestionsSpotlight'};
-			$.getJSON(url, params, function(data) {
-				try{
+				params = {'method': 'getSuggestionsSpotlight'};
+			$.getJSON(url, params, function (data) {
+				try {
 					var suggestionsData = data.suggestions;
 					if (suggestionsData && suggestionsData.length > 0) {
 						//Create an unordered list for display
 						var html = '<ul>';
 
-						$.each(suggestionsData, function() {
+						$.each(suggestionsData, function () {
 							html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
 						});
 
@@ -6792,11 +6992,11 @@ AspenDiscovery.Account = (function(){
 
 						var carouselElement = $('#recommendationsCarousel');
 						carouselElement.html(html);
-						var jCarousel = carouselElement.jcarousel({wrap:null});
+						var jCarousel = carouselElement.jcarousel({wrap: null});
 
 						// Reload carousel
 						jCarousel.jcarousel('reload');
-					}else{
+					} else {
 						$('#recommendedForYouInfo').hide();
 					}
 				} catch (e) {
@@ -6804,23 +7004,23 @@ AspenDiscovery.Account = (function(){
 				}
 			});
 		},
-		getDonationValuesForDisplay: function(){
-			if($("input[name='customAmount']").val()) {
+		getDonationValuesForDisplay: function () {
+			if ($("input[name='customAmount']").val()) {
 				var amount = $("input[name='customAmount']").val();
 				$('#thisDonation').show();
-				document.getElementById("thisDonationValue").innerHTML=amount
-			} else if($("input[name='predefinedAmount']:checked").val()) {
+				document.getElementById("thisDonationValue").innerHTML = amount
+			} else if ($("input[name='predefinedAmount']:checked").val()) {
 				var amount = $("input[name='predefinedAmount']:checked").val();
 				$('#thisDonation').show();
-				document.getElementById("thisDonationValue").innerHTML=amount
+				document.getElementById("thisDonationValue").innerHTML = amount
 			} else {
 				$('#thisDonation').hide();
 			}
 		},
-		getCurbsidePickupScheduler: function(locationId){
-			if (Globals.loggedIn){
+		getCurbsidePickupScheduler: function (locationId) {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupScheduler&pickupLocation=" + locationId, function(data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupScheduler&pickupLocation=" + locationId, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -6828,14 +7028,14 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.getCurbsidePickupScheduler(locationId);
 				}, false);
 			}
 			return false;
 		},
-		createCurbsidePickup: function (){
-			if (Globals.loggedIn){
+		createCurbsidePickup: function () {
+			if (Globals.loggedIn) {
 
 				var patronId = $("#newCurbsidePickupForm input[name=patronId]").val();
 				var locationId = $("#newCurbsidePickupForm  input[name=pickupLibrary]").val();
@@ -6844,46 +7044,46 @@ AspenDiscovery.Account = (function(){
 				var note = $("#newCurbsidePickupForm  input[name=pickupNote]").text();
 
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=createCurbsidePickup&patronId=" + patronId + "&location=" + locationId + "&date=" + date + "&time=" + time + "&note=" + note, function(data){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=createCurbsidePickup&patronId=" + patronId + "&location=" + locationId + "&date=" + date + "&time=" + time + "&note=" + note, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				});
-			}else{
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.createCurbsidePickup(patronId, locationId, dateTime, note);
 				}, false);
 			}
 			return false;
 		},
-		getCancelCurbsidePickup: function(patronId, pickupId) {
+		getCancelCurbsidePickup: function (patronId, pickupId) {
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function (data) {
 				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
-		cancelCurbsidePickup: function(patronId, pickupId) {
+		cancelCurbsidePickup: function (patronId, pickupId) {
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function (data) {
 				AspenDiscovery.showMessage(data.title, data.body, true, 2000); // automatically close when successful
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
-		checkInCurbsidePickup: function(patronId, pickupId) {
+		checkInCurbsidePickup: function (patronId, pickupId) {
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=checkInCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=checkInCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function (data) {
 				AspenDiscovery.showMessage(data.title, data.body, false);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
-		curbsidePickupScheduler: function(locationCode) {
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupUnavailableDays&locationCode=" + locationCode, function(data){
+		curbsidePickupScheduler: function (locationCode) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupUnavailableDays&locationCode=" + locationCode, function (data) {
 				$("#pickupDate").flatpickr(
 					{
 						minDate: "today",
@@ -6891,23 +7091,23 @@ AspenDiscovery.Account = (function(){
 						altInput: true,
 						altFormat: "M j, Y",
 						"disable": [
-							function(date) {
+							function (date) {
 								return data.includes(date.getDay());
 							}
 						],
 						"locale": {
 							"firstDayOfWeek": 0
 						},
-						onChange: function(selectedDates, dateStr, instance) {
+						onChange: function (selectedDates, dateStr, instance) {
 							//... send dateStr to check what times are available
-							$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupAvailableTimes&date=" + dateStr + "&locationCode=" + locationCode, function(data) {
+							$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupAvailableTimes&date=" + dateStr + "&locationCode=" + locationCode, function (data) {
 								// return available timeslots to dom
 								var numOfSlots = data.length;
 								var morningSlots = 0;
 								var afternoonSlots = 0;
 								var eveningSlots = 0;
 								for (var i = 0; i < numOfSlots; i++) {
-									if(data[i] < "12:00") {
+									if (data[i] < "12:00") {
 										morningSlots++;
 										var timeSlotContainer = document.getElementById("morningTimeSlots");
 										var slot = moment(data[i], "HH:mm").format("h:mm a");
@@ -6925,13 +7125,13 @@ AspenDiscovery.Account = (function(){
 									}
 								}
 
-								if(morningSlots === 0) {
+								if (morningSlots === 0) {
 									$("#morningTimeSlotsAccordion").hide();
 								}
-								if(afternoonSlots === 0) {
+								if (afternoonSlots === 0) {
 									$("#afternoonTimeSlotsAccordion").hide();
 								}
-								if(eveningSlots === 0) {
+								if (eveningSlots === 0) {
 									$("#eveningTimeSlotsAccordion").hide();
 								}
 								$('#availableTimeSlots').find('div.panel:visible:first').addClass('active');
@@ -6943,8 +7143,8 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
-		show2FAEnrollment: function(mandatoryEnroll){
-			if (Globals.loggedIn || mandatoryEnroll){
+		show2FAEnrollment: function (mandatoryEnroll) {
+			if (Globals.loggedIn || mandatoryEnroll) {
 				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
@@ -6954,15 +7154,15 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.show2FAEnrollmentVerify(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		show2FAEnrollmentVerify: function(mandatoryEnroll){
-			if (Globals.loggedIn || mandatoryEnroll){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
+		show2FAEnrollmentVerify: function (mandatoryEnroll) {
+			if (Globals.loggedIn || mandatoryEnroll) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -6970,15 +7170,15 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.show2FAEnrollmentVerify(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		show2FAEnrollmentBackupCodes: function(mandatoryEnroll){
-			if (Globals.loggedIn || mandatoryEnroll){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
+		show2FAEnrollmentBackupCodes: function (mandatoryEnroll) {
+			if (Globals.loggedIn || mandatoryEnroll) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -6986,30 +7186,30 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		show2FAEnrollmentSuccess: function(mandatoryEnroll){
-			if (Globals.loggedIn || mandatoryEnroll){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
+		show2FAEnrollmentSuccess: function (mandatoryEnroll) {
+			if (Globals.loggedIn || mandatoryEnroll) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.show2FAEnrollmentSuccess(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		showCancel2FA: function(){
-			if (Globals.loggedIn){
+		showCancel2FA: function () {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA", function(data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA", function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -7017,16 +7217,16 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.cancel2FA();
 				}, false);
 			}
 			return false;
 		},
-		cancel2FA: function(){
-			if (Globals.loggedIn){
+		cancel2FA: function () {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA", function(data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA", function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
 					} else {
@@ -7034,80 +7234,80 @@ AspenDiscovery.Account = (function(){
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.cancel2FA();
 				}, false);
 			}
 			return false;
 		},
-		verify2FA: function(mandatoryEnrollment) {
+		verify2FA: function (mandatoryEnrollment) {
 			var code = $("#code").val();
 			var loggingIn = mandatoryEnrollment ? true : false;
-			if (Globals.loggedIn || mandatoryEnrollment){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=" + loggingIn + "&code=" + code + "&mandatoryEnrollment=" + mandatoryEnrollment, function(data) {
+			if (Globals.loggedIn || mandatoryEnrollment) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=" + loggingIn + "&code=" + code + "&mandatoryEnrollment=" + mandatoryEnrollment, function (data) {
 					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
-					if(data.success === "true") {
+					if (data.success === "true") {
 						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnrollment);
 					}
 					$("#codeVerificationFailedPlaceholder").html(data.message).show();
 					return data;
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.verify2FA();
 				}, false);
 			}
 			return false;
 		},
-		new2FACode: function() {
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=new2FACode", function(data) {
-					// update #newCodeSentPlaceholder with sent status
-					$("#newCodeSentPlaceholder").html(data.body).show();
-					return data;
-				});
+		new2FACode: function () {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=new2FACode", function (data) {
+				// update #newCodeSentPlaceholder with sent status
+				$("#newCodeSentPlaceholder").html(data.body).show();
+				return data;
+			});
 			return false;
 		},
-		showNewBackupCodes: function(){
-			if (Globals.loggedIn){
+		showNewBackupCodes: function () {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.showNewBackupCodes();
 				}, false);
 			}
 			return false;
 		},
-		show2FALogin: function(){
-			if (Globals.loggedIn){
+		show2FALogin: function () {
+			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
 					}
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.show2FALogin();
 				}, false);
 			}
 			return false;
 		},
-		verify2FALogin: function(ajaxCallback) {
+		verify2FALogin: function (ajaxCallback) {
 			var code = $("#code").val();
 			var referer = $("#referer").val();
 			var name = $("#name").val();
 			var myAccountAuth = $("#myAccountAuth").val();
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code, function(data) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code, function (data) {
 				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
-				if(data.success === "true") {
+				if (data.success === "true") {
 					Globals.loggedIn = true;
 
-					if(myAccountAuth === 'true') {
+					if (myAccountAuth === 'true') {
 						window.location.reload();
 					}
 					$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
@@ -7118,9 +7318,9 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.closeLightbox();
 					}
 
-					if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+					if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
 						ajaxCallback();
-					} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+					} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof (AspenDiscovery.Account.ajaxCallback) === "function") {
 						AspenDiscovery.Account.ajaxCallback();
 						AspenDiscovery.Account.ajaxCallback = null;
 					}
@@ -7133,28 +7333,44 @@ AspenDiscovery.Account = (function(){
 			});
 			return false;
 		},
+		checkWorldPayStatus: function (paymentId, status) {
+			if (Globals.activeAction === "WorldPayCompleted" && Globals.loggedIn) {
+				var params = {
+					paymentId: paymentId,
+					currentStatus: status
+				};
+				$.getJSON(Globals.path + '/MyAccount/AJAX?method=checkWorldPayOrderStatus', params, function (data) {
+					if (data.success) {
+						$('#successMessage').html(data.message);
+						clearInterval(pollStatus);
+						return true;
+					}
+				});
+			}
+			return false;
+		}
 	};
 }(AspenDiscovery.Account || {}));
-AspenDiscovery.Admin = (function(){
+AspenDiscovery.Admin = (function () {
 	return {
-		showReindexNotes: function (id){
+		showReindexNotes: function (id) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getReindexNotes&id=" + id, true);
 			return false;
 		},
-		showCronNotes: function (id){
+		showCronNotes: function (id) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getCronNotes&id=" + id, true);
 			return false;
 		},
-		showCronProcessNotes: function (id){
+		showCronProcessNotes: function (id) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getCronProcessNotes&id=" + id, true);
 			return false;
 		},
-		toggleCronProcessInfo: function (id){
+		toggleCronProcessInfo: function (id) {
 			$("#cronEntry" + id).toggleClass("expanded collapsed");
 			$("#processInfo" + id).toggle();
 		},
 
-		showExtractNotes: function (id, source){
+		showExtractNotes: function (id, source) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&id=" + id + "&source=" + source, true);
 			return false;
 		},
@@ -7165,9 +7381,9 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		getDefaultColor:function(property, extendedThemeDefault) {
-			if(property === 'pageBackgroundColor'){
-				if(extendedThemeDefault != null) {
+		getDefaultColor: function (property, extendedThemeDefault) {
+			if (property === 'pageBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7175,8 +7391,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'bodyBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'bodyBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7184,8 +7400,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'bodyTextColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'bodyTextColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7193,8 +7409,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#6B6B6B";
 					document.getElementById(property).value = "#6B6B6B";
 				}
-			} else if(property === 'linkColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'linkColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7202,8 +7418,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#3174AF";
 					document.getElementById(property).value = "#3174AF";
 				}
-			} else if(property === 'linkHoverColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'linkHoverColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7211,8 +7427,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#265a87";
 					document.getElementById(property).value = "#265a87";
 				}
-			} else if(property === 'resultLabelColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'resultLabelColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7220,8 +7436,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#44484a";
 					document.getElementById(property).value = "#44484a";
 				}
-			} else if(property === 'resultValueColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'resultValueColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7229,8 +7445,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#6B6B6B";
 					document.getElementById(property).value = "#6B6B6B";
 				}
-			} else if(property === 'headerBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'headerBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7238,8 +7454,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f1f1f1";
 					document.getElementById(property).value = "#f1f1f1";
 				}
-			} else if(property === 'headerForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'headerForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7247,8 +7463,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#303030";
 					document.getElementById(property).value = "#303030";
 				}
-			} else if(property === 'breadcrumbsBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'breadcrumbsBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7256,8 +7472,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f5f5f5";
 					document.getElementById(property).value = "#f5f5f5";
 				}
-			} else if(property === 'breadcrumbsForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'breadcrumbsForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7265,8 +7481,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#6B6B6B";
 					document.getElementById(property).value = "#6B6B6B";
 				}
-			} else if(property === 'searchToolsBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'searchToolsBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7274,8 +7490,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f5f5f5";
 					document.getElementById(property).value = "#f5f5f5";
 				}
-			} else if(property === 'searchToolsBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'searchToolsBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7283,8 +7499,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#e3e3e3";
 					document.getElementById(property).value = "#e3e3e3";
 				}
-			} else if(property === 'searchToolsForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'searchToolsForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7292,8 +7508,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#6B6B6B";
 					document.getElementById(property).value = "#6B6B6B";
 				}
-			} else if(property === 'footerBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'footerBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7301,8 +7517,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f1f1f1";
 					document.getElementById(property).value = "#f1f1f1";
 				}
-			} else if(property === 'footerForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'footerForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7310,8 +7526,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#303030";
 					document.getElementById(property).value = "#303030";
 				}
-			} else if(property === 'primaryBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7319,8 +7535,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#0a7589";
 					document.getElementById(property).value = "#0a7589";
 				}
-			} else if(property === 'primaryForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7328,8 +7544,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'secondaryBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'secondaryBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7337,8 +7553,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#de9d03";
 					document.getElementById(property).value = "#de9d03";
 				}
-			} else if(property === 'secondaryForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'secondaryForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7346,8 +7562,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#303030";
 					document.getElementById(property).value = "#303030";
 				}
-			} else if(property === 'tertiaryBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'tertiaryBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7355,8 +7571,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#de1f0b";
 					document.getElementById(property).value = "#de1f0b";
 				}
-			} else if(property === 'tertiaryForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'tertiaryForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7364,8 +7580,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#000000";
 					document.getElementById(property).value = "#000000";
 				}
-			} else if(property === 'menubarBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'menubarBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7373,8 +7589,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f1f1f1";
 					document.getElementById(property).value = "#f1f1f1";
 				}
-			} else if(property === 'menubarForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'menubarForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7382,8 +7598,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#303030";
 					document.getElementById(property).value = "#303030";
 				}
-			} else if(property === 'menubarHighlightBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'menubarHighlightBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7391,8 +7607,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f1f1f1";
 					document.getElementById(property).value = "#f1f1f1";
 				}
-			} else if(property === 'menubarHighlightForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'menubarHighlightForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7400,8 +7616,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#265a87";
 					document.getElementById(property).value = "#265a87";
 				}
-			} else if(property === 'menuDropdownBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'menuDropdownBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7409,8 +7625,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ededed";
 					document.getElementById(property).value = "#ededed";
 				}
-			} else if(property === 'menuDropdownForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'menuDropdownForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7418,8 +7634,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#404040";
 					document.getElementById(property).value = "#404040";
 				}
-			} else if(property === 'modalDialogBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'modalDialogBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7427,8 +7643,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'modalDialogForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'modalDialogForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7436,8 +7652,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#333333";
 					document.getElementById(property).value = "#333333";
 				}
-			} else if(property === 'modalDialogHeaderFooterBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'modalDialogHeaderFooterBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7445,8 +7661,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'modalDialogHeaderFooterForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'modalDialogHeaderFooterForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7454,8 +7670,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#333333";
 					document.getElementById(property).value = "#333333";
 				}
-			} else if(property === 'modalDialogHeaderFooterBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'modalDialogHeaderFooterBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7463,8 +7679,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#e5e5e5";
 					document.getElementById(property).value = "#e5e5e5";
 				}
-			} else if(property === 'browseCategoryPanelColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'browseCategoryPanelColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7472,8 +7688,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#d7dce3";
 					document.getElementById(property).value = "#d7dce3";
 				}
-			} else if(property === 'selectedBrowseCategoryBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'selectedBrowseCategoryBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7481,8 +7697,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#0087AB";
 					document.getElementById(property).value = "#0087AB";
 				}
-			} else if(property === 'selectedBrowseCategoryForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'selectedBrowseCategoryForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7490,8 +7706,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'selectedBrowseCategoryBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'selectedBrowseCategoryBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7499,8 +7715,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#0087AB";
 					document.getElementById(property).value = "#0087AB";
 				}
-			} else if(property === 'deselectedBrowseCategoryBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'deselectedBrowseCategoryBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7508,8 +7724,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#0087AB";
 					document.getElementById(property).value = "#0087AB";
 				}
-			} else if(property === 'deselectedBrowseCategoryForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'deselectedBrowseCategoryForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7517,8 +7733,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'deselectedBrowseCategoryBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'deselectedBrowseCategoryBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7526,8 +7742,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#0087AB";
 					document.getElementById(property).value = "#0087AB";
 				}
-			} else if(property === 'badgeBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'badgeBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7535,8 +7751,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#666666";
 					document.getElementById(property).value = "#666666";
 				}
-			} else if(property === 'badgeForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'badgeForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7544,8 +7760,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'closedPanelBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'closedPanelBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7553,8 +7769,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#e7e7e7";
 					document.getElementById(property).value = "#e7e7e7";
 				}
-			} else if(property === 'closedPanelForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'closedPanelForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7562,8 +7778,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#333333";
 					document.getElementById(property).value = "#333333";
 				}
-			} else if(property === 'openPanelBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'openPanelBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7571,8 +7787,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#333333";
 					document.getElementById(property).value = "#333333";
 				}
-			} else if(property === 'openPanelForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'openPanelForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7580,8 +7796,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'panelBodyBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'panelBodyBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7589,8 +7805,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'panelBodyForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'panelBodyForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7598,8 +7814,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#404040";
 					document.getElementById(property).value = "#404040";
 				}
-			} else if(property === 'defaultButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'defaultButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7607,8 +7823,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'defaultButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'defaultButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7616,8 +7832,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#333333";
 					document.getElementById(property).value = "#333333";
 				}
-			} else if(property === 'defaultButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'defaultButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7625,8 +7841,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#cccccc";
 					document.getElementById(property).value = "#cccccc";
 				}
-			} else if(property === 'defaultButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'defaultButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7634,8 +7850,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#eeeeee";
 					document.getElementById(property).value = "#eeeeee";
 				}
-			} else if(property === 'defaultButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'defaultButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7643,8 +7859,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#333333";
 					document.getElementById(property).value = "#333333";
 				}
-			} else if(property === 'defaultButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'defaultButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7652,8 +7868,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#cccccc";
 					document.getElementById(property).value = "#cccccc";
 				}
-			} else if(property === 'primaryButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7661,8 +7877,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'primaryButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7670,8 +7886,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'primaryButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7679,8 +7895,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'primaryButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7688,8 +7904,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'primaryButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7697,8 +7913,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'primaryButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'primaryButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7706,8 +7922,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'actionButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'actionButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7715,8 +7931,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'actionButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'actionButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7724,8 +7940,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'actionButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'actionButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7733,8 +7949,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'actionButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'actionButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7742,8 +7958,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'actionButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'actionButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7751,8 +7967,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'actionButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'actionButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7760,8 +7976,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'editionsButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'editionsButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7769,8 +7985,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f8f9fa";
 					document.getElementById(property).value = "#f8f9fa";
 				}
-			} else if(property === 'editionsButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'editionsButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7778,8 +7994,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#212529";
 					document.getElementById(property).value = "#212529";
 				}
-			} else if(property === 'editionsButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'editionsButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7787,8 +8003,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#999999";
 					document.getElementById(property).value = "#999999";
 				}
-			} else if(property === 'editionsButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'editionsButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7796,8 +8012,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'editionsButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'editionsButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7805,8 +8021,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'editionsButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'editionsButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7814,8 +8030,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#1b6ec2";
 					document.getElementById(property).value = "#1b6ec2";
 				}
-			} else if(property === 'toolsButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'toolsButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7823,8 +8039,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#747474";
 					document.getElementById(property).value = "#747474";
 				}
-			} else if(property === 'toolsButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'toolsButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7832,8 +8048,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'toolsButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'toolsButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7841,8 +8057,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#636363";
 					document.getElementById(property).value = "#636363";
 				}
-			} else if(property === 'toolsButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'toolsButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7850,8 +8066,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#636363";
 					document.getElementById(property).value = "#636363";
 				}
-			} else if(property === 'toolsButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'toolsButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7859,8 +8075,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'toolsButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'toolsButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7868,8 +8084,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#636363";
 					document.getElementById(property).value = "#636363";
 				}
-			} else if(property === 'infoButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'infoButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7877,8 +8093,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#8cd2e7";
 					document.getElementById(property).value = "#8cd2e7";
 				}
-			} else if(property === 'infoButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'infoButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7886,8 +8102,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#000000";
 					document.getElementById(property).value = "#000000";
 				}
-			} else if(property === 'infoButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'infoButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7895,8 +8111,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#999999";
 					document.getElementById(property).value = "#999999";
 				}
-			} else if(property === 'infoButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'infoButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7904,8 +8120,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'infoButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'infoButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7913,8 +8129,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#217e9b";
 					document.getElementById(property).value = "#217e9b";
 				}
-			} else if(property === 'infoButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'infoButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7922,8 +8138,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#217e9b";
 					document.getElementById(property).value = "#217e9b";
 				}
-			} else if(property === 'warningButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'warningButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7931,8 +8147,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#f4d03f";
 					document.getElementById(property).value = "#f4d03f";
 				}
-			} else if(property === 'warningButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'warningButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7940,8 +8156,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#000000";
 					document.getElementById(property).value = "#000000";
 				}
-			} else if(property === 'warningButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'warningButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7949,8 +8165,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#999999";
 					document.getElementById(property).value = "#999999";
 				}
-			} else if(property === 'warningButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'warningButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7958,8 +8174,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'warningButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'warningButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7967,8 +8183,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#8d6708";
 					document.getElementById(property).value = "#8d6708";
 				}
-			} else if(property === 'warningButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'warningButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7976,8 +8192,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#8d6708";
 					document.getElementById(property).value = "#8d6708";
 				}
-			} else if(property === 'dangerButtonBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'dangerButtonBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7985,8 +8201,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#D50000";
 					document.getElementById(property).value = "#D50000";
 				}
-			} else if(property === 'dangerButtonForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'dangerButtonForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -7994,8 +8210,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'dangerButtonBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'dangerButtonBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -8003,8 +8219,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#999999";
 					document.getElementById(property).value = "#999999";
 				}
-			} else if(property === 'dangerButtonHoverBackgroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'dangerButtonHoverBackgroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -8012,8 +8228,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#ffffff";
 					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property === 'dangerButtonHoverForegroundColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'dangerButtonHoverForegroundColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -8021,8 +8237,8 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#D50000";
 					document.getElementById(property).value = "#D50000";
 				}
-			} else if(property === 'dangerButtonHoverBorderColor') {
-				if(extendedThemeDefault != null) {
+			} else if (property === 'dangerButtonHoverBorderColor') {
+				if (extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
 					document.getElementById(property + 'Hex').value = extendedThemeDefault;
 					document.getElementById(property).value = extendedThemeDefault;
@@ -8030,93 +8246,94 @@ AspenDiscovery.Admin = (function(){
 					document.getElementById(property + 'Hex').value = "#D50000";
 					document.getElementById(property).value = "#D50000";
 				}
-			};
+			}
+			;
 		},
 		checkContrast: function (property1, property2, oneWay, minRatio) {
-				if (oneWay === undefined) {
-					oneWay = false;
+			if (oneWay === undefined) {
+				oneWay = false;
+			}
+			var color1 = $('#' + property1).val();
+			var color2 = $('#' + property2).val();
+			if (color1.length === 7 && color2.length === 7) {
+				var luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
+				var luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
+				var contrastRatio;
+				if (luminance1 > luminance2) {
+					contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
+				} else {
+					contrastRatio = ((luminance2 + 0.05) / (luminance1 + 0.05));
 				}
-				var color1 = $('#' + property1).val();
-				var color2 = $('#' + property2).val();
-				if (color1.length === 7 && color2.length === 7) {
-					var luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
-					var luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
-					var contrastRatio;
-					if (luminance1 > luminance2) {
-						contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
+				var contrastSpan1 = $("#contrast_" + property1);
+				var contrastSpan2 = $("#contrast_" + property2);
+				contrastSpan1.text(contrastRatio.toFixed(2));
+				contrastSpan2.text(contrastRatio.toFixed(2));
+				if (minRatio == 7.0) {
+					if (contrastRatio < 4.5) {
+						contrastSpan1.addClass("alert-danger");
+						contrastSpan2.addClass("alert-danger");
+						contrastSpan1.removeClass("alert-warning");
+						contrastSpan2.removeClass("alert-warning");
+						contrastSpan1.removeClass("alert-success");
+						contrastSpan2.removeClass("alert-success");
+					} else if (contrastRatio < minRatio) {
+						contrastSpan1.removeClass("alert-danger");
+						contrastSpan2.removeClass("alert-danger");
+						contrastSpan1.addClass("alert-warning");
+						contrastSpan2.addClass("alert-warning");
+						contrastSpan1.removeClass("alert-success");
+						contrastSpan2.removeClass("alert-success");
 					} else {
-						contrastRatio = ((luminance2 + 0.05) / (luminance1 + 0.05));
-					}
-					var contrastSpan1 = $("#contrast_" + property1);
-					var contrastSpan2 = $("#contrast_" + property2);
-					contrastSpan1.text(contrastRatio.toFixed(2));
-					contrastSpan2.text(contrastRatio.toFixed(2));
-					if(minRatio == 7.0) {
-						if (contrastRatio < 4.5) {
-							contrastSpan1.addClass("alert-danger");
-							contrastSpan2.addClass("alert-danger");
-							contrastSpan1.removeClass("alert-warning");
-							contrastSpan2.removeClass("alert-warning");
-							contrastSpan1.removeClass("alert-success");
-							contrastSpan2.removeClass("alert-success");
-						} else if (contrastRatio < minRatio) {
-							contrastSpan1.removeClass("alert-danger");
-							contrastSpan2.removeClass("alert-danger");
-							contrastSpan1.addClass("alert-warning");
-							contrastSpan2.addClass("alert-warning");
-							contrastSpan1.removeClass("alert-success");
-							contrastSpan2.removeClass("alert-success");
-						} else {
-							contrastSpan1.removeClass("alert-danger");
-							contrastSpan2.removeClass("alert-danger");
-							contrastSpan1.removeClass("alert-warning");
-							contrastSpan2.removeClass("alert-warning");
-							contrastSpan1.addClass("alert-success");
-							contrastSpan2.addClass("alert-success");
-						}
-					} else {
-						if (contrastRatio < 3.5) {
-							contrastSpan1.addClass("alert-danger");
-							contrastSpan2.addClass("alert-danger");
-							contrastSpan1.removeClass("alert-warning");
-							contrastSpan2.removeClass("alert-warning");
-							contrastSpan1.removeClass("alert-success");
-							contrastSpan2.removeClass("alert-success");
-						} else if (contrastRatio < minRatio) {
-							contrastSpan1.removeClass("alert-danger");
-							contrastSpan2.removeClass("alert-danger");
-							contrastSpan1.addClass("alert-warning");
-							contrastSpan2.addClass("alert-warning");
-							contrastSpan1.removeClass("alert-success");
-							contrastSpan2.removeClass("alert-success");
-						} else {
-							contrastSpan1.removeClass("alert-danger");
-							contrastSpan2.removeClass("alert-danger");
-							contrastSpan1.removeClass("alert-warning");
-							contrastSpan2.removeClass("alert-warning");
-							contrastSpan1.addClass("alert-success");
-							contrastSpan2.addClass("alert-success");
-						}
+						contrastSpan1.removeClass("alert-danger");
+						contrastSpan2.removeClass("alert-danger");
+						contrastSpan1.removeClass("alert-warning");
+						contrastSpan2.removeClass("alert-warning");
+						contrastSpan1.addClass("alert-success");
+						contrastSpan2.addClass("alert-success");
 					}
 				} else {
-					$("#contrastCheck_" + property1).hide();
-					if (!oneWay) {
-						$("#contrastCheck_" + property2).hide();
-					}
-					$("#contrast_" + property1).innerHTML = 'Unknown';
-					if (!oneWay) {
-						$("#contrast_" + property2).innerHTML = 'Unknown';
+					if (contrastRatio < 3.5) {
+						contrastSpan1.addClass("alert-danger");
+						contrastSpan2.addClass("alert-danger");
+						contrastSpan1.removeClass("alert-warning");
+						contrastSpan2.removeClass("alert-warning");
+						contrastSpan1.removeClass("alert-success");
+						contrastSpan2.removeClass("alert-success");
+					} else if (contrastRatio < minRatio) {
+						contrastSpan1.removeClass("alert-danger");
+						contrastSpan2.removeClass("alert-danger");
+						contrastSpan1.addClass("alert-warning");
+						contrastSpan2.addClass("alert-warning");
+						contrastSpan1.removeClass("alert-success");
+						contrastSpan2.removeClass("alert-success");
+					} else {
+						contrastSpan1.removeClass("alert-danger");
+						contrastSpan2.removeClass("alert-danger");
+						contrastSpan1.removeClass("alert-warning");
+						contrastSpan2.removeClass("alert-warning");
+						contrastSpan1.addClass("alert-success");
+						contrastSpan2.addClass("alert-success");
 					}
 				}
+			} else {
+				$("#contrastCheck_" + property1).hide();
+				if (!oneWay) {
+					$("#contrastCheck_" + property2).hide();
+				}
+				$("#contrast_" + property1).innerHTML = 'Unknown';
+				if (!oneWay) {
+					$("#contrast_" + property2).innerHTML = 'Unknown';
+				}
+			}
 
 		},
-		getLuminanceForColor: function(color){
+		getLuminanceForColor: function (color) {
 			var r = AspenDiscovery.Admin.getLuminanceComponent(color, 1, 2);
 			var g = AspenDiscovery.Admin.getLuminanceComponent(color, 3, 2);
 			var b = AspenDiscovery.Admin.getLuminanceComponent(color, 5, 2);
 			return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 		},
-		getLuminanceComponent: function(color, start, length){
+		getLuminanceComponent: function (color, start, length) {
 			var component = parseInt(color.substring(start, start + length), 16) / 255;
 			if (component <= 0.03928) {
 				return component / 12.92;
@@ -8125,10 +8342,10 @@ AspenDiscovery.Admin = (function(){
 			}
 		},
 
-		updateMaterialsRequestFields: function(){
+		updateMaterialsRequestFields: function () {
 			var materialRequestType = $("#enableMaterialsRequestSelect option:selected").val();
 			$("#propertyRowallowDeletingILSRequests").hide();
-			if (materialRequestType === "0" || materialRequestType === "2"){
+			if (materialRequestType === "0" || materialRequestType === "2") {
 				$("#propertyRowexternalMaterialsRequestUrl").hide();
 				$("#propertyRowmaxRequestsPerYear").hide();
 				$("#propertyRowmaxOpenRequests").hide();
@@ -8136,10 +8353,10 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowmaterialsRequestFieldsToDisplay").hide();
 				$("#propertyRowmaterialsRequestFormats").hide();
 				$("#propertyRowmaterialsRequestFormFields").hide();
-				if (materialRequestType === "2"){
+				if (materialRequestType === "2") {
 					$("#propertyRowallowDeletingILSRequests").show();
 				}
-			}else if (materialRequestType === "1"){
+			} else if (materialRequestType === "1") {
 				$("#propertyRowexternalMaterialsRequestUrl").hide();
 				$("#propertyRowmaxRequestsPerYear").show();
 				$("#propertyRowmaxOpenRequests").show();
@@ -8147,7 +8364,7 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowmaterialsRequestFieldsToDisplay").show();
 				$("#propertyRowmaterialsRequestFormats").show();
 				$("#propertyRowmaterialsRequestFormFields").show()
-			}else if (materialRequestType === "3"){
+			} else if (materialRequestType === "3") {
 				$("#propertyRowexternalMaterialsRequestUrl").show();
 				$("#propertyRowmaxRequestsPerYear").hide();
 				$("#propertyRowmaxOpenRequests").hide();
@@ -8158,16 +8375,16 @@ AspenDiscovery.Admin = (function(){
 			}
 			return false;
 		},
-		updateDonationFields: function(){
+		updateDonationFields: function () {
 			var donationsEnabled = $("#enableDonations");
 			var donationsEnabledValue = $("#enableDonations:checked").val()
-			if(donationsEnabledValue == 1) {
+			if (donationsEnabledValue == 1) {
 				$("#propertyRowallowDonationsToBranch").show();
 				$("#propertyRowallowDonationEarmark").show();
 				$("#propertyRowallowDonationDedication").show();
 				$("#propertyRowdonationValues").show();
 				$("#propertyRowdonationContent").show();
-			}else{
+			} else {
 				$("#propertyRowallowDonationsToBranch").hide();
 				$("#propertyRowallowDonationEarmark").hide();
 				$("#propertyRowallowDonationDedication").hide();
@@ -8177,27 +8394,27 @@ AspenDiscovery.Admin = (function(){
 
 			return false;
 		},
-		validateCompare: function() {
+		validateCompare: function () {
 			var selectedObjects = $('.selectedObject:checked');
-			if (selectedObjects.length === 2){
+			if (selectedObjects.length === 2) {
 				return true;
-			}else{
+			} else {
 				AspenDiscovery.showMessage("Error", "Please select only two objects to compare");
 				return false;
 			}
 		},
-		showBatchUpdateFieldForm: function(module, toolName, batchUpdateScope) {
+		showBatchUpdateFieldForm: function (module, toolName, batchUpdateScope) {
 			var selectedObjects = $('.selectedObject:checked');
-			if (batchUpdateScope === 'all' || selectedObjects.length >= 1){
+			if (batchUpdateScope === 'all' || selectedObjects.length >= 1) {
 				var url = Globals.path + "/Admin/AJAX";
-				var params =  {
-					method : 'getBatchUpdateFieldForm',
-					moduleName : module,
+				var params = {
+					method: 'getBatchUpdateFieldForm',
+					moduleName: module,
 					toolName: toolName,
 					batchUpdateScope: batchUpdateScope
 				};
 				$.getJSON(url, params,
-					function(data) {
+					function (data) {
 						if (data.success) {
 							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 						} else {
@@ -8206,39 +8423,39 @@ AspenDiscovery.Admin = (function(){
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
-			}else{
+			} else {
 				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
 				return false;
 			}
 		},
-		processBatchUpdateFieldForm: function(module, toolName, batchUpdateScope){
+		processBatchUpdateFieldForm: function (module, toolName, batchUpdateScope) {
 			var selectedObjects = $('.selectedObject:checked');
-			if (batchUpdateScope === 'all' || selectedObjects.length >= 1){
+			if (batchUpdateScope === 'all' || selectedObjects.length >= 1) {
 				var url = Globals.path + "/Admin/AJAX";
 				var selectedField = $('#fieldSelector').val();
 				var selectedFieldControl = $('#' + selectedField);
 				var newValue;
-				if (selectedFieldControl.prop("type") === undefined){
+				if (selectedFieldControl.prop("type") === undefined) {
 					selectedFieldControl = $('#' + selectedField + "Select");
 				}
-				if (selectedFieldControl.prop("type") === 'checkbox'){
+				if (selectedFieldControl.prop("type") === 'checkbox') {
 					newValue = selectedFieldControl.prop("checked") ? 1 : 0;
-				}else {
+				} else {
 					newValue = selectedFieldControl.val();
 				}
-				var params =  {
-					method : 'doBatchUpdateField',
-					moduleName : module,
+				var params = {
+					method: 'doBatchUpdateField',
+					moduleName: module,
 					toolName: toolName,
 					batchUpdateScope: batchUpdateScope,
 					selectedField: selectedField,
 					newValue: newValue
 				};
-				selectedObjects.each(function(){
+				selectedObjects.each(function () {
 					params[$(this).prop('name')] = 'on';
 				});
 				$.getJSON(url, params,
-					function(data) {
+					function (data) {
 						if (data.success) {
 							AspenDiscovery.showMessage(data.title, data.message, true, true);
 						} else {
@@ -8247,20 +8464,19 @@ AspenDiscovery.Admin = (function(){
 					}
 				).fail(AspenDiscovery.ajaxFail);
 				return false;
-			}else{
+			} else {
 				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
 				return false;
 			}
 		},
-		addFilterRow: function(module, toolName) {
+		showCopyFacetGroupForm: function (id) {
 			var url = Globals.path + "/Admin/AJAX";
-			var params =  {
-				method : 'getFilterOptions',
-				moduleName : module,
-				toolName: toolName
+			var params = {
+				method: 'getCopyFacetGroupForm',
+				facetGroupId: id
 			};
 			$.getJSON(url, params,
-				function(data) {
+				function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					} else {
@@ -8270,17 +8486,147 @@ AspenDiscovery.Admin = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		getNewFilterRow: function(module, toolName) {
+		processCopyFacetGroupForm: function () {
+			var url = Globals.path + "/Admin/AJAX";
+			var applyToSettings = $('#displaySettingsSelector').val();
+			var newGroupName = $('#groupName').val();
+			var facetGroupId = $('#facetGroupId').val();
+			var params = {
+				method: 'doCopyFacetGroup',
+				id: facetGroupId,
+				name: newGroupName,
+				displaySettings: applyToSettings
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true, true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		showBatchDeleteForm: function (module, toolName, batchDeleteScope) {
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchDeleteScope === 'all' || selectedObjects.length >= 1) {
+				var url = Globals.path + "/Admin/AJAX";
+				var params = {
+					method: 'getBatchDeleteForm',
+					moduleName: module,
+					toolName: toolName,
+					batchDeleteScope: batchDeleteScope
+				};
+				$.getJSON(url, params,
+					function (data) {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							$("#releaseNotes").html("Error + " + data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			} else {
+				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				return false;
+			}
+		},
+		processBatchDeleteForm: function (module, toolName, batchDeleteScope) {
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchDeleteScope === 'all' || selectedObjects.length >= 1) {
+				var url = Globals.path + "/Admin/AJAX";
+				var params = {
+					method: 'doBatchDelete',
+					moduleName: module,
+					toolName: toolName,
+					batchDeleteScope: batchDeleteScope
+				};
+				selectedObjects.each(function () {
+					params[$(this).prop('name')] = 'on';
+				});
+				$.getJSON(url, params,
+					function (data) {
+						if (data.success) {
+							AspenDiscovery.showMessage(data.title, data.message, true, true);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			} else {
+				AspenDiscovery.showMessage("Error", "Please select at least one object to delete");
+				return false;
+			}
+		},
+		showCopyDisplaySettingsForm: function (id) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params = {
+				method: 'getCopyDisplaySettingsForm',
+				settingsId: id
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		processCopyDisplaySettingsForm: function () {
+			var url = Globals.path + "/Admin/AJAX";
+			var newName = $('#settingsName').val();
+			var settingsId = $('#settingsId').val();
+			var params = {
+				method: 'doCopyDisplaySettings',
+				id: settingsId,
+				name: newName
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, true, true);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		addFilterRow: function (module, toolName) {
+			var url = Globals.path + "/Admin/AJAX";
+			var params = {
+				method: 'getFilterOptions',
+				moduleName: module,
+				toolName: toolName
+			};
+			$.getJSON(url, params,
+				function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		getNewFilterRow: function (module, toolName) {
 			var url = Globals.path + "/Admin/AJAX";
 			var selectedFilter = $("#fieldSelector").val();
-			var params =  {
-				method : 'getNewFilterRow',
-				moduleName : module,
+			var params = {
+				method: 'getNewFilterRow',
+				moduleName: module,
 				toolName: toolName,
 				selectedFilter: selectedFilter
 			};
 			$.getJSON(url, params,
-				function(data) {
+				function (data) {
 					if (data.success) {
 						$('#activeFilters').append(data.filterRow);
 						AspenDiscovery.closeLightbox();
@@ -8291,27 +8637,27 @@ AspenDiscovery.Admin = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		displayReleaseNotes: function() {
+		displayReleaseNotes: function () {
 			var url = Globals.path + "/Admin/AJAX";
 			var selectedNotes = $('#releaseSelector').val();
-			var params =  {
-				method : 'getReleaseNotes',
-				release : selectedNotes
+			var params = {
+				method: 'getReleaseNotes',
+				release: selectedNotes
 			};
 			$.getJSON(url, params,
-				function(data) {
+				function (data) {
 					if (data.success) {
 						$("#releaseVersion").html(data.release);
 						$("#releaseNotes").html(data.releaseNotes);
-						if (data.actionItems === ''){
+						if (data.actionItems === '') {
 							$("#actionItemsSection").hide();
-						}else{
+						} else {
 							$("#actionItemsSection").show();
 							$("#actionItems").html(data.actionItems);
 						}
-						if (data.testingSuggestions === ''){
+						if (data.testingSuggestions === '') {
 							$("#testingSection").hide();
-						}else{
+						} else {
 							$("#testingSection").show();
 							$("#testingSuggestions").html(data.testingSuggestions);
 						}
@@ -8330,13 +8676,13 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowdefaultSort").hide();
 				$("#propertyRowsourceListId").show();
 				$("#propertyRowsourceCourseReserveId").hide();
-			}else if (selectedSource === 'CourseReserve') {
+			} else if (selectedSource === 'CourseReserve') {
 				$("#propertyRowsearchTerm").hide();
 				$("#propertyRowdefaultFilter").hide();
 				$("#propertyRowdefaultSort").hide();
 				$("#propertyRowsourceListId").hide();
 				$("#propertyRowsourceCourseReserveId").show();
-			}else{
+			} else {
 				$("#propertyRowsearchTerm").show();
 				$("#propertyRowdefaultFilter").show();
 				$("#propertyRowdefaultSort").show();
@@ -8348,22 +8694,28 @@ AspenDiscovery.Admin = (function(){
 			var audienceType = $('#determineAudienceBySelect').val();
 			if (audienceType === '3') {
 				$("#propertyRowaudienceSubfield").show();
-			}else{
+			} else {
 				$("#propertyRowaudienceSubfield").hide();
 			}
 			var formatSource = $('#formatSourceSelect').val();
-			if (formatSource === 'specified'){
+			if (formatSource === 'specified') {
 				$("#propertyRowspecifiedFormat").show();
 				$("#propertyRowspecifiedFormatCategory").show();
 				$("#propertyRowspecifiedFormatBoost").show();
 				$("#propertyRowcheckRecordForLargePrint").hide();
 				$("#propertyRowformatMap").hide();
-			}else{
+			} else if (formatSource === 'item') {
 				$("#propertyRowspecifiedFormat").hide();
 				$("#propertyRowspecifiedFormatCategory").hide();
 				$("#propertyRowspecifiedFormatBoost").hide();
 				$("#propertyRowformatMap").show();
 				$("#propertyRowcheckRecordForLargePrint").show();
+			} else {
+				$("#propertyRowspecifiedFormat").hide();
+				$("#propertyRowspecifiedFormatCategory").hide();
+				$("#propertyRowspecifiedFormatBoost").hide();
+				$("#propertyRowformatMap").show();
+				$("#propertyRowcheckRecordForLargePrint").hide();
 			}
 		},
 		updateLayoutSettingsFields: function () {
@@ -8371,7 +8723,7 @@ AspenDiscovery.Admin = (function(){
 			if ((useHomeLink === '0') || useHomeLink === '2') {
 				$("#propertyRowshowBookIcon").show();
 				$("#propertyRowhomeLinkText").hide();
-			}else{
+			} else {
 				$("#propertyRowshowBookIcon").hide();
 				$("#propertyRowhomeLinkText").show();
 			}
@@ -8380,11 +8732,11 @@ AspenDiscovery.Admin = (function(){
 			var sharingType = $('#sharingSelect').val();
 			if (sharingType === 'library') {
 				$("#propertyRowlibraryId").show();
-			}else{
+			} else {
 				$("#propertyRowlibraryId").hide();
 			}
 		},
-		showCreateRoleForm: function(){
+		showCreateRoleForm: function () {
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
 			return false;
 		},
@@ -8393,10 +8745,11 @@ AspenDiscovery.Admin = (function(){
 			var params = {
 				method: 'createRole',
 				roleName: $('#roleName').val(),
-				description: $('#description').val()
+				description: $('#description').val(),
+				copyFrom: $('#roleCopySelector').val()
 			}
 			$.getJSON(url, params,
-				function(data) {
+				function (data) {
 					if (data.success) {
 						window.location.href = Globals.path + '/Admin/Permissions?roleId=' + data.roleId;
 					} else {
@@ -8406,14 +8759,14 @@ AspenDiscovery.Admin = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 		},
 
-		deleteRole: function(roleId){
+		deleteRole: function (roleId) {
 			var url = Globals.path + '/Admin/AJAX';
 			var params = {
 				method: 'deleteRole',
 				roleId: $("#roleId").find("option:selected").val()
 			}
 			$.getJSON(url, params,
-				function(data) {
+				function (data) {
 					if (data.success) {
 						window.location.href = Globals.path + '/Admin/Permissions';
 					} else {
@@ -8423,31 +8776,31 @@ AspenDiscovery.Admin = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 		},
 
-		updateMakeRowAccordion: function() {
+		updateMakeRowAccordion: function () {
 			var makeRowAccordion = $('#makeAccordion');
-			$(makeRowAccordion).click(function() {
-				if(makeRowAccordion.is(":checked")){
-					$("#rowTitle").attr('required',"true");
-				}else{
+			$(makeRowAccordion).click(function () {
+				if (makeRowAccordion.is(":checked")) {
+					$("#rowTitle").attr('required', "true");
+				} else {
 					$("#rowTitle").removeAttr('required');
 				}
 			});
 		},
 
-		updateMakeCellAccordion: function() {
+		updateMakeCellAccordion: function () {
 			var makeCellAccordion = $('#makeCellAccordion');
-			$(makeCellAccordion).click(function() {
-				if(makeCellAccordion.is(":checked")){
-					$("#title").attr('required',"true");
-				}else{
+			$(makeCellAccordion).click(function () {
+				if (makeCellAccordion.is(":checked")) {
+					$("#title").attr('required', "true");
+				} else {
 					$("#title").removeAttr('required');
 				}
 			});
 		},
 
-		deleteNYTList: function(id){
+		deleteNYTList: function (id) {
 			var listId = id;
-			if (confirm("Are you sure you want to delete this list?")){
+			if (confirm("Are you sure you want to delete this list?")) {
 				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				})
@@ -8457,16 +8810,16 @@ AspenDiscovery.Admin = (function(){
 
 		updateLibraryLinksFields: function () {
 			var requireLogin = $('#showToLoggedInUsersOnly');
-			if(requireLogin.is(":checked")) {
+			if (requireLogin.is(":checked")) {
 				$("#propertyRowallowAccess").show();
 			} else {
 				$("#propertyRowallowAccess").hide();
 			}
 
-			$(requireLogin).click(function() {
-				if(requireLogin.is(":checked")){
+			$(requireLogin).click(function () {
+				if (requireLogin.is(":checked")) {
 					$("#propertyRowallowAccess").show();
-				}else{
+				} else {
 					$("#propertyRowallowAccess").hide();
 				}
 			});
@@ -8474,40 +8827,40 @@ AspenDiscovery.Admin = (function(){
 
 		updateDonationsSettingFields: function () {
 			var allowEarmarks = $('#allowDonationEarmark');
-			if(allowEarmarks.is(":checked")) {
+			if (allowEarmarks.is(":checked")) {
 				$("#propertyRowdonationEarmarks").show();
 			} else {
 				$("#propertyRowdonationEarmarks").hide();
 			}
-			$(allowEarmarks).click(function() {
-				if(allowEarmarks.is(":checked")){
+			$(allowEarmarks).click(function () {
+				if (allowEarmarks.is(":checked")) {
 					$("#propertyRowdonationEarmarks").show();
-				}else{
+				} else {
 					$("#propertyRowdonationEarmarks").hide();
 				}
 			});
 
 			var allowDedications = $('#allowDonationDedication');
-			if(allowDedications.is(":checked")) {
+			if (allowDedications.is(":checked")) {
 				$("#propertyRowdonationDedicationTypes").show();
 			} else {
 				$("#propertyRowdonationDedicationTypes").hide();
 			}
 
-			$(allowDedications).click(function() {
-				if(allowDedications.is(":checked")){
+			$(allowDedications).click(function () {
+				if (allowDedications.is(":checked")) {
 					$("#propertyRowdonationDedicationTypes").show();
-				}else{
+				} else {
 					$("#propertyRowdonationDedicationTypes").hide();
 				}
 			});
 		},
-		createRecovery2FACode: function() {
+		createRecovery2FACode: function () {
 			var username = $("#username").val();
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function(data) {
+			if (Globals.loggedIn) {
+				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function (data) {
 					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
-					if(data.success) {
+					if (data.success) {
 						$("#error").html(data.message).hide();
 						$("#generatedCode").html(data.message).show();
 					} else {
@@ -8517,25 +8870,164 @@ AspenDiscovery.Admin = (function(){
 					return data;
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.verify2FA();
 				}, false);
 			}
 			return false;
 		},
-		setDateFilterFieldVisibility: function (propertyName){
+		setDateFilterFieldVisibility: function (propertyName) {
 			var selectedValue = $('#filterType_' + propertyName).val();
-			if (selectedValue === 'afterTime'){
+			if (selectedValue === 'afterTime') {
 				$('#filterValue_' + propertyName).show();
 				$('#filterValue2_' + propertyName).val('').hide();
-			}else if (selectedValue === 'beforeTime'){
+			} else if (selectedValue === 'beforeTime') {
 				$('#filterValue_' + propertyName).val('').hide();
 				$('#filterValue2_' + propertyName).show();
-			}else{
+			} else {
 				$('#filterValue_' + propertyName).show();
 				$('#filterValue2_' + propertyName).show();
 			}
 		},
+		getUrlOptions: function () {
+			$('#propertyRowctaUrl').hide();
+			$('#propertyRowdeepLinkId').hide();
+			$('#propertyRowdeepLinkPath').hide();
+			$('#propertyRowdeepLinkFullPath').hide();
+
+			var linkType = $("#linkTypeSelect").val();
+			if (linkType === "0" || linkType === 0) {
+				$('#propertyRowctaUrl').hide();
+				$('#propertyRowdeepLinkId').hide();
+				$('#propertyRowdeepLinkPath').show();
+			} else {
+				$('#propertyRowctaUrl').show();
+				$('#propertyRowdeepLinkId').hide();
+				$('#propertyRowdeepLinkPath').hide();
+				$('#propertyRowdeepLinkFullPath').hide();
+			}
+		},
+		getDeepLinkFullPath: function () {
+			var selectedPath = $("#deepLinkPathSelect").val();
+			if (selectedPath === "search") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Search Term");
+			} else if (selectedPath === "search/grouped_work") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Grouped Work Id");
+			} else if (selectedPath === "search/browse_category") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Browse Category Text Id");
+			} else if (selectedPath === "search/author") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("Author");
+			} else if (selectedPath === "search/list") {
+				$('#propertyRowdeepLinkId').show();
+				$('label[for="deepLinkId"]').text("List Id");
+			} else {
+				$('#propertyRowdeepLinkId').hide();
+			}
+		},
+		getSSOFields: function () {
+			AspenDiscovery.Admin.toggleoAuthFields('hide');
+			AspenDiscovery.Admin.toggleSamlFields('hide');
+			AspenDiscovery.Admin.toggleOAuthGatewayFields();
+
+			var ssoService = $("#serviceSelect").val();
+			if (ssoService === "oauth") {
+				AspenDiscovery.Admin.toggleoAuthFields('show');
+				AspenDiscovery.Admin.toggleSamlFields('hide');
+				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+			} else {
+				AspenDiscovery.Admin.toggleSamlFields('show');
+				AspenDiscovery.Admin.toggleoAuthFields('hide');
+				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+			}
+		},
+		toggleoAuthFields: function (displayMode) {
+			if (displayMode === "show") {
+				$('#propertyRowclientId').show();
+				$('#propertyRowclientSecret').show();
+				$('#propertyRowgateway').show();
+				$('#propertyRowoAuthGatewayLabel').hide();
+				$('#propertyRowoAuthAccessTokenUrl').hide();
+				$('#propertyRowoAuthAuthorizeUrl').hide();
+				$('#propertyRowoAuthResourceOwnerUrl').hide();
+				$('#propertyRowoAuthScope').hide();
+				$('#propertyRowoAuthGatewayIcon').hide();
+				$('#propertyRowoAuthButtonBackgroundColor').hide();
+				$('#propertyRowoAuthButtonTextColor').hide();
+			} else {
+				$('#propertyRowclientId').hide();
+				$('#propertyRowclientSecret').hide();
+				$('#propertyRowgateway').hide();
+				$('#propertyRowoAuthGatewayLabel').hide();
+				$('#propertyRowoAuthAccessTokenUrl').hide();
+				$('#propertyRowoAuthAuthorizeUrl').hide();
+				$('#propertyRowoAuthResourceOwnerUrl').hide();
+				$('#propertyRowoAuthScope').hide();
+				$('#propertyRowoAuthGatewayIcon').hide();
+				$('#propertyRowoAuthButtonBackgroundColor').hide();
+				$('#propertyRowoAuthButtonTextColor').hide();
+			}
+		},
+		toggleSamlFields: function (displayMode) {
+			if (displayMode === "show") {
+				$('#propertyRowssoName').show();
+				$('#propertyRowssoXmlUrl').show();
+				$('#propertyRowssoUniqueAttribute').show();
+				$('#propertyRowssoIdAttr').show();
+				$('#propertyRowssoUsernameAttr').show();
+				$('#propertyRowssoFirstnameAttr').show();
+				$('#propertyRowssoLastnameAttr').show();
+				$('#propertyRowssoEmailAttr').show();
+				$('#propertyRowssoDisplayNameAttr').show();
+				$('#propertyRowssoPhoneAttr').show();
+				$('#propertyRowssoAddressAttr').show();
+				$('#propertyRowssoCityAttr').show();
+				$('#propertyRowssoPatronTypeSection').show();
+				$('#propertyRowssoLibraryIdSection').show();
+				$('#propertyRowssoCategoryIdSection').show();
+			} else {
+				$('#propertyRowssoName').hide();
+				$('#propertyRowssoXmlUrl').hide();
+				$('#propertyRowssoUniqueAttribute').hide();
+				$('#propertyRowssoIdAttr').hide();
+				$('#propertyRowssoUsernameAttr').hide();
+				$('#propertyRowssoFirstnameAttr').hide();
+				$('#propertyRowssoLastnameAttr').hide();
+				$('#propertyRowssoEmailAttr').hide();
+				$('#propertyRowssoDisplayNameAttr').hide();
+				$('#propertyRowssoPhoneAttr').hide();
+				$('#propertyRowssoAddressAttr').hide();
+				$('#propertyRowssoCityAttr').hide();
+				$('#propertyRowssoPatronTypeSection').hide();
+				$('#propertyRowssoLibraryIdSection').hide();
+				$('#propertyRowssoCategoryIdSection').hide();
+			}
+		},
+		toggleOAuthGatewayFields: function () {
+			var oAuthGateway = $("#oAuthGatewaySelect").val();
+			if (oAuthGateway === "custom") {
+				$('#propertyRowoAuthGatewayLabel').show();
+				$('#propertyRowoAuthAccessTokenUrl').show();
+				$('#propertyRowoAuthAuthorizeUrl').show();
+				$('#propertyRowoAuthResourceOwnerUrl').show();
+				$('#propertyRowoAuthScope').show();
+				$('#propertyRowoAuthGatewayIcon').show();
+				$('#propertyRowoAuthButtonBackgroundColor').show();
+				$('#propertyRowoAuthButtonTextColor').show();
+			} else {
+				$('#propertyRowoAuthGatewayLabel').hide();
+				$('#propertyRowoAuthAccessTokenUrl').hide();
+				$('#propertyRowoAuthAuthorizeUrl').hide();
+				$('#propertyRowoAuthResourceOwnerUrl').hide();
+				$('#propertyRowoAuthScope').hide();
+				$('#propertyRowoAuthGatewayIcon').hide();
+				$('#propertyRowoAuthButtonBackgroundColor').hide();
+				$('#propertyRowoAuthButtonTextColor').hide();
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -10501,7 +10993,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		deleteListAction: function (){
-			if (confirm("Are you sure you want to delete this list?")){
+			if (confirm("Are you sure you want to delete this entire list?")){
 				this.submitListForm('deleteList');
 			}
 			return false;
@@ -11696,6 +12188,59 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
+		showVdxRequest: function(module, source, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getVdxRequestForm&recordSource=" + source;
+				$.getJSON(url, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id);
+				}, false);
+			}
+			return false;
+		},
+
+		submitVdxRequest: function(module, id) {
+			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
+				var module = module;
+				var params = {
+					'method': 'submitVdxRequest',
+					title: $('#title').val(),
+					author: $('#author').val(),
+					publisher: $('#publisher').val(),
+					isbn: $('#isbn').val(),
+					maximumFeeAmount: $('#maximumFeeAmount').val(),
+					acceptFee: $('#acceptFee').prop('checked'),
+					pickupLocation: $('#pickupLocationSelect').val(),
+					catalogKey: $('#catalogKey').val(),
+					note: $('#note').val()
+				};
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=submitVdxRequest";
+				$.getJSON(url, params, function(data){
+					document.body.style.cursor = "default";
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message, false, false);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Record.showVdxRequest(module, source, id, volume);
+				}, false);
+			}
+			return false;
+		},
+
 		showPlaceHoldEditions: function (module, source, id, volume) {
 			if (Globals.loggedIn){
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
@@ -11779,6 +12324,8 @@ AspenDiscovery.Record = (function(){
 						requestTitleButton.removeClass('disabled');
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
+					}else if (data.needsIllRequest){
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
 						if (!data.autologout){
@@ -11876,6 +12423,8 @@ AspenDiscovery.Record = (function(){
 						requestTitleButton.removeClass('disabled');
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
+					}else if (data.needsIllRequest){
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 						AspenDiscovery.Account.loadMenuData();
@@ -12155,7 +12704,7 @@ AspenDiscovery.ResultsList = (function(){
 
 AspenDiscovery.Searches = (function(){
 	$(document).ready(function(){
-		AspenDiscovery.Searches.initAutoComplete();
+		AspenDiscovery.Searches.initAutoComplete({});
 
 		// Add Browser-stored showCovers setting to the search form if there is a stored value set, and
 		// this is not a OPAC Machine, and the user is not logged in, and there is not a hidden value
@@ -12219,8 +12768,7 @@ AspenDiscovery.Searches = (function(){
 
 		changeDropDownFacet: function (facetId) {
 			var selectedFacetDropdown = $('#' + facetId + ' option:selected');
-			var destination = selectedFacetDropdown.data('destination');
-			window.location = destination;
+			window.location = selectedFacetDropdown.data('destination');
 			return false;
 		},
 
@@ -12244,7 +12792,13 @@ AspenDiscovery.Searches = (function(){
 			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('searchResultsDisplayMode', this.displayMode);
 			}
-			if (mode === 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
+			if (mode === 'list') {
+				$('#hideSearchCoversSwitch').show();
+				$('#hideSearchCoversSwitchModal').show();
+			} else {
+				$('#hideSearchCoversSwitch').hide();
+				$('#hideSearchCoversSwitchModal').hide();
+			}
 			location.replace(location.pathname + paramString); // reloads page without adding entry to history
 		},
 
@@ -12271,45 +12825,50 @@ AspenDiscovery.Searches = (function(){
 			return false;
 		},
 
-		initAutoComplete: function(){
-			try{
-				var searchTermInput = $("#lookfor");
-				if (searchTermInput.length){
-					searchTermInput.autocomplete({
-						source:function(request,response){
-							var url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
+		initAutoComplete: function(parameters){
+			var URLSearchParameters = new URLSearchParams(window.location.search);
+			var searchTermSelector = (parameters.searchTermSelector) ? '#' + parameters.searchTermSelector : "#lookfor";
+			try {
+				if ($(searchTermSelector).length) {
+					$(searchTermSelector).autocomplete({
+						source: function (request, response) {
+							var searchIndexSelected = $(searchTermSelector).closest('form').find('select#searchIndex option:selected').val();
+							var searchIndex = (parameters.searchIndex) ? parameters.searchIndex : (searchIndexSelected) ? searchIndexSelected : (URLSearchParameters.get('searchIndex')) ? URLSearchParameters.get('searchIndex') : '';
+							var searchSourceSelected = $(searchTermSelector).closest('form').find('select#searchSource option:selected').val();
+							var searchSource = (parameters.searchSource) ? parameters.searchSource : (searchSourceSelected) ? searchSourceSelected : (URLSearchParameters.get('searchSource')) ? URLSearchParameters.get('searchSource') : '';
+							var url = Globals.path + "/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $(searchTermSelector).val() + "&searchIndex=" + searchIndex + "&searchSource=" + searchSource;
 							$.ajax({
-								url:url,
-								dataType:"json",
-								success:function(data){
+								url: url,
+								dataType: "json",
+								success: function (data) {
 									response(data);
 								}
 							});
 						},
-						position:{
-							my:"left top",
-							at:"left bottom",
-							of:"#lookfor",
-							collision:"none"
+						position: {
+							my: "left top",
+							at: "left bottom",
+							of: $(searchTermSelector),
+							collision: "none"
 						},
-						minLength:4,
-						delay:600,
-						select: function(event, ui){
-							searchTermInput.val(ui.item.value);
-							$("#searchForm").submit();
+						minLength: 4,
+						delay: 600,
+						select: function (event, ui) {
+							var form = $(searchTermSelector).closest('form');
+							$(searchTermSelector).val(ui.item.value);
+							form.submit();
 							return false;
 						}
-					}).data('ui-autocomplete')._renderItem = function( ul, item ) {
-						return $( "<li></li>" )
-							.data( "ui-autocomplete-item", item.value )
-							.append( '<a>' + item.label + '</a>' )
-							.appendTo( ul );
+					}).data('ui-autocomplete')._renderItem = function (ul, item) {
+						return $("<li></li>")
+							.data("ui-autocomplete-item", item.value)
+							.append('<a>' + item.label + '</a>')
+							.appendTo(ul);
 					};
 				}
-
-			}catch(e){
-				alert("error during autocomplete setup"+e);
-			}
+			} catch (e) {
+				alert("error during autocomplete setup:\n" + e);
+			};
 		},
 
 		sendEmail: function(){
@@ -12828,6 +13387,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
@@ -12835,6 +13396,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
@@ -12842,6 +13405,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
@@ -12849,6 +13414,8 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
@@ -12856,9 +13423,12 @@ AspenDiscovery.WebBuilder = function () {
 				$("#propertyRowsourceId").show();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowimgAction').hide();
+				$('#propertyRowimgAlt').hide();
 				$('#propertyRowpdfView').hide();
 				if (sourceType === 'image') {
-					$('#propertyRowimageURL').show();
+					$('#propertyRowimgAction').show();
+					$('#propertyRowimgAlt').show();
 				} else if (sourceType === 'pdf') {
 					$('#propertyRowpdfView').show();
 				}
@@ -12882,6 +13452,15 @@ AspenDiscovery.WebBuilder = function () {
 				});
 			}
 
+		},
+
+		getImageActionFields: function() {
+			var imgAction = $("#imgActionSelect").val();
+			if (imgAction === '1' || imgAction === '2') {
+				$('#propertyRowimageURL').show();
+			} else {
+				$('#propertyRowimageURL').hide();
+			}
 		},
 
 		getUploadImageForm: function(editorName) {

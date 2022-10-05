@@ -19,7 +19,21 @@
     "close_window": "Close",
     "privacy_policy": "Privacy Policy",
     "contact": "Contact",
-    "new": "New"
+    "new": "New!",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "public": "Public",
+    "private": "Private",
+    "access": "Access",
+    "title": "Title",
+    "or": "or",
+    "description": "Description",
+    "last_updated_on": "Last updated on {{date}}",
+    "remove": "Remove",
+    "none": "None",
+    "hide": "Hide",
+    "refresh_account": "Refresh Account",
+    "load_more": "Load More"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -33,7 +47,10 @@
     "no_session_created": "Unable to start a user session. Please try to log in again."
   },
   "browse_category": {
-    "empty": "No items to load"
+    "empty": "No items to load",
+    "manage_categories": "Manage Categories",
+    "refresh_categories": "Refresh Categories",
+    "load_all_categories": "Load All Categories"
   },
   "grouped_work": {
     "title": "Item Details",
@@ -42,7 +59,19 @@
     "language": "Language",
     "format": "Format",
     "no_matches": "No matches found for this title in {{language}} for {{format}} format",
-    "view_item_details": "View Item Details"
+    "view_item_details": "View Item Details",
+    "checkout_options": "Checkout Options",
+    "checkout_title": "Checkout Title",
+    "select_volume": "Select a volume",
+    "first_available": "First Available Item",
+    "specific_volume": "Specific Volume",
+    "place_hold_on": "Place hold on"
+  },
+  "copy_details": {
+    "where_is_it": "Where is it?",
+    "available_copies": "Available Copies",
+    "location": "Location",
+    "call_num": "Call #"
   },
   "library_contact": {
     "today_hours": "Today's Hours",
@@ -65,15 +94,25 @@
     "profile": "Profile",
     "my_lists": "Lists",
     "saved_searches": "Saved Searches",
-    "saved_searches_updated": "{{count}} With Updates"
+    "saved_searches_updated": "{{count}} With Updates",
+    "manage_notifications": "Manage Notifications",
+    "notification_settings": "Notification Settings",
+    "allow_notifications": "Allow Notifications"
   },
   "linked_accounts": {
+    "title": "Linked Accounts",
     "account_to_manage": "Account to Manage",
     "username": "Library Card Number",
     "password": "PIN/Password",
     "add": "Add Account",
-    "remove": "Remove",
-    "none": "None"
+    "select_an_account": "Select an account to place hold for",
+    "checkout_to_account": "Checkout to account",
+    "place_hold_for_account": "Place hold for account",
+    "info_message": "Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc. in the main account.",
+    "additional_accounts": "Additional accounts to manage",
+    "following_accounts_can_manage": "The following accounts can be managed from this account:",
+    "other_accounts": "Other accounts that can view this account",
+    "following_accounts_can_view": "The following accounts can view checkout and hold information from this account. If someone is viewing your account that you do not want to have access, please contact library staff."
   },
   "checkouts": {
     "title": "Checked Out Titles",
@@ -105,7 +144,22 @@
     "freeze_all_holds": "Freeze All",
     "position_queue": "Position",
     "hold_options": "Hold Options",
-    "pickup_by": "Pickup By"
+    "pickup_by": "Pickup By",
+    "cancel_request": "Cancel Request",
+    "status": "Status",
+    "type": "Type"
+  },
+  "lists": {
+    "title": "Lists",
+    "empty": "This list is empty. Why not add something to it?",
+    "add_to_list": "Add to List",
+    "choose_a_list": "Choose a List",
+    "create_list": "Create List",
+    "create_new_list": "Create a new list",
+    "create_new_list_item": "Create a new list from item",
+    "no_lists_yet": "You have no lists yet",
+    "save_to_list": "Save to List",
+    "num_items_on_list": "{{num}} items"
   },
   "pickup_locations": {
     "text": "I want to pick this up at",
@@ -113,7 +167,8 @@
     "change_location": "Change Location",
     "change_pickup_location": "Change Pickup Location",
     "change_hold_location": "Change Hold Location",
-    "select_new_pickup": "Select a new location to pickup your hold"
+    "select_new_pickup": "Select a new location to pickup your hold",
+    "select_pickup_location": "Select a Pickup Location"
   },
   "overdrive": {
     "email_field": "Enter an email to be notified when the title is ready for you",

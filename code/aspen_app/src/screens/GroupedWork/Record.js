@@ -13,17 +13,37 @@ import _ from "lodash";
 import SelectLinkedAccount from "./SelectLinkedAccount";
 import SelectVolumeHold from "./SelectVolumeHold";
 import {userContext} from "../../context/user";
+import {getVdxForm} from "../../util/loadLibrary";
 
 export class Record extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			loading: true,
+			vdxOptions: [],
 		}
 	}
 
 	componentDidMount = async () => {
+		await this._loadVDX().then(res => {
+			this.setState({
+				vdxOptions: res,
+			})
+		})
+	}
 
+	_loadVDX = async () => {
+		try {
+			const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
+			if(vdxFormFields === null) {
+				await getVdxForm(this.context.library.baseUrl, this.context.location.vdxFormId).then(res => {
+					return res;
+				});
+			}
+			return JSON.parse(vdxFormFields);
+		} catch(e) {
+			console.log(e);
+		}
 	}
 
 	static contextType = userContext;
@@ -32,8 +52,10 @@ export class Record extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
-		const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes} = this.props;
+
+		const {recordData, available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, groupedWorkISBN, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes, groupedWorkAuthor, copyDetails} = this.props;
 		let actionCount = 1;
+
 		if(typeof actions !== 'undefined') {
 			actionCount = _.size(actions);
 		}
@@ -61,14 +83,20 @@ export class Record extends Component {
 
 		let libraryUrl = library.baseUrl;
 
+		let volumeCount = 0;
+		if(typeof volumes !== "undefined") {
+			volumeCount = _.size(volumes);
+		}
+
+
 		return (
-			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
+			<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "100%"}}>
 				{publisher ? (<Text fontSize={10} bold pb={3}>{edition} {publisher}, {publicationDate}</Text>) : null}
 				<HStack justifyContent="space-around" alignItems="center" space={2} flex={1}>
 					<VStack space={1} alignItems="center" maxW="40%" flex={1}>
 						<Badge colorScheme={statusColor} rounded="4px" _text={{fontSize: 14}} mb={.5}>{status}</Badge>
 						{copiesMessage ? (<Text fontSize={8} textAlign="center" italic={1} maxW="75%">{copiesMessage}</Text>) : null}
-						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl}/> : null}
+						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl} copyDetails={copyDetails} discoveryVersion={discoveryVersion}/> : null}
 					</VStack>
 					<Button.Group maxW="50%" direction={actionCount > 1 ? "column" : "row"} alignItems="stretch">
 						{actions.map((thisAction) => {
@@ -103,8 +131,10 @@ export class Record extends Component {
 										linkedAccounts = {linkedAccounts}
 										linkedAccountsCount = {linkedAccountsCount}
 										updateProfile = {updateProfile}
+										hasItemsWithoutVolumes = {hasItemsWithoutVolumes}
 										majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
 										volumes = {volumes}
+										volumeCount = {volumeCount}
 									/>
 								)
 							} else if (thisAction.title === "Access Online") {
@@ -122,6 +152,25 @@ export class Record extends Component {
 							} else if (thisAction.url === "/MyAccount/Holds") {
 								return (
 									<OnHoldForYou title={thisAction.title} openHolds={openHolds} />
+								)
+							} else if (thisAction.type === "vdx_request") {
+								return (
+									<Button
+										onPress={() => this.props.navigation.navigate('CreateVDXRequest', {
+											record: recordData,
+											title: title,
+											author: groupedWorkAuthor,
+											publisher: recordData.publisher,
+											isbn: groupedWorkISBN,
+											acceptFee: false,
+											pickupLocation: user.pickupLocationId,
+											vdxOptions: this.state.vdxOptions,
+											catalogKey: id,
+											navigation: this.props.navigation
+										})}
+									>
+										{thisAction.title}
+									</Button>
 								)
 							} else {
 								return (
@@ -174,7 +223,6 @@ const CheckOutEContent = (props) => {
 const ILS = (props) => {
 	const [loading, setLoading] = React.useState(false);
 
-	console.log(props.majorityOfItemsHaveVolumes);
 	if (props.locationCount && props.locationCount > 1) {
 		return (
 			<SelectPickupLocation
@@ -192,10 +240,12 @@ const ILS = (props) => {
 				majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
 				volumes = {props.volumes}
 				updateProfile = {props.updateProfile}
+				hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
+				volumeCount = {props.volumeCount}
 			/>
 		)
 	} else {
-		if(props.majorityOfItemsHaveVolumes) {
+		if(props.majorityOfItemsHaveVolumes || props.volumeCount >= 1) {
 			return (
 				<SelectVolumeHold
 					label={props.actionLabel}
@@ -209,6 +259,9 @@ const ILS = (props) => {
 					user = {props.user}
 					volumes = {props.volumes}
 					updateProfile = {props.updateProfile}
+					hasItemsWithoutVolumes = {props.hasItemsWithoutVolumes}
+					majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
+					volumeCount = {props.volumeCount}
 				/>
 			)
 		} else {

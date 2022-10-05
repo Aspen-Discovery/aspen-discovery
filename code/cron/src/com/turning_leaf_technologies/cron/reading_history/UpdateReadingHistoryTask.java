@@ -55,7 +55,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 				HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
 				//Give 10 seconds for connection timeout and 60 seconds for read timeout
 				conn.setConnectTimeout(10000);
-				conn.setReadTimeout(60000);
+				conn.setReadTimeout(120000);
 				conn.addRequestProperty("User-Agent", "Aspen Discovery");
 				conn.addRequestProperty("Accept", "*/*");
 				conn.addRequestProperty("Cache-Control", "no-cache");

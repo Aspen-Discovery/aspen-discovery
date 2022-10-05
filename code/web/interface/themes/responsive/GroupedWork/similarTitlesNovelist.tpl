@@ -5,7 +5,7 @@
 			<div class="novelist-similar-item row">
 				<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 					{if isset($similarTitle.fullRecordLink)}
-						<a href='{$similarTitle.fullRecordLink}'><img src="{$similarTitle.smallCover}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}" class="listResultImage img-thumbnail"/></a>
+						<a href='{$similarTitle.fullRecordLink}'><img src="{$similarTitle.smallCover}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}" class="listResultImage img-thumbnail {$coverStyle}"/></a>
 					{/if}
 				</div>
 				<div class="col-xs-9 col-lg-10">

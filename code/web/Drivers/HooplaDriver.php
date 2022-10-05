@@ -220,7 +220,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param $patron User
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutItems = array();
@@ -515,7 +515,7 @@ class HooplaDriver extends AbstractEContentDriver{
 		}
 	}
 
-    public function hasNativeReadingHistory()
+    public function hasNativeReadingHistory() : bool
     {
         return false;
     }
@@ -523,7 +523,7 @@ class HooplaDriver extends AbstractEContentDriver{
     /**
      * @return boolean true if the driver can renew all titles in a single pass
      */
-    public function hasFastRenewAll()
+    public function hasFastRenewAll() : bool
     {
         return false;
     }
@@ -563,7 +563,7 @@ class HooplaDriver extends AbstractEContentDriver{
      * @return array        Array of the patron's holds
      * @access public
      */
-    public function getHolds($patron)
+    public function getHolds($patron) : array
     {
         return [];
     }
@@ -600,7 +600,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param null $cancelId ID to cancel for compatibility
 	 * @return false|array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
     {
         return false;
     }
@@ -612,7 +612,8 @@ class HooplaDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php';
 		$userUsage = new UserHooplaUsage();
-		$userUsage->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$userUsage->instance = $aspenUsage->instance;
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -637,7 +638,8 @@ class HooplaDriver extends AbstractEContentDriver{
 		$product = new HooplaExtract();
 		$product->hooplaId = $hooplaId;
 		if ($product->find(true)) {
-			$recordUsage->instance = $_SERVER['SERVER_NAME'];
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->hooplaId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');

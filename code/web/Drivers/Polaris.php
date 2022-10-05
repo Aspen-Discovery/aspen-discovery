@@ -146,7 +146,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return true;
 	}
@@ -209,7 +209,7 @@ class Polaris extends AbstractIlsDriver
 		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
 	}
 
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
@@ -266,7 +266,7 @@ class Polaris extends AbstractIlsDriver
 		return $checkedOutTitles;
 	}
 
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return true;
 	}
@@ -415,7 +415,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	public function getHolds($patron)
+	public function getHolds($patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -772,7 +772,7 @@ class Polaris extends AbstractIlsDriver
 		return $result;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		if (!$isIll) {
 			$staffInfo = $this->getStaffUserInfo();
@@ -1092,7 +1092,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToFreezeId/inactive";
@@ -1150,7 +1150,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	function thawHold(User $patron, $recordId, $itemToThawId)
+	function thawHold(User $patron, $recordId, $itemToThawId) : array
 	{
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToThawId/active";
@@ -1196,7 +1196,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToUpdateId/pickupbranch?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}&pickupbranchid=$newPickupLocation";
@@ -1381,7 +1381,7 @@ class Polaris extends AbstractIlsDriver
 		return $result;
 	}
 
-	public function getFines(User $patron, $includeMessages = false)
+	public function getFines(User $patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -1457,11 +1457,9 @@ class Polaris extends AbstractIlsDriver
 				$allPaymentsSucceed = false;
 			}
 		}
-		if ($allPaymentsSucceed){
-			$result = [
-				'success' => true,
-				'message' => 'Your fines have been paid successfully, thank you.'
-			];
+        if ($allPaymentsSucceed){
+            $result['success'] = true;
+            $result['message'] = translate(['text' => 'Your fines have been paid successfully, thank you.', 'isPublicFacing'=>true]);
 		}
 
 		global $logger;
@@ -1855,13 +1853,16 @@ class Polaris extends AbstractIlsDriver
 			if ($library->selfRegistrationLocationRestrictions == 1) {
 				//Library Locations
 				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch DESC, displayName');
 			} elseif ($library->selfRegistrationLocationRestrictions == 2) {
 				//Valid pickup locations
-				$location->whereAdd('validHoldPickupBranch <> 2');
+				$location->whereAdd('validSelfRegistrationBranch <> 2');
+				$location->orderBy('isMainBranch DESC, displayName');
 			} elseif ($library->selfRegistrationLocationRestrictions == 3) {
 				//Valid pickup locations
 				$location->libraryId = $library->libraryId;
-				$location->whereAdd('validHoldPickupBranch <> 2');
+				$location->whereAdd('validSelfRegistrationBranch <> 2');
+				$location->orderBy('isMainBranch DESC, displayName');
 			}
 			if ($location->find()) {
 				while ($location->fetch()) {
@@ -1869,8 +1870,9 @@ class Polaris extends AbstractIlsDriver
 						$pickupLocations[$location->code] = $location->displayName;
 					}
 				}
-				asort($pickupLocations);
-				$pickupLocations = ['' => translate(['text' => 'Select a location', 'isPublicFacing' => true])] + $pickupLocations;
+				if (count($pickupLocations) > 1) {
+					$pickupLocations = ['' => translate(['text' => 'Select a location', 'isPublicFacing' => true])] + $pickupLocations;
+				}
 			}
 
 			$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [

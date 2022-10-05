@@ -6,9 +6,12 @@ import {translate} from '../../translations/translations';
 import DisplayRecord, {Record} from "./Record";
 
 const Manifestation = (props) => {
+	let arrayToSearch = [];
+	const {navigation, data, format, language, locations, showAlert, groupedWorkTitle, groupedWorkAuthor, groupedWorkISBN, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
 
-	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
-	const arrayToSearch = data[format];
+	if(typeof data[format] !== "undefined") {
+		arrayToSearch = data[format];
+	}
 
 	let locationCount = 1;
 	if(typeof locations !== "undefined") {
@@ -22,6 +25,23 @@ const Manifestation = (props) => {
 	match = match.filter(function (item) {
 		return (item.language === language);
 	});
+
+	let copyDetails = [];
+	match.map((item) => {
+		let copyDetail = [];
+		if(discoveryVersion >= "22.09.00") {
+			copyDetail = {
+				'id': item.id,
+				'format': item.format,
+				'totalCopies': 18,
+				'availableCopies': 8,
+				'shelfLocation': item.shelfLocation,
+				'callNumber': item.callNumber,
+			};
+		};
+
+		copyDetails.push(copyDetail)
+	})
 
 	if (match.length === 0) {
 		return (
@@ -42,9 +62,11 @@ const Manifestation = (props) => {
 
 		let volumes = [];
 		let majorityOfItemsHaveVolumes = false;
+		let hasItemsWithoutVolumes = false;
 		if(discoveryVersion >= "22.06.00") {
 			volumes = item.volumes;
 			majorityOfItemsHaveVolumes = item.majorityOfItemsHaveVolumes;
+			hasItemsWithoutVolumes = item.hasItemsWithoutVolumes;
 		}
 
 		return (
@@ -67,14 +89,20 @@ const Manifestation = (props) => {
 				itemDetails = {itemDetails}
 				user = {user}
 				groupedWorkId = {groupedWorkId}
+				groupedWorkAuthor = {groupedWorkAuthor}
+				groupedWorkISBN = {groupedWorkISBN}
 				library = {library}
 				linkedAccounts = {linkedAccounts}
 				openCheckouts = {openCheckouts}
 				openHolds = {openHolds}
+				hasItemsWithoutVolumes = {hasItemsWithoutVolumes}
 				majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
 				volumes = {volumes}
 				discoveryVersion = {discoveryVersion}
 				updateProfile = {updateProfile}
+				navigation = {navigation}
+				recordData = {item}
+				copyDetails = {copyDetails}
 			/>
 		)
 	})

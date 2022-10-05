@@ -20,6 +20,7 @@ import {
 	getProfile
 } from "../../util/loadPatron";
 import DisplayBrowseCategory from "./Category";
+import {translate} from "../../translations/translations";
 
 export default class BrowseCategoryHome extends PureComponent {
 	static contextType = userContext;
@@ -41,6 +42,7 @@ export default class BrowseCategoryHome extends PureComponent {
 			showButtons: false,
 			loadAllCategories: false,
 		};
+		this._isMounted = false;
 		//getBrowseCategories();
 	}
 
@@ -63,6 +65,8 @@ export default class BrowseCategoryHome extends PureComponent {
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
+
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
@@ -75,50 +79,9 @@ export default class BrowseCategoryHome extends PureComponent {
 			})
 		}
 
-		this.setState({
+		this._isMounted && this.setState({
 			categoriesLoaded: false,
-			isLoading: false,
 		})
-
-
-/*		let libraryUrl = "";
-		try {
-			libraryUrl = await AsyncStorage.getItem('@pathUrl');
-		} catch (e) {
-			console.log(e);
-		}
-
-		let patronId = "";
-		try {
-			let patron = await AsyncStorage.getItem('@patronProfile');
-			patron = JSON.parse(patron);
-			if(!_.isNull(patron)) {
-				patronId = patron.id;
-			}
-		} catch(e) {
-			console.log(e);
-		}
-
-		sleep(5000);
-
-		if (patronId) {
-			await getPatronBrowseCategories(libraryUrl, patronId).then(response => {
-				this.setState({
-					browseCategories: response,
-					categoriesLoaded: true,
-					isLoading: false,
-				})
-			})
-		}*/
-
-		const buttonDelay = setTimeout(() => {
-			this.setState({
-				showButtons: true,
-			})
-		}, 0);
-
-
-		//sleep(5000);
 
 		let libraryUrl = "";
 		try {
@@ -127,30 +90,21 @@ export default class BrowseCategoryHome extends PureComponent {
 			console.log(e);
 		}
 
-		if (libraryUrl) {
-			await getCheckedOutItems(libraryUrl);
-			await getHolds(libraryUrl);
-			await getPickupLocations(libraryUrl);
-			await getLists(libraryUrl);
-			await getILSMessages(libraryUrl);
+		//console.log(libraryUrl);
+
+		if (this.context.library.baseUrl) {
+			await getCheckedOutItems(this.context.library.baseUrl);
+			await getHolds(this.context.library.baseUrl);
+			await getPickupLocations(this.context.library.baseUrl);
+			await getLists(this.context.library.baseUrl);
+			await getILSMessages(this.context.library.baseUrl);
 			//await getPatronBrowseCategories(libraryUrl);
 		}
 
-/*		this.interval = setInterval(async () => {
-			this.setState({checkingForUpdates: true})
-			await getBrowseCategories(libraryUrl).then(response => {
-				this.context.browseCategories = response;
-				this.setState({
-					checkingForUpdates: false,
-				})
-			})
-		}, 10000)*/
-
-		//console.log(this.state.discoveryVersion);
 	}
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	onHideCategory = async (libraryUrl, categoryId, patronId) => {
@@ -165,10 +119,10 @@ export default class BrowseCategoryHome extends PureComponent {
 		});
 	};
 
-	onRefreshCategories = async (libraryUrl) => {
+	onRefreshCategories = async () => {
 		this.setState({isLoading: true});
 
-		await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
+		await getBrowseCategories(this.context.library.baseUrl, this.state.discoveryVersion).then(response => {
 			this.context.browseCategories = response;
 			//console.log(response);
 			this.setState({
@@ -177,10 +131,10 @@ export default class BrowseCategoryHome extends PureComponent {
 		})
 	}
 
-	onLoadAllCategories = async (libraryUrl, patronId) => {
+	onLoadAllCategories = async () => {
 		this.setState({isLoading: true});
 
-		await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
+		await getBrowseCategories(this.context.library.baseUrl, this.state.discoveryVersion).then(response => {
 			this.context.browseCategories = response;
 			//console.log(response);
 			this.setState({
@@ -196,17 +150,18 @@ export default class BrowseCategoryHome extends PureComponent {
 		})
 	}
 
-	onPressItem = (item, libraryUrl, type, title, discoveryVersion) => {
+	onPressItem = (key, type, title, discoveryVersion) => {
+		const libraryUrl = this.context.library.baseUrl;
 		if(discoveryVersion >= "22.07.00") {
 			if(type === "List") {
-				this.props.navigation.navigate("SearchByList", {category: item, libraryUrl: libraryUrl, categoryLabel: title});
+				this.props.navigation.navigate("SearchByList", {id: key, libraryUrl: libraryUrl, title: title});
 			} else if (type === "SavedSearch") {
-				this.props.navigation.navigate("SearchBySavedSearch", {category: item, libraryUrl: libraryUrl, categoryLabel: title});
+				this.props.navigation.navigate("SearchBySavedSearch", {id: key, libraryUrl: libraryUrl, title: title});
 			} else {
-				this.props.navigation.navigate("GroupedWorkScreen", {item: item, libraryUrl: libraryUrl});
+				this.props.navigation.navigate("GroupedWorkScreen", {id: key, libraryUrl: libraryUrl, title: title});
 			}
 		} else {
-			this.props.navigation.navigate("GroupedWorkScreen", {item: item, libraryUrl: libraryUrl})
+			this.props.navigation.navigate("GroupedWorkScreen", {id: key, libraryUrl: libraryUrl, title: title})
 		}
 	};
 
@@ -224,8 +179,9 @@ export default class BrowseCategoryHome extends PureComponent {
 			try {
 				//const Image = createImageProgress(ExpoFastImage);
 				const imageUrl = libraryUrl + "/bookcover.php?id=" + data.key + "&size=large&type=grouped_work";
+				//console.log(data);
 				return (
-					<Pressable mr={1.5} onPress={() => this.onPressItem(data.key, libraryUrl)}
+					<Pressable mr={1.5} onPress={() => this.onPressItem(data.key)}
 					           width={{base: 100, lg: 200}}
 					           height={{base: 150, lg: 250}}>
 						<CachedImage
@@ -248,14 +204,13 @@ export default class BrowseCategoryHome extends PureComponent {
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
 					<Text maxWidth="80%" bold mb={1} fontSize={{base: "lg", lg: "2xl"}}>{title}</Text>
 					<Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => this.hideCategory(libraryUrl, key, user)}
-					        startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>Hide</Button>
+					        startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>{translate('general.hide')}</Button>
 				</HStack>
 			</Box>
 		)
 	};
 
 	_renderRecords = (data, user, libraryUrl, discoveryVersion) => {
-		const title = data.title_display;
 		let type = "grouped_work";
 		if(data.source) {
 			type = data.source;
@@ -267,14 +222,16 @@ export default class BrowseCategoryHome extends PureComponent {
 			isNew = data.isNew;
 		}
 
+		//console.log(data);
+
 		return (
-			<Pressable ml={1} mr={3} onPress={() => this.onPressItem(data.id, libraryUrl, type, title, discoveryVersion)}
+			<Pressable ml={1} mr={3} onPress={() => this.onPressItem(data.id, type, data.title_display, discoveryVersion)}
 			           width={{base: 100, lg: 200}}
 			           height={{base: 125, lg: 250}}>
-				{discoveryVersion >= "22.08.00" && isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{fontSize: 9}}>New!</Badge></Container>) : null}
+				{discoveryVersion >= "22.08.00" && isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{fontSize: 9}}>{translate('general.new')}</Badge></Container>) : null}
 				<CachedImage
 					cacheKey={data.id}
-					alt={title}
+					alt={data.title_display}
 					source={{
 						uri:  `${imageUrl}`,
 						expiresIn: 86400,
@@ -304,19 +261,35 @@ export default class BrowseCategoryHome extends PureComponent {
 					           onPress={
 						           () => {
 							           navigation.navigate(searchBy, {
-								           categoryLabel: categoryLabel,
-								           category: categoryKey,
+								           title: categoryLabel,
+								           id: categoryKey,
 								           libraryUrl: libraryUrl,
 							           })}
 					           }>
 						<Box width={{base: 100, lg: 200}} height={{base: 150, lg: 250}} bg="secondary.200" borderRadius="4" p="5" alignItems="center" justifyContent="center">
-							<Center><Text bold fontSize="md">Load More</Text></Center>
+							<Center><Text bold fontSize="md">{translate('general.load_more')}</Text></Center>
 						</Box>
 					</Pressable>
 
 				</Box>
 			)
 		}
+	}
+
+	_handleOnPressCategory = (categoryLabel, categoryKey, categorySource) => {
+		let searchBy = "SearchByCategory";
+		if(categorySource === "List") {
+			searchBy = "SearchByList";
+		} else if (categorySource === "SavedSearch") {
+			searchBy = "SearchBySavedSearch";
+		} else {
+			searchBy = "SearchByCategory";
+		}
+		this.props.navigation.navigate(searchBy, {
+			title: categoryLabel,
+			id: categoryKey,
+			libraryUrl: this.context.library.baseUrl,
+		})
 	}
 
 	render() {
@@ -337,6 +310,12 @@ export default class BrowseCategoryHome extends PureComponent {
 			discoveryVersion = "22.06.00";
 		}
 
+		setTimeout(() => {
+			this.setState({
+				isLoading: false,
+			})
+		}, 1);
+
 
 		if (this.state.isLoading === true) {
 			return (loadingSpinner());
@@ -348,10 +327,10 @@ export default class BrowseCategoryHome extends PureComponent {
 
 		if (typeof browseCategories === 'undefined') {
 			//return (loadingSpinner());
-			return (loadError("No categories found"));
+			return (loadError("No categories found", this.onRefreshCategories()));
 		}
 
-		if(discoveryVersion >= "22.05.00") {
+		if(discoveryVersion >= "22.05.00" && browseCategories) {
 			//console.log(browseCategories);
 			//console.log(discoveryVersion + " is newer than or equal to 22.05.00");
 			return (
@@ -373,6 +352,7 @@ export default class BrowseCategoryHome extends PureComponent {
 									libraryUrl={library.baseUrl}
 									loadMore={this._renderLoadMore}
 									discoveryVersion={discoveryVersion}
+									onPressCategory={this._handleOnPressCategory}
 								/>
 							);
 						})}
@@ -412,7 +392,6 @@ export default class BrowseCategoryHome extends PureComponent {
 
 const ButtonOptions = (props) => {
 	const {onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories} = props;
-	const [isLoading, setLoading] = React.useState(true);
 
 	if(discoveryVersion >= "22.07.00") {
 		if(loadAll) {
@@ -420,10 +399,10 @@ const ButtonOptions = (props) => {
 				<Box>
 					<Button size="md" colorScheme="primary" onPress={() => {
 						onPressSettings(libraryUrl, patronId)
-					}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>Manage Categories</Button>
+					}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>{translate('browse_category.manage_categories')}</Button>
 					<Button size="md" mt="3" colorScheme="primary" onPress={() => {
-						onRefreshCategories(libraryUrl)
-					}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
+						onRefreshCategories()
+					}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>{translate('browse_category.refresh_categories')}</Button>
 				</Box>
 			)
 		} else {
@@ -431,7 +410,7 @@ const ButtonOptions = (props) => {
 				<Box>
 					<Button size="md" colorScheme="primary" onPress={() => {
 						onLoadAllCategories(libraryUrl, patronId)
-					}} startIcon={<Icon as={MaterialIcons} name="schedule" size="sm"/>}>Load All Categories</Button>
+					}} startIcon={<Icon as={MaterialIcons} name="schedule" size="sm"/>}>{translate('browse_category.load_all_categories')}</Button>
 				</Box>
 			)
 		}
@@ -440,10 +419,10 @@ const ButtonOptions = (props) => {
 	return <Box>
 		<Button size="md" colorScheme="primary" onPress={() => {
 			onPressSettings(libraryUrl, patronId)
-		}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>Manage Categories</Button>
+		}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>{translate('browse_category.manage_categories')}</Button>
 		<Button size="md" mt="3" colorScheme="primary" onPress={() => {
 			onRefreshCategories(libraryUrl)
-		}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>Refresh Categories</Button>
+		}} startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>{translate('browse_category.refresh_categories')}</Button>
 	</Box>
 }
 

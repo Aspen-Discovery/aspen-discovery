@@ -7,8 +7,9 @@ import {create} from 'apisauce';
 import {userContext} from "../../context/user";
 import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 import {GLOBALS} from "../../util/globals";
-import {getBrowseCategories} from "../../util/loadLibrary";
+import {getBrowseCategories, getVdxForm} from "../../util/loadLibrary";
 import {getPatronBrowseCategories} from "../../util/loadPatron";
+import * as Notifications from 'expo-notifications';
 
 class LoadingScreen extends Component {
 	constructor() {
@@ -20,12 +21,14 @@ class LoadingScreen extends Component {
 			library: [],
 			location: [],
 			browseCategories: [],
+			pushToken: null,
 		};
 		this.context = {
 			user: [],
 			library: [],
 			location: [],
 			browseCategories: [],
+			pushToken: null,
 		}
 	}
 
@@ -70,7 +73,7 @@ class LoadingScreen extends Component {
 				//const patronProfile = await AsyncStorage.getItem('@patronProfile');
 				if (_.isEmpty(this.state.user)) {
 					//console.log("fetching getPatronProfile...");
-					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
+					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true&checkIfValid=false', postBody);
 					if (response.ok) {
 						let data = [];
 						if (response.data.result.profile) {
@@ -124,6 +127,19 @@ class LoadingScreen extends Component {
 								data = response.data.result.location;
 								this.setState({location: data});
 								this.context.location = data;
+
+								// fetch vdx form fields if vdx is set up for location
+								if(typeof data.vdxFormId !== "undefined" && !_.isNull(data.vdxFormId)) {
+									try {
+										const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
+										if(vdxFormFields === null) {
+											await getVdxForm(libraryUrl, data.vdxFormId);
+										}
+									} catch(e) {
+										console.log(e);
+									}
+								}
+
 								await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
 								console.log("location loaded into context");
 							}

@@ -589,6 +589,7 @@ class ItemAPI extends Action {
 			if($itemData['description'] == '') {
 				$itemData['description'] = "Description Not Provided";
 			}
+			$itemData['isbn'] = $groupedWorkDriver->getCleanISBN();
 			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
 
 			$ratingData = $groupedWorkDriver->getRatingData();
@@ -727,6 +728,8 @@ class ItemAPI extends Action {
 							'shelfLocation' => $shelfLocation,
 							'callNumber' => $callNumber,
 							'copiesMessage' => $relatedManifestation->getNumberOfCopiesMessage(),
+							'totalCopies' => $relatedRecord->getCopies(),
+							'availableCopies' => $relatedRecord->getAvailableCopies(),
 							'edition' => $edition,
 							'publisher' => $publisher,
 							'publicationDate' => $publicationDate,

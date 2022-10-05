@@ -14,7 +14,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$this->curlWrapper->timeout = 20;
 	}
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}
@@ -63,7 +63,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron)
+	public function getCheckouts(User $patron) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		if (isset($this->checkouts[$patron->id])){
@@ -110,7 +110,7 @@ class Axis360Driver extends AbstractEContentDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -205,7 +205,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron, $forSummary = false)
+	public function getHolds($patron, $forSummary = false) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		if (isset($this->holds[$patron->id])){
@@ -320,7 +320,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){
@@ -550,7 +550,8 @@ class Axis360Driver extends AbstractEContentDriver
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
-		$userUsage->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$userUsage->instance = $aspenUsage->instance;
 
 		if ($userUsage->find(true)) {
 			$userUsage->usageCount++;
@@ -573,7 +574,8 @@ class Axis360Driver extends AbstractEContentDriver
 		$product->axis360Id = $recordId;
 		if ($product->find(true)) {
 			$recordUsage->axis360Id = $product->axis360Id;
-			$recordUsage->instance = $_SERVER['SERVER_NAME'];
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -598,7 +600,8 @@ class Axis360Driver extends AbstractEContentDriver
 		$product = new Axis360Title();
 		$product->axis360Id = $recordId;
 		if ($product->find(true)){
-			$recordUsage->instance = $_SERVER['SERVER_NAME'];
+			global $aspenUsage;
+			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -684,7 +687,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$checkouts[$key] = $checkout;
 	}
 
-	function freezeHold(User $patron, $recordId)
+	function freezeHold(User $patron, $recordId) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){
@@ -731,7 +734,7 @@ class Axis360Driver extends AbstractEContentDriver
 		return $result;
 	}
 
-	function thawHold(User $patron, $recordId)
+	function thawHold(User $patron, $recordId) : array
 	{
 		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken($patron)){
@@ -782,7 +785,8 @@ class Axis360Driver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 		$axis360Stats = new Axis360Stats();
-		$axis360Stats->instance = $_SERVER['SERVER_NAME'];
+		global $aspenUsage;
+		$axis360Stats->instance = $aspenUsage->instance;
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

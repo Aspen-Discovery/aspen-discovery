@@ -364,6 +364,15 @@ class UInterface extends Smarty
 			}
 
 			$this->assign('parentTheme', $theme->getParentTheme());
+			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('coverStyle', $theme->coverStyle);
+
+			$browseCategoryLayoutStyle = "masonry";
+			if($theme->browseImageLayout == 1) {
+				$browseCategoryLayoutStyle = "grid";
+			}
+
+			$this->assign('browseStyle', $browseCategoryLayoutStyle);
 
 			//Get Logo
 			$logoName = null;
@@ -537,6 +546,7 @@ class UInterface extends Smarty
 		$this->assign('showRatings', $groupedWorkDisplaySettings->showRatings);
 		$this->assign('show856LinksAsTab', $groupedWorkDisplaySettings->show856LinksAsTab);
 		$this->assign('showSearchTools', $groupedWorkDisplaySettings->showSearchTools);
+		$this->assign('showSearchToolsAtTop', $groupedWorkDisplaySettings->showSearchToolsAtTop);
 		$this->assign('showQuickCopy', $groupedWorkDisplaySettings->showQuickCopy);
 		$this->assign('alwaysShowSearchResultsMainDetails', $groupedWorkDisplaySettings->alwaysShowSearchResultsMainDetails);
 		$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
@@ -574,7 +584,11 @@ class UInterface extends Smarty
 		$this->assign('enableSavedSearches', $library->enableSavedSearches);
 		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
 
-		if ($location != null){ // library and location
+		$this->assign('showUserCirculationModules', $library->showUserCirculationModules);
+		$this->assign('showUserContactInformation', $library->showUserContactInformation);
+		$this->assign('showUserPreferences', $library->showUserPreferences);
+
+		if ($location != null) { // library and location
 			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $groupedWorkDisplaySettings->showComments);

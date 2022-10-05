@@ -19,7 +19,7 @@ class SystemAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getTranslation', 'getLanguages'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLocationAppSettings', 'getTranslation', 'getLanguages', 'getVdxForm'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -124,7 +124,8 @@ class SystemAPI extends Action
 	{
 		global $configArray;
 		if (isset($_REQUEST['slug'])) {
-			$app = new AspenLiDASetting();
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+			$app = new BrandedAppSetting();
 			$app->slugName = $_REQUEST['slug'];
 			if ($app->find(true)){
 				$settings = [];
@@ -149,6 +150,56 @@ class SystemAPI extends Action
 			}
 		}else{
 			return ['success' => false, 'message' => 'Slug name for app not provided'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getNotificationSettings() : array
+	{
+		if (isset($_REQUEST['libraryId'])) {
+			$library = new Library();
+			$library->libraryId = $_REQUEST['libraryId'];
+			if($library->find(true)) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+				$notificationSettings = new NotificationSetting();
+				$notificationSettings->id = $library->lidaNotificationSettingId;
+				if($notificationSettings->find(true)) {
+					$settings['sendTo'] = $notificationSettings->sendTo;
+					$settings['notifySavedSearch'] = $notificationSettings->notifySavedSearch;
+					return ['success' => true, 'settings' => $settings];
+				} else {
+					return ['success' => false, 'message' => 'No notification settings found for library'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'No library found with provided id'];
+			}
+		} else{
+			return ['success' => false, 'message' => 'Must provide a library id'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getLocationAppSettings() : array
+	{
+		if (isset($_REQUEST['locationId'])) {
+			$location = new Location();
+			$location->locationId = $_REQUEST['locationId'];
+			if($location->find(true)) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+				$appSettings = new AppSetting();
+				$appSettings->id = $location->lidaGeneralSettingId;
+				if($appSettings->find(true)) {
+					$settings['releaseChannel'] = $appSettings->releaseChannel;
+					$settings['enableAccess'] = $appSettings->enableAccess;
+					return ['success' => true, 'settings' => $settings];
+				} else {
+					return ['success' => false, 'message' => 'No app settings found for location'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'No location found with provided id'];
+			}
+		} else{
+			return ['success' => false, 'message' => 'Must provide a location id'];
 		}
 	}
 
@@ -458,7 +509,8 @@ class SystemAPI extends Action
 				}
 			}
 
-			$app = new AspenLiDASetting();
+			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
+			$app = new BrandedAppSetting();
 			if(isset($_REQUEST['slug'])) {
 				$app->slugName = $_REQUEST['slug'];
 				if (!$app->find(true)) {
@@ -482,11 +534,14 @@ class SystemAPI extends Action
 				$fileName = $app->logoLogin;
 			} elseif ($type === "appIcon") {
 				$fileName = $app->logoAppIcon;
+			} elseif ($type === "appNotification") {
+				$fileName = $app->logoNotification;
 			} else {
 				die();
 			}
 
 			$fullPath = $dataPath . $fileName;
+			$extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
 			if ($file = @fopen($fullPath, 'r')) {
 				set_time_limit(300);
@@ -494,7 +549,11 @@ class SystemAPI extends Action
 
 				$size = intval(sprintf("%u", filesize($fullPath)));
 
-				header('Content-Type: image/png');
+				if($extension == 'svg'){
+					header('Content-Type: image/svg+xml');
+				} else {
+					header('Content-Type: image/png');
+				}
 				header('Content-Transfer-Encoding: binary');
 				header('Content-Length: ' . $size);
 
@@ -615,6 +674,46 @@ class SystemAPI extends Action
 			'priorities' => $priorities,
 			'numActiveTickets' => $numActiveTickets,
 		);
+	}
+
+	function getVdxForm() {
+		$result = array(
+			'success' => false,
+			'title' => 'Error',
+			'message' => 'Unable to load VDX form',
+		);
+
+		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+
+		if(isset($_REQUEST['formId'])) {
+			$formId = $_REQUEST['formId'];
+		} else {
+			return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'A VDX form id was not given.', 'isPublicFacing'=> true]));
+		}
+
+		$vdxSettings = new VdxSetting();
+		if($vdxSettings->find(true)) {
+			$vdxForm = new VdxForm();
+			$vdxForm->id = $formId;
+			if($vdxForm->find(true)) {
+				$vdxFormFields = $vdxForm->getFormFieldsForApi();
+				$result = array(
+					'success' => true,
+					'title' => translate(['text' => 'Request Title', 'isPublicFacing'=> true]),
+					'message' => translate(['text' => 'If you cannot find a title in our catalog, you can request the title via this form. Please enter as much information as possible so we can find the exact title you are looking for. For example, if you are looking for a specific season of a TV show, please include that information.', 'isPublicFacing' => true]),
+					'buttonLabel' => translate(['text' => 'Place Request', 'isPublicFacing'=> true]),
+					'buttonLabelProcessing' => translate(['text' => 'Placing Request', 'isPublicFacing'=> true]),
+					'fields' => $vdxFormFields,
+				);
+			} else {
+				return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'Unable to find the specified form.', 'isPublicFacing'=> true]));
+			}
+		} else {
+			return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'VDX Settings do not exist, please contact the library to make a request.', 'isPublicFacing'=> true]));
+		}
+
+		return $result;
 	}
 
 	function getBreadcrumbs() : array

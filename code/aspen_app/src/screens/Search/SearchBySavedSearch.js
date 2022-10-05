@@ -22,7 +22,7 @@ import {MaterialIcons} from "@expo/vector-icons";
 import { translate } from '../../translations/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
-import {categorySearchResults, savedSearchResults, searchResults} from "../../util/search";
+import {categorySearchResults, getFormats, savedSearchResults, searchResults} from "../../util/search";
 import _ from "lodash";
 import {getLists, removeTitlesFromList} from "../../util/loadPatron";
 import AddToList from "./AddToList";
@@ -54,7 +54,7 @@ export default class SearchBySavedSearch extends Component {
 		//const format     = this.props.navigation.state.params.format;
 		//const searchType = this.props.navigation.state.params.searchType;
 		const { navigation, route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await getLists(libraryUrl);
 		await this._fetchResults();
@@ -83,8 +83,8 @@ export default class SearchBySavedSearch extends Component {
 	_fetchResults = async () => {
 		const { page } = this.state;
 		const { navigation, route } = this.props;
-		const category = route.params?.category ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const category = route.params?.id ?? '';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await savedSearchResults(category, 25, page, libraryUrl).then(response => {
 			if(response.ok) {
@@ -145,7 +145,7 @@ export default class SearchBySavedSearch extends Component {
 		const imageUrl = library.baseUrl + item.image;
 		let formats = [];
 		if(item.format) {
-			formats = this.getFormats(item.format);
+			formats = getFormats(item.format);
 		}
 
 		let isNew = false;
@@ -154,10 +154,10 @@ export default class SearchBySavedSearch extends Component {
 		};
 
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library, item.title)}>
 				<HStack space={3}>
 					<VStack>
-						{isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{fontSize: 9}}>New!</Badge></Container>) : null}
+						{isNew ? (<Container zIndex={1}><Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{fontSize: 9}}>{translate('general.new')}</Badge></Container>) : null}
 						<Image source={{ uri: imageUrl }} alt={item.title} borderRadius="md" size={{base: "90px", lg: "120px"}} />
 						<Badge mt={1} _text={{fontSize: 10, color: "coolGray.600"}} bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900", _text: {color: "warmGray.400"}}}>{item.language}</Badge>
 						<AddToList item={item.id}
@@ -181,7 +181,7 @@ export default class SearchBySavedSearch extends Component {
 		)
 	}
 
-	getFormats = (data) => {
+/*	getFormats = (data) => {
 		let formats = [];
 
 		data.map((item) => {
@@ -192,16 +192,17 @@ export default class SearchBySavedSearch extends Component {
 
 		formats = _.uniq(formats);
 		return formats;
-	}
+	}*/
 
 	// handles the on press action
-	onPressItem = (item, library) => {
+	onPressItem = (item, library, title) => {
 		const { navigation, route } = this.props;
 		const libraryUrl = library.baseUrl;
 		navigation.dispatch(CommonActions.navigate({
 			name: 'GroupedWorkScreen',
 			params: {
-				item: item,
+				id: item,
+				title: title,
 				libraryUrl: libraryUrl,
 			},
 		}));
@@ -213,7 +214,7 @@ export default class SearchBySavedSearch extends Component {
 		return (
 			<Center flex={1}>
 				<Heading pt={5}>{translate('search.no_results')}</Heading>
-				<Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+				<Text bold w="75%" textAlign="center">{route.params?.title}</Text>
 				<Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
 			</Center>
 		);
@@ -247,7 +248,7 @@ export default class SearchBySavedSearch extends Component {
 			return (
 				<Center flex={1}>
 					<Heading pt={5}>{translate('search.no_results')}</Heading>
-					<Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+					<Text bold w="75%" textAlign="center">{route.params?.title}</Text>
 					<Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
 				</Center>
 			);

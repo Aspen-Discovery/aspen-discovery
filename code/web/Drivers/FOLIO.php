@@ -166,7 +166,7 @@ class FOLIO extends AbstractIlsDriver
 	}
 
 
-	public function getCheckouts(User $user)
+	public function getCheckouts(User $user) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$query = ['query' => 'userId==' . $user->username . ' and status.name==Open'];
@@ -199,7 +199,7 @@ class FOLIO extends AbstractIlsDriver
 		return $transactions;
 	}
 
-	public function hasFastRenewAll()
+	public function hasFastRenewAll() : bool
 	{
 		return false;
 	}
@@ -254,7 +254,7 @@ class FOLIO extends AbstractIlsDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user)
+	public function getHolds(User $user) : array
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$query = array(
@@ -318,7 +318,7 @@ class FOLIO extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false)
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
 	{
 		global $logger;
 		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
@@ -397,21 +397,21 @@ class FOLIO extends AbstractIlsDriver
 	}
 
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
 	{
 		return array(
 			'success' => false,
 			'message' => 'Freezing holds not implemented for this ILS');
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId)
+	function thawHold($patron, $recordId, $itemToThawId) : array
 	{
 		return array(
 			'success' => false,
 			'message' => 'Thawing holds not implemented for this ILS');
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
 	{
 		global $logger;
 		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
@@ -442,7 +442,10 @@ class FOLIO extends AbstractIlsDriver
 
 	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
-
+		return [
+			'success' => false,
+			'messages' => ['Cannot update patron information with this ILS.']
+		];
 	}
 
 	function updateHomeLibrary(User $patron, string $homeLibraryCode)
@@ -453,7 +456,7 @@ class FOLIO extends AbstractIlsDriver
 		];
 	}
 
-	public function getFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false) : array
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$currencyCode = 'USD';
@@ -564,7 +567,7 @@ class FOLIO extends AbstractIlsDriver
 	}
 
 
-	public function hasNativeReadingHistory()
+	public function hasNativeReadingHistory() : bool
 	{
 		return false;
 	}

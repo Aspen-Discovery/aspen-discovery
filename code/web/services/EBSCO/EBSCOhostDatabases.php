@@ -41,7 +41,7 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor
 	}
 	function getDefaultSort() : string
 	{
-		return 'name asc';
+		return 'displayName asc';
 	}
 
 	function getObjectStructure() : array
@@ -89,5 +89,10 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor
 	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer EBSCOhost Settings');
+	}
+
+	function canDelete()
+	{
+		return false;
 	}
 }

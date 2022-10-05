@@ -5,6 +5,7 @@ Disallow: /Admin/
 Disallow: /images/fiveStar/
 Disallow: /Record/*/Search/
 Disallow: /Circa/
+Disallow: /Search/AJAX
 
 User-agent: SemrushBot
 Disallow: /

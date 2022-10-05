@@ -1,4 +1,5 @@
 import React, {Component, useState} from "react";
+import {Linking} from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import {DrawerContentScrollView} from "@react-navigation/drawer";
@@ -13,6 +14,23 @@ import {getILSMessages, getProfile, reloadProfile} from "../../util/loadPatron";
 import {setGlobalVariables} from "../../util/setVariables";
 import {saveLanguage} from "../../util/accountActions";
 import {userContext} from "../../context/user";
+import * as Notifications from 'expo-notifications';
+import * as ExpoLinking from 'expo-linking';
+import Constants from "expo-constants";
+import {GLOBALS} from "../../util/globals";
+
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		shouldShowAlert: true,
+		shouldPlaySound: true,
+		shouldSetBadge: true,
+	}),
+});
+
+const prefix = ExpoLinking.createURL("/");
+console.log(prefix);
+
+//console.log(redirectUrl);
 
 export class DrawerContent extends Component {
 	constructor(props, context) {
@@ -32,7 +50,9 @@ export class DrawerContent extends Component {
 			languages: [],
 			langB: [],
 			asyncLoaded: false,
+			notification: {},
 		};
+		this._isMounted = false;
 			//setGlobalVariables();
 	}
 
@@ -110,23 +130,103 @@ export class DrawerContent extends Component {
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		this.setState({
 			isLoading: false,
 		});
 
 		//await this.loadLanguages();
 
+		Notifications.addNotificationReceivedListener(this._handleNotification);
+		Notifications.addNotificationResponseReceivedListener(this._handleNotificationResponse);
+
 		this.interval = setInterval(() => {
-			this.loadILSMessages();
-			this.loadProfile();
-			//this.loadLanguages();
-		}, 300000)
+			if (this._isMounted){
+				this.loadILSMessages();
+				this.loadProfile();
+				//this.loadLanguages();
+			}
+		}, GLOBALS.timeoutSlow)
 
-		return () => clearInterval(this.interval);
-
+		return () => {
+			clearInterval(this.interval);
+		};
 	}
 
+	_handleNotification = notification => {
+		this.setState({notification: notification});
+	};
+
+	_handleNotificationResponse = async response => {
+		await this._addStoredNotification(response);
+		//console.log("encoded", response.notification.request.content.data.url)
+		let url = decodeURIComponent(response.notification.request.content.data.url).replace( /\+/g, ' ' );
+		//console.log("decoded", url);
+		url = url.concat("&results=[]");
+
+		console.log(prefix);
+		url = url.replace("aspen-lida://", prefix)
+		console.log("response", url);
+
+		//const parsedUrl = await Linking.parse(encodeURI(url));
+		//console.log("parsedUrl", parsedUrl);
+
+
+		console.log("Checking url...");
+		const supported = await Linking.canOpenURL(url);
+		if(supported) {
+			try {
+				console.log("Opening url...");
+				await Linking.openURL(url);
+			} catch(e) {
+				console.log("Could not open url");
+				console.log(e);
+			}
+		} else {
+			console.log("Could not open url");
+		}
+		//Linking.openURL(url);
+	};
+
+	_getStoredNotifications = async () => {
+		try {
+			const notifications = await AsyncStorage.getItem('@notifications');
+			return notifications != null ? JSON.parse(notifications) : null;
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	_createNotificationStorage = async (message) => {
+		try {
+			let array = [];
+			array.push(message);
+			const notification = JSON.stringify(array);
+			await AsyncStorage.setItem('@notifications', notification);
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	_addStoredNotification = async (message) => {
+		let storage = await this._getStoredNotifications().then(async response => {
+			if (response) {
+				//console.log(response);
+				response.push(message);
+				try {
+					await AsyncStorage.setItem('@notifications', JSON.stringify(response));
+				} catch (e) {
+					console.log(e);
+				}
+			} else {
+				await this._createNotificationStorage(message);
+			}
+		});
+	}
+
+
 	componentWillUnmount() {
+		this._isMounted = false;
 		clearInterval(this.interval);
 	}
 
@@ -200,8 +300,10 @@ export class DrawerContent extends Component {
 		if(typeof library !== "undefined") {
 			if(library.logoApp) {
 				icon = library.logoApp;
-			} else {
+			} else if(library.favicon) {
 				icon = library.favicon;
+			} else {
+				icon = Constants.manifest.ios.icon;
 			}
 		}
 
@@ -326,9 +428,9 @@ export class DrawerContent extends Component {
 								rounded="8"
 							/>
 							<Box>
-								{user ? (<Text bold fontSize="14">{user.displayName}</Text>) : null}
+								{user && user.displayName ? (<Text bold fontSize="14">{user.displayName}</Text>) : null}
 
-								{library ? (<Text fontSize="12" fontWeight="500">{library.displayName}</Text>) : null}
+								{library && library.displayName ? (<Text fontSize="12" fontWeight="500">{library.displayName}</Text>) : null}
 								<HStack space={1} alignItems="center">
 									<Icon as={MaterialIcons} name="credit-card" size="xs"/>
 									{user ? (<Text fontSize="12" fontWeight="500">{user.cat_username}</Text>) : null}
@@ -483,7 +585,7 @@ function LogOutButton() {
 const ReloadProfileButton = (props) => {
 
 	return(
-		<Button size="xs" colorScheme="tertiary" onPress={() => props.handleRefreshProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
+		<Button size="xs" colorScheme="tertiary" onPress={() => props.handleRefreshProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>{translate('general.refresh_account')}</Button>
 	)
 }
 

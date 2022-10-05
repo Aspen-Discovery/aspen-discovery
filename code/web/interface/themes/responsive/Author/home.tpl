@@ -15,7 +15,11 @@
 	{* Information about the search *}
 	<div class="result-head">
 		{* User's viewing mode toggle switch *}
-		{include file="Search/results-displayMode-toggle.tpl"}
+		{if $showSearchToolsAtTop}
+			{include file="Search/search-toolbar.tpl"}
+		{else}
+			{include file="Search/results-displayMode-toggle.tpl"}
+		{/if}
 
 		<div class="clearer"></div>
 	</div>
@@ -35,7 +39,7 @@
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-	{if $showSearchTools}
+	{if $showSearchTools && !$showSearchToolsAtTop}
 		<div class="well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong> &nbsp;
 			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a> &nbsp;

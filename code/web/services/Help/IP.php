@@ -10,6 +10,12 @@ class Help_IP extends Action
 		$ip_address = IPAddress::getActiveIp();
 		$interface->assign('ip_address', $ip_address);
 
+		if (IPAddress::showDebuggingInformation()) {
+			global $aspenUsage;
+			$interface->assign('instanceName', $aspenUsage->instance);
+			$interface->assign('validServerNames', getValidServerNames());
+		}
+
 		$this->display('ip.tpl', 'IP Address', '');
 	}
 

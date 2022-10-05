@@ -23,7 +23,10 @@ class UserAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage', 'initMasquerade', 'endMasquerade'))) {
+				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile',
+					'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations',
+					'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage',
+					'initMasquerade', 'endMasquerade', 'saveNotificationPushToken', 'deleteNotificationPushToken', 'getNotificationPushToken', 'submitVdxRequest', 'cancelVdxRequest', 'getNotificationPreference', 'setNotificationPreference', 'getNotificationPreferences'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -518,6 +521,15 @@ class UserAPI extends Action
 				}
 			}
 
+			//Add Interlibrary Loan
+			if ($user->hasInterlibraryLoan()){
+				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+				$driver = new VdxDriver();
+				$vdxSummary = $driver->getAccountSummary($user);
+				$numHolds += (int)$vdxSummary->numUnavailableHolds;
+			}
+
+
 			$userData->numCheckedOut = $numCheckedOut;
 			$userData->numHolds = $numHolds;
 			$userData->numHoldsAvailable = $numHoldsAvailable;
@@ -550,6 +562,7 @@ class UserAPI extends Action
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
+			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			return array('success' => true, 'profile' => $userData);
 		} else {
@@ -920,7 +933,8 @@ class UserAPI extends Action
 	{
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$fines = $user->getFines();
+			$includeLinkedUsers = $_REQUEST['includeLinkedUsers'] ?? false;
+			$fines = $user->getFines($includeLinkedUsers, true);
 			$totalOwed = 0;
 			foreach ($fines as &$fine) {
 				if (isset($fine['amountOutstandingVal'])) {
@@ -2401,6 +2415,44 @@ class UserAPI extends Action
 		}
 	}
 
+	function submitVdxRequest() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/VdxDriver.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
+			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
+			$vdxSettings = new VdxSetting();
+			if ($vdxSettings->find(true)){
+				$vdxDriver = new VdxDriver();
+				return $vdxDriver->submitRequest($vdxSettings, $user, $_REQUEST, false);
+			}else{
+				return  array(
+					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
+					'message' => translate(['text'=>"VDX Settings do not exist, please contact the library to make a request.", 'isPublicFacing'=>true]),
+					'success' => false
+				);
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function cancelVdxRequest() {
+		$user = $this->getUserForApiCall();
+		$title = translate(['text'=>'Error', 'isPublicFacing'=>true]);
+		if ($user && !($user instanceof AspenError)) {
+			$sourceId = $_REQUEST['sourceId'] ?? null;
+			$cancelId = $_REQUEST['cancelId'] ?? null;
+			$result = $user->cancelVdxRequest($sourceId, $cancelId);
+			if($result['success'] == true || $result['success'] == "true") {
+				$title = translate(['text'=>'Success', 'isPublicFacing'=>true]);
+			}
+			return array('success' => $result['success'], 'title' => $title, 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
 	/**
 	 * Loads the reading history for the user.  Includes print, eContent, and OverDrive titles.
 	 * Note: The return of this method can be quite lengthy if the patron has a large number of items in their reading history.
@@ -3202,6 +3254,149 @@ class UserAPI extends Action
 			}
 		} else {
 			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	/**
+	 * Stores the push token for notifications.
+	 *
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	function saveNotificationPushToken() : array{
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if(isset($_POST['pushToken'])) {
+				$device = $_POST['deviceModel'] ?? "Unknown";
+				$result = $user->saveNotificationPushToken($_POST['pushToken'], $device);
+				if($result === true) {
+					return array(
+						'success' => true,
+						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+						'message' => translate(['text'=> 'Successfully updated notification preferences', 'isPublicFacing'=>true])
+					);
+				} else {
+					return array(
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(['text'=>'Sorry, we could save your notification preferences at this time.', 'isPublicFacing'=>true])
+					);
+				}
+			} else {
+				return array('success' => false, 'message' => 'A push token was not provided');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function deleteNotificationPushToken() : array{
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if(isset($_POST['pushToken'])) {
+				$device = $_POST['deviceModel'] ?? "Unknown";
+				$result = $user->deleteNotificationPushToken($_POST['pushToken']);
+				if($result === true) {
+					return array(
+						'success' => true,
+						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+						'message' => translate(['text'=> 'Successfully updated notification preferences', 'isPublicFacing'=>true])
+					);
+				} else {
+					return array(
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(['text'=>'Sorry, we could save your notification preferences at this time.', 'isPublicFacing'=>true])
+					);
+				}
+			} else {
+				return array('success' => false, 'message' => 'A push token was not provided');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function getNotificationPushToken() : array{
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$result = $user->getNotificationPushToken();
+			if(!empty($result)) {
+				return array(
+					'success' => true,
+					'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+					'message' => translate(['text'=> 'Notification push tokens found', 'isPublicFacing'=>true]),
+					'tokens' => $result,
+				);
+			} else {
+				return array(
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'No notification push tokens were found for this user', 'isPublicFacing'=>true]),
+					'tokens' => $result,
+				);
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function getNotificationPreferences() : array{
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (!empty($_POST['pushToken'])) {
+				$preferences = $user->getNotificationPreferencesByToken($_POST['pushToken']);
+				return array('success' => true, 'savedPreferences' => $preferences);
+			} else {
+				return array('success' => false, 'message' => 'Push token not provided');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function getNotificationPreference() : array{
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (!empty($_REQUEST['type']) && !empty($_POST['pushToken'])) {
+				$allowNotificationType = $user->getNotificationPreference($_REQUEST['type'], $_POST['pushToken']);
+				return array('success' => true, 'type' => $_REQUEST['type'], 'allow' => $allowNotificationType);
+			} else {
+				return array('success' => false, 'message' => 'Preference type or push token not provided');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function setNotificationPreference() : array{
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (!empty($_REQUEST['type']) && !empty($_REQUEST['pushToken']) && !empty($_REQUEST['value'])) {
+				if($_REQUEST['value'] === "false") {
+					$newValue = 0;
+				} else {
+					$newValue = 1;
+				}
+				$result = $user->setNotificationPreference($_REQUEST['type'], $newValue, $_REQUEST['pushToken']);
+				if($result) {
+					return array(
+						'success' => true,
+						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+						'message' => translate(['text'=> 'Successfully updated notification preferences', 'isPublicFacing'=>true]),
+					);
+				} else {
+					return array(
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => translate(['text'=> 'Sorry, we could save your notification preferences at this time.', 'isPublicFacing'=>true]),
+					);
+				}
+			} else {
+				return array('success' => false, 'message' => 'Preference type, value, or push token not provided');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
