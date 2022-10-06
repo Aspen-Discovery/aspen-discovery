@@ -114,7 +114,7 @@ class User extends DataObject
 
 	function getNumericColumnNames() : array
 	{
-		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
+		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError', 'rememberHoldPickupLocation'];
 	}
 
 	function getEncryptedFieldNames() : array {

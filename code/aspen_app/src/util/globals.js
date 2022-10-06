@@ -9,7 +9,7 @@ export const GLOBALS = {
 	'appVersion': Constants.manifest.version,
 	'appBuild': Platform.OS === 'android' ? Constants.manifest.android.versionCode : Constants.manifest.ios.buildNumber,
 	'appSessionId': Constants.sessionId,
-	'appPatch': 1,
+	'appPatch': 0,
 	'slug': Constants.manifest.slug,
 	'apiUrl': Constants.manifest.extra.apiUrl,
 	'releaseChannel': Updates.releaseChannel,
