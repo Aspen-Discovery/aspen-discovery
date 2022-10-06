@@ -661,7 +661,7 @@ public class IndexingUtils {
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
-					if (line.matches(".*" + indexerName + "\\.jar " + serverName + " nightly.*")){
+					if (line.matches(".*" + indexerName + "\\.jar " + serverName)){
 						return true;
 					}
 				}
@@ -677,7 +677,7 @@ public class IndexingUtils {
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
-					if (line.matches(".*" + indexerName + "\\.jar " + serverName + " nightly.*")){
+					if (line.matches(".*" + indexerName + "\\.jar " + serverName)){
 						return true;
 					}
 				}
