@@ -31,10 +31,14 @@ class Suggestions{
 
 		$holds = $user->getHolds(false);
 		foreach ($holds['available'] as $hold){
-			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			if (!empty($hold->groupedWorkId)) {
+				$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			}
 		}
 		foreach ($holds['unavailable'] as $hold){
-			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			if (!empty($hold->groupedWorkId)) {
+				$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+			}
 		}
 
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated

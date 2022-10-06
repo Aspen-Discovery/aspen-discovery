@@ -32,7 +32,7 @@ export default class LoadSavedSearch extends Component {
 	}
 
 	openSavedSearch = (id, title, url) => {
-		this.props.navigation.push("AccountScreenTab", {screen: 'SavedSearch', params: { search: id, name: title, libraryUrl: url }});
+		this.props.navigation.push("AccountScreenTab", {screen: 'SavedSearch', params: { id: id, title: title, libraryUrl: url }});
 	}
 
 	static contextType = userContext;
@@ -46,7 +46,7 @@ export default class LoadSavedSearch extends Component {
 		if(this.state.isLoading) {
 			return (loadingSpinner());
 		} else {
-			this.props.navigation.navigate("AccountScreenTab", {screen: 'SavedSearch', params: { search: id, name: title, libraryUrl: url }});
+			this.props.navigation.navigate("AccountScreenTab", {screen: 'SavedSearch', params: { id: id, title: title, libraryUrl: url }});
 		}
 
 		return null;

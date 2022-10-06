@@ -47,6 +47,7 @@ export async function savePushToken(libraryUrl, pushToken) {
 	});
 	const response = await api.post('/UserAPI?method=saveNotificationPushToken', postBody);
 	if(response.ok) {
+		console.log(response);
 		if(response.data.result.success) {
 			popAlert(response.data.result.title, response.data.result.message, "success");
 		} else {
@@ -238,7 +239,7 @@ export async function setNotificationPreference(libraryUrl, pushToken, type, val
 	});
 	const response = await api.post('/UserAPI?method=setNotificationPreference', postBody);
 	if(response.ok) {
-		//console.log(response);
+		console.log(response);
 		if(response.data.result.success === true) {
 			popAlert(response.data.result.title, response.data.result.message, "success");
 			return response.data.result;

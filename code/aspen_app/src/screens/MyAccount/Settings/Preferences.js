@@ -1,7 +1,9 @@
 import React, {Component} from "react";
 import {Box, Divider, HStack, Pressable, Button, Text, Heading, FlatList, Icon} from "native-base";
 import * as WebBrowser from 'expo-web-browser';
+import Constants from 'expo-constants';
 import {MaterialIcons} from "@expo/vector-icons";
+import * as Notifications from 'expo-notifications';
 
 // custom components and helper files
 import {translate} from "../../../translations/translations";
@@ -16,6 +18,7 @@ export default class Preferences extends Component {
 			error: null,
 			hasUpdated: false,
 			isRefreshing: false,
+			expoToken: null,
 			defaultMenuItems: [
 				{
 					key: '1',
@@ -36,6 +39,20 @@ export default class Preferences extends Component {
 			]
 		};
 
+	}
+
+	componentDidMount = async () => {
+		if(Constants.isDevice) {
+			let expoToken = (await Notifications.getExpoPushTokenAsync()).data;
+			if(expoToken) {
+				this.setState({
+					expoToken: expoToken,
+				})
+			}
+		}
+		this.setState({
+			isLoading: false,
+		})
 	}
 
 	renderItem = (item, patronId, libraryUrl, discoveryVersion) => {
@@ -68,7 +85,7 @@ export default class Preferences extends Component {
 	};
 
 	onPressMenuItem = (path, patronId, libraryUrl) => {
-		this.props.navigation.navigate(path, {libraryUrl: libraryUrl, patronId: patronId, user: this.context.user, pushToken: this.context.pushToken});
+		this.props.navigation.navigate(path, {libraryUrl: libraryUrl, patronId: patronId, user: this.context.user, pushToken: this.state.expoToken});
 	};
 
 

@@ -1761,7 +1761,9 @@ abstract class MarcRecordProcessor {
 							result.add("LargePrint");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("toy and movable books") || subfieldData.contains("pop-up")) {
+						}else if (subfieldData.contains("board books") || subfieldData.contains("board book")) {
+							result.add("Board Book");
+						}else if (subfieldData.contains("pop-up")) {
 							result.add("Pop-Up Book");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
@@ -1800,7 +1802,9 @@ abstract class MarcRecordProcessor {
 							result.add("LibraryOfThings");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("toy and movable books") || subfieldData.contains("pop-up")) {
+						}else if (subfieldData.contains("board books") || subfieldData.contains("board book")) {
+							result.add("Board Book");
+						}else if (subfieldData.contains("pop-up")) {
 							result.add("Pop-Up Book");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;

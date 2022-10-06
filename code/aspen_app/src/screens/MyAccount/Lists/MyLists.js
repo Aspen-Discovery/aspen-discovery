@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SafeAreaView} from 'react-native';
 import {Badge, Box, Center, FlatList, Image, Pressable, Text, HStack, VStack, ScrollView} from "native-base";
 import moment from "moment";
 
@@ -9,6 +9,7 @@ import CreateList from "./CreateList";
 import {getHolds, getLists} from "../../../util/loadPatron";
 import {userContext} from "../../../context/user";
 import {translate} from "../../../translations/translations";
+import {GLOBALS} from "../../../util/globals";
 
 export default class MyLists extends Component {
 	constructor() {
@@ -20,35 +21,35 @@ export default class MyLists extends Component {
 			libraryUrl: '',
 			lists: []
 		};
+		this._isMounted = false;
 	}
 
 	_fetchLists = async () => {
 		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 
-		await getLists(libraryUrl).then(response =>
-			this.setState({
-				lists: response
-			})
+		this._isMounted && await getLists(libraryUrl).then(response =>
+			{
+				this.setState({
+					lists: response
+				})
+
+			}
 		);
 	}
 
 	componentDidMount = async () => {
-		await this._fetchLists().then(r => {
+		this._isMounted = true;
+
+		this._isMounted && await this._fetchLists().then(r => {
 			this.setState({
 				isLoading: false
 			})
 		});
-
-		this.interval = setInterval(() => {
-			this._fetchLists();
-		}, 1000)
-		return () => clearInterval(this.interval)
-
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// renders the items on the screen
@@ -82,7 +83,7 @@ export default class MyLists extends Component {
 	};
 
 	openList = (id, item, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'List', params: { list: id, details: item, name: item.title, libraryUrl: libraryUrl }});
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'List', params: { id: id, details: item, title: item.title, libraryUrl: libraryUrl }});
 	};
 
 	_listEmptyComponent = () => {
@@ -109,9 +110,9 @@ export default class MyLists extends Component {
 		}
 
 		return (
-			<ScrollView>
-			<Box safeArea={2} h="100%">
-				<CreateList libraryUrl={library.baseUrl} />
+			<SafeAreaView style={{flex: 1}}>
+			<Box safeArea={2} t={10} pb={10}>
+				<CreateList libraryUrl={library.baseUrl} _fetchLists={this._fetchLists}/>
 				<FlatList
 					data={lists}
 					ListEmptyComponent={this._listEmptyComponent()}
@@ -119,7 +120,7 @@ export default class MyLists extends Component {
 					keyExtractor={(item) => item.id}
 				/>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 
 	}

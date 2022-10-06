@@ -63,6 +63,37 @@ abstract class MyAccount extends Action
 			// check if 2fa is available for user
 			$twoFactor = UserAccount::has2FAEnabledForPType();
 			$interface->assign('twoFactorEnabled', $twoFactor);
+
+			// Check to see what sidebar sections to display, if any
+			$showUserCirculationModules = $interface->getVariable('showUserCirculationModules');
+			$showCurbsidePickups = $interface->getVariable('showCurbsidePickups');
+			$showFines = $interface->getVariable('showFines');
+			$showRatings = $interface->getVariable('showRatings');
+			$showFavorites = $interface->getVariable('showFavorites');
+			$enableSavedSearches = $interface->getVariable('enableSavedSearches');
+			$displayMaterialsRequest = $interface->getVariable('displayMaterialsRequest');
+			$enableReadingHistory = $interface->getVariable('enableReadingHistory');
+			$allowAccountLinking = $interface->getVariable('allowAccountLinking');
+			$showUserPreferences = $interface->getVariable('showUserPreferences');
+			$showUserContactInformation = $interface->getVariable('showUserContactInformation');
+			$twoFactorEnabled = $interface->getVariable('twoFactorEnabled');
+			$allowPinReset = $interface->getVariable('allowPinReset');
+			$userIsStaff = $interface->getVariable('userIsStaff');
+
+
+			$user = UserAccount::getLoggedInUser();
+			$showMyAccount = false;
+			if ($showUserCirculationModules || $showCurbsidePickups || $showFines || $showRatings || $showFavorites || $enableSavedSearches || $displayMaterialsRequest || $enableReadingHistory) {
+				$showMyAccount = true;
+			}
+
+			$showAccountSettings = false;
+			if ($allowAccountLinking || $showUserPreferences || $showUserContactInformation || $user->showMessagingSettings() || $twoFactorEnabled || $allowPinReset || $userIsStaff || $showUserCirculationModules) {
+				$showAccountSettings = true;
+			}
+
+			$interface->assign('showMyAccount', $showMyAccount);
+			$interface->assign('showAccountSettings', $showAccountSettings);
 		}
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();
@@ -77,6 +108,12 @@ abstract class MyAccount extends Action
 	function display($mainContentTemplate, $pageTitle='Your Account', $sidebar='Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		$interface->setPageTitle($pageTitle);
-		parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);
+
+		// If neither sidebar sections are show, don't display the sidebar
+		if ($interface->getVariable('showMyAccount') || $interface->getVariable('showAccountSettings')) {
+			parent::display($mainContentTemplate, $pageTitle);
+		} else {
+			parent::display($mainContentTemplate, $pageTitle, false);
+		}
 	}
 }

@@ -1186,8 +1186,8 @@ class CatalogConnection
 				$user = null;
 			}
 		} else {
-			$timer->logTime("offline patron login failed because we haven't seen this user before");
-			$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
+			$timer->logTime("Loading patron from database failed because we haven't seen this user before");
+			$logger->log("Loading patron from database failed because we haven't seen this user before", Logger::LOG_NOTICE);
 			$user = null;
 		}
 		return $user;

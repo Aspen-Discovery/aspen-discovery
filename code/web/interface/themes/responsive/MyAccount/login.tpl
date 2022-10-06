@@ -18,93 +18,102 @@
 				</p>
 			</div>
 		{/if}
-		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
-			<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel translateParameters=true isPublicFacing=true}</div>
-			<div id="loginFormFields">
-				<div id="loginUsernameRow" class="form-group">
-					<label for="username" class="control-label col-xs-12 col-sm-4">{translate text="$usernameLabel" isPublicFacing=true} </label>
-					<div class="col-xs-12 col-sm-8">
-						<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" maxlength="60">
-					</div>
-				</div>
-				<div id="loginPasswordRow" class="form-group">
-					<label for="password" class="control-label col-xs-12 col-sm-4">{translate text="$passwordLabel" isPublicFacing=true} </label>
-					<div class="col-xs-12 col-sm-8">
-						<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
-						{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
-							<p class="text-muted help-block">
-								<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
-								{if $forgotPasswordType == 'emailAspenResetLink'}
-									<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
-								{elseif $forgotPasswordType == 'emailResetLink'}
-									<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
-								{else}
-									<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
-								{/if}
-							</p>
-						{/if}
+		{if !(empty($ssoService))}
+            {include file='MyAccount/sso-login.tpl'}
+            {if $ssoLoginOptions == 0}
+	            <div class="hr-label">
+	                <span class="text">{translate text="or" isPublicFacing=true}</span>
+	            </div>
+            {/if}
+        {/if}
+        {if $ssoLoginOptions == 0}
+	        <form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
+		        <div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel translateParameters=true isPublicFacing=true}</div>
+		        <div id="loginFormFields">
+		            <div id="loginUsernameRow" class="form-group">
+		                <label for="username" class="control-label col-xs-12 col-sm-4">{translate text="$usernameLabel" isPublicFacing=true} </label>
+		                <div class="col-xs-12 col-sm-8">
+		                    <input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" maxlength="60">
+		                </div>
+		            </div>
+		            <div id="loginPasswordRow" class="form-group">
+		                <label for="password" class="control-label col-xs-12 col-sm-4">{translate text="$passwordLabel" isPublicFacing=true} </label>
+		                <div class="col-xs-12 col-sm-8">
+		                    <input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
+		                    {if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
+		                        <p class="text-muted help-block">
+		                            <strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
+		                            {if $forgotPasswordType == 'emailAspenResetLink'}
+		                                <a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+		                            {elseif $forgotPasswordType == 'emailResetLink'}
+		                                <a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+		                            {else}
+		                                <a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
+		                            {/if}
+		                        </p>
+		                    {/if}
 
-						{if $enableSelfRegistration == 1 && !$isStandalonePage}
-							<p class="help-block">
-								{translate text="Don't have a library card?" isPublicFacing=true}  <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
-							</p>
-						{elseif $enableSelfRegistration == 2 && !$isStandalonePage}
-							<p class="help-block">
-								{translate text="Don't have a library card?" isPublicFacing=true} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
-							</p>
-						{elseif $enableSelfRegistration == 3 && !$isStandalonePage}
-							<p class="help-block">
-								{translate text="Don't have a library card?" isPublicFacing=true} <a href="/MyAccount/eCARD">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
-							</p>
-						{/if}
-					</div>
-				</div>
-				{if !(empty($loginNotes))}
-					<div id="loginNotes" class="form-group">
-						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-							{translate text=$loginNotes isPublicFacing=true}
-						</div>
-					</div>
-				{/if}
-				{if !(empty($ssoXmlUrl))}
-				<div id="SAMLLoginRow" class="form-group">
-					<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-						<p class="help-block">
-							<a href="/saml2auth.php?samlLogin=y&idp={$ssoXmlUrl}">Log in using {$ssoName}</a>
-						</p>
-					</div>
-				</div>
-				{/if}
-				<div id="loginPasswordRow2" class="form-group">
-					<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-						<label for="showPwd" class="checkbox">
-							<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
-							{translate text="Reveal Password" isPublicFacing=true}
-						</label>
+		                    {if $enableSelfRegistration == 1 && !$isStandalonePage}
+		                        <p class="help-block">
+		                            {translate text="Don't have a library card?" isPublicFacing=true}  <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
+		                        </p>
+		                    {elseif $enableSelfRegistration == 2 && !$isStandalonePage}
+		                        <p class="help-block">
+		                            {translate text="Don't have a library card?" isPublicFacing=true} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
+		                        </p>
+		                    {elseif $enableSelfRegistration == 3 && !$isStandalonePage}
+		                        <p class="help-block">
+		                            {translate text="Don't have a library card?" isPublicFacing=true} <a href="/MyAccount/eCARD">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
+		                        </p>
+		                    {/if}
+		                </div>
+		            </div>
+		            {if !(empty($loginNotes))}
+		                <div id="loginNotes" class="form-group">
+		                    <div class="col-xs-12 col-sm-offset-4 col-sm-8">
+		                        {translate text=$loginNotes isPublicFacing=true}
+		                    </div>
+		                </div>
+		            {/if}
+		            {if !(empty($ssoXmlUrl))}
+		            <div id="SAMLLoginRow" class="form-group">
+		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
+		                    <p class="help-block">
+		                        <a href="/saml2auth.php?samlLogin=y&idp={$ssoXmlUrl}">Log in using {$ssoName}</a>
+		                    </p>
+		                </div>
+		            </div>
+		            {/if}
+		            <div id="loginPasswordRow2" class="form-group">
+		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
+		                    <label for="showPwd" class="checkbox">
+		                        <input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
+		                        {translate text="Reveal Password" isPublicFacing=true}
+		                    </label>
 
-						{if !$inLibrary && !$isOpac && !$isStandalonePage}
-							<label for="rememberMe" class="checkbox">
-								<input type="checkbox" id="rememberMe" name="rememberMe">
-								{translate text="Keep Me Signed In" isPublicFacing=true}
-							</label>
-						{/if}
-					</div>
-				</div>
+		                    {if !$inLibrary && !$isOpac && !$isStandalonePage}
+		                        <label for="rememberMe" class="checkbox">
+		                            <input type="checkbox" id="rememberMe" name="rememberMe">
+		                            {translate text="Keep Me Signed In" isPublicFacing=true}
+		                        </label>
+		                    {/if}
+		                </div>
+		            </div>
 
-				<div id="loginActions" class="form-group">
-					<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-						<input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
-						{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
-						{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
-						{if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
-						{if $pageId}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
-						{if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
-						{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
-					</div>
-				</div>
-
-			</div>
-		</form>
+		            <div id="loginActions" class="form-group">
+		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
+		                    <input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
+		                    {if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
+		                    {if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
+		                    {if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+		                    {if $pageId}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
+		                    {if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
+		                    {if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+		                </div>
+		            </div>
+		        </div>
+		    </form>
+        {/if}
 	</div>
 </div>
 {/strip}

@@ -1,8 +1,8 @@
 import React, {Component, useState} from "react";
+import {SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
 	Actionsheet,
-	Avatar,
 	Badge,
 	Box,
 	Button,
@@ -85,6 +85,7 @@ export default class Holds extends Component {
 			selectThaw: [],
 			selectCancel: [],
 		};
+		this._isMounted = false;
 		this.onDateChange = this.onDateChange.bind(this);
 		this.onAllDateChange = this.onAllDateChange.bind(this);
 		//this._fetchHolds();
@@ -112,7 +113,7 @@ export default class Holds extends Component {
 		const holds = JSON.parse(tmpHolds);
 		const holdsNotReady = JSON.parse(tmpHoldsNotReady);
 		const holdsReady = JSON.parse(tmpHoldsReady);
-		this.setState({
+		this._isMounted && this.setState({
 			holds: holds,
 			holdsNotReady: holdsNotReady,
 			holdsReady: holdsReady,
@@ -124,10 +125,22 @@ export default class Holds extends Component {
 			isLoading: true,
 		})
 
-		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		this._isMounted && await getHolds(this.context.library.baseUrl).then(r => {
+			this.setState({
+				holds: r['holds'],
+				holdsNotReady: r['holdsNotReady'],
+				holdsReady: r['holdsReady'],
+				isLoading: false,
+			})
+		});
+	}
 
-		await reloadHolds(libraryUrl).then(r => {
+	_reloadHolds = async () => {
+		this.setState({
+			isLoading: true,
+		})
+
+		this._isMounted && await reloadHolds(this.context.library.baseUrl).then(r => {
 			this.setState({
 				holds: r['holds'],
 				holdsNotReady: r['holdsNotReady'],
@@ -141,19 +154,20 @@ export default class Holds extends Component {
 	loadPickupLocations = async () => {
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
 		const locations = JSON.parse(tmp);
-		this.setState({
+		this._isMounted && this.setState({
 			locations: locations,
 		})
 	}
 
 	_pickupLocations = async () => {
 		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 
-		await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
+		this._isMounted && await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
@@ -166,10 +180,9 @@ export default class Holds extends Component {
 			});
 		}
 
-		await this._fetchHolds();
-		await this._pickupLocations();
-		await this.loadHolds();
-		await this.loadPickupLocations();
+		this._isMounted && await this._fetchHolds();
+		this._isMounted && await this._pickupLocations();
+		this._isMounted && await this.loadPickupLocations();
 
 		this.setState({
 			isLoading: false
@@ -178,7 +191,7 @@ export default class Holds extends Component {
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// Handles opening the GroupedWork screen with the item data
@@ -230,14 +243,12 @@ export default class Holds extends Component {
 
 	// Trigger a context refresh
 	updateProfile = async () => {
-		console.log("Getting new profile data from holds...");
-		await getProfile().then(response => {
+		this._isMounted && await getProfile().then(response => {
 			this.context.user = response;
 			this.setState({
 				groupValues: [],
 			})
 		});
-
 	}
 
 	_listEmptyComponent = () => {
@@ -250,8 +261,7 @@ export default class Holds extends Component {
 		);
 	};
 
-	_listHeaderComponent = (libraryUrl, updateProfile, _fetchHolds) => {
-
+	_listFooterComponent = (libraryUrl, updateProfile, _fetchHolds) => {
 		const groupValues = this.state.groupValues;
 		let showSelectOptions = false;
 		if(groupValues.length >= 1) {
@@ -270,6 +280,8 @@ export default class Holds extends Component {
 						selectedReactivationDate={this.state.selectedStartDate}
 						clearGroupValue={this.clearGroupValue}
 					/>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadHolds()}}
+					/>
 				</Center>
 			);
 		}
@@ -283,6 +295,8 @@ export default class Holds extends Component {
 						_fetchHolds={_fetchHolds}
 						onDateChange={this.onDateChange}
 						selectedReactivationDate={this.state.selectedStartDate}
+					/>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadHolds()}}
 					/>
 			</Center>
 		);
@@ -301,32 +315,28 @@ export default class Holds extends Component {
 		}
 
 		if (this.state.hasError) {
-			return (loadError(this.state.error, this._fetchHolds));
+			return (loadError(this.state.error, this._reloadHolds));
 		}
 
 		return (
-			<ScrollView py={10}>
+			<SafeAreaView style={{flex: 1}}>
 			<Box>
-				<Center>
+				<Center pt={5} pb={10}>
 					<Checkbox.Group
 						defaultValue={this.state.groupValues}
-						accessibilityLabel="choose multiple items"
+						accessibilityLabel="Choose multiple holds to manage"
 						onChange={values => {this.setGroupValue(values)}}>
 						<FlatList
 							data={holds}
 							ListEmptyComponent={this._listEmptyComponent()}
-							ListFooterComponent={this._listHeaderComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
+							ListFooterComponent={this._listFooterComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
 							renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile, this._fetchHolds)}
 							keyExtractor={(item) => item.id.concat("_", item.position)}
 						/>
 					</Checkbox.Group>
-					<Center pb={5}>
-						<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
-						/>
-					</Center>
 				</Center>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 	}
 }
@@ -457,13 +467,13 @@ function HoldItem(props) {
 						<VStack>
 							<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
 							{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
-								<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md"></Checkbox></Center>
+								<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
 								: null}
 						</VStack>
 					) : null}
 
 					{!data.coverUrl && data.source !== "vdx" ? (
-						<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md"></Checkbox></Center>
+						<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
 					) : null}
 
 					<VStack maxW="80%">
@@ -854,9 +864,9 @@ const ManageSelectedHolds = (props) => {
 							numToThaw = [];
 							numToCancel = [];
 							numToFreeze = [];
-							updateProfile();
 							_fetchHolds();
 							onClose(onClose);
+							updateProfile();
 							startCancelling(false);
 						})
 					}}><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item>}
@@ -937,10 +947,10 @@ const ManageAllHolds = (props) => {
 						onPress={() => {
 							startCancelling(true);
 							cancelHolds(titlesToCancel, libraryUrl).then(r => {
-								updateProfile();
 								_fetchHolds();
 								onClose(onClose);
 								startCancelling(false);
+								updateProfile();
 							})
 						}}
 					>

@@ -1,9 +1,8 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RefreshControl, ScrollView} from "react-native";
+import {SafeAreaView, ScrollView} from "react-native";
 import {
 	Actionsheet,
-	Avatar,
 	Badge,
 	Box,
 	Button,
@@ -27,7 +26,7 @@ import * as WebBrowser from 'expo-web-browser';
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
-import {getCheckedOutItems, getProfile, reloadProfile} from '../../util/loadPatron';
+import {getCheckedOutItems, getProfile, reloadCheckedOutItems, reloadProfile} from '../../util/loadPatron';
 import {
 	isLoggedIn,
 	renewAllCheckouts,
@@ -50,20 +49,11 @@ export default class CheckedOut extends Component {
 			user: [],
 			checkouts: [],
 		};
-		//this._fetchCheckouts();
-		this.loadCheckouts();
-	}
-
-	loadCheckouts = async () => {
-		const tmp = await AsyncStorage.getItem('@patronCheckouts');
-		const items = JSON.parse(tmp);
-		this.setState({
-			checkouts: items,
-			isLoading: false,
-		})
+		this._isMounted = false;
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
@@ -80,19 +70,12 @@ export default class CheckedOut extends Component {
 			isLoading: false,
 		});
 
-		await this._fetchCheckouts();
-		await this.loadCheckouts();
-
-		this.interval = setInterval(() => {
-			this.loadCheckouts();
-		}, 1000)
-
-		return () => clearInterval(this.interval)
+		this._isMounted && await this._fetchCheckouts();
 
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// grabs the items checked out to the account
@@ -101,10 +84,25 @@ export default class CheckedOut extends Component {
 			isLoading: true,
 		});
 
-		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		await getCheckedOutItems(this.context.library.baseUrl).then(res => {
+			this.setState({
+				checkouts: res,
+				isLoading: false,
+			})
+		});
+	}
 
-		await getCheckedOutItems(libraryUrl).then(r => this.loadCheckouts());
+	_reloadCheckouts = async () => {
+		this.setState({
+			isLoading: true,
+		});
+
+		await reloadCheckedOutItems(this.context.library.baseUrl).then(res => {
+			this.setState({
+				checkouts: res,
+				isLoading: false,
+			})
+		});
 	}
 
 	// renders the items on the screen
@@ -119,6 +117,7 @@ export default class CheckedOut extends Component {
 				user={user}
 				updateProfile={updateProfile}
 				discoveryVersion={this.state.discoveryVersion}
+				_fetchCheckouts={this._fetchCheckouts}
 			/>
 		);
 	};
@@ -226,8 +225,8 @@ export default class CheckedOut extends Component {
 		}
 
 		return (
-			<ScrollView>
-			<Box>
+			<SafeAreaView style={{flex: 1}}>
+			<Box safeArea={5}>
 				{numCheckedOut > 0 ?
 					<Center pt={3} pb={3}>
 						<Button
@@ -238,7 +237,8 @@ export default class CheckedOut extends Component {
 							onPress={() => {
 								this.setState({renewingAll: true})
 								renewAllCheckouts(library.baseUrl).then(r => {
-									this.setState({renewingAll: false})
+									this.setState({renewingAll: false});
+									this._fetchCheckouts();
 								})
 							}}
 							startIcon={<Icon as={MaterialIcons} name="autorenew" size={5}/>}
@@ -254,22 +254,21 @@ export default class CheckedOut extends Component {
 					keyExtractor={(item) => item.recordId}
 				/>
 				<Center pt={5} pb={5}>
-					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchCheckouts()}}
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadCheckouts()}}
 					/>
 				</Center>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 
 	}
 }
 
 function CheckedOutItem(props) {
-
 	const [access, setAccess] = useState(false);
 	const [returning, setReturn] = useState(false);
 	const [renewing, setRenew] = useState(false);
-	const {openWebsite, data, renewItem, openGroupedWork, libraryUrl, user, updateProfile, discoveryVersion} = props;
+	const {openWebsite, data, renewItem, openGroupedWork, libraryUrl, user, updateProfile, discoveryVersion, _fetchCheckouts} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 	const dueDate = moment.unix(data.dueDate);
 	var itemDueOn = moment(dueDate).format("MMM D, YYYY");
@@ -307,9 +306,6 @@ function CheckedOutItem(props) {
 			allowLinkedAccountAction = false;
 		}
 	}
-
-	console.log(allowLinkedAccountAction);
-
 
 	// check that title ends in / first
 	if (data.title) {
@@ -402,7 +398,8 @@ function CheckedOutItem(props) {
 								renewCheckout(data.barcode, data.recordId, data.source, data.itemId, libraryUrl, data.userId).then(r => {
 									updateProfile();
 									setRenew(false);
-									onClose(onClose)
+									onClose(onClose);
+									_fetchCheckouts();
 								});
 							}}>
 							{translate('checkouts.renew')}
@@ -469,6 +466,7 @@ function CheckedOutItem(props) {
 									updateProfile();
 									setReturn(false);
 									onClose(onClose);
+									_fetchCheckouts();
 								});
 							}}>
 							{translate('checkouts.return_now')}
@@ -486,6 +484,7 @@ function CheckedOutItem(props) {
 									updateProfile();
 									setReturn(false);
 									onClose(onClose);
+									_fetchCheckouts();
 								});
 							}}>
 							{translate('checkouts.return_now')}

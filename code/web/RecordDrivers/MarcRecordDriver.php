@@ -1958,9 +1958,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 								}
 							}
 						}
-						if ($copyInfo['shelfLocation'] != '') {
+						//if ($copyInfo['shelfLocation'] != '') {
 							$this->holdingSections[$sectionName]['holdings'][] = $copyInfo;
-						}
+						//}
 
 					}
 

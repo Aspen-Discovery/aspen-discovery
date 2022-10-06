@@ -1,6 +1,6 @@
 import React, { Component } from "react";
+import {ScrollView} from "react-native";
 import {
-	Avatar,
 	Box,
 	FlatList,
 	Badge,
@@ -16,9 +16,7 @@ import { CommonActions } from '@react-navigation/native';
 // custom components and helper files
 import { translate } from '../../translations/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
-import {getListTitles} from "../../util/loadPatron";
 import {userContext} from "../../context/user";
-import {ScrollView} from "react-native";
 import AddToList from "./AddToList";
 import {listofListSearchResults} from "../../util/search";
 
@@ -41,8 +39,8 @@ export default class SearchByList extends Component {
 
 	componentDidMount = async () => {
 		const { route } = this.props;
-		const givenList = route.params?.category ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const givenList = route.params?.id ?? '';
+		const libraryUrl = this.context.library.baseUrl;
 
 		this.setState({
 			isLoading: false,
@@ -76,8 +74,8 @@ export default class SearchByList extends Component {
 
 	loadList = async () => {
 		const { route } = this.props;
-		const givenListId = route.params?.category ?? 0;
-		const libraryUrl = route.params?.libraryUrl ?? 0;
+		const givenListId = route.params?.id ?? 0;
+		const libraryUrl = this.context.library.baseUrl;
 
 		await listofListSearchResults(givenListId, 25, 1, libraryUrl).then(response => {
 			this.setState({
@@ -93,10 +91,10 @@ export default class SearchByList extends Component {
 			recordType = item.recordtype;
 		}
 		const imageUrl = library.baseUrl + "/bookcover.php?id=" + item.id + "&size=large&type=" + recordType;
-		console.log(imageUrl);
+		//console.log(item);
 
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, library, item.recordtype, item.title)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, library, item.recordtype, item.title_display)}>
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
 					<VStack>
 						<Image source={{ uri: imageUrl }} alt={item.title_display} borderRadius="md" size={{base: "90px", lg: "120px"}} />
@@ -133,8 +131,8 @@ export default class SearchByList extends Component {
 			navigation.dispatch(CommonActions.navigate({
 				name: 'ListResults',
 				params: {
-					category: item,
-					categoryLabel: title,
+					id: item,
+					title: title,
 					libraryUrl: libraryUrl,
 				},
 			}));
@@ -142,7 +140,8 @@ export default class SearchByList extends Component {
 			navigation.dispatch(CommonActions.navigate({
 				name: 'GroupedWorkScreen',
 				params: {
-					item: item,
+					id: item,
+					title: title,
 					libraryUrl: libraryUrl,
 				},
 			}));
@@ -157,8 +156,8 @@ export default class SearchByList extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 		const { route } = this.props;
-		const givenListId = route.params?.category ?? 0;
-		const libraryUrl = route.params?.libraryUrl ?? null;
+		const givenListId = route.params?.id ?? 0;
+		const libraryUrl = this.context.library.baseUrl;
 
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );

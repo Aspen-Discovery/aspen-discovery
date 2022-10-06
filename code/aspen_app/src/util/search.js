@@ -7,6 +7,7 @@ import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
+import _ from "lodash";
 
 export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl) {
 	let solrScope;
@@ -26,7 +27,6 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
 	const response = await api.get('/SearchAPI?method=getAppSearchResults');
 
 	if (response.ok) {
-		//console.log(response);
 		return response;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
@@ -96,4 +96,17 @@ export async function savedSearchResults(searchId, limit = 25, page, libraryUrl)
 		console.log(response);
 		return response;
 	}
+}
+
+export function getFormats(data) {
+	let formats = [];
+
+	data.map((item) => {
+		let thisFormat = item.split("#");
+		thisFormat = thisFormat[thisFormat.length - 1];
+		formats.push(thisFormat);
+	});
+
+	formats = _.uniq(formats);
+	return formats;
 }

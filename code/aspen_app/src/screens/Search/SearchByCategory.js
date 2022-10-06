@@ -54,7 +54,7 @@ export default class SearchByCategory extends Component {
 		//const format     = this.props.navigation.state.params.format;
 		//const searchType = this.props.navigation.state.params.searchType;
 		const { navigation, route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await getLists(libraryUrl);
 		this._getLastListUsed();
@@ -84,14 +84,14 @@ export default class SearchByCategory extends Component {
 		const { page } = this.state;
 		const { navigation, route } = this.props;
 		//console.log(route);
-		const category = route.params?.category ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? '';
+		const category = route.params?.id ?? '';
+		const libraryUrl = this.context.library.baseUrl;
 
 		await categorySearchResults(category, 25, page, libraryUrl).then(response => {
 			if(response.ok) {
 				let records = response.data.result.records;
 
-				//console.log(response);
+				console.log(response);
 				if(records.length > 0) {
 					this.setState((prevState, nextProps) => ({
 						data:
@@ -174,7 +174,7 @@ export default class SearchByCategory extends Component {
 		navigation.dispatch(CommonActions.navigate({
 			name: 'GroupedWorkScreen',
 			params: {
-				item: item,
+				id: item,
 				libraryUrl: libraryUrl,
 			},
 		}));
@@ -186,7 +186,7 @@ export default class SearchByCategory extends Component {
 		return (
 			<Center flex={1}>
 				<Heading pt={5}>{translate('search.no_results')}</Heading>
-				<Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+				<Text bold w="75%" textAlign="center">{route.params?.title}</Text>
 				<Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
 			</Center>
 		);
@@ -218,7 +218,7 @@ export default class SearchByCategory extends Component {
 			return (
 				<Center flex={1}>
 					<Heading pt={5}>{translate('search.no_results')}</Heading>
-					<Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+					<Text bold w="75%" textAlign="center">{route.params?.title}</Text>
 					<Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
 				</Center>
 			);

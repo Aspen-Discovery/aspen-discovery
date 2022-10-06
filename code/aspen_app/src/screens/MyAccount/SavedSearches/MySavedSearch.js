@@ -1,15 +1,9 @@
-import React, {Component} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from "react";
+import {SafeAreaView} from 'react-native';
 import {
-	Actionsheet,
-	Avatar,
 	Badge,
 	Box,
-	Button,
-	Center,
-	Divider,
 	FlatList,
-	IconButton,
 	Container,
 	Pressable,
 	Text,
@@ -23,9 +17,7 @@ import { useIsFocused } from '@react-navigation/native';
 // custom components and helper files
 import {translate} from '../../../translations/translations';
 import {loadingSpinner} from "../../../components/loadingSpinner";
-import {removeLinkedAccount, renewAllCheckouts} from "../../../util/accountActions";
-import {getListTitles, getSavedSearchTitles, removeTitlesFromList} from "../../../util/loadPatron";
-import {ScrollView} from "react-native";
+import {getSavedSearchTitles} from "../../../util/loadPatron";
 import {userContext} from "../../../context/user";
 import _ from "lodash";
 import AddToList from "../../Search/AddToList";
@@ -41,19 +33,9 @@ class MySavedSearch extends React.PureComponent {
 			search: [],
 			searchDetails: [],
 			id: 0,
-			//reloadSearch: this.loadSearch.bind(this)
 		};
+		this._isMounted = false;
 	}
-
-/*	static getDerivedStateFromProps(nextProps, prevState) {
-		if(nextProps.route.params.search !== prevState.id){
-			//Change in props
-			return{
-				model:prevState.reloadSearch(nextProps.model)
-			};
-		}
-		return null; // No change to state
-	}*/
 
 	loadSearch = async () => {
 		this.setState({
@@ -61,45 +43,30 @@ class MySavedSearch extends React.PureComponent {
 		})
 
 		const { route } = this.props;
-		const givenSearchId = route.params?.search ?? 0;
-		const libraryUrl = route.params?.libraryUrl ?? this.context.library.baseUrl;
+		const givenSearchId = route.params?.id ?? 0;
+		const libraryUrl = this.context.library.baseUrl;
 
-		await getSavedSearchTitles(givenSearchId, libraryUrl).then(response => {
-			this.setState({
+		this._isMounted && await getSavedSearchTitles(givenSearchId, libraryUrl).then(response => {
+			this._isMounted && this.setState({
 				search: response,
 				id: givenSearchId,
 				libraryUrl: libraryUrl,
+				isLoading: false,
 			})
 		});
 	}
 
 	componentDidMount = async () => {
-		const { route } = this.props;
-		console.log(route.params);
-		const givenSearchId = route.params?.search ?? 0;
-		const givenSearch = route.params?.details ?? '';
-		const givenResults = route.params?.results ?? '';
-		const libraryUrl = route.params?.libraryUrl ?? this.context.library.baseUrl;
-
-		//console.log(givenSearchId);
-
-		await this.loadSearch();
+		this._isMounted = true;
+		this._isMounted && await this.loadSearch();
 
 		this.setState({
 			isLoading: false,
 		})
-
-/*		this.interval = setInterval(() => {
-			//console.log(this.state);
-			this.loadSearch();
-		}, 100000)
-
-		return () => clearInterval(this.interval)*/
-
 	};
 
 	componentWillUnmount() {
-		//clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	// renders the items on the screen
@@ -152,38 +119,21 @@ class MySavedSearch extends React.PureComponent {
 	}
 
 	openItem = (id, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {item: id, libraryUrl: libraryUrl}});
-	};
-
-	_listEmpty = () => {
-		return (
-			<Center mt={5} mb={5}>
-				<Text bold fontSize="lg">
-					No search results.
-				</Text>
-			</Center>
-		);
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {id: id, libraryUrl: libraryUrl}});
 	};
 
 	static contextType = userContext;
 
 	render() {
 		const {isFocused} = this.props;
-		const {search} = this.state;
-		const user = this.context.user;
-		const location = this.context.location;
 		const library = this.context.library;
-		const { route } = this.props;
-		const givenSearchId = route.params?.search ?? 0;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
-		//console.log(this.state.search);
-
 		return (
-			<ScrollView>
+			<SafeAreaView style={{flex: 1}}>
 				<Box safeArea={2} isFocused={isFocused}>
 					<FlatList
 						data={this.state.search}
@@ -191,7 +141,7 @@ class MySavedSearch extends React.PureComponent {
 						keyExtractor={(item) => item.id}
 					/>
 				</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 
 	}

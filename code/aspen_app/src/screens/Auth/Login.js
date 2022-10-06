@@ -52,7 +52,7 @@ export default class Login extends Component {
 			locationNum: 0,
 			showModal: false
 		};
-
+		this._isMounted = false;
 		// create arrays to store Greenhouse data from
 		this.arrayHolder = [];
 		this.filteredLibraries = [];
@@ -66,10 +66,10 @@ export default class Login extends Component {
 
 	// handles the mount information, setting session variables, etc
 	componentDidMount = async () => {
-
+		this._isMounted = true;
 		//await setGlobalVariables();
 
-		await getGreenhouseData(this.libraryData).then(async data => {
+		this._isMounted && await getGreenhouseData(this.libraryData).then(async data => {
 			//console.log(data);
 			this.libraryData = data.libraryData;
 			if (data.locationNum) {
@@ -91,17 +91,21 @@ export default class Login extends Component {
 			}
 		});
 
-		this.setState({
+		this._isMounted && this.setState({
 			isLoading: false,
 			isFetching: false,
 		});
 
 		if(Constants.manifest.slug === "aspen-lida") {
 			// fetch greenhouse data to populate libraries for community app
-			await this.makeFullGreenhouseRequest();
+			this._isMounted && await this.makeFullGreenhouseRequest();
 		}
 
 	};
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	}
 
 	// handles the opening or closing of the showLibraries() modal
 	handleModal = (newState) => {

@@ -17,6 +17,7 @@ import {userContext} from "../../context/user";
 import * as Notifications from 'expo-notifications';
 import * as ExpoLinking from 'expo-linking';
 import Constants from "expo-constants";
+import {GLOBALS} from "../../util/globals";
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -51,6 +52,7 @@ export class DrawerContent extends Component {
 			asyncLoaded: false,
 			notification: {},
 		};
+		this._isMounted = false;
 			//setGlobalVariables();
 	}
 
@@ -128,6 +130,7 @@ export class DrawerContent extends Component {
 	}
 
 	componentDidMount = async () => {
+		this._isMounted = true;
 		this.setState({
 			isLoading: false,
 		});
@@ -138,10 +141,12 @@ export class DrawerContent extends Component {
 		Notifications.addNotificationResponseReceivedListener(this._handleNotificationResponse);
 
 		this.interval = setInterval(() => {
-			this.loadILSMessages();
-			this.loadProfile();
-			//this.loadLanguages();
-		}, 300000)
+			if (this._isMounted){
+				this.loadILSMessages();
+				this.loadProfile();
+				//this.loadLanguages();
+			}
+		}, GLOBALS.timeoutSlow)
 
 		return () => {
 			clearInterval(this.interval);
@@ -221,6 +226,7 @@ export class DrawerContent extends Component {
 
 
 	componentWillUnmount() {
+		this._isMounted = false;
 		clearInterval(this.interval);
 	}
 

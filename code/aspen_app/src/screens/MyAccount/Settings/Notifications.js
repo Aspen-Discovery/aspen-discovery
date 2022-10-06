@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import {SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import {Box, HStack, Switch, Text, ScrollView, Button, FlatList} from "native-base";
@@ -6,15 +7,9 @@ import * as Notifications from 'expo-notifications';
 import _ from "lodash";
 
 // custom components and helper files
-import {loadError} from "../../../components/loadError";
 import {userContext} from "../../../context/user";
 import {loadingSpinner} from "../../../components/loadingSpinner";
-import {
-	deletePushToken, getNotificationPreference,
-	getNotificationPreferences,
-	getPushToken,
-	registerForPushNotificationsAsync, savePushToken, setNotificationPreference
-} from "../../../components/Notifications";
+import {deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference} from "../../../components/Notifications";
 import {translate} from "../../../translations/translations";
 
 export default class Settings_Notifications extends Component {
@@ -27,14 +22,14 @@ export default class Settings_Notifications extends Component {
 			pushToken: this.props.route.params?.pushToken ?? null,
 			categories: {
 				notifySavedSearch: {
-					id: 3,
+					id: 0,
 					label: 'Saved searches',
 					option: 'notifySavedSearch',
 					description: null,
 					allow: false,
 				},
 				notifyCustom: {
-					id: 2,
+					id: 1,
 					label: 'Alerts from your library',
 					option: 'notifyCustom',
 					description: null,
@@ -42,76 +37,77 @@ export default class Settings_Notifications extends Component {
 				},
 			},
 			unableToNotify: false,
+			allowNotifications: !!this.props.route.params?.pushToken,
 		};
+		this._isMounted = false;
 		this.getSavedPreferences = this.getSavedPreferences.bind(this);
-		this.getSavedPreferencesForDevice();
 	}
 
 	componentDidMount = async () => {
-		//await AsyncStorage.getItem('@pushToken')
+		this._isMounted = true;
+
+		//this._isMounted && await this.getSavedPreferences();
+		this._isMounted && this.getSavedPreferencesForDevice();
 
 		this.setState({
 			isLoading: false,
 		})
 
-		let notificationStorage = await AsyncStorage.getItem('@notifications');
-		if(notificationStorage) {
-			notificationStorage = JSON.parse(notificationStorage);
-		} else {
-			notificationStorage = [];
+		// build a received notification storage for later
+		if(this._isMounted){
+			let notificationStorage = await AsyncStorage.getItem('@notifications');
+			if (notificationStorage) {
+				notificationStorage = JSON.parse(notificationStorage);
+			} else {
+				notificationStorage = [];
+			}
 		}
 
 		//console.log(notificationStorage);
 	}
 
+	componentWillUnmount() {
+		this._isMounted = false;
+	}
+
 	getSavedPreferencesForDevice = () => {
-		if (Constants.isDevice) {
-			const deviceToken = this.context.pushToken;
+		if (Constants.isDevice && this._isMounted) {
+			const deviceToken = this.state.pushToken;
 			const user = this.context.user;
 			const notificationPreferences = user.notification_preferences ?? null;
 
 			if(notificationPreferences && deviceToken) {
 				const devicePreferences = _.filter(notificationPreferences, ['token', deviceToken]);
 				if(devicePreferences && devicePreferences.length === 1) {
-					this.state = {
-						...this.state,
-						allowNotifications: true,
-						token: deviceToken,
+					console.log(devicePreferences[0]);
+					this.setState((prevState) => ({
+						...prevState,
 						categories: {
-							...this.state.categories,
+							...prevState.categories,
 							notifySavedSearch: {
-								...this.state.categories.notifySavedSearch,
+								...prevState.categories.notifySavedSearch,
 								allow: devicePreferences[0]['notifySavedSearch'] === "1",
 							},
 							notifyCustom: {
-								...this.state.categories.notifyCustom,
-								allow: devicePreferences[0]['notifyCustom'] === "1"
+								...prevState.categories.notifyCustom,
+								allow: devicePreferences[0]['notifyCustom'] === "1",
 							},
 						},
-					};
+					}));
+					return true;
 				} else {
-					this.state = {
-						...this.state,
-						allowNotifications: false,
-						unableToNotify: true,
-						token: null,
-					};
+					return false;
 				}
-				//
-				//if found, set state to match
-				//if not found, set state to default
 			}
 		} else {
-			this.state = {
-				...this.state,
-				allowNotifications: false,
+			this.setState({
 				unableToNotify: true,
-				token: null,
-			};
+			})
+			return false;
 		}
 	}
 
-	getSavedPreferences = async (token, libraryUrl) => {
+	getSavedPreferences = async (token) => {
 		const route = this.props;
 		const savedPreferences = route.params?.user.notification_preferences ?? null;
 		if(savedPreferences) {
@@ -121,23 +117,24 @@ export default class Settings_Notifications extends Component {
 		let currentPreferences = this.state.categories;
 		currentPreferences = Object.keys(currentPreferences);
 		for await(const pref of currentPreferences) {
-			let savedValue = await getNotificationPreference(libraryUrl, token, pref)
+			let savedValue = await getNotificationPreference(this.context.library.baseUrl, token, pref)
 			if(savedValue) {
-				this.setState({
+				console.log(savedValue);
+				this.setState((prevState) => ({
 					categories: {
-						...this.state.categories,
+						...prevState.categories,
 						[pref]: {
-							...this.state.categories[pref],
+							...prevState.categories[pref],
 							allow: savedValue.allow,
 						}
 					}
-				})
+				}))
 			}
 		}
 	}
 
 	updatePreference = async (option, newValue) => {
-		let token = this.context.pushToken;
+		let token = this.state.pushToken;
 		if(token) {
 			let updatedValue = await setNotificationPreference(this.context.library.baseUrl, token, option, newValue);
 			this.setState({
@@ -156,7 +153,7 @@ export default class Settings_Notifications extends Component {
 	}
 
 	updateContext = (option, newValue) => {
-		const deviceToken = this.context.pushToken;
+		const deviceToken = this.state.pushToken;
 		const user = this.context.user;
 		const notificationPreferences = user.notification_preferences ?? null;
 
@@ -204,18 +201,18 @@ export default class Settings_Notifications extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
-		const pushToken = this.context.pushToken;
+		const pushToken = this.state.pushToken;
 
 		if(this.state.isLoading === true) {
 			return(loadingSpinner());
 		}
 
 		return (
-			<ScrollView>
+			<SafeAreaView style={{flex: 1}}>
 				<Box flex={1} safeArea={5}>
 					<HStack space={3} pb={5} alignItems="center" justifyContent="space-between">
 						<Text bold>{translate('user_profile.allow_notifications')}</Text>
-						<Switch onToggle={() => this.handleToggle} isChecked={this.state.allowNotifications} isDisabled={this.state.unableToNotify}/>
+						<Switch onToggle={() => this.handleToggle()} isChecked={this.state.allowNotifications} isDisabled={this.state.unableToNotify}/>
 					</HStack>
 					{this.state.allowNotifications ? (
 						<FlatList
@@ -224,7 +221,7 @@ export default class Settings_Notifications extends Component {
 						/>
 					) : null}
 				</Box>
-			</ScrollView>
+			</SafeAreaView>
 		)
 	}
 }

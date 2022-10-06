@@ -12,7 +12,7 @@ class MyAccount_Home extends MyAccount{
 			// Check to see if the user has rated any titles
 			$interface->assign('hasRatings', $user->hasRatings());
 
-			$this->display('home.tpl');
+			parent::display('home.tpl');
 		}
 	}
 

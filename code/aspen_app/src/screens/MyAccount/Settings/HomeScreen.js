@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SafeAreaView} from 'react-native';
 import {Box, FlatList, HStack, Switch, Text, ScrollView} from "native-base";
 
 // custom components and helper files
@@ -22,12 +22,13 @@ export default class Settings_HomeScreen extends Component {
 			browseCategories: [],
 			patronCategories: [],
 		};
-		//getPatronBrowseCategories();
+		this._isMounted = false;
 		this.loadBrowseCategories();
 	}
 
 	// store the values into the state
 	componentDidMount = async () => {
+		this._isMounted = true;
 		if(this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
 			version = version.split(" ");
@@ -44,28 +45,23 @@ export default class Settings_HomeScreen extends Component {
 			isLoading: true,
 		})
 
-		await this.loadBrowseCategories().then(r => {
+		this._isMounted && await this.loadBrowseCategories().then(r => {
 			this.setState({ isLoading: false });
 		});
-
-		this.interval = setInterval(() => {
-			this.loadBrowseCategories();
-		}, 1000)
-
-		return () => clearInterval(this.interval)
 
 	};
 
 	componentWillUnmount() {
-		clearInterval(this.interval);
+		this._isMounted = false;
 	}
 
 	loadBrowseCategories = async () => {
+
 		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const libraryUrl = this.context.library.baseUrl;
 		const patronId = route.params?.patronId ?? 'null';
 
-		await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
+		this._isMounted && await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
 			this.setState({
 				patronCategories: res,
 				isLoading: false,
@@ -76,7 +72,7 @@ export default class Settings_HomeScreen extends Component {
 	// Update the status of the browse category when the toggle switch is flipped
 	updateToggle = async (item, user, libraryUrl) => {
 		if (item.isHidden === true) {
-			await showBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
+			this._isMounted &&await showBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
 				await getPatronBrowseCategories(libraryUrl, user).then(res => {
 					this.setState({
 						patronCategories: res,
@@ -87,7 +83,7 @@ export default class Settings_HomeScreen extends Component {
 				})
 			});
 		} else {
-			await dismissBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
+			this._isMounted && await dismissBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
 				await getPatronBrowseCategories(libraryUrl, user).then(res => {
 					this.setState({
 						patronCategories: res,
@@ -98,6 +94,8 @@ export default class Settings_HomeScreen extends Component {
 				})
 			});
 		}
+
+		this._isMounted && await this.loadBrowseCategories();
 	};
 
 
@@ -106,8 +104,8 @@ export default class Settings_HomeScreen extends Component {
 			<Box borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
 					<Text isTruncated bold maxW="80%" fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
-					{item.isHidden ? <Switch size="md" onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)}/> :
-						<Switch size="md" onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)} defaultIsChecked/>}
+					{item.isHidden ? <Switch size="md" onToggle={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)}/> :
+						<Switch size="md" onToggle={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)} defaultIsChecked/>}
 				</HStack>
 			</Box>
 		);
@@ -127,7 +125,7 @@ export default class Settings_HomeScreen extends Component {
 		}
 
 		if (this.state.hasError) {
-			return (loadError(this.state.error));
+			return (loadError(this.state.error, ''));
 		}
 
 		if (!patronCategories) {
@@ -135,14 +133,14 @@ export default class Settings_HomeScreen extends Component {
 		}
 
 		return (
-			<ScrollView>
+			<SafeAreaView style={{flex: 1}}>
 			<Box>
 				<FlatList
 					data={patronCategories}
 					renderItem={({item}) => this.renderNativeItem(item, user.id, library.baseUrl, browseCategories)}
 				/>
 			</Box>
-			</ScrollView>
+			</SafeAreaView>
 		);
 	}
 }

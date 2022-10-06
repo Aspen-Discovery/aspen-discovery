@@ -117,23 +117,30 @@ class AJAX extends Action {
 		$searchObject->init();
 		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-		//Load results from Prospector
-		$prospector = new Prospector();
+        if (!empty($searchObject->id)) {
+            //Load results from Prospector
+            $prospector = new Prospector();
 
-		// Only show prospector results within search results if enabled
-		if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-			$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-			$interface->assign('prospectorResults', $prospectorResults['records']);
-		}
+            // Only show prospector results within search results if enabled
+            if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch) {
+                $prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+                $interface->assign('prospectorResults', $prospectorResults['records']);
+            }
 
-		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-		$interface->assign('prospectorLink', $prospectorLink);
-		$timer->logTime('load Prospector titles');
-		//echo $interface->fetch('Search/ajax-innreach.tpl');
-		return array(
-			'numTitles' => count($prospectorResults),
-			'formattedData' => $interface->fetch('Search/ajax-innreach.tpl')
-		);
+            $prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
+            $interface->assign('prospectorLink', $prospectorLink);
+            $timer->logTime('load Prospector titles');
+            //echo $interface->fetch('Search/ajax-innreach.tpl');
+            return array(
+                'numTitles' => count($prospectorResults),
+                'formattedData' => $interface->fetch('Search/ajax-innreach.tpl')
+            );
+        }else{
+            return array(
+                'numTitles' => 0,
+                'formattedData' => ''
+            );
+        }
 	}
 
 	/**
