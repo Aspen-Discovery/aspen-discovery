@@ -68,24 +68,28 @@ class MyAccount_Login extends Action
 		//SSO
 		$loginOptions = 0;
 		if ($library->ssoSettingId != -1) {
-			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-			$sso = new \SSOSetting();
-			$sso->id = $library->ssoSettingId;
-			if ($sso->find(true)) {
-				$loginOptions = $sso->loginOptions;
-				$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-				$interface->assign('ssoService', $sso->service);
-				if ($sso->service == "oauth") {
-					$interface->assign('oAuthGateway', $sso->oAuthGateway);
-					if ($sso->oAuthGateway == "custom") {
-						$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
-						$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
-						$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
-						if ($sso->oAuthGatewayIcon) {
-							$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+			try {
+				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+				$sso = new \SSOSetting();
+				$sso->id = $library->ssoSettingId;
+				if ($sso->find(true)) {
+					$loginOptions = $sso->loginOptions;
+					$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
+					$interface->assign('ssoService', $sso->service);
+					if ($sso->service == "oauth") {
+						$interface->assign('oAuthGateway', $sso->oAuthGateway);
+						if ($sso->oAuthGateway == "custom") {
+							$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
+							$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
+							$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
+							if ($sso->oAuthGatewayIcon) {
+								$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+							}
 						}
 					}
 				}
+			}catch (Exception $e){
+				//This happens if the tables are not installed, just ignore
 			}
 		}
 

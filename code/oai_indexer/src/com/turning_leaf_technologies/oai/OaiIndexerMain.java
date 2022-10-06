@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.oai;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -16,7 +17,9 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.*;
@@ -58,16 +61,22 @@ public class OaiIndexerMain {
 
 		Date startTime = new Date();
 		String processName = "oai_indexer";
+
 		logger = LoggingUtil.setupLogging(serverName, processName);
 		logger.info("Starting " + processName + ": " + startTime);
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-		//Connect to the aspen database
-		connectToDatabase();
+		//Check to see if the indexer is already running and if so quit
+		if (IndexingUtils.isIndexerRunning(processName, configIni, serverName, logger)){
+			logger.info("Indexer is already running, quitting");
+		}else{
+			//Connect to the aspen database
+			connectToDatabase();
 
-		extractAndIndexOaiData();
+			extractAndIndexOaiData();
+		}
 
 		logger.info("Finished " + new Date());
 		long endTime = new Date().getTime();

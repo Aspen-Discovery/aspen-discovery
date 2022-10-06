@@ -378,7 +378,7 @@ class HooplaProcessor {
 					boolean okToAdd;
 					HooplaScope hooplaScope = scope.getHooplaScope();
 					if (hooplaScope != null){
-						okToAdd = hooplaScope.isOkToAdd(identifier, kind, price, abridged, pa, profanity, children, rating, logger);
+						okToAdd = hooplaScope.isOkToAdd(identifier, kind, price, abridged, pa, profanity, children, rating, genresToAdd, logger);
 					}else{
 						okToAdd = false;
 					}

@@ -27,6 +27,7 @@ class HooplaScope extends DataObject
 	public /** @noinspection PhpUnused */ $excludeAbridged;
 	public /** @noinspection PhpUnused */ $excludeParentalAdvisory;
 	public /** @noinspection PhpUnused */ $excludeProfanity;
+	public /** @noinspection PhpUnused */ $genresToExclude;
 
 	private $_libraries;
 	private $_locations;
@@ -67,6 +68,7 @@ class HooplaScope extends DataObject
 			'excludeAbridged' => array('property' => 'excludeAbridged', 'type' => 'checkbox', 'label' => 'Exclude Abridged Records', 'description'=>'Whether or not records marked as abridged should be included', 'default'=>0, 'forcesReindex' => true),
 			'excludeParentalAdvisory' => array('property' => 'excludeParentalAdvisory', 'type' => 'checkbox', 'label' => 'Exclude Parental Advisory Records', 'description'=>'Whether or not records marked with a parental advisory indicator should be included', 'default'=>0, 'forcesReindex' => true),
 			'excludeProfanity' => array('property' => 'excludeProfanity', 'type' => 'checkbox', 'label' => 'Exclude Records With Profanity', 'description'=>'Whether or not records marked with a profanity waning should be included', 'default'=>0, 'forcesReindex' => true),
+			'genresToExclude' => array('property' => 'genresToExclude', 'type' => 'textarea', 'label' => 'Genres To Exlude (each filter on it\'s own line, regular expressions ok)', 'description' => 'Genres To Exclude', 'hideInLists' => true),
 
 			'libraries' => array(
 				'property' => 'libraries',
