@@ -274,8 +274,9 @@ class Library extends DataObject
 	//SSO
 	public /** @noinspection PhpUnused */ $ssoName;
 	public /** @noinspection PhpUnused */ $ssoXmlUrl;
-	public /** @noinspection PhpUnused */ $ssoUniqueAttribute;
 	public /** @noinspection PhpUnused */ $ssoMetadataFilename;
+	public /** @noinspection PhpUnused */ $ssoEntityId;
+	public /** @noinspection PhpUnused */ $ssoUniqueAttribute;
 	public /** @noinspection PhpUnused */ $ssoIdAttr;
 	public /** @noinspection PhpUnused */ $ssoUsernameAttr;
 	public /** @noinspection PhpUnused */ $ssoFirstnameAttr;
@@ -584,6 +585,8 @@ class Library extends DataObject
 			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
 		}
 
+
+
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
 		$structure = array(
@@ -624,6 +627,8 @@ class Library extends DataObject
 			'ssoSection' => array('property'=>'ssoSection', 'type' => 'section', 'label' =>'Single Sign-on', 'hideInLists' => true, 'properties' => array(
 				'ssoName' => array('property'=>'ssoName', 'type'=>'text', 'label'=>'Name of service', 'description'=>'The name to be displayed when referring to the authentication service', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				'ssoXmlUrl' => array('property'=>'ssoXmlUrl', 'type'=>'text', 'label'=>'URL of service metadata XML', 'description'=>'The URL at which the metadata XML document for this identity provider can be obtained', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+				'ssoMetadataFilename'=> array('path'=>'/data/aspen-discovery/sso_metadata', 'property'=>'ssoMetadataFilename', 'type'=>'file', 'label'=>'XML metadata file', 'description'=>'The XML metadata file if no URL is available', 'serverValidation'=>'processXmlUpload', 'readOnly'=>true, 'permissions' => ['Library ILS Connection']),
+				'ssoEntityId' => array('property'=>'ssoEntityId', 'type'=>'text', 'label'=>'Entity ID of SSO provider', 'description'=>'The entity ID of the SSO IdP. This can be found in the IdP\'s metadata', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				'ssoUniqueAttribute' => array('property'=>'ssoUniqueAttribute', 'type'=>'text', 'label'=>'Name of the identity provider attribute that uniquely identifies a user', 'description'=>'This should be unique to each user', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				'ssoIdAttr' => array('property'=>'ssoIdAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user ID', 'description'=>'This should be unique to each user', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 				'ssoUsernameAttr' => array('property'=>'ssoUsernameAttr', 'type'=>'text', 'label'=>'Name of the identity provider attribute that contains the user\'s username', 'description'=>'The user\'s username', 'size'=>'512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
@@ -1264,9 +1269,9 @@ class Library extends DataObject
 			'validatedOk' => true,
 			'errors' => array(),
 		);
-		// Only proceed if we have a populated SSO IdP URL (we infer SSO auth usage
-		// from this)
-		if (!$this->ssoXmlUrl || strlen($this->ssoXmlUrl) == 0) {
+		// Only validate everything else if we have a populated SSO entity ID
+		// (we infer SSO auth usage from this)
+		if (!$this->ssoEntityId || strlen($this->ssoEntityId) == 0) {
 			return $validationResults;
 		}
 		if (
@@ -1301,6 +1306,10 @@ class Library extends DataObject
 			'ssoCategoryIdAttr',
 			'ssoCategoryIdFallback',
 			'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value'
+		);
+		$validationResults = array(
+			'validatedOk' => true,
+			'errors' => array(),
 		);
 	}
 
@@ -1860,7 +1869,7 @@ class Library extends DataObject
 			$quickSearch->quickSearchSettingId = $quickSearchSettings->id;
 			$quickSearch->orderBy('weight');
 			if ($quickSearch->find()) {
-				while ($quickSearch->fetch()) {
+				while $quickSearch->fetch()) {
 					$quickSearches[$quickSearch->id] = clone $quickSearch;
 				}
 			}
@@ -1907,9 +1916,7 @@ class Library extends DataObject
 		global $logger;
 		global $configArray;
 		global $serverName;
-		$dataPath = '/data/aspen-discovery/sso_metadata/';
-		$fileName = md5($serverName) . '.xml';
-		$filePath = $dataPath . $fileName;
+		$ssoXmlDataPath = '/data/aspen-discovery/sso_metadata/';
 		$url = trim($this->ssoXmlUrl);
 		if (strlen($url) > 0) {
 			// We've got a new or updated URL
@@ -1926,16 +1933,18 @@ class Library extends DataObject
 					$logger->log($e, Logger::LOG_ERROR);
 					return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');
 				}
-				$written = file_put_contents($filePath, $xml);
+				$fileName = $serverName . '.xml';
+				$ssoMetadataFilename = $ssoXmlDataPath . $fileName;
+				$written = file_put_contents($ssoMetadataFilename, $xml);
 				if ($written === false) {
 					$logger->log(
-						'Failed to write SSO metadata to ' . $filePath . ' for site ' .
+						'Failed to write SSO metadata to ' . $ssoMetadataFilename . ' for site ' .
 						$configArray['Site']['title'],
 						Logger::LOG_ERROR
 					);
 					return new AspenError('Unable to use SSO IdP metadata, cannot create XML file');
 				} else {
-					chmod($filePath, 0764);
+					chmod($ssoMetadataFilename, 0764);
 				}
 			} else {
 				$logger->log(

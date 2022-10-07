@@ -69,11 +69,11 @@
 					</div>
 				</div>
 			{/if}
-			{if !(empty($ssoXmlUrl))}
+			{if !(empty($ssoEntityId))}
 			<div id="SAMLLoginRow" class="form-group">
 				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 					<p class="help-block">
-						<a href="/saml2auth.php?samlLogin=y&idp={$ssoXmlUrl}">Log in using {$ssoName}</a>
+						<a href="/saml2auth.php?samlLogin=y&idp={$ssoEntityId}">Log in using {$ssoName}</a>
 					</p>
 				</div>
 			</div>

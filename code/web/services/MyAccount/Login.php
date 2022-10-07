@@ -98,8 +98,8 @@ class MyAccount_Login extends Action
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML
-		if (isset($library->ssoXmlUrl)) {
-			$interface->assign('ssoXmlUrl', $library->ssoXmlUrl);
+		if (isset($library->ssoMetadataFilename) && isset($library->ssoEntityId)) {
+			$interface->assign('ssoEntityId', $library->ssoEntityId);
 		}
 		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
 		if (!empty($library->loginNotes)) {
