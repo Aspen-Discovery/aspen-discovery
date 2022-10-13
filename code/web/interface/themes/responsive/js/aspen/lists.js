@@ -79,6 +79,10 @@ AspenDiscovery.Lists = (function(){
 			);
 		},
 
+		exportUserListAction: function (id){
+
+		},
+
 		citeListAction: function (id) {
 			return AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
 			//return false;

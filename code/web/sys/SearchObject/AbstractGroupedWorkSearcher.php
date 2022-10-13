@@ -608,12 +608,13 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function buildExcel($result = null)
 	{
+        global $configArray;
 		try {
 			// First, get the search results if none were provided
 			// (we'll go for 50 at a time)
 			if (is_null($result)) {
 				$this->limit = 1000;
-				$result = $this->processSearch(false, false);
+				$result = $this->processSearch(false, false); // TODO: James asks: processSearch does NOT apply scope to results, correct?
 			}
 
 			// Prepare the spreadsheet
@@ -630,45 +631,62 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			$sheet = $objPHPExcel->getActiveSheet();
 			$curRow = 1;
 			$curCol = 0;
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Record #');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Call Number');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Item Type');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
 
 			$maxColumn = $curCol - 1;
 
 			global $solrScope;
-			for ($i = 0; $i < count($result['response']['docs']); $i++) {
+            $docs = $result['response']['docs'];
+            $scopedDocs = array_filter($docs, function($v) use ($solrScope) {
+//                return preg_grep("/^" . $solrScope . "#", $v["availability_toggle"]);
+                return preg_grep("/^" . $solrScope . "#/", $v["global"]);
+            });
+            $docs = array_values($scopedDocs);
+
+			for ($i = 0; $i < count($docs); $i++) {
 				//Output the row to excel
-				$curDoc = $result['response']['docs'][$i];
+				$curDoc = $docs[$i];
 				$curRow++;
 				$curCol = 0;
 				//Output the row to excel
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['id'] ?? '');
+                $link = '';
+                if ($curDoc['id']) {
+                    $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
+                }
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $link);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author'] ?? '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['publishDateSort'] ?? '');
-				$callNumber = '';
-				if (isset($curDoc['local_callnumber_' . $solrScope])) {
-					$callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
-				}
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $callNumber);
-				$iType = '';
-				if (isset($curDoc['itype_' . $solrScope])) {
-					$iType = is_array($curDoc['itype_' . $solrScope]) ? $curDoc['itype_' . $solrScope][0] : $curDoc['itype_' . $solrScope];
-				}
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $iType);
+
+                if (!is_array($curDoc['format'])) {
+                    $formats = (array)$curDoc['format'];
+                } else {
+                    $formats = $curDoc['format'];
+                }
+                $scopedFormats = array_filter($formats, function($v) use ($solrScope) {
+                    return strpos($v, $solrScope . '#') === 0;
+                });
+
+                $format = is_array($curDoc['format_' . $solrScope]) ? implode(', ', $curDoc['format_' . $solrScope]) : $curDoc['format_' . $solrScope];
+
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $format);
+                $callNumber = '';
+                if (isset($curDoc['local_callnumber_' . $solrScope])) {
+                    $callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
+                }
 				$location = '';
 				if (isset($curDoc['detailed_location_' . $solrScope])) {
-					$location = is_array($curDoc['detailed_location_' . $solrScope]) ? $curDoc['detailed_location_' . $solrScope][0] : $curDoc['detailed_location_' . $solrScope];
+					$location = is_array($curDoc['detailed_location_' . $solrScope]) ? implode(',', $curDoc['detailed_location_' . $solrScope]) : $curDoc['detailed_location_' . $solrScope];
 				}
 				/** @noinspection PhpUnusedLocalVariableInspection */
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location);
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location . ' ' . $callNumber);
 			}
 
 			for ($i = 0; $i < $maxColumn; $i++) {

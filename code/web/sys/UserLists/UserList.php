@@ -18,8 +18,12 @@ class UserList extends DataObject
 	public $defaultSort;
 	public $importedFrom;
 	public $nytListModified;
+    /**
+     * @var int
+     */
+    private $limit;
 
-	public function getUniquenessFields(): array
+    public function getUniquenessFields(): array
 	{
 		return ['id'];
 	}
@@ -912,4 +916,99 @@ class UserList extends DataObject
 			$this->update();
 		}
 	}
+
+    /**
+     * Turn our results into an Excel document
+     * @param null|array $result
+     */
+    public function buildExcel($result = null)
+    {
+        global $configArray;
+        try {
+            // First, get the User List titles if none were provided
+            // (we'll go for 50 at a time)
+            if (is_null($result)) {
+                $this->limit = 1000;
+                $result = $this->getListTitles();
+            }
+
+            // Prepare the spreadsheet
+            ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
+            include ROOT_DIR . '/PHPExcel.php';
+            include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
+            $objPHPExcel = new PHPExcel();
+            $objPHPExcel->getProperties()->setTitle("User List");
+
+            $objPHPExcel->setActiveSheetIndex(0);
+            $objPHPExcel->getActiveSheet()->setTitle('Titles');
+
+            //Add headers to the table
+            $sheet = $objPHPExcel->getActiveSheet();
+            $curRow = 1;
+            $curCol = 0;
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
+
+            $maxColumn = $curCol - 1;
+
+            global $solrScope;
+            for ($i = 0; $i < count($result['response']['docs']); $i++) {
+                //Output the row to excel
+                $curDoc = $result['response']['docs'][$i];
+                $curRow++;
+                $curCol = 0;
+                //Output the row to excel
+                $link = '';
+                if ($curDoc['id']) {
+                    $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
+                }
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $link);
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['publishDateSort'] ?? '');
+                $format = '';
+                if (isset($curDoc['format_' . $solrScope])) {
+                    $format = is_array($curDoc['format_' . $solrScope]) ? implode(', ', $curDoc['format_' . $solrScope]) : $curDoc['format_' . $solrScope];
+                }
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $format);
+                $callNumber = '';
+                if (isset($curDoc['local_callnumber_' . $solrScope])) {
+                    $callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
+                }
+                $location = '';
+                if (isset($curDoc['detailed_location_' . $solrScope])) {
+                    $location = is_array($curDoc['detailed_location_' . $solrScope]) ? implode(',', $curDoc['detailed_location_' . $solrScope]) : $curDoc['detailed_location_' . $solrScope];
+                }
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location . ' ' . $callNumber);
+            }
+
+            for ($i = 0; $i < $maxColumn; $i++) {
+                $sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
+            }
+
+            //Output to the browser
+            header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+            header("Cache-Control: no-store, no-cache, must-revalidate");
+            header("Cache-Control: post-check=0, pre-check=0", false);
+            header("Pragma: no-cache");
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="Results.xlsx"');
+
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
+            $objPHPExcel->disconnectWorksheets();
+            unset($objPHPExcel);
+        } catch (Exception $e) {
+            global $logger;
+            $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+        }
+    }
+
 }
