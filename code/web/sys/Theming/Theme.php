@@ -458,7 +458,7 @@ class Theme extends DataObject
 			'secondaryForegroundColor' => ['property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Text Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith' => 'secondaryBackgroundColor'],
 
 			//Tertiary Color
-			'tertiaryBackgroundColor' => ['property' => 'tertiaryBackgroundColor', 'type' => 'color', 'label' => 'Tertiary Background Color', 'description' => 'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de1f0b', 'checkContrastWith' => 'tertiaryForegroundColor'],
+			'tertiaryBackgroundColor' => ['property' => 'tertiaryBackgroundColor', 'type' => 'color', 'label' => 'Tertiary Background Color', 'description' => 'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#F76E5E', 'checkContrastWith' => 'tertiaryForegroundColor'],
 			'tertiaryForegroundColor' => ['property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#000000', 'checkContrastWith' => 'tertiaryBackgroundColor'],
 
 			'headingFont' => ['property' => 'headingFont', 'type' => 'font', 'label' => 'Heading Font', 'description' => 'Heading Font', 'validFonts' => $validHeadingFonts, 'previewFontSize' => '20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'],
@@ -492,12 +492,12 @@ class Theme extends DataObject
 			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
 				'browseCategoryPanelColor' => ['property' => 'browseCategoryPanelColor', 'type' => 'color', 'label' => 'Browse Category Panel Color', 'description' => 'Background Color of the Browse Category Panel', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'],
 
-				'selectedBrowseCategoryBackgroundColor' => ['property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB', 'checkContrastWith'=>'selectedBrowseCategoryForegroundColor'],
-				'selectedBrowseCategoryForegroundColor' => ['property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Text Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'selectedBrowseCategoryBackgroundColor'],
+				'selectedBrowseCategoryBackgroundColor' => ['property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#005C75', 'checkContrastWith' => 'selectedBrowseCategoryForegroundColor'],
+				'selectedBrowseCategoryForegroundColor' => ['property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Text Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'selectedBrowseCategoryBackgroundColor'],
 				'selectedBrowseCategoryBorderColor' => ['property' => 'selectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Selected Browse Category Border Color', 'description' => 'Selected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'],
 
-				'deselectedBrowseCategoryBackgroundColor' => ['property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB', 'checkContrastWith'=>'deselectedBrowseCategoryForegroundColor'],
-				'deselectedBrowseCategoryForegroundColor' => ['property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'deselectedBrowseCategoryBackgroundColor'],
+				'deselectedBrowseCategoryBackgroundColor' => ['property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#005C75', 'checkContrastWith' => 'deselectedBrowseCategoryForegroundColor'],
+				'deselectedBrowseCategoryForegroundColor' => ['property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'deselectedBrowseCategoryBackgroundColor'],
 				'deselectedBrowseCategoryBorderColor' => ['property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'],
 
 				'capitalizeBrowseCategories' => ['property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse category names', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
@@ -867,7 +867,7 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('primaryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('secondaryBackgroundColor', '#de9d03', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#de1f0b', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#F76E5E', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#000000', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menubarBackgroundColor', '#f1f1f1', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menubarForegroundColor', '#303030', $appliedThemes);
@@ -881,10 +881,10 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('badgeBackgroundColor', Theme::$defaultBadgeBackgroundColor, $appliedThemes);

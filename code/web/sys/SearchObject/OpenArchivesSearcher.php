@@ -103,9 +103,9 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'OpenArchivesKeyword' => translate(['text'=>'Keyword', 'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'OpenArchivesTitle' => translate(['text'=>'Keyword', 'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'OpenArchivesSubject' => translate(['text'=>'Keyword', 'Subject', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'OpenArchivesKeyword' => translate(['text' => 'Keyword', 'Keyword', 'isPublicFacing' => true, 'inAttribute' => true]),
+			'OpenArchivesTitle' => translate(['text' => 'Title', 'Title', 'isPublicFacing' => true, 'inAttribute' => true]),
+			'OpenArchivesSubject' => translate(['text' => 'Subject', 'Subject', 'isPublicFacing' => true, 'inAttribute' => true]),
 		];
 	}
 
