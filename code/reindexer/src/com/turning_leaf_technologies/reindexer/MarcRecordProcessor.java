@@ -27,7 +27,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
-	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE)
+	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
