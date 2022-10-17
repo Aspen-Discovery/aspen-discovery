@@ -27,6 +27,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
@@ -1530,7 +1531,10 @@ abstract class MarcRecordProcessor {
 				String editionData = edition.getSubfield('a').getData().toLowerCase();
 				if (editionData.contains("large type") || editionData.contains("large print")) {
 					result.add("LargePrint");
-				}else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
+				}else if (bluray4kComboRegex.matcher(editionData).matches()) {
+					result.add("4K/Blu-ray");
+				}
+				else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
 					result.add("Blu-ray/DVD");
 				}else if (editionData.contains("go reader") || editionData.contains("goreader")) {
 					result.add("GoReader");
@@ -1575,6 +1579,10 @@ abstract class MarcRecordProcessor {
 						result.add("Atlas");
 					} else if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 						result.add("LargePrint");
+					} else if (subfield.getCode() == 'a' && (physicalDescriptionData.contains("launchpad"))) {
+						result.add("Playaway Launchpad");
+					}else if (physicalDescriptionData.contains("4k") && (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray"))) {
+						result.add("4K Blu-ray");
 					} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 						//Check to see if this is a combo pack.
 						Subfield subfieldE = field.getSubfield('e');
@@ -1607,7 +1615,7 @@ abstract class MarcRecordProcessor {
 							result.add("Book+DVD");
 						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd-rom")){
 							result.add("Book+CD-ROM");
-						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
+						}else if (subfieldE != null && (subfieldE.getData().toLowerCase().contains("cd") || subfieldE.getData().toLowerCase().contains("audio disc"))){
 							result.add("Book+CD");
 						}else{
 							result.add("Book");
@@ -1635,8 +1643,8 @@ abstract class MarcRecordProcessor {
 				} else {
 					if (sysDetailsValue.contains("playaway")) {
 						result.add("Playaway");
-					} else if (sysDetailsValue.contains("4k") && (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray"))) {
-						result.add("4K Blu-ray");
+					} else if (bluray4kComboRegex.matcher(sysDetailsValue).matches()) {
+						result.add("4K/Blu-ray");
 					} else if (dvdBlurayComboRegex.matcher(sysDetailsValue).matches()) {
 						result.add("Blu-ray/DVD");
 					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
@@ -1659,17 +1667,23 @@ abstract class MarcRecordProcessor {
 					if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
 						break;
-					} else if (voxPattern.matcher(noteValue).matches()) {
+					}else if (voxPattern.matcher(noteValue).matches()) {
 						result.add("VoxBooks");
+						break;
+					}else if (bluray4kComboRegex.matcher(noteValue).matches()) {
+						result.add("4K/Blu-ray");
 						break;
 					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
 						result.add("Blu-ray/DVD");
 						break;
+					} else if (noteValue.contains("wonderbook")) {
+						result.add("Wonderbook");
+						break;
 					} else if (noteValue.contains("playaway view")) {
 						result.add("Playaway View");
 						break;
-					} else if (noteValue.contains("wonderbook")) {
-						result.add("Wonderbook");
+					}  else if (noteValue.contains("playaway bookpack") || noteValue.contains("playaway bookpacks")) {
+						result.add("Playaway Bookpack");
 						break;
 					}
 				}
