@@ -31,6 +31,7 @@ class SSOSetting extends DataObject
 	public $ssoXmlUrl;
 	public $ssoUniqueAttribute;
 	public $ssoMetadataFilename;
+	public $ssoEntityId;
 	public $ssoIdAttr;
 	public $ssoUsernameAttr;
 	public $ssoFirstnameAttr;
@@ -95,6 +96,8 @@ class SSOSetting extends DataObject
 
 			'ssoName' => array('property' => 'ssoName', 'type' => 'text', 'label' => 'Name of service', 'description' => 'The name to be displayed when referring to the authentication service', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoXmlUrl' => array('property' => 'ssoXmlUrl', 'type' => 'text', 'label' => 'URL of service metadata XML', 'description' => 'The URL at which the metadata XML document for this identity provider can be obtained', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
+			'ssoMetadataFilename'=> array('path' => '/data/aspen-discovery/sso_metadata', 'property' => 'ssoMetadataFilename', 'type' => 'file', 'label' => 'XML metadata file', 'description' => 'The XML metadata file if no URL is available', 'readOnly'=>true, 'permissions' => ['Library ILS Connection']),
+			'ssoEntityId' => array('property' => 'ssoEntityId', 'type' => 'text', 'label' => 'Entity ID of SSO provider', 'description' => 'The entity ID of the SSO IdP. This can be found in the IdP\'s metadata', 'size' => '512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
 			'ssoUniqueAttribute' => array('property' => 'ssoUniqueAttribute', 'type' => 'text', 'label' => 'Name of the identity provider attribute that uniquely identifies a user', 'description' => 'This should be unique to each user', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoIdAttr' => array('property' => 'ssoIdAttr', 'type' => 'text', 'label' => 'Name of the identity provider attribute that contains the user ID', 'description' => 'This should be unique to each user', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoUsernameAttr' => array('property' => 'ssoUsernameAttr', 'type' => 'text', 'label' => 'Name of the identity provider attribute that contains the user\'s username', 'description' => 'The user\'s username', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),

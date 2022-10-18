@@ -28,7 +28,7 @@ class MyAccount_Holds extends MyAccount{
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
-		$breadcrumbs[] = new Breadcrumb('', 'Titles On Holds');
+		$breadcrumbs[] = new Breadcrumb('', 'Titles On Hold');
 		return $breadcrumbs;
 	}
 }

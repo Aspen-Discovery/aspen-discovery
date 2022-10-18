@@ -959,8 +959,8 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML
-		if (!empty($library->ssoXmlUrl)) {
-			$interface->assign('ssoXmlUrl', $library->ssoXmlUrl);
+		if (!empty($library->ssoMetadataFilename) && !empty($library->ssoEntityId)) {
+			$interface->assign('ssoEntityId', $library->ssoEntityId);
 		}
 		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
 

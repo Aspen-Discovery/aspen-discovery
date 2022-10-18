@@ -1062,7 +1062,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		$modalBody = $interface->fetch('GroupedWork/copyDetails.tpl');
 		return array(
-			'title' => translate(['text'=>"Copy Summary", 'isPublicFacing'=>true]),
+			'title' => translate(['text'=>"Where is it?", 'isPublicFacing'=>true]),
 			'modalBody' => $modalBody,
 		);
 	}

@@ -11,7 +11,7 @@ $library = new Library();
 $library->find();
 while ($library->fetch()){
     if (strlen($library->ssoXmlUrl) > 0) {
-        print "Refreshing metadata for $library->displayName\n";
+        print "Refreshing metadata for $library->displayName from $library->ssoXmlUrl\n";
         $result = $library->fetchAndStoreSsoMetadata();
         if ($result instanceof AspenError) {
             print "FAILED: " . $result->message . "\n";
