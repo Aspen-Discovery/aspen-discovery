@@ -1,5 +1,4 @@
 import React from "react";
-import * as ErrorRecovery from "expo-error-recovery";
 import * as SecureStore from 'expo-secure-store';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,15 +10,9 @@ import Constants from "expo-constants";
 import {create} from 'apisauce';
 import * as Sentry from 'sentry-expo';
 import * as Notifications from 'expo-notifications';
-//import { Linking } from 'react-native';
 import * as Linking from 'expo-linking';
-import {Platform} from "react-native";
 
-
-import Splash from "./splash";
 import Login from "../screens/Auth/Login";
-
-import LoadingScreen from "../screens/Auth/Loading";
 import AccountDrawer from "../navigations/drawer/DrawerNavigator";
 import {translate} from "../translations/translations";
 import {createAuthTokens, getHeaders, postData} from "../util/apiAuth";
@@ -27,9 +20,10 @@ import {popAlert, popToast} from "./loadError";
 import {removeData} from "../util/logout";
 import {navigationRef} from "../helpers/RootNavigator";
 import {GLOBALS} from "../util/globals";
-import {getILSMessages} from "../util/loadPatron";
-import TabNavigator from "../navigations/tab/TabNavigator";
-import AccountStackNavigator from "../navigations/stack/AccountStackNavigator";
+
+// Before rendering any navigation stack
+import { enableScreens } from 'react-native-screens';
+enableScreens();
 
 const Stack = createNativeStackNavigator();
 
@@ -47,7 +41,6 @@ Sentry.init({
 });
 
 const prefix = Linking.createURL("/");
-console.log(prefix);
 
 const PERSISTENCE_KEY = 'NAVIGATION_STATE_V1';
 
@@ -228,6 +221,7 @@ export function App() {
 									await SecureStore.setItemAsync("locationId", patronsLibrary['locationId']);
 									await AsyncStorage.setItem("@locationId", patronsLibrary['locationId']);
 									await SecureStore.setItemAsync("solrScope", patronsLibrary['solrScope']);
+									GLOBALS.solrScope = patronsLibrary['solrScope'];
 									await AsyncStorage.setItem("@solrScope", patronsLibrary['solrScope']);
 									await SecureStore.setItemAsync("pathUrl", data.libraryUrl);
 									//await SecureStore.setItemAsync("logo", patronsLibrary['theme']['logo']);
@@ -279,7 +273,6 @@ export function App() {
 			<NavigationContainer theme={navigationTheme}
 			                     ref={navigationRef}
 			                     fallback={<Spinner />}
-			                     //initialState={initialState}
 			                     linking={{
 									 prefixes: [prefix],
 									 config: {
@@ -329,39 +322,25 @@ export function App() {
 				                     async getInitialURL() {
 										 let url = await Linking.getInitialURL();
 
-										//console.log("Running getInitialURL");
-
 										 if(url != null) {
 											 url = decodeURIComponent(url).replace( /\+/g, ' ' );
 											 url = url.replace("aspen-lida://", prefix)
-											 //url = 'exp://192.168.1.27:19000/--/user/saved_search?search=245859&name=New Comics';
-											 //console.log(url);
 											 return url;
 										 }
 
 										 const response = await Notifications.getLastNotificationResponseAsync();
 										 url = decodeURIComponent(response?.notification.request.content.data.url).replace( /\+/g, ' ' );
 					                     url = url.replace("aspen-lida://", prefix)
-					                     //url = 'exp://192.168.1.27:19000/--/user/saved_search?search=245859&name=New Comics';
-					                     //console.log(url);
 										 return url;
 				                     },
 									 subscribe(listener) {
-
-										 //console.log("Running subscriber");
 										 const linkingSubscription = Linking.addEventListener('url', ({ url }) => { listener(url) });
-
 										 const subscription = Notifications.addNotificationResponseReceivedListener(response => {
 											 const url = response.notification.request.content.data.url;
-
-											 // any custom logic to see whether the URL needs to be handled
-											 // ...
-
 											 listener(url);
 										 });
 
 										 return () => {
-											 // clean up event listeners
 											 subscription.remove();
 											 linkingSubscription.remove();
 										 }
