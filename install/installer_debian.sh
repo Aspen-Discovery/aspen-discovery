@@ -1,73 +1,72 @@
 #!/bin/sh
 
-#This will need to be copied to the server manually to do the setup.
-#Expects to be installed on Debian 10 Buster
-#Run as sudo ./installer.sh
-apt update
-apt install -y wget
-apt install -y apache2
-apt -y install apt-transport-https lsb-release ca-certificates curl
-wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
-apt update
-apt install -y php7.3 php7.3-mcrypt php7.3-gd php7.3-curl php7.3-mysql php7.3-zip
-apt install -y php7.3-xml
-apt install -y bind9 bind9utils
-apt install -y php7.3-intl
-apt install -y php7.3-mbstring
-apt install -y php7.3-pgsql
-apt install -y php7.3-ssh2
-service apache2 start
-systemctl enable apache2
-# New PHP ini file
-# - Change max_memory to 256M (from 128M)
-# - Increase max file size to 50M
-# - Increase max post size to 50M
-mv /etc/php/7.3/apache2/php.ini /etc/php/7.3/apache2/php.ini.old
-cp php.ini /etc/php/7.3/apache2/php.ini
+#Expects to be installed on Debian 10 Buster or later
+#Run as sudo ./installer_debian.sh
+apt-get update
+apt-get -y install gpg openjdk-11-jre-headless openjdk-11-jdk-headless apache2 certbot python3-certbot-apache mariadb-server apt-transport-https lsb-release ca-certificates curl zip
+
+# Install "plain" php package here to determine OS default. Override below if desired.
+if ! dpkg -l | grep ii | grep -qE ' php[0-9]+\.[0-9]+ ' ; then
+  apt-get install -y php
+fi
+
+php_vers="$(dpkg -l | grep ii | grep -E ' php[0-9]+\.[0-9]+ ' | grep -Eo '[0-9]+\.[0-9]+' | head -1)"
+
+if test -z "$php_vers" ; then
+  echo "Unable to determine default php version!"
+  exit 1
+fi
+
+# Install Ondrej Sury's php repo for additional php modules
+# Specifically, the abandonware php-mcrypt...
+keyrings="/etc/apt/keyrings"
+test -d "$keyrings" || (mkdir -p "$keyrings" ; chmod 0755 "$keyrings")
+if ! test -f "$keyrings/sury.gpg" || ! test -f /etc/apt/sources.list.d/sury.list ; then
+  wget -q -O - https://packages.sury.org/php/apt.gpg | gpg -o "$keyrings/sury.gpg" --dearmor
+  echo "deb [signed-by=$keyrings/sury.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/sury.list
+  apt-get update
+fi
+
+# Have to use versions for these or the highest version available from sury.org is used rather than the system verison.
+apt-get install -y "php${php_vers}-mcrypt" "php${php_vers}-gd" "php${php_vers}-curl" "php${php_vers}-mysql" "php${php_vers}-zip" "php${php_vers}-xml" "php${php_vers}-intl" "php${php_vers}-mbstring" "php${php_vers}-soap"
+
+# - Change max_memory to 256M
+# - Increase max file size to 75M
+# - Increase max post size to 75M
+php_ini="/etc/php/${php_vers}/apache2/php.ini"
+# Necessary or surprise baggage from dragging around an old php.ini?
+#grep -q '^max_input_vars = 2000' "$php_ini" || sed -Ei 's/^;max_input_vars = [0-9]+/max_input_vars = 2000/' "$php_ini"
+grep -q '^memory_limit = 256M' "$php_ini" || sed -Ei 's/^memory_limit = [0-9]+M/memory_limit = 256M/' "$php_ini"
+grep -q '^post_max_size = 75M' "$php_ini" || sed -Ei 's/^post_max_size = [0-9]+M/post_max_size = 75M/' "$php_ini"
+grep -q '^upload_max_filesize = 75M' "$php_ini" || sed -Ei 's/^upload_max_filesize = [0-9]+M/upload_max_filesize = 75M/' "$php_ini"
+
+./samlsso_installer_debian.sh
+
+# MariaDB overrides
+cp 60-aspen.cnf /etc/mysql/mariadb.conf.d/
+
 a2enmod rewrite
-apt install -y mariadb-server
-mv /etc/mysql/mariadb.cnf /etc/mysql/mariadb.cnf.old
-cp mariadb.cnf /etc/mysql/mariadb.cnf
-systemctl start mariadb
-systemctl enable mariadb
-apt install -y software-properties-common
-apt install -y default-jdk
-apt install -y openjdk-11-jdk
-apt install -y unzip
+systemctl restart apache2 mysql
 
-#Create temp smarty directories
-cd /usr/local/aspen-discovery
-mkdir tmp
-chown -R www-data:www-data tmp
-chmod -R 755 tmp
+# Create temp smarty directories
+mkdir -p /usr/local/aspen-discovery/tmp
+chown -R www-data:www-data /usr/local/aspen-discovery/tmp
+chmod -R 755 /usr/local/aspen-discovery/tmp
 
-#Increase entropy
-apt install -y -q rng-tools
-cp install/limits.conf /etc/security/limits.conf
-cp install/rngd.service /usr/lib/systemd/system/rngd.service
+# Raise process and open file limits for the solr user
+cp solr_limits.conf /etc/security/limits.d/solr.conf
 
-systemctl daemon-reload
-systemctl start rngd
-
-apt install -y python-certbot-apache
-
-bash ./samlsso_installer_debian.sh
-
-echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
-mysql_secure_installation
-echo "Enter the timezone of the server"
-read timezone
-timedatectl set-timezone $timezone
-
-#Create aspen MySQL superuser
-read -p "Please enter the username for the Aspen MySQL superuser (can't be root) : " username
-read -p "Please enter the password for the Aspen MySQL superuser ($username) : " password
-query="GRANT ALL PRIVILEGES ON *.* TO $username@'localhost' IDENTIFIED BY '$password'";
+# Create aspen MySQL superuser
+printf "Please enter the username for the Aspen MySQL superuser (can't be root) : " >&2
+read -r username
+printf "Please enter the password for the Aspen MySQL superuser (%s) : " "$username" >&2
+read -r password
+query="GRANT ALL PRIVILEGES ON *.* TO '$username'@'localhost' IDENTIFIED BY '$password';"
 mysql -e "$query"
-query="GRANT ALL PRIVILEGES ON *.* TO $username@'127.0.0.1' IDENTIFIED BY '$password'";
+query="GRANT ALL PRIVILEGES ON *.* TO '$username'@'127.0.0.1' IDENTIFIED BY '$password';"
 mysql -e "$query"
 mysql -e "flush privileges"
 
-cd /usr/local/aspen-discovery/install
-bash ./setup_aspen_user_debian.sh
+mysql_secure_installation
+
+./setup_aspen_user_debian.sh

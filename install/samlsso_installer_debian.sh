@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/bash
 
  read -p "Configure SAML Single Sign On? (y/N) " SAMLSSO
  SAMLSSO="${SAMLSSO:=n}"
