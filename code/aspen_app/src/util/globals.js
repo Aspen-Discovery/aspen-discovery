@@ -15,4 +15,6 @@ export const GLOBALS = {
 	'releaseChannel': Updates.releaseChannel,
 	'language': "en",
 	'prevLaunched': false,
+	'pendingSearchFilters': [],
+	'solrScope': "unknown",
 }
