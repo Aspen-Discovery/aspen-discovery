@@ -7,12 +7,25 @@ import {getItemDetails} from "../../util/recordActions";
 import _ from "lodash";
 
 const ShowItemDetails = (props) => {
-	const { data, title, id, format, libraryUrl, copyDetails, discoveryVersion} = props;
+	const { data, title, id, format, libraryUrl, copyDetails, discoveryVersion, itemDetails} = props;
 	const [showModal, setShowModal] = useState(false);
 	const [details, setDetails] = React.useState('');
 	const [shouldFetch, setShouldFetch] = React.useState(true);
 	const loading = React.useCallback(() => setShouldFetch(true), []);
 
+	let copies = [];
+	if(itemDetails) {
+		_.map(itemDetails, function(copy, index, array) {
+			copy = {
+				'id': index,
+				'totalCopies': copy.totalCopies,
+				'availableCopies': copy.availableCopies,
+				'shelfLocation': copy.shelfLocation,
+				'callNumber': copy.callNumber,
+			}
+			copies = _.concat(copies, copy);
+		})
+	}
 	//console.log("copyDetailsModal", copyDetails);
 
 	if(discoveryVersion <= "22.09.01") {
@@ -92,7 +105,7 @@ const ShowItemDetails = (props) => {
 						</Modal.Header>
 						<Modal.Body>
 							<FlatList
-								data={copyDetails}
+								data={copies}
 								keyExtractor={(item) => item.description}
 								ListHeaderComponent={renderHeader()}
 								renderItem={({item}) => renderCopyDetails(item)}
