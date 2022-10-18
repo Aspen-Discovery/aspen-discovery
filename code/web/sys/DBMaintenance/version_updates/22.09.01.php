@@ -1,10 +1,10 @@
-
 <?php
+/** @noinspection SqlResolve */
+
 /** @noinspection PhpUnused */
 function getUpdates22_09_01() : array
 {
-    $curTime = time();
-    return [
+	return [
 		/*'name' => [
 			'title' => '',
 			'description' => '',
@@ -18,6 +18,6 @@ function getUpdates22_09_01() : array
 			'sql' => [
 				"ALTER TABLE library ADD column ssoEntityId VARCHAR(255)"
             ]
-		] //add_library_sso_config_options
+		] //add_additional_library_sso_config_options
 	];
 }
