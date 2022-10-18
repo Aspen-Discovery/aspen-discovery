@@ -1654,11 +1654,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
 					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
 					//noinspection Java8MapApi
-					for (String itemType : uniqueItemFormats) {
-						uniqueItemFormats.remove(itemType);
-						uniqueItemFormats.add(translatedFormat);
-						recordInfo.addFormat(translatedFormat);
+					for (ItemInfo item : recordInfo.getRelatedItems()) {
+						item.setFormat(null);
+						item.setFormatCategory(null);
 					}
+					recordInfo.addFormat(translatedFormat);
+					recordInfo.addFormatCategory(translateValue("format_category", "LargePrint", recordInfo.getRecordIdentifier()));
 				}
 			}
 		} catch (Exception e) {
