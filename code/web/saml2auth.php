@@ -31,6 +31,7 @@
 	// Someone has most likely hit this script directly, rather than having
 	// come back from an IdP
 	if (count($usersAttributes) == 0) {
+		global $logger;
 		$logger->log("No SSO attributes found",  Logger::LOG_ERROR);
 		header('Location: /');
 	}

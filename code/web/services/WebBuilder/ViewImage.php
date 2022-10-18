@@ -35,6 +35,7 @@ class WebBuilder_ViewImage extends Action{
 		$fullPath = $dataPath . $this->uploadedImage->fullSizePath;
 
 		if ($file = @fopen($fullPath, 'r')) {
+			fclose($file);
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);
 
@@ -61,7 +62,7 @@ class WebBuilder_ViewImage extends Action{
 
 				fclose($handle);
 			} else {
-				readfile($fullPath);
+				$readResult = readfile($fullPath);
 			}
 
 			die();
