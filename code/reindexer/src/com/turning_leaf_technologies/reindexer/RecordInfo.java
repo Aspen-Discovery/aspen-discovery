@@ -135,8 +135,8 @@ public class RecordInfo {
 				}
 			}
 
-			HashMap.Entry<String, Integer> FormatCounter = null; 	//need to sort through both string and integer to compare things properly
-			String mostUsedFormat = null; 			//Set most used format to null before iterating through the hashmap
+			HashMap.Entry<String, Integer> FormatCounter = null; //need to sort through both string and integer to compare things properly
+			String mostUsedFormat = null; //Set most used format to null before iterating through the hashmap
 
 			//for each entry set in relatedFormats
 			for (HashMap.Entry<String, Integer> curItem : relatedFormats.entrySet())
@@ -150,7 +150,11 @@ public class RecordInfo {
 			}
 
 			if (mostUsedFormat == null){
-				return "Unknown";
+				//If we have formats for the record, use that. We only get here if we have no item formats.
+				primaryFormat = formats.iterator().next();
+				//This might not be correct if we have multiple formats since the format category could be different
+				//for each.
+				primaryFormatCategory = formatCategories.iterator().next();
 			}else{
 				primaryFormat = mostUsedFormat;
 				primaryFormatCategory = formatToFormatCategory.get(mostUsedFormat);

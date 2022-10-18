@@ -196,7 +196,7 @@ class PortalCell extends DataObject
 			if($imageAction == 1 || $imageAction == 2) {
 				$imageLinkURL = $this->imageURL;
 			}
-			$imageAlt = $this->imgAlt ?? $imageUpload->title;
+			$imageAlt = htmlentities($this->imgAlt ?? $imageUpload->title, ENT_QUOTES);
 			if ($imageUpload->find(true)) {
 				$size = '';
 				if ($this->widthMd <= 2) {

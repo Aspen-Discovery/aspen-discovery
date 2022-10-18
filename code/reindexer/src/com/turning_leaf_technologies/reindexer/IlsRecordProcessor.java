@@ -411,8 +411,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					break;
 				}
 			}
-			if (primaryFormat == null/* || primaryFormat.equals("Unknown")*/) {
+			if (primaryFormat == null || primaryFormat.equals("Unknown")) {
 				primaryFormat = "Unknown";
+				primaryFormatCategory = "Unknown";
 				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
 			}
 			if (primaryFormatCategory == null/* || primaryFormat.equals("Unknown")*/) {
@@ -1001,23 +1002,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (format != null) {
 				format = format.toLowerCase(Locale.ROOT);
 				if (hasTranslation("format", format)) {
-					itemInfo.setFormat(translateValue("format", format, recordInfo.getRecordIdentifier()));
-				}
-				if (hasTranslation("format_category", format)) {
-					itemInfo.setFormatCategory(translateValue("format_category", format, recordInfo.getRecordIdentifier()));
-				}
-				String formatBoost = null;
-				if (hasTranslation("format_boost", format)) {
-					formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
-				}
-				try {
-					if (formatBoost != null && formatBoost.length() > 0) {
-						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
-					}
-				} catch (Exception e) {
-					if (!unhandledFormatBoosts.contains(format)){
-						unhandledFormatBoosts.add(format);
-						logger.warn("Could not get boost for format " + format);
+					String translatedFormat = translateValue("format", format, recordInfo.getRecordIdentifier());
+					if (translatedFormat != null && translatedFormat.length() > 0) {
+						itemInfo.setFormat(translatedFormat);
+						if (hasTranslation("format_category", format)) {
+							itemInfo.setFormatCategory(translateValue("format_category", format, recordInfo.getRecordIdentifier()));
+						}
+						String formatBoost = null;
+						if (hasTranslation("format_boost", format)) {
+							formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+						}
+						try {
+							if (formatBoost != null && formatBoost.length() > 0) {
+								recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
+							}
+						} catch (Exception e) {
+							if (!unhandledFormatBoosts.contains(format)) {
+								unhandledFormatBoosts.add(format);
+								logger.warn("Could not get boost for format " + format);
+							}
+						}
 					}
 				}
 			}
@@ -1607,22 +1611,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	/**
 	 * Determine Record Format(s)
 	 */
-    public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
-        //We should already have formats based on the items
-        if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
-            //Check to see if all items have formats.
-            if (!recordInfo.allItemsHaveFormats()){
-                HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
-                if (uniqueItemFormats.size() == 1) {
-                    recordInfo.addFormat(uniqueItemFormats.iterator().next());
-                    recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
-					largePrintCheck(recordInfo, record);
+	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
+		//We should already have formats based on the items
+		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()) {
+			//Check to see if all items have formats.
+			if (!recordInfo.allItemsHaveFormats()) {
+				HashSet<String> uniqueItemFormats = recordInfo.getUniqueItemFormats();
+				if (uniqueItemFormats.size() == 1) {
+					String selectedFormat = uniqueItemFormats.iterator().next();
+					if (!selectedFormat.equals("Unknown")){
+						recordInfo.addFormat(uniqueItemFormats.iterator().next());
+						recordInfo.addFormatCategory(recordInfo.getFirstItemFormatCategory());
+						largePrintCheck(recordInfo, record);
+						return;
+					}
 				}
-            }else {
+			} else {
 				largePrintCheck(recordInfo, record);
-                return;
-            }
-        }
+				return;
+			}
+		}
 
 		//If not, we will assign format based on bib level data
 		if (formatSource.equals("specified")){
