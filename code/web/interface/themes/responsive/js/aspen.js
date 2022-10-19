@@ -6306,7 +6306,7 @@ AspenDiscovery.Account = (function () {
 			var params = {
 				method: 'showSearchToolbar',
 				displayMode: AspenDiscovery.Searches.displayMode,
-				showCovers: showCovers ?? 0,
+				showCovers: showCovers,
 				rssLink: rssLink,
 				excelLink: excelLink,
 				searchId: searchId,
