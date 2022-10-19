@@ -154,7 +154,9 @@ public class RecordInfo {
 				primaryFormat = formats.iterator().next();
 				//This might not be correct if we have multiple formats since the format category could be different
 				//for each.
-				primaryFormatCategory = formatCategories.iterator().next();
+				if (formatCategories.size() > 0){
+					primaryFormatCategory = formatCategories.iterator().next();
+				}
 			}else{
 				primaryFormat = mostUsedFormat;
 				primaryFormatCategory = formatToFormatCategory.get(mostUsedFormat);
