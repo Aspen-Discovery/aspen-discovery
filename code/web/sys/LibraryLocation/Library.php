@@ -1487,6 +1487,7 @@ class Library extends DataObject
 			$libraryLocations->find();
 			while ($libraryLocations->fetch()){
 				$user = new User();
+				/** @noinspection SqlResolve */
 				$user->query("update user set displayName = '' where homeLocationId = {$libraryLocations->locationId}");
 			}
 		}
@@ -1926,8 +1927,8 @@ class Library extends DataObject
 			$xml = $curlWrapper->curlGetPage($url);
 			if (strlen($xml) > 0) {
 				// Check it's a valid SAML message
-				require_once '/usr/share/simplesamlphp/lib/_autoload.php';
 				try {
+					require_once '/usr/share/simplesamlphp/lib/_autoload.php';
 					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
 				} catch(Exception $e) {
 					$logger->log($e, Logger::LOG_ERROR);
