@@ -49,7 +49,8 @@
 						</div>
 						{if $isLoggedIn}
 						<div class="btn-group" data-toggle="buttons" style="margin-top: -.15em; margin-left: 1em;">
-							<button class="btn btn-default selected-browse-dismiss" onclick=""><i class="fas fa-times"></i> Hide</button>
+							<button class="btn btn-default selected-browse-dismiss" onclick="">
+							<i class="fas fa-times"></i> {translate text='Hide' isPublicFacing=true}</button>
 						</div>
 						{/if}
 					</div>
