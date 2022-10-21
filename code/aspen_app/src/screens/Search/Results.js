@@ -158,7 +158,7 @@ export default class Results extends React.Component {
 		const pendingFilters = route.params?.pendingFilters ?? [];
 		const pendingParams = route.params?.pendingParams ?? [];
 
-        await searchResults(searchTerm, 100, page, "http://aspen.local:8888/", pendingParams).then(response => {
+        await searchResults(searchTerm, 100, page, libraryUrl, pendingParams).then(response => {
             if(response) {
 				const searchResults = response['result'] ?? [];
 				const defaultFilters = response['filters'] ?? [];
