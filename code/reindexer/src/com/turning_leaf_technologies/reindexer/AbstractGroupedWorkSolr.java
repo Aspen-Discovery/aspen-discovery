@@ -466,27 +466,18 @@ public abstract class AbstractGroupedWorkSolr {
 				//remove punctuation from the sortable title
 				sortableTitle = punctuationPattern.matcher(sortableTitle).replaceAll("");
 				this.titleSort = sortableTitle.trim();
-				displayTitle = AspenStringUtils.trimTrailingPunctuation(displayTitle);
-				//Strip out anything in brackets unless that would cause us to show nothing
-				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0) {
-					displayTitle = tmpTitle;
-				}
-				//Remove common formats
-				tmpTitle = commonSubtitlePattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0) {
-					displayTitle = tmpTitle;
-				}
-				this.displayTitle = displayTitle.trim();
 
 				//SubTitle only gets set based on the main title.
 				if (subTitle == null){
+					this.displayTitle = shortTitle;
 					if (this.subTitle != null) {
 						//clear the subtitle if it was set by a previous record.
 						this.subTitle = null;
 					}
 				}else {
 					setSubTitle(subTitle);
+					subTitle = AspenStringUtils.trimTrailingPunctuation(subTitle);
+					this.displayTitle = shortTitle.concat(": ").concat(subTitle);
 				}
 			}
 
@@ -702,7 +693,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addSeriesWithVolume(String seriesName, String volume) {
-		if (series != null) {
+		if (seriesName != null && seriesName.length() != 0) {
 			String seriesInfo = getNormalizedSeries(seriesName);
 			if (volume.length() > 0) {
 				volume = getNormalizedSeriesVolume(volume);
