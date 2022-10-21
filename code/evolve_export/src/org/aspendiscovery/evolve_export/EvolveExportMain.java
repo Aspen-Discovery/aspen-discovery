@@ -339,7 +339,7 @@ public class EvolveExportMain {
 											} else {
 												if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
 													isExistingItem = true;
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
 													if (curItem.isNull("CallNumber")){
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
 													}else{
@@ -362,7 +362,7 @@ public class EvolveExportMain {
 											@SuppressWarnings("WrapperTypeMayBePrimitive")
 											Double holdingId = curItem.getDouble("HoldingID");
 											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), Integer.toString(holdingId.intValue()), marcFactory);
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
 											if (curItem.isNull("CallNumber")){
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
 											}else{
