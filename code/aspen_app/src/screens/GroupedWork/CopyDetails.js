@@ -30,7 +30,7 @@ const ShowItemDetails = (props) => {
 		})
 	}
 
-	console.log(copies);
+	//console.log(copies);
 	//console.log("copyDetailsModal", copyDetails);
 
 	if(discoveryVersion <= "22.09.01") {

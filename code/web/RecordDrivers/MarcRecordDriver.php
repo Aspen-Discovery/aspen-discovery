@@ -967,7 +967,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$marc856Fields = $marcRecord->getFields('856');
 					/** @var File_MARC_Data_Field $marc856Field */
 					foreach ($marc856Fields as $marc856Field){
-						if ($marc856Field->getIndicator(1) == '4' && $marc856Field->getIndicator(2) == '0'){
+						if ($marc856Field->getIndicator(1) == '4' && ($marc856Field->getIndicator(2) == '0' || $marc856Field->getIndicator(2) == '1')){
 							$subfieldU = $marc856Field->getSubfield('u');
 							if ($subfieldU != null){
 								$linkDestination = $subfieldU->getData();

@@ -1328,6 +1328,21 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
+		if (printFormats.contains("Playaway Launchpad")){
+			printFormats.clear();
+			printFormats.add("Playaway Launchpad");
+			return;
+		}
+		if (printFormats.contains("Playaway Bookpack")){
+			printFormats.clear();
+			printFormats.add("Playaway Bookpack");
+			return;
+		}
+		if (printFormats.contains("PlayawayView")){
+			printFormats.clear();
+			printFormats.add("PlayawayView");
+			return;
+		}
 		if (printFormats.contains("Wonderbook")){
 			printFormats.clear();
 			printFormats.add("Wonderbook");
@@ -1353,9 +1368,18 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("DVD")){
 			printFormats.remove("VideoCassette");
 		}
+		if (printFormats.contains("4K Blu-ray")){
+			printFormats.remove("VideoDisc");
+			printFormats.remove("DVD");
+			printFormats.remove("Blu-ray");
+		}
 		if (printFormats.contains("Blu-ray")){
 			printFormats.remove("VideoDisc");
 			printFormats.remove("DVD");
+		}
+		if (printFormats.contains("4K/Blu-ray")){
+			printFormats.remove("Blu-ray");
+			printFormats.remove("4K Blu-ray");
 		}
 		if (printFormats.contains("Blu-ray/DVD")){
 			printFormats.remove("Blu-ray");
@@ -1403,6 +1427,12 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Book") && printFormats.contains("Kit")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Pop-Up Book")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Board Book")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
