@@ -18,8 +18,8 @@ class DataObjectUtil
 		//Define the structure of the object.
 		$interface->assign('structure', $objectStructure);
 		//Check to see if the request should be multipart/form-data
-		$contentType = $this->getFormContentType($structure);
-		$interface->assign('contentType', $contentType);
+        $contentType = DataObjectUtil::getFormContentType($objectStructure);
+        $interface->assign('contentType', $contentType);
 		$interface->assign('formLabel', 'Edit ' . $contentType);
 		return  $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}

@@ -123,26 +123,38 @@ public class RecordInfo {
 	String getPrimaryFormat() {
 		if (primaryFormat == null){
 			HashMap<String, Integer> relatedFormats = new HashMap<>();
-			for (String format : formats){
-				relatedFormats.put(format, 1);
-			}
 			HashMap<String, String> formatToFormatCategory = new HashMap<>();
 			for (ItemInfo curItem : relatedItems){
 				if (curItem.getFormat() != null && !curItem.getFormat().equals("")) {
-					relatedFormats.put(curItem.getFormat(), relatedFormats.getOrDefault(curItem.getFormat(), 1));
+					if (relatedFormats.containsKey(curItem.getFormat())){
+						relatedFormats.merge(curItem.getFormat(), 1, Integer::sum);
+					}else{
+						relatedFormats.put(curItem.getFormat(), relatedFormats.getOrDefault(curItem.getFormat(), 1));
+					}
 					formatToFormatCategory.put(curItem.getFormat(), curItem.getFormatCategory());
 				}
 			}
-			int timesUsed = 0;
-			String mostUsedFormat = null;
-			for (String curFormat : relatedFormats.keySet()){
-				if (relatedFormats.get(curFormat) > timesUsed){
-					mostUsedFormat = curFormat;
-					timesUsed = relatedFormats.get(curFormat);
+
+			HashMap.Entry<String, Integer> FormatCounter = null; //need to sort through both string and integer to compare things properly
+			String mostUsedFormat = null; //Set most used format to null before iterating through the hashmap
+
+			//for each entry set in relatedFormats
+			for (HashMap.Entry<String, Integer> curItem : relatedFormats.entrySet())
+			{
+				//if current item format count is greater than FormatCounter, set this as mostUsedFormat
+				if (FormatCounter == null || curItem.getValue().compareTo(FormatCounter.getValue()) > 0)
+				{
+					FormatCounter = curItem;
+					mostUsedFormat = curItem.getKey(); //get and set the most used format from entrySet with getKey()
 				}
 			}
+
 			if (mostUsedFormat == null){
-				return "Unknown";
+				//If we have formats for the record, use that. We only get here if we have no item formats.
+				primaryFormat = formats.iterator().next();
+				//This might not be correct if we have multiple formats since the format category could be different
+				//for each.
+				primaryFormatCategory = formatCategories.iterator().next();
 			}else{
 				primaryFormat = mostUsedFormat;
 				primaryFormatCategory = formatToFormatCategory.get(mostUsedFormat);
