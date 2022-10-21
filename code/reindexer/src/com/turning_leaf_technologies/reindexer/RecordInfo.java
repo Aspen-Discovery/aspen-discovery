@@ -151,10 +151,15 @@ public class RecordInfo {
 
 			if (mostUsedFormat == null){
 				//If we have formats for the record, use that. We only get here if we have no item formats.
-				primaryFormat = formats.iterator().next();
+				if (formats.size() > 0) {
+					primaryFormat = formats.iterator().next();
+				}
+
 				//This might not be correct if we have multiple formats since the format category could be different
 				//for each.
-				primaryFormatCategory = formatCategories.iterator().next();
+				if (formatCategories.size() > 0){
+					primaryFormatCategory = formatCategories.iterator().next();
+				}
 			}else{
 				primaryFormat = mostUsedFormat;
 				primaryFormatCategory = formatToFormatCategory.get(mostUsedFormat);
