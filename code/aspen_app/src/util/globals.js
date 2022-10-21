@@ -16,5 +16,6 @@ export const GLOBALS = {
 	'language': "en",
 	'prevLaunched': false,
 	'pendingSearchFilters': [],
+	'availableFacetClusters': [],
 	'solrScope': "unknown",
 }

@@ -183,6 +183,19 @@
     "new_search_button": "Try a new search",
     "search_results": "Search Results"
   },
+  "filters": {
+    "published_in_the_last": "Published in the Last",
+    "year": "year",
+    "years": "{{num}} years",
+    "year_from": "Year from",
+    "year_to": "Year to",
+    "unrated": "Unrated",
+    "from": "from",
+    "to": "to",
+    "result": "{{num}} result",
+    "results": "{{num}} results",
+    "title": "Filters"
+  },
   "error": {
     "title": "Error",
     "message": "There was an error loading results from the library",
