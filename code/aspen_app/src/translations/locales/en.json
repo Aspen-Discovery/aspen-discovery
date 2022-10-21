@@ -33,7 +33,10 @@
     "none": "None",
     "hide": "Hide",
     "refresh_account": "Refresh Account",
-    "load_more": "Load More"
+    "load_more": "Load More",
+    "update": "Update",
+    "updating": "Updating",
+    "reset": "Reset"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -194,7 +197,9 @@
     "to": "to",
     "result": "{{num}} result",
     "results": "{{num}} results",
-    "title": "Filters"
+    "title": "Filters",
+    "filter": "Filter",
+    "filter_by": "Filter by"
   },
   "error": {
     "title": "Error",

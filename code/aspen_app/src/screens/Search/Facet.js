@@ -13,6 +13,7 @@ import {GLOBALS} from "../../util/globals";
 import {userContext} from "../../context/user";
 import {loadingSpinner} from "../../components/loadingSpinner";
 import Facet_CheckboxGroup from "./Facets/CheckboxGroup";
+import {translate} from "../../translations/translations";
 
 export default class Facet extends Component {
 	constructor(props, context) {
@@ -40,6 +41,10 @@ export default class Facet extends Component {
 	 componentDidMount = async () => {
 		 this._isMounted = true;
 
+		 if(this.state.multiSelect) {
+			 this.defaultCheckboxValues();
+		 }
+
 		 this.setState({
 			 isLoading: false,
 		 })
@@ -59,7 +64,7 @@ export default class Facet extends Component {
 
 	searchBar = () => {
 		if(this.state.numFacets > 10) {
-			const placeHolder = "Search " + this.state.title;
+			const placeHolder = translate('search.title') + " " + this.state.title;
 			return(
 				<Box safeArea={5}>
 					<Input
@@ -78,6 +83,20 @@ export default class Facet extends Component {
 				<Box pb={5}></Box>
 			)
 		}
+	}
+
+	defaultCheckboxValues = () => {
+		const applied = this.state.applied;
+		let values = [];
+		_.map(applied, function(item, index, collection) {
+			values = _.concat(values, item.value)
+		});
+
+		this.setState({
+			checkboxValues: values,
+		})
+
+		return values;
 	}
 
 	updateCheckboxValues = (group, values, allowMultiple) => {
@@ -163,7 +182,6 @@ export default class Facet extends Component {
 			pendingUpdates: pendingFilters,
 		});
 
-		//this.backToFilters();
 	}
 
 	backToFilters = () => {
@@ -216,13 +234,13 @@ export default class Facet extends Component {
 			<Box safeArea={5} _light={{ bg: 'coolGray.50' }} _dark={{ bg: 'coolGray.700'}} shadow={4}>
 				<Center pb={2}>
 					<Button.Group size="lg">
-						<Button variant="outline" onPress={() => this.resetSearch()}>Reset</Button>
-						<Button isLoading={this.state.isUpdating} isLoadingText="Updating..."
+						<Button variant="outline" onPress={() => this.resetSearch()}>{translate('general.reset')}</Button>
+						<Button isLoading={this.state.isUpdating} isLoadingText={translate('general.updating')}
 						        onPress={() => {
 									this.setState({isUpdating: true});
 									this.updateSearch();
 									this.setState({isUpdating: false})
-						}}>Update</Button>
+						}}>{translate('general.update')}</Button>
 					</Button.Group>
 				</Center>
 			</Box>
@@ -272,7 +290,6 @@ export default class Facet extends Component {
 				</View>
 			)
 		} else if (this.state.multiSelect) {
-			console.log(this.state.applied);
 			return(
 				<View style={{ flex: 1 }}>
 					{this.searchBar()}
@@ -280,7 +297,8 @@ export default class Facet extends Component {
 						<Box safeAreaX={5}>
 							<Checkbox.Group
 								name={category}
-								accessibilityLabel="Filter by"
+								defaultValue={this.state.checkboxValues}
+								accessibilityLabel={translate('filters.filter_by')}
 								onChange={values => this.updateCheckboxValues(category, values, true)}
 							>
 								{this.filter(facets).map((item, index, array) => (
