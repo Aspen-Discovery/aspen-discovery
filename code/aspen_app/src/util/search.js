@@ -9,25 +9,34 @@ import {popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
 import _ from "lodash";
 
-export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl) {
-	let solrScope;
-	try {
-		solrScope = await AsyncStorage.getItem("@solrScope");
-	} catch (e) {
-		console.log(e);
+export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl, filters = "") {
+	let solrScope = "";
+	if(GLOBALS.solrScope !== "unknown") {
+		solrScope = GLOBALS.solrScope;
+	} else {
+		try {
+			solrScope = await AsyncStorage.getItem("@solrScope");
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
 	const api = create({
-		baseURL: libraryUrl + '/API',
+		baseURL: libraryUrl,
 		timeout: GLOBALS.timeoutSlow,
 		headers: getHeaders,
 		params: {library: solrScope, lookfor: searchTerm, pageSize: pageSize, page: page},
 		auth: createAuthTokens()
 	});
-	const response = await api.get('/SearchAPI?method=getAppSearchResults');
 
+	const response = await api.get('/API/SearchAPI?method=getAppSearchResults&sort=relevance' + filters);
 	if (response.ok) {
-		return response;
+		let str = response.config.url;
+		str = str.split("&").slice(1);
+		return {
+			result: response.data.result,
+			filters: str,
+		}
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);
@@ -53,6 +62,40 @@ export async function categorySearchResults(category, limit = 25, page, libraryU
 	}
 }
 
+export async function filteredSearchResults(searchTerm, pageSize = 100, page, libraryUrl, filters) {
+	let solrScope = "";
+	if(GLOBALS.solrScope !== "unknown") {
+		solrScope = GLOBALS.solrScope;
+	} else {
+		try {
+			solrScope = await AsyncStorage.getItem("@solrScope");
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	console.log('solrScope: ', solrScope);
+
+	const filterParams = buildUrl(filters);
+
+	const api = create({
+		baseURL: 'http://aspen.local:8888/API',
+		timeout: GLOBALS.timeoutSlow,
+		headers: getHeaders,
+		params: {library: solrScope, lookfor: searchTerm, pageSize: pageSize, page: page},
+		auth: createAuthTokens()
+	});
+
+	const response = await api.get('/SearchAPI?method=getAppSearchResults' + filterParams);
+	if (response.ok) {
+		return response.data.result;
+	} else {
+		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
+		return response;
+	}
+}
+
 export async function listofListSearchResults(searchId, limit = 25, page, libraryUrl) {
 	console.log(searchId);
 	const myArray = searchId.split("_");
@@ -68,7 +111,6 @@ export async function listofListSearchResults(searchId, limit = 25, page, librar
 	});
 	const response = await api.post('/SearchAPI?method=getListResults', postBody);
 	if (response.ok) {
-		//console.log(response);
 		return response.data.result;
 	} else {
 		console.log(response);
@@ -90,7 +132,6 @@ export async function savedSearchResults(searchId, limit = 25, page, libraryUrl)
 	});
 	const response = await api.post('/SearchAPI?method=getSavedSearchResults', postBody);
 	if (response.ok) {
-		console.log(response);
 		return response;
 	} else {
 		console.log(response);
@@ -109,4 +150,67 @@ export function getFormats(data) {
 
 	formats = _.uniq(formats);
 	return formats;
+}
+
+export async function getCurrentParams() {
+	try {
+		const searchParams = await AsyncStorage.getItem('@searchParams');
+		return searchParams != null ? JSON.parse(searchParams) : null;
+	} catch(e) {
+		console.log(e);
+	}
+	return false;
+}
+
+export async function createParams(group, value) {
+	try {
+		let params = [];
+		let param = {
+			[group]: value,
+		}
+		params.push(param);
+		await AsyncStorage.setItem('@searchParams', JSON.stringify(params));
+		return true;
+	} catch (e) {
+		console.log(e);
+	}
+	return false;
+}
+
+export async function updateParams(group, value) {
+	let storage = await getCurrentParams().then(async response => {
+		if(response) {
+			//other params are set, so we add or remove from it
+			let param = {
+				[group]: value,
+			}
+			response.push(param);
+			try {
+				await AsyncStorage.setItem('@searchParams', JSON.stringify(response))
+				return true;
+			} catch (e) {
+				//for some reason we weren't able to update storage
+				console.log(e);
+			}
+		} else {
+			await createParams(group, value);
+		}
+	})
+	return false;
+}
+
+function buildUrl(filters) {
+	if(_.isArray(filters) && filters.length > 0) {
+		let params = [];
+		_.map(filters, function(item, index, array) {
+			console.log("index: ", index);
+			console.log(item);
+
+			//params.push({
+			// '&filter[]=' + encodeURI(item.category + ':' + item.value);
+			// })
+		})
+		//console.log(params);
+	}
+	return false;
 }

@@ -26,8 +26,18 @@ export default class Search extends Component {
 	componentDidMount = async () => {
 		this._isMounted = true;
 
+		let discoveryVersion = "22.10.00";
+		if(typeof this.context.library !== "undefined") {
+			if(this.context.library.discoveryVersion) {
+				let version = this.context.library.discoveryVersion;
+				version = version.split(" ");
+				discoveryVersion = version[0];
+			}
+		}
+
 		this.setState({
 			isLoading: false,
+			discoveryVersion: discoveryVersion
 		});
 
 		// build a received notification storage for later
@@ -45,6 +55,7 @@ export default class Search extends Component {
 		navigation.navigate("SearchResults", {
 			term: searchTerm,
 			libraryUrl: this.context.library.baseUrl,
+			discoveryVersion: this.state.discoveryVersion,
 		});
 		await this._addRecentSearch(searchTerm).then(res => {
 			this.clearText();
@@ -67,6 +78,26 @@ export default class Search extends Component {
 			</Button>
 		);
 	};
+
+	_getCurrentParams = async () => {
+		try {
+			const searchParams = await AsyncStorage.getItem('@searchParams');
+			return searchParams != null ? JSON.parse(searchParams) : null;
+		} catch(e) {
+			console.log(e);
+		}
+	}
+
+	_buildUrlParams = async () => {
+		let storage = await this._getCurrentParams().then(response => {
+			if(response) {
+				const baseUrl = this.context.library.baseUrl;
+				let params = encodeURI(response);
+			} else {
+				// no params set?
+			}
+		})
+	}
 
 	_recentSearchItem = (search) => {
 		const { navigation } = this.props;
@@ -126,7 +157,6 @@ export default class Search extends Component {
 	_addRecentSearch = async (searchTerm) => {
 		let storage = await this._getRecentSearches().then(async response => {
 			if (response) {
-				console.log(response);
 				let search = {
 					[searchTerm]: searchTerm,
 				};
