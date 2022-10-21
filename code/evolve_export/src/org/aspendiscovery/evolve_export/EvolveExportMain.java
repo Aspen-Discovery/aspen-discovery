@@ -381,6 +381,8 @@ public class EvolveExportMain {
 										logEntry.incErrors("Error updating item field", e);
 									}
 									logEntry.incUpdated();
+									//Save the MARC record
+									getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibId, marcRecord);
 									//Regroup the record
 									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
 									//Reindex the record
