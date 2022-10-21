@@ -33,8 +33,8 @@ const Manifestation = (props) => {
 			copyDetail = {
 				'id': item.id,
 				'format': item.format,
-				'totalCopies': 18,
-				'availableCopies': 8,
+				'totalCopies': item.totalCopies,
+				'availableCopies': item.availableCopies,
 				'shelfLocation': item.shelfLocation,
 				'callNumber': item.callNumber,
 			};
