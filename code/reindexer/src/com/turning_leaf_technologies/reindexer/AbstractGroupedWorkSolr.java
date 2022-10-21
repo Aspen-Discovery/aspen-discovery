@@ -693,7 +693,7 @@ public abstract class AbstractGroupedWorkSolr {
 	}
 
 	void addSeriesWithVolume(String seriesName, String volume) {
-		if (series != null && series.size() != 0) {
+		if (seriesName != null && seriesName.length() != 0) {
 			String seriesInfo = getNormalizedSeries(seriesName);
 			if (volume.length() > 0) {
 				volume = getNormalizedSeriesVolume(volume);
