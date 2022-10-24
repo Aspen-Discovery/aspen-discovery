@@ -12,7 +12,7 @@ class AppSetting extends DataObject
 
 	static function getObjectStructure() : array {
 		$releaseChannels = [0 => 'Beta (Testing)', 1 => 'Production (Public)'];
-		$locationList = Location::getLocationList(UserAccount::userHasPermission('Administer Aspen LiDA Settings'));
+		$locationList = Location::getLocationList(false);
 
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
