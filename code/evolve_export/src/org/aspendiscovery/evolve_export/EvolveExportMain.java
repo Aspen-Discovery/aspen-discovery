@@ -420,6 +420,7 @@ public class EvolveExportMain {
 
 					try {
 						JSONArray responseAsArray = new JSONArray(rawMessage);
+						logEntry.addNote(" Found " + responseAsArray.length() + " changed bibs");
 						for (int i = 0; i < responseAsArray.length(); i++) {
 							numProcessed++;
 							JSONObject curRow = responseAsArray.getJSONObject(i);
