@@ -96,7 +96,7 @@ export class Record extends Component {
 					<VStack space={1} alignItems="center" maxW="40%" flex={1}>
 						<Badge colorScheme={statusColor} rounded="4px" _text={{fontSize: 14}} mb={.5}>{status}</Badge>
 						{copiesMessage ? (<Text fontSize={8} textAlign="center" italic={1} maxW="75%">{copiesMessage}</Text>) : null}
-						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl} copyDetails={copyDetails} discoveryVersion={discoveryVersion}/> : null}
+						{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl} copyDetails={copyDetails} discoveryVersion={discoveryVersion} itemDetails={itemDetails}/> : null}
 					</VStack>
 					<Button.Group maxW="50%" direction={actionCount > 1 ? "column" : "row"} alignItems="stretch">
 						{actions.map((thisAction) => {
