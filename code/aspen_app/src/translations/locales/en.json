@@ -33,7 +33,10 @@
     "none": "None",
     "hide": "Hide",
     "refresh_account": "Refresh Account",
-    "load_more": "Load More"
+    "load_more": "Load More",
+    "update": "Update",
+    "updating": "Updating",
+    "reset": "Reset"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -182,6 +185,21 @@
     "quick_search_title": "Quick Searches",
     "new_search_button": "Try a new search",
     "search_results": "Search Results"
+  },
+  "filters": {
+    "published_in_the_last": "Published in the Last",
+    "year": "year",
+    "years": "{{num}} years",
+    "year_from": "Year from",
+    "year_to": "Year to",
+    "unrated": "Unrated",
+    "from": "from",
+    "to": "to",
+    "result": "{{num}} result",
+    "results": "{{num}} results",
+    "title": "Filters",
+    "filter": "Filter",
+    "filter_by": "Filter by"
   },
   "error": {
     "title": "Error",

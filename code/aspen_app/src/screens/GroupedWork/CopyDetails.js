@@ -13,6 +13,9 @@ const ShowItemDetails = (props) => {
 	const [shouldFetch, setShouldFetch] = React.useState(true);
 	const loading = React.useCallback(() => setShouldFetch(true), []);
 
+	//console.log(copyDetails);
+	//console.log(itemDetails);
+
 	let copies = [];
 	if(itemDetails) {
 		_.map(itemDetails, function(copy, index, array) {
@@ -26,6 +29,8 @@ const ShowItemDetails = (props) => {
 			copies = _.concat(copies, copy);
 		})
 	}
+
+	//console.log(copies);
 	//console.log("copyDetailsModal", copyDetails);
 
 	if(discoveryVersion <= "22.09.01") {
@@ -106,7 +111,6 @@ const ShowItemDetails = (props) => {
 						<Modal.Body>
 							<FlatList
 								data={copies}
-								keyExtractor={(item) => item.description}
 								ListHeaderComponent={renderHeader()}
 								renderItem={({item}) => renderCopyDetails(item)}
 							/>
@@ -129,6 +133,7 @@ const renderHeader = () => {
 }
 
 const renderCopyDetails = (item) => {
+	console.log(item);
 	return (
 		<HStack space={4} justifyContent="space-between">
 			<Text w="30%" fontSize="xs">{item.availableCopies} of {item.totalCopies}</Text>

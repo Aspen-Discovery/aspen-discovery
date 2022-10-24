@@ -10,14 +10,13 @@ import {
 	Stack,
 	HStack,
 	VStack,
-	Avatar,
 	Pressable,
-	IconButton,
-	Icon,
 	Image,
-	ScrollView
+	Icon
 } from "native-base";
 import { CommonActions } from '@react-navigation/native';
+import _ from "lodash";
+import {MaterialIcons} from "@expo/vector-icons";
 
 // custom components and helper files
 import { translate } from '../../translations/translations';
@@ -27,6 +26,7 @@ import { searchResults } from "../../util/search";
 import {getLists} from "../../util/loadPatron";
 import {AddToList} from "./AddToList";
 import {userContext} from "../../context/user";
+import {GLOBALS} from "../../util/globals";
 
 window.addEventListener = x => x
 window.removeEventListener = x => x
@@ -48,8 +48,22 @@ export default class Results extends React.Component {
 			dataMessage: null,
 			lastListUsed: 0,
 			scrollPosition: 0,
+			discoveryVersion: this.props.route.params?.discoveryVersion ?? "22.10.00",
+			facetSet: [],
+			categorySelected: null,
+			sortList: [],
+			appliedSort: 'relevance',
+			filters: [],
+			query: this.props.route.params?.term ?? "",
+			pendingFilters: this.props.route.params?.pendingFilters ?? [],
+			totalResults: 0,
 		};
 		//this._getLastListUsed();
+		GLOBALS.pendingSearchFilters = [];
+		this._facetsNum = 0;
+		this._facets = [];
+		this._sortOptions = [];
+		this._allOptions = [];
 		this._isMounted = false;
 		this.lastListUsed = 0;
 		this.solrScope = null;
@@ -68,6 +82,9 @@ export default class Results extends React.Component {
 		this._isMounted && await getLists(libraryUrl);
 		this._getLastListUsed();
 		this._isMounted && await this._fetchResults();
+
+		this.getCurrentSort();
+		//this.formatFilters();
 	};
 
 
@@ -81,13 +98,20 @@ export default class Results extends React.Component {
 		return null;
 	}
 
-	componentDidUpdate(prevProps, prevState, snapshot) {
+	async componentDidUpdate(prevProps, prevState, snapshot) {
 		// If we have a snapshot value, we've just added new items.
 		// Adjust scroll so these new items don't push the old ones out of view.
 		// (snapshot here is the value returned from getSnapshotBeforeUpdate)
 		if (snapshot !== null) {
 			const page = this.locRef.current;
 			page.scrollTop = page.scrollHeight - snapshot;
+		}
+
+		if (prevProps.route.params?.pendingParams !== this.props.route.params?.pendingParams) {
+			this.setState({
+				isLoading: true,
+			})
+			this._isMounted && await this._fetchResults();
 		}
 	}
 
@@ -114,36 +138,81 @@ export default class Results extends React.Component {
 		})
 	}
 
+	getCurrentSort = () => {
+		const sortList = this.state.sortList;
+		const appliedSort = this.state.appliedSort;
+
+		const sort = _.get(sortList, appliedSort);
+
+		this.setState({
+			appliedSort: sort.desc,
+		})
+	}
+
 	_fetchResults = async () => {
 	    const { page } = this.state;
 		const { navigation, route } = this.props;
 		const givenSearch = route.params?.term ?? '%20';
 		const libraryUrl = this.context.library.baseUrl;
         const searchTerm = givenSearch.replace(/" "/g, "%20");
+		const pendingFilters = route.params?.pendingFilters ?? [];
+		const pendingParams = route.params?.pendingParams ?? [];
 
-        await searchResults(searchTerm, 100, page, libraryUrl).then(response => {
-            if(response.ok) {
-				//console.log(response.data);
-                if(response.data.result.count > 0) {
+        await searchResults(searchTerm, 100, page, libraryUrl, pendingParams).then(response => {
+            if(response) {
+				const searchResults = response['result'] ?? [];
+				const defaultFilters = response['filters'] ?? [];
+                if(searchResults.count > 0) {
+	                const filters = defaultFilters;
+	                let filtersArr = [];
+	                if(filters.length > 0) {
+		                _.forEach(filters, function(value) {
+			                let str = value.split("=").slice(1).join();
+			                str = str.split(":");
+			                let obj = {};
+			                obj[str[0]] = _.trim(str[1], '%22');
+			                filtersArr = _.concat(filtersArr, obj);
+		                })
+	                }
+
+					GLOBALS.pendingSearchFilters = filtersArr;
+					GLOBALS.availableFacetClusters = searchResults.facetSet;
+
+					const availableFacets = setupFacetClusters(searchResults.facetSet ?? []);
+	                this._facets = availableFacets['facets'];
+					this._facetsNum = availableFacets['count'];
+
+					const sortOptions = setupSortOptions(searchResults.sortList ?? [])
+	                this._sortOptions = sortOptions['facets'];
+
+					this._allOptions = _.concat(this._facets, this._sortOptions);
+	                this._allOptions = _.orderBy(this._allOptions, 'key');
+
                     this.setState((prevState, nextProps) => ({
                         data:
                             page === 1
-                                ? Array.from(response.data.result.items)
-                                : [...this.state.data, ...response.data.result.items],
-                        isLoading: false,
-                        isLoadingMore: false,
-                        refreshing: false
+                                ? Array.from(searchResults.items)
+                                : [...this.state.data, ...searchResults.items],
+                        refreshing: false,
+	                    facetSet: searchResults.facetSet,
+	                    sortList: searchResults.sortList ?? [],
+	                    appliedSort: searchResults.sortedBy ?? "",
+	                    categorySelected: searchResults.categorySelected ?? "",
+	                    totalResults: searchResults.totalResults,
+	                    filters: filtersArr,
+	                    isLoading: false,
+	                    isLoadingMore: false,
                     }));
                 } else {
-	                if(page === 1 && response.data.result.count === 0) {
+	                if(page === 1 && searchResults.count === 0) {
                     /* No search results were found */
                         this.setState({
                             hasError: true,
-                            error: response.data.result.message,
+                            error: searchResults.message,
                             isLoading: false,
                             isLoadingMore: false,
                             refreshing: false,
-                            dataMessage: response.data.result.message,
+                            dataMessage: searchResults.message,
                         });
                     } else {
                         /* Tried to fetch next page, but end of results */
@@ -151,14 +220,13 @@ export default class Results extends React.Component {
                             isLoading: false,
                             isLoadingMore: false,
                             refreshing: false,
-                            dataMessage: response.data.result.message ?? "Unknown error fetching results",
+                            dataMessage: searchResults.message ?? "Unknown error fetching results",
 	                        endOfResults: true,
                         });
                     }
                 }
             }
         })
-
 	}
 
 	_handleLoadMore = () => {
@@ -233,6 +301,158 @@ export default class Results extends React.Component {
 	    return ( loadingSpinner() );
 	}
 
+	filterBar = () => {
+		const numResults = this.state.totalResults.toLocaleString();
+		const filters = GLOBALS.pendingSearchFilters;
+		const availableFacetClusters = GLOBALS.availableFacetClusters;
+
+		let keys = {};
+		_.forEach(availableFacetClusters, function(tempValue, tempKey) {
+			const key = {[tempKey]: tempValue.label}
+			keys = _.merge(keys, key);
+		})
+
+		let numGroupedKeysWithValue = 0;
+		let groupedKeys = [];
+		_.forEach(keys, function(tempValue, tempKey) {
+			let key = _.filter(filters, tempKey);
+			let keyCount = key.length;
+			let groupByKey = {
+				'label': tempValue,
+				'key': tempKey,
+				'num': keyCount,
+				'facets': key,
+			}
+			groupedKeys = _.concat(groupedKeys, groupByKey);
+
+			if(keyCount > 0) {
+				numGroupedKeysWithValue++;
+			}
+		});
+
+		if(numGroupedKeysWithValue === 0) {
+			groupedKeys = [];
+		}
+
+		let resultsLabel = translate('filters.results', {num: numResults});
+		if(this.state.totalResults === 1) {
+			resultsLabel = translate('filters.result', {num: numResults});
+		}
+
+		if(this.state.discoveryVersion >= "22.10.00") {
+			return (
+				<Box safeArea={2} _dark={{ bg: 'coolGray.700' }} bgColor="coolGray.100" shadow={4}>
+					<FlatList
+						horizontal
+						data={groupedKeys}
+						ListHeaderComponent={this.filterBarHeader()}
+						ListEmptyComponent={this.filterBarEmpty(this._facets)}
+						renderItem={({ item }) => this.filterBarButton(item, availableFacetClusters)}
+						keyExtractor={({ item }) => _.uniqueId(item + '_')}
+					/>
+					<Center>
+						<Text mt={3} fontSize="lg">{resultsLabel}</Text>
+					</Center>
+				</Box>
+			)
+		}
+		return null;
+	}
+
+	filterBarHeader = () => {
+		let isLaunching = false;
+		return(
+			<Button
+				size="sm"
+				leftIcon={<Icon as={MaterialIcons} name="tune" size="sm" />}
+				variant="solid"
+				mr={1}
+				isLoading={this.state.isLoading}
+				onPress={() => {
+					this.setState({isLoading: true})
+					this.props.navigation.push('modal', {
+						screen: 'Filters',
+						params: {
+							options: this._allOptions,
+							navigation: this.props.navigation,
+							term: this.state.query,
+							pendingUpdates: [],
+						}
+					})
+
+					this.setState({isLoading: false})
+				}}
+			>{translate('filters.title')}</Button>
+		)
+	}
+
+	filterBarButton = (item) => {
+		if(item.num > 0) {
+			const categoryData = _.filter(this._allOptions, ['category', item.key]);
+			const facets = item.facets;
+			const facetClusterLabel = item.label;
+			let facetLabel = "";
+			let appliedFacets = [];
+			_.map(facets, function(item, index, array) {
+				let facet = _.join(_.values(item), '');
+				facet = decodeURI(facet);
+				facet = facet.replace(/%20/g,' ');
+				appliedFacets = _.concat(appliedFacets, facet)
+			})
+
+			facetLabel = _.join(appliedFacets, ', ');
+			const label = _.truncate(facetClusterLabel + ": " + facetLabel);
+			return(
+				<Button
+					mr={1}
+					size="sm"
+					vertical
+					variant="outline"
+					onPress={() => {
+						this.props.navigation.push('modal', {
+							screen: 'Facet',
+							params: {
+								navigation: this.props.navigation,
+								term: this.state.query,
+								data: categoryData[0],
+								pendingUpdates: [],
+								title: categoryData[0].label,
+							}
+						})
+					}}
+				>{label}</Button>
+			)
+		} else {
+			return null;
+		}
+	}
+
+	filterBarEmpty = (availableFacetClusters) => {
+		const filters = getLimitedObjects(availableFacetClusters, 5);
+
+		return(
+			<Button.Group size="sm" space={1} vertical variant="outline">
+				{filters.map((item, index, array) => {
+					const categoryData = _.filter(this._allOptions, ['category', item.category]);
+					return <Button
+						onPress={() => {
+							this.props.navigation.push('modal', {
+								screen: 'Facet',
+								params: {
+									navigation: this.props.navigation,
+									term: this.state.query,
+									data: categoryData[0],
+									pendingUpdates: [],
+									title: categoryData[0].label,
+								}
+							})
+						}}
+					>{item.label}</Button>
+				})}
+			</Button.Group>
+		)
+	}
+
 	static contextType = userContext;
 
 
@@ -261,7 +481,8 @@ export default class Results extends React.Component {
         }
 
 		return (
-			<Box ref={this.locRef}>
+			<Box ref={this.locRef} flex={1}>
+				{this.filterBar()}
 				<FlatList
 					data={this.state.data}
 					ListEmptyComponent={this._listEmptyComponent()}
@@ -274,5 +495,140 @@ export default class Results extends React.Component {
 				/>
 			</Box>
 		);
+	}
+}
+
+function getLimitedObjects(array, n) {
+	let i = 0;
+	let keys = [];
+
+	_.map(array, function (item, index, array) {
+		if(i < n) {
+			i++;
+			keys = _.concat(keys, item);
+		}
+	})
+
+	return keys;
+}
+
+function setupSortOptions(payload) {
+	if(_.isArrayLike(payload) || _.isObjectLike(payload)) {
+		let sortList = [];
+		let i = 0;
+
+		const container = {
+			key: 0,
+			category: 'sort_by',
+			label: 'Sort By',
+			multiSelect: false,
+			count: 0,
+			hasApplied: false,
+			list: [],
+			applied: [],
+		}
+		sortList.push(container);
+
+		_.map(payload, function(item, index, array) {
+			sortList[0]['list'].push({
+				key: i++,
+				label: item.desc,
+				numResults: 0,
+				isApplied: item.selected,
+				value: index,
+			})
+
+			if(item.selected) {
+				sortList[0]['applied'].push({
+					key: 0,
+					label: item.desc,
+					numResults: 0,
+					isApplied: item.selected,
+					value: index,
+				})
+			}
+		})
+
+		let foundApplied = _.has(sortList[0]['list'][0], 'isApplied')
+		Object.assign(sortList[0], {count: i, hasApplied: foundApplied});
+
+		// order facets by key
+		sortList = _.orderBy(sortList, ['key']);
+
+		return {
+			'facets': sortList,
+			'count': _.size(sortList),
+		}
+	} else {
+		//make sure we return something
+		return {
+			'facets': [],
+			'count': 0,
+		}
+	}
+}
+
+function setupFacetClusters(payload) {
+	if(_.isArrayLike(payload) || _.isObjectLike(payload)) {
+		let facetClusterKey = 1;
+		let facetCluster = [];
+		_.forEach(payload, function(value, key) {
+			const facetList = value.list;
+			let facetKey = 0;
+			let i = 0;
+
+			const container = {
+				key: facetClusterKey++,
+				category: key,
+				label: value.label ?? "Unknown",
+				multiSelect: value.multiSelect ?? false,
+				hasApplied: false,
+				count: 0,
+				list: [],
+				applied: [],
+			}
+
+			facetCluster.push(container);
+
+			let cluster = facetCluster.find(cluster => cluster.category === key);
+			_.map(facetList, function(item, index, collection) {
+				cluster['list'].push({
+					key: facetKey++,
+					label: item.display ?? "Unknown",
+					value: item.value,
+					numResults: item.count,
+					isApplied: item.isApplied,
+				})
+
+				if(item.isApplied) {
+					cluster['applied'].push({
+						key: i++,
+						label: item.display ?? "Unknown",
+						value: item.value,
+						numResults: item.count,
+						isApplied: item.isApplied,
+					})
+				}
+			})
+
+			let foundApplied = _.size(cluster['applied']) > 0;
+			Object.assign(cluster, {count: facetKey, hasApplied: foundApplied});
+
+		})
+
+		// order facets by key
+		facetCluster = _.orderBy(facetCluster, ['key']);
+
+		return {
+			'facets': facetCluster,
+			'count': _.size(facetCluster),
+		}
+
+	} else {
+		//make sure we return something
+		return {
+			'facets': [],
+			'count': 0,
+		}
 	}
 }

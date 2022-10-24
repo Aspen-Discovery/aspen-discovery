@@ -615,13 +615,14 @@ class SearchAPI extends Action
 
 			$facetSet = $searchObject->getFacetList();
 			$jsonResults['facetSet'] = [];
-			foreach ($facetSet as $name => $facetInfo){
+			foreach ($facetSet as $name => $facetInfo) {
 				$jsonResults['facetSet'][$name] = [
 					'label' => $facetInfo['label'],
 					'list' => $facetInfo['list'],
 					'hasApplied' => $facetInfo['hasApplied'],
 					'valuesToShow' => $facetInfo['valuesToShow'],
 					'showAlphabetically' => $facetInfo['showAlphabetically'],
+					'multiSelect' => (bool)$facetInfo['multiSelect'],
 				];
 			}
 
@@ -640,6 +641,9 @@ class SearchAPI extends Action
 			}
 			$jsonResults['categorySelected'] = $categorySelected;
 			$timer->logTime('finish checking to see if a format category has been loaded already');
+
+			$jsonResults['sortList'] = $searchObject->getSortList();
+			$jsonResults['sortedBy'] = $searchObject->getSort();
 
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
@@ -1855,7 +1859,11 @@ class SearchAPI extends Action
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if (!empty($searchResults['recordSet'])) {
+			$results['lookfor'] = $searchResults['lookfor'];
 			$results['count'] = count($searchResults['recordSet']);
+			$results['totalResults'] = $searchResults['recordCount'];
+			$results['categorySelected'] = $searchResults['categorySelected'];
+			$results['sortedBy'] = $searchResults['sortedBy'];
 			foreach ($searchResults['recordSet'] as $item) {
 				$groupedWork = new GroupedWorkDriver($item);
 				$author = $item['author_display'];
@@ -1904,6 +1912,10 @@ class SearchAPI extends Action
 				if (!empty($itemList)) {
 					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary, 'language' => $language);
 				}
+
+				$results['sortList'] = $searchResults['sortList'];
+				$results['facetSet'] = $searchResults['facetSet'];
+				$results['paging'] = $searchResults['paging'];
 			}
 		}
 
