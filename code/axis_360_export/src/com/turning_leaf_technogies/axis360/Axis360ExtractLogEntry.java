@@ -1,6 +1,6 @@
 package com.turning_leaf_technogies.axis360;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-class Axis360ExtractLogEntry implements BaseLogEntry {
+class Axis360ExtractLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
 	private final Date startTime;
 	private Date endTime;
@@ -22,6 +22,7 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 	private int numSkipped = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
+	private int numInvalidRecords = 0;
 	private final Logger logger;
 
     Axis360ExtractLogEntry(Long settingId, Connection dbConn, Logger logger){
@@ -30,7 +31,7 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 		this.settingId = settingId;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into axis360_export_log (startTime, settingId) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE axis360_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE axis360_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numAvailabilityChanges = ?, numMetadataChanges = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -94,6 +95,7 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numSkipped);
 				updateLogEntry.setInt(++curCol, numAvailabilityChanges);
 				updateLogEntry.setInt(++curCol, numMetadataChanges);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -129,6 +131,7 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 	void incUpdated(){
 		numUpdated++;
 	}
+	@SuppressWarnings("unused")
 	void incSkipped(){
 		numSkipped++;
 	}
@@ -148,5 +151,10 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 		if (this.numProducts % 250 == 0) {
 			this.saveResults();
 		}
+	}
+
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
 }

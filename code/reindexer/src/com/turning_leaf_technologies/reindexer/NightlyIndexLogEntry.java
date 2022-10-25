@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
@@ -8,14 +8,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class NightlyIndexLogEntry implements BaseLogEntry {
+public class NightlyIndexLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
-	private Logger logger;
+	private final ArrayList<String> notes = new ArrayList<>();
+	private final Logger logger;
 	private int numWorksProcessed;
 	private int numErrors;
+	private int numInvalidRecords = 0;
 
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
@@ -25,14 +26,14 @@ public class NightlyIndexLogEntry implements BaseLogEntry {
 		this.startTime = new Date();
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into reindex_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE reindex_log SET lastUpdate = ?, endTime = ?, notes = ?, numWorksProcessed = ?, numErrors = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE reindex_log SET lastUpdate = ?, endTime = ?, notes = ?, numWorksProcessed = ?, numErrors = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
 		this.saveResults();
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
@@ -110,6 +111,7 @@ public class NightlyIndexLogEntry implements BaseLogEntry {
 				updateLogEntry.setString(++curCol, getNotesHtml());
 				updateLogEntry.setInt(++curCol, numWorksProcessed);
 				updateLogEntry.setInt(++curCol, numErrors);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -118,5 +120,10 @@ public class NightlyIndexLogEntry implements BaseLogEntry {
 			logger.error("Error creating updating nightly indexing log", e);
 			return false;
 		}
+	}
+
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
 }

@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 public class IndexingProfile extends BaseIndexingSettings {
@@ -550,7 +550,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.lastUpdateOfAuthorities = lastUpdateOfAuthorities;
 	}
 
-	public void clearRegroupAllRecords(Connection dbConn, BaseLogEntry logEntry) {
+	public void clearRegroupAllRecords(Connection dbConn, BaseIndexingLogEntry logEntry) {
 		try {
 			PreparedStatement clearRegroupAllRecordsStmt = dbConn.prepareStatement("UPDATE indexing_profiles set regroupAllRecords = 0 where id =?");
 			clearRegroupAllRecordsStmt.setLong(1, id);
@@ -574,7 +574,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	public void setLastChangeProcessed(long lastChangeProcessed) {
 		this.lastChangeProcessed = lastChangeProcessed;
 	}
-	public void updateLastChangeProcessed(Connection dbConn, BaseLogEntry logEntry) {
+	public void updateLastChangeProcessed(Connection dbConn, BaseIndexingLogEntry logEntry) {
 		try {
 			PreparedStatement updateLastChangeProcessedId = dbConn.prepareStatement("UPDATE indexing_profiles set lastChangeProcessed = ? where id =?");
 			updateLastChangeProcessedId.setLong(1, lastChangeProcessed);

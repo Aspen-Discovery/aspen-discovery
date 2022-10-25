@@ -3,11 +3,10 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -41,7 +40,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
 	 */
-	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, BaseLogEntry logEntry, Logger logger) {
+	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(serverName, profile, dbConnection, logEntry, logger);
 		this.profile = profile;
 

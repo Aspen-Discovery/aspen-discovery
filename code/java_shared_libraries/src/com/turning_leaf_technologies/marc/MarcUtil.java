@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.marc;
 
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.marc4j.*;
@@ -530,7 +530,7 @@ public class MarcUtil {
 		return timeAdded;
 	}
 
-	public static Record readMarcRecordFromFile(File marcFile, BaseLogEntry logEntry){
+	public static Record readMarcRecordFromFile(File marcFile, BaseIndexingLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -557,7 +557,7 @@ public class MarcUtil {
 		return readMarcRecordFromFilePermissive(marcFile, logEntry);
 	}
 
-	private static Record readMarcRecordFromFilePermissive(File marcFile, BaseLogEntry logEntry){
+	private static Record readMarcRecordFromFilePermissive(File marcFile, BaseIndexingLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -577,7 +577,7 @@ public class MarcUtil {
 		return null;
 	}
 
-	public static Record readJsonFormattedRecord(String identifier, String marcContents, BaseLogEntry logEntry){
+	public static Record readJsonFormattedRecord(String identifier, String marcContents, BaseIndexingLogEntry logEntry){
 		try {
 			InputStream marcFileStream = new ByteArrayInputStream(marcContents.getBytes(StandardCharsets.UTF_8));
 

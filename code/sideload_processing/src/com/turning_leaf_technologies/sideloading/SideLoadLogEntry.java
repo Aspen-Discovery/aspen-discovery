@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.sideloading;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
@@ -11,11 +11,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-class SideLoadLogEntry implements BaseLogEntry {
+class SideLoadLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final ArrayList<String> notes = new ArrayList<>();
 	private int numSideLoadsUpdated = 0;
 	private String sideLoadsUpdated = "";
 	private int numProducts = 0;
@@ -24,21 +24,22 @@ class SideLoadLogEntry implements BaseLogEntry {
 	private int numDeleted = 0;
 	private int numUpdated = 0;
 	private int numSkipped = 0;
-	private Logger logger;
+	private int numInvalidRecords = 0;
+	private final Logger logger;
 
 	SideLoadLogEntry(Connection dbConn, Logger logger) {
 		this.logger = logger;
 		this.startTime = new Date();
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into sideload_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE sideload_log SET lastUpdate = ?, endTime = ?, notes = ?, numSideLoadsUpdated = ?, sideLoadsUpdated = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE sideload_log SET lastUpdate = ?, endTime = ?, notes = ?, numSideLoadsUpdated = ?, sideLoadsUpdated = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
 		saveResults();
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
@@ -96,6 +97,7 @@ class SideLoadLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numUpdated);
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numSkipped);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -138,6 +140,7 @@ class SideLoadLogEntry implements BaseLogEntry {
 		numUpdated++;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	void incNumProducts(int size) {
 		numProducts += size;
 	}
@@ -151,6 +154,7 @@ class SideLoadLogEntry implements BaseLogEntry {
 		this.saveResults();
 	}
 
+	@SuppressWarnings("unused")
 	public boolean hasErrors() {
 		return numErrors > 0;
 	}
@@ -161,5 +165,10 @@ class SideLoadLogEntry implements BaseLogEntry {
 
 	int getNumProducts() {
 		return numProducts;
+	}
+
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
 }

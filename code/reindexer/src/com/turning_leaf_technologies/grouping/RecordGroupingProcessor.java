@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.grouping;
 
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.Date;
 
 public class RecordGroupingProcessor {
-	protected BaseLogEntry logEntry;
+	protected BaseIndexingLogEntry logEntry;
 	protected Logger logger;
 
 	private PreparedStatement insertGroupedWorkStmt;
@@ -70,7 +70,7 @@ public class RecordGroupingProcessor {
 	 * @param serverName   - The server we are grouping data for
 	 * @param logger       - A logger to store debug and error messages to.
 	 */
-	public RecordGroupingProcessor(Connection dbConnection, String serverName, BaseLogEntry logEntry, Logger logger) {
+	public RecordGroupingProcessor(Connection dbConnection, String serverName, BaseIndexingLogEntry logEntry, Logger logger) {
 		this.logger = logger;
 		this.logEntry = logEntry;
 
@@ -883,7 +883,7 @@ public class RecordGroupingProcessor {
 		return originalTitle;
 	}
 
-	BaseLogEntry getLogEntry(){
+	BaseIndexingLogEntry getLogEntry(){
 		return this.logEntry;
 	}
 

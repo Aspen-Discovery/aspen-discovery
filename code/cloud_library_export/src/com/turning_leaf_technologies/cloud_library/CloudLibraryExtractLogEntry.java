@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.cloud_library;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-class CloudLibraryExtractLogEntry implements BaseLogEntry {
+class CloudLibraryExtractLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
 	private final long settingId;
 	private final Date startTime;
@@ -21,6 +21,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private int numUpdated = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
+	private int numInvalidRecords = 0;
 	private final Logger logger;
 
 	CloudLibraryExtractLogEntry(Connection dbConn, long settingsId, Logger logger) {
@@ -29,7 +30,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 		this.settingId = settingsId;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into cloud_library_export_log (settingId, startTime) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE cloud_library_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE cloud_library_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -93,6 +94,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numAvailabilityChanges);
 				updateLogEntry.setInt(++curCol, numMetadataChanges);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -143,6 +145,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 		numMetadataChanges++;
 	}
 
+	@SuppressWarnings("unused")
 	void setNumProducts(int size) {
 		numProducts = size;
 	}
@@ -151,8 +154,13 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 		return numErrors > 0;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	void incNumProducts(int numResults) {
 		this.numProducts += numResults;
 	}
 
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
+	}
 }

@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.indexing;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class IlsExtractLogEntry implements BaseLogEntry {
+public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
 	private String indexingProfile;
 	private Date startTime;
@@ -25,6 +25,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	private int numDeleted = 0;
 	private int numUpdated = 0;
 	private int numSkipped = 0;
+	private int numInvalidRecords = 0;
 	private Logger logger;
 	private StringBuilder notesText = new StringBuilder();
 	private boolean maxNoteTextLengthReached = false;
@@ -35,7 +36,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		this.indexingProfile = indexingProfile;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into ils_extract_log (startTime, indexingProfile) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, isFullUpdate = ?, endTime = ?, notes = ?, numRegrouped =?, numChangedAfterGrouping = ?, numProducts = ?, numRecordsWithInvalidMarc = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, currentId = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, isFullUpdate = ?, endTime = ?, notes = ?, numRegrouped =?, numChangedAfterGrouping = ?, numProducts = ?, numRecordsWithInvalidMarc = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, currentId = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -105,6 +106,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numSkipped);
 				updateLogEntry.setString(++curCol, currentId);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -195,5 +197,10 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 
 	public void setIsFullUpdate(boolean runFullUpdate) {
 		this.isFullUpdate = runFullUpdate;
+	}
+
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
 }

@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
  */
 class GroupedWork implements Cloneable {
 	private final static Logger logger = LogManager.getLogger(GroupedWork.class);
-	protected BaseLogEntry logEntry;
+	protected BaseIndexingLogEntry logEntry;
 
 	//The id of the work within the database.
 	String permanentId;

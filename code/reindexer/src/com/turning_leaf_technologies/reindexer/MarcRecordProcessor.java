@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +66,7 @@ abstract class MarcRecordProcessor {
 	 * @param identifier the identifier to load information for
 	 * @param logEntry the log entry to store any errors
 	 */
-	public synchronized void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+	public synchronized void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseIndexingLogEntry logEntry){
 		//Check to be sure the record is not suppressed
 		boolean isSuppressed = false;
 		try {
@@ -110,7 +110,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier, BaseLogEntry logEntry) {
+	private Record loadMarcRecordFromDisk(String identifier, BaseIndexingLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
 		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
 	}

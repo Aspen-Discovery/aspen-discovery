@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
@@ -23,7 +23,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 		return clonedWork;
 	}
 
-	SolrInputDocument getSolrDocument(BaseLogEntry logEntry) {
+	SolrInputDocument getSolrDocument(BaseIndexingLogEntry logEntry) {
 		SolrInputDocument doc = new SolrInputDocument();
 		//Main identification
 		doc.addField("id", id);
@@ -259,7 +259,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 		return doc;
 	}
 
-	protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseLogEntry logEntry) {
+	protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseIndexingLogEntry logEntry) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
 		try {
