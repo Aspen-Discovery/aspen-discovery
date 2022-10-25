@@ -2231,7 +2231,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$localMarcHoldings = [];
 		$marcHoldings = [];
 		$marcRecord = $this->getMarcRecord();
-		if ($marcRecord){
+		if (!empty($marcRecord)){
 			//Get holdings information
 			$marc852Fields = $marcRecord->getFields('852');
 			if (count($marc852Fields) > 0){
@@ -2264,20 +2264,31 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if ($marc852subfield6 != false){
 						$marc852subfield6Data = $marc852subfield6->getData();
 						$marcHolding = [];
-						$owningLibraryCode = strtolower($marc852Field->getSubfield('b')->getData());
-						if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)){
-							$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+						$marcSubfieldB = $marc852Field->getSubfield('b');
+						if ($marcSubfieldB != false) {
+							$owningLibraryCode = strtolower($marcSubfieldB->getData());
+							if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)) {
+								$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+							} else {
+								$owningLibrary = $owningLibraryCode;
+							}
+							$marcHolding['library'] = $owningLibrary;
 						}else{
-							$owningLibrary = $owningLibraryCode;
+							continue;
 						}
-						$marcHolding['library'] = $owningLibrary;
-						$shelfLocation = strtolower($marc852Field->getSubfield('c')->getData());
-						if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)){
-							$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+						$marcSubfieldC = $marc852Field->getSubfield('c');
+						if ($marcSubfieldC != false) {
+							$shelfLocation = strtolower($marcSubfieldC->getData());
+							if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
+								$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+							}
+							$marcHolding['shelfLocation'] = $shelfLocation;
+						}else{
+							$marcHolding['shelfLocation'] = '';
 						}
-						$marcHolding['shelfLocation'] = $shelfLocation;
 						//Nothing super useful in 853, ignore it for now
 						//Load what is held in the 866
+						$is866Found = false;
 						foreach ($marc866Fields as $marc866Field) {
 							$marc866subfield6 = $marc866Field->getSubfield('6');
 							if ($marc866subfield6 != false) {
@@ -2286,9 +2297,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 									$marc866subfieldA = $marc866Field->getSubfield('a');
 									if ($marc866subfieldA != false) {
 										$marcHolding['holdings'] = $marc866subfieldA->getData();
+										$is866Found = true;
 									}
 								}
 							}
+						}
+						if (!$is866Found){
+							continue;
 						}
 						if (array_key_exists($owningLibraryCode, $localLocationCodes)){
 							$localMarcHoldings[] = $marcHolding;
