@@ -29,7 +29,7 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
 		auth: createAuthTokens()
 	});
 
-	const response = await api.get('/API/SearchAPI?method=getAppSearchResults&sort=relevance' + filters);
+	const response = await api.get('/API/SearchAPI?method=getAppSearchResults' + filters);
 	if (response.ok) {
 		let str = response.config.url;
 		str = str.split("&").slice(1);
