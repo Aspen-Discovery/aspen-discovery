@@ -93,7 +93,7 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
 		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
-		if (status == null){
+		if (status == null || status.length() == 0){
 			status = "On Shelf";
 		}
 		return status;

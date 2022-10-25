@@ -133,7 +133,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
-		List<DataField> subjectFields = MarcUtil.getDataFields(record, new int[]{600, 610, 611, 630, 648, 650, 651, 655, 690});
+		List<DataField> subjectFields = MarcUtil.getDataFields(record, new int[]{600, 610, 611, 630, 648, 650, 651, 655, 690, 691});
 
 		HashSet<String> subjects = new HashSet<>();
 		for (DataField curSubjectField : subjectFields){
@@ -365,7 +365,9 @@ abstract class MarcRecordProcessor {
 					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
-				case "690": {
+				case "690":
+				case "691":
+				{
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						if (curSubfield.getCode() == 'a' ||
