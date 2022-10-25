@@ -703,4 +703,21 @@ class Grouping_Record
 	{
 		return $this->_statusInformation->isLibraryOwned();
 	}
+
+	public function getHoldPickupSetting()
+	{
+		$result = 0;
+		global $indexingProfiles;
+		if(array_key_exists($this->source, $indexingProfiles)) {
+			$indexingProfile = $indexingProfiles[$this->source];
+			$formatMap = $indexingProfile->formatMap;
+			/** @var FormatMapValue $formatMapValue */
+			foreach ($formatMap as $formatMapValue) {
+				if (strcasecmp($formatMapValue->format, $this->format) === 0) {
+					return max($result, $formatMapValue->pickupAt);
+				}
+			}
+		}
+		return $result;
+	}
 }

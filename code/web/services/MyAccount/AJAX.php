@@ -1029,6 +1029,9 @@ class MyAccount_AJAX extends JSON_Action
 			$id = $_REQUEST['holdId'];
 			$interface->assign('holdId', $id);
 
+			$recordId = $_REQUEST['recordId'];
+			$sourceId = $_REQUEST['source'] . ":" . $_REQUEST['recordId'];
+
 			$currentLocation = $_REQUEST['currentLocation'];
 			if (!is_numeric($currentLocation)) {
 				$location = new Location();
@@ -1043,6 +1046,32 @@ class MyAccount_AJAX extends JSON_Action
 
 			$location = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold);
+
+			$groupedWorkId = null;
+			$pickupAt = 0;
+			require_once ROOT_DIR . '/sys/User/Hold.php';
+			$hold = new Hold();
+			$hold->recordId = $recordId;
+			if($hold->find(true)) {
+				$groupedWorkId = $hold->groupedWorkId;
+			}
+
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver = new GroupedWorkDriver($groupedWorkId);
+			if($recordDriver->isValid()) {
+				$record = $recordDriver->getRelatedRecord($sourceId);
+				$pickupAt = $record->getHoldPickupSetting();
+				if($pickupAt > 0) {
+					$itemLocations = $recordDriver->getValidPickupLocations($pickupAt);
+					foreach($pickupBranches as $locationKey => $location) {
+						if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
+							unset($pickupBranches[$locationKey]);
+						}
+					}
+				}
+			}
+
+			$interface->assign('pickupAt', $pickupAt);
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(
