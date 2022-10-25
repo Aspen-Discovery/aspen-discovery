@@ -1330,14 +1330,14 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
-		if (printFormats.contains("Playaway Launchpad")){
+		if (printFormats.contains("PlayawayLaunchpad")){
 			printFormats.clear();
-			printFormats.add("Playaway Launchpad");
+			printFormats.add("PlayawayLaunchpad");
 			return;
 		}
-		if (printFormats.contains("Playaway Bookpack")){
+		if (printFormats.contains("PlayawayBookpack")){
 			printFormats.clear();
-			printFormats.add("Playaway Bookpack");
+			printFormats.add("PlayawayBookpack");
 			return;
 		}
 		if (printFormats.contains("PlayawayView")){
@@ -1370,7 +1370,7 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("DVD")){
 			printFormats.remove("VideoCassette");
 		}
-		if (printFormats.contains("4K Blu-ray")){
+		if (printFormats.contains("4KBlu-ray")){
 			printFormats.remove("VideoDisc");
 			printFormats.remove("DVD");
 			printFormats.remove("Blu-ray");
@@ -1381,7 +1381,7 @@ abstract class MarcRecordProcessor {
 		}
 		if (printFormats.contains("4K/Blu-ray")){
 			printFormats.remove("Blu-ray");
-			printFormats.remove("4K Blu-ray");
+			printFormats.remove("4KBlu-ray");
 		}
 		if (printFormats.contains("Blu-ray/DVD")){
 			printFormats.remove("Blu-ray");
@@ -1431,10 +1431,10 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("Book") && printFormats.contains("Kit")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Pop-Up Book")){
+		if (printFormats.contains("Book") && printFormats.contains("Pop-UpBook")){
 			printFormats.remove("Book");
 		}
-		if (printFormats.contains("Book") && printFormats.contains("Board Book")){
+		if (printFormats.contains("Book") && printFormats.contains("BoardBook")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
@@ -1571,7 +1571,7 @@ abstract class MarcRecordProcessor {
 				}else if (editionData.contains("go reader") || editionData.contains("goreader")) {
 					result.add("GoReader");
 				}else if (editionData.contains("playaway view")) {
-					result.add("Playaway View");
+					result.add("PlayawayView");
 				}else if (editionData.contains("playaway")) {
 					result.add("Playaway");
 				}else if (editionData.contains("wonderbook")) {
@@ -1581,11 +1581,11 @@ abstract class MarcRecordProcessor {
 				}else if (editionData.contains("nintendo switch")) {
 					result.add("Nintendo Switch");
 				}else if (editionData.contains("book club kit")) {
-					result.add("Book Club Kit");
+					result.add("BookClubKit");
 				}else if (editionData.contains("vox")) {
 					result.add("Vox");
 				}else if (editionData.contains("pop-up") || (editionData.contains("mini-pop-up"))) {
-					result.add("Pop-Up Book");
+					result.add("Pop-UpBook");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
@@ -1612,9 +1612,9 @@ abstract class MarcRecordProcessor {
 					} else if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 						result.add("LargePrint");
 					} else if (subfield.getCode() == 'a' && (physicalDescriptionData.contains("launchpad"))) {
-						result.add("Playaway_Launchpad");
+						result.add("PlayawayLaunchpad");
 					}else if (physicalDescriptionData.contains("4k") && (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray"))) {
-						result.add("4K_Blu-ray");
+						result.add("4KBlu-ray");
 					} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 						//Check to see if this is a combo pack.
 						Subfield subfieldE = field.getSubfield('e');
@@ -1712,10 +1712,10 @@ abstract class MarcRecordProcessor {
 						result.add("Wonderbook");
 						break;
 					} else if (noteValue.contains("playaway view")) {
-						result.add("Playaway View");
+						result.add("PlayawayView");
 						break;
 					}  else if (noteValue.contains("playaway bookpack") || noteValue.contains("playaway bookpacks")) {
-						result.add("Playaway Bookpack");
+						result.add("PlayawayBookpack");
 						break;
 					}
 				}
@@ -1808,9 +1808,9 @@ abstract class MarcRecordProcessor {
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("board books") || subfieldData.contains("board book")) {
-							result.add("Board Book");
+							result.add("BoardBook");
 						}else if (subfieldData.contains("pop-up")) {
-							result.add("Pop-Up Book");
+							result.add("Pop-UpBook");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1849,9 +1849,9 @@ abstract class MarcRecordProcessor {
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("board books") || subfieldData.contains("board book")) {
-							result.add("Board Book");
+							result.add("BoardBook");
 						}else if (subfieldData.contains("pop-up")) {
-							result.add("Pop-Up Book");
+							result.add("Pop-UpBook");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1900,11 +1900,11 @@ abstract class MarcRecordProcessor {
 					if (fieldData.contains("playaway view")) {
 						result.add("PlayawayView");
 					}else if (fieldData.contains("playaway launchpad")) {
-						result.add("Playaway_Launchpad");
+						result.add("PlayawayLaunchpad");
 					}else if (fieldData.contains("playaway bookpack")) {
-						result.add("Playaway_Bookpack");
+						result.add("PlayawayBookpack");
 					}else if (fieldData.contains("playaway wonderbook")) {
-						result.add("Playaway_Wonderbook");
+						result.add("Wonderbook");
 					}else if (fieldData.contains("playaway digital audio") || fieldData.contains("findaway world")) {
 						result.add("Playaway");
 					}
