@@ -1,11 +1,13 @@
 package com.turning_leaf_technologies.marc;
 
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.json.JSONException;
 import org.marc4j.*;
 import org.marc4j.marc.*;
+import org.marc4j.util.JsonParser;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -530,7 +532,7 @@ public class MarcUtil {
 		return timeAdded;
 	}
 
-	public static Record readMarcRecordFromFile(File marcFile, BaseLogEntry logEntry){
+	public static Record readMarcRecordFromFile(File marcFile, BaseIndexingLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -557,7 +559,7 @@ public class MarcUtil {
 		return readMarcRecordFromFilePermissive(marcFile, logEntry);
 	}
 
-	private static Record readMarcRecordFromFilePermissive(File marcFile, BaseLogEntry logEntry){
+	private static Record readMarcRecordFromFilePermissive(File marcFile, BaseIndexingLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -577,7 +579,7 @@ public class MarcUtil {
 		return null;
 	}
 
-	public static Record readJsonFormattedRecord(String identifier, String marcContents, BaseLogEntry logEntry){
+	public static Record readJsonFormattedRecord(String identifier, String marcContents, BaseIndexingLogEntry logEntry){
 		try {
 			InputStream marcFileStream = new ByteArrayInputStream(marcContents.getBytes(StandardCharsets.UTF_8));
 
@@ -587,20 +589,16 @@ public class MarcUtil {
 				marcFileStream.close();
 				streamReader = null;
 				return marcRecord;
+			}catch (JSONException jse){
+			}catch (JsonParser.Escape jse){
+				logEntry.incInvalidRecords(identifier);
+				logEntry.addNote(jse.getMessage());
 			}catch (MarcException me){
-				if (logEntry instanceof IlsExtractLogEntry) {
-					IlsExtractLogEntry ilsExtractLogEntry = (IlsExtractLogEntry) logEntry;
-					ilsExtractLogEntry.incRecordsWithInvalidMarc("Could not read MARC for " + identifier + " " + me);
-				}else{
-					logEntry.incErrors("Could not read MARC for " + identifier, me);
-				}
+				logEntry.incInvalidRecords(identifier);
+				logEntry.addNote(me.getMessage());
 			}catch (NullPointerException npe){
-				if (logEntry instanceof IlsExtractLogEntry){
-					IlsExtractLogEntry ilsExtractLogEntry = (IlsExtractLogEntry) logEntry;
-					ilsExtractLogEntry.incRecordsWithInvalidMarc("Null pointer exception reading MARC for " + identifier + " " + npe);
-				}else {
-					logEntry.incErrors("Null pointer exception reading MARC for " + identifier, npe);
-				}
+				logEntry.incInvalidRecords(identifier);
+				logEntry.addNote(npe.getMessage());
 			}
 			streamReader = null;
 			marcFileStream.close();

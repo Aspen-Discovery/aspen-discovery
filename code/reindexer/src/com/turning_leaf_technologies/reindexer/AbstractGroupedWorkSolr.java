@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.dates.DateUtils;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -210,7 +211,7 @@ public abstract class AbstractGroupedWorkSolr {
 		clonedWork.relatedScopes = (HashMap<String, ArrayList<ScopingInfo>>) relatedScopes.clone();
 	}
 
-	abstract SolrInputDocument getSolrDocument(BaseLogEntry logEntry);
+	abstract SolrInputDocument getSolrDocument(BaseIndexingLogEntry logEntry);
 
 	public void addScopingInfo(String scopeName, ScopingInfo scopingInfo){
 		ArrayList<ScopingInfo> scopingInfoForScope = relatedScopes.computeIfAbsent(scopeName, k -> new ArrayList<>());
@@ -271,7 +272,7 @@ public abstract class AbstractGroupedWorkSolr {
 		return earliestDate;
 	}
 
-	abstract protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseLogEntry logEntry);
+	abstract protected void addScopedFieldsToDocument(SolrInputDocument doc, BaseIndexingLogEntry logEntry);
 
 	protected void checkInconsistentLiteraryForms() {
 		if (literaryForm.size() > 1) {

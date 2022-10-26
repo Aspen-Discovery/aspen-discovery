@@ -9,12 +9,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 
-class OverDriveExtractLogEntry implements BaseLogEntry {
+class OverDriveExtractLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
 	private final long settingId;
 	private final Date startTime;
@@ -28,6 +29,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	private int numSkipped = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
+	private int numInvalidRecords = 0;
 	private final Logger logger;
 	
 	OverDriveExtractLogEntry(Connection dbConn, OverDriveSetting setting, Logger logger){
@@ -36,7 +38,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		this.startTime = new Date();
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into overdrive_extract_log (startTime, settingId) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE overdrive_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE overdrive_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -100,6 +102,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numAvailabilityChanges);
 				updateLogEntry.setInt(++curCol, numMetadataChanges);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -153,11 +156,17 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	void setNumProducts(int size) {
 		numProducts = size;
 	}
+	@SuppressWarnings("unused")
 	void incNumProducts(int size) {
 		numProducts += size;
 	}
 
 	boolean hasErrors() {
 		return numErrors > 0;
+	}
+
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
 }

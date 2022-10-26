@@ -83,7 +83,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char singleOrderLocationSubfield;
 	private char orderCopiesSubfield;
 	private char orderStatusSubfield;
-	private char orderCode3Subfield;
 
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
@@ -237,7 +236,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
 
 			String suppressRecordsWithUrlsMatching = indexingProfileRS.getString("suppressRecordsWithUrlsMatching");
-			if (suppressRecordsWithUrlsMatching != null && suppressRecordsWithUrlsMatching.length() == 0){
+			if (suppressRecordsWithUrlsMatching == null || suppressRecordsWithUrlsMatching.length() == 0){
 				this.suppressRecordsWithUrlsMatching = null;
 			}else {
 				this.suppressRecordsWithUrlsMatching = Pattern.compile(suppressRecordsWithUrlsMatching, Pattern.CASE_INSENSITIVE);
@@ -252,7 +251,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			singleOrderLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocationSingle");
 			orderCopiesSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
 			orderStatusSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
-			orderCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
 			treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
@@ -445,7 +443,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				groupedWork.addKeywords(record.getControlNumber());
 			}
 
-			//Do updates based on items
+			//Perform updates based on items
 			loadPopularity(groupedWork, identifier);
 			groupedWork.addBarcodes(MarcUtil.getFieldList(record, itemTag + barcodeSubfield));
 
@@ -487,6 +485,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (marcRecord != null){
 					DataField titleField = marcRecord.getDataField(245);
 					if (titleField != null) {
+						@SuppressWarnings("SpellCheckingInspection")
 						String childTitle = titleField.getSubfieldsAsString("abfgnp", " ");
 						groupedWork.addContents(childTitle);
 					}
@@ -528,7 +527,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return numPrintItems;
 	}
 
-	//static Pattern eContentUrlPattern = Pattern.compile("overdrive\\.com|contentreserve\\.com|hoopla|yourcloudlibrary|axis360\\.baker-taylor\\.com", Pattern.CASE_INSENSITIVE);
 	//Suppress all marc records for eContent that can be loaded via API
 	protected boolean isBibSuppressed(Record record, String identifier) {
 		if (suppressRecordsWithUrlsMatching != null) {
@@ -556,6 +554,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			updateRecordSuppressionReasonStmt.setString(2, notes);
 			updateRecordSuppressionReasonStmt.setString(3, profileType);
 			updateRecordSuppressionReasonStmt.setString(4, identifier);
+			@SuppressWarnings("unused")
 			int numUpdated = updateRecordSuppressionReasonStmt.executeUpdate();
 		}catch (Exception e){
 			indexer.getLogEntry().incErrors("Error updating record suppression", e);
@@ -586,12 +585,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (curOrderField.getSubfield(orderStatusSubfield) != null) {
 				status = curOrderField.getSubfield(orderStatusSubfield).getData();
 			}
-			String code3 = null;
-			if (orderCode3Subfield != ' ' && curOrderField.getSubfield(orderCode3Subfield) != null){
-				code3 = curOrderField.getSubfield(orderCode3Subfield).getData();
-			}
 
-			if (isOrderItemValid(status, code3)){
+			if (isOrderItemValid(status)){
 				int copies = 0;
 				//If the location is multi, we actually have several records that should be processed separately
 				List<Subfield> detailedLocationSubfield = curOrderField.getSubfields(orderLocationSubfield);
@@ -618,7 +613,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 								indexer.getLogEntry().incErrors("Error parsing copies and location for order item " + tmpLocation);
 							}
 						} else {
-							//If we only get one location in the detailed copies, we need to read the copies subfield rather than
+							//If we only get one location in the detailed copies, we need to read the "copies" subfield rather than
 							//hard coding to 1
 							copies = 1;
 							if (orderCopiesSubfield != ' ') {
@@ -647,12 +642,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (recordInfo.getNumCopiesOnOrder() > 0 && !hasTangibleItems){
 			groupedWork.addKeywords("On Order");
 			groupedWork.addKeywords("Coming Soon");
-			/*//Don't do this anymore, see D-1893
-			HashSet<String> additionalOrderSubjects = new HashSet<>();
-			additionalOrderSubjects.add("On Order");
-			additionalOrderSubjects.add("Coming Soon");
-			groupedWork.addTopic(additionalOrderSubjects);
-			groupedWork.addTopicFacet(additionalOrderSubjects);*/
 		}
 	}
 
@@ -727,10 +716,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					if (scope.isLocationScope() && !hasLocationBasedShelfLocation){
 						hasLocationBasedShelfLocation = true;
-						//TODO: Decide if this code should be activated
-						/*if (itemInfo.getShelfLocation().equals("On Order")) {
-							itemInfo.setShelfLocation(scopingInfo.getScope().getFacetLabel() + "On Order");
-						}*/
 					}
 				}
 
@@ -741,7 +726,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected boolean isOrderItemValid(String status, String code3) {
+	protected boolean isOrderItemValid(String status) {
 		return status.equals("o") || status.equals("1");
 	}
 
@@ -974,7 +959,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.setLastCheckinDate(lastCheckIn);
 		}
 
-		//set status towards the end so we can access date added and other things that may need to
+		//set status towards the end - so we can access date added and other things that may need to
 		itemInfo.setStatusCode(itemStatus);
 		if (itemStatus != null) {
 			setDetailedStatus(itemInfo, itemField, itemStatus, recordInfo.getRecordIdentifier());
@@ -1515,7 +1500,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void loadPopularity(AbstractGroupedWorkSolr groupedWork, String recordIdentifier) {
 		//Add popularity based on the number of holds (we have already done popularity for prior checkouts)
-		//Active holds indicate that a title is more interesting so we will count each hold at double value
+		//Active holds indicate that a title is more interesting - so we will count each hold at double value
 		int numHolds = getIlsHoldsForTitle(recordIdentifier);
 		groupedWork.addHolds(numHolds);
 		double popularity = 2 * numHolds;
@@ -1653,7 +1638,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
 				if (printFormats.size() == 1 && printFormats.iterator().next().contains("LargePrint")) {
 					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
-					//noinspection Java8MapApi
 					for (ItemInfo item : recordInfo.getRelatedItems()) {
 						item.setFormat(null);
 						item.setFormatCategory(null);
@@ -1670,10 +1654,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	void loadPrintFormatFromBib(RecordInfo recordInfo, Record record) {
 		LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
 
-		/*for(String format: printFormats){
-			logger.debug("Print formats from bib:");
-			logger.debug("    " + format);
-		}*/
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
 		if (translatedFormats.size() == 0){
 			logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats);

@@ -48,7 +48,9 @@ class MarcLoader{
 		if ($ilsRecord->find(true)){
 			if (!empty($ilsRecord->sourceData)) {
 				$marcRecord = new File_MARC_Record();
-				$marcRecord->jsonDecode($ilsRecord->sourceData);
+				if (!$marcRecord->jsonDecode($ilsRecord->sourceData)) {
+					AspenError::raiseError(new AspenError('Could not load marc record for record ' . $ilsId));
+				}
 				$checkFileSystem = false;
 			}
 		}

@@ -14,4 +14,5 @@ class CloudLibraryExportLogEntry extends BaseLogEntry
 	public $numUpdated;
 	public $numAvailabilityChanges;
 	public $numMetadataChanges;
+	public $numInvalidRecords;
 }

@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.grouping;
 
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +18,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	private PreparedStatement getOverDriveProductInfoStmt;
 	private PreparedStatement getProductMetadataStmt;
 
-	public OverDriveRecordGrouper(Connection dbConnection, String serverName, BaseLogEntry logEntry, Logger logger) {
+	public OverDriveRecordGrouper(Connection dbConnection, String serverName, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(dbConnection, serverName, logEntry, logger);
 
 		try {
