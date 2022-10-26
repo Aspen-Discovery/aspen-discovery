@@ -174,7 +174,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 						for (String parentRecordId : parentRecords){
 							if (existingParentRecords.containsKey(parentRecordId)){
 								if (!existingParentRecords.get(parentRecordId).equals(title)){
-									updateChildTitleStmt.setString(1, title);
+									updateChildTitleStmt.setString(1, AspenStringUtils.trimTo(750, title));
 									updateChildTitleStmt.setString(2, primaryIdentifier.getIdentifier());
 									updateChildTitleStmt.setString(3, parentRecordId);
 									updateChildTitleStmt.executeUpdate();
