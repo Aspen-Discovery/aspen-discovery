@@ -975,7 +975,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
 									'url' => $linkDestination,
 									'requireLogin' => false,
-									'type' => 'marc_access_online'
+									'type' => 'marc_access_online',
+									'target' => '_blank'
 								);
 							}
 						}
