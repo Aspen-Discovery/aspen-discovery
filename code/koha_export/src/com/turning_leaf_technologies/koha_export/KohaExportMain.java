@@ -22,6 +22,13 @@ import org.marc4j.marc.Record;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -361,6 +368,25 @@ public class KohaExportMain {
 								if (numUpdates > 0){
 									logger.debug("Cleared cover cache info for " + groupedWorkId);
 								}
+
+								try {
+									Set<PosixFilePermission> perms = new HashSet<>();
+									perms.add(PosixFilePermission.OWNER_READ);
+									perms.add(PosixFilePermission.OWNER_WRITE);
+									perms.add(PosixFilePermission.GROUP_READ);
+									perms.add(PosixFilePermission.GROUP_WRITE);
+									perms.add(PosixFilePermission.OTHERS_READ);
+
+									Files.setPosixFilePermissions(coverFile.toPath(), perms);
+									String groupName = "aspen_apache";
+									UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+									GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
+									Files.getFileAttributeView(coverFile.toPath(), PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
+								}catch (Exception e){
+									//Errors get generated on Windows, just ignore.
+									logger.error("Error setting file permissions for " + coverFile.toString(), e);
+								}
+
 								numCoversExported++;
 							}catch (IOException e){
 								logEntry.incErrors("Error creating book cover for " + kohaCoversRS.getString("biblionumber"), e);
