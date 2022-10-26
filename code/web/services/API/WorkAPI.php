@@ -20,6 +20,11 @@ class WorkAPI extends Action{
 		echo $output;
 	}
 
+	/** @noinspection PhpUnused */
+	function getGroupedWork() {
+		// placeholder for moving getAppGroupedWork from Item API
+	}
+
 	function getRatingData($permanentId = null){
 		global $timer;
 		if (is_null($permanentId) && isset($_REQUEST['id'])){
