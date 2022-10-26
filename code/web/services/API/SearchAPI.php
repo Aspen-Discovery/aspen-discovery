@@ -2084,7 +2084,7 @@ class SearchAPI extends Action
 				$items = [];
 
 				$i = 0;
-				$key = 'Sort By';
+				$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
 				foreach($sortList as $value => $sort) {
 					$items[$key][$i]['value'] = $value;
 					$items[$key][$i]['display'] = $sort['desc'];
