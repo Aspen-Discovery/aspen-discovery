@@ -2079,8 +2079,22 @@ class SearchAPI extends Action
 			if($searchObj) {
 				$searchObj->processSearch(false, true);
 				$searchObj->close();
+				$sortList = $searchObj->getSortList();
 				$facets = $searchObj->getFacetList();
 				$items = [];
+
+				$i = 0;
+				$key = 'Sort By';
+				foreach($sortList as $value => $sort) {
+					$items[$key][$i]['value'] = $value;
+					$items[$key][$i]['display'] = $sort['desc'];
+					$items[$key][$i]['field'] = 'sort_by';
+					$items[$key][$i]['count'] = 0;
+					$items[$key][$i]['isApplied'] = $sort['selected'];
+					$items[$key][$i]['multiSelect'] = false;
+					$i++;
+				}
+
 				foreach($facets as $facet) {
 					$key = $facet['label'];
 					$i = 0;
@@ -2094,6 +2108,7 @@ class SearchAPI extends Action
 						$i++;
 					}
 				}
+
 				$results = [
 					'success' => true,
 					'id' => $id,
