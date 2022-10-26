@@ -1579,7 +1579,7 @@ abstract class MarcRecordProcessor {
 				}else if (editionData.contains("gamecube")) {
 					result.add("GameCube");
 				}else if (editionData.contains("nintendo switch")) {
-					result.add("Nintendo Switch");
+					result.add("NintendoSwitch");
 				}else if (editionData.contains("book club kit")) {
 					result.add("BookClubKit");
 				}else if (editionData.contains("vox")) {
