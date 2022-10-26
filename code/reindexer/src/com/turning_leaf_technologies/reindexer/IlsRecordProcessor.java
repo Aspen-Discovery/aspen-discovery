@@ -1656,7 +1656,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
 		if (translatedFormats.size() == 0){
-			logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats);
+			if (formatSource.equals("item")){
+				//This generally happens if the library has an item type that they translate to blank to force it to go through bib level evaluation, but that evaluation gets back to the original item type
+				// In that case, just use the raw value.
+				translatedFormats = printFormats;
+			}else{
+				logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats);
+			}
 		}
 		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, recordInfo.getRecordIdentifier());
 		recordInfo.addFormats(translatedFormats);

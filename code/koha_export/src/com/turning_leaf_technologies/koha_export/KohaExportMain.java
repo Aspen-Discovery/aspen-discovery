@@ -296,10 +296,9 @@ public class KohaExportMain {
 			try {
 				PreparedStatement getKohaVersionStmt = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable='Version'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
-				while (kohaVersionRS.next()){
+				if (kohaVersionRS.next()){
 					kohaVersion = kohaVersionRS.getFloat("value");
 					logEntry.addNote("Koha version is " + kohaVersion);
-					break;
 				}
 			} catch (SQLException e) {
 				logEntry.incErrors("Error loading koha version", e);
@@ -1381,7 +1380,7 @@ public class KohaExportMain {
 			} else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
 				throw e;
 			} else {
-				logEntry.incErrors("Error updating marc record for bib " + curBibId, e);
+				logEntry.incInvalidRecords(curBibId);
 			}
 		}
 	}

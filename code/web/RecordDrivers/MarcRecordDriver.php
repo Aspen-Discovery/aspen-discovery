@@ -969,7 +969,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					foreach ($marc856Fields as $marc856Field){
 						if ($marc856Field->getIndicator(1) == '4' && ($marc856Field->getIndicator(2) == '0' || $marc856Field->getIndicator(2) == '1')){
 							$subfieldU = $marc856Field->getSubfield('u');
-							if ($subfieldU != null){
+							$showAction = false;
+							if ($marc856Field->getIndicator(2) == '1'){
+								$subfield3 = $marc856Field->getSubfield('3');
+								if ($subfield3 == null && $subfieldU != null){
+									$showAction = true;
+								}
+							}else{
+								if ($subfieldU != null) {
+									$showAction = true;
+								}
+							}
+							if ($showAction){
 								$linkDestination = $subfieldU->getData();
 								$this->_actions[] = array(
 									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
