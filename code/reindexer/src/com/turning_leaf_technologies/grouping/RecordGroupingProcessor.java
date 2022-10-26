@@ -700,7 +700,9 @@ public class RecordGroupingProcessor {
 	private HashMap<String, String> loadTranslationMap(File translationMapFile) {
 		Properties props = new Properties();
 		try {
-			props.load(new FileReader(translationMapFile));
+			FileReader translationMapReader = new FileReader(translationMapFile);
+			props.load(translationMapReader);
+			translationMapReader.close();
 		} catch (IOException e) {
 			logEntry.incErrors("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
 		}
