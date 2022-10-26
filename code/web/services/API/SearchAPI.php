@@ -1939,9 +1939,11 @@ class SearchAPI extends Action
 
 		$results = [
 			'success' => false,
+			'count' => 0,
 			'totalResults' => 0,
 			'lookfor' => $_REQUEST['lookfor'],
 			'title' => translate(['text' => 'No Results Found', 'isPublicFacing' => true]),
+			'items' => [],
 			'message' => translate(['text'=> "Your search '%1%' did not match any resources.", 1=>$_REQUEST['lookfor'], 'isPublicFacing'=>true])
 		];
 
@@ -1984,6 +1986,7 @@ class SearchAPI extends Action
 				'perPage' => $summary['perPage']);
 			$pager = new Pager($options);
 			$results['totalResults'] = $pager->getTotalItems();
+			$results['count'] = $summary['resultTotal'];
 			$results['page_current'] = $pager->getCurrentPage();
 			$results['page_total'] = $pager->getTotalPages();
 			$timer->logTime('finish hits processing');
@@ -2010,6 +2013,16 @@ class SearchAPI extends Action
 			$results['title'] = translate(['text' => 'Catalog Search', 'isPublicFacing' => true]);
 			$results['message'] = translate(['text'=> "Your search '%1%' returned %2% results", 1=>$_REQUEST['lookfor'], 2=>$results['count'], 'isPublicFacing'=>true]);
 			$timer->logTime('load result records');
+
+			if($results['page_current'] == $results['page_total']) {
+				$results['message'] = "end of results";
+			}
+		}
+
+		if(empty($results['items'])) {
+			if($_REQUEST['page'] != 1) {
+				$results['message'] = "end of results";
+			}
 		}
 
 		return $results;
