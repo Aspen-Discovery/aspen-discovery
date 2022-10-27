@@ -542,12 +542,12 @@ class Record_AJAX extends Action
 									$patron->rememberHoldPickupLocation = 1;
 									$patron->update();
 								}
-							}
-							$pickupLocation = new Location();
-							if ($pickupLocation->get('code', $pickupBranch)){
-								if ($pickupLocation->locationId != $user->pickupLocationId){
-									$patron->pickupLocationId = $pickupLocation->locationId;
-									$patron->update();
+								$pickupLocation = new Location();
+								if ($pickupLocation->get('code', $pickupBranch)){
+									if ($pickupLocation->locationId != $user->pickupLocationId){
+										$patron->pickupLocationId = $pickupLocation->locationId;
+										$patron->update();
+									}
 								}
 							}
 						}else if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']){
