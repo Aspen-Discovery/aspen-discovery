@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Center, VStack, Spinner, Heading} from "native-base";
+import {Center, Heading, Spinner, VStack} from "native-base";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from "expo-constants";
 import _ from "lodash";
@@ -7,9 +7,8 @@ import {create} from 'apisauce';
 import {userContext} from "../../context/user";
 import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
 import {GLOBALS} from "../../util/globals";
-import {getBrowseCategories, getVdxForm} from "../../util/loadLibrary";
-import {getPatronBrowseCategories} from "../../util/loadPatron";
-import * as Notifications from 'expo-notifications';
+import {formatDiscoveryVersion, getBrowseCategories, getLanguages, getVdxForm, LIBRARY} from "../../util/loadLibrary";
+import {getILSMessages, getPatronBrowseCategories, PATRON} from "../../util/loadPatron";
 
 class LoadingScreen extends Component {
 	constructor() {
@@ -60,11 +59,15 @@ class LoadingScreen extends Component {
 				console.log(e);
 			}
 
+			LIBRARY.url = libraryUrl;
+			PATRON.scope = librarySolrScope;
+
 			if (libraryUrl) {
 				//console.log("Connecting to " + libName + " using " + libraryUrl);
+
 				let postBody = await postData();
 				const api = create({
-					baseURL: libraryUrl + '/API',
+					baseURL: LIBRARY.url + '/API',
 					timeout: GLOBALS.timeoutAverage,
 					headers: getHeaders(true),
 					auth: createAuthTokens()
@@ -80,25 +83,42 @@ class LoadingScreen extends Component {
 							data = response.data.result.profile;
 							this.setState({user: data});
 							this.context.user = data;
+
+							PATRON.language = data.interfaceLanguage;
+							PATRON.listLastUsed = data.lastListUsed;
+							PATRON.fines = data.fines;
+							PATRON.promptForOverdriveEmail = data.promptForOverdriveEmail;
+							PATRON.rememberHoldPickupLocation = data.rememberHoldPickupLocation;
+							PATRON.num.checkedOut = data.numCheckedOut;
+							PATRON.num.holds = data.numHolds;
+							PATRON.num.lists = data.numLists;
+							PATRON.num.overdue = data.numOverdue;
+							PATRON.num.ready = data.numHoldsAvailable;
+							PATRON.num.savedSearches = data.numSavedSearches;
+							PATRON.num.updatedSearches = data.numSavedSearchesNew;
+
+							await getILSMessages(LIBRARY.url);
 							await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
 							console.log("patron loaded into context");
 						}
 					}
 				} //end user check
 
-				if(libraryId) {
+				await getLanguages(LIBRARY.url);
+
+				if (libraryId) {
 					const api = create({
-						baseURL: libraryUrl + '/API',
+						baseURL: LIBRARY.url + '/API',
 						timeout: GLOBALS.timeoutAverage,
 						headers: getHeaders(),
 						auth: createAuthTokens()
 					});
 
-					if(_.isEmpty(this.state.library)) {
+					if (_.isEmpty(this.state.library)) {
 						const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
-						if(response.ok) {
+						if (response.ok) {
 							let data = [];
-							if(response.data.result.library) {
+							if (response.data.result.library) {
 								data = response.data.result.library;
 								this.setState({library: data});
 								this.context.library = data;
@@ -119,7 +139,6 @@ class LoadingScreen extends Component {
 
 					//const locationProfile = await AsyncStorage.getItem('@locationInfo');
 					if(_.isEmpty(this.state.location)) {
-						//console.log("fetching getLocationInfo...");
 						const response = await api.get('/SystemAPI?method=getLocationInfo', {id: locationId, library: librarySolrScope, version: Constants.manifest.version});
 						if(response.ok) {
 							let data = [];
@@ -149,9 +168,8 @@ class LoadingScreen extends Component {
 
 				let discoveryVersion;
 				if (this.state.library.discoveryVersion) {
-					let version = this.state.library.discoveryVersion;
-					version = version.split(" ");
-					discoveryVersion = version[0];
+					LIBRARY.version = formatDiscoveryVersion(this.state.library.discoveryVersion)
+					discoveryVersion = formatDiscoveryVersion(this.state.library.discoveryVersion);
 				} else {
 					discoveryVersion = "22.06.00";
 				} // end discovery version check

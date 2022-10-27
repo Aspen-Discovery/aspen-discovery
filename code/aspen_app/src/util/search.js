@@ -3,15 +3,36 @@ import {create} from 'apisauce';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // custom components and helper files
-import {createAuthTokens, getHeaders, postData} from "./apiAuth";
+import {createAuthTokens, ENDPOINT, getHeaders, getResponseCode, postData} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
 import _ from "lodash";
+import {PATRON} from "./loadPatron";
+import {LIBRARY} from "./loadLibrary";
+
+export const SEARCH = {
+	'term': null,
+	'id': null,
+	'sortMethod': "relevance",
+	'appliedFilters': [],
+	'sortList': [],
+	'availableFacets': [],
+	'defaultFacets': [],
+}
+
+const endpoint = ENDPOINT.search;
+
+const discovery = create({
+	baseURL: LIBRARY.url,
+	timeout: GLOBALS.timeoutAverage,
+	auth: createAuthTokens(),
+	headers: getHeaders(endpoint.isPost),
+});
 
 export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl, filters = "") {
 	let solrScope = "";
-	if(GLOBALS.solrScope !== "unknown") {
+	if (GLOBALS.solrScope !== "unknown") {
 		solrScope = GLOBALS.solrScope;
 	} else {
 		try {
@@ -22,26 +43,106 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
 	}
 
 	const api = create({
-		baseURL: libraryUrl,
+		baseURL: libraryUrl + '/API/',
 		timeout: GLOBALS.timeoutSlow,
-		headers: getHeaders,
+		headers: getHeaders(),
 		params: {library: solrScope, lookfor: searchTerm, pageSize: pageSize, page: page},
 		auth: createAuthTokens()
 	});
 
-	const response = await api.get('/API/SearchAPI?method=getAppSearchResults' + filters);
+	const response = await api.get('/SearchAPI?method=getAppSearchResults' + filters);
 	if (response.ok) {
-		let str = response.config.url;
-		str = str.split("&").slice(1);
+		SEARCH.term = response.data.result.lookfor;
+		let facets = response.config.url;
+		facets = facets.split("&").slice(1);
+		//formatFacetCluster(facets, true);
 		return {
+			success: true,
 			result: response.data.result,
-			filters: str,
+			filters: facets,
 		}
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);
+		return response
+	}
+}
+
+export async function getDefaultFacets(limit = 5) {
+	const data = await discovery.get(endpoint.url + 'getDefaultFacets', {limit: limit});
+	const response = getResponseCode(data);
+	if (response.success) {
+		SEARCH.defaultFacets = response.data.result;
+		return response.data.result
+	} else {
 		return response;
 	}
+}
+
+export async function getSearchResults(searchTerm, pageSize = 25, page, libraryUrl, filters = "") {
+	const data = await discovery.get(endpoint.url + 'searchLite' + filters, {
+		library: PATRON.scope,
+		lookfor: searchTerm,
+		pageSize: pageSize,
+		page: page
+	});
+	const response = getResponseCode(data);
+	if (response.success) {
+		SEARCH.id = response.data.result.id;
+		SEARCH.sortMethod = response.data.result.sort;
+		SEARCH.term = response.data.result.lookfor;
+
+		await getAppliedFilters();
+		await getSortList();
+
+		return {
+			success: response.success,
+			data: response.data.result,
+		}
+	} else {
+		return {
+			success: response.success,
+			data: [],
+			error: response.error ?? [],
+		}
+	}
+}
+
+export async function getAppliedFilters() {
+	const data = await discovery.get(endpoint.url + 'getAppliedFilters', {id: SEARCH.id});
+	const response = getResponseCode(data);
+	if (response.success) {
+		SEARCH.appliedFilters = response.data.result;
+		return response.data.result
+	} else {
+		return response;
+	}
+}
+
+export async function getSortList() {
+	const data = await discovery.get(endpoint.url + 'getSortList', {id: SEARCH.id});
+	const response = getResponseCode(data);
+	if (response.success) {
+		SEARCH.sortList = response.data.result;
+		return response.data.result
+	} else {
+		return response;
+	}
+}
+
+export async function getAvailableFacets() {
+	const data = await discovery.get(endpoint.url + 'getAvailableFacets', {id: SEARCH.id});
+	const response = getResponseCode(data);
+	if (response.success) {
+		SEARCH.availableFacets = response.data.result;
+		return response.data.result
+	} else {
+		return response;
+	}
+}
+
+export async function getFacetCluster() {
+	return false;
 }
 
 export async function categorySearchResults(category, limit = 25, page, libraryUrl) {

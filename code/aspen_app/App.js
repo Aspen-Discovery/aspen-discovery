@@ -1,24 +1,22 @@
 import React, {Component} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
-import {NativeBaseProvider, StatusBar, HStack, Center, Spinner} from "native-base";
+import {Center, HStack, NativeBaseProvider, Spinner, StatusBar} from "native-base";
 import {SSRProvider} from "@react-aria/ssr";
 import App from "./src/components/navigation";
 import {createTheme, saveTheme} from "./src/themes/theme";
 import {userContext} from "./src/context/user";
 import {create} from 'apisauce';
-import * as SplashScreen from "expo-splash-screen";
 import _ from "lodash";
-import * as Sentry from 'sentry-expo';
 
-import { LogBox } from 'react-native';
+import {LogBox} from 'react-native';
 import {createAuthTokens, getHeaders, postData} from "./src/util/apiAuth";
 import {GLOBALS} from "./src/util/globals";
 
-import { enableScreens } from 'react-native-screens';
+import {enableScreens} from 'react-native-screens';
 import {getPatronBrowseCategories} from "./src/util/loadPatron";
 import {getBrowseCategories} from "./src/util/loadLibrary";
+
 enableScreens();
 
 // Hide log error/warning popups in simulator (useful for demoing)
@@ -163,15 +161,12 @@ export default class AppContainer extends Component {
 
 					//const locationProfile = await AsyncStorage.getItem('@locationInfo');
 					if(_.isEmpty(this.state.location)) {
-						//console.log("fetching getLocationInfo...");
 						const response = await api.get('/SystemAPI?method=getLocationInfo', {id: locationId, library: librarySolrScope, version: Constants.manifest.version});
 						if(response.ok) {
 							let data = [];
 							if(response.data.result.location) {
 								data = response.data.result.location;
 								this.setState({location: data});
-								//await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
-								//console.log("location loaded into context");
 							}
 						}
 					}

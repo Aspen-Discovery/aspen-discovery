@@ -2,12 +2,12 @@ import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import {create} from 'apisauce';
-import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
 import {createAuthTokens, getHeaders} from "./apiAuth";
-import {popAlert} from "../components/loadError";
-import {GLOBALS} from "./globals";
+import {GLOBALS, GLOBALS_LIBRARY, GLOBALS_PATRON} from "./globals";
+import {LIBRARY} from "./loadLibrary";
+import {PATRON} from "./loadPatron";
 
 /**
  * Logout the user from Aspen LiDA and remove all saved data
@@ -21,44 +21,47 @@ export async function removeData() {
 		'@patronCheckouts', '@patronHolds', '@patronHoldsNotReady', '@patronHoldsReady',
 		'@linkedAccounts', '@viewerAccounts', '@pathUrl', '@userToken'];
 
-		SecureStore.deleteItemAsync("patronName");
-		SecureStore.deleteItemAsync("library");
-		SecureStore.deleteItemAsync("libraryName");
-		SecureStore.deleteItemAsync("locationId");
-		SecureStore.deleteItemAsync("solrScope");
-		SecureStore.deleteItemAsync("pathUrl");
-		SecureStore.deleteItemAsync("version");
-		SecureStore.deleteItemAsync("userKey");
-		SecureStore.deleteItemAsync("secretKey");
-		SecureStore.deleteItemAsync("userToken");
-		SecureStore.deleteItemAsync("logo");
-		SecureStore.deleteItemAsync("favicon");
-		await AsyncStorage.removeItem('@userToken');
-		await AsyncStorage.removeItem('@patronProfile');
-		await AsyncStorage.removeItem('@libraryInfo');
-		await AsyncStorage.removeItem('@locationInfo');
-		await AsyncStorage.removeItem('@pathUrl');
-		//await AsyncStorage.clear();
-		global.promptForOverdriveEmail = "";
-		global.overdriveEmail = "";
-		global.patronId = "";
-		global.barcode = "";
-		global.rememberHoldPickupLocation = "";
-		global.pickupLocationId = "";
-		global.homeLocationId = "";
-		global.interfaceLanguage = "";
-		global.numCheckedOut = "";
-		global.numOverdue = "";
-		global.numHolds = "";
-		global.numHoldsAvailable = "";
-		global.userKey = "";
-		global.secretKey = "";
-		global.allHolds = "";
-		global.unavailableHolds = "";
-		global.availableHolds = "";
-		global.allUserHolds = "";
-		global.checkedOutItems = "";
-		console.log("Storage data cleansed.")
+	SecureStore.deleteItemAsync("patronName");
+	SecureStore.deleteItemAsync("library");
+	SecureStore.deleteItemAsync("libraryName");
+	SecureStore.deleteItemAsync("locationId");
+	SecureStore.deleteItemAsync("solrScope");
+	SecureStore.deleteItemAsync("pathUrl");
+	SecureStore.deleteItemAsync("version");
+	SecureStore.deleteItemAsync("userKey");
+	SecureStore.deleteItemAsync("secretKey");
+	SecureStore.deleteItemAsync("userToken");
+	SecureStore.deleteItemAsync("logo");
+	SecureStore.deleteItemAsync("favicon");
+	await AsyncStorage.removeItem('@userToken');
+	await AsyncStorage.removeItem('@patronProfile');
+	await AsyncStorage.removeItem('@libraryInfo');
+	await AsyncStorage.removeItem('@locationInfo');
+	await AsyncStorage.removeItem('@pathUrl');
+	//await AsyncStorage.clear();
+	// global.promptForOverdriveEmail = "";
+	// global.overdriveEmail = "";
+	// global.patronId = "";
+	// global.barcode = "";
+	// global.rememberHoldPickupLocation = "";
+	// global.pickupLocationId = "";
+	// global.homeLocationId = "";
+	// global.interfaceLanguage = "";
+	// global.numCheckedOut = "";
+	// global.numOverdue = "";
+	// global.numHolds = "";
+	// global.numHoldsAvailable = "";
+	// global.userKey = "";
+	// global.secretKey = "";
+	// global.allHolds = "";
+	// global.unavailableHolds = "";
+	// global.availableHolds = "";
+	// global.allUserHolds = "";
+	// global.checkedOutItems = "";
+
+	LIBRARY = GLOBALS_LIBRARY;
+	PATRON = GLOBALS_PATRON;
+	console.log("Storage data cleansed.")
 }
 
 /**

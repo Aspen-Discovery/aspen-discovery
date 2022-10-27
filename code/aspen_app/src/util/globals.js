@@ -14,9 +14,46 @@ export const GLOBALS = {
 	'apiUrl': Constants.manifest.extra.apiUrl,
 	'releaseChannel': Updates.releaseChannel,
 	'language': "en",
+	'lastSeen': null,
 	'prevLaunched': false,
 	'pendingSearchFilters': [],
 	'availableFacetClusters': [],
 	'hasPendingChanges': false,
 	'solrScope': "unknown",
+}
+
+/**
+ * Store an empty/default version of each global variable to easily reset them when logging out
+ **/
+
+export const GLOBALS_LIBRARY = {
+	'url': null,
+	'name': null,
+	'favicon': null,
+	'version': "22.10.00",
+	'languages': [],
+	'vdx': [],
+}
+
+export const GLOBALS_PATRON = {
+	'userToken': null,
+	'scope': null,
+	'library': null,
+	'location': null,
+	'listLastUsed': null,
+	'fines': 0,
+	'messages': [],
+	'num': {
+		'checkedOut': 0,
+		'holds': 0,
+		'lists': 0,
+		'overdue': 0,
+		'ready': 0,
+		'savedSearches': 0,
+		'updatedSearches': 0,
+	},
+	'promptForOverdriveEmail': 1,
+	'rememberHoldPickupLocation': 0,
+	'pickupLocations': [],
+	'language': 'en',
 }

@@ -1,9 +1,9 @@
 import React from "react";
 import * as SecureStore from 'expo-secure-store';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useToken, useContrastText, useColorModeValue, Spinner } from 'native-base';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {Spinner, useColorModeValue, useContrastText, useToken} from 'native-base';
 import * as Location from "expo-location";
 import * as Updates from 'expo-updates';
 import Constants from "expo-constants";
@@ -15,14 +15,17 @@ import * as Linking from 'expo-linking';
 import Login from "../screens/Auth/Login";
 import AccountDrawer from "../navigations/drawer/DrawerNavigator";
 import {translate} from "../translations/translations";
-import {createAuthTokens, getHeaders, postData} from "../util/apiAuth";
+import {createAuthTokens, getHeaders} from "../util/apiAuth";
 import {popAlert, popToast} from "./loadError";
 import {removeData} from "../util/logout";
 import {navigationRef} from "../helpers/RootNavigator";
 import {GLOBALS} from "../util/globals";
 
 // Before rendering any navigation stack
-import { enableScreens } from 'react-native-screens';
+import {enableScreens} from 'react-native-screens';
+import {formatDiscoveryVersion, LIBRARY} from "../util/loadLibrary";
+import {PATRON} from "../util/loadPatron";
+
 enableScreens();
 
 const Stack = createNativeStackNavigator();
@@ -206,6 +209,19 @@ export function App() {
 								//await AsyncStorage.setItem('@userToken', userToken);
 
 								console.log(patronsLibrary);
+
+								// update global variables for later
+								GLOBALS.solrScope = patronsLibrary['solrScope'];
+								GLOBALS.lastSeen = Constants.manifest.version;
+								LIBRARY.url = data.libraryUrl;
+								LIBRARY.name = patronsLibrary['name'];
+								LIBRARY.version = formatDiscoveryVersion(patronsLibrary['version']);
+								LIBRARY.favicon = patronsLibrary['favicon'];
+								PATRON.userToken = userToken;
+								PATRON.scope = patronsLibrary['solrScope'];
+								PATRON.library = patronsLibrary['libraryId'];
+								PATRON.location = patronsLibrary['locationId'];
+
 								try {
 									await AsyncStorage.setItem('@userToken', userToken);
 									await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
@@ -221,7 +237,7 @@ export function App() {
 									await SecureStore.setItemAsync("locationId", patronsLibrary['locationId']);
 									await AsyncStorage.setItem("@locationId", patronsLibrary['locationId']);
 									await SecureStore.setItemAsync("solrScope", patronsLibrary['solrScope']);
-									GLOBALS.solrScope = patronsLibrary['solrScope'];
+
 									await AsyncStorage.setItem("@solrScope", patronsLibrary['solrScope']);
 									await SecureStore.setItemAsync("pathUrl", data.libraryUrl);
 									//await SecureStore.setItemAsync("logo", patronsLibrary['theme']['logo']);
@@ -229,7 +245,7 @@ export function App() {
 									//await SecureStore.setItemAsync("discoveryVersion", patronsLibrary['version']);
 									await AsyncStorage.setItem("@lastStoredVersion", Constants.manifest.version);
 									await AsyncStorage.setItem("@patronLibrary", JSON.stringify(patronsLibrary));
-									dispatch( {type: 'SIGN_IN', token: userToken});
+									dispatch({type: 'SIGN_IN', token: userToken});
 
 								} catch(e) {
 									console.log("Unable to log in user.");

@@ -6,8 +6,6 @@ import base64 from 'react-native-base64';
 import _ from "lodash";
 import {API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5} from '@env';
 import {GLOBALS} from "./globals";
-import {create} from 'apisauce';
-
 
 // polyfill for base64 (required for authentication)
 if (!global.btoa) {
@@ -16,10 +14,6 @@ if (!global.btoa) {
 if (!global.atob) {
 	global.atob = base64.decode;
 }
-
-export const api = create({
-
-})
 
 /**
  * Create authentication token to validate the API request to Aspen
@@ -122,8 +116,82 @@ export function problemCodeMap(code) {
 }
 
 /**
+ * Check Aspen Discovery response for valid data
+ * <ul>
+ *     <li>payload - The object returned from api instance</li>
+ * </ul>
+ * @param {object} payload
+ **/
+export function getResponseCode(payload) {
+	if (payload.ok) {
+		return {
+			success: true,
+			config: payload.config,
+			data: payload.data,
+		};
+	} else {
+		//console.log(payload);
+		const problem = problemCodeMap(payload.problem);
+		//popToast(problem.title, problem.message, "warning");
+		return {
+			success: false,
+			config: payload.config,
+			error: {
+				title: problem.title,
+				code: payload.problem,
+				message: problem.message + " (" + payload.problem + ")",
+			}
+		}
+	}
+}
+
+/**
  * Remove HTML from a string
  **/
 export function stripHTML(string) {
-	return string.replace( /(<([^>]+)>)/ig, '');
+	return string.replace(/(<([^>]+)>)/ig, '');
+}
+
+/**
+ * Array of available endpoints into Aspen Discovery
+ *
+ **/
+
+export const ENDPOINT = {
+	'user': {
+		'url': '/API/UserAPI?method=',
+		'isPost': true,
+	},
+	'search': {
+		'url': '/API/SearchAPI?method=',
+		'isPost': false,
+	},
+	'list': {
+		'url': '/API/ListAPI?method=',
+		'isPost': true,
+	},
+	'work': {
+		'url': '/API/WorkAPI?method=',
+		'isPost': false,
+	},
+	'item': {
+		'url': '/API/ItemAPI?method=',
+		'isPost': false,
+	},
+	'fine': {
+		'url': '/API/FineAPI?method=',
+		'isPost': true,
+	},
+	'system': {
+		'url': '/API/SystemAPI?method=',
+		'isPost': false,
+	},
+	'translation': {
+		'url': '/API/SystemAPI?method=',
+		'isPost': false,
+	},
+	'greenhouse': {
+		'url': '/API/GreenhouseAPI?method=',
+		'isPost': false,
+	}
 }
