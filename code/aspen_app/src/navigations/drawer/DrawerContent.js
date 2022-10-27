@@ -216,7 +216,7 @@ export class DrawerContent extends Component {
 	}
 
 	displayFinesMessage = () => {
-		if (this.state.fines !== 0) {
+		if (!_.includes(this.state.fines, "0.00")) {
 			const message = "Your accounts have " + this.state.fines + " in fines.";
 			return showILSMessage('warning', message)
 		}
