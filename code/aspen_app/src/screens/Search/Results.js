@@ -1,32 +1,34 @@
 import * as React from "react";
 import {
-	Center,
-	Button,
-	Box,
 	Badge,
-	Text,
+	Box,
+	Button,
+	Center,
 	FlatList,
 	Heading,
-	Stack,
 	HStack,
-	VStack,
-	Pressable,
+	Icon,
 	Image,
-	Icon
+	Pressable,
+	Stack,
+	Text,
+	VStack
 } from "native-base";
-import { CommonActions } from '@react-navigation/native';
+import {SafeAreaView} from 'react-native';
+import {CommonActions} from '@react-navigation/native';
 import _ from "lodash";
 import {MaterialIcons} from "@expo/vector-icons";
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
-import { loadingSpinner } from "../../components/loadingSpinner";
-import { loadError } from "../../components/loadError";
-import { searchResults } from "../../util/search";
+import {translate} from '../../translations/translations';
+import {loadingSpinner} from "../../components/loadingSpinner";
+import {loadError} from "../../components/loadError";
+import {getAvailableFacets, getSearchResults, SEARCH, searchResults} from "../../util/search";
 import {getLists} from "../../util/loadPatron";
 import {AddToList} from "./AddToList";
 import {userContext} from "../../context/user";
 import {GLOBALS} from "../../util/globals";
+import {LIBRARY} from "../../util/loadLibrary";
 
 window.addEventListener = x => x
 window.removeEventListener = x => x
@@ -57,6 +59,9 @@ export default class Results extends React.Component {
 			query: this.props.route.params?.term ?? "",
 			pendingFilters: this.props.route.params?.pendingFilters ?? [],
 			totalResults: 0,
+			paramsToAdd: this.props.route.params?.pendingParams ?? [],
+			lookfor: this.props.route.params?.term ?? '%20',
+			lookfor_clean: "",
 		};
 		//this._getLastListUsed();
 		GLOBALS.pendingSearchFilters = [];
@@ -73,18 +78,22 @@ export default class Results extends React.Component {
 
 	componentDidMount = async () => {
 		this._isMounted = true;
-		//const level      = this.props.navigation.state.params.level;
-		//const format     = this.props.navigation.state.params.format;
-		//const searchType = this.props.navigation.state.params.searchType;
-		const { navigation, route } = this.props;
-		const libraryUrl = this.context.library.baseUrl;
 
-		this._isMounted && await getLists(libraryUrl);
-		this._getLastListUsed();
-		this._isMounted && await this._fetchResults();
+		const {lookfor} = this.state;
+		this.setState({
+			lookfor_clean: lookfor.replace(/" "/g, "%20"),
+		})
 
-		this.getCurrentSort();
-		//this.formatFilters();
+		if (this._isMounted) {
+			await getLists(this.context.library.baseUrl)
+			this._getLastListUsed();
+			if (LIBRARY.version >= "22.11.00") {
+				await this.startSearch();
+			} else {
+				await this._fetchResults();
+			}
+		}
+		this._isMounted && this.getCurrentSort();
 	};
 
 
@@ -99,19 +108,13 @@ export default class Results extends React.Component {
 	}
 
 	async componentDidUpdate(prevProps, prevState, snapshot) {
-		// If we have a snapshot value, we've just added new items.
-		// Adjust scroll so these new items don't push the old ones out of view.
-		// (snapshot here is the value returned from getSnapshotBeforeUpdate)
-		if (snapshot !== null) {
-			const page = this.locRef.current;
-			page.scrollTop = page.scrollHeight - snapshot;
-		}
-
 		if (prevProps.route.params?.pendingParams !== this.props.route.params?.pendingParams) {
-			this.setState({
-				isLoading: true,
-			})
-			this._isMounted && await this._fetchResults();
+			if (this._isMounted && LIBRARY.version >= "22.11.00") {
+				this.setState({
+					isLoading: true,
+				})
+				await this.startSearch();
+			}
 		}
 	}
 
@@ -139,94 +142,118 @@ export default class Results extends React.Component {
 	}
 
 	getCurrentSort = () => {
-		const sortList = this.state.sortList;
-		const appliedSort = this.state.appliedSort;
-
-		const sort = _.get(sortList, appliedSort);
-
-		this.setState({
-			appliedSort: sort.desc,
-		})
+		return _.filter(SEARCH.sortList, 'selected');
 	}
 
+	// search function for discovery 22.11.x or newer
+	startSearch = async () => {
+		const {lookfor_clean, page, paramsToAdd} = this.state;
+		await getSearchResults(lookfor_clean, 25, page, this.context.library.baseUrl, paramsToAdd).then(data => {
+			if (data.success) {
+				if (data.count > 0) {
+					if (data.page_current < data.page_total) {
+						this.setState((prevState, nextProps) => ({
+							data:
+								page === 1
+									? Array.from(data.items) : [...this.state.data, ...data.items],
+							refreshing: false,
+							isLoading: false,
+							isLoadingMore: false,
+							totalResults: data.totalResults,
+							curPage: data.page_current,
+							totalPages: data.page_total,
+						}));
+					} else if (data.page_current === data.page_total) {
+						this.setState((prevState, nextProps) => ({
+							data:
+								page === 1
+									? Array.from(data.items) : [...this.state.data, ...data.items],
+							refreshing: false,
+							isLoading: false,
+							isLoadingMore: false,
+							totalResults: data.totalResults,
+							curPage: data.page_current,
+							totalPages: data.page_total,
+							dataMessage: data.message ?? translate('error.message'),
+							endOfResults: true,
+						}));
+					} else {
+						this.setState({
+							isLoading: false,
+							isLoadingMore: false,
+							refreshing: false,
+							dataMessage: data.message ?? translate('error.message'),
+							endOfResults: true,
+						});
+					}
+				} else {
+					/* No search results were found */
+					this.setState({
+						hasError: true,
+						error: data.message,
+						isLoading: false,
+						isLoadingMore: false,
+						refreshing: false,
+						dataMessage: data.message,
+					});
+				}
+			} else {
+				this.setState({
+					isLoading: false,
+					hasError: true,
+					error: data.error.message
+				})
+			}
+		})
+
+		await getAvailableFacets();
+	}
+
+	// search function for discovery 22.10.x or earlier
 	_fetchResults = async () => {
-	    const { page } = this.state;
+		const { page } = this.state;
 		const { navigation, route } = this.props;
 		const givenSearch = route.params?.term ?? '%20';
 		const libraryUrl = this.context.library.baseUrl;
-        const searchTerm = givenSearch.replace(/" "/g, "%20");
-		const pendingFilters = route.params?.pendingFilters ?? [];
-		const pendingParams = route.params?.pendingParams ?? [];
+		const searchTerm = givenSearch.replace(/" "/g, "%20");
 
-        await searchResults(searchTerm, 100, page, libraryUrl, pendingParams).then(response => {
-            if(response) {
-				const searchResults = response['result'] ?? [];
-				const defaultFilters = response['filters'] ?? [];
-                if(searchResults.count > 0) {
-	                const filters = defaultFilters;
-	                let filtersArr = [];
-	                if(filters.length > 0) {
-		                _.forEach(filters, function(value) {
-			                let str = value.split("=").slice(1).join();
-			                str = str.split(":");
-			                let obj = {};
-			                obj[str[0]] = _.trim(str[1], '%22');
-			                filtersArr = _.concat(filtersArr, obj);
-		                })
-	                }
-
-					GLOBALS.pendingSearchFilters = filtersArr;
-					GLOBALS.availableFacetClusters = searchResults.facetSet;
-
-					const availableFacets = setupFacetClusters(searchResults.facetSet ?? []);
-	                this._facets = availableFacets['facets'];
-					this._facetsNum = availableFacets['count'];
-
-					const sortOptions = setupSortOptions(searchResults.sortList ?? [])
-	                this._sortOptions = sortOptions['facets'];
-
-					this._allOptions = _.concat(this._facets, this._sortOptions);
-	                this._allOptions = _.orderBy(this._allOptions, 'key');
-
-                    this.setState((prevState, nextProps) => ({
-                        data:
-                            page === 1
-                                ? Array.from(searchResults.items)
-                                : [...this.state.data, ...searchResults.items],
-                        refreshing: false,
-	                    facetSet: searchResults.facetSet,
-	                    sortList: searchResults.sortList ?? [],
-	                    appliedSort: searchResults.sortedBy ?? "",
-	                    categorySelected: searchResults.categorySelected ?? "",
-	                    totalResults: searchResults.totalResults,
-	                    filters: filtersArr,
-	                    isLoading: false,
-	                    isLoadingMore: false,
-                    }));
-                } else {
-	                if(page === 1 && searchResults.count === 0) {
-                    /* No search results were found */
-                        this.setState({
-                            hasError: true,
-                            error: searchResults.message,
-                            isLoading: false,
-                            isLoadingMore: false,
-                            refreshing: false,
-                            dataMessage: searchResults.message,
-                        });
-                    } else {
-                        /* Tried to fetch next page, but end of results */
-                        this.setState({
-                            isLoading: false,
-                            isLoadingMore: false,
-                            refreshing: false,
-                            dataMessage: searchResults.message ?? "Unknown error fetching results",
-	                        endOfResults: true,
-                        });
-                    }
-                }
-            }
-        })
+		await searchResults(searchTerm, 100, page, libraryUrl).then(response => {
+			if(response.ok) {
+				//console.log(response.data);
+				if(response.data.result.count > 0) {
+					this.setState((prevState, nextProps) => ({
+						data:
+							page === 1
+								? Array.from(response.data.result.items)
+								: [...this.state.data, ...response.data.result.items],
+						isLoading: false,
+						isLoadingMore: false,
+						refreshing: false
+					}));
+				} else {
+					if(page === 1 && response.data.result.count === 0) {
+						/* No search results were found */
+						this.setState({
+							hasError: true,
+							error: response.data.result.message,
+							isLoading: false,
+							isLoadingMore: false,
+							refreshing: false,
+							dataMessage: response.data.result.message,
+						});
+					} else {
+						/* Tried to fetch next page, but end of results */
+						this.setState({
+							isLoading: false,
+							isLoadingMore: false,
+							refreshing: false,
+							dataMessage: response.data.result.message ?? "Unknown error fetching results",
+							endOfResults: true,
+						});
+					}
+				}
+			}
+		})
 	}
 
 	_handleLoadMore = () => {
@@ -236,7 +263,11 @@ export default class Results extends React.Component {
 	            isLoadingMore: true
 	        }),
 	        () => {
-	            this._fetchResults();
+		        if (LIBRARY.version >= "22.11.00") {
+			        this.startSearch();
+		        } else {
+			        this._fetchResults();
+		        }
 	        }
 	    )
 	};
@@ -339,16 +370,16 @@ export default class Results extends React.Component {
 			resultsLabel = translate('filters.result', {num: numResults});
 		}
 
-		if(this.state.discoveryVersion >= "22.10.00") {
+		if (this.state.discoveryVersion >= "22.11.00") {
 			return (
-				<Box safeArea={2} _dark={{ bg: 'coolGray.700' }} bgColor="coolGray.100" shadow={4}>
+				<Box safeArea={2} _dark={{bg: 'coolGray.700'}} bgColor="coolGray.100" shadow={4}>
 					<FlatList
 						horizontal
 						data={groupedKeys}
 						ListHeaderComponent={this.filterBarHeader()}
 						ListEmptyComponent={this.filterBarEmpty(this._facets)}
-						renderItem={({ item }) => this.filterBarButton(item, availableFacetClusters)}
-						keyExtractor={({ item }) => _.uniqueId(item + '_')}
+						renderItem={({item}) => this.filterBarButton(item, availableFacetClusters)}
+						keyExtractor={({item}) => _.uniqueId(item + '_')}
 					/>
 					<Center>
 						<Text mt={3} fontSize="lg">{resultsLabel}</Text>
@@ -360,7 +391,6 @@ export default class Results extends React.Component {
 	}
 
 	filterBarHeader = () => {
-		let isLaunching = false;
 		return(
 			<Button
 				size="sm"
@@ -387,6 +417,7 @@ export default class Results extends React.Component {
 	}
 
 	filterBarButton = (item) => {
+		//todo: add sort option to bar
 		if(item.num > 0) {
 			const categoryData = _.filter(this._allOptions, ['category', item.key]);
 			const facets = item.facets;
@@ -467,7 +498,7 @@ export default class Results extends React.Component {
 		}
 
 		if (this.state.hasError && !this.state.dataMessage) {
-            return ( loadError(this.state.error, this._fetchResults) );
+			return (loadError(this.state.error, null));
 		}
 
         if (this.state.hasError && this.state.dataMessage) {
@@ -481,19 +512,21 @@ export default class Results extends React.Component {
         }
 
 		return (
-			<Box ref={this.locRef} flex={1}>
-				{this.filterBar()}
-				<FlatList
-					data={this.state.data}
-					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({ item }) => this.renderItem(item, library, user, this.lastListUsed)}
-					keyExtractor={(item) => item.key}
-					ListFooterComponent={this._renderFooter}
-					onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
-					onEndReachedThreshold={.5}
-					initialNumToRender={25}
-				/>
-			</Box>
+			<SafeAreaView style={{flex: 1}}>
+				<Box ref={this.locRef} flex={1}>
+					{this.filterBar()}
+					<FlatList
+						data={this.state.data}
+						ListEmptyComponent={this._listEmptyComponent()}
+						renderItem={({item}) => this.renderItem(item, library, user, this.lastListUsed)}
+						keyExtractor={(item) => item.key}
+						ListFooterComponent={this._renderFooter}
+						onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
+						onEndReachedThreshold={.5}
+						initialNumToRender={25}
+					/>
+				</Box>
+			</SafeAreaView>
 		);
 	}
 }
@@ -520,7 +553,7 @@ function setupSortOptions(payload) {
 		const container = {
 			key: 0,
 			category: 'sort_by',
-			label: 'Sort By',
+			label: translate('filters.sort_by'),
 			multiSelect: false,
 			count: 0,
 			hasApplied: false,
@@ -580,7 +613,7 @@ function setupFacetClusters(payload) {
 			const container = {
 				key: facetClusterKey++,
 				category: key,
-				label: value.label ?? "Unknown",
+				label: value.label ?? translate('general.unknown'),
 				multiSelect: value.multiSelect ?? false,
 				hasApplied: false,
 				count: 0,
@@ -594,7 +627,7 @@ function setupFacetClusters(payload) {
 			_.map(facetList, function(item, index, collection) {
 				cluster['list'].push({
 					key: facetKey++,
-					label: item.display ?? "Unknown",
+					label: item.display ?? translate('general.unknown'),
 					value: item.value,
 					numResults: item.count,
 					isApplied: item.isApplied,
@@ -603,7 +636,7 @@ function setupFacetClusters(payload) {
 				if(item.isApplied) {
 					cluster['applied'].push({
 						key: i++,
-						label: item.display ?? "Unknown",
+						label: item.display ?? translate('general.unknown'),
 						value: item.value,
 						numResults: item.count,
 						isApplied: item.isApplied,
