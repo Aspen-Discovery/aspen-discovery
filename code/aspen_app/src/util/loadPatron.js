@@ -1,21 +1,40 @@
-import React, {useContext, useState, useEffect} from "react";
+import React from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import {create} from 'apisauce';
 import _ from "lodash";
 import {GLOBALS} from "./globals";
-import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
-import {createAuthTokens, getHeaders, postData} from "./apiAuth";
+import {createAuthTokens, ENDPOINT, getHeaders, postData} from "./apiAuth";
 import {popAlert} from "../components/loadError";
-import {userContext} from "../context/user";
 
-export async function getProfile(reload = false, url = "") {
-	//console.log(value);
+export let PATRON = {
+	'userToken': null,
+	'scope': null,
+	'library': null,
+	'location': null,
+	'listLastUsed': null,
+	'fines': 0,
+	'messages': [],
+	'num': {
+		'checkedOut': 0,
+		'holds': 0,
+		'lists': 0,
+		'overdue': 0,
+		'ready': 0,
+		'savedSearches': 0,
+		'updatedSearches': 0,
+	},
+	'promptForOverdriveEmail': 1,
+	'rememberHoldPickupLocation': 0,
+	'pickupLocations': [],
+	'language': 'en',
+}
 
+const endpoint = ENDPOINT.user;
+
+export async function getProfile(reload = false) {
 	let postBody = await postData();
-
 	let libraryUrl;
 	try {
 		libraryUrl = await AsyncStorage.getItem('@pathUrl');
@@ -23,7 +42,7 @@ export async function getProfile(reload = false, url = "") {
 		console.log(e);
 	}
 
-	if(libraryUrl) {
+	if (libraryUrl) {
 		const api = create({
 			baseURL: libraryUrl + '/API',
 			timeout: GLOBALS.timeoutAverage,
@@ -32,13 +51,11 @@ export async function getProfile(reload = false, url = "") {
 			params: {reload: reload}
 		});
 		const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
-		//console.log(response);
-		if(response.ok) {
-			if(response.data.result && response.data.result.profile) {
+		await getILSMessages(libraryUrl);
+		if (response.ok) {
+			if (response.data.result && response.data.result.profile) {
 				return response.data.result.profile;
 			}
-		} else {
-			//console.log(response);
 		}
 	}
 }
@@ -83,6 +100,7 @@ export async function getILSMessages(libraryUrl) {
 
 		if(response.data.result.messages) {
 			messages = response.data.result.messages;
+			PATRON.messages = messages;
 			try {
 				await AsyncStorage.setItem('@ILSMessages', JSON.stringify(messages));
 			} catch (e) {
@@ -96,9 +114,6 @@ export async function getILSMessages(libraryUrl) {
 			}
 		}
 		return messages;
-		//console.log("User ILS messages saved");
-	} else {
-		//console.log(response);
 	}
 }
 
@@ -432,6 +447,7 @@ export async function createList(title, description, access, libraryUrl) {
 		await getLists(libraryUrl);
 		//await reloadProfile(libraryUrl);
 		if(response.data.result.listId) {
+			PATRON.listLastUsed = response.data.result.listId;
 			await AsyncStorage.setItem('@lastListUsed', response.data.result.listId);
 		}
 		return response.data.result;
@@ -455,6 +471,7 @@ export async function createListFromTitle(title, description, access, items, lib
 		//await reloadProfile(libraryUrl);
 		if(response.data.result.listId) {
 			await AsyncStorage.setItem('@lastListUsed', response.data.result.listId);
+			PATRON.listLastUsed = response.data.result.listId;
 		}
 
 		let status = "success";
@@ -486,6 +503,7 @@ export async function editList(listId, title, description, access, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=editList', postBody);
 	if(response.ok) {
+		PATRON.listLastUsed = listId;
 		await getLists(libraryUrl);
 		//await reloadProfile(libraryUrl);
 		await AsyncStorage.setItem('@lastListUsed', listId);
@@ -506,6 +524,7 @@ export async function clearListTitles(listId, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=clearListTitles', postBody);
 	if(response.ok) {
+		PATRON.listLastUsed = listId;
 		//await getListTitles(listId, libraryUrl);
 		return response.data;
 	} else {
@@ -524,8 +543,7 @@ export async function addTitlesToList(id, itemId, libraryUrl) {
 	});
 	const response = await api.post('/ListAPI?method=addTitlesToList', postBody);
 	if(response.ok) {
-		//await getLists(libraryUrl);
-		//await reloadProfile(libraryUrl);
+		PATRON.listLastUsed = id;
 		if(response.data.result.success) {
 			popAlert("Success", response.data.result.numAdded + " added to list", "success");
 		} else {
@@ -567,6 +585,7 @@ export async function removeTitlesFromList(listId, title, libraryUrl) {
 	const response = await api.post('/ListAPI?method=removeTitlesFromList', postBody);
 	if(response.ok) {
 		//console.log(response.data);
+		PATRON.listLastUsed = listId;
 		await getListTitles(listId, libraryUrl);
 		//await AsyncStorage.setItem('@lastListUsed', listId);
 		return response.data.result;

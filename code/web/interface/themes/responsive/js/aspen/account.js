@@ -788,10 +788,10 @@ AspenDiscovery.Account = (function () {
 			location.replace(location.pathname + paramString)
 		},
 
-		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation) {
+		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation, source) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation + "&source=" + source, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
 			} else {

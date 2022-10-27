@@ -36,7 +36,8 @@
     "load_more": "Load More",
     "update": "Update",
     "updating": "Updating",
-    "reset": "Reset"
+    "reset": "Reset",
+    "unknown": "Unknown"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -199,7 +200,8 @@
     "results": "{{num}} results",
     "title": "Filters",
     "filter": "Filter",
-    "filter_by": "Filter by"
+    "filter_by": "Filter by",
+    "sort_by": "Sort by"
   },
   "error": {
     "title": "Error",

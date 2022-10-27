@@ -30,9 +30,6 @@ const ShowItemDetails = (props) => {
 		})
 	}
 
-	//console.log(copies);
-	//console.log("copyDetailsModal", copyDetails);
-
 	if(discoveryVersion <= "22.09.01") {
 		React.useEffect(() => {
 			if(!loading) {
@@ -40,8 +37,6 @@ const ShowItemDetails = (props) => {
 			}
 
 			const loadItemDetails = async () => {
-				//id === undefined
-				//format === null
 				if(typeof id !== "undefined" && format !== null) {
 					await getItemDetails(libraryUrl, id, format).then(response => {
 						setShouldFetch(false);

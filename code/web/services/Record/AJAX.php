@@ -1139,46 +1139,11 @@ class Record_AJAX extends Action
 		}
 
 		//Check to see if the record must be picked up at the holding branch
-		$pickupAt = 0;
 		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
-		$format = $marcRecord->getPrimaryFormat();
-		global $indexingProfiles;
-		$indexingProfile = $indexingProfiles[$relatedRecord->source];
-		$formatMap = $indexingProfile->formatMap;
-		/** @var FormatMapValue $formatMapValue */
-		foreach ($formatMap as $formatMapValue) {
-			if (strcasecmp($formatMapValue->format, $format) === 0) {
-				$pickupAt = max($pickupAt, $formatMapValue->pickupAt);
-				break;
-			}
-		}
-
-		//If we have to pickup at the holding branch, filter the list of available pickup locations to
-		//only include locations where the item is
-		if ($pickupAt > 0){
-			$itemLocations = [];
-			$items = $relatedRecord->getItems();
-			foreach ($items as $item){
-				if ($pickupAt == 2){
-					//Item can be picked up at any branch within the library
-					if (!isset($itemLocations[$item->locationCode])) {
-						$locationForLocationCode = new Location();
-						$locationForLocationCode->code = $item->locationCode;
-						if ($locationForLocationCode->find(true)){
-							$libraryForLocation = $locationForLocationCode->getParentLibrary();
-							foreach ($libraryForLocation->getLocations() as $libraryBranch){
-								$itemLocations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
-							}
-						}
-					}
-				}else{
-					//Item can be picked up at just the owning branch
-					$itemLocations[strtolower($item->locationCode)] = strtolower($item->locationCode);
-				}
-			}
-
-
-			foreach($locations as $locationKey => $location){
+		$pickupAt = $relatedRecord->getHoldPickupSetting();
+		if($pickupAt > 0) {
+			$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+			foreach($locations as $locationKey => $location) {
 				if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
 					unset($locations[$locationKey]);
 				}

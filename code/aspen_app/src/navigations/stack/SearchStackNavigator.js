@@ -1,14 +1,15 @@
 import React from "react";
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {translate} from "../../translations/translations";
 import GroupedWork from "../../screens/GroupedWork/GroupedWork";
 import Search from "../../screens/Search/Search";
 import Results from "../../screens/Search/Results";
 import Filters from "../../screens/Search/Filters";
 import Facet from "../../screens/Search/Facet";
-import {CloseIcon} from "native-base";
+import {ChevronLeftIcon, CloseIcon} from "native-base";
+import {CommonActions} from '@react-navigation/native';
 
-const SearchStackNavigator = ({ options, route, back, navigation }) => {
+const SearchStackNavigator = ({options, route, back, navigation}) => {
 	const Stack = createNativeStackNavigator();
 	return (
 		<Stack.Navigator
@@ -31,6 +32,9 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
 				component={Results}
 				options={({ route }) => ({
 					title: translate('search.search_results_title') + route.params.term,
+					params: {
+						pendingParams: [],
+					}
 				})}
 			/>
 			<Stack.Screen
@@ -38,7 +42,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
 				component={FilterModal}
 				options={{
 					headerShown: false,
-					presentation: "modal"
+					presentation: "card"
 				}}
 			/>
 			<Stack.Screen
@@ -60,8 +64,13 @@ const FilterModal = () => {
 			screenOptions={({ navigation, route }) => ({
 				headerShown: false,
 				animationTypeForReplace: "push",
+				gestureEnabled: false,
+				headerLeft: () => (
+					<ChevronLeftIcon color="primary.baseContrast"
+					                 onPress={() => navigation.dispatch(CommonActions.goBack())}/>)
+				,
 				headerRight: () => (
-					<CloseIcon color="primary.baseContrast" onPress={()=> navigation.getParent().pop()}/>
+					<CloseIcon color="primary.baseContrast" onPress={() => navigation.getParent().pop()}/>
 				),
 			})}>
 			<FilterModalStack.Screen
@@ -70,13 +79,13 @@ const FilterModal = () => {
 				options={{
 					title: "Filters",
 					headerShown: true,
-					presentation: "modal"
+					presentation: "card"
 				}}
 			/>
 			<FilterModalStack.Screen
 				name="Facet"
 				component={Facet}
-				options={({ route }) => ({
+				options={({route}) => ({
 					title: route.params.title,
 					headerShown: true,
 					presentation: "card"

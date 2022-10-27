@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Button, Center, FlatList, FormControl, Input, Text, HStack, Icon} from "native-base";
+import {Box, Button, Center, FlatList, FormControl, HStack, Icon, Input, Text} from "native-base";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MaterialIcons} from "@expo/vector-icons";
 import _ from "lodash";
@@ -9,6 +9,8 @@ import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {userContext} from "../../context/user";
 import {ScrollView} from "react-native";
+import {getDefaultFacets} from "../../util/search";
+import {formatDiscoveryVersion, LIBRARY} from "../../util/loadLibrary";
 
 export default class Search extends Component {
 	constructor() {
@@ -27,12 +29,14 @@ export default class Search extends Component {
 		this._isMounted = true;
 
 		let discoveryVersion = "22.10.00";
-		if(typeof this.context.library !== "undefined") {
-			if(this.context.library.discoveryVersion) {
-				let version = this.context.library.discoveryVersion;
-				version = version.split(" ");
-				discoveryVersion = version[0];
+		if (typeof this.context.library !== "undefined") {
+			if (this.context.library.discoveryVersion) {
+				discoveryVersion = formatDiscoveryVersion(this.context.library.discoveryVersion);
 			}
+		}
+
+		if (LIBRARY.version >= "22.11.00") {
+			this._isMounted && await getDefaultFacets();
 		}
 
 		this.setState({
@@ -40,7 +44,6 @@ export default class Search extends Component {
 			discoveryVersion: discoveryVersion
 		});
 
-		// build a received notification storage for later
 		this._isMounted && await this._getRecentSearches();
 
 	};
@@ -50,8 +53,8 @@ export default class Search extends Component {
 	}
 
 	initiateSearch = async () => {
-		const {searchTerm, libraryUrl} = this.state;
-		const { navigation } = this.props;
+		const {searchTerm} = this.state;
+		const {navigation} = this.props;
 		navigation.navigate("SearchResults", {
 			term: searchTerm,
 			libraryUrl: this.context.library.baseUrl,
@@ -71,6 +74,7 @@ export default class Search extends Component {
 					navigation.navigate("SearchResults", {
 						term: item.searchTerm,
 						libraryUrl: this.context.library.baseUrl,
+						discoveryVersion: this.state.discoveryVersion,
 					})
 				}
 			>

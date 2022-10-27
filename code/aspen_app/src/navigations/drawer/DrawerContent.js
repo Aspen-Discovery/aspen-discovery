@@ -3,21 +3,22 @@ import {Linking} from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import {DrawerContentScrollView} from "@react-navigation/drawer";
-import {Badge, Box, Button, Container, Divider, HStack, Icon, Image, Menu, Pressable, Text, VStack, CircleIcon} from 'native-base';
+import {Badge, Box, Button, Container, Divider, HStack, Icon, Image, Menu, Pressable, Text, VStack} from 'native-base';
 import {MaterialIcons} from "@expo/vector-icons";
 import {translate} from "../../translations/translations";
 import {UseColorMode} from "../../themes/theme";
 import {AuthContext} from "../../components/navigation";
 import _ from "lodash";
 import {showILSMessage} from "../../components/Notifications";
-import {getILSMessages, getProfile, reloadProfile} from "../../util/loadPatron";
-import {setGlobalVariables} from "../../util/setVariables";
+import {getILSMessages, getProfile, PATRON, reloadProfile} from "../../util/loadPatron";
 import {saveLanguage} from "../../util/accountActions";
 import {userContext} from "../../context/user";
 import * as Notifications from 'expo-notifications';
 import * as ExpoLinking from 'expo-linking';
 import Constants from "expo-constants";
 import {GLOBALS} from "../../util/globals";
+import {LIBRARY} from "../../util/loadLibrary";
+import {getLanguageDisplayName} from "../../translations/TranslationService";
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -28,9 +29,6 @@ Notifications.setNotificationHandler({
 });
 
 const prefix = ExpoLinking.createURL("/");
-console.log(prefix);
-
-//console.log(redirectUrl);
 
 export class DrawerContent extends Component {
 	constructor(props, context) {
@@ -48,73 +46,22 @@ export class DrawerContent extends Component {
 			},
 			messages: [],
 			languages: [],
-			langB: [],
+			languageDisplayLabel: "English",
 			asyncLoaded: false,
 			notification: {},
+			fines: 0,
+			language: this.context.user.interfaceLanguage,
+			num: {
+				'checkedOut': this.context.user.numCheckedOut ?? 0,
+				'holds': this.context.user.numHolds ?? 0,
+				'lists': this.context.user.numLists ?? 0,
+				'overdue': this.context.user.numOverdue ?? 0,
+				'ready': this.context.user.numHoldsAvailable ?? 0,
+				'savedSearches': this.context.user.numSavedSearches ?? 0,
+				'updatedSearches': this.context.user.numSavedSearchesNew ?? 0,
+			}
 		};
 		this._isMounted = false;
-			//setGlobalVariables();
-	}
-
-	loadILSMessages = async () => {
-		let libraryUrl;
-		try {
-			libraryUrl = await AsyncStorage.getItem('@pathUrl');
-		} catch (e) {
-			console.log(e);
-		}
-
-		if(libraryUrl) {
-			await getILSMessages(libraryUrl).then(response => {
-				this.setState({
-					messages: response,
-					isLoading: false,
-				})
-			})
-		}
-	}
-
-	loadLanguages = async () => {
-		const tmp = await AsyncStorage.getItem('@libraryLanguages');
-		let languages = JSON.parse(tmp);
-		languages = _.values(languages);
-		this.setState({
-			languages: languages,
-			langB: JSON.parse(tmp),
-			isLoading: false,
-		})
-	}
-
-	bootstrapAsync = async (libraryUrl) => {
-		let userToken;
-		try {
-			userToken = await AsyncStorage.getItem('@userToken');
-		} catch (e) {
-			console.log(e);
-		}
-
-		if(userToken) {
-			if(this.state.asyncLoaded === false) {
-				if(typeof libraryUrl !== "undefined") {
-					//await setGlobalVariables()
-					//await getLanguages(libraryUrl);
-					//await getBrowseCategories(libraryUrl);
-					//await getCheckedOutItems(libraryUrl);
-					//await getHolds(libraryUrl);
-					//await getILSMessages(libraryUrl);
-					//await getPickupLocations(libraryUrl);
-					//await getPatronBrowseCategories(libraryUrl);
-					//await getLists(libraryUrl);
-
-					await this.loadILSMessages(libraryUrl);
-					//await this.loadLanguages();
-
-					this.setState({
-						asyncLoaded: true,
-					})
-				}
-			}
-		}
 	}
 
 	checkContext = async (context) => {
@@ -131,18 +78,23 @@ export class DrawerContent extends Component {
 
 	componentDidMount = async () => {
 		this._isMounted = true;
+		const languageDisplay = getLanguageDisplayName(PATRON.language);
+
+		if (this._isMounted) {
+			this._getLastListUsed();
+		}
+
 		this.setState({
 			isLoading: false,
+			messages: PATRON.messages,
+			languageDisplayLabel: languageDisplay
 		});
-
-		//await this.loadLanguages();
 
 		Notifications.addNotificationReceivedListener(this._handleNotification);
 		Notifications.addNotificationResponseReceivedListener(this._handleNotificationResponse);
 
 		this.interval = setInterval(() => {
-			if (this._isMounted){
-				this.loadILSMessages();
+			if (this._isMounted) {
 				this.loadProfile();
 				//this.loadLanguages();
 			}
@@ -159,20 +111,10 @@ export class DrawerContent extends Component {
 
 	_handleNotificationResponse = async response => {
 		await this._addStoredNotification(response);
-		//console.log("encoded", response.notification.request.content.data.url)
 		let url = decodeURIComponent(response.notification.request.content.data.url).replace( /\+/g, ' ' );
-		//console.log("decoded", url);
 		url = url.concat("&results=[]");
-
-		console.log(prefix);
 		url = url.replace("aspen-lida://", prefix)
-		console.log("response", url);
 
-		//const parsedUrl = await Linking.parse(encodeURI(url));
-		//console.log("parsedUrl", parsedUrl);
-
-
-		console.log("Checking url...");
 		const supported = await Linking.canOpenURL(url);
 		if(supported) {
 			try {
@@ -185,7 +127,6 @@ export class DrawerContent extends Component {
 		} else {
 			console.log("Could not open url");
 		}
-		//Linking.openURL(url);
 	};
 
 	_getStoredNotifications = async () => {
@@ -211,7 +152,6 @@ export class DrawerContent extends Component {
 	_addStoredNotification = async (message) => {
 		let storage = await this._getStoredNotifications().then(async response => {
 			if (response) {
-				//console.log(response);
 				response.push(message);
 				try {
 					await AsyncStorage.setItem('@notifications', JSON.stringify(response));
@@ -224,6 +164,11 @@ export class DrawerContent extends Component {
 		});
 	}
 
+	_getLastListUsed = () => {
+		if (this.context.user) {
+			PATRON.listLastUsed = this.context.user.lastListUsed;
+		}
+	}
 
 	componentWillUnmount() {
 		this._isMounted = false;
@@ -233,6 +178,30 @@ export class DrawerContent extends Component {
 	componentDidUpdate(prevProps, prevState) {
 		if (prevState.user !== this.state.user) {
 			this.context.user(this.state.user);
+		}
+
+		if (prevState.messages !== PATRON.messages) {
+			this.setState({
+				messages: PATRON.messages,
+			})
+		}
+
+		if (prevState.fines !== PATRON.fines) {
+			this.setState({
+				fines: PATRON.fines,
+			})
+		}
+
+		if (prevState.num !== PATRON.num) {
+			this.setState({
+				num: PATRON.num,
+			})
+		}
+
+		if (prevState.language !== PATRON.language) {
+			this.setState({
+				language: PATRON.language,
+			})
 		}
 	}
 
@@ -246,11 +215,18 @@ export class DrawerContent extends Component {
 		})
 	}
 
+	displayFinesMessage = () => {
+		if (!_.includes(this.state.fines, "0.00")) {
+			const message = "Your accounts have " + this.state.fines + " in fines.";
+			return showILSMessage('warning', message)
+		}
+	}
+
 	displayILSMessages = (messages) => {
 		if (_.isArray(messages) === true) {
 			return (
 				messages.map((item) => {
-					if(item.message) {
+					if (item.message) {
 						return showILSMessage(item.messageStyle, item.message);
 					}
 				})
@@ -274,18 +250,15 @@ export class DrawerContent extends Component {
 	static contextType = userContext;
 
 	render() {
-		const {messages} = this.state;
+		const {messages, fines} = this.state;
+		const {checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches} = this.state.num;
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
 
-		if(this.state.asyncLoaded === false && library.baseUrl !== null) {
-			this.bootstrapAsync(library.baseUrl);
-		}
-
 		let discoveryVersion;
-		if(typeof library !== "undefined") {
-			if(library.discoveryVersion) {
+		if (typeof library !== "undefined") {
+			if (library.discoveryVersion) {
 				let version = library.discoveryVersion;
 				version = version.split(" ");
 				discoveryVersion = version[0];
@@ -306,113 +279,6 @@ export class DrawerContent extends Component {
 				icon = Constants.manifest.ios.icon;
 			}
 		}
-
-		let numOverdue;
-		if(typeof user !== "undefined") {
-			if(typeof user.numOverdue !== "undefined") {
-				if(user.numOverdue !== null) {
-					numOverdue = user.numOverdue;
-				} else {
-					numOverdue = 0;
-				}
-			} else {
-				numOverdue = 0;
-			}
-		} else {
-			numOverdue = 0;
-		}
-
-		let numCheckedOut;
-		if(typeof user !== "undefined") {
-			if(typeof user.numCheckedOut !== "undefined") {
-				if(user.numCheckedOut !== null) {
-					numCheckedOut = user.numCheckedOut;
-				} else {
-					numCheckedOut = 0;
-				}
-			} else {
-				numCheckedOut = 0;
-			}
-		} else {
-			numCheckedOut = 0;
-		}
-
-		let numHolds;
-		if(typeof user !== "undefined") {
-			if(typeof user.numHolds !== "undefined") {
-				if(user.numHolds !== null) {
-					numHolds = user.numHolds;
-				} else {
-					numHolds = 0;
-				}
-			} else {
-				numHolds = 0;
-			}
-		} else {
-			numHolds = 0;
-		}
-
-		let numHoldsAvailable;
-		if(typeof user !== "undefined") {
-			if(typeof user.numHoldsAvailable !== "undefined") {
-				if(user.numHoldsAvailable !== null) {
-					numHoldsAvailable = user.numHoldsAvailable;
-				} else {
-					numHoldsAvailable = 0;
-				}
-			} else {
-				numHoldsAvailable = 0;
-			}
-		} else {
-			numHoldsAvailable = 0;
-		}
-
-		let numLists;
-		if(typeof user !== "undefined") {
-			if(typeof user.numLists !== "undefined") {
-				if(user.numLists !== null) {
-					numLists = user.numLists;
-				} else {
-					numLists = 0;
-				}
-			} else {
-				numLists = 0;
-			}
-		} else {
-			numLists = 0;
-		}
-
-		let numSavedSearches;
-		if(typeof user !== "undefined") {
-			if(typeof user.numSavedSearches !== "undefined") {
-				if(user.numSavedSearches !== null) {
-					numSavedSearches = user.numSavedSearches;
-				} else {
-					numSavedSearches = 0;
-				}
-			} else {
-				numSavedSearches = 0;
-			}
-		} else {
-			numSavedSearches = 0;
-		}
-
-		let numSavedSearchesNew;
-		if(typeof user !== "undefined") {
-			if(typeof user.numSavedSearchesNew !== "undefined") {
-				if(user.numSavedSearchesNew !== null) {
-					numSavedSearchesNew = user.numSavedSearchesNew;
-				} else {
-					numSavedSearchesNew = 0;
-				}
-			} else {
-				numSavedSearchesNew = 0;
-			}
-		} else {
-			numSavedSearchesNew = 0;
-		}
-
-		//console.log(library);
 
 		return (
 			<DrawerContentScrollView>
@@ -439,6 +305,7 @@ export class DrawerContent extends Component {
 						</HStack>
 					</Box>
 
+					{fines ? this.displayFinesMessage() : null}
 					{messages ? this.displayILSMessages(messages) : null}
 
 					<Divider />
@@ -452,13 +319,13 @@ export class DrawerContent extends Component {
 									<Icon as={MaterialIcons} name="chevron-right" size="7"/>
 									<VStack w="100%">
 										<Text fontWeight="500">{translate('checkouts.title')} {user ? (
-											<Text bold>({numCheckedOut})</Text>) : null}</Text>
+											<Text bold>({checkedOut})</Text>) : null}</Text>
 									</VStack>
 								</HStack>
-								{numOverdue > 0 ? (
+								{overdue > 0 ? (
 									<Container>
 										<Badge colorScheme="error" ml={10} rounded="4px"
-										       _text={{fontSize: "xs"}}>{translate('checkouts.overdue_summary', {count: numOverdue})}</Badge>
+										       _text={{fontSize: "xs"}}>{translate('checkouts.overdue_summary', {count: overdue})}</Badge>
 									</Container>
 								) : null}
 
@@ -471,13 +338,13 @@ export class DrawerContent extends Component {
 									<Icon as={MaterialIcons} name="chevron-right" size="7"/>
 									<VStack w="100%">
 										<Text fontWeight="500">{translate('holds.title')} {user ? (
-											<Text bold>({numHolds})</Text>) : null}</Text>
+											<Text bold>({holds})</Text>) : null}</Text>
 									</VStack>
 								</HStack>
-								{numHoldsAvailable > 0 ? (
+								{ready > 0 ? (
 									<Container>
 										<Badge colorScheme="success" ml={10} rounded="4px"
-										       _text={{fontSize: "xs"}}>{translate('holds.ready_for_pickup', {count: numHoldsAvailable})}</Badge>
+										       _text={{fontSize: "xs"}}>{translate('holds.ready_for_pickup', {count: ready})}</Badge>
 									</Container>
 								) : null}
 							</Pressable>
@@ -490,7 +357,7 @@ export class DrawerContent extends Component {
 										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
 										<VStack w="100%">
 											<Text fontWeight="500">{translate('user_profile.my_lists')} {user ? (
-												<Text bold>({numLists})</Text>) : null}</Text>
+												<Text bold>({lists})</Text>) : null}</Text>
 										</VStack>
 									</HStack>
 								</Pressable>
@@ -515,13 +382,13 @@ export class DrawerContent extends Component {
 										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
 										<VStack w="100%">
 											<Text fontWeight="500">{translate('user_profile.saved_searches')} {user ? (
-												<Text bold>({numSavedSearches})</Text>) : null}</Text>
+												<Text bold>({savedSearches})</Text>) : null}</Text>
 										</VStack>
 									</HStack>
-									{numSavedSearchesNew > 0 ? (
+									{updatedSearches > 0 ? (
 										<Container>
 											<Badge colorScheme="warning" ml={10} rounded="4px"
-											       _text={{fontSize: "xs"}}>{translate('user_profile.saved_searches_updated', {count: numSavedSearchesNew})}</Badge>
+											       _text={{fontSize: "xs"}}>{translate('user_profile.saved_searches_updated', {count: updatedSearches})}</Badge>
 										</Container>
 									) : null}
 								</Pressable>
@@ -583,29 +450,33 @@ function LogOutButton() {
 }
 
 const ReloadProfileButton = (props) => {
-
 	return(
 		<Button size="xs" colorScheme="tertiary" onPress={() => props.handleRefreshProfile(props.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>{translate('general.refresh_account')}</Button>
 	)
 }
 
 const LanguageSwitcher = (props) => {
-	const userLanguage = props.userLanguage;
-	const [language, setLanguage] = useState(props.userLanguage);
-	const [label, setLabel] = useState(props.userLanguage);
+	const initialLabel = props.initial;
+	const [language, setLanguage] = useState(PATRON.language);
+	const [label, setLabel] = useState(initialLabel);
+
+	const updateLanguage = async (newVal) => {
+		await saveLanguage(newVal);
+		setLanguage(newVal);
+		setLabel(getLanguageDisplayName(newVal));
+	};
+
 
 	return <Box>
 		<Menu closeOnSelect={true} w="190" trigger={triggerProps => {
 			return <Pressable {...triggerProps}>
-				<Button size="sm" colorScheme="secondary" leftIcon={<Icon as={MaterialIcons} name="language" size="xs" />} {...triggerProps}>{getLanguageDisplayName(label, props.allLanguages)}</Button>
+				<Button size="md" colorScheme="secondary" leftIcon={<Icon as={MaterialIcons} name="language"
+				                                                          size="xs"/>} {...triggerProps}>{label}</Button>
 			</Pressable>;
 		}}>
-			<Menu.OptionGroup defaultValue={userLanguage} title="Select a Language" type="radio" onChange={(val) => {
-				setLanguage(val);
-				setLabel(val);
-				saveLanguage(val);
-			}}>
-				{props.availableLanguages.map((language) => {
+			<Menu.OptionGroup defaultValue={PATRON.language} title="Select a Language" type="radio"
+			                  onChange={(val) => updateLanguage(val)}>
+				{LIBRARY.languages.map((language) => {
 					return (
 						<Menu.ItemOption value={language.code}>{language.displayName}</Menu.ItemOption>
 					)
@@ -614,11 +485,5 @@ const LanguageSwitcher = (props) => {
 		</Menu>
 	</Box>;
 };
-
-function getLanguageDisplayName(code, languages) {
-	let result = _.filter(languages, ['code', code]);
-	result = _.values(result[0]);
-	return result[2];
-}
 
 export default DrawerContent

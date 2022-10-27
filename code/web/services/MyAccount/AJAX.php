@@ -1029,6 +1029,9 @@ class MyAccount_AJAX extends JSON_Action
 			$id = $_REQUEST['holdId'];
 			$interface->assign('holdId', $id);
 
+			$recordId = $_REQUEST['recordId'];
+			$sourceId = $_REQUEST['source'] . ":" . $_REQUEST['recordId'];
+
 			$currentLocation = $_REQUEST['currentLocation'];
 			if (!is_numeric($currentLocation)) {
 				$location = new Location();
@@ -1043,6 +1046,22 @@ class MyAccount_AJAX extends JSON_Action
 
 			$location = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold);
+
+			$pickupAt = 0;
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($recordId);
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+			$pickupAt = $relatedRecord->getHoldPickupSetting();
+			if($pickupAt > 0) {
+				$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+				foreach($pickupBranches as $locationKey => $location) {
+					if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
+						unset($pickupBranches[$locationKey]);
+					}
+				}
+			}
+
+			$interface->assign('pickupAt', $pickupAt);
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(

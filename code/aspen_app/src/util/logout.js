@@ -2,25 +2,18 @@ import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import {create} from 'apisauce';
-import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
 import {createAuthTokens, getHeaders} from "./apiAuth";
-import {popAlert} from "../components/loadError";
-import {GLOBALS} from "./globals";
+import {GLOBALS, GLOBALS_LIBRARY, GLOBALS_PATRON} from "./globals";
+import {LIBRARY} from "./loadLibrary";
+import {PATRON} from "./loadPatron";
 
 /**
  * Logout the user from Aspen LiDA and remove all saved data
  **/
 export async function removeData() {
-	const keys = ['@libraryHomeLink', '@libraryAddress', '@libraryPhone',
-		'@libraryEmail', '@libraryShowHours', '@libraryHoursMessage',
-		'@libraryHours', '@libraryLatitude', '@libraryLongitude',
-		'@patronProfile', '@patronLibrary', '@libraryInfo', '@locationInfo',
-		'@appSettings', '@pickupLocations', '@browseCategories', '@ILSMessages',
-		'@patronCheckouts', '@patronHolds', '@patronHoldsNotReady', '@patronHoldsReady',
-		'@linkedAccounts', '@viewerAccounts', '@pathUrl', '@userToken'];
-
+	try {
 		SecureStore.deleteItemAsync("patronName");
 		SecureStore.deleteItemAsync("library");
 		SecureStore.deleteItemAsync("libraryName");
@@ -38,27 +31,35 @@ export async function removeData() {
 		await AsyncStorage.removeItem('@libraryInfo');
 		await AsyncStorage.removeItem('@locationInfo');
 		await AsyncStorage.removeItem('@pathUrl');
-		//await AsyncStorage.clear();
-		global.promptForOverdriveEmail = "";
-		global.overdriveEmail = "";
-		global.patronId = "";
-		global.barcode = "";
-		global.rememberHoldPickupLocation = "";
-		global.pickupLocationId = "";
-		global.homeLocationId = "";
-		global.interfaceLanguage = "";
-		global.numCheckedOut = "";
-		global.numOverdue = "";
-		global.numHolds = "";
-		global.numHoldsAvailable = "";
-		global.userKey = "";
-		global.secretKey = "";
-		global.allHolds = "";
-		global.unavailableHolds = "";
-		global.availableHolds = "";
-		global.allUserHolds = "";
-		global.checkedOutItems = "";
+	} catch (e) {
+		console.log(e);
+	} finally {
+		LIBRARY.url = null;
+		LIBRARY.name = null;
+		LIBRARY.favicon = null;
+		LIBRARY.version = "22.10.00";
+		LIBRARY.languages = [];
+		LIBRARY.vdx = [];
+		PATRON.userToken = null;
+		PATRON.scope = null;
+		PATRON.library = null;
+		PATRON.location = null;
+		PATRON.listLastUsed = null;
+		PATRON.fines = 0;
+		PATRON.messages = [];
+		PATRON.num.checkedOut = 0;
+		PATRON.num.holds = 0;
+		PATRON.num.lists = 0;
+		PATRON.num.overdue = 0;
+		PATRON.num.ready = 0;
+		PATRON.num.savedSearches = 0;
+		PATRON.num.updatedSearches = 0;
+		PATRON.promptForOverdriveEmail = 1;
+		PATRON.rememberHoldPickupLocation = 0;
+		PATRON.pickupLocations = [];
+		PATRON.language = "en";
 		console.log("Storage data cleansed.")
+	}
 }
 
 /**
