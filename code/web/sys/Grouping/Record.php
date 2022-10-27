@@ -166,7 +166,7 @@ class Grouping_Record
 					$this->_statusInformation->setIsLocallyOwned(true);
 					$this->_statusInformation->addLocalCopies($item->numCopies);
 					if ($item->available) {
-						$this->_statusInformation->addLocalCopies($item->numCopies);
+						$this->_statusInformation->addAvailableCopies($item->numCopies);
 						$this->_statusInformation->setAvailableHere(true);
 					}
 				}
