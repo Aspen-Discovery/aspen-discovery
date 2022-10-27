@@ -1142,7 +1142,7 @@ class Record_AJAX extends Action
 		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 		$pickupAt = $relatedRecord->getHoldPickupSetting();
 		if($pickupAt > 0) {
-			$itemLocations = $marcRecord->getGroupedWorkDriver()->getValidPickupLocations($pickupAt);
+			$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
 			foreach($locations as $locationKey => $location) {
 				if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
 					unset($locations[$locationKey]);

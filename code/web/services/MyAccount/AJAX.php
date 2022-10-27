@@ -1047,26 +1047,16 @@ class MyAccount_AJAX extends JSON_Action
 			$location = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold);
 
-			$groupedWorkId = null;
 			$pickupAt = 0;
-			require_once ROOT_DIR . '/sys/User/Hold.php';
-			$hold = new Hold();
-			$hold->recordId = $recordId;
-			if($hold->find(true)) {
-				$groupedWorkId = $hold->groupedWorkId;
-			}
-
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$recordDriver = new GroupedWorkDriver($groupedWorkId);
-			if($recordDriver->isValid()) {
-				$record = $recordDriver->getRelatedRecord($sourceId);
-				$pickupAt = $record->getHoldPickupSetting();
-				if($pickupAt > 0) {
-					$itemLocations = $recordDriver->getValidPickupLocations($pickupAt);
-					foreach($pickupBranches as $locationKey => $location) {
-						if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
-							unset($pickupBranches[$locationKey]);
-						}
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($recordId);
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+			$pickupAt = $relatedRecord->getHoldPickupSetting();
+			if($pickupAt > 0) {
+				$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+				foreach($pickupBranches as $locationKey => $location) {
+					if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
+						unset($pickupBranches[$locationKey]);
 					}
 				}
 			}
