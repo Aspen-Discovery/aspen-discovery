@@ -197,7 +197,8 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 						}
 						for (String oldParentRecordId : existingParentRecords.keySet()){
 							try{
-								deleteParentRecordStmt.setString(1,oldParentRecordId);
+								deleteParentRecordStmt.setString(1, primaryIdentifier.getIdentifier());
+								deleteParentRecordStmt.setString(2,oldParentRecordId);
 								deleteParentRecordStmt.executeUpdate();
 							}catch (Exception e){
 								logEntry.incErrors("Error deleting parent record for " + primaryIdentifier.getIdentifier() + ", " + oldParentRecordId, e);

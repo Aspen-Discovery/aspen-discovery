@@ -25,6 +25,13 @@ function getUpdates22_11_00(): array
 				'ALTER TABLE reindex_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 			]
 		], //add_numInvalidRecords_to_indexing_logs
+		'sso_setting_add_entity_id' => [
+			'title' => 'SSO - Add Entity ID',
+			'description' => 'SSO - Add Entity ID',
+			'sql' => [
+				"ALTER TABLE sso_setting ADD column ssoEntityId VARCHAR(255)"
+			]
+		] //sso_setting_add_entity_id
 
 		//kirstien
 
