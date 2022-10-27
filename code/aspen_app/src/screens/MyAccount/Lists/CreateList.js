@@ -21,7 +21,7 @@ const CreateList = (props) => {
 				leftIcon={<Icon as={MaterialIcons} name="add" size="xs" mr="-1"/>}
 			>
 				Create a New List</Button>
-			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full">
+			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full" avoidKeyboard>
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>

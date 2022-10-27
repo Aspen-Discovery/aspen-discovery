@@ -428,8 +428,8 @@ const SelectYourLibrary = (props) => {
 		        startIcon={<Icon as={MaterialIcons} name="place" size={5}/>}>
 			{libraryName ? libraryName : translate('login.select_your_library')}
 		</Button>
-		<Modal isOpen={props.showModal} onClose={() => props.handleModal(false)} size="lg" >
-			<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }}>
+		<Modal isOpen={props.showModal} onClose={() => props.handleModal(false)} size="lg" avoidKeyboard>
+			<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }} maxH="350">
 				<Modal.CloseButton />
 				<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
 
