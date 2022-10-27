@@ -2570,7 +2570,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$relatedRecord->addItem($itemData);
 					}
 
-					//Finally add records to the correct manifestation (so status updates properly)
+					//Finally, add records to the correct manifestation (so status updates properly)
 					foreach ($allRecords as $record) {
 						//Add to the correct manifestation
 						if (isset( $this->_relatedManifestations[$record->format])) {
