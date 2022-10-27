@@ -63,7 +63,12 @@ public abstract class VariableFieldImpl implements VariableField {
     @Override
     public void setTag(final String tag) {
         this.tag = tag;
-        this.numericTag = Integer.parseInt(tag);
+        try {
+            this.numericTag = Integer.parseInt(tag);
+        }catch (NumberFormatException nfe){
+            //The tag is not numeric, set the value to 0
+            this.numericTag = 0;
+        }
     }
 
     /**
