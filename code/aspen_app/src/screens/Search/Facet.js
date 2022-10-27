@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Button, Checkbox, Center, Input, View} from "native-base";
+import {Box, Button, Center, Checkbox, Input, View} from "native-base";
 import _ from "lodash";
 
 // custom components and helper files
@@ -12,8 +12,8 @@ import {ScrollView} from "react-native";
 import {GLOBALS} from "../../util/globals";
 import {userContext} from "../../context/user";
 import {loadingSpinner} from "../../components/loadingSpinner";
-import Facet_CheckboxGroup from "./Facets/CheckboxGroup";
 import {translate} from "../../translations/translations";
+import {UnsavedChangesBack, UnsavedChangesExit} from "./UnsavedChanges";
 
 export default class Facet extends Component {
 	constructor(props, context) {
@@ -26,13 +26,14 @@ export default class Facet extends Component {
 			facets: this.props.route.params?.data.list ?? [],
 			numFacets: this.props.route.params?.data.count ?? 0,
 			category: this.props.route.params?.data.category ?? "",
-			appliedValues: this.props.route.params?.data.applied ?? [],
 			applied: this.props.route.params?.data.applied ?? [],
 			multiSelect: this.props.route.params?.data.multiSelect ?? false,
 			pendingFilters: [],
 			filterByQuery: "",
 			hasPendingChanges: false,
+			showWarning: false,
 			isUpdating: false,
+			checkboxValues: [],
 		};
 		this._isMounted = false;
 		this._allowMultiple = false;
@@ -41,7 +42,7 @@ export default class Facet extends Component {
 	 componentDidMount = async () => {
 		 this._isMounted = true;
 
-		 if(this.state.multiSelect) {
+		 if (this.state.multiSelect) {
 			 this.defaultCheckboxValues();
 		 }
 
@@ -50,22 +51,42 @@ export default class Facet extends Component {
 		 })
 	 }
 
+	componentDidUpdate() {
+		const {navigation} = this.props;
+
+		// Use `setOptions` to update the button that we previously specified
+		// Now the button includes an `onPress` handler to update the count
+		navigation.setOptions({
+			headerLeft: () => (
+				<UnsavedChangesBack updateSearch={this.updateSearch}/>
+			),
+			headerRight: () => (
+				<UnsavedChangesExit updateSearch={this.updateSearch}/>
+			)
+		});
+
+
+	}
+
 	componentWillUnmount() {
 		this._isMounted = false;
+		this._showPendingAlert = false;
+		GLOBALS.hasPendingChanges = false;
 	}
 
 	filter(list) {
 		const filterByQuery = this.state.filterByQuery;
-
-		return _.filter(list, function(facet) {
+		//todo: add method to use api endpoint to get more results to filter through by query
+		return _.filter(list, function (facet) {
 			return facet.label.indexOf(filterByQuery) > -1
 		})
 	}
 
 	searchBar = () => {
-		if(this.state.numFacets > 10) {
+		//todo: add searchbar to >10 results when able to filter thru every facet properly
+		if (this.state.numFacets > 200) {
 			const placeHolder = translate('search.title') + " " + this.state.title;
-			return(
+			return (
 				<Box safeArea={5}>
 					<Input
 						name="filterSearchBar"
@@ -100,7 +121,7 @@ export default class Facet extends Component {
 	}
 
 	updateCheckboxValues = (group, values, allowMultiple) => {
-		this._allowMultiple = true;
+		this._allowMultiple = allowMultiple;
 		if(_.isArray(values) || _.isObject(values)) {
 			values.forEach(value => {
 				this.setState((prevState) => ({
@@ -126,6 +147,7 @@ export default class Facet extends Component {
 			}))
 		}
 
+		GLOBALS.hasPendingChanges = true;
 	}
 
 	updateFilters = (group, value, allowMultiple) => {
@@ -143,6 +165,7 @@ export default class Facet extends Component {
 				},
 				hasPendingChanges: true,
 			}))
+
 		} else {
 			this.setState((prevState) => ({
 				...prevState,
@@ -153,73 +176,87 @@ export default class Facet extends Component {
 				hasPendingChanges: true,
 			}))
 		}
+
+		GLOBALS.hasPendingChanges = true;
 	}
 
-	updateSearch = () => {
+	updateSearch = (resetFacetGroup = false, toFilters = false) => {
 		const pendingFilters = this.state.pendingFilters;
 		const allowMultiple = this._allowMultiple;
 
-		_.forEach(pendingFilters, function(tempValue, tempKey) {
-			if(_.find(GLOBALS.pendingSearchFilters, tempKey)) {
-				if(allowMultiple) {
-					GLOBALS.pendingSearchFilters = _.merge(GLOBALS.pendingSearchFilters[0][tempKey], tempValue);
+		if (_.isObjectLike(pendingFilters) || _.isArrayLike(pendingFilters)) {
+			_.forEach(pendingFilters, function (tempValue, tempKey) {
+				if (_.find(GLOBALS.pendingSearchFilters, tempKey) && (tempKey !== "undefined" || tempValue !== "undefined")) {
+					if (allowMultiple) {
+						if (resetFacetGroup) {
+							console.log("try to remove " + tempKey)
+						} else {
+							GLOBALS.pendingSearchFilters = _.merge(GLOBALS.pendingSearchFilters[0][tempKey], tempValue);
+						}
+					} else {
+						const i = _.findIndex(GLOBALS.pendingSearchFilters, tempKey);
+						if (resetFacetGroup) {
+							console.log("try to remove " + tempValue)
+						} else {
+							_.update(GLOBALS.pendingSearchFilters, [i], function (n) {
+								return n = {[tempKey]: tempValue};
+							});
+						}
+					}
 				} else {
-					const i = _.findIndex(GLOBALS.pendingSearchFilters, tempKey)
-					_.update(GLOBALS.pendingSearchFilters, [i], function(n) { return n = {[tempKey]:tempValue}; });
+					if (resetFacetGroup) {
+						console.log("skip adding it")
+					} else {
+						GLOBALS.pendingSearchFilters = _.concat(GLOBALS.pendingSearchFilters, pendingFilters);
+					}
 				}
-			} else {
-				GLOBALS.pendingSearchFilters = _.concat(GLOBALS.pendingSearchFilters, pendingFilters);
-			}
-		});
+			});
+		}
 
-		let params = this.buildParams();
+		let params = "";
+		params = this.buildParams();
 		params = _.join(params, '');
 
-		const { navigation } = this.props;
-		navigation.navigate("SearchResults", {
-			term: this.state.term,
-			pendingParams: params,
-			pendingUpdates: pendingFilters,
-		});
+		GLOBALS.hasPendingChanges = false;
+		const {navigation} = this.props;
+		if (toFilters) {
+			navigation.navigate("Filters", {
+				term: this.state.term
+			});
+		} else {
+			navigation.navigate("SearchResults", {
+				term: this.state.term,
+				pendingParams: params,
+			});
+		}
 
 	}
 
-	backToFilters = () => {
-		const { navigation } = this.props;
-		navigation.navigate("Filters", {
-			pendingUpdates: this.state.pendingFilters,
+	clearSelections = () => {
+		const {applied, category} = this.state;
+		const allowMultiple = this._allowMultiple;
+		applied.forEach(item => {
+			this.updateFilters(category, item.value, allowMultiple);
 		})
-	}
-
-	resetSearch = () => {
-		this.setState({
-			pendingFilters: [],
-			facets: this.props.route.params?.facets,
-			hasPendingChanges: false,
-		})
-
-		const { navigation } = this.props;
-		navigation.navigate("SearchResults", {
-			term: this.state.query,
-			pendingFilters: []
-		});
+		this.updateSearch(true, false);
 	}
 
 	buildParams = () => {
 		let params = [];
-		_.map(GLOBALS.pendingSearchFilters, function(n) {
+		_.map(GLOBALS.pendingSearchFilters, function (n) {
 			const key = _.findKey(n);
 			const value = _.get(n, key);
-			if(_.isObject(value)) {
-				_.forEach(value, function(tempValue, tempKey) {
-					if(key === "sort_by") {
+
+			if (_.isObject(value)) {
+				_.forEach(value, function (tempValue, tempKey) {
+					if (key === "sort_by") {
 						params = params.concat('&sort=' + encodeURI(tempValue))
 					} else {
 						params = params.concat('&filter[]=' + encodeURI(key + ':' + tempValue))
 					}
 				})
 			} else {
-				if(key === "sort_by") {
+				if (key === "sort_by") {
 					params = params.concat('&sort=' + encodeURI(value))
 				} else {
 					params = params.concat('&filter[]=' + encodeURI(key + ':' + value))
@@ -230,17 +267,16 @@ export default class Facet extends Component {
 	}
 
 	actionButtons = () => {
-		return(
-			<Box safeArea={5} _light={{ bg: 'coolGray.50' }} _dark={{ bg: 'coolGray.700'}} shadow={4}>
-				<Center pb={2}>
+		return (
+			<Box safeArea={3} _light={{bg: 'coolGray.50'}} _dark={{bg: 'coolGray.700'}} shadow={1}>
+				<Center>
 					<Button.Group size="lg">
-						<Button variant="outline" onPress={() => this.resetSearch()}>{translate('general.reset')}</Button>
+						<Button variant="unstyled"
+						        onPress={() => this.clearSelections()}>{translate('general.reset')}</Button>
 						<Button isLoading={this.state.isUpdating} isLoadingText={translate('general.updating')}
 						        onPress={() => {
-									this.setState({isUpdating: true});
-									this.updateSearch();
-									this.setState({isUpdating: false})
-						}}>{translate('general.update')}</Button>
+							        this.updateSearch();
+						        }}>{translate('general.update')}</Button>
 					</Button.Group>
 				</Center>
 			</Box>
@@ -252,16 +288,16 @@ export default class Facet extends Component {
 	render() {
 		const {facets, category} = this.state;
 
-		if(this.state.isLoading) {
+		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
 		if (category === "publishDate" || category === "birthYear" || category === "deathYear" || category === "publishDateSort") {
 			return (
-				<View style={{ flex: 1 }}>
+				<View style={{flex: 1}}>
 					<ScrollView>
 						<Box safeArea={5}>
-							<Facet_Year category={category} updater={this.updateFilters} data={facets} />
+							<Facet_Year category={category} updater={this.updateFilters} data={facets}/>
 						</Box>
 					</ScrollView>
 					{this.actionButtons()}
@@ -316,7 +352,8 @@ export default class Facet extends Component {
 					{this.searchBar()}
 					<ScrollView>
 						<Box safeAreaX={5}>
-							<Facet_RadioGroup data={facets} category={category} title={this.state.title} applied={this.state.applied} updater={this.updateFilters} />
+							<Facet_RadioGroup data={facets} category={category} title={this.state.title}
+							                  applied={this.state.applied} updater={this.updateFilters}/>
 						</Box>
 					</ScrollView>
 					{this.actionButtons()}
