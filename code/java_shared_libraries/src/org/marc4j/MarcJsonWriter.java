@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.Normalizer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.marc4j.converter.CharConverter;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -239,6 +240,9 @@ public class MarcJsonWriter implements MarcWriter {
         boolean firstField = true;
 
         for (final ControlField cf : record.getControlFields()) {
+            if (cf.getNumericTag() == 0){
+                continue;
+            }
             if (!firstField) {
                 buf.append(",");
             } else {
@@ -265,6 +269,9 @@ public class MarcJsonWriter implements MarcWriter {
         }
 
         for (final DataField df : record.getDataFields()) {
+            if (df.getNumericTag() == 0){
+                continue;
+            }
             if (!firstField) {
                 buf.append(",");
             } else {
@@ -334,13 +341,13 @@ public class MarcJsonWriter implements MarcWriter {
                 buf.append("\n                ");
             }
 
-            buf.append(ql + "ind1" + ql + ":\"" + df.getIndicator1() + "\",");
+            buf.append(ql + "ind1" + ql + ":\"" + unicodeEscape(Character.toString(df.getIndicator1())) + "\",");
 
             if (indent) {
                 buf.append("\n                ");
             }
 
-            buf.append(ql + "ind2" + ql + ":\"" + df.getIndicator2() + "\"");
+            buf.append(ql + "ind2" + ql + ":\"" + unicodeEscape(Character.toString(df.getIndicator2())) + "\"");
 
             if (indent) {
                 buf.append("\n            ");
