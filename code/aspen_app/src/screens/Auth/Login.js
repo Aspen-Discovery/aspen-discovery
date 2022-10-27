@@ -367,7 +367,7 @@ export default class Login extends Component {
 		return (
 			<Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
 				<Image source={{ uri: logo }} rounded={25} size="xl"
-				       alt={translate('app.name')} />
+				       alt={translate('app.name')} fallbackSource={require("../../themes/default/aspenLogo.png")}/>
 				{this.locationNum > 1 || isCommunity ? (
 					<SelectYourLibrary
 						libraryName={this.state.libraryName}
