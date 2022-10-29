@@ -937,7 +937,7 @@ class UserList extends DataObject
             include ROOT_DIR . '/PHPExcel.php';
             include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
             $objPHPExcel = new PHPExcel();
-            $objPHPExcel->getProperties()->setTitle("User List");
+            $objPHPExcel->getProperties()->setTitle('User List');
 
             $objPHPExcel->setActiveSheetIndex(0);
             $objPHPExcel->getActiveSheet()->setTitle('Titles');

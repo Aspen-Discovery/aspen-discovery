@@ -643,11 +643,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 
 			global $solrScope;
             $docs = $result['response']['docs'];
-            $scopedDocs = array_filter($docs, function($v) use ($solrScope) {
-//                return preg_grep("/^" . $solrScope . "#", $v["availability_toggle"]);
-                return preg_grep("/^" . $solrScope . "#/", $v["global"]);
-            });
-            $docs = array_values($scopedDocs);
 
 			for ($i = 0; $i < count($docs); $i++) {
 				//Output the row to excel
@@ -662,37 +657,42 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $link);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['publishDateSort'] ?? '');
-
                 if (!is_array($curDoc['format'])) {
                     $formats = (array)$curDoc['format'];
                 } else {
                     $formats = $curDoc['format'];
                 }
-                $scopedFormats = array_filter($formats, function($v) use ($solrScope) {
-                    return strpos($v, $solrScope . '#') === 0;
-                });
+                foreach ($formats as $key=>$format) {
+                    $formats[$key] = substr($format, strpos($format, '#') + 1);
+                }
+                $uniqueFormats = array_unique($formats);
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
 
-                $format = is_array($curDoc['format_' . $solrScope]) ? implode(', ', $curDoc['format_' . $solrScope]) : $curDoc['format_' . $solrScope];
-
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $format);
+                // TODO: replace this horsepoop with magical itemSummary something something that keeps item detailed location and call number associated...
                 $callNumber = '';
                 if (isset($curDoc['local_callnumber_' . $solrScope])) {
                     $callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
                 }
-				$location = '';
-				if (isset($curDoc['detailed_location_' . $solrScope])) {
-					$location = is_array($curDoc['detailed_location_' . $solrScope]) ? implode(',', $curDoc['detailed_location_' . $solrScope]) : $curDoc['detailed_location_' . $solrScope];
-				}
+                $scopedLocations = array_filter($curDoc["detailed_location"], function($v) use ($solrScope) {
+                    return preg_match("/^" . $solrScope . "#/", $v);
+                });
+                foreach ($scopedLocations as $key=>$scopedLocation) {
+                    if (strpos($scopedLocation, $solrScope . '#') === 0) {
+                        $scopedLocations[$key] = substr($scopedLocation, strpos($scopedLocation, '#') + 1);
+                    } else {
+                        $scopedLocations[$key] = null;
+                    }
+                }
+                $locations = array_values($scopedLocations);
+                $uniqueLocations = array_unique($locations);
 				/** @noinspection PhpUnusedLocalVariableInspection */
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location . ' ' . $callNumber);
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueLocations) . ': ' . $callNumber);
 			}
-
 			for ($i = 0; $i < $maxColumn; $i++) {
 				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 			}
-
 			//Output to the browser
 			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 			header("Cache-Control: no-store, no-cache, must-revalidate");

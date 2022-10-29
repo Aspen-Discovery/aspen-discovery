@@ -80,7 +80,8 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		exportUserListAction: function (id){
-
+			// TODO: make this work. James Staub
+			window.location = window.location + '&view=excel';
 		},
 
 		citeListAction: function (id) {
