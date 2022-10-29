@@ -32,6 +32,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
@@ -112,11 +113,19 @@ public class EvergreenExportMain {
 					System.exit(1);
 				}
 
+				String staffUsername = null;
+				String staffPassword = null;
+				String staffToken = null;
+
 				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'evergreen'");
 				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 				if (accountProfileRS.next()){
 					baseUrl = accountProfileRS.getString("patronApiUrl");
 					profileToLoad = accountProfileRS.getString("recordSource");
+					staffUsername = accountProfileRS.getString("staffUsername");
+					staffPassword = accountProfileRS.getString("staffPassword");
+
+					staffToken = getAPIAuthToken(staffUsername, staffPassword);
 				}else{
 					logEntry.incErrors("Could not load Evergreen account profile");
 					accountProfileRS.close();
@@ -143,6 +152,7 @@ public class EvergreenExportMain {
 
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
+							updatePatronTypes(dbConn, staffToken);
 							logEntry.addNote("Finished updating branch information");
 
 							exportVolumes(dbConn);
@@ -387,6 +397,66 @@ public class EvergreenExportMain {
 		}
 	}
 
+	private static void updatePatronTypes(Connection dbConn, String staffToken) {
+		try {
+			//String params = "service=open-ils.pcrud&method=open-ils.pcrud.retrieve.pgt&param=%22" + staffToken + "%22";
+
+			HashMap<Integer, String> evergreenPTypes = new HashMap<>();
+			String[] pgtIdl = fetchIdl("pgt");
+
+			loadPatronTypesFromEvergreen(staffToken, null, pgtIdl, evergreenPTypes);
+
+			PreparedStatement existingAspenPatronTypesStmt = dbConn.prepareStatement("SELECT pType from ptype where id = ?");
+			PreparedStatement addAspenPatronTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (id, pType) VALUES (?, ?)");
+			PreparedStatement updateAspenPatronTypeStmt = dbConn.prepareStatement("UPDATE ptype SET pType = ? where id = ?");
+
+			for (Integer pTypeId : evergreenPTypes.keySet()){
+				String pTypeName = evergreenPTypes.get(pTypeId);
+				existingAspenPatronTypesStmt.setLong(1, pTypeId);
+				ResultSet existingAspenPatronTypesRS = existingAspenPatronTypesStmt.executeQuery();
+				if (!existingAspenPatronTypesRS.next()) {
+					addAspenPatronTypeStmt.setLong(1, pTypeId);
+					addAspenPatronTypeStmt.setString(2, pTypeName);
+					addAspenPatronTypeStmt.executeUpdate();
+				}else if (!existingAspenPatronTypesRS.getString("pType").equals(pTypeName)){
+					updateAspenPatronTypeStmt.setString(1, pTypeName);
+					updateAspenPatronTypeStmt.setLong(2, pTypeId);
+					updateAspenPatronTypeStmt.executeUpdate();
+				}
+				existingAspenPatronTypesRS.close();
+			}
+		} catch (Exception e) {
+			logger.error("Error updating patron type information from Evergreen", e);
+		}
+	}
+
+	private static void loadPatronTypesFromEvergreen(String staffToken, Integer parentPType, String[] pgtIdl, HashMap<Integer, String> evergreenPTypes){
+		String apiUrl = baseUrl +  "/osrf-gateway-v1";
+		String fetchPTypeParams;
+		if (parentPType == null){
+			fetchPTypeParams = "service=open-ils.pcrud&method=open-ils.pcrud.search.pgt.atomic&param=\"" + staffToken + "\"&param={\"parent\":false}";
+		}else{
+			fetchPTypeParams = "service=open-ils.pcrud&method=open-ils.pcrud.search.pgt.atomic&param=\"" + staffToken + "\"&param={\"parent\":" + parentPType + "}";
+		}
+
+		WebServiceResponse response = NetworkUtils.postToURL(apiUrl, fetchPTypeParams, "application/x-www-form-urlencoded", null, logger);
+
+		JSONObject pTypeResponse = response.getJSONResponse();
+		if (pTypeResponse.has("payload")){
+			JSONArray payload = pTypeResponse.getJSONArray("payload");
+			for (int i = 0; i < payload.length(); i++ ){
+				JSONArray pTypes = payload.getJSONArray(i);
+				for (int j = 0; j < pTypes.length(); j++){
+					JSONObject pType = pTypes.getJSONObject(j);
+					HashMap<String, Object> mappedPatronType = mapFields(pType.getJSONArray("__p"), pgtIdl);
+					Integer pTypeId = (Integer)mappedPatronType.get("id");
+					evergreenPTypes.put(pTypeId, (String)mappedPatronType.get("name"));
+					loadPatronTypesFromEvergreen(staffToken, pTypeId, pgtIdl, evergreenPTypes);
+				}
+			}
+		}
+	}
+
 	private static PreparedStatement existingAspenLocationStmt;
 	private static PreparedStatement existingAspenLibraryStmt;
 	private static PreparedStatement addAspenLibraryStmt;
@@ -468,39 +538,8 @@ public class EvergreenExportMain {
 
 	}
 
-	static String[] orgUnitFields = new String[]{"children",
-		"billing_address",
-		"holds_address",
-		"id",
-		"ill_address",
-		"mailing_address",
-		"name",
-		"ou_type",
-		"parent_ou",
-		"shortname",
-		"email",
-		"phone",
-		"opac_visible",
-		"fiscal_calendar",
-		"users",
-		"closed_dates",
-		"circulations",
-		"settings",
-		"addresses",
-		"checkins",
-		"workstations",
-		"fund_alloc_pcts",
-		"copy_location_orders",
-		"atc_prev_dests",
-		"resv_requests",
-		"resv_pickups",
-		"rsrc_types",
-		"resources",
-		"rsrc_attrs",
-		"attr_vals",
-		"hours_of_operation"
-	};
 	private static void loadOrganizationalUnit(JSONArray orgUnitPayload, int level, long parentId, long locationMapId, HashMap<String, String> existingLocations) {
+		String[] orgUnitFields = fetchIdl("aou");
 		HashMap<String, Object> mappedOrgUnitField = mapFields(orgUnitPayload, orgUnitFields);
 		if (level == 0){
 			//This is the top level unit, it is not written to Aspen, just process all the children
@@ -1598,5 +1637,69 @@ public class EvergreenExportMain {
 				}
 			}
 		}
+	}
+
+	public static String getAPIAuthToken(String staffUsername, String staffPassword)
+	{
+		String apiUrl = baseUrl +  "/osrf-gateway-v1";
+		String params = "service=open-ils.auth&method=open-ils.auth.login&param=%7B%22password%22%3A%22" + staffPassword + "%22%2C%22type%22%3A%22persist%22%2C%22org%22%3Anull%2C%22identifier%22%3A%22" + staffUsername + "%22%7D";
+
+		WebServiceResponse response = NetworkUtils.postToURL(apiUrl, params, "application/x-www-form-urlencoded", null, logger);
+		if (response.isSuccess()){
+			JSONObject authData = response.getJSONResponse();
+			if (authData.has("payload")){
+				JSONArray mainPayload = authData.getJSONArray("payload");
+				for (int i = 0; i < mainPayload.length(); i++){
+					JSONObject mainPayloadObject = mainPayload.getJSONObject(i);
+					if (mainPayloadObject.has("payload")){
+						JSONObject subPayload = mainPayloadObject.getJSONObject("payload");
+						if (subPayload.has("authtoken")){
+							return subPayload.getString("authtoken");
+						}
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private static HashMap<String, String[]> cachedIdl = new HashMap<>();
+	private static String[] fetchIdl(String className){
+		if (cachedIdl.containsKey(className)){
+			return cachedIdl.get(className);
+		}
+		String idlUrl = baseUrl + "/reports/fm_IDL.xml?class=" + className;
+		WebServiceResponse getIdlResponse = callEvergreenAPI(idlUrl);
+		if (getIdlResponse.isSuccess()) {
+			try {
+				Document getIdlDocument = createXMLDocumentForWebServiceResponse(getIdlResponse);
+				Element firstNode = (Element) getIdlDocument.getFirstChild();
+
+				NodeList classNodes = firstNode.getElementsByTagName("class");
+				for (int i = 0; i < classNodes.getLength(); i++){
+					Element curClass = (Element)classNodes.item(i);
+					String tmpClassName = curClass.getAttribute("id");
+					if (tmpClassName.equals(className)) {
+						NodeList fieldsNodes = curClass.getElementsByTagName("fields");
+						for (int k = 0; k < fieldsNodes.getLength(); k++) {
+							Element fieldsNode = (Element)fieldsNodes.item(k);
+							NodeList fieldNodes = fieldsNode.getElementsByTagName("field");
+							String[] fieldMappings = new String[fieldNodes.getLength()];
+							for (int j = 0; j < fieldNodes.getLength(); j++) {
+								Element curField = (Element) fieldNodes.item(j);
+								String fieldName = curField.getAttribute("name");
+								fieldMappings[j] = fieldName;
+							}
+							cachedIdl.put(className, fieldMappings);
+							return fieldMappings;
+						}
+					}
+				}
+			}catch (Exception e){
+				logEntry.incErrors("Error parsing IDL", e);
+			}
+		}
+		return null;
 	}
 }
