@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'searchLite', 'getDefaultFacets'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'getAvailableFacetsKeys', 'searchLite', 'getDefaultFacets', 'getFacetClusterByKey', 'searchFacetCluster'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SearchAPI', $method);
@@ -1973,12 +1973,10 @@ class SearchAPI extends Action
 			$timer->logTime('no hits processing');
 		} else {
 			$timer->logTime('save search');
-
 			$summary = $searchObject->getResultSummary();
 			$results['id'] = $searchObject->getSearchId();
 			$results['lookfor'] = $searchObject->displayQuery();
 			$results['sort'] = $searchObject->getSort();
-
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
 			$options = array('totalItems' => $summary['resultTotal'],
@@ -1990,7 +1988,6 @@ class SearchAPI extends Action
 			$results['page_current'] = $pager->getCurrentPage();
 			$results['page_total'] = $pager->getTotalPages();
 			$timer->logTime('finish hits processing');
-
 			$records = $searchObject->getResultRecordSet();
 			$items = [];
 			foreach ($records as $recordKey => $record) {
@@ -2013,19 +2010,34 @@ class SearchAPI extends Action
 			$results['title'] = translate(['text' => 'Catalog Search', 'isPublicFacing' => true]);
 			$results['message'] = translate(['text'=> "Your search '%1%' returned %2% results", 1=>$_REQUEST['lookfor'], 2=>$results['count'], 'isPublicFacing'=>true]);
 			$timer->logTime('load result records');
-
 			if($results['page_current'] == $results['page_total']) {
 				$results['message'] = "end of results";
 			}
 		}
-
 		if(empty($results['items'])) {
 			if($_REQUEST['page'] != 1) {
 				$results['message'] = "end of results";
 			}
 		}
-
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function restoreSearch($id) {
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$search = new SearchEntry();
+		$search->id = $id;
+		if($search->find(true)) {
+			$minSO = unserialize($search->search_object);
+			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
+			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
+			if($searchObj) {
+				$searchObj->processSearch(false, true);
+				$searchObj->close();
+				return $searchObj;
+			}
+		}
+		return false;
 	}
 
 	/** @noinspection PhpUnused */
@@ -2034,11 +2046,9 @@ class SearchAPI extends Action
 			'success' => false,
 			'message' => '',
 		];
-
 		if(empty($_REQUEST['id'])) {
 			return array('success' => false, 'message' => 'A valid search id not provided');
 		}
-
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$id = $_REQUEST['id'];
 		$search = new SearchEntry();
@@ -2061,30 +2071,27 @@ class SearchAPI extends Action
 	function getAvailableFacets() {
 		$results = [
 			'success' => false,
-			'message' => '',
+			'message' => 'Unable to restore search from id',
 		];
-
 		if(empty($_REQUEST['id'])) {
 			return array('success' => false, 'message' => 'A valid search id not provided');
 		}
-
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$includeSortList = $_REQUEST['includeSortList'] ?? true;
 		$id = $_REQUEST['id'];
-		$search = new SearchEntry();
-		$search->id = $id;
-		if($search->find(true)) {
-			$minSO = unserialize($search->search_object);
-			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
-			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
-			if($searchObj) {
-				$searchObj->processSearch(false, true);
-				$searchObj->close();
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			$facets = $searchObj->getFacetList();
+			$items = [];
+			$index = 0;
+			if($includeSortList) {
 				$sortList = $searchObj->getSortList();
-				$facets = $searchObj->getFacetList();
-				$items = [];
-
 				$i = 0;
 				$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
+				$items[$key]['key'] = 0;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = 'sort_by';
+				$items[$key]['hasApplied'] = true;
+				$items[$key]['multiSelect'] = false;
 				foreach($sortList as $value => $sort) {
 					$items[$key][$i]['value'] = $value;
 					$items[$key][$i]['display'] = $sort['desc'];
@@ -2094,28 +2101,60 @@ class SearchAPI extends Action
 					$items[$key][$i]['multiSelect'] = false;
 					$i++;
 				}
-
-				foreach($facets as $facet) {
-					$key = $facet['label'];
-					$i = 0;
-					foreach($facet['list'] as $item) {
-						$items[$key][$i]['value'] = $item['value'];
-						$items[$key][$i]['display'] = $item['display'];
-						$items[$key][$i]['field'] = $facet['field_name'];
-						$items[$key][$i]['count'] = $item['count'];
-						$items[$key][$i]['isApplied'] = $item['isApplied'];
-						$items[$key][$i]['multiSelect'] = (bool)$item['multiSelect'];
-						$i++;
-					}
-				}
-
-				$results = [
-					'success' => true,
-					'id' => $id,
-					'time' => round($searchObj->getQuerySpeed(), 2),
-					'options' => $items,
-				];
 			}
+			foreach($facets as $facet) {
+				$index++;
+				$key = $facet['label'];
+				$i = 0;
+				$items[$key]['key'] = $index;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = $facet['field_name'];
+				$items[$key]['hasApplied'] = $facet['hasApplied'];
+				$items[$key]['multiSelect'] = $facet['multiSelect'];
+				foreach($facet['list'] as $item) {
+					$items[$key][$i]['value'] = $item['value'];
+					$items[$key][$i]['display'] = $item['display'];
+					$items[$key][$i]['field'] = $facet['field_name'];
+					$items[$key][$i]['count'] = $item['count'];
+					$items[$key][$i]['isApplied'] = $item['isApplied'];
+					$items[$key][$i]['multiSelect'] = (bool)$item['multiSelect'];
+					$i++;
+				}
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'options' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getAvailableFacetsKeys() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		$includeSort = $_REQUEST['includeSort'] ?? false;
+		$id = $_REQUEST['id'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			$facets = $searchObj->getFacetList();
+			$items = array_keys($facets);
+			if($includeSort) {
+				$items[] = 'sort_by';
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'options' => $items,
+			];
 		}
 		return $results;
 	}
@@ -2124,13 +2163,11 @@ class SearchAPI extends Action
 	function getAppliedFilters() {
 		$results = [
 			'success' => false,
-			'message' => '',
+			'message' => 'Unable to restore search from id',
 		];
-
 		if(empty($_REQUEST['id'])) {
 			return array('success' => false, 'message' => 'A valid search id not provided');
 		}
-
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$id = $_REQUEST['id'];
 		$search = new SearchEntry();
@@ -2164,13 +2201,11 @@ class SearchAPI extends Action
 	/** @noinspection PhpUnused */
 	function getDefaultFacets() {
 		$limit = $_REQUEST['limit'] ?? 5;
-
 		$searchObj = SearchObjectFactory::initSearchObject();
 		$searchObj->init();
 		$obj = $searchObj->getFacetConfig();
 		$searchObj->close();
 		$obj = array_slice($obj, 0, $limit);
-
 		$facets = [];
 		$i = 0;
 		foreach($obj as $facet) {
@@ -2191,7 +2226,53 @@ class SearchAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getFacetCluster() {
-		// placeholder for fetching more facets when searching thru large (>100) clusters
+	function getFacetClusterByKey() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		if(empty($_REQUEST['cluster'])) {
+			return array('success' => false, 'message' => 'A valid cluster field_name not provided');
+		}
+		$id = $_REQUEST['id'];
+		$key = $_REQUEST['cluster'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			$facets = $searchObj->getFacetList();
+			$cluster = $facets[$key] ?? [];
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'field' => $cluster['field_name'],
+				'display' => $cluster['label'],
+				'hasApplied' => $cluster['hasApplied'],
+				'multiSelect' => $cluster['multiSelect'],
+				'options' => $cluster['list'],
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	// placeholder for fetching more facets when searching thru large (>100) clusters
+	function searchFacetCluster() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		$id = $_REQUEST['id'];
+		$term = $_REQUEST['term'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			// do something with the term
+		}
+		return $results;
 	}
 }
