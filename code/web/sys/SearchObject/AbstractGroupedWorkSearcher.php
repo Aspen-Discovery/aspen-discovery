@@ -654,7 +654,8 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
                 if ($curDoc['id']) {
                     $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
                 }
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $link);
+				$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
