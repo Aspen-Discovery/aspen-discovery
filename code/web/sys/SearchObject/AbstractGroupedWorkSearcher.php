@@ -617,15 +617,17 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$result = $this->processSearch(false, false); // TODO: James asks: processSearch does NOT apply scope to results, correct?
 			}
 
-			// Prepare the spreadsheet
-			ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
-			include ROOT_DIR . '/PHPExcel.php';
-			include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
-			$objPHPExcel = new PHPExcel();
-			$objPHPExcel->getProperties()->setTitle("Search Results");
+            // Create new PHPExcel object
+            $objPHPExcel = new PHPExcel();
+
+            // Set properties
+            $objPHPExcel->getProperties()
+                ->setCreator("Aspen Discovery")
+                ->setLastModifiedBy("Aspen Discovery")
+                ->setTitle("Search Results");
 
 			$objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle('Results');
+			$objPHPExcel->getActiveSheet()->setTitle("Search Results");
 
 			//Add headers to the table
 			$sheet = $objPHPExcel->getActiveSheet();
@@ -645,21 +647,36 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
             $docs = $result['response']['docs'];
 
 			for ($i = 0; $i < count($docs); $i++) {
-				//Output the row to excel
-				$curDoc = $docs[$i];
-				$curRow++;
-				$curCol = 0;
-				//Output the row to excel
+                //Output the row to excel
+                $curDoc = $docs[$i];
+                $curRow++;
+                $curCol = 0;
+                //Output the row to excel
                 $link = '';
                 if ($curDoc['id']) {
                     $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
                 }
-				$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
                 $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['publishDateSort'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
+
+                // Publish Dates: Min-Max
+                if (!is_array($curDoc['publishDate'])) {
+                    $publishDates = (array)$curDoc['publishDate'];
+                } else {
+                    $publishDates = $curDoc['publishDate'];
+                }
+                $publishDate = '';
+                if (count($publishDates) == 1) {
+                    $publishDate = $publishDates[0];
+                } elseif (count($publishDates) > 1) {
+                    $publishDate = min($publishDates) . ' - ' . max($publishDates);
+                }
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
+
+                // Formats
                 if (!is_array($curDoc['format'])) {
                     $formats = (array)$curDoc['format'];
                 } else {
@@ -700,7 +717,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			header("Cache-Control: post-check=0, pre-check=0", false);
 			header("Pragma: no-cache");
 			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename="Results.xlsx"');
+			header('Content-Disposition: attachment;filename="SearchResults.xlsx"');
 
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
