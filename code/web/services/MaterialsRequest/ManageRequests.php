@@ -289,16 +289,14 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
             $objPHPExcel = new PHPExcel();
 
             // Set properties
-            $objPHPExcel->getProperties()->setCreator("Aspen Discovery")
-            ->setLastModifiedBy("Aspen Discovery")
-            ->setTitle("Office 2007 XLSX Document")
-            ->setSubject("Office 2007 XLSX Document")
-            ->setDescription("Office 2007 XLSX, generated using PHP.")
-            ->setKeywords("office 2007 openxml php")
-            ->setCategory("Itemless eContent Report");
+            $objPHPExcel->getProperties()
+                ->setCreator("Aspen Discovery")
+                ->setLastModifiedBy("Aspen Discovery")
+                ->setTitle("Materials Requests");
 
             // Add some data
             $activeSheet = $objPHPExcel->setActiveSheetIndex(0);
+            $objPHPExcel->getActiveSheet()->setTitle('Titles');
             $activeSheet->setCellValueByColumnAndRow(0, 1, 'Materials Requests');
 
             //Define table headers
@@ -462,7 +460,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
             $objWriter->save('php://output');
             $objPHPExcel->disconnectWorksheets();
             unset($objPHPExcel);
-		    // exit;
         } catch (Exception $e) {
             global $logger;
             $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
