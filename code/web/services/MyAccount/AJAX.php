@@ -5672,4 +5672,39 @@ class MyAccount_AJAX extends JSON_Action
 		);
 
 	}
+
+    function exportUserList() {
+        $result = [
+            'success' => false,
+            'message' => 'Something went wrong.'
+        ];
+        global $interface;
+        if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) { // validly formatted List Id
+            $userListId = $_REQUEST['listId'];
+            require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+            $list = new UserList();
+            $list->id = $userListId;
+            if ($list->find(true)) {
+                // Load the User object for the owner of the list (if necessary):
+                if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
+                    $list->buildExcel();
+                } else {
+                    $result = array(
+                        'result' => false,
+                        'message' => 'You do not have access to this list.'
+                    );
+                }
+            } else {
+                $result = array(
+                    'result' => false,
+                    'message' => 'Unable to read list.'
+                );
+            }
+        } else { // Invalid listId
+            $result = array(
+                'result' => false,
+                'message' => "Invalid List Id."
+            );
+        }
+    }
 }

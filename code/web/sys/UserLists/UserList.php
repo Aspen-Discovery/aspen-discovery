@@ -921,23 +921,22 @@ class UserList extends DataObject
      * Turn our results into an Excel document
      * @param null|array $result
      */
-    public function buildExcel($result = null)
+    public function buildExcel()
     {
         global $configArray;
         try {
-            // First, get the User List titles if none were provided
-            // (we'll go for 50 at a time)
-            if (is_null($result)) {
-                $this->limit = 1000;
-                $result = $this->getListTitles();
-            }
 
-            // Prepare the spreadsheet
-            ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
-            include ROOT_DIR . '/PHPExcel.php';
-            include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
+            $listEntries = $this->getListTitles();
+            $titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for email list, not just a page's worth
+
+            // Create new PHPExcel object
             $objPHPExcel = new PHPExcel();
-            $objPHPExcel->getProperties()->setTitle('User List');
+
+            // Set properties
+            $objPHPExcel->getProperties()
+                ->setCreator("Aspen Discovery")
+                ->setLastModifiedBy("Aspen Discovery")
+                ->setTitle("User List");
 
             $objPHPExcel->setActiveSheetIndex(0);
             $objPHPExcel->getActiveSheet()->setTitle('Titles');
@@ -956,37 +955,81 @@ class UserList extends DataObject
 
             $maxColumn = $curCol - 1;
 
-            global $solrScope;
-            for ($i = 0; $i < count($result['response']['docs']); $i++) {
-                //Output the row to excel
-                $curDoc = $result['response']['docs'][$i];
+            for ($i = 0; $i < count($titleDetails); $i++) {
+                /** @var GroupedWorkDriver $curDoc */
+                $curDoc = $titleDetails[$i];
                 $curRow++;
                 $curCol = 0;
-                //Output the row to excel
-                $link = '';
-                if ($curDoc['id']) {
-                    $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
+                if ($curDoc instanceof GroupedWorkDriver) {
+                    // Link to Grouped Work record
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $curDoc->getLinkUrl(true));
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($curDoc->getLinkUrl(true));
+
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+
+                    // Publisher list
+                    $publishers = $curDoc->getPublishers();
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $publishers));
+
+                    // Publication dates: min - max
+                    if (!is_array($curDoc->getPublicationDates())) {
+                        $publishDates = (array)$curDoc->getPublicationDates();
+                    } else {
+                        $publishDates = $curDoc->getPublicationDates();
+                    }
+                    $publishDate = '';
+                    if (count($publishDates) == 1) {
+                        $publishDate = $publishDates[0];
+                    } elseif (count($publishDates) > 1) {
+                        $publishDate = min($publishDates) . ' - ' . max($publishDates);
+                    }
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
+
+                    // Formats
+                    if (!is_array($curDoc->getFormats())) {
+                        $formats = (array)$curDoc->getFormats();
+                    } else {
+                        $formats = $curDoc->getFormats();
+                    }
+                    $uniqueFormats = array_unique($formats);
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
+
+                    // TODO: replace this horsepoop with magical itemSummary something something that keeps item detailed location and call number associated...
+//                    $callNumber = '';
+//                    if (isset($curDoc['local_callnumber_' . $solrScope])) {
+//                        $callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
+//                    }
+//                    $scopedLocations = array_filter($curDoc["detailed_location"], function($v) use ($solrScope) {
+//                        return preg_match("/^" . $solrScope . "#/", $v);
+//                    });
+//                    foreach ($scopedLocations as $key=>$scopedLocation) {
+//                        if (strpos($scopedLocation, $solrScope . '#') === 0) {
+//                            $scopedLocations[$key] = substr($scopedLocation, strpos($scopedLocation, '#') + 1);
+//                        } else {
+//                            $scopedLocations[$key] = null;
+//                        }
+//                    }
+//                    $locations = array_values($scopedLocations);
+//                    $uniqueLocations = array_unique($locations);
+//                    /** @noinspection PhpUnusedLocalVariableInspection */
+//                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueLocations) . ': ' . $callNumber);
+
+                } elseif ($curDoc instanceof ListsRecordDriver) {
+
+                } elseif ($curDoc instanceof PersonRecord) {
+
+                } elseif ($curDoc instanceof OpenArchivesRecordDriver) {
+
+                } elseif ($curDoc instanceof EbscohostRecordDriver) {
+
+                } elseif ($curDoc instanceof EbscoRecordDriver) {
+
+                } elseif ($curDoc instanceof WebsitePageRecordDriver) {
+
+                } elseif ($curDoc instanceof WebResourceRecordDriver) {
+
                 }
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $link);
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['publishDateSort'] ?? '');
-                $format = '';
-                if (isset($curDoc['format_' . $solrScope])) {
-                    $format = is_array($curDoc['format_' . $solrScope]) ? implode(', ', $curDoc['format_' . $solrScope]) : $curDoc['format_' . $solrScope];
-                }
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $format);
-                $callNumber = '';
-                if (isset($curDoc['local_callnumber_' . $solrScope])) {
-                    $callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
-                }
-                $location = '';
-                if (isset($curDoc['detailed_location_' . $solrScope])) {
-                    $location = is_array($curDoc['detailed_location_' . $solrScope]) ? implode(',', $curDoc['detailed_location_' . $solrScope]) : $curDoc['detailed_location_' . $solrScope];
-                }
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location . ' ' . $callNumber);
             }
 
             for ($i = 0; $i < $maxColumn; $i++) {
@@ -999,7 +1042,7 @@ class UserList extends DataObject
             header("Cache-Control: post-check=0, pre-check=0", false);
             header("Pragma: no-cache");
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="Results.xlsx"');
+            header('Content-Disposition: attachment;filename="UserList.xlsx"');
 
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
             $objWriter->save('php://output'); //THIS DOES NOT WORK WHY?

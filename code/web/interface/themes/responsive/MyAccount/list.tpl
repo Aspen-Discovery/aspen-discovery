@@ -114,7 +114,7 @@
 								<button value="emailList" id="FavEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List' isPublicFacing=true}</button>
 								{/if}
 								<button value="printList" id="FavPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List' isPublicFacing=true}</button>
-								<button value="exportUserList" id="FavExport" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.exportUserListAction()'>{translate text='Export List to Excel' isPublicFacing=true}</button>
+								<a id="FavExport" class="btn btn-sm btn-default listViewButton" href="/MyAccount/AJAX?method=exportUserList&listId={$userList->id}">{translate text='Export List to Excel' isPublicFacing=true}</a>
 								<button value="citeList" id="FavCite" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.citeListAction("{$userList->id}")'>{translate text='Generate Citations' isPublicFacing=true}</button>
 
 								<div class="btn-group" role="group">

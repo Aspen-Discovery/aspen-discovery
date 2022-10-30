@@ -79,11 +79,6 @@ AspenDiscovery.Lists = (function(){
 			);
 		},
 
-		exportUserListAction: function (id){
-			// TODO: make this work. James Staub
-			window.location = window.location + '&view=excel';
-		},
-
 		citeListAction: function (id) {
 			return AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
 			//return false;
