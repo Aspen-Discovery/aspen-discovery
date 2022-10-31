@@ -5676,7 +5676,7 @@ class MyAccount_AJAX extends JSON_Action
     function exportUserList() {
         $result = [
             'success' => false,
-            'message' => 'Something went wrong.'
+            'message' => translate(['text' => 'Export User List to Excel: something went wrong.', 'isPublicFacing' => true]);
         ];
         global $interface;
         if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) { // validly formatted List Id
@@ -5691,19 +5691,19 @@ class MyAccount_AJAX extends JSON_Action
                 } else {
                     $result = array(
                         'result' => false,
-                        'message' => 'You do not have access to this list.'
+                        'message' => translate(['text' => 'Export User List to Excel: You do not have access to this list.', 'isPublicFacing' => true])
                     );
                 }
             } else {
                 $result = array(
                     'result' => false,
-                    'message' => 'Unable to read list.'
+                    'message' => translate(['text' => 'Export User List to Excel: Unable to read list.', 'isPublicFacing' => true])
                 );
             }
         } else { // Invalid listId
             $result = array(
                 'result' => false,
-                'message' => "Invalid List Id."
+                'message' => translate(['text' => 'Export User List to Excel: Invalid list id.', 'isPublicFacing' => true])
             );
         }
     }
