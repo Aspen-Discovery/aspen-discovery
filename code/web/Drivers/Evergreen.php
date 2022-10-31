@@ -891,7 +891,6 @@ class Evergreen extends AbstractIlsDriver
 
 	public function getAPIAuthToken(User $patron)
 	{
-		//Remove any spaces from the barcode
 		$sessionInfo = $this->validatePatronAndGetAuthToken($patron->getBarcode(), $patron->getPasswordOrPin());
 		if ($sessionInfo['userValid']){
 			return $sessionInfo['authToken'];
@@ -957,7 +956,6 @@ class Evergreen extends AbstractIlsDriver
 
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
-		//return parent::patronLogin($username, $password, $validatedViaSSO);
 		$username = trim($username);
 		$password = trim($password);
 		$session = $this->validatePatronAndGetAuthToken($username, $password);
@@ -1024,17 +1022,29 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	public function findNewUser($patronBarcode)
 	{
-		$sessionInfo = $this->getStaffUserInfo();
+		$staffSessionInfo = $this->getStaffUserInfo();
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$headers  = array(
 			'Content-Type: application/x-www-form-urlencoded',
 		);
 		$this->apiCurlWrapper->addCustomHeaders($headers, false);
-		$params = [
-			'service' => 'open-ils.auth',
-			'method' => 'open-ils.auth.session.retrieve',
-			'param' => json_encode($sessionInfo['authToken']),
-		];
+		$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
+		$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
+		$request .= '&param=' . $patronBarcode;
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)){
+				if ($apiResponse->payload[0]->__c == 'au'){ //class
+					$mappedPatronData =  $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
+
+					$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, '');
+					return $user;
+				}
+			}
+		}
 
 		//For Evergreen, this can only be called when initiating masquerade
 		return false;

@@ -9683,10 +9683,10 @@ a.browse-thumbnail-sorted.active {
   *display: inline;
 }
 .scrollerTitle img {
-  opacity: 0.6;
+  opacity: 0.8;
 }
 .scrollerTitle:hover img {
-  opacity: 0.8;
+  opacity: 1;
 }
 .scrollerTitle.selected {
   border: 3px solid #00125E;
