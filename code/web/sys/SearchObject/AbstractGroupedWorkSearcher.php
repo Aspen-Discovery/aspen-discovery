@@ -614,7 +614,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			// (we'll go for 50 at a time)
 			if (is_null($result)) {
 				$this->limit = 1000;
-				$result = $this->processSearch(false, false); // TODO: James asks: processSearch does NOT apply scope to results, correct?
+				$result = $this->processSearch(false, false);
 			}
 
             // Create new PHPExcel object
