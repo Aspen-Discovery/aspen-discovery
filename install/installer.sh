@@ -87,5 +87,4 @@ make
 make install
 
 # Disable apache server signature
-cp install/httpd.conf /etc/httpd/conf/httpd.conf
-sudo systemctl restart httpd.service
+echo -e "ServerSignature Off \nServerTokens Prod" >> /etc/httpd/conf/httpd.conf
