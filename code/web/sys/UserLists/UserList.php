@@ -923,15 +923,12 @@ class UserList extends DataObject
      */
     public function buildExcel()
     {
-        global $configArray;
         try {
-
-            $listEntries = $this->getListTitles();
+            global $configArray;
             $titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for email list, not just a page's worth
 
             // Create new PHPExcel object
             $objPHPExcel = new PHPExcel();
-
             // Set properties
             $objPHPExcel->getProperties()
                 ->setCreator("Aspen Discovery")
@@ -956,12 +953,11 @@ class UserList extends DataObject
             $maxColumn = $curCol - 1;
 
             for ($i = 0; $i < count($titleDetails); $i++) {
-                /** @var GroupedWorkDriver $curDoc */
                 $curDoc = $titleDetails[$i];
                 $curRow++;
                 $curCol = 0;
                 if ($curDoc instanceof GroupedWorkDriver) {
-                    // Link to Grouped Work record
+                    // Hyperlink to title
                     $sheet->setCellValueByColumnAndRow($curCol, $curRow, $curDoc->getLinkUrl(true));
                     $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($curDoc->getLinkUrl(true));
 
@@ -1016,9 +1012,17 @@ class UserList extends DataObject
 //                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueLocations) . ': ' . $callNumber);
 
                 } elseif ($curDoc instanceof ListsRecordDriver) {
-
+                    // Hyperlink to title
+                    $link = $configArray['Site']['url'] . "/MyAccount/MyList/" . $curDoc->getId();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // User List Title
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+                    // User List creator
+                    $fields = $curDoc->getFields();
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
                 } elseif ($curDoc instanceof PersonRecord) {
-
+                    
                 } elseif ($curDoc instanceof OpenArchivesRecordDriver) {
 
                 } elseif ($curDoc instanceof EbscohostRecordDriver) {
