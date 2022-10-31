@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'getAvailableFacetsKeys', 'searchLite', 'getDefaultFacets', 'getFacetClusterByKey', 'searchFacetCluster'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'getAvailableFacetsKeys', 'searchLite', 'getDefaultFacets', 'getFacetClusterByKey', 'searchFacetCluster', 'getFormatCategories'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SearchAPI', $method);
@@ -2023,7 +2023,7 @@ class SearchAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function restoreSearch($id) {
+	private function restoreSearch($id) {
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$search = new SearchEntry();
 		$search->id = $id;
@@ -2033,7 +2033,6 @@ class SearchAPI extends Action
 			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
 			if($searchObj) {
 				$searchObj->processSearch(false, true);
-				$searchObj->close();
 				return $searchObj;
 			}
 		}
@@ -2057,11 +2056,70 @@ class SearchAPI extends Action
 			$minSO = unserialize($search->search_object);
 			$searchObj = SearchObjectFactory::deminify($minSO, $search);
 			$sortList = $searchObj->getSortList();
+			$items = [];
+			$i = 0;
+			$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
+			$items['key'] = 0;
+			$items['label'] = $key;
+			$items['field'] = 'sort_by';
+			$items['hasApplied'] = true;
+			$items['multiSelect'] = false;
+			foreach($sortList as $value => $sort) {
+				$items['facets'][$i]['value'] = $value;
+				$items['facets'][$i]['display'] = translate(['text'=>$sort['desc'], 'isPublicFacing'=>true]);
+				$items['facets'][$i]['field'] = 'sort_by';
+				$items['facets'][$i]['count'] = 0;
+				$items['facets'][$i]['isApplied'] = $sort['selected'];
+				$items['facets'][$i]['multiSelect'] = false;
+				$i++;
+			}
 			$results = [
 				'success' => true,
 				'id' => $id,
 				'time' => round($searchObj->getQuerySpeed(), 2),
-				'options' => $sortList,
+				'data' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getFormatCategories() {
+		$results = [
+			'success' => false,
+			'message' => '',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$id = $_REQUEST['id'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			global $interface;
+			$topFacetSet = $interface->getVariable('topFacetSet');
+			$formatCategories = $topFacetSet['format_category'];
+			$items = [];
+			$i = 0;
+			$items['key'] = 0;
+			$items['label'] = $formatCategories['label'];
+			$items['field'] = $formatCategories['field_name'];
+			$items['hasApplied'] = $formatCategories['hasApplied'];
+			$items['multiSelect'] = (bool)$formatCategories['multiSelect'];
+			foreach($formatCategories['list'] as $category) {
+				$items['facets'][$i]['value'] = $category['value'];
+				$items['facets'][$i]['display'] = $category['display'];
+				$items['facets'][$i]['field'] = $formatCategories['field_name'];
+				$items['facets'][$i]['count'] = $category['count'];
+				$items['facets'][$i]['isApplied'] = $category['isApplied'];
+				$items['facets'][$i]['multiSelect'] = (bool)$formatCategories['multiSelect'];
+				$i++;
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'data' => $items,
 			];
 		}
 		return $results;
@@ -2080,7 +2138,10 @@ class SearchAPI extends Action
 		$id = $_REQUEST['id'];
 		$searchObj = $this->restoreSearch($id);
 		if($searchObj) {
-			$facets = $searchObj->getFacetList();
+			global $interface;
+			$topFacetSet = $interface->getVariable('topFacetSet');
+			$facets = $interface->getVariable('sideFacetSet');
+			//$facets = $searchObj->getFacetList();
 			$items = [];
 			$index = 0;
 			if($includeSortList) {
@@ -2093,39 +2154,58 @@ class SearchAPI extends Action
 				$items[$key]['hasApplied'] = true;
 				$items[$key]['multiSelect'] = false;
 				foreach($sortList as $value => $sort) {
-					$items[$key][$i]['value'] = $value;
-					$items[$key][$i]['display'] = $sort['desc'];
-					$items[$key][$i]['field'] = 'sort_by';
-					$items[$key][$i]['count'] = 0;
-					$items[$key][$i]['isApplied'] = $sort['selected'];
-					$items[$key][$i]['multiSelect'] = false;
+					$items[$key]['facets'][$i]['value'] = $value;
+					$items[$key]['facets'][$i]['display'] = translate(['text'=>$sort['desc'], 'isPublicFacing'=>true]);
+					$items[$key]['facets'][$i]['field'] = 'sort_by';
+					$items[$key]['facets'][$i]['count'] = 0;
+					$items[$key]['facets'][$i]['isApplied'] = $sort['selected'];
+					$items[$key]['facets'][$i]['multiSelect'] = false;
 					$i++;
 				}
 			}
 			foreach($facets as $facet) {
 				$index++;
-				$key = $facet['label'];
 				$i = 0;
-				$items[$key]['key'] = $index;
-				$items[$key]['label'] = $key;
-				$items[$key]['field'] = $facet['field_name'];
-				$items[$key]['hasApplied'] = $facet['hasApplied'];
-				$items[$key]['multiSelect'] = $facet['multiSelect'];
-				foreach($facet['list'] as $item) {
-					$items[$key][$i]['value'] = $item['value'];
-					$items[$key][$i]['display'] = $item['display'];
-					$items[$key][$i]['field'] = $facet['field_name'];
-					$items[$key][$i]['count'] = $item['count'];
-					$items[$key][$i]['isApplied'] = $item['isApplied'];
-					$items[$key][$i]['multiSelect'] = (bool)$item['multiSelect'];
-					$i++;
+				if($facet['field_name'] == 'availability_toggle') {
+					$availabilityToggle = $topFacetSet['availability_toggle'];
+					$key = $availabilityToggle['label'];
+					$items[$key]['key'] = $index;
+					$items[$key]['label'] = $key;
+					$items[$key]['field'] = $availabilityToggle['field_name'];
+					$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
+					$items[$key]['multiSelect'] = $availabilityToggle['multiSelect'];
+					foreach($availabilityToggle['list'] as $item) {
+						$items[$key]['facets'][$i]['value'] = $item['value'];
+						$items[$key]['facets'][$i]['display'] = $item['display'];
+						$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$items[$key]['facets'][$i]['count'] = $item['count'];
+						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						$i++;
+					}
+				} else {
+					$key = $facet['label'];
+					$items[$key]['key'] = $index;
+					$items[$key]['label'] = $key;
+					$items[$key]['field'] = $facet['field_name'];
+					$items[$key]['hasApplied'] = $facet['hasApplied'];
+					$items[$key]['multiSelect'] = $facet['multiSelect'];
+					foreach($facet['list'] as $item) {
+						$items[$key]['facets'][$i]['value'] = $item['value'];
+						$items[$key]['facets'][$i]['display'] = $item['display'];
+						$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+						$items[$key]['facets'][$i]['count'] = $item['count'];
+						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						$i++;
+					}
 				}
 			}
 			$results = [
 				'success' => true,
 				'id' => $id,
 				'time' => round($searchObj->getQuerySpeed(), 2),
-				'options' => $items,
+				'data' => $items,
 			];
 		}
 		return $results;
@@ -2180,11 +2260,11 @@ class SearchAPI extends Action
 			foreach($filters as $key => $filter) {
 				$i = 0;
 				foreach($filter as $item) {
-					$items[$key][$i]['value'] = $item['value'];
-					$items[$key][$i]['display'] = $item['display'];
-					$items[$key][$i]['field'] = $key;
-					$items[$key][$i]['count'] = null;
-					$items[$key][$i]['isApplied'] = true;
+					$items[$key]['value'] = $item['value'];
+					$items[$key]['display'] = $item['display'];
+					$items[$key]['field'] = $item['field'];
+					$items[$key]['count'] = 0;
+					$items[$key]['isApplied'] = true;
 					$i++;
 				}
 			}
@@ -2192,7 +2272,7 @@ class SearchAPI extends Action
 				'success' => true,
 				'id' => $id,
 				'time' => round($searchObj->getQuerySpeed(), 2),
-				'options' => $items,
+				'data' => $items,
 			];
 		}
 		return $results;
@@ -2209,19 +2289,19 @@ class SearchAPI extends Action
 		$facets = [];
 		$i = 0;
 		foreach($obj as $facet) {
-			$facets[$i][$facet->displayName]['value'] = $facet->facetName;
-			$facets[$i][$facet->displayName]['display'] = $facet->displayName;
-			$facets[$i][$facet->displayName]['field'] = $facet->facetName;
-			$facets[$i][$facet->displayName]['count'] = 0;
-			$facets[$i][$facet->displayName]['isApplied'] = false;
-			$facets[$i][$facet->displayName]['multiSelect'] = (bool)$facet->multiSelect;
+			$facets[$i]['value'] = $facet->facetName;
+			$facets[$i]['display'] = $facet->displayName;
+			$facets[$i]['field'] = $facet->facetName;
+			$facets[$i]['count'] = 0;
+			$facets[$i]['isApplied'] = false;
+			$facets[$i]['multiSelect'] = (bool)$facet->multiSelect;
 			$i++;
 		}
 		return [
 			'success' => true,
 			'limit' => $limit,
 			'time' => round($searchObj->getQuerySpeed(), 2),
-			'options' => $facets,
+			'data' => $facets,
 		];
 	}
 
