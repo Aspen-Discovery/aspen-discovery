@@ -452,10 +452,6 @@ public abstract class AbstractGroupedWorkSolr {
 				if (tmpTitle.length() > 0) {
 					shortTitle = tmpTitle;
 				}
-				tmpTitle = punctuationPattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() >0) {
-					shortTitle = tmpTitle;
-				}
 				this.title = shortTitle;
 				this.titleFormat = formatCategory;
 				//Strip out anything in brackets unless that would cause us to show nothing
