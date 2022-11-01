@@ -1330,7 +1330,7 @@ class Evergreen extends AbstractIlsDriver
 	public function processHoldNotificationPreferencesForm(User $user) : array {
 		$result = [
 			'success' => false,
-			'message' => 'Hold Notification Preferences are not implemented for this ILS'
+			'message' => 'Unknown error updating your Hold Notification Preferences'
 		];
 
 		$authToken = $this->getAPIAuthToken($user, false);
@@ -1360,7 +1360,7 @@ class Evergreen extends AbstractIlsDriver
 		$defaultSmsNumber = $_REQUEST['smsNumber'] ?? '';
 		$defaultPhoneNumber = $_REQUEST['phoneNumber'] ?? '';
 
-		$request = 'service=open-ils.actor&method=open-ils.actor.settings.apply.user_or_ws:';
+		$request = 'service=open-ils.actor&method=open-ils.actor.settings.apply.user_or_ws';
 		$request .= '&param=' . json_encode($authToken);
 		//$request .= '&param=' . $user->username;
 		$request .= '&param=' . json_encode([
@@ -1376,6 +1376,9 @@ class Evergreen extends AbstractIlsDriver
 			$apiResponse = json_decode($apiResponse);
 			if (isset($apiResponse->debug)){
 				$result['message'] = $apiResponse->debug;
+			}elseif ($apiResponse->status == 200){
+				$result['success'] = true;
+				$result['message'] = translate(['text' => 'Your settings were updated successfully', 'isPublicFacing'=>true]);
 			}
 		}
 
@@ -1437,7 +1440,6 @@ class Evergreen extends AbstractIlsDriver
 
 			$user = UserAccount::getActiveUserObj();
 			$interface->assign('primaryEmail', $user->email);
-			$interface->assign('primaryPhone', $user->phone);
 		}
 	}
 
