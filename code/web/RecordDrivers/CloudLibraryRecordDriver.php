@@ -165,7 +165,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.CloudLibrary.getStaffView('{$this->id}');",
-				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'body' => '<div id="staffViewPlaceHolder">' . translate(['text'=>'Loading Staff View.', 'isPublicFacing' => true]) . '</div>',
 			);
 		}
 
