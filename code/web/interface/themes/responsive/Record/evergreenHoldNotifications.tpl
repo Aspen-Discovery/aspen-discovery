@@ -11,11 +11,11 @@
 	{/if}
 	<div>
 		<label for="phoneNotification">
-			<input type="checkbox" id="phoneNotification" name="phoneNotification" {if !empty($primaryPhone) && in_array('phone', $opac_hold_notify)}checked{/if}> {translate text="Yes, by phone" isPublicFacing=true}
+			<input type="checkbox" id="phoneNotification" name="phoneNotification" {if !empty($opac_default_phone) && in_array('phone', $opac_hold_notify)}checked{/if}> {translate text="Yes, by phone" isPublicFacing=true}
 		</label>
 		<div class="form-group">
 			<label class="control-label" for="phoneNumber">{translate text="Phone Number" isPublicFacing=true}</label>
-			<input type="tel" name="phoneNumber" id="phoneNumber" class="form-control" size="10" value="{$primaryPhone}">
+			<input type="tel" name="phoneNumber" id="phoneNumber" class="form-control" size="10" value="{$opac_default_phone}">
 		</div>
 	</div>
 	{if !empty($smsCarriers)}
@@ -35,7 +35,7 @@
 			</div>
 			<div class="form-group">
 				<label class="control-label" for="smsNumber">{translate text="Mobile Number" isPublicFacing=true}</label>
-				<input type="tel" name="smsNumber" id="smsNumber" class="form-control" size="10" default="{$opac_default_sms_notify}">
+				<input type="tel" name="smsNumber" id="smsNumber" class="form-control" size="10" value="{$opac_default_sms_notify}">
 				<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Hint: use the full 10 digits of your phone #, no spaces, no dashes" isAdminFacing=true}</small></span>
 			</div>
 		</div>

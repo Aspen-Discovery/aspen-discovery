@@ -2099,14 +2099,11 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function showHoldNotificationPreferences() : bool {
-		global $library;
-		if ($library->showMessagingSettings) {
-			if ($this->hasIlsConnection()) {
-				return $this->getCatalogDriver()->showHoldNotificationPreferences();
-			}
-			else {
-				return false;
-			}
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showHoldNotificationPreferences();
+		}
+		else {
+			return false;
 		}
 	}
 
