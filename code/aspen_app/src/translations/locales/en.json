@@ -202,7 +202,12 @@
 	"title": "Filters",
 	"filter": "Filter",
 	"filter_by": "Filter by",
-	"sort_by": "Sort by"
+	"sort_by": "Sort by",
+	"unsaved_changes": "Unsaved changes",
+	"unsaved_changes_body_back": "Do you want to save your selections before going back?",
+	"unsaved_changes_body_exit": "Do you want to save your selections and view updated search results?",
+	"update_filters": "Updated filters",
+	"continue_anyway": "Continue anyway"
   },
   "error": {
 	"title": "Error",

@@ -2,6 +2,7 @@ import React from 'react';
 import {AlertDialog, Button, Center, ChevronLeftIcon, CloseIcon, Pressable} from 'native-base';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import {SEARCH} from '../../util/search';
+import {translate} from '../../translations/translations';
 
 export const UnsavedChangesBack = (props) => {
 	const {updateSearch} = props;
@@ -40,17 +41,17 @@ export const UnsavedChangesBack = (props) => {
 				<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 					<AlertDialog.Content>
 						<AlertDialog.CloseButton/>
-						<AlertDialog.Header>Unsaved Changes</AlertDialog.Header>
+						<AlertDialog.Header>{translate('filters.unsaved_changes')}</AlertDialog.Header>
 						<AlertDialog.Body>
-							Do you want to save your selections before going back?
+							{translate('filters.unsaved_changes_body_back')}
 						</AlertDialog.Body>
 						<AlertDialog.Footer>
 							<Button.Group space={2}>
 								<Button variant="unstyled" colorScheme="coolGray" onPress={updateClose} ref={cancelRef}>
-									Update filters
+									{translate('filters.update_filters')}
 								</Button>
 								<Button colorScheme="danger" onPress={forceClose}>
-									Continue anyway
+									{translate('filters.continue_anyway')}
 								</Button>
 							</Button.Group>
 						</AlertDialog.Footer>
@@ -97,17 +98,17 @@ export const UnsavedChangesExit = (props) => {
 				<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 					<AlertDialog.Content>
 						<AlertDialog.CloseButton/>
-						<AlertDialog.Header>Unsaved changes</AlertDialog.Header>
+						<AlertDialog.Header>{translate('filters.unsaved_changes')}</AlertDialog.Header>
 						<AlertDialog.Body>
-							Do you want to save your selections and view updated search results?
+							{translate('filers.unsaved_changes_body_exit')}
 						</AlertDialog.Body>
 						<AlertDialog.Footer>
 							<Button.Group space={2}>
 								<Button variant="unstyled" colorScheme="coolGray" onPress={updateClose} ref={cancelRef}>
-									Update search
+									{translate('filters.update_filters')}
 								</Button>
 								<Button colorScheme="danger" onPress={forceClose}>
-									Continue anyway
+									{translate('filters.continue_anyway')}
 								</Button>
 							</Button.Group>
 						</AlertDialog.Footer>
