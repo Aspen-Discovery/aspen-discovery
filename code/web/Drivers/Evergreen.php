@@ -110,7 +110,9 @@ class Evergreen extends AbstractIlsDriver
 				$curCheckout->dueDate = strtotime($mappedCheckout['due_date']);
 				$curCheckout->checkoutDate = strtotime($mappedCheckout['create_time']);
 
-				//$curCheckout->renewCount = $itemOut->RenewalCount;
+				if ($mappedCheckout['auto_renewal'] == 't'){
+					$curCheckout->autoRenew = true;
+				}
 				$curCheckout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
 				$curCheckout->maxRenewals = $mappedCheckout['renewal_remaining'];
 				$curCheckout->renewalId = $mappedCheckout['target_copy'];
@@ -217,7 +219,7 @@ class Evergreen extends AbstractIlsDriver
 					$result['api']['message'] = translate(['text' => 'Your title was renewed successfully.', 'isPublicFacing' => true]);
 
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
+					$patron->forceReloadOfCheckouts();
 				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
 					$result['message'] = $apiResponse->payload[0]->desc;
 					$result['api']['message'] = $apiResponse->payload[0]->desc;

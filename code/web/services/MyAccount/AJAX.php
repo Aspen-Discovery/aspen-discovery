@@ -1794,6 +1794,7 @@ class MyAccount_AJAX extends JSON_Action
 		$ils = $configArray['Catalog']['ils'];
 		$showOut = ($ils == 'Horizon');
 		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+		$showRenewalsRemaining = ($ils == 'Evergreen');
 		$showWaitList = $ils == 'Horizon';
 
 		// Create new PHPExcel object
@@ -2274,10 +2275,12 @@ class MyAccount_AJAX extends JSON_Action
 			$ils = $configArray['Catalog']['ils'];
 			$showOut = ($ils == 'Horizon');
 			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+			$showRenewalsRemaining = ($ils == 'Evergreen');
 			$showWaitList = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon');
 
 			$interface->assign('showOut', $showOut);
 			$interface->assign('showRenewed', $showRenewed);
+			$interface->assign('showRenewalsRemaining', $showRenewalsRemaining);
 			$interface->assign('showWaitList', $showWaitList);
 
 			// Define sorting options
