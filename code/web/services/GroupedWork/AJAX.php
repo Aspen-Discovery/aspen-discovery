@@ -955,6 +955,14 @@ class GroupedWork_AJAX extends JSON_Action
 					}else{
 						$result['message'] = translate(['text'=>'Incorrect image type.  Please upload a PNG, GIF, or JPEG', 'isAdminFacing'=>true]);
 					}
+					if ($result['success'] == true){
+						try {
+							chgrp($destFullPath, 'aspen_apache');
+							chmod($destFullPath, 0775);
+						}catch (Exception $e){
+							//Just ignore errors
+						}
+					}
 				}
 			} else {
 				$result['message'] = translate(['text'=>'No cover was uploaded, please try again.', 'isAdminFacing'=>true]);

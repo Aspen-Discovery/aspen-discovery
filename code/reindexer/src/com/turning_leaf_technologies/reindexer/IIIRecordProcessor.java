@@ -206,7 +206,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 
 		String status = orderItem.getStatus();
 
-		if (isOrderItemValid(status, null)){
+		if (isOrderItemValid(status)){
 			recordInfo.addItem(itemInfo);
 		}
 	}

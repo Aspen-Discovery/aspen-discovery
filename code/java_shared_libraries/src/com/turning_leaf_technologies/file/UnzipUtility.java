@@ -7,6 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.zip.GZIPInputStream;
 
 /**
  * This utility extracts files and directories of a standard zip file to
@@ -63,5 +67,20 @@ public class UnzipUtility {
             bos.write(bytesIn, 0, read);
         }
         bos.close();
+    }
+
+    //gUnzip is currently not utilized and needs testing when applicable
+    public static void gUnzip(Path source, Path target) throws IOException {
+        try (GZIPInputStream gis = new GZIPInputStream(new FileInputStream(source.toFile()));
+             FileOutputStream fos = new FileOutputStream(target.toFile())) {
+            // copy GZIPInputStream to FileOutputStream
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int read = 0;
+            while ((read = gis.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+            }
+            fos.close();
+            gis.close();
+        }
     }
 }

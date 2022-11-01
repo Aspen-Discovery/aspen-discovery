@@ -1249,7 +1249,7 @@ class Polaris extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		global $library;
 		$result = [
@@ -2110,7 +2110,7 @@ class Polaris extends AbstractIlsDriver
 		if (isset($_REQUEST['txtPhone'])) {
 			$txtCarrier = $_REQUEST['txtPhone'];
 			if ($txtCarrier != '(None)') {
-				$property = 'PhoneVoice' . $_REQUEST['txtPhone'] . 'CarrierID';
+				$property = 'Phone' . $_REQUEST['txtPhone'] . 'CarrierID';
 				$body->$property = $_REQUEST['txtCarrier'];
 			}
 		}

@@ -1278,7 +1278,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) {
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array {
 		$result = [
 			'success' => false,
 			'messages' => []

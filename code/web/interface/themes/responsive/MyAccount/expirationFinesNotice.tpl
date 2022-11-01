@@ -31,21 +31,19 @@
 
 			{if $showExpirationWarnings && $ilsSummary->isExpirationClose()}
 				<div class="myAccountLink">
-					<a class="alignright" title="{translate text="Please contact your local library to have your library card renewed." isPublicFacing=true}" style="color:#c62828; font-weight:bold;" onclick="alert({translate text='Please Contact your local library to have your library card renewed.' inAttribute=true isPublicFacing=true})" href="#">
-						{if $ilsSummary->isExpired()}
-							{if $expiredMessage}
-								{$expiredMessage}
-							{else}
-								{translate text="Your library card expired on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
-							{/if}
+					{if $ilsSummary->isExpired()}
+						{if $expiredMessage}
+							{$expiredMessage}
 						{else}
-							{if $expirationNearMessage}
-								{$expirationNearMessage}
-							{else}
-								{translate text="Your library card will expire on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
-							{/if}
+							{translate text="Your library card expired on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
 						{/if}
-					</a>
+					{else}
+						{if $expirationNearMessage}
+							{$expirationNearMessage}
+						{else}
+							{translate text="Your library card will expire on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
+						{/if}
+					{/if}
 				</div>
 			{/if}
 

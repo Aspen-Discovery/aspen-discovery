@@ -108,7 +108,7 @@ class Koha extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade If we are in masquerade mode
 	 * @return array                  Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade = false)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade = false) : array
 	{
 		$result = [
 			'success' => false,
@@ -653,7 +653,7 @@ class Koha extends AbstractIlsDriver
 				'password' => $password
 			];
 			$authenticationResponse = $this->getPostedXMLWebServiceResponse($authenticationURL, $params);
-			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $password]);
+			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $authenticationResponse->asXML(), ['password' => $password]);
 			if (isset($authenticationResponse->id)) {
 				$patronId = $authenticationResponse->id;
 				$result = $this->loadPatronInfoFromDB($patronId, $password);
@@ -1780,71 +1780,166 @@ class Koha extends AbstractIlsDriver
 		);
 	}
 
+	private function canRenewWithFines($patron)
+	{
+		$OPACFineNoRenewals = $this->getKohaSystemPreference('OPACFineNoRenewals');
+		if ($OPACFineNoRenewals) {
+			$totalOwed = (int)$this->getOutstandingFineTotal($patron);
+
+			$OPACFineNoRenewalsIncludeCredits = $this->getKohaSystemPreference('OPACFineNoRenewalsIncludeCredits');
+			if ($OPACFineNoRenewalsIncludeCredits) {
+				$outstandingCredits = $this->getOutstandingCreditTotal($patron);
+				$totalOwed = $totalOwed - $outstandingCredits;
+			}
+
+			if ($totalOwed >= $OPACFineNoRenewals) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		$this->initDatabaseConnection();
-		/** @noinspection SqlResolve */
-		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
-		$renewResults = mysqli_query($this->dbConnection, $renewSql);
-		$maxRenewals = 0;
-
-		$params = [
-			'service' => 'RenewLoan',
-			'patron_id' => $patron->username,
-			'item_id' => $itemId,
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'There was an error renewing your checkout.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to renew checkout', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'There was an error renewing your checkout.', 'isPublicFacing' => true])
+			]
 		];
 
-		require_once ROOT_DIR . '/sys/User/Checkout.php';;
-		$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
-		$renewResponse = $this->getXMLWebServiceResponse($renewURL);
-		ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
-
-		//Parse the result
-		if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
-
-			while ($curRow = mysqli_fetch_assoc($renewResults)) {
-				$patronType = $patron->patronType;
-				$itemType = $curRow['itype'];
-				$checkoutBranch = $curRow['branchcode'];
-				$renewCount = $curRow['renewals'] + 1;
-				/** @noinspection SqlResolve */
-				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
-				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
-				if ($issuingRulesRS !== false) {
-					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-						$maxRenewals = $issuingRulesRow['rule_value'];
-					}
-					$issuingRulesRS->close();
-				}
-			}
-			$renewResults->close();
-
-			$renewsRemaining = ($maxRenewals - $renewCount);
-			//We renewed the hold
-			$success = true;
-			$message = 'Your item was successfully renewed.';
-			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
-
-			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Title successfully renewed', 'isPublicFacing'=>true]);
-			$result['api']['message'] = $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
-
-			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-			$patron->forceReloadOfCheckouts();
-		} else {
-			$error = $renewResponse->error;
-			$success = false;
-			$message = 'The item could not be renewed: ';
-			$message = $this->getRenewErrorMessage($error, $message);
-
-			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
-			$result['api']['message'] = $this->getRenewErrorMessage($error, "");
+		$canRenewWithFines = $this->canRenewWithFines($patron);
+		if (!$canRenewWithFines) {
+			$result['message'] = translate(['text' => 'Unable to renew because the patron has too many outstanding charges.', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate(['text' => 'Unable to renew because the patron has too many outstanding charges.', 'isPublicFacing' => true]);
+			return $result;
 		}
 
-		$result['itemId'] = $itemId;
-		$result['success'] = $success;
-		$result['message'] = $message;
+		if ($this->getKohaVersion() >= 19.11) {
+			$sourceId = null;
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
+			$checkout = new Checkout();
+			$checkout->recordId = $recordId;
+			if ($checkout->find(true)) {
+				$sourceId = $checkout->getSourceId();
+			}
+			if (is_null($sourceId)) {
+				$result['message'] = translate(['text' => 'Unable to renew because we were unable to find checkout.', 'isPublicFacing' => true]);
+				$result['api']['message'] = translate(['text' => 'Unable to renew because we were unable to find checkout.', 'isPublicFacing' => true]);
+				return $result;
+			}
+
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+				$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+			} else {
+				$apiUrl = $this->getWebServiceUrl() . "/api/v1/checkouts/$sourceId/renewal";
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'Accept-Encoding: gzip, deflate',
+				], true);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', null);
+				$responseCode = $this->apiCurlWrapper->getResponseCode();
+				ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+				if ($responseCode == 201) {
+					$result['success'] = true;
+					$result['message'] = translate(['text' => "Your checkout was renewed successfully.", 'isPublicFacing' => true]);
+					$result['api']['title'] = translate(['text' => 'Checkout renewed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your checkout was renewed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfCheckouts();
+				} else if ($responseCode == 403) {
+					$result['success'] = false;
+					$result['api']['title'] = translate(['text' => 'Unable to renew checkout', 'isPublicFacing' => true]);
+					$result['message'] = translate(['text' => "Error renewing this title, the checkout was not renewed.", 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => "Error renewing this title, the checkout was not renewed.", 'isPublicFacing' => true]);
+
+					if (!empty($response)) {
+						$jsonResponse = json_decode($response);
+						if (!empty($jsonResponse->error)) {
+							$result['message'] = translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+							$result['api']['message'] = translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+						}
+					}
+				} else {
+					$result['success'] = false;
+					$result['message'] = translate(['text' => "Error (%1%) renewing this title.", 1 => $responseCode, 'isPublicFacing' => true]);
+				}
+			}
+		} else {
+			$this->initDatabaseConnection();
+			/** @noinspection SqlResolve */
+			$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
+			$renewResults = mysqli_query($this->dbConnection, $renewSql);
+			$maxRenewals = 0;
+
+			$params = [
+				'service' => 'RenewLoan',
+				'patron_id' => $patron->username,
+				'item_id' => $itemId,
+			];
+
+			require_once ROOT_DIR . '/sys/User/Checkout.php';;
+			$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
+			$renewResponse = $this->getXMLWebServiceResponse($renewURL);
+			ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
+
+			//Parse the result
+			if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+
+				while ($curRow = mysqli_fetch_assoc($renewResults)) {
+					$patronType = $patron->patronType;
+					$itemType = $curRow['itype'];
+					$checkoutBranch = $curRow['branchcode'];
+					$renewCount = $curRow['renewals'] + 1;
+					/** @noinspection SqlResolve */
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+					if ($issuingRulesRS !== false) {
+						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+							$maxRenewals = $issuingRulesRow['rule_value'];
+						}
+						$issuingRulesRS->close();
+					}
+				}
+				$renewResults->close();
+
+				$renewsRemaining = ($maxRenewals - $renewCount);
+				//We renewed the hold
+				$success = true;
+				$message = 'Your item was successfully renewed.';
+				$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Title successfully renewed', 'isPublicFacing' => true]);
+				$result['api']['message'] = $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfCheckouts();
+			} else {
+				$error = $renewResponse->error;
+				$success = false;
+				$message = 'The item could not be renewed: ';
+				$message = $this->getRenewErrorMessage($error, $message);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Unable to renew title', 'isPublicFacing' => true]);
+				$result['api']['message'] = $this->getRenewErrorMessage($error, "");
+			}
+
+			$result['itemId'] = $itemId;
+			$result['success'] = $success;
+			$result['message'] = $message;
+		}
 
 		return $result;
 	}
@@ -1935,6 +2030,36 @@ class Koha extends AbstractIlsDriver
 		}
 
 		return $amountOutstanding;
+	}
+
+	private function getOutstandingCreditTotal($patron)
+	{
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$renew_result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+			$renew_result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+		} else {
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/patrons/$patron->username/account";
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('koha.getOutstandingCreditTotal', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($responseCode == 200) {
+				$jsonResponse = json_decode($response);
+				if (!empty($jsonResponse->outstanding_credits)) {
+					return $jsonResponse->outstanding_credits->total;
+				}
+			}
+		}
+		return false;
 	}
 
 	private $oauthToken = null;

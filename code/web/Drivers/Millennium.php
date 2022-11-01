@@ -660,7 +660,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade){
+	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array{
 		$result = [
 			'success' => false,
 			'messages' => []

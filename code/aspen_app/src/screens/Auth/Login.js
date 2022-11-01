@@ -367,7 +367,7 @@ export default class Login extends Component {
 		return (
 			<Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
 				<Image source={{ uri: logo }} rounded={25} size="xl"
-				       alt={translate('app.name')} />
+				       alt={translate('app.name')} fallbackSource={require("../../themes/default/aspenLogo.png")}/>
 				{this.locationNum > 1 || isCommunity ? (
 					<SelectYourLibrary
 						libraryName={this.state.libraryName}
@@ -428,8 +428,8 @@ const SelectYourLibrary = (props) => {
 		        startIcon={<Icon as={MaterialIcons} name="place" size={5}/>}>
 			{libraryName ? libraryName : translate('login.select_your_library')}
 		</Button>
-		<Modal isOpen={props.showModal} onClose={() => props.handleModal(false)} size="lg" >
-			<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }}>
+		<Modal isOpen={props.showModal} onClose={() => props.handleModal(false)} size="lg" avoidKeyboard>
+			<Modal.Content bg="white" _dark={{ bg: "coolGray.800" }} maxH="350">
 				<Modal.CloseButton />
 				<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
 

@@ -1113,7 +1113,7 @@ class Sierra extends Millennium{
 		return $summary;
 	}
 
-	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		$result = [
 			'success' => false,

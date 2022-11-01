@@ -969,13 +969,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					foreach ($marc856Fields as $marc856Field){
 						if ($marc856Field->getIndicator(1) == '4' && ($marc856Field->getIndicator(2) == '0' || $marc856Field->getIndicator(2) == '1')){
 							$subfieldU = $marc856Field->getSubfield('u');
-							if ($subfieldU != null){
+							$showAction = false;
+							if ($marc856Field->getIndicator(2) == '1'){
+								$subfield3 = $marc856Field->getSubfield('3');
+								if ($subfield3 == null && $subfieldU != null){
+									$showAction = true;
+								}
+							}else{
+								if ($subfieldU != null) {
+									$showAction = true;
+								}
+							}
+							if ($showAction){
 								$linkDestination = $subfieldU->getData();
 								$this->_actions[] = array(
 									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
 									'url' => $linkDestination,
 									'requireLogin' => false,
-									'type' => 'marc_access_online'
+									'type' => 'marc_access_online',
+									'target' => '_blank'
 								);
 							}
 						}
@@ -2231,7 +2243,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$localMarcHoldings = [];
 		$marcHoldings = [];
 		$marcRecord = $this->getMarcRecord();
-		if ($marcRecord){
+		if (!empty($marcRecord)){
 			//Get holdings information
 			$marc852Fields = $marcRecord->getFields('852');
 			if (count($marc852Fields) > 0){
@@ -2264,20 +2276,31 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if ($marc852subfield6 != false){
 						$marc852subfield6Data = $marc852subfield6->getData();
 						$marcHolding = [];
-						$owningLibraryCode = strtolower($marc852Field->getSubfield('b')->getData());
-						if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)){
-							$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+						$marcSubfieldB = $marc852Field->getSubfield('b');
+						if ($marcSubfieldB != false) {
+							$owningLibraryCode = strtolower($marcSubfieldB->getData());
+							if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)) {
+								$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+							} else {
+								$owningLibrary = $owningLibraryCode;
+							}
+							$marcHolding['library'] = $owningLibrary;
 						}else{
-							$owningLibrary = $owningLibraryCode;
+							continue;
 						}
-						$marcHolding['library'] = $owningLibrary;
-						$shelfLocation = strtolower($marc852Field->getSubfield('c')->getData());
-						if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)){
-							$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+						$marcSubfieldC = $marc852Field->getSubfield('c');
+						if ($marcSubfieldC != false) {
+							$shelfLocation = strtolower($marcSubfieldC->getData());
+							if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
+								$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+							}
+							$marcHolding['shelfLocation'] = $shelfLocation;
+						}else{
+							$marcHolding['shelfLocation'] = '';
 						}
-						$marcHolding['shelfLocation'] = $shelfLocation;
 						//Nothing super useful in 853, ignore it for now
 						//Load what is held in the 866
+						$is866Found = false;
 						foreach ($marc866Fields as $marc866Field) {
 							$marc866subfield6 = $marc866Field->getSubfield('6');
 							if ($marc866subfield6 != false) {
@@ -2286,9 +2309,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 									$marc866subfieldA = $marc866Field->getSubfield('a');
 									if ($marc866subfieldA != false) {
 										$marcHolding['holdings'] = $marc866subfieldA->getData();
+										$is866Found = true;
 									}
 								}
 							}
+						}
+						if (!$is866Found){
+							continue;
 						}
 						if (array_key_exists($owningLibraryCode, $localLocationCodes)){
 							$localMarcHoldings[] = $marcHolding;
@@ -2306,6 +2333,31 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			}
 		}
 		return $marcHoldings;
+	}
+
+	public function getValidPickupLocations($pickupAtRule): array
+	{
+		$locations = [];
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		$items = $relatedRecord->getItems();
+		foreach($items as $item) {
+			if($pickupAtRule == 2) {
+				if(!isset($locations[$item->locationCode])) {
+					$location = new Location();
+					$location->code = $item->locationCode;
+					if($location->find(true)) {
+						$library = $location->getParentLibrary();
+						foreach($library->getLocations() as $libraryBranch) {
+							$locations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
+						}
+					}
+				}
+			} else {
+				$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
+			}
+		}
+
+		return $locations;
 	}
 }
 

@@ -1029,6 +1029,9 @@ class MyAccount_AJAX extends JSON_Action
 			$id = $_REQUEST['holdId'];
 			$interface->assign('holdId', $id);
 
+			$recordId = $_REQUEST['recordId'];
+			$sourceId = $_REQUEST['source'] . ":" . $_REQUEST['recordId'];
+
 			$currentLocation = $_REQUEST['currentLocation'];
 			if (!is_numeric($currentLocation)) {
 				$location = new Location();
@@ -1043,6 +1046,22 @@ class MyAccount_AJAX extends JSON_Action
 
 			$location = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold);
+
+			$pickupAt = 0;
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($recordId);
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+			$pickupAt = $relatedRecord->getHoldPickupSetting();
+			if($pickupAt > 0) {
+				$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+				foreach($pickupBranches as $locationKey => $location) {
+					if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
+						unset($pickupBranches[$locationKey]);
+					}
+				}
+			}
+
+			$interface->assign('pickupAt', $pickupAt);
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(
@@ -1775,6 +1794,7 @@ class MyAccount_AJAX extends JSON_Action
 		$ils = $configArray['Catalog']['ils'];
 		$showOut = ($ils == 'Horizon');
 		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+		$showRenewalsRemaining = ($ils == 'Evergreen');
 		$showWaitList = $ils == 'Horizon';
 
 		// Create new PHPExcel object
@@ -1901,7 +1921,7 @@ class MyAccount_AJAX extends JSON_Action
 		$user = UserAccount::getActiveUserObj();
 
 		$ils = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra');
+		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra' || $ils == 'Evergreen');
 		$showExpireTime = ($ils == 'Horizon' || $ils == 'Symphony');
 		$selectedAvailableSortOption = $this->setSort('availableHoldSort', 'availableHold');
 		$selectedUnavailableSortOption = $this->setSort('unavailableHoldSort', 'unavailableHold');
@@ -2255,10 +2275,12 @@ class MyAccount_AJAX extends JSON_Action
 			$ils = $configArray['Catalog']['ils'];
 			$showOut = ($ils == 'Horizon');
 			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+			$showRenewalsRemaining = ($ils == 'Evergreen');
 			$showWaitList = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon');
 
 			$interface->assign('showOut', $showOut);
 			$interface->assign('showRenewed', $showRenewed);
+			$interface->assign('showRenewalsRemaining', $showRenewalsRemaining);
 			$interface->assign('showWaitList', $showWaitList);
 
 			// Define sorting options
@@ -2360,7 +2382,7 @@ class MyAccount_AJAX extends JSON_Action
 				}
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra' || $ils == 'Evergreen');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');

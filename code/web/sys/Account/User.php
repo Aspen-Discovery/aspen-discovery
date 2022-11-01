@@ -1384,14 +1384,14 @@ class User extends DataObject
 //		}
 		if ($this->isRecordCheckedOut($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
+				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : translate(['text' => 'You', 'isPublicFacing' => true]), 'isPublicFacing' => true]),
 				'url' => "/MyAccount/CheckedOut",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
 			);
 		} elseif ($source != 'hoopla' && $this->isRecordOnHold($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
+				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : translate(['text' => 'You', 'isPublicFacing' => true]), 'isPublicFacing' => true]),
 				'url' => "/MyAccount/Holds",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
@@ -2085,7 +2085,7 @@ class User extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function showMessagingSettings(){
+	function showMessagingSettings() : bool{
 		global $library;
 		if ($library->showMessagingSettings) {
 			if ($this->hasIlsConnection()) {
@@ -2097,7 +2097,20 @@ class User extends DataObject
 		return false;
 	}
 
-	function getMessages(){
+	/** @noinspection PhpUnused */
+	function showHoldNotificationPreferences() : bool {
+		global $library;
+		if ($library->showMessagingSettings) {
+			if ($this->hasIlsConnection()) {
+				return $this->getCatalogDriver()->showHoldNotificationPreferences();
+			}
+			else {
+				return false;
+			}
+		}
+	}
+
+	function getMessages() : array{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		$userMessage = new UserMessage();
 		$userMessage->userId = $this->id;

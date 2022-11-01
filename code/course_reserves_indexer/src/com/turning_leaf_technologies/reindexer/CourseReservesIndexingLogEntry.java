@@ -19,7 +19,7 @@ class CourseReservesIndexingLogEntry implements BaseLogEntry {
 	private int numDeleted = 0;
 	private int numUpdated = 0;
 	private int numSkipped = 0;
-	private Logger logger;
+	private final Logger logger;
 
     CourseReservesIndexingLogEntry(Connection dbConn, Logger logger){
 		this.logger = logger;
@@ -33,7 +33,7 @@ class CourseReservesIndexingLogEntry implements BaseLogEntry {
 		saveResults();
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
 		Date date = new Date();
@@ -128,6 +128,7 @@ class CourseReservesIndexingLogEntry implements BaseLogEntry {
 	void incUpdated(){
 		numUpdated++;
 	}
+	@SuppressWarnings("unused")
 	void incSkipped(){
 		numSkipped++;
 	}

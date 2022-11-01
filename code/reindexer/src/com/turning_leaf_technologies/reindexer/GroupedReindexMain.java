@@ -4,6 +4,7 @@ import com.jcraft.jsch.*;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +23,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class GroupedReindexMain {
-	private static BaseLogEntry logEntry;
+	private static BaseIndexingLogEntry logEntry;
 	private static Logger logger;
 
 	//General configuration

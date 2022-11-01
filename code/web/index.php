@@ -196,6 +196,11 @@ $interface->assign('action', $action);
 //Check for maliciously formatted parameters
 checkForMaliciouslyFormattedParameters();
 
+if (isset($_REQUEST['q']) && !isset($_REQUEST['lookfor'])){
+	$_REQUEST['lookfor'] = $_REQUEST['q'];
+	$_GET['lookfor'] = $_GET['q'];
+}
+
 global $solrScope;
 global $scopeType;
 global $isGlobalScope;

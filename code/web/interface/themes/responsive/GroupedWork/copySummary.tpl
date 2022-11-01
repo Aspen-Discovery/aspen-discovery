@@ -14,15 +14,13 @@
 			{if $item.displayByDefault && $numRowsShown<3}
 				{if $item.isEContent == false}
 					<div class="itemSummary row" style="margin: 0">
-						<div class="col-lg-7">
+						<div class="col-lg-12">
 							<span class="notranslate">{if !$item.isEContent}<strong>{$item.shelfLocation}</strong>{/if}
-								{if $item.availableCopies < 999}
-									&nbsp; {translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
+							<br>{$item.callNumber}
+								<br>{if $item.availableCopies < 999}
+									{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
 								{/if}
 							</span>
-						</div>
-						<div class="col-lg-4">
-								<span class="notranslate"><strong>{$item.callNumber}</strong></span>
 						</div>
 					</div>
 				{/if}

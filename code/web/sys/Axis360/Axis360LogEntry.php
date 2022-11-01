@@ -13,5 +13,5 @@ class Axis360LogEntry extends BaseLogEntry
 	public $numDeleted;
 	public $numUpdated;
 	public $numSkipped;
-
+	public $numInvalidRecords;
 }
