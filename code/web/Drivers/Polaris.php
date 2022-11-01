@@ -1249,7 +1249,7 @@ class Polaris extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		global $library;
 		$result = [

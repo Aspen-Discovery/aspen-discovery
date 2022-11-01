@@ -39,7 +39,7 @@ class Evergreen extends AbstractIlsDriver
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			//Get a list of holds
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -183,7 +183,7 @@ class Evergreen extends AbstractIlsDriver
 			]
 		];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = array(
@@ -251,7 +251,7 @@ class Evergreen extends AbstractIlsDriver
 				'message' => translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true])
 			]
 		];
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = array(
@@ -312,7 +312,7 @@ class Evergreen extends AbstractIlsDriver
 			],
 		];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null){
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers  = array(
@@ -340,6 +340,7 @@ class Evergreen extends AbstractIlsDriver
 					}
 				}
 			}
+			/** @noinspection SpellCheckingInspection */
 			$namedParams = [
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
@@ -420,7 +421,7 @@ class Evergreen extends AbstractIlsDriver
 			]
 		];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = array(
@@ -483,7 +484,7 @@ class Evergreen extends AbstractIlsDriver
 			]
 		];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = array(
@@ -539,7 +540,7 @@ class Evergreen extends AbstractIlsDriver
 			]
 		];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers = array(
@@ -591,7 +592,7 @@ class Evergreen extends AbstractIlsDriver
 		return $result;
 	}
 
-	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
+	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		return [
 			'success' => false,
@@ -617,7 +618,7 @@ class Evergreen extends AbstractIlsDriver
 			'unavailable' => $unavailableHolds
 		);
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null){
 			//Get a list of holds
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -744,7 +745,7 @@ class Evergreen extends AbstractIlsDriver
 			list(,$recordId) = explode(':', $recordId);
 		}
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null){
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers  = array(
@@ -772,6 +773,7 @@ class Evergreen extends AbstractIlsDriver
 					}
 				}
 			}
+			/** @noinspection SpellCheckingInspection */
 			$namedParams = [
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
@@ -809,6 +811,7 @@ class Evergreen extends AbstractIlsDriver
 			//First check to see if the hold can be placed
 			$requestB = 'service=open-ils.circ&method=open-ils.circ.title_hold.is_possible';
 			$requestB .= '&param=' . json_encode($authToken);
+			/** @noinspection SpellCheckingInspection */
 			$namedParamsB = [
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
@@ -889,10 +892,14 @@ class Evergreen extends AbstractIlsDriver
 		return $hold_result;
 	}
 
-	public function getAPIAuthToken(User $patron)
+	public function getAPIAuthToken(User $patron, $allowStaffToken)
 	{
-		$sessionInfo = $this->validatePatronAndGetAuthToken($patron->getBarcode(), $patron->getPasswordOrPin());
-		if ($sessionInfo['userValid']){
+		if ($allowStaffToken && UserAccount::isUserMasquerading() && empty($patron->getPasswordOrPin())){
+			$sessionInfo = $this->getStaffUserInfo();
+		}else {
+			$sessionInfo = $this->validatePatronAndGetAuthToken($patron->getBarcode(), $patron->getPasswordOrPin());
+		}
+		if ($sessionInfo['userValid']) {
 			return $sessionInfo['authToken'];
 		}
 		return null;
@@ -914,7 +921,7 @@ class Evergreen extends AbstractIlsDriver
 
 		$fines = [];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null) {
 			//Get a list of holds
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -933,7 +940,9 @@ class Evergreen extends AbstractIlsDriver
 				if (isset($apiResponse->payload)){
 					foreach ($apiResponse->payload[0] as $transactionObj){
 						$transaction = $transactionObj->transaction->__p;
+						/** @noinspection SpellCheckingInspection */
 						$transactionObj = $this->mapEvergreenFields($transaction, $this->fetchIdl('mbts'));
+						/** @noinspection SpellCheckingInspection */
 						$curFine = [
 							'fineId' => $transactionObj['id'],
 							'date' => strtotime($transactionObj['xact_start']),
@@ -1040,6 +1049,7 @@ class Evergreen extends AbstractIlsDriver
 				if ($apiResponse->payload[0]->__c == 'au'){ //class
 					$mappedPatronData =  $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
 
+					/** @noinspection PhpUnnecessaryLocalVariableInspection */
 					$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, '');
 					return $user;
 				}
@@ -1244,7 +1254,7 @@ class Evergreen extends AbstractIlsDriver
 		$summary->numUnavailableHolds = count($holds['unavailable']);
 
 		//Get additional information
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken != null){
 			$sessionData = $this->fetchSession($authToken);
 			if ($sessionData != null){
@@ -1267,6 +1277,7 @@ class Evergreen extends AbstractIlsDriver
 				if ($this->apiCurlWrapper->getResponseCode() == 200) {
 					$apiResponse = json_decode($apiResponse);
 					if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)){
+						/** @noinspection SpellCheckingInspection */
 						$moneySummary = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('mous'));
 						$summary->totalFines = $moneySummary['balance_owed'];
 					}
@@ -1299,7 +1310,7 @@ class Evergreen extends AbstractIlsDriver
 			'message' => 'Hold Notification Preferences are not implemented for this ILS'
 		];
 
-		$authToken = $this->getAPIAuthToken($user);
+		$authToken = $this->getAPIAuthToken($user, false);
 
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$headers = array(
@@ -1334,7 +1345,7 @@ class Evergreen extends AbstractIlsDriver
 			'opac.default_sms_carrier' => $defaultSmsCarrier,
 			'opac.default_sms_notify' => $defaultSmsNumber,
 			'opac.default_phone' => $defaultPhoneNumber
-		], );
+		]);
 
 		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 		ExternalRequestLogEntry::logRequest('evergreen.updateHoldNotifications', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
@@ -1350,9 +1361,8 @@ class Evergreen extends AbstractIlsDriver
 
 	/**
 	 * @param User $user
-	 * @return array
 	 */
-	private function loadHoldNotificationInfoFromEvergreen(User $user): array {
+	private function loadHoldNotificationInfoFromEvergreen(User $user) {
 		//Get a list of SMS carriers
 		global $interface;
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -1360,6 +1370,7 @@ class Evergreen extends AbstractIlsDriver
 			'Content-Type: application/x-www-form-urlencoded',
 		);
 		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		/** @noinspection SpellCheckingInspection */
 		$request = 'service=open-ils.pcrud&method=open-ils.pcrud.search.csc.atomic';
 		$request .= '&param=' . json_encode("ANONYMOUS");
 		$request .= '&param=' . json_encode(['active' => 1]);
@@ -1378,8 +1389,8 @@ class Evergreen extends AbstractIlsDriver
 		$interface->assign('smsCarriers', $smsCarriers);
 
 		//Load notification preferences
-		if ($user && !empty($user->cat_password)) {
-			$authToken = $this->getAPIAuthToken($user);
+		if (!empty($user) && !empty($user->cat_password)) {
+			$authToken = $this->getAPIAuthToken($user, false);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
 			$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
 			$request .= '&param=' . json_encode(['opac.hold_notify', 'opac.default_sms_carrier', 'opac.default_sms_notify', 'opac.default_phone']);
@@ -1405,7 +1416,6 @@ class Evergreen extends AbstractIlsDriver
 			$interface->assign('primaryEmail', $user->email);
 			$interface->assign('primaryPhone', $user->phone);
 		}
-		return $smsCarriers;
 	}
 
 	function fetchIdl($className) : array {

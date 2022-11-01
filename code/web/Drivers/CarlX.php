@@ -679,7 +679,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasqueradeo) {
+	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)  : array{
 		$result = [
 			'success' => false,
 			'messages' => []

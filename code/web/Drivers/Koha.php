@@ -108,7 +108,7 @@ class Koha extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade If we are in masquerade mode
 	 * @return array                  Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade = false)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade = false) : array
 	{
 		$result = [
 			'success' => false,
