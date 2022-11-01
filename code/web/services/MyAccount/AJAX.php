@@ -1920,7 +1920,7 @@ class MyAccount_AJAX extends JSON_Action
 		$user = UserAccount::getActiveUserObj();
 
 		$ils = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra');
+		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra' || $ils == 'Evergreen');
 		$showExpireTime = ($ils == 'Horizon' || $ils == 'Symphony');
 		$selectedAvailableSortOption = $this->setSort('availableHoldSort', 'availableHold');
 		$selectedUnavailableSortOption = $this->setSort('unavailableHoldSort', 'unavailableHold');
@@ -2379,7 +2379,7 @@ class MyAccount_AJAX extends JSON_Action
 				}
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra' || $ils == 'Evergreen');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');

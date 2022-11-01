@@ -686,6 +686,7 @@ class Evergreen extends AbstractIlsDriver
 							$curHold->pickupLocationName = $location->displayName;
 						}
 
+						$getHoldPosition = true;
 						if ($holdInfo['frozen'] == 't'){
 							$curHold->frozen = true;
 							$curHold->status = "Frozen";
@@ -699,12 +700,32 @@ class Evergreen extends AbstractIlsDriver
 							$curHold->expirationDate = strtotime($holdInfo['shelf_expire_time']);
 							$curHold->status = "Ready to Pickup";
 							$curHold->available = true;
+							$getHoldPosition = false;
 						}elseif (!empty($holdInfo['transit'])){
 							$curHold->status = 'In Transit';
+							$getHoldPosition = false;
 						}else{
 							$curHold->status = "Pending";
 							$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 							$curHold->locationUpdateable = true;
+						}
+
+						if ($getHoldPosition){
+							//Get stats for the hold
+							$getHoldStatsParams = 'service=open-ils.circ';
+							$getHoldStatsParams .= '&method=open-ils.circ.hold.queue_stats.retrieve';
+							$getHoldStatsParams .= '&param=' . json_encode($authToken);
+							$getHoldStatsParams .= '&param=' . $holdInfo['id'];
+							$getHoldStatsApiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getHoldStatsParams);
+							ExternalRequestLogEntry::logRequest('evergreen.getHoldStats', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getHoldStatsParams, $this->apiCurlWrapper->getResponseCode(), $getHoldStatsApiResponse, []);
+							if ($this->apiCurlWrapper->getResponseCode() == 200) {
+								$getHoldStatsApiResponse = json_decode($getHoldStatsApiResponse);
+								if (isset($getHoldStatsApiResponse->payload) && isset($getHoldStatsApiResponse->payload[0])){
+									$holdStatsPayload = $getHoldStatsApiResponse->payload[0];
+									$curHold->position = $holdStatsPayload->queue_position;
+									$curHold->holdQueueLength = $holdStatsPayload->total_holds;
+								}
+							}
 						}
 
 						$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
