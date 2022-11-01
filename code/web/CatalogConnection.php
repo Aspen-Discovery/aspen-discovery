@@ -1291,9 +1291,9 @@ class CatalogConnection
 		return $this->driver->isPromptForHoldNotifications();
 	}
 
-	public function getHoldNotificationTemplate() : ?string
+	public function getHoldNotificationTemplate(User $user) : ?string
 	{
-		return $this->driver->getHoldNotificationTemplate();
+		return $this->driver->getHoldNotificationTemplate($user);
 	}
 
 	public function validateUniqueId(User $user){
@@ -1309,4 +1309,15 @@ class CatalogConnection
 		return $this->driver->getPatronIDChanges($searchPatronID);
 	}
 
+	public function showHoldNotificationPreferences() : bool{
+		return $this->driver->showHoldNotificationPreferences();
+	}
+
+	public function getHoldNotificationPreferencesTemplate(User $user) : ?string {
+		return $this->driver->getHoldNotificationPreferencesTemplate($user);
+	}
+
+	public function processHoldNotificationPreferencesForm(User $user) : array {
+		return $this->driver->processHoldNotificationPreferencesForm($user);
+	}
 }

@@ -66,6 +66,9 @@
 			{/if}
 			{if $showUserPreferences}<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
 			{if $showUserContactInformation}<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
+			{if $user->showHoldNotificationPreferences()}
+				<div class="header-menu-option" ><a href="/MyAccount/HoldNotificationPreferences">{translate text='Hold Notification Preferences' isPublicFacing=true}</a></div>
+			{/if}
 			{if $user->showMessagingSettings()}
 				<div class="header-menu-option" ><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
 			{/if}

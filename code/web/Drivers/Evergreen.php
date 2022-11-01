@@ -1282,10 +1282,79 @@ class Evergreen extends AbstractIlsDriver
 		return true;
 	}
 
-	public function getHoldNotificationTemplate() : ?string
+	public function getHoldNotificationTemplate(User $user) : ?string
 	{
-		global $interface;
+		$this->loadHoldNotificationInfoFromEvergreen($user);
+		return 'Record/evergreenHoldNotifications.tpl';
+	}
+
+	public function getHoldNotificationPreferencesTemplate(User $user) : ?string{
+		$this->loadHoldNotificationInfoFromEvergreen($user);
+		return 'evergreenHoldNotificationPreferences.tpl';
+	}
+
+	public function processHoldNotificationPreferencesForm(User $user) : array {
+		$result = [
+			'success' => false,
+			'message' => 'Hold Notification Preferences are not implemented for this ILS'
+		];
+
+		$authToken = $this->getAPIAuthToken($user);
+
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$holdNotificationMethods = '';
+		if (isset($_REQUEST['emailNotification'])){
+			$holdNotificationMethods .= 'email';
+		}
+		if (isset($_REQUEST['phoneNotification'])){
+			if (strlen($holdNotificationMethods) > 0){
+				$holdNotificationMethods .= ':';
+			}
+			$holdNotificationMethods .= 'phone';
+		}
+		if (isset($_REQUEST['smsNotification'])){
+			if (strlen($holdNotificationMethods) > 0){
+				$holdNotificationMethods .= ':';
+			}
+			$holdNotificationMethods .= 'sms';
+		}
+		$defaultSmsCarrier = $_REQUEST['smsCarrier'] ?? '';
+		$defaultSmsNumber = $_REQUEST['smsNumber'] ?? '';
+		$defaultPhoneNumber = $_REQUEST['phoneNumber'] ?? '';
+
+		$request = 'service=open-ils.actor&method=open-ils.actor.settings.apply.user_or_ws:';
+		$request .= '&param=' . json_encode($authToken);
+		//$request .= '&param=' . $user->username;
+		$request .= '&param=' . json_encode([
+			'opac.hold_notify' => $holdNotificationMethods,
+			'opac.default_sms_carrier' => $defaultSmsCarrier,
+			'opac.default_sms_notify' => $defaultSmsNumber,
+			'opac.default_phone' => $defaultPhoneNumber
+		], );
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		ExternalRequestLogEntry::logRequest('evergreen.updateHoldNotifications', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->debug)){
+				$result['message'] = $apiResponse->debug;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param User $user
+	 * @return array
+	 */
+	private function loadHoldNotificationInfoFromEvergreen(User $user): array {
 		//Get a list of SMS carriers
+		global $interface;
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$headers = array(
 			'Content-Type: application/x-www-form-urlencoded',
@@ -1300,18 +1369,43 @@ class Evergreen extends AbstractIlsDriver
 		ExternalRequestLogEntry::logRequest('evergreen.getHoldNotificationTemplate', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
-			foreach ($apiResponse->payload[0] as $smsInfo){
+			foreach ($apiResponse->payload[0] as $smsInfo) {
 				$smsObj = $this->mapEvergreenFields($smsInfo->__p, $this->fetchIdl('csc'));
 				$smsCarriers[$smsObj['id']] = $smsObj['name'] . '(' . $smsObj['region'] . ')';
 			}
 		}
-		asort($smsCarriers,   SORT_STRING | SORT_FLAG_CASE);
+		asort($smsCarriers, SORT_STRING | SORT_FLAG_CASE);
 		$interface->assign('smsCarriers', $smsCarriers);
 
-		$user = UserAccount::getActiveUserObj();
-		$interface->assign('primaryEmail', $user->email);
-		$interface->assign('primaryPhone', $user->phone);
-		return 'Record/evergreenHoldNotifications.tpl';
+		//Load notification preferences
+		if ($user && !empty($user->cat_password)) {
+			$authToken = $this->getAPIAuthToken($user);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
+			$request .= '&param=' . json_encode(['opac.hold_notify', 'opac.default_sms_carrier', 'opac.default_sms_notify', 'opac.default_phone']);
+			$request .= '&param=' . json_encode($authToken);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				foreach ($apiResponse->payload[0] as $payload) {
+					$name = str_replace('.', '_', $payload->name);
+					if ($payload->name == 'opac.hold_notify') {
+						$value = explode(':', $payload->value);
+					}
+					else {
+						$value = $payload->value;
+					}
+
+					$interface->assign($name, $value);
+				}
+			}
+
+			$user = UserAccount::getActiveUserObj();
+			$interface->assign('primaryEmail', $user->email);
+			$interface->assign('primaryPhone', $user->phone);
+		}
+		return $smsCarriers;
 	}
 
 	function fetchIdl($className) : array {
@@ -1340,5 +1434,9 @@ class Evergreen extends AbstractIlsDriver
 			}
 		}
 		return $idl;
+	}
+
+	public function showHoldNotificationPreferences() : bool {
+		return true;
 	}
 }

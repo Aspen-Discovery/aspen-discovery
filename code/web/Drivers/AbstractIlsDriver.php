@@ -448,7 +448,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return false;
 	}
 
-	public function getHoldNotificationTemplate() : ?string
+	public function getHoldNotificationTemplate(User $user) : ?string
 	{
 		return null;
 	}
@@ -460,5 +460,20 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function getPatronIDChanges($searchPatronID) : ?array
 	{
 		return null;
+	}
+
+	public function showHoldNotificationPreferences() : bool {
+		return false;
+	}
+
+	public function getHoldNotificationPreferencesTemplate(User $user) : ?string {
+		return null;
+	}
+
+	public function processHoldNotificationPreferencesForm(User $user) : array {
+		return [
+			'success' => false,
+			'message' => 'Hold Notification Preferences are not implemented for this ILS'
+		];
 	}
 }

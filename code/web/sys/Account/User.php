@@ -2085,7 +2085,7 @@ class User extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function showMessagingSettings(){
+	function showMessagingSettings() : bool{
 		global $library;
 		if ($library->showMessagingSettings) {
 			if ($this->hasIlsConnection()) {
@@ -2097,7 +2097,20 @@ class User extends DataObject
 		return false;
 	}
 
-	function getMessages(){
+	/** @noinspection PhpUnused */
+	function showHoldNotificationPreferences() : bool {
+		global $library;
+		if ($library->showMessagingSettings) {
+			if ($this->hasIlsConnection()) {
+				return $this->getCatalogDriver()->showHoldNotificationPreferences();
+			}
+			else {
+				return false;
+			}
+		}
+	}
+
+	function getMessages() : array{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		$userMessage = new UserMessage();
 		$userMessage->userId = $this->id;

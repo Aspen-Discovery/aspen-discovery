@@ -1155,7 +1155,7 @@ class Record_AJAX extends Action
 		$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
 		$interface->assign('promptForHoldNotifications', $promptForHoldNotifications);
 		if ($promptForHoldNotifications) {
-			$interface->assign('holdNotificationTemplate', $user->getCatalogDriver()->getHoldNotificationTemplate());
+			$interface->assign('holdNotificationTemplate', $user->getCatalogDriver()->getHoldNotificationTemplate($user));
 		}
 
 		global $library;
