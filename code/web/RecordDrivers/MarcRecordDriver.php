@@ -1473,7 +1473,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
-				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'body' => '<div id="staffViewPlaceHolder">' . translate(['text'=>'Loading Staff View.', 'isPublicFacing' => true]) . '</div>',
 			);
 		}
 

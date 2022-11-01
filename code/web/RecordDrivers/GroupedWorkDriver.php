@@ -1386,7 +1386,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.GroupedWork.getStaffView('{$this->getPermanentId()}');",
-				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'body' => '<div id="staffViewPlaceHolder">' . translate(['text'=>'Loading Staff View.', 'isPublicFacing' => true]) . '</div>',
 			);
 		}
 

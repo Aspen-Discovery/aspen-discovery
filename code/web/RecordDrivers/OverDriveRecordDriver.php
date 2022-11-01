@@ -704,7 +704,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.OverDrive.getStaffView('{$this->id}');",
-				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'body' => '<div id="staffViewPlaceHolder">' . translate(['text'=>'Loading Staff View.', 'isPublicFacing' => true]) . '</div>',
 			);
 		}
 
