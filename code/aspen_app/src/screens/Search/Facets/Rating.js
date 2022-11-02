@@ -1,24 +1,53 @@
-import React, {Component} from "react";
-import {ScrollView} from "react-native";
-import {Box, Text, VStack, HStack, Pressable, CheckIcon} from "native-base";
-import _ from "lodash";
-import {Rating} from "react-native-elements";
+import React, {Component} from 'react';
+import {ScrollView} from 'react-native';
+import {HStack, Icon, Pressable, Text, VStack} from 'native-base';
+import {MaterialIcons} from '@expo/vector-icons';
+import _ from 'lodash';
+import {Rating} from 'react-native-elements';
 
 // custom components and helper files
-import {userContext} from "../../../context/user";
-import {loadingSpinner} from "../../../components/loadingSpinner";
-import {translate} from "../../../translations/translations";
+import {userContext} from '../../../context/user';
+import {loadingSpinner} from '../../../components/loadingSpinner';
+import {addAppliedFilter, removeAppliedFilter} from '../../../util/search';
 
 export default class Facet_Rating extends Component {
+	static contextType = userContext;
+
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
 			isLoading: true,
-			appliedRating: "",
-			value: "",
+			appliedRating: '',
+			value: '',
 			item: this.props.data,
 			category: this.props.category,
 			updater: this.props.updater,
+			stars: [
+				{
+					label: 'fiveStar',
+					value: '5',
+				},
+				{
+					label: 'fourStar',
+					value: '4',
+				},
+				{
+					label: 'threeStar',
+					value: '3',
+				},
+				{
+					label: 'twoStar',
+					value: '2',
+				},
+				{
+					label: 'oneStar',
+					value: '1',
+				},
+				{
+					label: 'Unrated',
+					value: '0',
+				},
+			],
 		};
 		this._isMounted = false;
 	}
@@ -27,10 +56,18 @@ export default class Facet_Rating extends Component {
 		this._isMounted = true;
 		this.setState({
 			isLoading: false,
-		})
+		});
 
-		this.appliedRating();
-	}
+		const {item} = this.state;
+		let value = '';
+		if (_.find(item, ['isApplied', true])) {
+			let appliedFilterObj = _.find(item, ['isApplied', true]);
+			value = appliedFilterObj['value'];
+		}
+		this.setState({
+			value: value,
+		});
+	};
 
 	componentWillUnmount() {
 		this._isMounted = false;
@@ -39,95 +76,52 @@ export default class Facet_Rating extends Component {
 	getRatingCount(star) {
 		const {item} = this.state;
 		let results = 0;
-		if(_.find(item, ['value', star])) {
+		if (_.find(item, ['value', star])) {
 			results = _.find(item, ['value', star]);
-			results = results['numResults'];
+			results = results['count'];
 		}
 		return results;
 	}
 
-	appliedRating = () => {
-		const {item, category} = this.state;
-		let appliedFilterValue = "";
-		let value = "";
-		if(_.find(item, ['isApplied', true])) {
-			let appliedFilterObj = _.find(item, ['isApplied', true]);
-			value = appliedFilterObj['value'];
-			appliedFilterValue = "&filter[]=" + encodeURI(category + ':' + value)
-		}
-
-		this.setState({
-			appliedRating: appliedFilterValue,
-			value: value
-		})
-	}
-
 	updateSearch = (star) => {
-		const {category, updater} = this.state;
-		let value = "&filter[]=" + encodeURI(category + ':' + star);
-		this.setState({
-			appliedRating: value,
-			value: star
-		})
-
-		updater(category, star, false);
-	}
-
-	static contextType = userContext;
+		const {category, value} = this.state;
+		if (star === value) {
+			removeAppliedFilter(category, star);
+			this.setState({
+				value: '',
+			});
+		} else {
+			addAppliedFilter(category, star, false);
+			this.setState({
+				value: star,
+			});
+		}
+		this.props.updater();
+	};
 
 	render() {
-		if(this.state.isLoading) {
+		const stars = this.state.stars;
+
+		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
 		return (
-			<ScrollView>
-				<Box safeArea={5}>
-					<VStack space={3}>
-						<Pressable onPress={() => this.updateSearch('fiveStar')}>
-							<HStack space={2}>
-								{this.state.value === "fiveStar" ? <CheckIcon size="5" color="emerald.500" /> : null}
-								<Rating imageSize={20} readonly startingValue={5} />
-								<Text>({this.getRatingCount('fiveStar')})</Text>
-							</HStack>
-						</Pressable>
-						<Pressable onPress={() => this.updateSearch('fourStar')}>
-							<HStack space={2}>
-								{this.state.value === "fourStar" ? <CheckIcon size="5" color="emerald.500" /> : null}
-								<Rating imageSize={20} readonly startingValue={4} />
-								<Text>({this.getRatingCount('fourStar')})</Text>
-							</HStack>
-						</Pressable>
-						<Pressable onPress={() => this.updateSearch('threeStar')}>
-							<HStack space={2}>
-								{this.state.value === "threeStar" ? <CheckIcon size="5" color="emerald.500" /> : null}
-								<Rating imageSize={20} readonly startingValue={3} />
-								<Text>({this.getRatingCount('threeStar')})</Text>
-							</HStack>
-						</Pressable>
-						<Pressable onPress={() => this.updateSearch('twoStar')}>
-							<HStack space={2}>
-								{this.state.value === "twoStar" ? <CheckIcon size="5" color="emerald.500" /> : null}
-								<Rating imageSize={20} readonly startingValue={2} />
-								<Text>({this.getRatingCount('twoStar')})</Text>
-							</HStack>
-						</Pressable>
-						<Pressable onPress={() => this.updateSearch('oneStar')}>
-							<HStack space={2}>
-								{this.state.value === "oneStar" ? <CheckIcon size="5" color="emerald.500" /> : null}
-								<Rating imageSize={20} readonly startingValue={1} />
-								<Text>({this.getRatingCount('oneStar')})</Text>
-							</HStack>
-						</Pressable>
-						<Pressable onPress={() => this.updateSearch('Unrated')}>
-							<HStack space={2}>
-								{this.state.value === "Unrated" ? <CheckIcon size="5" color="emerald.500" /> : null}
-								<Text>{translate('filters.unrated')} ({this.getRatingCount('Unrated')})</Text>
-							</HStack>
-						</Pressable>
+				<ScrollView>
+
+					<VStack space={2}>
+						{stars.map((star, index) => (
+								<Pressable onPress={() => this.updateSearch(star.label)} p={0.5} py={2}>
+									<HStack space={3} justifyContent="flex-start" alignItems="center">
+										{this.state.value === star.label ? <Icon as={MaterialIcons} name="radio-button-checked" size="lg" color="primary.600"/> : <Icon as={MaterialIcons} name="radio-button-unchecked" size="lg" color="muted.400"/>}
+										<Rating imageSize={20} readonly startingValue={star.value}/>
+										<Text color="darkText" ml={2}>({this.getRatingCount(star.label)})</Text>
+									</HStack>
+								</Pressable>
+						))}
 					</VStack>
-				</Box>
-			</ScrollView>
-		)
+
+				</ScrollView>
+		);
 	}
 }

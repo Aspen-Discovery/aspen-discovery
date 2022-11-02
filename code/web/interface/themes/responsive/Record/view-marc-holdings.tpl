@@ -9,7 +9,7 @@
 					<tr>
 						<td>{$marcHolding.library}</td>
 						<td>{$marcHolding.shelfLocation}</td>
-						<td>{$marcHolding.holdings}</td>
+						<td>{implode subject=$marcHolding.holdings glue='<br/>'}</td>
 					</tr>
 				{/foreach}
 			</tbody>

@@ -546,7 +546,7 @@ class SirsiDynixROA extends HorizonAPI
 			//If the user is opted in to SMS messages, set up their notifications automatically.
 			if (!empty($_REQUEST['smsNotices']) && !empty($_REQUEST['cellPhone'])){
 				$defaultCountryCode = '';
-				$getCountryCodesResponse = $this->getWebServiceResponse('getMessagingSettings', $webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $staffSessionToken);
+				$getCountryCodesResponse = $this->getWebServiceResponse('getMessagingSettings', $webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $sessionToken);
 				foreach ($getCountryCodesResponse as $countryCodeInfo){
 					//This gets flipped later
 					if ($countryCodeInfo->fields->isDefault) {
@@ -1591,7 +1591,9 @@ class SirsiDynixROA extends HorizonAPI
 		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
 			$patron->cat_password = $newPin;
+			$patron->lastLoginValidation = 0;
 			$patron->update();
+			$patron->clearActiveSessions();
 			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 
 		} else {
@@ -1650,7 +1652,10 @@ class SirsiDynixROA extends HorizonAPI
 			if ($user != null) {
 				if ($user->username == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 					$user->cat_password = $newPin;
+					$user->lastLoginValidation = 0;
 					$user->update();
+
+					$user->clearActiveSessions();
 				}
 			}
 			return array(
@@ -2372,7 +2377,8 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
 							if ($systemVariables->storeRecordDetailsInDatabase){
-                                $getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format, recordIdentifier FROM grouped_work_records 
+								/** @noinspection SqlResolve */
+								$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format, recordIdentifier FROM grouped_work_records 
 								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id

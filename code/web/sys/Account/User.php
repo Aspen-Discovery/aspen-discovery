@@ -2099,14 +2099,11 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function showHoldNotificationPreferences() : bool {
-		global $library;
-		if ($library->showMessagingSettings) {
-			if ($this->hasIlsConnection()) {
-				return $this->getCatalogDriver()->showHoldNotificationPreferences();
-			}
-			else {
-				return false;
-			}
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showHoldNotificationPreferences();
+		}
+		else {
+			return false;
 		}
 	}
 
@@ -2866,6 +2863,15 @@ class User extends DataObject
 
 		$this->holdInfoLastLoaded = 0;
 		$this->update();
+	}
+
+	public function clearActiveSessions() {
+		//Delete any sessions for the patron to ensure they are logged out
+		$session = new Session();
+		$session->whereAdd("data like '%activeUserId|s:" . strlen($this->id) . ":\"$this->id\"%'");
+		$session->whereAdd('session_id != "' . session_id() . '"');
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$numDeletions = $session->delete(true);
 	}
 
 	protected function clearRuntimeDataVariables(){

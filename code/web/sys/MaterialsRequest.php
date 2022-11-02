@@ -50,7 +50,7 @@ class MaterialsRequest extends DataObject
 		return ['emailSent', 'holdsCreated', 'assignedTo'];
 	}
 
-	static function getFormats(){
+	static function getFormats(bool $activeFormatsOnly) : array {
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 		$customFormats = new MaterialsRequestFormats();
 		global $library;
@@ -64,6 +64,9 @@ class MaterialsRequest extends DataObject
 		}
 
 		$customFormats->libraryId = $requestLibrary->libraryId;
+		if ($activeFormatsOnly){
+			$customFormats->activeForNewRequests = 1;
+		}
 
 		if ($customFormats->count() == 0 ) {
 			// Default Formats to use when no custom formats are created.

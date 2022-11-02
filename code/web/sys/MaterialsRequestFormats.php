@@ -10,6 +10,7 @@ class MaterialsRequestFormats extends DataObject
 	public $formatLabel;
 	public $authorLabel;
 	public $specialFields;   // SET Data type, possible values : 'Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season'
+	public $activeForNewRequests;
 	public $weight;
 
 	static $materialsRequestFormatsSpecialFieldOptions = array(
@@ -18,17 +19,15 @@ class MaterialsRequestFormats extends DataObject
 
 
 	static function getObjectStructure() : array {
-		$structure = array(
-			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
-			'weight'        => array('property' => 'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
-			'format'        => array('property' => 'format', 'type' => 'text', 'label' => 'Format', 'description' => 'internal value for format, please use camelCase and no spaces ie. cdAudio'),
-			'formatLabel'   => array('property' => 'formatLabel', 'type' => 'text', 'label' => 'Format Label', 'description' => 'Label for the format that will be displayed to users.'),
-			'authorLabel'   => array('property' => 'authorLabel', 'type' => 'text', 'label' => 'Author Label', 'description' => 'Label for the author field associated with this format that will be displayed to users.'),
-		  'specialFields' => array('property' => 'specialFields', 'type' => 'multiSelect', 'listStyle' => 'checkboxList', 'label' => 'Special Fields for Format', 'description' => 'Any Special Fields to use with this format', 'values' => self::$materialsRequestFormatsSpecialFieldOptions)
-			//			'libraryId' => array(), // hidden value or internally updated.
-
+		return array(
+			'id' => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
+			'weight' => array('property' => 'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
+			'format' => array('property' => 'format', 'type' => 'text', 'label' => 'Format', 'description' => 'internal value for format, please use camelCase and no spaces ie. cdAudio'),
+			'formatLabel' => array('property' => 'formatLabel', 'type' => 'text', 'label' => 'Format Label', 'description' => 'Label for the format that will be displayed to users.'),
+			'authorLabel' => array('property' => 'authorLabel', 'type' => 'text', 'label' => 'Author Label', 'description' => 'Label for the author field associated with this format that will be displayed to users.'),
+			'specialFields' => array('property' => 'specialFields', 'type' => 'multiSelect', 'listStyle' => 'checkboxList', 'label' => 'Special Fields for Format', 'description' => 'Any Special Fields to use with this format', 'values' => self::$materialsRequestFormatsSpecialFieldOptions),
+			'activeForNewRequests' => array('property' => 'activeForNewRequests', 'type' => 'checkbox', 'label' => 'Active for new requests?', 'description' => 'Whether or not the format should be active for patrons.', 'default' => 1),
 		);
-		return $structure;
 	}
 
 	static function getDefaultMaterialRequestFormats($libraryId = -1) {

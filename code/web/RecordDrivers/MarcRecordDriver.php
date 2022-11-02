@@ -1485,7 +1485,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
-				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'body' => '<div id="staffViewPlaceHolder">' . translate(['text'=>'Loading Staff View.', 'isPublicFacing' => true]) . '</div>',
 			);
 		}
 
@@ -2308,7 +2308,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 								if ($marc866subfield6Data == $marc852subfield6Data){
 									$marc866subfieldA = $marc866Field->getSubfield('a');
 									if ($marc866subfieldA != false) {
-										$marcHolding['holdings'] = $marc866subfieldA->getData();
+										$marcHolding['holdings'][] = $marc866subfieldA->getData();
 										$is866Found = true;
 									}
 								}

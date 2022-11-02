@@ -2220,7 +2220,7 @@ class SearchAPI extends Action
 		if(empty($_REQUEST['id'])) {
 			return array('success' => false, 'message' => 'A valid search id not provided');
 		}
-		$includeSort = $_REQUEST['includeSort'] ?? false;
+		$includeSort = $_REQUEST['includeSort'] ?? true;
 		$id = $_REQUEST['id'];
 		$searchObj = $this->restoreSearch($id);
 		if($searchObj) {
@@ -2330,7 +2330,7 @@ class SearchAPI extends Action
 				'field' => $cluster['field_name'],
 				'display' => $cluster['label'],
 				'hasApplied' => $cluster['hasApplied'],
-				'multiSelect' => $cluster['multiSelect'],
+				'multiSelect' => (bool)$cluster['multiSelect'],
 				'options' => $cluster['list'],
 			];
 		}
