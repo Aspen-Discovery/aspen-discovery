@@ -95,9 +95,11 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 */
 	public function getTitle()
 	{
-        //if episode data, display the titleTitle, so we match what is displayed in search results
+        //if episode or subtitle data, match what is displayed in search results
         if (!empty($this->hooplaRawMetadata->episode)) {
             return $this->hooplaRawMetadata->titleTitle.': '.$this->hooplaExtract->title;
+        }else if (!empty($this->hooplaRawMetadata->subtitle)) {
+            return $this->hooplaExtract->title.': '.$this->hooplaRawMetadata->subtitle;
         }else
 		return $this->hooplaExtract->title;
 	}
