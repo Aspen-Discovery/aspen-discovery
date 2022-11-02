@@ -11,3 +11,4 @@ fi
 if ! grep -qF 'ServerTokens Min' '/etc/httpd/conf/httpd.conf'; then
 	echo "ServerTokens Min" >> '/etc/httpd/conf/httpd.conf'
 fi
+sed -i 's/expose_php = On/expose_php = Off/' '/etc/php.ini'
