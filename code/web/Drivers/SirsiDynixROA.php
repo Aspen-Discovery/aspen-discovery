@@ -1591,7 +1591,9 @@ class SirsiDynixROA extends HorizonAPI
 		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
 			$patron->cat_password = $newPin;
+			$patron->lastLoginValidation = 0;
 			$patron->update();
+			$patron->clearActiveSessions();
 			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 
 		} else {
@@ -1650,7 +1652,10 @@ class SirsiDynixROA extends HorizonAPI
 			if ($user != null) {
 				if ($user->username == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 					$user->cat_password = $newPin;
+					$user->lastLoginValidation = 0;
 					$user->update();
+
+					$user->clearActiveSessions();
 				}
 			}
 			return array(

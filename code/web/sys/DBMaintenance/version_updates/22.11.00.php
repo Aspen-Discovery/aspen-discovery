@@ -31,7 +31,14 @@ function getUpdates22_11_00(): array
 			'sql' => [
 				"ALTER TABLE sso_setting ADD column ssoEntityId VARCHAR(255)"
 			]
-		] //sso_setting_add_entity_id
+		], //sso_setting_add_entity_id
+		'materials_request_format_active_for_new_requests' => [
+			'title' => 'Materials Request Format - Active For New Requests',
+			'description' => 'Allow specific formats to be disabled for a materials request',
+			'sql' => [
+				"ALTER TABLE materials_request_formats ADD column activeForNewRequests TINYINT(1) DEFAULT 1"
+			]
+		], //materials_request_format_active_for_new_requests
 
 		//kirstien
 

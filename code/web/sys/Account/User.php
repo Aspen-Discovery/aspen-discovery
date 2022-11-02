@@ -2865,6 +2865,15 @@ class User extends DataObject
 		$this->update();
 	}
 
+	public function clearActiveSessions() {
+		//Delete any sessions for the patron to ensure they are logged out
+		$session = new Session();
+		$session->whereAdd("data like '%activeUserId|s:" . strlen($this->id) . ":\"$this->id\"%'");
+		$session->whereAdd('session_id != "' . session_id() . '"');
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$numDeletions = $session->delete(true);
+	}
+
 	protected function clearRuntimeDataVariables(){
 		if ($this->_accountProfile != null){
 			$this->_accountProfile->__destruct();
