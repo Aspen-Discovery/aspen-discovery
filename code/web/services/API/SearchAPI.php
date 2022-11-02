@@ -2190,14 +2190,26 @@ class SearchAPI extends Action
 					$items[$key]['field'] = $facet['field_name'];
 					$items[$key]['hasApplied'] = $facet['hasApplied'];
 					$items[$key]['multiSelect'] = $facet['multiSelect'];
-					foreach($facet['list'] as $item) {
-						$items[$key]['facets'][$i]['value'] = $item['value'];
-						$items[$key]['facets'][$i]['display'] = $item['display'];
-						$items[$key]['facets'][$i]['field'] = $facet['field_name'];
-						$items[$key]['facets'][$i]['count'] = $item['count'];
-						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-						$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-						$i++;
+					if(isset($facet['sortedList'])) {
+						foreach($facet['sortedList'] as $item) {
+							$items[$key]['facets'][$i]['value'] = $item['value'];
+							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+							$items[$key]['facets'][$i]['count'] = $item['count'];
+							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							$i++;
+						}
+					} else {
+						foreach($facet['list'] as $item) {
+							$items[$key]['facets'][$i]['value'] = $item['value'];
+							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+							$items[$key]['facets'][$i]['count'] = $item['count'];
+							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							$i++;
+						}
 					}
 				}
 			}
