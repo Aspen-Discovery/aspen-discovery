@@ -46,7 +46,7 @@ function getUpdates22_11_00(): array
 				'ALTER TABLE sideload_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 			]
 		], //add_numInvalidRecords_to_sideload_logs
-		
+
 		//kirstien
 
 		//kodi
