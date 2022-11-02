@@ -2308,7 +2308,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 								if ($marc866subfield6Data == $marc852subfield6Data){
 									$marc866subfieldA = $marc866Field->getSubfield('a');
 									if ($marc866subfieldA != false) {
-										$marcHolding['holdings'] = $marc866subfieldA->getData();
+										$marcHolding['holdings'][] = $marc866subfieldA->getData();
 										$is866Found = true;
 									}
 								}
