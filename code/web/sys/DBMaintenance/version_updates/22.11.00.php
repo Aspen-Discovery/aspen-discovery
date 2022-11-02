@@ -23,6 +23,7 @@ function getUpdates22_11_00(): array
 				'ALTER TABLE ils_extract_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 				'ALTER TABLE overdrive_extract_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 				'ALTER TABLE reindex_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
+				'ALTER TABLE sideload_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 			]
 		], //add_numInvalidRecords_to_indexing_logs
 		'sso_setting_add_entity_id' => [
