@@ -1,9 +1,10 @@
 <?php
 
 require_once ROOT_DIR . "/Action.php";
+require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once ROOT_DIR . "/sys/MaterialsRequest.php";
 
-class MaterialsRequest_Update extends Action {
+class MaterialsRequest_Update extends Admin_Admin {
 
 	function launch() {
 		global $configArray;
@@ -130,7 +131,7 @@ class MaterialsRequest_Update extends Action {
 		}
 
 		//Get a list of formats to show
-		$availableFormats = MaterialsRequest::getFormats();
+		$availableFormats = MaterialsRequest::getFormats(false);
 		$interface->assign('availableFormats', $availableFormats);
 
 		$this->display('update-result.tpl', 'Update Result');
@@ -142,5 +143,16 @@ class MaterialsRequest_Update extends Action {
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
 		$breadcrumbs[] = new Breadcrumb('', 'Update Materials Request');
 		return $breadcrumbs;
+	}
+
+
+	function getActiveAdminSection() : string
+	{
+		return 'materials_request';
+	}
+
+	function canView() : bool
+	{
+		return UserAccount::userHasPermission('Manage Library Materials Requests');
 	}
 }

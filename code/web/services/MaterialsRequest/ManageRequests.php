@@ -99,7 +99,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 		}
 
-		$availableFormats = MaterialsRequest::getFormats();
+		$availableFormats = MaterialsRequest::getFormats(false);
 		$interface->assign('availableFormats', $availableFormats);
 		$defaultFormatsToShow = array_keys($availableFormats);
 		if (isset($_REQUEST['formatFilter'])){

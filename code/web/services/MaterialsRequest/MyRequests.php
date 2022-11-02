@@ -61,7 +61,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 			$openRequests = $materialsRequests->count();
 			$interface->assign('openRequests', $openRequests);
 
-			$formats = MaterialsRequest::getFormats();
+			$formats = MaterialsRequest::getFormats(true);
 
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
