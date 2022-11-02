@@ -1,17 +1,18 @@
-import React, {Component} from "react";
-import {Box, Button, Center, FlatList, Text, Pressable, HStack} from "native-base";
+import React, {Component} from 'react';
+import {Box, Center, FlatList, HStack, Pressable, Text} from 'native-base';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
-import {translate} from "../../translations/translations";
-import {loadingSpinner} from "../../components/loadingSpinner";
-import {loadError} from "../../components/loadError";
-import {AuthContext} from "../../components/navigation";
-import {GLOBALS} from "../../util/globals";
-import {userContext} from "../../context/user";
+import {translate} from '../../translations/translations';
+import {loadingSpinner} from '../../components/loadingSpinner';
+import {loadError} from '../../components/loadError';
+import {GLOBALS} from '../../util/globals';
+import {userContext} from '../../context/user';
 
 export default class More extends Component {
+	static contextType = userContext;
+
 	constructor() {
 		super();
 		this.state = {
@@ -25,7 +26,7 @@ export default class More extends Component {
 		let privacyPolicy;
 
 		try {
-			let tmp = await AsyncStorage.getItem("@appSettings");
+			let tmp = await AsyncStorage.getItem('@appSettings');
 			let appSettings = JSON.parse(tmp);
 			privacyPolicy = appSettings.privacyPolicy;
 		} catch (e) {
@@ -45,7 +46,7 @@ export default class More extends Component {
 					title: translate('general.privacy_policy'),
 					path: privacyPolicy,
 					external: true,
-				}
+				},
 			],
 			isLoading: false,
 		});
@@ -54,23 +55,23 @@ export default class More extends Component {
 	renderNativeItem = (item) => {
 		if (item.external) {
 			return (
-				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
-					this.openWebsite(item.path)
-				}}>
-					<HStack space={3}>
-						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
-					</HStack>
-				</Pressable>
+					<Pressable borderBottomWidth="1" _dark={{borderColor: 'gray.600'}} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
+						this.openWebsite(item.path);
+					}}>
+						<HStack space={3}>
+							<Text _dark={{color: 'warmGray.50'}} color="coolGray.800" bold fontSize={{base: 'lg', lg: 'xl'}}>{item.title}</Text>
+						</HStack>
+					</Pressable>
 			);
 		} else {
 			return (
-				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
-					this.onPressMenuItem(item.path)
-				}}>
-					<HStack>
-						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
-					</HStack>
-				</Pressable>
+					<Pressable borderBottomWidth="1" _dark={{borderColor: 'gray.600'}} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
+						this.onPressMenuItem(item.path);
+					}}>
+						<HStack>
+							<Text _dark={{color: 'warmGray.50'}} color="coolGray.800" bold fontSize={{base: 'lg', lg: 'xl'}}>{item.title}</Text>
+						</HStack>
+					</Pressable>
 			);
 		}
 	};
@@ -79,12 +80,9 @@ export default class More extends Component {
 		this.props.navigation.navigate(item, {item});
 	};
 
-
 	openWebsite = async (url) => {
 		WebBrowser.openBrowserAsync(url);
-	}
-
-	static contextType = userContext;
+	};
 
 	render() {
 		if (this.state.isLoading) {
@@ -99,29 +97,19 @@ export default class More extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 
-		console.log(library);
-
 		return (
-			<Box>
-				<FlatList
-					data={this.state.defaultMenuItems}
-					renderItem={({item}) => this.renderNativeItem(item)}
-					keyExtractor={(item, index) => index.toString()}
-				/>
+				<Box>
+					<FlatList
+							data={this.state.defaultMenuItems}
+							renderItem={({item}) => this.renderNativeItem(item)}
+							keyExtractor={(item, index) => index.toString()}
+					/>
 
-				<Center mt={5}>
-					<Text mt={10} fontSize="xs" bold>Aspen LiDA <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}]</Text></Text>
-					{library.discoveryVersion ? (<Text fontSize="xs" bold>Aspen Discovery <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{library.discoveryVersion}</Text></Text>) : null}
-				</Center>
-			</Box>
+					<Center mt={5}>
+						<Text mt={10} fontSize="xs" bold>Aspen LiDA <Text color="coolGray.600" _dark={{color: 'warmGray.400'}}>{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}]</Text></Text>
+						{library.discoveryVersion ? (<Text fontSize="xs" bold>Aspen Discovery <Text color="coolGray.600" _dark={{color: 'warmGray.400'}}>{library.discoveryVersion}</Text></Text>) : null}
+					</Center>
+				</Box>
 		);
 	}
-}
-
-function LogOutButton() {
-	const { signOut } = React.useContext(AuthContext);
-
-	return(
-		<Button onPress={signOut}>{translate('general.logout')}</Button>
-	)
 }
