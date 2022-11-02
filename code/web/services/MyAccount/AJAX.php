@@ -5676,7 +5676,7 @@ class MyAccount_AJAX extends JSON_Action
     function exportUserList() {
         $result = [
             'success' => false,
-            'message' => translate(['text' => 'Export User List to Excel: something went wrong.', 'isPublicFacing' => true]);
+            'message' => translate(['text' => 'Export User List to Excel: something went wrong.', 'isPublicFacing' => true])
         ];
         global $interface;
         if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) { // validly formatted List Id

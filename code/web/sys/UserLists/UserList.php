@@ -991,25 +991,37 @@ class UserList extends DataObject
                     $uniqueFormats = array_unique($formats);
                     $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
 
-                    // TODO: replace this horsepoop with magical itemSummary something something that keeps item detailed location and call number associated...
-//                    $callNumber = '';
-//                    if (isset($curDoc['local_callnumber_' . $solrScope])) {
-//                        $callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
-//                    }
-//                    $scopedLocations = array_filter($curDoc["detailed_location"], function($v) use ($solrScope) {
-//                        return preg_match("/^" . $solrScope . "#/", $v);
-//                    });
-//                    foreach ($scopedLocations as $key=>$scopedLocation) {
-//                        if (strpos($scopedLocation, $solrScope . '#') === 0) {
-//                            $scopedLocations[$key] = substr($scopedLocation, strpos($scopedLocation, '#') + 1);
-//                        } else {
-//                            $scopedLocations[$key] = null;
-//                        }
-//                    }
-//                    $locations = array_values($scopedLocations);
-//                    $uniqueLocations = array_unique($locations);
-//                    /** @noinspection PhpUnusedLocalVariableInspection */
-//                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueLocations) . ': ' . $callNumber);
+                    // Format / Location / Call number, max 3 records
+                    //Get the Grouped Work Driver so we can get information about the formats and locations within the record
+                    require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+                    $output = [];
+                    foreach ($curDoc->getRelatedManifestations() as $relatedManifestation){
+                        //Manifestation gives us Format & Format Category
+                        if (!$relatedManifestation->isHideByDefault()) {
+                            $format = $relatedManifestation->format;
+                            //Variation gives us the sort
+                            foreach ($relatedManifestation->getVariations() as $variation) {
+                                if (!$variation->isHideByDefault()) {
+                                    //Record will give us the call number, and location
+                                    //Only do up to 3 records per format?
+                                    foreach ($variation->getRecords() as $record) {
+                                        if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+                                            $copySummary = $record->getItemSummary();
+                                            foreach ($copySummary as $item) {
+                                                $output[] = $format . "::" . $item['description'];
+                                            }
+                                            $output = array_unique($output);
+                                            $output = array_slice($output, 0, 3);
+                                            if (count($output)==0) {
+                                                $output[] = "No copies currently owned by this library";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
 
                 } elseif ($curDoc instanceof ListsRecordDriver) {
                     // Hyperlink to title
@@ -1021,6 +1033,7 @@ class UserList extends DataObject
                     // User List creator
                     $fields = $curDoc->getFields();
                     $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
+
                 } elseif ($curDoc instanceof PersonRecord) {
                     
                 } elseif ($curDoc instanceof OpenArchivesRecordDriver) {
