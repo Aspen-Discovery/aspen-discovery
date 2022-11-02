@@ -2236,7 +2236,9 @@ class SearchAPI extends Action
 		$id = $_REQUEST['id'];
 		$searchObj = $this->restoreSearch($id);
 		if($searchObj) {
-			$facets = $searchObj->getFacetList();
+			global $interface;
+			$facets = $interface->getVariable('sideFacetSet');
+			//$facets = $searchObj->getFacetList();
 			$items = array_keys($facets);
 			if($includeSort) {
 				$items[] = 'sort_by';
