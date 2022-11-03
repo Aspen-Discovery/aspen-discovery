@@ -2271,14 +2271,15 @@ class SearchAPI extends Action
 			$searchObj = SearchObjectFactory::deminify($minSO, $search);
 			$filters = $searchObj->getFilterList();
 			$items = [];
+
 			foreach($filters as $key => $filter) {
 				$i = 0;
 				foreach($filter as $item) {
-					$items[$key]['value'] = $item['value'];
-					$items[$key]['display'] = $item['display'];
-					$items[$key]['field'] = $item['field'];
-					$items[$key]['count'] = 0;
-					$items[$key]['isApplied'] = true;
+					$items[$key][$i]['value'] = $item['value'];
+					$items[$key][$i]['display'] = $item['display'];
+					$items[$key][$i]['field'] = $item['field'];
+					$items[$key][$i]['count'] = 0;
+					$items[$key][$i]['isApplied'] = true;
 					$i++;
 				}
 			}
