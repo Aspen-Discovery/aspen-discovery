@@ -1025,7 +1025,7 @@ class UserList extends DataObject
 
                 } elseif ($curDoc instanceof ListsRecordDriver) {
                     // Hyperlink to title
-                    $link = $configArray['Site']['url'] . "/MyAccount/MyList/" . $curDoc->getId();
+                    $link = $curDoc->getLinkUrl();
                     $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
                     $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
                     // User List Title
@@ -1035,16 +1035,56 @@ class UserList extends DataObject
                     $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
 
                 } elseif ($curDoc instanceof PersonRecord) {
-                    
+                    // Hyperlink to Person Record
+                    $link = $curDoc->getLinkUrl();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // Person Name
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getName() ?? '');
+
                 } elseif ($curDoc instanceof OpenArchivesRecordDriver) {
+                    // Hyperlink to Open Archive target
+                    $link = $curDoc->getLinkUrl();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // Record Title
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
 
                 } elseif ($curDoc instanceof EbscohostRecordDriver) {
+                    // Hyperlink to EBSCOHost record
+                    $link = $curDoc->getLinkUrl();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // Record Title
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+                    // Record Primary Author
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
 
                 } elseif ($curDoc instanceof EbscoRecordDriver) {
+                    // Hyperlink to EBSCO record
+                    $link = $curDoc->getLinkUrl();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // Record Title
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+                    // Record Primary Author
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
 
                 } elseif ($curDoc instanceof WebsitePageRecordDriver) {
+                    // Hyperlink
+                    $link = $curDoc->getLinkUrl();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // Record Title
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
 
                 } elseif ($curDoc instanceof WebResourceRecordDriver) {
+                    // Hyperlink
+                    $link = $curDoc->getLinkUrl();
+                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                    // Record Title
+                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
 
                 }
             }
