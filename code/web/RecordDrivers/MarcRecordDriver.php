@@ -982,7 +982,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 //						);
 						$this->_actions[] = array(
 							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
-							'url' => "/Record/{$this->getId()}/View856",
+							'url' => "",
 							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
 							'requireLogin' => false,
 							'type' => 'marc_access_online'
