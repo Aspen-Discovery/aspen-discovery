@@ -901,6 +901,7 @@ abstract class HorizonAPI extends Horizon{
 					'maxLength' => (int)$registrationField->length,
 					'type' => 'text',
 					'required' => (string)$registrationField->required == 'true',
+					'autocomplete' => false
 				);
 				if ((string)$registrationField->masked == 'true'){
 					$newField['type'] = 'password';
