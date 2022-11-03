@@ -1513,9 +1513,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPublishers()
+	public function getPublishers()
 	{
-		return isset($this->fields['publisher']) ? $this->fields['publisher'] : array();
+		return $this->fields['publisherStr'] ?? array();
 	}
 
 	public function getRatingData()
