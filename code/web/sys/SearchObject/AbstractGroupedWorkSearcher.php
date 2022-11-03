@@ -608,6 +608,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function buildExcel($result = null)
 	{
+        global $configArray;
 		try {
 			// First, get the search results if none were provided
 			// (we'll go for 50 at a time)
@@ -616,72 +617,120 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$result = $this->processSearch(false, false);
 			}
 
-			// Prepare the spreadsheet
-			ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
-			include ROOT_DIR . '/PHPExcel.php';
-			include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
-			$objPHPExcel = new PHPExcel();
-			$objPHPExcel->getProperties()->setTitle("Search Results");
+            // Create new PHPExcel object
+            $objPHPExcel = new PHPExcel();
+
+            // Set properties
+            $objPHPExcel->getProperties()
+                ->setCreator("Aspen Discovery")
+                ->setLastModifiedBy("Aspen Discovery")
+                ->setTitle("Search Results");
 
 			$objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle('Results');
+			$objPHPExcel->getActiveSheet()->setTitle("Search Results");
 
 			//Add headers to the table
 			$sheet = $objPHPExcel->getActiveSheet();
 			$curRow = 1;
 			$curCol = 0;
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Record #');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Call Number');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Item Type');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
 
 			$maxColumn = $curCol - 1;
 
 			global $solrScope;
-			for ($i = 0; $i < count($result['response']['docs']); $i++) {
-				//Output the row to excel
-				$curDoc = $result['response']['docs'][$i];
-				$curRow++;
-				$curCol = 0;
-				//Output the row to excel
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['id']) ? $curDoc['id'] : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDateSort']) ? implode(', ', $curDoc['publishDateSort']) : '');
-				$callNumber = '';
-				if (isset($curDoc['local_callnumber_' . $solrScope])) {
-					$callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
-				}
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $callNumber);
-				$iType = '';
-				if (isset($curDoc['itype_' . $solrScope])) {
-					$iType = is_array($curDoc['itype_' . $solrScope]) ? $curDoc['itype_' . $solrScope][0] : $curDoc['itype_' . $solrScope];
-				}
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $iType);
-				$location = '';
-				if (isset($curDoc['detailed_location_' . $solrScope])) {
-					$location = is_array($curDoc['detailed_location_' . $solrScope]) ? $curDoc['detailed_location_' . $solrScope][0] : $curDoc['detailed_location_' . $solrScope];
-				}
-				/** @noinspection PhpUnusedLocalVariableInspection */
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location);
-			}
+            $docs = $result['response']['docs'];
 
+			for ($i = 0; $i < count($docs); $i++) {
+                //Output the row to excel
+                $curDoc = $docs[$i];
+                $curRow++;
+                $curCol = 0;
+                //Output the row to excel
+                $link = '';
+                if ($curDoc['id']) {
+                    $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
+                }
+                $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+                $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
+
+                // Publish Dates: Min-Max
+                if (!is_array($curDoc['publishDate'])) {
+                    $publishDates = (array)$curDoc['publishDate'];
+                } else {
+                    $publishDates = $curDoc['publishDate'];
+                }
+                $publishDate = '';
+                if (count($publishDates) == 1) {
+                    $publishDate = $publishDates[0];
+                } elseif (count($publishDates) > 1) {
+                    $publishDate = min($publishDates) . ' - ' . max($publishDates);
+                }
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
+
+                // Formats
+                if (!is_array($curDoc['format'])) {
+                    $formats = (array)$curDoc['format'];
+                } else {
+                    $formats = $curDoc['format'];
+                }
+                foreach ($formats as $key=>$format) {
+                    $formats[$key] = substr($format, strpos($format, '#') + 1);
+                }
+                $uniqueFormats = array_unique($formats);
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
+
+                // Format / Location / Call number, max 3 records
+                //Get the Grouped Work Driver so we can get information about the formats and locations within the record
+                require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+                $groupedWorkDriver = new GroupedWorkDriver($curDoc);
+                $output = [];
+                foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation){
+                    //Manifestation gives us Format & Format Category
+                    if (!$relatedManifestation->isHideByDefault()) {
+                        $format = $relatedManifestation->format;
+                        //Variation gives us the sort
+                        foreach ($relatedManifestation->getVariations() as $variation) {
+                            if (!$variation->isHideByDefault()) {
+                                //Record will give us the call number, and location
+                                //Only do up to 3 records per format?
+                                foreach ($variation->getRecords() as $record) {
+                                    if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+                                        $copySummary = $record->getItemSummary();
+                                        foreach ($copySummary as $item) {
+                                                $output[] = $format . "::" . $item['description'];
+                                        }
+                                        $output = array_unique($output);
+                                        $output = array_slice($output, 0, 3);
+                                        if (count($output)==0) {
+                                            $output[] = "No copies currently owned by this library";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
+			}
 			for ($i = 0; $i < $maxColumn; $i++) {
 				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 			}
-
 			//Output to the browser
 			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 			header("Cache-Control: no-store, no-cache, must-revalidate");
 			header("Cache-Control: post-check=0, pre-check=0", false);
 			header("Pragma: no-cache");
 			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename="Results.xlsx"');
+			header('Content-Disposition: attachment;filename="SearchResults.xlsx"');
 
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?

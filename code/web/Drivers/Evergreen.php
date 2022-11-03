@@ -952,7 +952,7 @@ class Evergreen extends AbstractIlsDriver
 				'Content-Type: application/x-www-form-urlencoded',
 			);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-			$request = 'service=open-ils.actor&method=open-ils.actor.user.transactions.have_charge.fleshed';
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.transactions.have_balance.fleshed';
 			$request .= '&param=' . json_encode($authToken);
 			$request .= '&param=' . $patron->username;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
@@ -973,9 +973,9 @@ class Evergreen extends AbstractIlsDriver
 							'reason' => $transactionObj['last_billing_type'],
 							'message' => $transactionObj['last_billing_note'],
 							'amountVal' => $transactionObj['total_owed'],
-							'amountOutstandingVal' => $transactionObj['total_owed'] - $transactionObj['total_paid'],
+							'amountOutstandingVal' => $transactionObj['balance_owed'],
 							'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
-							'amountOutstanding' => $currencyFormatter->formatCurrency($transactionObj['total_owed'] - $transactionObj['total_paid'], $currencyCode),
+							'amountOutstanding' => $currencyFormatter->formatCurrency($transactionObj['balance_owed'], $currencyCode),
 						];
 						$fines[] = $curFine;
 					}
@@ -984,6 +984,10 @@ class Evergreen extends AbstractIlsDriver
 		}
 
 		return $fines;
+	}
+
+	public function showOutstandingFines(){
+		return true;
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO)

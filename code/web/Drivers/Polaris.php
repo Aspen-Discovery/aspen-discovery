@@ -1901,19 +1901,19 @@ class Polaris extends AbstractIlsDriver
 		}
 
 		$fields['personalInformationSection'] = array('property' => 'personalInformationSection', 'type' => 'section', 'label' => 'Personal Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'firstName' => array('property' => 'firstName', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true, 'readOnly' => ($type == 'patronUpdate')),
-			'middleName' => array('property' => 'middleName', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'Your middle name', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),
-			'lastName' => array('property' => 'lastName', 'type' => 'text', 'label' => 'Last Name', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true, 'readOnly' => ($type == 'patronUpdate')),
+			'firstName' => array('property' => 'firstName', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true, 'readOnly' => ($type == 'patronUpdate'), 'autocomplete' => false),
+			'middleName' => array('property' => 'middleName', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'Your middle name', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate'), 'autocomplete' => false),
+			'lastName' => array('property' => 'lastName', 'type' => 'text', 'label' => 'Last Name', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true, 'readOnly' => ($type == 'patronUpdate'), 'autocomplete' => false),
 		]);
 		if ($type == 'selfReg' && $library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields['personalInformationSection']['properties']['birthDate'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields['personalInformationSection']['properties']['birthDate'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true, 'autocomplete' => false);
 		}
 		$fields['nameOnIdentificationSection'] = array('property' => 'nameOnIdentificationSection', 'type' => 'section', 'label' => 'Name on Identification', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'firstNameOnIdentification' => array('property' => 'firstNameOnIdentification', 'type' => 'text', 'label' => 'First Name', 'description' => 'The first name on your ID', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),
-			'middleNameOnIdentification' => array('property' => 'middleNameOnIdentification', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'The middle name on your ID', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),
-			'lastNameOnIdentification' => array('property' => 'lastNameOnIdentification', 'type' => 'text', 'label' => 'Last Name', 'description' => 'The last name on your ID', 'maxLength' => 60, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),
+			'firstNameOnIdentification' => array('property' => 'firstNameOnIdentification', 'type' => 'text', 'label' => 'First Name', 'description' => 'The first name on your ID', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate'), 'autocomplete' => false),
+			'middleNameOnIdentification' => array('property' => 'middleNameOnIdentification', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'The middle name on your ID', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate'), 'autocomplete' => false),
+			'lastNameOnIdentification' => array('property' => 'lastNameOnIdentification', 'type' => 'text', 'label' => 'Last Name', 'description' => 'The last name on your ID', 'maxLength' => 60, 'required' => false, 'readOnly' => ($type == 'patronUpdate'), 'autocomplete' => false),
 			'useNameOnIdForNotices' => array('property' => 'useNameOnIdForNotices', 'type' => 'checkbox', 'label' => 'Use name on ID for print / phone notices', 'description' => 'Whether or not the library should use the name on your ID when sending print and phone notices', 'required' => false, 'readOnly' => ($type == 'patronUpdate')),
 		]);
 		$addressCanBeUpdated = true;
@@ -1921,19 +1921,19 @@ class Polaris extends AbstractIlsDriver
 			$addressCanBeUpdated = false;
 		}
 		if (empty($library->validSelfRegistrationStates)){
-			$borrowerStateField = array('property' => 'state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+			$borrowerStateField = array('property' => 'state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true, 'autocomplete' => false);
 		}else{
 			$validStates = explode('|', $library->validSelfRegistrationStates);
 			$validStates = array_combine($validStates, $validStates);
 			$borrowerStateField = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true, 'readOnly' => !$addressCanBeUpdated);
 		}
 		$fields['addressSection'] = array('property' => 'addressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'address' => array('property' => 'address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true, 'readOnly' => !$addressCanBeUpdated),
-			'address2' => array('property' => 'address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false, 'readOnly' => !$addressCanBeUpdated),
-			'address3' => array('property' => 'address3', 'type' => 'text', 'label' => 'Address 3', 'description' => 'Third line of the address', 'maxLength' => 128, 'required' => false, 'readOnly' => !$addressCanBeUpdated),
-			'city' => array('property' => 'city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true, 'readOnly' => !$addressCanBeUpdated),
+			'address' => array('property' => 'address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true, 'readOnly' => !$addressCanBeUpdated, 'autocomplete' => false),
+			'address2' => array('property' => 'address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false, 'readOnly' => !$addressCanBeUpdated, 'autocomplete' => false),
+			'address3' => array('property' => 'address3', 'type' => 'text', 'label' => 'Address 3', 'description' => 'Third line of the address', 'maxLength' => 128, 'required' => false, 'readOnly' => !$addressCanBeUpdated, 'autocomplete' => false),
+			'city' => array('property' => 'city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true, 'readOnly' => !$addressCanBeUpdated, 'autocomplete' => false),
 			'state' => $borrowerStateField,
-			'zipcode' => array('property' => 'zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true, 'readOnly' =>!$addressCanBeUpdated),
+			'zipcode' => array('property' => 'zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true, 'readOnly' =>!$addressCanBeUpdated, 'autocomplete' => false),
 		]);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
@@ -1949,11 +1949,11 @@ class Polaris extends AbstractIlsDriver
 			$phoneCanBeUpdated = false;
 		}
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'email' => array('property' => 'email', 'type' => 'email', 'label' => 'Email address', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
-			'altEmail' => array('property' => 'altEmail', 'type' => 'email', 'label' => 'Alt. Email Address', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
-			'phone1' => array('property' => 'phone1', 'type' => 'text', 'label' => 'Phone 1' . $phoneFormat, 'description' => 'Phone 1', 'maxLength' => 128, 'required' => false, 'readOnly' => !$phoneCanBeUpdated),
-			'phone2' => array('property' => 'phone2', 'type' => 'text', 'label' => 'Phone 2' . $phoneFormat, 'description' => 'Phone 2', 'maxLength' => 128, 'required' => false, 'readOnly' => !$phoneCanBeUpdated),
-			'phone3' => array('property' => 'phone3', 'type' => 'text', 'label' => 'Phone 3' . $phoneFormat, 'description' => 'Phone 3', 'maxLength' => 128, 'required' => false, 'readOnly' => !$phoneCanBeUpdated),
+			'email' => array('property' => 'email', 'type' => 'email', 'label' => 'Email address', 'description' => 'Email', 'maxLength' => 128, 'required' => false, 'autocomplete' => false),
+			'altEmail' => array('property' => 'altEmail', 'type' => 'email', 'label' => 'Alt. Email Address', 'description' => 'Email', 'maxLength' => 128, 'required' => false, 'autocomplete' => false),
+			'phone1' => array('property' => 'phone1', 'type' => 'text', 'label' => 'Phone 1' . $phoneFormat, 'description' => 'Phone 1', 'maxLength' => 128, 'required' => false, 'readOnly' => !$phoneCanBeUpdated, 'autocomplete' => false),
+			'phone2' => array('property' => 'phone2', 'type' => 'text', 'label' => 'Phone 2' . $phoneFormat, 'description' => 'Phone 2', 'maxLength' => 128, 'required' => false, 'readOnly' => !$phoneCanBeUpdated, 'autocomplete' => false),
+			'phone3' => array('property' => 'phone3', 'type' => 'text', 'label' => 'Phone 3' . $phoneFormat, 'description' => 'Phone 3', 'maxLength' => 128, 'required' => false, 'readOnly' => !$phoneCanBeUpdated, 'autocomplete' => false),
 		]);
 		$carriers = [
 			0=>'(Select a carrier)',
@@ -1996,8 +1996,8 @@ class Polaris extends AbstractIlsDriver
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
 			$fields['logonInformationSection'] = array('property' => 'logonInformationSection', 'type' => 'section', 'label' => 'Logon Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-				'patronUsername' => array('property' => 'patronUsername', 'type' => 'text', 'label' => 'Username (optional as an alternate to barcode)', 'description' => 'An optional username to use when logging in.', 'required' => false, 'maxLength' => 128),
-				'patronPassword' => array('property' => 'patronPassword', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => true, 'required' => true, 'showDescription' => true),
+				'patronUsername' => array('property' => 'patronUsername', 'type' => 'text', 'label' => 'Username (optional as an alternate to barcode)', 'description' => 'An optional username to use when logging in.', 'required' => false, 'maxLength' => 128, 'autocomplete' => false),
+				'patronPassword' => array('property' => 'patronPassword', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => true, 'required' => true, 'showDescription' => true, 'autocomplete' => false),
 			]);
 		}
 

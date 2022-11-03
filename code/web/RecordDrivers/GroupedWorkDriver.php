@@ -1513,9 +1513,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPublishers()
+	public function getPublishers()
 	{
-		return isset($this->fields['publisher']) ? $this->fields['publisher'] : array();
+		return $this->fields['publisherStr'] ?? array();
 	}
 
 	public function getRatingData()
@@ -2445,7 +2445,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return $recordsFromIndex;
 	}
 
-	private function loadRelatedRecords($forCovers = false)
+	private function loadRelatedRecords($forCovers = false, $forceLoadFromDB = false)
 	{
 		global $timer;
 		global $memoryWatcher;
@@ -2458,7 +2458,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			global $library;
 			$scopingInfoFieldName = 'scoping_details_' . $solrScope;
 			$relatedRecords = array();
-			if (isset($this->fields[$scopingInfoFieldName])) {
+			if (!$forceLoadFromDB && isset($this->fields[$scopingInfoFieldName])) {
 				$user = UserAccount::getActiveUserObj();
 
 				$searchLocation = Location::getSearchLocation();
@@ -2498,6 +2498,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 				}
 			}else{
 				$searchLocation = Location::getSearchLocation();
+
+				//Check for the main location for the library
+				require_once ROOT_DIR . '/sys/Grouping/Scope.php';
+				//Get the scope for the main location for the library
+				$mainLocation = new Location();
+				$mainLocation->libraryId = $library->libraryId;
+				$mainLocation->isMainBranch = 1;
+				$mainLocationScopeId = false;
+				if ($mainLocation->find(true)){
+					$scope = new Grouping_Scope();
+					$mainLibraryScopeName = str_replace('-', '', strtolower(!empty($mainLocation->subdomain) ? $mainLocation->subdomain : $mainLocation->code));
+					$scope->name = $mainLibraryScopeName;
+					$scope->isLocationScope = 1;
+					if ($scope->find(true)){
+						$mainLocationScopeId = $scope->id;
+					}
+				}
 
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				require_once ROOT_DIR . '/sys/Grouping/Manifestation.php';
@@ -2566,7 +2583,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 							$scopedItem['localUrl'] = $itemUrls[0]['url'];
 						}
 						$results->closeCursor();
-						$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library);
+						$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library, $mainLocationScopeId);
 						$relatedRecord->addItem($itemData);
 					}
 
@@ -2803,7 +2820,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$i = 0;
 		foreach ($this->relatedItemsByRecordId[$relatedRecord->id] as $curItem) {
 			require_once ROOT_DIR . '/sys/Grouping/Item.php';
-			$item = new Grouping_Item($curItem, $scopingInfo, $searchLocation, $library);
+			$item = new Grouping_Item($curItem, $scopingInfo, $searchLocation, $library, false);
 			$relatedRecord->addItem($item);
 
 			$description = $item->shelfLocation . ':' . $item->callNumber;
@@ -2867,7 +2884,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if (empty($physicalLocation) && ($searchLocation == null || $item->isEContent)) {
 					$relatedRecord->setHasLocalItem(true);
 				}
-				$key = '5 ' . $key;
+				//If the item is owned by the main location of the library, move it above the other locations for that library
+				if ($item->atLibraryMainBranch){
+					$key = '4 ' . $key;
+				}else {
+					$key = '5 ' . $key;
+				}
 				$sectionId = 5;
 				$section = $library->displayName;
 			} elseif ($item->isOrderItem) {
