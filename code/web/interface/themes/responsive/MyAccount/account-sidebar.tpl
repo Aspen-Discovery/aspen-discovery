@@ -245,6 +245,7 @@
 					</div>
 				{/if}
 			{/if}
+		{if !$showMyAccount}</div>{/if}
 		</div>
 	{/if}
 	<script type="text/javascript">
