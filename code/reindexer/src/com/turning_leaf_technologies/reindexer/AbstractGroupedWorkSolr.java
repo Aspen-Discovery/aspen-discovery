@@ -469,7 +469,7 @@ public abstract class AbstractGroupedWorkSolr {
 				this.titleSort = sortableTitle.trim();
 
 				//SubTitle only gets set based on the main title.
-				if (subTitle == null){
+				if (subTitle == null || subTitle.equals("")){
 					this.displayTitle = shortTitle;
 					if (this.subTitle != null) {
 						//clear the subtitle if it was set by a previous record.
