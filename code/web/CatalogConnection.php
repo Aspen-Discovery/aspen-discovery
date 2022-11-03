@@ -667,7 +667,7 @@ class CatalogConnection
 
 	/**
 	 * @param ReadingHistoryEntry $readingHistoryDB
-	 * @param bool $forExport True if this is being ysed while exporting to Excel
+	 * @param bool $forExport True if this is being used while exporting to Excel
 	 * @return mixed
 	 */
 	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false)

@@ -161,7 +161,7 @@ class GroupedWorkDisplaySetting extends DataObject
 
 			// Catalog Enrichment //
 			'enrichmentSection' => ['property' => 'enrichmentSection', 'type' => 'section', 'label' => 'Catalog Enrichment', 'renderAsHeading' => true, 'hideInLists' => true, 'properties' => [
-				'showStandardReviews' => array('property' => 'showStandardReviews', 'type' => 'checkbox', 'label' => 'Show Standard Reviews', 'description' => 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => 1),
+				'showStandardReviews' => array('property' => 'showStandardReviews', 'type' => 'checkbox', 'label' => 'Show Syndicated Reviews', 'description' => 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => 1),
 				'showGoodReadsReviews' => array('property' => 'showGoodReadsReviews', 'type' => 'checkbox', 'label' => 'Show GoodReads Reviews', 'description' => 'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default' => true),
 				'preferSyndeticsSummary' => array('property' => 'preferSyndeticsSummary', 'type' => 'checkbox', 'label' => 'Prefer Syndetics/Content Cafe Description', 'description' => 'Whether or not the Description loaded from an enrichment service should be preferred over the Description in the Marc Record.', 'hideInLists' => true, 'default' => 1),
 				'showSimilarAuthors' => array('property' => 'showSimilarAuthors', 'type' => 'checkbox', 'label' => 'Show Similar Authors', 'description' => 'Whether or not Similar Authors from Novelist is shown.', 'default' => 1, 'hideInLists' => true,),

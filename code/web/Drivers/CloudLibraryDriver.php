@@ -72,8 +72,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout->updateFromRecordDriver($recordDriver);
 					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($patron);
 				} else {
-					$checkout->title = 'Unknown cloudLibrary Title';
-					$checkout->format = 'Unknown - cloudLibrary';
+					$checkout->title = translate(['text' => 'Unknown cloudLibrary Title', 'isPublicFacing' => true]);
+					$checkout->format = translate(['Unknown - cloudLibrary', 'isPublicFacing' => true]);
 				}
 
 				$checkout->userId = $patron->id;
@@ -676,8 +676,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if ($recordDriver->isValid()) {
 			$hold->updateFromRecordDriver($recordDriver);
 		} else {
-			$hold->title = 'Unknown cloudLibrary Title';
-			$hold->format = 'Unknown - cloudLibrary';
+			$hold->title = translate(['text' => 'Unknown cloudLibrary Title', 'isPublicFacing'=>true]);
+			$hold->format = translate(['Unknown - cloudLibrary', 'isPublicFacing'=>true]);
 		}
 		return $hold;
 	}

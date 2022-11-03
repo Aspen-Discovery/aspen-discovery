@@ -39,6 +39,13 @@ function getUpdates22_11_00(): array
 				"ALTER TABLE materials_request_formats ADD column activeForNewRequests TINYINT(1) DEFAULT 1"
 			]
 		], //materials_request_format_active_for_new_requests
+		'add_numInvalidRecords_to_sideload_logs' => [
+			'title' => 'Add Num Invalid Records To Sideload Logs',
+			'description' => 'Add Num Invalid Records To Sideload Logs',
+			'sql' => [
+				'ALTER TABLE sideload_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
+			]
+		], //add_numInvalidRecords_to_sideload_logs
 
 		//kirstien
 
