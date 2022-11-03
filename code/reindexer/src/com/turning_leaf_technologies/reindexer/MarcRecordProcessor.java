@@ -1583,7 +1583,7 @@ abstract class MarcRecordProcessor {
 				}else if (editionData.contains("book club kit")) {
 					result.add("BookClubKit");
 				}else if (editionData.contains("vox")) {
-					result.add("Vox");
+					result.add("VoxBooks");
 				}else if (editionData.contains("pop-up") || (editionData.contains("mini-pop-up"))) {
 					result.add("Pop-UpBook");
 				}else {
