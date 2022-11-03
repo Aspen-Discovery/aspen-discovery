@@ -963,34 +963,30 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 				if ($show856LinksAsAccessOnlineButtons){
 					//Get any 856 links for the marc record
-					$marcRecord = $this->getMarcRecord();
-					$marc856Fields = $marcRecord->getFields('856');
-					/** @var File_MARC_Data_Field $marc856Field */
-					foreach ($marc856Fields as $marc856Field){
-						if ($marc856Field->getIndicator(1) == '4' && ($marc856Field->getIndicator(2) == '0' || $marc856Field->getIndicator(2) == '1')){
-							$subfieldU = $marc856Field->getSubfield('u');
-							$showAction = false;
-							if ($marc856Field->getIndicator(2) == '1'){
-								$subfield3 = $marc856Field->getSubfield('3');
-								if ($subfield3 == null && $subfieldU != null){
-									$showAction = true;
-								}
-							}else{
-								if ($subfieldU != null) {
-									$showAction = true;
-								}
-							}
-							if ($showAction){
-								$linkDestination = $subfieldU->getData();
-								$this->_actions[] = array(
-									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
-									'url' => $linkDestination,
-									'requireLogin' => false,
-									'type' => 'marc_access_online',
-									'target' => '_blank'
-								);
-							}
-						}
+					$validUrls = $this->getViewable856Links();
+					if (count($validUrls) == 1){
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+							'url' => $validUrls[0]['url'],
+							'requireLogin' => false,
+							'type' => 'marc_access_online',
+							'target' => '_blank'
+						);
+					}elseif (count($validUrls) >= 2){
+//						$this->_actions[] = array(
+//							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+//							'url' => $validUrls[0],
+//							'requireLogin' => false,
+//							'type' => 'marc_access_online',
+//							'target' => '_blank'
+//						);
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+							'url' => "/Record/{$this->getId()}/View856",
+							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
+							'requireLogin' => false,
+							'type' => 'marc_access_online'
+						);
 					}
 				}
 
@@ -2358,6 +2354,51 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 
 		return $locations;
+	}
+
+	private $validUrls = null;
+	/**
+	 * @return array
+	 */
+	public function getViewable856Links(): array {
+		if ($this->validUrls == null) {
+			$validUrls = [];
+			$marcRecord = $this->getMarcRecord();
+			$marc856Fields = $marcRecord->getFields('856');
+			/** @var File_MARC_Data_Field $marc856Field */
+			foreach ($marc856Fields as $marc856Field) {
+				if ($marc856Field->getIndicator(1) == '4' && ($marc856Field->getIndicator(2) == '0' || $marc856Field->getIndicator(2) == '1')) {
+					$subfieldU = $marc856Field->getSubfield('u');
+					$showAction = false;
+					if ($marc856Field->getIndicator(2) == '1') {
+						$subfield3 = $marc856Field->getSubfield('3');
+						if ($subfield3 == null && $subfieldU != null) {
+							$showAction = true;
+						}
+					}
+					else {
+						if ($subfieldU != null) {
+							$showAction = true;
+						}
+					}
+					if ($showAction) {
+						$subfieldZ = $marc856Field->getSubfield('z');
+						if ($subfieldZ != null) {
+							$label = $subfieldZ->getData();
+						}
+						else {
+							$label = $subfieldU->getData();
+						}
+						$validUrls[] = [
+							'url' => $subfieldU->getData(),
+							'label' => $label
+						];
+					}
+				}
+			}
+			$this->validUrls = $validUrls;
+		}
+		return $this->validUrls;
 	}
 }
 

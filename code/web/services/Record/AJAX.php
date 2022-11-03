@@ -1073,6 +1073,60 @@ class Record_AJAX extends Action
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function showSelect856ToViewForm() : array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				list(, $id) = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$validUrls = $recordDriver->getViewable856Links();
+			$interface->assign('validUrls', $validUrls);
+
+			$buttonTitle = translate(['text' => 'Access Online', 'isPublicFacing' => true]);
+			return [
+				'title' => translate(['text' => 'Select Link to View', 'isPublicFacing' => true]),
+				'modalBody' => $interface->fetch("Record/select-view-856-link-form.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#view856\").submit()'>$buttonTitle</button>"
+			];
+		}else{
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'modalBody' => translate(['text' => 'Could not find a record with that id', 'isPublicFacing' => true]),
+				'modalButtons' => ""
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function View856() : string {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$linkId = $_REQUEST['linkId'];
+
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				list(, $id) = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$validUrls = $recordDriver->getViewable856Links();
+			header('Location: ' . $validUrls[$linkId]['url']);
+			die();
+		}else{
+			header('Location: ' . "/Record/$id");
+			die();
+		}
+	}
+
 	function getStaffView() : array {
 		$result = [
 			'success' => false,
