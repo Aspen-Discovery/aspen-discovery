@@ -94,17 +94,6 @@ export default class Search extends Component {
 		}
 	};
 
-	_buildUrlParams = async () => {
-		let storage = await this._getCurrentParams().then(response => {
-			if (response) {
-				const baseUrl = this.context.library.baseUrl;
-				let params = encodeURI(response);
-			} else {
-				// no params set?
-			}
-		});
-	};
-
 	_recentSearchItem = (search) => {
 		const {navigation} = this.props;
 		return (
