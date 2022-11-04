@@ -128,7 +128,7 @@ class CourseReservesIndexer {
 			String courseNumber = allCourseReservesRS.getString("courseNumber");
 			String courseTitle = allCourseReservesRS.getString("courseTitle");
 
-			String displayName = courseNumber + " " + courseTitle + " - " + courseTitle;
+			String displayName = courseNumber + " " + courseTitle + " - " + courseInstructor;
 			courseReserveSolr.setTitle(displayName);
 			courseReserveSolr.setCourseNumber(courseNumber);
 			courseReserveSolr.setCourseTitle(courseTitle);
