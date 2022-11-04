@@ -137,10 +137,8 @@ export async function getAppliedFilters() {
 	const response = getResponseCode(data);
 	if (response.success) {
 		const appliedFilters = response.data.result.data;
-		console.log(appliedFilters);
 		SEARCH.appliedFilters = appliedFilters;
 		_.map(appliedFilters, function(filter, index, collection) {
-			console.log(filter);
 			_.forEach(filter, function(facet, key) {
 				addAppliedFilter(facet['field'], facet['value'], true);
 			});
@@ -340,10 +338,8 @@ export function buildParamsForUrl() {
 				if (field === 'sort_by') {
 					//ignore adding sort here, we'll do it later
 					//todo: stop adding sort_by to SEARCH.pendingFilters
-					console.log(field);
 				} else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level') {
 					facet = facet.replaceAll(' ', '+');
-					console.log(facet);
 					params = params.concat('&filter[]=' + field + ':' + facet);
 				} else {
 					params = params.concat('&filter[]=' + encodeURIComponent(field + ':' + facet));
@@ -354,7 +350,6 @@ export function buildParamsForUrl() {
 
 	params = _.join(params, '');
 	SEARCH.appendedParams = params;
-	console.log('New search params > ', SEARCH.appendedParams);
 	return params;
 }
 
@@ -431,7 +426,6 @@ export function addAppliedFilter(group, values, multiSelect = false) {
 }
 
 export function removeAppliedFilter(group, values) {
-	console.log(values);
 	if (group) {
 		if (_.isArray(values) || _.isObject(values)) {
 			_.forEach(values, function(value) {

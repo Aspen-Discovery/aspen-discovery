@@ -66,7 +66,6 @@ export default class Filters extends Component {
 	};
 
 	_appliedFacet = (cluster) => {
-		const appliedFacets = _.filter(SEARCH.availableFacets.data, 'hasApplied');
 		const facetData = _.filter(SEARCH.availableFacets.data, ['label', cluster]);
 		const pendingFacets = _.filter(this.state.pendingFilters, ['field', facetData[0]['field']]);
 		let text = '';
