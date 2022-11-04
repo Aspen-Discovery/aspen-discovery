@@ -20,7 +20,8 @@ export const SEARCH = {
 	'sortList': [],
 	'availableFacets': [],
 	'defaultFacets': [],
-	'pending': [],
+	'pendingFilters': [],
+	'appendedParams': '',
 };
 
 const endpoint = ENDPOINT.search;
@@ -89,24 +90,28 @@ export async function getSearchResults(
 		headers: getHeaders(endpoint.isPost),
 		auth: createAuthTokens(),
 	});
-	const data = await discovery.get(endpoint.url + 'searchLite' + filters, {
+
+	const data = await discovery.get(endpoint.url + 'searchLite' + SEARCH.appendedParams, {
 		library: PATRON.scope,
 		lookfor: searchTerm,
 		pageSize: pageSize,
 		page: page,
+		sort: SEARCH.sortMethod,
 	});
 	const response = getResponseCode(data);
 	if (response.success) {
-		SEARCH.id = response.data.result.id;
-		SEARCH.sortMethod = response.data.result.sort;
-		SEARCH.term = response.data.result.lookfor;
-
-		await getSortList();
-		await getAvailableFacets();
-		await getAppliedFilters();
+		// only set these if we get back a good result
+		if (response.data.result.success) {
+			SEARCH.id = response.data.result.id;
+			SEARCH.sortMethod = response.data.result.sort;
+			SEARCH.term = response.data.result.lookfor;
+			await getSortList();
+			await getAvailableFacets();
+			await getAppliedFilters();
+		}
 
 		return {
-			success: response.success,
+			success: response.data.result.success,
 			data: response.data.result,
 		};
 	} else {
@@ -119,6 +124,7 @@ export async function getSearchResults(
 }
 
 export async function getAppliedFilters() {
+	SEARCH.appliedFilters = [];
 	const discovery = create({
 		baseURL: LIBRARY.url,
 		timeout: GLOBALS.timeoutFast,
@@ -130,10 +136,16 @@ export async function getAppliedFilters() {
 			{id: SEARCH.id});
 	const response = getResponseCode(data);
 	if (response.success) {
-		SEARCH.appliedFilters = response.data.result.data;
-		_.forEach(SEARCH.appliedFilters, function(filter, key) {
-			addAppliedFilter(filter.field, filter.value, true);
+		const appliedFilters = response.data.result.data;
+		console.log(appliedFilters);
+		SEARCH.appliedFilters = appliedFilters;
+		_.map(appliedFilters, function(filter, index, collection) {
+			console.log(filter);
+			_.forEach(filter, function(facet, key) {
+				addAppliedFilter(facet['field'], facet['value'], true);
+			});
 		});
+		buildParamsForUrl();
 		return response.data.result.data;
 	} else {
 		return response;
@@ -242,48 +254,6 @@ export async function categorySearchResults(
 	}
 }
 
-export async function filteredSearchResults(
-		searchTerm, pageSize = 100, page, libraryUrl, filters) {
-	let solrScope = '';
-	if (GLOBALS.solrScope !== 'unknown') {
-		solrScope = GLOBALS.solrScope;
-	} else {
-		try {
-			solrScope = await AsyncStorage.getItem('@solrScope');
-		} catch (e) {
-			console.log(e);
-		}
-	}
-
-	console.log('solrScope: ', solrScope);
-
-	const filterParams = buildUrl(filters);
-
-	const api = create({
-		baseURL: 'http://aspen.local:8888/API',
-		timeout: GLOBALS.timeoutSlow,
-		headers: getHeaders,
-		params: {
-			library: solrScope,
-			lookfor: searchTerm,
-			pageSize: pageSize,
-			page: page,
-		},
-		auth: createAuthTokens(),
-	});
-
-	const response = await api.get(
-			'/SearchAPI?method=getAppSearchResults' + filterParams);
-	if (response.ok) {
-		return response.data.result;
-	} else {
-		popToast(translate('error.no_server_connection'),
-				translate('error.no_library_connection'), 'warning');
-		console.log(response);
-		return response;
-	}
-}
-
 export async function listofListSearchResults(searchId, limit = 25, page, libraryUrl) {
 	const myArray = searchId.split('_');
 	let id = myArray[myArray.length - 1];
@@ -360,7 +330,6 @@ export function getFormats(data) {
  **/
 export function buildParamsForUrl() {
 	const filters = SEARCH.pendingFilters;
-	console.log(filters);
 	let params = [];
 	_.forEach(filters, function(filter) {
 		const field = filter.field;
@@ -369,16 +338,23 @@ export function buildParamsForUrl() {
 		if (_.size(facets) > 0) {
 			_.forEach(facets, function(facet) {
 				if (field === 'sort_by') {
-					params = params.concat('&sort=' + encodeURI(facet));
+					//ignore adding sort here, we'll do it later
+					//todo: stop adding sort_by to SEARCH.pendingFilters
+					console.log(field);
+				} else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level') {
+					facet = facet.replaceAll(' ', '+');
+					console.log(facet);
+					params = params.concat('&filter[]=' + field + ':' + facet);
 				} else {
-					params = params.concat('&filter[]=' + encodeURI(field + ':' + facet));
+					params = params.concat('&filter[]=' + encodeURIComponent(field + ':' + facet));
 				}
 			});
 		}
 	});
 
 	params = _.join(params, '');
-	console.log(params);
+	SEARCH.appendedParams = params;
+	console.log('New search params > ', SEARCH.appendedParams);
 	return params;
 }
 
@@ -426,19 +402,27 @@ export function addAppliedFilter(group, values, multiSelect = false) {
 				const i = _.findIndex(SEARCH.pendingFilters, ['field', group]);
 				if (i !== -1) {
 					if (multiSelect) {
-						let newValue = _.castArray(value);
-						SEARCH.pendingFilters[i]['facets'] = _.concat(SEARCH.pendingFilters[i]['facets'], newValue);
+						SEARCH.pendingFilters[i]['facets'] = _.concat(SEARCH.pendingFilters[i]['facets'], value);
 					} else {
 						SEARCH.pendingFilters[i]['facets'] = _.castArray(value);
 					}
 					SEARCH.pendingFilters[i]['facets'] = _.uniqWith(SEARCH.pendingFilters[i]['facets'], _.isEqual);
+					console.log('Added ' + value + ' to ' + group + ' (multiSelect: ' + multiSelect + ')');
+					buildParamsForUrl();
 					return true;
 				}
 			});
 		} else {
 			const i = _.findIndex(SEARCH.pendingFilters, ['field', group]);
 			if (i !== -1) {
-				SEARCH.pendingFilters[i]['facets'] = _.castArray(values);
+				if (multiSelect) {
+					SEARCH.pendingFilters[i]['facets'] = _.concat(SEARCH.pendingFilters[i]['facets'], values);
+				} else {
+					SEARCH.pendingFilters[i]['facets'] = _.castArray(values);
+				}
+				SEARCH.pendingFilters[i]['facets'] = _.uniqWith(SEARCH.pendingFilters[i]['facets'], _.isEqual);
+				console.log('Added ' + values + ' to ' + group + ' (multiSelect: ' + multiSelect + ')');
+				buildParamsForUrl();
 				return true;
 			}
 		}
@@ -447,25 +431,24 @@ export function addAppliedFilter(group, values, multiSelect = false) {
 }
 
 export function removeAppliedFilter(group, values) {
-	console.log('group >', group);
-	console.log('values >', values);
+	console.log(values);
 	if (group) {
 		if (_.isArray(values) || _.isObject(values)) {
 			_.forEach(values, function(value) {
 				const i = _.findIndex(SEARCH.pendingFilters, ['field', group]);
-				console.log('i >', i);
 				if (i !== -1) {
-					console.log(SEARCH.pendingFilters[i]['facets']);
 					SEARCH.pendingFilters[i]['facets'] = _.pull(SEARCH.pendingFilters[i]['facets'], value);
+					console.log('Removed ' + value + ' from ' + group);
+					buildParamsForUrl();
 					return true;
 				}
 			});
 		} else {
 			const i = _.findIndex(SEARCH.pendingFilters, ['field', group]);
-			console.log('i >', i);
 			if (i !== -1) {
-				console.log(SEARCH.pendingFilters[i]['facets']);
 				SEARCH.pendingFilters[i]['facets'] = _.pull(SEARCH.pendingFilters[i]['facets'], values);
+				console.log('Removed ' + values + ' from ' + group);
+				buildParamsForUrl();
 				return true;
 			}
 		}
@@ -478,4 +461,22 @@ export function getPendingFacets(cluster) {
 		return _.filter(SEARCH.pendingFilters, ['field', cluster]);
 	}
 	return [];
+}
+
+export function getCurrentSort() {
+	const sort = _.filter(SEARCH.sortList, 'selected');
+	return sort;
+}
+
+export function resetSearchGlobals() {
+	SEARCH.term = null;
+	SEARCH.id = null;
+	SEARCH.hasPendingChanges = false;
+	SEARCH.sortMethod = 'relevance';
+	SEARCH.appliedFilters = [];
+	SEARCH.sortList = [];
+	SEARCH.availableFacets = [];
+	SEARCH.pendingFilters = [];
+	SEARCH.appendedParams = '';
+	console.log('Reset global search variables');
 }
