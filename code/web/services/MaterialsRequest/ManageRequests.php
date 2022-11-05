@@ -436,7 +436,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
                     $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
 
                     // Assigned to
-                    $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->getAssigneeUser()->displayName);
+                    if ($request->getAssigneeUser()) {
+                        $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->getAssigneeUser()->displayName);
+                    } else {
+                        $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, translate(['text'=>'Unassigned', 'isAdminFacing'=>true]));
+                    }
                 }
             }
 
