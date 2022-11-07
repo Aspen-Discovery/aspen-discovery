@@ -7,7 +7,7 @@ export default class Facet_Checkbox extends Component {
 		return (
 				<Pressable py={4}>
 					<HStack align="center" space={3}>
-						<Checkbox value={item.value} accessibilityLabel={item.display} defaultIsChecked={item.isApplied}/>
+						<Checkbox value={item.value} accessibilityLabel={item.display}/>
 						<Text>{item.display} ({item.count})</Text>
 					</HStack>
 				</Pressable>

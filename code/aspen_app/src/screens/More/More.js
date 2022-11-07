@@ -106,7 +106,7 @@ export default class More extends Component {
 					/>
 
 					<Center mt={5}>
-						<Text mt={10} fontSize="xs" bold>Aspen LiDA <Text color="coolGray.600" _dark={{color: 'warmGray.400'}}>{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}]</Text></Text>
+						<Text mt={10} fontSize="xs" bold>Aspen LiDA <Text color="coolGray.600" _dark={{color: 'warmGray.400'}}>{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel}]</Text></Text>
 						{library.discoveryVersion ? (<Text fontSize="xs" bold>Aspen Discovery <Text color="coolGray.600" _dark={{color: 'warmGray.400'}}>{library.discoveryVersion}</Text></Text>) : null}
 					</Center>
 				</Box>
