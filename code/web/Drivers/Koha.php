@@ -1824,7 +1824,7 @@ class Koha extends AbstractIlsDriver
 			return $result;
 		}
 
-		if (false && $this->getKohaVersion() >= 19.11) {
+		if ($this->getKohaVersion() >= 19.11) {
 			$sourceId = null;
 			require_once ROOT_DIR . '/sys/User/Checkout.php';
 			$checkout = new Checkout();
