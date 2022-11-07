@@ -526,7 +526,7 @@ class Koha extends AbstractIlsDriver
 							$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired', 'isPublicFacing' => true]);
 						}
 					}
-				
+
 					$patronExpirationResults->close();
 				}
 			}
