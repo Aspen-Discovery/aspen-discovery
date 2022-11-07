@@ -18,6 +18,7 @@ export default class Filters extends Component {
 			isLoading: true,
 			term: '',
 			facets: SEARCH.availableFacets.data ? Object.keys(SEARCH.availableFacets.data) : [],
+			pendingFilters: SEARCH.pendingFilters ?? [],
 		};
 		this._isMounted = false;
 	}
@@ -33,7 +34,12 @@ export default class Filters extends Component {
 		this._isMounted = false;
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(prevProps, prevState) {
+		if (this.state.pendingFilters !== this.props.route.params?.pendingFilters) {
+			this.setState({
+				pendingFilters: this.props.route.params?.pendingFilters,
+			});
+		}
 		const {navigation} = this.props;
 		navigation.setOptions({
 			/* headerLeft: () => (
@@ -60,29 +66,45 @@ export default class Filters extends Component {
 	};
 
 	_appliedFacet = (cluster) => {
-		const appliedFacets = _.filter(SEARCH.availableFacets.data, 'hasApplied');
-		const pendingFacets = SEARCH.pendingFilters;
+		const facetData = _.filter(SEARCH.availableFacets.data, ['label', cluster]);
+		const pendingFacets = _.filter(this.state.pendingFilters, ['field', facetData[0]['field']]);
 		let text = '';
-		if (_.size(appliedFacets) > 0) {
-			const obj = _.filter(appliedFacets, ['label', cluster]);
-			if (_.size(obj) > 0) {
-				_.forEach(obj[0]['facets'], function(value, key) {
-					if (value['isApplied']) {
-						if (text.length === 0) {
-							text = text.concat(_.toString(value['display']));
-						} else {
-							text = text.concat(', ', _.toString(value['display']));
-						}
-					}
-				});
-			} else {
-				text = text.concat(_.toString(obj['display']));
-			}
+
+		//console.log(SEARCH.appliedFilters[cluster]);
+
+		if ((!_.isUndefined(SEARCH.appliedFilters[cluster]))) {
+			const facet = SEARCH.appliedFilters[cluster];
+			_.forEach(facet, function(item, key) {
+				if (text.length === 0) {
+					text = text.concat(_.toString(item['display']));
+				} else {
+					text = text.concat(', ', _.toString(item['display']));
+				}
+			});
 		}
-		if (!_.isEmpty(text)) {
-			return (
-					<Text>{text}</Text>
-			);
+
+		let pendingText = '';
+		if (!_.isUndefined(pendingFacets[0])) {
+			const obj = pendingFacets[0]['facets'];
+			_.forEach(obj, function(value, key) {
+				if (pendingText.length === 0) {
+					pendingText = pendingText.concat(_.toString(value));
+				} else {
+					pendingText = pendingText.concat(', ', _.toString(value));
+				}
+			});
+		}
+
+		if (!_.isEmpty(text) || !_.isEmpty(pendingText)) {
+			if (!_.isEmpty(pendingText) && _.isEmpty(text)) {
+				return <Text italic>{pendingText}</Text>;
+			} else if (!_.isEmpty(pendingText) && !_.isEmpty(text)) {
+				return <Text italic>{pendingText}</Text>;
+			} else {
+				return (
+						<Text>{text}</Text>
+				);
+			}
 		} else {
 			return null;
 		}
@@ -115,6 +137,11 @@ export default class Filters extends Component {
 
 	clearSelections = () => {
 		SEARCH.hasPendingChanges = false;
+		SEARCH.appliedFilters = [];
+		SEARCH.sortMethod = 'relevance';
+		SEARCH.availableFacets = [];
+		SEARCH.pendingFilters = [];
+		SEARCH.appendedParams = '';
 		this.props.navigation.navigate('SearchResults', {
 			term: SEARCH.term,
 			pendingParams: '',

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Badge, Box, Button, Center, FlatList, Heading, HStack, Icon, Image, Pressable, Stack, Text, VStack} from 'native-base';
+import {Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Image, Pressable, Stack, Text, VStack} from 'native-base';
 import {SafeAreaView, ScrollView} from 'react-native';
 import {CommonActions} from '@react-navigation/native';
 import _ from 'lodash';
@@ -9,7 +9,7 @@ import {MaterialIcons} from '@expo/vector-icons';
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from '../../components/loadingSpinner';
 import {loadError} from '../../components/loadError';
-import {getSearchResults, SEARCH, searchResults} from '../../util/search';
+import {getSearchResults, resetSearchGlobals, SEARCH, searchResults} from '../../util/search';
 import {getLists} from '../../util/loadPatron';
 import {AddToList} from './AddToList';
 import {userContext} from '../../context/user';
@@ -47,6 +47,9 @@ export default class Results extends React.Component {
 			paramsToAdd: this.props.route.params?.pendingParams ?? [],
 			lookfor: this.props.route.params?.term ?? '%20',
 			lookfor_clean: '',
+			resetSearch: false,
+			curPage: 0,
+			totalPages: 0,
 		};
 		this._isMounted = false;
 		this.lastListUsed = 0;
@@ -63,11 +66,19 @@ export default class Results extends React.Component {
 			lookfor_clean: lookfor.replace(/" "/g, '%20'),
 		});
 
+		const {navigation} = this.props;
+		const routes = navigation.getState()?.routes;
+		const prevRoute = routes[routes.length - 2];
+		console.log(prevRoute['name']);
+		if (prevRoute['name'] === 'SearchScreen') {
+			resetSearchGlobals();
+		}
+
 		if (this._isMounted) {
 			await getLists(this.context.library.baseUrl);
 			this._getLastListUsed();
 			if (LIBRARY.version >= '22.11.00') {
-				await this.startSearch();
+				await this.startSearch(false, true);
 				//this.getCurrentSort();
 			} else {
 				await this._fetchResults();
@@ -93,7 +104,18 @@ export default class Results extends React.Component {
 					isLoading: true,
 				});
 				console.log('Starting a new search...');
-				await this.startSearch(true);
+				this.setState({
+					data: [],
+					totalResults: 0,
+					curPage: 0,
+					totalPages: 0,
+					page: 0,
+					endOfResults: false,
+					dataMessage: null,
+					hasError: false,
+					resetSearch: true,
+				});
+				await this.startSearch(true, false);
 			}
 		}
 	}
@@ -126,61 +148,73 @@ export default class Results extends React.Component {
 	};
 
 	// search function for discovery 22.11.x or newer
-	startSearch = async (isUpdated = false) => {
-		const {lookfor_clean, page} = this.state;
+	startSearch = async (isUpdated = false, freshSearch = true) => {
+		const lookfor_clean = this.state.lookfor_clean;
+		let page = this.state.page;
+		if (isUpdated) {
+			page = 1;
+		}
+
+		if (freshSearch) {
+			SEARCH.sortMethod = 'relevance';
+		}
 		const paramsToAdd = this.props.route.params?.pendingParams ?? '';
-		await getSearchResults(lookfor_clean, 25, page, this.context.library.baseUrl, paramsToAdd).then(response => {
+		await getSearchResults(lookfor_clean, 100, page, this.context.library.baseUrl, paramsToAdd).then(response => {
 			const data = response.data;
 			if (data.success) {
-				if (data.count > 0) {
-					if (data.page_current < data.page_total) {
+				if (data['count'] > 0) {
+					if (data['page_current'] <= data['page_total']) {
 						this.setState((prevState, nextProps) => ({
 							data:
 									page === 1
 											?
-											Array.from(data.items) :
-											[...this.state.data, ...data.items],
+											Array.from(data['items']) :
+											[...this.state.data, ...data['items']],
 							refreshing: false,
 							isLoading: false,
 							isLoadingMore: false,
-							totalResults: data.totalResults,
-							curPage: data.page_current,
-							totalPages: data.page_total,
+							totalResults: data['totalResults'],
+							curPage: data['page_current'],
+							totalPages: data['page_total'],
+							resetSearch: false,
 						}));
-					} else if (data.page_current === data.page_total) {
+					} else if (data['page_current'] === data['page_total']) {
 						this.setState((prevState, nextProps) => ({
 							data:
 									page === 1
 											?
-											Array.from(data.items) :
-											[...this.state.data, ...data.items],
+											Array.from(data['items']) :
+											[...this.state.data, ...data['items']],
 							refreshing: false,
 							isLoading: false,
 							isLoadingMore: false,
-							totalResults: data.totalResults,
-							curPage: data.page_current,
-							totalPages: data.page_total,
-							dataMessage: data.message ?? translate('error.message'),
+							totalResults: data['totalResults'],
+							curPage: data['page_current'],
+							totalPages: data['page_total'],
+							dataMessage: data['message'] ?? translate('error.message'),
 							endOfResults: true,
+							resetSearch: false,
 						}));
 					} else {
 						this.setState({
 							isLoading: false,
 							isLoadingMore: false,
 							refreshing: false,
-							dataMessage: data.message ?? translate('error.message'),
+							dataMessage: data['message'] ?? translate('error.message'),
 							endOfResults: true,
+							resetSearch: false,
 						});
 					}
 				} else {
 					/* No search results were found */
 					this.setState({
 						hasError: true,
-						error: data.message,
+						error: data['message'],
 						isLoading: false,
 						isLoadingMore: false,
 						refreshing: false,
-						dataMessage: data.message,
+						dataMessage: data['message'],
+						resetSearch: false,
 					});
 				}
 			} else {
@@ -189,6 +223,7 @@ export default class Results extends React.Component {
 						isLoading: false,
 						hasError: true,
 						error: data.error.message ?? 'Unknown error',
+						resetSearch: false,
 					});
 				} else {
 					this.setState({
@@ -197,6 +232,7 @@ export default class Results extends React.Component {
 						refreshing: false,
 						dataMessage: data.message ?? translate('error.message'),
 						endOfResults: true,
+						resetSearch: false,
 					});
 				}
 			}
@@ -266,7 +302,7 @@ export default class Results extends React.Component {
 				}),
 				() => {
 					if (LIBRARY.version >= '22.11.00') {
-						this.startSearch();
+						this.startSearch(false, false);
 					} else {
 						this._fetchResults();
 					}
@@ -357,6 +393,22 @@ export default class Results extends React.Component {
 		);
 	};
 
+	_listHeaderComponent = () => {
+		const numResults = _.toInteger(this.state.totalResults);
+		let resultsLabel = translate('filters.results', {num: numResults});
+		if (numResults === 1) {
+			resultsLabel = translate('filters.result', {num: numResults});
+		}
+		if (numResults > 0) {
+			return (
+					<Box _dark={{bg: 'coolGray.700'}} bgColor="coolGray.100" borderBottomWidth="1" _dark={{borderColor: 'gray.600'}}
+							 borderColor="coolGray.200"><Container m={2}><Text>{resultsLabel}</Text></Container></Box>
+			);
+		} else {
+			return null;
+		}
+	};
+
 	_renderFooter = () => {
 		if (!this.state.isLoadingMore) {
 			return null;
@@ -365,23 +417,15 @@ export default class Results extends React.Component {
 	};
 
 	filterBar = () => {
-		const numResults = _.toInteger(this.state.totalResults);
-		let resultsLabel = translate('filters.results', {num: numResults});
-		if (numResults === 1) {
-			resultsLabel = translate('filters.result', {num: numResults});
-		}
-
 		if (LIBRARY.version >= '22.11.00') {
 			return (
 					<Box safeArea={2} _dark={{bg: 'coolGray.700'}} bgColor="coolGray.100"
-							 shadow={4} flexWrap="nowrap">
+							 borderBottomWidth="1" _dark={{borderColor: 'gray.600'}}
+							 borderColor="coolGray.200" flexWrap="nowrap">
 						<ScrollView horizontal>
 							{this.filterBarHeader()}
 							{this.filterBarButton()}
 						</ScrollView>
-						<Center>
-							<Text mt={3} fontSize="lg">{resultsLabel}</Text>
-						</Center>
 					</Box>
 			);
 		}
@@ -395,18 +439,15 @@ export default class Results extends React.Component {
 						leftIcon={<Icon as={MaterialIcons} name="tune" size="sm"/>}
 						variant="solid"
 						mr={1}
-						isLoading={this.state.isLoading}
 						onPress={() => {
-							this.setState({isLoading: true});
 							this.props.navigation.push('modal', {
 								screen: 'Filters',
 								params: {
 									navigation: this.props.navigation,
+									route: this.props.route,
 									pendingUpdates: [],
 								},
 							});
-
-							this.setState({isLoading: false});
 						}}
 				>{translate('filters.title')}</Button>
 		);
@@ -414,34 +455,36 @@ export default class Results extends React.Component {
 
 	filterBarButton = () => {
 		const appliedFilters = _.filter(SEARCH.availableFacets.data, 'hasApplied');
-		let labels = '';
+		const appliedFacets = SEARCH.appliedFilters;
+		console.log(SEARCH.id);
 		const navigation = this.props.navigation;
 		const searchTerm = this.state.query;
 		if (_.size(appliedFilters) > 0) {
 			return (
 					<Button.Group size="sm" space={1} vertical variant="outline">
-						{_.map(appliedFilters, function(item, index, collection) {
-							_.forEach(item['facets'], function(value, key) {
-								if (value['isApplied']) {
-									if (labels.length === 0) {
-										labels = labels.concat(_.toString(value['display']));
-									} else {
-										labels = labels.concat(', ', _.toString(value['display']));
-									}
+						{_.map(appliedFacets, function(item, index, collection) {
+							const cluster = _.filter(SEARCH.availableFacets.data, ['field', item[0]['field']]);
+							let labels = '';
+							_.forEach(item, function(value, key) {
+								if (labels.length === 0) {
+									labels = labels.concat(_.toString(value['display']));
+								} else {
+									labels = labels.concat(', ', _.toString(value['display']));
 								}
+
 							});
-							const label = _.truncate(item['label'] + ': ' + labels);
+							const label = _.truncate(index + ': ' + labels);
 							return <Button onPress={() => {
 								navigation.push('modal', {
 									screen: 'Facet',
 									params: {
 										navigation: navigation,
-										key: item['field'],
+										key: item[0]['field'],
 										term: searchTerm,
-										title: item['label'],
-										facets: item['facets'],
+										title: cluster[0]['label'],
+										facets: item[0]['facets'],
 										pendingUpdates: [],
-										extra: item,
+										extra: cluster[0],
 									},
 								});
 							}}>{label}</Button>;
@@ -487,6 +530,11 @@ export default class Results extends React.Component {
 		const library = this.context.library;
 
 		//console.log(SEARCH.appliedFilters);
+		const numResults = _.toInteger(this.state.totalResults);
+		let resultsLabel = translate('filters.results', {num: numResults});
+		if (numResults === 1) {
+			resultsLabel = translate('filters.result', {num: numResults});
+		}
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
@@ -514,6 +562,7 @@ export default class Results extends React.Component {
 						{this.filterBar()}
 						<FlatList
 								data={this.state.data}
+								ListHeaderComponent={this._listHeaderComponent()}
 								ListEmptyComponent={this._listEmptyComponent()}
 								renderItem={({item}) => this.renderItem(item, library, user,
 										this.lastListUsed)}

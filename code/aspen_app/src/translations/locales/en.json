@@ -203,11 +203,11 @@
 	"filter": "Filter",
 	"filter_by": "Filter by",
 	"sort_by": "Sort by",
-	"unsaved_changes": "Unsaved changes",
-	"unsaved_changes_body_back": "Do you want to save your selections before going back?",
-	"unsaved_changes_body_exit": "Do you want to save your selections and view updated search results?",
-	"update_filters": "Updated filters",
-	"continue_anyway": "Continue anyway"
+	"unsaved_changes": "Discard changes?",
+	"unsaved_changes_body_back": "If you leave now, your changes won't be saved.",
+	"unsaved_changes_body_exit": "If you leave now, your changes won't be saved.",
+	"update_filters": "Save",
+	"continue_anyway": "Discard"
   },
   "error": {
 	"title": "Error",

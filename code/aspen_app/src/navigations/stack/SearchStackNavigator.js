@@ -6,7 +6,11 @@ import Search from '../../screens/Search/Search';
 import Results from '../../screens/Search/Results';
 import Filters from '../../screens/Search/Filters';
 import Facet from '../../screens/Search/Facet';
-import {ChevronLeftIcon, CloseIcon} from 'native-base';
+import {ChevronLeftIcon, CloseIcon, Pressable} from 'native-base';
+
+import {enableScreens} from 'react-native-screens';
+
+enableScreens();
 
 const SearchStackNavigator = ({options, route, back, navigation}) => {
 	const Stack = createNativeStackNavigator();
@@ -66,8 +70,7 @@ const FilterModal = () => {
 						gestureEnabled: false,
 						headerLeft: () => {
 							if (route.name !== 'Filters') {
-								return <ChevronLeftIcon color="primary.baseContrast"
-																				onPress={() => navigation.goBack()}/>;
+								return <Pressable onPress={() => navigation.goBack()}><ChevronLeftIcon color="primary.baseContrast"/></Pressable>;
 							} else {
 								return null;
 							}

@@ -39,6 +39,7 @@ export default class Login extends Component {
 	componentDidMount = async () => {
 		this._isMounted = true;
 
+		console.log(LOGIN_DATA.nearbyLocations);
 		if (_.isEmpty(LOGIN_DATA.nearbyLocations)) {
 			this._isMounted && await makeGreenhouseRequestNearby();
 			LOGIN_DATA.hasPendingChanges = false;
@@ -257,7 +258,7 @@ export default class Login extends Component {
 								: null}
 						<Center>{isBeta ? <Badge rounded={5}
 																		 mt={5}>{translate('app.beta')}</Badge> : null}</Center>
-						<Center><Text mt={5} fontSize="xs" color="coolGray.600">{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}]</Text></Center>
+						<Center><Text mt={5} fontSize="xs" color="coolGray.600">{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel}]</Text></Center>
 					</KeyboardAvoidingView>
 				</Box>
 		);

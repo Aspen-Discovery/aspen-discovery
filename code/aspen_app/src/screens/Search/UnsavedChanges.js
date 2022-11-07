@@ -5,7 +5,7 @@ import {SEARCH} from '../../util/search';
 import {translate} from '../../translations/translations';
 
 export const UnsavedChangesBack = (props) => {
-	const {updateSearch} = props;
+	const {updateSearch, discardChanges} = props;
 	const navigation = useNavigation();
 	const [isOpen, setIsOpen] = React.useState(false);
 	const onClose = () => setIsOpen(false);
@@ -30,9 +30,10 @@ export const UnsavedChangesBack = (props) => {
 
 	// remove pending parameters, then go back to original search results screen
 	const forceClose = () => {
+		discardChanges();
 		setIsOpen(false);
 		SEARCH.hasPendingChanges = false;
-		navigation.getParent().pop();
+		navigation.dispatch(CommonActions.goBack());
 	};
 
 	return (
@@ -40,17 +41,16 @@ export const UnsavedChangesBack = (props) => {
 				<Pressable onPress={() => getStatus()}><ChevronLeftIcon color="primary.baseContrast"/></Pressable>
 				<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 					<AlertDialog.Content>
-						<AlertDialog.CloseButton/>
 						<AlertDialog.Header>{translate('filters.unsaved_changes')}</AlertDialog.Header>
 						<AlertDialog.Body>
 							{translate('filters.unsaved_changes_body_back')}
 						</AlertDialog.Body>
 						<AlertDialog.Footer>
-							<Button.Group space={2}>
-								<Button variant="unstyled" colorScheme="coolGray" onPress={updateClose} ref={cancelRef}>
+							<Button.Group space={3}>
+								<Button colorScheme="primary" onPress={updateClose} ref={cancelRef}>
 									{translate('filters.update_filters')}
 								</Button>
-								<Button colorScheme="danger" onPress={forceClose}>
+								<Button colorScheme="danger" variant="ghost" onPress={forceClose}>
 									{translate('filters.continue_anyway')}
 								</Button>
 							</Button.Group>
@@ -62,7 +62,7 @@ export const UnsavedChangesBack = (props) => {
 };
 
 export const UnsavedChangesExit = (props) => {
-	const {updateSearch} = props;
+	const {updateSearch, discardChanges} = props;
 	const navigation = useNavigation();
 	const [isOpen, setIsOpen] = React.useState(false);
 	const onClose = () => setIsOpen(false);
@@ -75,7 +75,7 @@ export const UnsavedChangesExit = (props) => {
 			setIsOpen(true);
 		} else {
 			// if no pending changes, just close it
-			navigation.dispatch(CommonActions.goBack());
+			navigation.getParent().pop();
 		}
 	}
 
@@ -87,6 +87,7 @@ export const UnsavedChangesExit = (props) => {
 
 	// remove pending parameters, then go back to original search results screen
 	const forceClose = () => {
+		discardChanges();
 		setIsOpen(false);
 		SEARCH.hasPendingChanges = false;
 		navigation.getParent().pop();
@@ -97,17 +98,16 @@ export const UnsavedChangesExit = (props) => {
 				<Pressable onPress={() => getStatus()}><CloseIcon color="primary.baseContrast"/></Pressable>
 				<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 					<AlertDialog.Content>
-						<AlertDialog.CloseButton/>
 						<AlertDialog.Header>{translate('filters.unsaved_changes')}</AlertDialog.Header>
 						<AlertDialog.Body>
-							{translate('filers.unsaved_changes_body_exit')}
+							{translate('filters.unsaved_changes_body_exit')}
 						</AlertDialog.Body>
 						<AlertDialog.Footer>
-							<Button.Group space={2}>
-								<Button variant="unstyled" colorScheme="coolGray" onPress={updateClose} ref={cancelRef}>
+							<Button.Group space={3}>
+								<Button colorScheme="primary" onPress={updateClose} ref={cancelRef}>
 									{translate('filters.update_filters')}
 								</Button>
-								<Button colorScheme="danger" onPress={forceClose}>
+								<Button colorScheme="danger" variant="ghost" onPress={forceClose}>
 									{translate('filters.continue_anyway')}
 								</Button>
 							</Button.Group>

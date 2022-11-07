@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Box, Button, Center, Checkbox, Input, View} from 'native-base';
+import {Box, Button, Center, Checkbox, ChevronLeftIcon, Input, Pressable, View} from 'native-base';
 import _ from 'lodash';
 
 // custom components and helper files
@@ -13,7 +13,7 @@ import {userContext} from '../../context/user';
 import {loadingSpinner} from '../../components/loadingSpinner';
 import {translate} from '../../translations/translations';
 import {UnsavedChangesExit} from './UnsavedChanges';
-import {addAppliedFilter, buildParamsForUrl, getPendingFacets, removeAppliedFilter, SEARCH} from '../../util/search';
+import {addAppliedFilter, buildParamsForUrl, removeAppliedFilter, SEARCH} from '../../util/search';
 
 export default class Facet extends Component {
 	static contextType = userContext;
@@ -24,19 +24,21 @@ export default class Facet extends Component {
 			isLoading: true,
 			term: this.props.route.params?.term,
 			data: this.props.route.params?.data ?? [],
-			title: this.props.route.params?.extra['display'] ?? 'Filter',
+			title: this.props.route.params?.extra['label'] ?? 'Filter',
 			facets: this.props.route.params?.facets ?? [],
-			numFacets: this.props.route.params?.extra['count'] ?? 0,
-			category: this.props.route.params?.extra['field'] ?? [],
+			numFacets: 0,
+			category: this.props.route.params?.extra['field'] ?? '',
 			applied: [],
-			multiSelect: this.props.route.params?.extra['multiSelect'] ?? false,
-			pendingFilters: [],
+			multiSelect: Boolean(this.props.route.params?.extra['multiSelect']),
+			pendingFilters: SEARCH.pendingFilters,
 			filterByQuery: '',
 			hasPendingChanges: false,
 			showWarning: false,
 			isUpdating: false,
-			checkboxValues: [],
-			oldCheckboxValues: [],
+			resetOptions: false,
+			values: [],
+			pending: [],
+			valuesDefault: [],
 		};
 		this._isMounted = false;
 	}
@@ -44,38 +46,51 @@ export default class Facet extends Component {
 	componentDidMount = async () => {
 		this._isMounted = true;
 
-		let multiSelect = this.props.route.params?.extra['multiSelect'];
-		if (multiSelect === '1' || multiSelect === 1 || multiSelect === true || multiSelect === 'true') {
+		const data = _.filter(SEARCH.availableFacets.data, ['field', this.state.category]);
+		if (data[0]) {
 			this.setState({
-				multiSelect: true,
-			});
-		} else {
-			this.setState({
-				multiSelect: false,
+				facets: data[0]['facets'],
+				numFacets: _.size(data[0]['facets']),
 			});
 		}
 
-		this.setSelectedValues();
-		this.setAppliedFacets();
+		this.preselectValues();
 
 		this.setState({
 			isLoading: false,
 		});
 	};
 
-	componentDidUpdate() {
+	componentDidUpdate(prevProps, prevState) {
 		const {navigation} = this.props;
-
-		// Use `setOptions` to update the button that we previously specified
-		// Now the button includes an `onPress` handler to update the count
-		navigation.setOptions({
-			/* headerLeft: () => (
-			 <UnsavedChangesBack updateSearch={this.updateSearch}/>
-			 ), */
-			headerRight: () => (
-					<UnsavedChangesExit updateSearch={this.updateSearch}/>
-			),
-		});
+		const routes = navigation.getState()?.routes;
+		const prevRoute = routes[routes.length - 2];
+		if (prevRoute) {
+			navigation.setOptions({
+				headerLeft: () => (
+						<Pressable onPress={() => {
+							this.updateGlobal();
+							this.props.navigation.navigate('Filters', {
+								pendingFilters: SEARCH.pendingFilters,
+							});
+						}}>
+							<ChevronLeftIcon color="primary.baseContrast"/>
+						</Pressable>
+				),
+				headerRight: () => (
+						<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges} updateGlobal={this.updateGlobal}/>
+				),
+			});
+		} else {
+			navigation.setOptions({
+				headerLeft: () => (
+						<Box></Box>
+				),
+				headerRight: () => (
+						<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges}/>
+				),
+			});
+		}
 
 	}
 
@@ -83,9 +98,16 @@ export default class Facet extends Component {
 		this._isMounted = false;
 	}
 
-	filter(list) {
+	filter(list, sorted = false) {
 		const filterByQuery = this.state.filterByQuery;
 		//todo: add method to use api endpoint to get more results to filter through by query
+		if (sorted) {
+			const sortedList = _.orderBy(list, ['isApplied', 'count', 'display'], ['desc', 'desc', 'asc']);
+			return _.filter(sortedList, function(facet) {
+				return facet.display.indexOf(filterByQuery) > -1;
+			});
+		}
+
 		return _.filter(list, function(facet) {
 			return facet.display.indexOf(filterByQuery) > -1;
 		});
@@ -93,7 +115,7 @@ export default class Facet extends Component {
 
 	searchBar = () => {
 		//todo: add searchbar to >10 results when able to filter thru every facet properly
-		if (this.state.numFacets > 200) {
+		if (this.state.numFacets > 105) {
 			const placeHolder = translate('search.title') + ' ' + this.state.title;
 			return (
 					<Box safeArea={5}>
@@ -115,51 +137,31 @@ export default class Facet extends Component {
 		}
 	};
 
-	setAppliedFacets = () => {
-		let appliedFacets = getPendingFacets(this.state.category);
-		this.setState({
-			appliedFacets: appliedFacets['facets'],
-		});
-	};
-
-	setSelectedValues = () => {
-		const facets = this.props.route.params?.facets;
-		const applied = _.filter(facets, 'isApplied');
+	preselectValues = () => {
 		let values = [];
-
-		_.map(applied, function(item, index, collection) {
-			values = _.concat(values, item.value);
+		const {category, multiSelect} = this.state;
+		const cluster = _.filter(SEARCH.pendingFilters, ['field', category]);
+		_.map(cluster, function(item, index, collection) {
+			let facets = item['facets'];
+			if (_.size(facets) > 0) {
+				_.forEach(facets, function(value, key) {
+					console.log(multiSelect);
+					if (multiSelect) {
+						values = _.concat(values, value);
+					} else {
+						values = value;
+					}
+				});
+			}
 		});
-
 		this.setState({
-			checkboxValues: values,
+			values: values,
+			valuesDefault: values,
 		});
-
-		return values;
-	};
-
-	updateCheckboxValues = (group, values) => {
-		const oldValues = this.state.checkboxValues;
-		const toRemove = _.difference(oldValues, values);
-		if (addAppliedFilter(group, values, true)) {
-			this.setState({checkboxValues: values});
-		}
-		removeAppliedFilter(group, toRemove);
-		this.setAppliedFacets();
-		SEARCH.hasPendingChanges = true;
-		buildParamsForUrl();
-	};
-
-	updateFilters = (group, value, allowMultiple, type = 'add') => {
-		if (addAppliedFilter(group, value, allowMultiple)) {
-			this.setAppliedFacets();
-		}
-		SEARCH.hasPendingChanges = true;
 	};
 
 	updateSearch = (resetFacetGroup = false, toFilters = false) => {
 		const params = buildParamsForUrl();
-		console.log('params >', params);
 		SEARCH.hasPendingChanges = false;
 		const {navigation} = this.props;
 		if (toFilters) {
@@ -175,18 +177,44 @@ export default class Facet extends Component {
 
 	};
 
-	clearSelections = () => {
-		const {applied, category} = this.state;
-		if (_.isEmpty(this.state.checkboxValues)) {
-			removeAppliedFilter(category, applied);
-		} else {
-			removeAppliedFilter(category, this.state.checkboxValues);
-		}
-
+	updateLocalValues = (group, values) => {
+		SEARCH.hasPendingChanges = true;
+		this.updateGlobal(group, values);
 		this.setState({
-			checkboxValues: [],
-			appliedFacets: [],
-			applied: [],
+			values: values,
+		});
+	};
+
+	updateGlobal = (group, values) => {
+		const multiSelect = this.state.multiSelect;
+		const prevSelections = this.state.values;
+		addAppliedFilter(group, values, multiSelect);
+		if (multiSelect) {
+			const difference = _.difference(prevSelections, values);
+			if (difference) {
+				removeAppliedFilter(group, difference);
+			}
+		}
+	};
+
+	discardChanges = () => {
+		SEARCH.hasPendingChanges = true;
+		const {values, category, valuesDefault} = this.state;
+		const difference = _.difference(values, valuesDefault);
+		if (difference) {
+			removeAppliedFilter(category, difference);
+		}
+		this.setState({
+			values: [],
+		});
+	};
+
+	resetCluster = () => {
+		SEARCH.hasPendingChanges = true;
+		const {values, category} = this.state;
+		removeAppliedFilter(category, values);
+		this.setState({
+			values: [],
 		});
 	};
 
@@ -196,7 +224,7 @@ export default class Facet extends Component {
 					<Center>
 						<Button.Group size="lg">
 							<Button variant="unstyled"
-											onPress={() => this.clearSelections()}>{translate('general.reset')}</Button>
+											onPress={() => this.resetCluster()}>{translate('general.reset')}</Button>
 							<Button isLoading={this.state.isUpdating} isLoadingText={translate('general.updating')}
 											onPress={() => {
 												this.updateSearch();
@@ -219,7 +247,7 @@ export default class Facet extends Component {
 					<View style={{flex: 1}}>
 						<ScrollView>
 							<Box safeArea={5}>
-								<Facet_Year category={category} updater={this.setAppliedFacets} data={facets}/>
+								<Facet_Year category={category} updater={this.updateLocalValues} data={facets}/>
 							</Box>
 						</ScrollView>
 						{this.actionButtons()}
@@ -230,7 +258,7 @@ export default class Facet extends Component {
 					<View style={{flex: 1}}>
 						<ScrollView>
 							<Box safeArea={5}>
-								<Facet_Rating category={category} updater={this.setAppliedFacets} data={facets}/>
+								<Facet_Rating category={category} updater={this.updateLocalValues} data={facets}/>
 							</Box>
 						</ScrollView>
 						{this.actionButtons()}
@@ -241,7 +269,7 @@ export default class Facet extends Component {
 					<View style={{flex: 1}}>
 						<ScrollView>
 							<Box safeArea={5}>
-								<Facet_Slider category={category} data={facets} updater={this.updateFilters}/>
+								<Facet_Slider category={category} data={facets} updater={this.updateLocalValues}/>
 							</Box>
 						</ScrollView>
 						{this.actionButtons()}
@@ -255,11 +283,11 @@ export default class Facet extends Component {
 							<Box safeAreaX={5}>
 								<Checkbox.Group
 										name={category}
-										defaultValue={this.state.checkboxValues}
+										value={this.state.values}
 										accessibilityLabel={translate('filters.filter_by')}
-										onChange={values => this.updateCheckboxValues(category, values, true)}
+										onChange={values => this.updateLocalValues(category, values)}
 								>
-									{this.filter(facets).map((item, index, array) => (
+									{this.filter(facets, true).map((item, index, array) => (
 											<Facet_Checkbox key={index} data={item}/>
 									))}
 								</Checkbox.Group>
@@ -275,7 +303,7 @@ export default class Facet extends Component {
 						<ScrollView>
 							<Box safeAreaX={5}>
 								<Facet_RadioGroup data={facets} category={category} title={this.state.title}
-																	applied={this.state.applied} updater={this.setAppliedFacets}/>
+																	applied={this.state.values} updater={this.updateLocalValues}/>
 							</Box>
 						</ScrollView>
 						{this.actionButtons()}
