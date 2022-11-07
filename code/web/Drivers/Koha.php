@@ -443,14 +443,18 @@ class Koha extends AbstractIlsDriver
 			/** @noinspection SqlResolve */
 			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
-			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
-				$renewPref = $renewPrefRow['autorenew_checkouts'];
+			if ($renewPrefResults !== false){
+				if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+					$renewPref = $renewPrefRow['autorenew_checkouts'];
 
-				if ($renewPref == 0) {
-					$curCheckout->autoRenew = "0";
-				} else {
-					$curCheckout->autoRenew = $curRow['auto_renew'];
+					if ($renewPref == 0) {
+						$curCheckout->autoRenew = "0";
+					} else {
+						$curCheckout->autoRenew = $curRow['auto_renew'];
+					}
 				}
+
+				$renewPrefResults->close();
 			}
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
@@ -513,14 +517,17 @@ class Koha extends AbstractIlsDriver
 				/** @noinspection SqlResolve */
 				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+				if ($patronExpirationResults != false){
+					if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+						$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
+						$today = date("Y-m-d");
 
-				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
-					$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
-					$today = date("Y-m-d");
-
-					if ($expirationDate < $today) {
-						$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired', 'isPublicFacing' => true]);
+						if ($expirationDate < $today) {
+							$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired', 'isPublicFacing' => true]);
+						}
 					}
+
+					$patronExpirationResults->close();
 				}
 			}
 

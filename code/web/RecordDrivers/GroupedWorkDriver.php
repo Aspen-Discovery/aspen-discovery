@@ -2458,7 +2458,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			global $library;
 			$scopingInfoFieldName = 'scoping_details_' . $solrScope;
 			$relatedRecords = array();
-			if (strpos($_SERVER['HTTP_USER_AGENT'], 'Aspen LiDA') === 0){
+			if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Aspen LiDA') === 0){
 				$forceLoadFromDB = true;
 			}
 			if (!$forceLoadFromDB && isset($this->fields[$scopingInfoFieldName])) {
