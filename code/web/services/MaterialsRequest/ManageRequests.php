@@ -383,7 +383,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
                     $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
 
                     // Place hold?
-                    if ($request->placeHoldWhenAvailable == 1){
+                    if ($request->placeHoldWhenAvailable == 1 || !empty(request->holdPickupLocation)){
                         $value = 'Yes';
                     }else{
                         $value = 'No';
@@ -391,7 +391,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
                     $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
 
                     // Hold pickup location, including bookmobile stop if appropriate
-                    if ($request->placeHoldWhenAvailable == 1){
+                    if ($request->placeHoldWhenAvailable == 1 || !empty($request->holdPickupLocation)){
                         if ($request->holdPickupLocation) {
                             $value = $request->getHoldLocationName($request->holdPickupLocation);
                             if ($request->bookmobileStop) {
@@ -436,7 +436,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
                     $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
 
                     // Assigned to
-                    $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->getAssigneeUser()->displayName);
+                    if ($request->getAssigneeUser()) {
+                        $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->getAssigneeUser()->displayName);
+                    } else {
+                        $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, translate(['text'=>'Unassigned', 'isAdminFacing'=>true]));
+                    }
                 }
             }
 
