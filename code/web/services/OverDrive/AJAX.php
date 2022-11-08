@@ -206,7 +206,7 @@ class OverDrive_AJAX extends JSON_Action
 		if (count($overDriveUsers) == 0) {
 			return [
 				'success' => false,
-				'message' => 'Your account is not valid for OverDrive, please contact your local library.'
+				'message' => translate(['text' => 'Your account is not valid for OverDrive, please contact your local library.', 'isPublicFacing' => true])
 			];
 		} else if ($promptForEmail || count($overDriveUsers) > 1) {
 			$promptTitle = 'OverDrive Hold Options';
@@ -259,7 +259,7 @@ class OverDrive_AJAX extends JSON_Action
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => 'Error',
-				'prompts' => 'Your account is not valid for OverDrive, please contact your local library.',
+				'prompts' => translate(['text' => 'Your account is not valid for OverDrive, please contact your local library.', 'isPublicFacing' => true]),
 				'buttons' => ''
 			];
 		}

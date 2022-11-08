@@ -51,6 +51,9 @@ export async function makeGreenhouseRequestNearby() {
 			libraries = _.values(libraries);
 			libraries = _.uniqBy(libraries, v => [v.libraryId, v.name].join());
 		}
+
+		console.log(libraries);
+
 		if (data.count <= 1) {
 			LOGIN_DATA.showSelectLibrary = false;
 		}
