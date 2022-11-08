@@ -2284,6 +2284,26 @@ class SearchAPI extends Action
 			$filters = $searchObj->getFilterList();
 			$items = [];
 
+			$includeSort = $_REQUEST['includeSort'] ?? true;
+			if($includeSort) {
+				$list = $searchObj->getSortList();
+				$sort = [];
+				foreach($list as $index => $item) {
+					if($item['selected'] == true){
+						$sort = $item;
+						$sort['value'] = $index;
+						break;
+					}
+				}
+				$i = 0;
+				$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
+				$items[$key][$i]['value'] = $sort['value'];
+				$items[$key][$i]['display'] = $sort['desc'];
+				$items[$key][$i]['field'] = 'sort_by';
+				$items[$key][$i]['count'] = 0;
+				$items[$key][$i]['isApplied'] = true;
+			}
+
 			foreach($filters as $key => $filter) {
 				$i = 0;
 				foreach($filter as $item) {
