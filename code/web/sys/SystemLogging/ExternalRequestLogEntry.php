@@ -63,7 +63,8 @@ class ExternalRequestLogEntry extends DataObject
 				$externalRequest->insert();
 			}
 		}catch (Exception $e){
-			//This happens before the table is created, we can ignore it safely.
+			global $logger;
+			$logger->log("Error logging request " . $e->getMessage(), Logger::LOG_ERROR);
 		}
 	}
 
