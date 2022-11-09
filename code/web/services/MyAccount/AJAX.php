@@ -1050,13 +1050,15 @@ class MyAccount_AJAX extends JSON_Action
 			$pickupAt = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($recordId);
-			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
-			$pickupAt = $relatedRecord->getHoldPickupSetting();
-			if($pickupAt > 0) {
-				$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
-				foreach($pickupBranches as $locationKey => $location) {
-					if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
-						unset($pickupBranches[$locationKey]);
+			if ($marcRecord->isValid()) {
+				$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+				$pickupAt = $relatedRecord->getHoldPickupSetting();
+				if ($pickupAt > 0) {
+					$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+					foreach ($pickupBranches as $locationKey => $location) {
+						if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)) {
+							unset($pickupBranches[$locationKey]);
+						}
 					}
 				}
 			}
