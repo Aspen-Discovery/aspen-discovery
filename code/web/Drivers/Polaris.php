@@ -2004,6 +2004,10 @@ class Polaris extends AbstractIlsDriver
 		return $fields;
 	}
 
+	public function selfRegisterViaSSO(){
+		return false;
+	}
+
 	public function selfRegister()
 	{
 		global $library;

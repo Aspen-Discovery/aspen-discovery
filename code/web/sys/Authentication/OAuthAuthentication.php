@@ -13,6 +13,7 @@ class OAuthAuthentication extends Action
 
 	protected $basicAuth;
 	protected $state;
+	protected $gateway;
 	protected $accessToken;
 	protected $resourceOwner;
 	protected $redirectUri;
@@ -27,6 +28,7 @@ class OAuthAuthentication extends Action
 		$ssoSettings->id = $library->ssoSettingId;
 		$ssoSettings->service = "oauth";
 		if ($ssoSettings->find(true)) {
+			$this->gateway = $ssoSettings->oAuthGateway;
 			$this->state = $this->getRandomState();
 			$this->basicAuth = $ssoSettings->getBasicAuthToken();
 			$this->redirectUri = $ssoSettings->getRedirectUrl();
@@ -60,6 +62,7 @@ class OAuthAuthentication extends Action
 		global $library;
 
 		if (isset($payload['code'])) {
+			global $logger;
 			$ssoSettings = new SSOSetting();
 			$ssoSettings->id = $library->ssoSettingId;
 			$ssoSettings->service = "oauth";
@@ -74,25 +77,31 @@ class OAuthAuthentication extends Action
 
 				$requestToken = $this->getAccessToken($ssoSettings->getAccessTokenUrl(), $requestOptions);
 				if (!$requestToken) {
+					$logger->log('Error getting access token', Logger::LOG_ERROR);
 					return [
 						'success' => false,
-						'message' => "Did not get expected JSON results from OAuth to get a valid Access Token",
+						'message' => '',
+						'error' => "Did not get expected JSON results from OAuth to get a valid Access Token",
 					];
 				}
 
 				$resourceOwner = $this->getResourceOwner($ssoSettings->getResourceOwnerDetailsUrl());
 				if (!$resourceOwner) {
+					$logger->log('Error getting resource owner', Logger::LOG_ERROR);
 					return [
 						'success' => false,
-						'message' => "Did not get expected JSON results from OAuth to get Resource Owner details",
+						'message' => '',
+						'error' => "Did not get expected JSON results from OAuth to get Resource Owner details",
 					];
 				}
 
 				$account = $this->validateAccount();
 				if (!$account) {
+					$logger->log('Error validating account', Logger::LOG_ERROR);
 					return [
 						'success' => false,
-						'message' => "Unable to find and/or register user with provided credentials",
+						'message' => '',
+						'error' => "Unable to find and/or register user with provided credentials",
 					];
 				}
 
@@ -119,13 +128,26 @@ class OAuthAuthentication extends Action
 		global $logger;
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
-		$user = $catalogConnection->findNewUser($this->getUserId());
+		$user = $this->getUserId();
+		if($user) {
+			$logger->log('Checking to see if user ' . print_r($user, true) . ' exists in the database...', Logger::LOG_ERROR);
+		} else {
+			$logger->log('Error searching resource owner for userId', Logger::LOG_ERROR);
+			return false;
+		}
 
+		$user = $catalogConnection->findNewUser($user);
 		if (!$user instanceof User) {
-			$selfReg = $catalogConnection->selfRegister();
+			$logger->log('No user found in database... attempting to self-register...', Logger::LOG_ERROR);
+			$newUser['email'] = $this->getEmail();
+			$newUser['firstname'] = $this->getFirstName();
+			$newUser['lastname'] = $this->getLastName();
+			$newUser['cat_username'] = $this->getUserId();
+			$selfReg = $catalogConnection->selfRegister(true, $newUser);
+			$logger->log(print_r($selfReg, true), Logger::LOG_ERROR);
 			if ($selfReg['success'] != '1') {
 				//unable to register the user
-				$logger->log("Error self registering user " . $this->getUserId(), Logger::LOG_ERROR);
+				$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
 				return false;
 			}
 		}
@@ -171,7 +193,7 @@ class OAuthAuthentication extends Action
 		$_SESSION['loggedInViaSSO'] = true;
 	}
 
-	public function getAuthorizationRequestUrl(SSOSetting $settings)
+	public function getAuthorizationRequestUrl(SSOSetting $settings): string
 	{
 		$authorizationUrl = $settings->getAuthorizationUrl();
 		$requestOptions = [
@@ -203,13 +225,13 @@ class OAuthAuthentication extends Action
 		return false;
 	}
 
-	private function getResourceOwner($resourceOwnerDetailsUrl)
+	private function getResourceOwner($resourceOwnerDetailsUrl): bool
 	{
 		$url = $resourceOwnerDetailsUrl . "?access_token=" . $this->accessToken;
 		$this->initCurlWrapper();
 		$response = $this->curlWrapper->curlGetPage($url);
 		$options = json_decode($response, true);
-		if ($options[$this->matchpoints['userId']]) {
+		if (is_array($options)) {
 			$this->resourceOwner = $options;
 			return true;
 		}
@@ -218,22 +240,22 @@ class OAuthAuthentication extends Action
 
 	private function getUserId()
 	{
-		return $this->resourceOwner[$this->matchpoints['userId']];
+		return $this->searchArray($this->resourceOwner, $this->matchpoints['userId']);
 	}
 
 	private function getFirstName()
 	{
-		return $this->resourceOwner[$this->matchpoints['firstName']];
+		return $this->searchArray($this->resourceOwner, $this->matchpoints['firstName']);
 	}
 
 	private function getLastName()
 	{
-		return $this->resourceOwner[$this->matchpoints['lastName']];
+		return $this->searchArray($this->resourceOwner, $this->matchpoints['lastName']);
 	}
 
 	private function getEmail()
 	{
-		return $this->resourceOwner[$this->matchpoints['email']];
+		return $this->searchArray($this->resourceOwner, $this->matchpoints['email']);
 	}
 
 	protected function getRandomState($length = 32): string
@@ -246,7 +268,7 @@ class OAuthAuthentication extends Action
 		return http_build_query($params, '', '&', \PHP_QUERY_RFC3986);
 	}
 
-	protected function appendQuery($url, $query)
+	protected function appendQuery($url, $query): string
 	{
 		$query = trim($query, '?&');
 
@@ -256,6 +278,26 @@ class OAuthAuthentication extends Action
 		}
 
 		return $url;
+	}
+
+	protected function searchArray($array, $needle) {
+		$result = false;
+		foreach ($array as $obj){
+			if(is_array($obj)) {
+				foreach($obj as $n) {
+					if(array_key_exists($needle, $n)) {
+						$result = $n[$needle];
+						break;
+					}
+				}
+			} else {
+				if(array_key_exists($needle, $obj)) {
+					$result = $obj[$needle];
+					break;
+				}
+			}
+		}
+		return $result;
 	}
 
 	function launch()

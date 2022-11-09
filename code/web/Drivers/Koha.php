@@ -2695,6 +2695,83 @@ class Koha extends AbstractIlsDriver
 		return $fields;
 	}
 
+	function selfRegisterViaSSO($ssoUser) {
+		global $locationSingleton;
+
+		$result = [
+			'success' => false,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . '/api/v1/patrons';
+			$postParams = [
+				'firstname' => $ssoUser['lastname'],
+				'surname' => $ssoUser['lastname'],
+				'email' => $ssoUser['email'],
+				'address' => 'Unknown',
+				'city' => 'Unknown',
+				'library_id' => $locationSingleton->getBranchLocationCode(),
+				'category_id' => $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory')
+			];
+
+			$postParams = json_encode($postParams);
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
+			ExternalRequestLogEntry::logRequest('koha.selfRegisterViaSSO', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($this->apiCurlWrapper->getResponseCode() != 201) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						if (!empty($jsonResponse->error)) {
+							$result['messages'][] = $jsonResponse->error;
+						} else {
+							foreach ($jsonResponse->errors as $error) {
+								$result['messages'][] = $error->message;
+							}
+						}
+					} else {
+						$result['messages'][] = $response;
+					}
+				} else {
+					$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+				$result['message'] = 'Could not create your account. ' . implode($result['messages']);
+			} else {
+				$jsonResponse = json_decode($response);
+				$result['username'] = $jsonResponse->userid;
+				$result['success'] = true;
+				if ($this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail') != '0') {
+					$result['message'] = 'Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.';
+				} else {
+					if ($this->getKohaSystemPreference('autoMemberNum') == '1') {
+						$result['barcode'] = $jsonResponse->cardnumber;
+						$patronId = $jsonResponse->patron_id;
+						if (isset($_REQUEST['borrower_password'])) {
+							$tmpResult = $this->resetPinInKoha($patronId, $_REQUEST['borrower_password'], $oauthToken);
+							if ($tmpResult['success']) {
+								$result['password'] = $_REQUEST['borrower_password'];
+							}
+						}
+					} else {
+						$result['message'] = 'Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.';
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
 	function selfRegister()
 	{
 		global $library;

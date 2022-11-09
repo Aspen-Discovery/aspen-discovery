@@ -923,6 +923,9 @@ class Millennium extends AbstractIlsDriver
 	function combineCityStateZipInSelfRegistration(){
 		return true;
 	}
+	function selfRegisterViaSSO(){
+		return false;
+	}
 	function selfRegister(){
 		global $logger;
 		global $library;
