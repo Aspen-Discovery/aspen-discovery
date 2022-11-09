@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.zip.CRC32;
@@ -299,12 +300,32 @@ public class HooplaExportMain {
 				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
 				boolean isRegroupAllRecords = getSettingsRS.getBoolean("regroupAllRecords");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
+				boolean indexByDay = getSettingsRS.getBoolean("indexByDay");
 				long settingsId = getSettingsRS.getLong("id");
 				if (doFullReload){
 					//Unset that a full update needs to be done
 					PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set runFullUpdate = 0 where id = ?");
 					updateSettingsStmt.setLong(1, settingsId);
 					updateSettingsStmt.executeUpdate();
+				}else if (indexByDay ) {
+					//We only want to index once a day at 1 am UTC
+					SimpleDateFormat f = new SimpleDateFormat("HH");
+					f.setTimeZone(TimeZone.getTimeZone("UTC"));
+					Date now = new Date();
+					String curHourUTC = f.format(now);
+					if (curHourUTC.equals("01")){
+						//Set last update time to 25 hours ago
+						Calendar nowCal = GregorianCalendar.getInstance();
+						nowCal.setTime(now);
+						nowCal.add(Calendar.HOUR, -25);
+						long twentyFiveHoursAgo = nowCal.getTimeInMillis() / 1000;
+						if (twentyFiveHoursAgo < lastUpdate){
+							lastUpdate = twentyFiveHoursAgo;
+						}
+					}else{
+						//It's not 1 am UTC, skip for now.
+						continue;
+					}
 				}
 
 				if (isRegroupAllRecords) {

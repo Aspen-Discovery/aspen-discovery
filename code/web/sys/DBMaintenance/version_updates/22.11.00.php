@@ -46,6 +46,15 @@ function getUpdates22_11_00(): array
 				'ALTER TABLE sideload_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 			]
 		], //add_numInvalidRecords_to_sideload_logs
+		'hoopla_index_by_day' => [
+			'title' => 'Hoopla - Index By Day',
+			'description' => 'Add an option for hoopla to index by day',
+			'sql' => [
+				'ALTER TABLE hoopla_settings ADD COLUMN indexByDay TINYINT(1) DEFAULT 0',
+				'UPDATE hoopla_settings set indexByDay = 1',
+				'UPDATE hoopla_settings set lastUpdateOfChangedRecords = 1664236800',
+			]
+		], //hoopla_index_by_day
 
 		//kirstien
 
