@@ -144,7 +144,6 @@ class OAuthAuthentication extends Action
 			$newUser['lastname'] = $this->getLastName();
 			$newUser['cat_username'] = $this->getUserId();
 			$selfReg = $catalogConnection->selfRegister(true, $newUser);
-			$logger->log(print_r($selfReg, true), Logger::LOG_ERROR);
 			if ($selfReg['success'] != '1') {
 				//unable to register the user
 				$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
