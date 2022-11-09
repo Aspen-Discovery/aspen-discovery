@@ -78,7 +78,7 @@ export default class Facet extends Component {
 						</Pressable>
 				),
 				headerRight: () => (
-						<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges} updateGlobal={this.updateGlobal}/>
+						<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges} updateGlobal={this.updateGlobal} prevRoute="Filters"/>
 				),
 			});
 		} else {
@@ -87,7 +87,7 @@ export default class Facet extends Component {
 						<Box></Box>
 				),
 				headerRight: () => (
-						<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges}/>
+						<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges} prevRoute="Filters"/>
 				),
 			});
 		}
@@ -145,7 +145,6 @@ export default class Facet extends Component {
 			let facets = item['facets'];
 			if (_.size(facets) > 0) {
 				_.forEach(facets, function(value, key) {
-					console.log(multiSelect);
 					if (multiSelect) {
 						values = _.concat(values, value);
 					} else {
@@ -162,6 +161,7 @@ export default class Facet extends Component {
 
 	updateSearch = (resetFacetGroup = false, toFilters = false) => {
 		const params = buildParamsForUrl();
+		console.log(params);
 		SEARCH.hasPendingChanges = false;
 		const {navigation} = this.props;
 		if (toFilters) {

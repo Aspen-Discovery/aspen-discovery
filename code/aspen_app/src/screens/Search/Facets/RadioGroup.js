@@ -24,13 +24,13 @@ export default class Facet_RadioGroup extends Component {
 		this._isMounted = true;
 		let facets = this.state.items;
 
-		console.log(this.state.applied);
-
 		if (_.isObject(facets)) {
 			const facet = _.filter(facets, 'isApplied');
-			this.setState({
-				value: facet[0]['value'] ?? '',
-			});
+			if (!_.isEmpty(facet)) {
+				this.setState({
+					value: facet[0]['value'] ?? '',
+				});
+			}
 		}
 
 		this.setState({
@@ -58,6 +58,7 @@ export default class Facet_RadioGroup extends Component {
 	updateValue = (payload) => {
 		const {category, value} = this.state;
 		if (category !== 'sort_by') {
+			console.log('payload > ', payload);
 			if (payload === value) {
 				removeAppliedFilter(category, payload);
 				this.setState({
@@ -75,14 +76,14 @@ export default class Facet_RadioGroup extends Component {
 				this.setState({
 					value: '',
 				});
-				SEARCH.sortMethod = 'relevance';
 			} else {
 				this.setState({
 					value: payload,
 				});
 				SEARCH.sortMethod = payload;
 			}
-			console.log(SEARCH.sortMethod);
+			addAppliedFilter(category, payload, false);
+			console.log(SEARCH.pendingFilters);
 		}
 
 		this.props.updater();
