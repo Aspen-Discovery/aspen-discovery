@@ -295,7 +295,7 @@ class OAuthAuthentication extends Action {
 		return $this->appendQuery($authorizationUrl, $queryString);
 	}
 
-	public function refreshAccessToken() {
+	public function refreshAccessToken(): bool {
 		global $library;
 		$ssoSettings = new SSOSetting();
 		$ssoSettings->id = $library->ssoSettingId;
@@ -314,7 +314,7 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	public function logout() {
+	public function logout(): bool {
 		global $library;
 		$ssoSettings = new SSOSetting();
 		$ssoSettings->id = $library->ssoSettingId;
@@ -404,7 +404,7 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	protected function createClientSecret($pkFile) {
+	protected function createClientSecret($pkFile): string {
 		$pk = openssl_pkey_get_private($pkFile);
 		$timestamp = (string)intval(microtime(true) * 1000);
 		openssl_private_encrypt($timestamp, $crypttext, $pk);
