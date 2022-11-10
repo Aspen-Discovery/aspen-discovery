@@ -1326,11 +1326,6 @@ abstract class MarcRecordProcessor {
 			printFormats.add("PlayawayView");
 			return;
 		}
-		if (printFormats.contains("Playaway")){
-			printFormats.clear();
-			printFormats.add("Playaway");
-			return;
-		}
 		if (printFormats.contains("GoReader")){
 			printFormats.clear();
 			printFormats.add("GoReader");
@@ -1359,6 +1354,11 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("Wonderbook")){
 			printFormats.clear();
 			printFormats.add("Wonderbook");
+			return;
+		}
+		if (printFormats.contains("Playaway")){
+			printFormats.clear();
+			printFormats.add("Playaway");
 			return;
 		}
 		if (printFormats.contains("Kit")){
