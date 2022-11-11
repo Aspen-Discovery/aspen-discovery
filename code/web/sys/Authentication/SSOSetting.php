@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/Authentication/SSOMapping.php';
 
-class SSOSetting extends DataObject
-{
+class SSOSetting extends DataObject {
 	public $__table = 'sso_setting';
 	public $id;
 	public $name;
@@ -20,7 +19,10 @@ class SSOSetting extends DataObject
 	public $oAuthAuthorizeUrl;
 	public $oAuthAccessTokenUrl;
 	public $oAuthResourceOwnerUrl;
+	public $oAuthLogoutUrl;
 	public $oAuthScope;
+	public $oAuthGrantType;
+	public $oAuthPrivateKeys;
 	public $oAuthGatewayLabel;
 	public $oAuthGatewayIcon;
 	public $oAuthButtonBackgroundColor;
@@ -54,8 +56,7 @@ class SSOSetting extends DataObject
 	private $_libraries;
 	private $_dataMapping;
 
-	public static function getObjectStructure(): array
-	{
+	public static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$fieldMapping = SSOMapping::getObjectStructure();
 
@@ -74,6 +75,12 @@ class SSOSetting extends DataObject
 			'1' => 'Only SSO Login'
 		);
 
+		$authentication_grant_type = array(
+			'0' => 'By Authorization Code (Standard)',
+			'1' => 'By Resource Owner Credentials',
+			'2' => 'By Client Credentials'
+		);
+
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
 			'name' => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the setting', 'maxLength' => 50],
@@ -89,15 +96,18 @@ class SSOSetting extends DataObject
 			'oAuthAuthorizeUrl' => array('property' => 'oAuthAuthorizeUrl', 'type' => 'url', 'label' => 'Custom Gateway Authorization Url', 'description' => 'The API url used as the main entry point for requesting authorization', 'hideInLists' => true),
 			'oAuthAccessTokenUrl' => array('property' => 'oAuthAccessTokenUrl', 'type' => 'url', 'label' => 'Custom Gateway Access Token Url', 'description' => 'The API url used to connect and exchange the authorization code for an access token.', 'hideInLists' => true),
 			'oAuthResourceOwnerUrl' => array('property' => 'oAuthResourceOwnerUrl', 'type' => 'url', 'label' => 'Custom Gateway Resource Owner Url', 'description' => 'The API url used to access the user details', 'hideInLists' => true),
+			'oAuthLogoutUrl' => array('property' => 'oAuthLogoutUrl', 'type' => 'url', 'label' => 'Custom Gateway Logout Url', 'description' => 'The API url used to invalidate a session and force a user to logout', 'hideInLists' => true),
 			'oAuthScope' => array('property' => 'oAuthScope', 'type' => 'text', 'label' => 'Custom Gateway Scopes', 'description' => 'Granular permissions the API client needs to access data', 'hideInLists' => true),
+			'oAuthGrantType' => array('property' => 'oAuthGrantType', 'type' => 'enum', 'label' => 'Authentication Grant Type', 'values' => $authentication_grant_type, 'description' => 'The grant type used when obtaining an access token.', 'default' => 0, 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.toggleOAuthPrivateKeysField();'),
+			'oAuthPrivateKeys' => array('property' => 'oAuthPrivateKeys', 'type' => 'file', 'label' => 'Private Keys PEM File', 'description' => 'A .PEM file that contains private keys to access a client secret.', 'hideInLists' => true),
 			'oAuthGatewayIcon' => array('property' => 'oAuthGatewayIcon', 'type' => 'image', 'label' => 'Custom Gateway Icon', 'description' => 'An icon representing the custom gateway', 'hideInLists' => true, 'thumbWidth' => 32),
 			'oAuthButtonBackgroundColor' => array('property' => 'oAuthButtonBackgroundColor', 'type' => 'text', 'label' => 'Custom Gateway Background Color', 'description' => 'Custom Gateway Button Background Color', 'hideInLists' => true),
 			'oAuthButtonTextColor' => array('property' => 'oAuthButtonTextColor', 'type' => 'text', 'label' => 'Custom Gateway Text Color', 'description' => 'Custom Gateway Button Foreground Color', 'hideInLists' => true),
 
 			'ssoName' => array('property' => 'ssoName', 'type' => 'text', 'label' => 'Name of service', 'description' => 'The name to be displayed when referring to the authentication service', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoXmlUrl' => array('property' => 'ssoXmlUrl', 'type' => 'text', 'label' => 'URL of service metadata XML', 'description' => 'The URL at which the metadata XML document for this identity provider can be obtained', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
-			'ssoMetadataFilename'=> array('path' => '/data/aspen-discovery/sso_metadata', 'property' => 'ssoMetadataFilename', 'type' => 'file', 'label' => 'XML metadata file', 'description' => 'The XML metadata file if no URL is available', 'readOnly'=>true, 'permissions' => ['Library ILS Connection']),
-			'ssoEntityId' => array('property' => 'ssoEntityId', 'type' => 'text', 'label' => 'Entity ID of SSO provider', 'description' => 'The entity ID of the SSO IdP. This can be found in the IdP\'s metadata', 'size' => '512', 'hideInLists' => false, 'permissions' => ['Library ILS Connection']),
+			'ssoMetadataFilename' => array('path' => '/data/aspen-discovery/sso_metadata', 'property' => 'ssoMetadataFilename', 'type' => 'file', 'label' => 'XML metadata file', 'description' => 'The XML metadata file if no URL is available', 'hideInLists' => true, 'readOnly' => true, 'permissions' => ['Library ILS Connection']),
+			'ssoEntityId' => array('property' => 'ssoEntityId', 'type' => 'text', 'label' => 'Entity ID of SSO provider', 'description' => 'The entity ID of the SSO IdP. This can be found in the IdP\'s metadata', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoUniqueAttribute' => array('property' => 'ssoUniqueAttribute', 'type' => 'text', 'label' => 'Name of the identity provider attribute that uniquely identifies a user', 'description' => 'This should be unique to each user', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoIdAttr' => array('property' => 'ssoIdAttr', 'type' => 'text', 'label' => 'Name of the identity provider attribute that contains the user ID', 'description' => 'This should be unique to each user', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 			'ssoUsernameAttr' => array('property' => 'ssoUsernameAttr', 'type' => 'text', 'label' => 'Name of the identity provider attribute that contains the user\'s username', 'description' => 'The user\'s username', 'size' => '512', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
@@ -149,8 +159,7 @@ class SSOSetting extends DataObject
 		];
 	}
 
-	public function __get($name)
-	{
+	public function __get($name) {
 		if ($name == "libraries") {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
@@ -162,46 +171,28 @@ class SSOSetting extends DataObject
 				}
 			}
 			return $this->_libraries;
-		} elseif ($name == "dataMapping") {
+		}
+		elseif ($name == "dataMapping") {
 			return $this->getFieldMappings();
-		} else {
+		}
+		else {
 			return $this->_data[$name];
 		}
 	}
 
-	public function __set($name, $value)
-	{
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		} elseif ($name == "dataMapping") {
+		}
+		elseif ($name == "dataMapping") {
 			$this->_dataMapping = $value;
-		} else {
+		}
+		else {
 			$this->_data[$name] = $value;
 		}
 	}
 
-	public function update()
-	{
-		$ret = parent::update();
-		if ($ret !== FALSE) {
-			$this->saveLibraries();
-			$this->saveFieldMappings();
-		}
-		return true;
-	}
-
-	public function insert()
-	{
-		$ret = parent::insert();
-		if ($ret !== FALSE) {
-			$this->saveLibraries();
-			$this->saveFieldMappings();
-		}
-		return $ret;
-	}
-
-	public function getFieldMappings()
-	{
+	public function getFieldMappings() {
 		if (!isset($this->_dataMapping) && $this->id) {
 			$this->_dataMapping = array();
 			$dataMapping = new SSOMapping();
@@ -215,16 +206,16 @@ class SSOSetting extends DataObject
 		return $this->_dataMapping;
 	}
 
-	public function saveFieldMappings()
-	{
-		if (isset($this->_dataMapping) && is_array($this->_dataMapping)) {
-			$this->saveOneToManyOptions($this->_dataMapping, 'ssoSettingId');
-			unset($this->_dataMapping);
+	public function update() {
+		$ret = parent::update();
+		if ($ret !== FALSE) {
+			$this->saveLibraries();
+			$this->saveFieldMappings();
 		}
+		return true;
 	}
 
-	public function saveLibraries()
-	{
+	public function saveLibraries() {
 		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 			foreach ($libraryList as $libraryId => $displayName) {
@@ -237,7 +228,8 @@ class SSOSetting extends DataObject
 						$library->ssoSettingId = $this->id;
 						$library->update();
 					}
-				} else {
+				}
+				else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
 					if ($library->ssoSettingId == $this->id) {
 						$library->ssoSettingId = -1;
@@ -249,13 +241,27 @@ class SSOSetting extends DataObject
 		}
 	}
 
-	public function getNumericColumnNames(): array
-	{
+	public function saveFieldMappings() {
+		if (isset($this->_dataMapping) && is_array($this->_dataMapping)) {
+			$this->saveOneToManyOptions($this->_dataMapping, 'ssoSettingId');
+			unset($this->_dataMapping);
+		}
+	}
+
+	public function insert() {
+		$ret = parent::insert();
+		if ($ret !== FALSE) {
+			$this->saveLibraries();
+			$this->saveFieldMappings();
+		}
+		return $ret;
+	}
+
+	public function getNumericColumnNames(): array {
 		return ['staffOnly'];
 	}
 
-	public function genericOAuthProvider()
-	{
+	public function genericOAuthProvider() {
 		global $configArray;
 		$redirectUri = $configArray['Site']['url'] . '/Authentication/OAuth';
 		return array(
@@ -269,8 +275,7 @@ class SSOSetting extends DataObject
 		);
 	}
 
-	public function getAuthorizationUrl()
-	{
+	public function getAuthorizationUrl() {
 		if ($this->oAuthGateway == "google") {
 			return "https://accounts.google.com/o/oauth2/v2/auth";
 		}
@@ -278,8 +283,7 @@ class SSOSetting extends DataObject
 		return $this->oAuthAuthorizeUrl;
 	}
 
-	public function getAccessTokenUrl()
-	{
+	public function getAccessTokenUrl() {
 		if ($this->oAuthGateway == "google") {
 			return "https://oauth2.googleapis.com/token";
 		}
@@ -287,8 +291,7 @@ class SSOSetting extends DataObject
 		return $this->oAuthAccessTokenUrl;
 	}
 
-	public function getResourceOwnerDetailsUrl()
-	{
+	public function getResourceOwnerDetailsUrl() {
 		if ($this->oAuthGateway == "google") {
 			return "https://openidconnect.googleapis.com/v1/userinfo";
 		}
@@ -296,8 +299,15 @@ class SSOSetting extends DataObject
 		return $this->oAuthResourceOwnerUrl;
 	}
 
-	public function getScope()
-	{
+	public function getLogoutUrl() {
+		if ($this->oAuthGateway == 'google') {
+			return 'https://oauth2.googleapis.com/revoke?token=';
+		}
+
+		return $this->oAuthLogoutUrl;
+	}
+
+	public function getScope() {
 		if ($this->oAuthGateway == "google") {
 			return "openid email profile";
 		}
@@ -305,8 +315,7 @@ class SSOSetting extends DataObject
 		return $this->oAuthScope;
 	}
 
-	public function getRedirectUrl()
-	{
+	public function getRedirectUrl() {
 		global $configArray;
 		$baseUrl = $configArray['Site']['url'];
 		if ($this->service == "oauth") {
@@ -316,8 +325,7 @@ class SSOSetting extends DataObject
 		return false;
 	}
 
-	public function getMatchpoints()
-	{
+	public function getMatchpoints() {
 		$matchpoints = [
 			'email' => 'email',
 			'userId' => 'sub',
@@ -331,11 +339,14 @@ class SSOSetting extends DataObject
 		while ($mappings->fetch()) {
 			if ($mappings->aspenField == "email") {
 				$matchpoints['email'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "user_id") {
+			}
+			elseif ($mappings->aspenField == "user_id") {
 				$matchpoints['userId'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "first_name") {
+			}
+			elseif ($mappings->aspenField == "first_name") {
 				$matchpoints['firstName'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "last_name") {
+			}
+			elseif ($mappings->aspenField == "last_name") {
 				$matchpoints['lastName'] = $mappings->responseField;
 			}
 		}
@@ -343,9 +354,15 @@ class SSOSetting extends DataObject
 		return $matchpoints;
 	}
 
-	public function getBasicAuthToken()
-	{
+	public function getBasicAuthToken() {
 		return base64_encode($this->clientId . ":" . $this->clientSecret);
+	}
+
+	public function getAuthenticationGrantType() {
+		if ($this->oAuthGateway == 'google') {
+			return 0;
+		}
+		return $this->oAuthGrantType;
 	}
 
 }

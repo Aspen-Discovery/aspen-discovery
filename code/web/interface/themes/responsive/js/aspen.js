@@ -6717,7 +6717,7 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 		handleACISpeedpayError: function (error) {
-			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, false);
 		},
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
@@ -8932,16 +8932,19 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Admin.toggleoAuthFields('hide');
 			AspenDiscovery.Admin.toggleSamlFields('hide');
 			AspenDiscovery.Admin.toggleOAuthGatewayFields();
+			AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 
 			var ssoService = $("#serviceSelect").val();
 			if (ssoService === "oauth") {
 				AspenDiscovery.Admin.toggleoAuthFields('show');
 				AspenDiscovery.Admin.toggleSamlFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 			} else {
 				AspenDiscovery.Admin.toggleSamlFields('show');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 			}
 		},
 		toggleoAuthFields: function (displayMode) {
@@ -8953,7 +8956,10 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowoAuthAccessTokenUrl').hide();
 				$('#propertyRowoAuthAuthorizeUrl').hide();
 				$('#propertyRowoAuthResourceOwnerUrl').hide();
+				$('#propertyRowoAuthLogoutUrl').hide();
 				$('#propertyRowoAuthScope').hide();
+				$('#propertyRowoAuthGrantType').hide();
+				$('#propertyRowoAuthPrivateKeys').hide();
 				$('#propertyRowoAuthGatewayIcon').hide();
 				$('#propertyRowoAuthButtonBackgroundColor').hide();
 				$('#propertyRowoAuthButtonTextColor').hide();
@@ -8965,7 +8971,10 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowoAuthAccessTokenUrl').hide();
 				$('#propertyRowoAuthAuthorizeUrl').hide();
 				$('#propertyRowoAuthResourceOwnerUrl').hide();
+				$('#propertyRowoAuthLogoutUrl').hide();
 				$('#propertyRowoAuthScope').hide();
+				$('#propertyRowoAuthGrantType').hide();
+				$('#propertyRowoAuthPrivateKeys').hide();
 				$('#propertyRowoAuthGatewayIcon').hide();
 				$('#propertyRowoAuthButtonBackgroundColor').hide();
 				$('#propertyRowoAuthButtonTextColor').hide();
@@ -8988,6 +8997,8 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowssoPatronTypeSection').show();
 				$('#propertyRowssoLibraryIdSection').show();
 				$('#propertyRowssoCategoryIdSection').show();
+				$('#propertyRowssoMetadataFilename').show();
+				$('#propertyRowssoEntityId').show();
 			} else {
 				$('#propertyRowssoName').hide();
 				$('#propertyRowssoXmlUrl').hide();
@@ -9004,6 +9015,8 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowssoPatronTypeSection').hide();
 				$('#propertyRowssoLibraryIdSection').hide();
 				$('#propertyRowssoCategoryIdSection').hide();
+				$('#propertyRowssoMetadataFilename').hide();
+				$('#propertyRowssoEntityId').hide();
 			}
 		},
 		toggleOAuthGatewayFields: function () {
@@ -9013,7 +9026,9 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowoAuthAccessTokenUrl').show();
 				$('#propertyRowoAuthAuthorizeUrl').show();
 				$('#propertyRowoAuthResourceOwnerUrl').show();
+				$('#propertyRowoAuthLogoutUrl').show();
 				$('#propertyRowoAuthScope').show();
+				$('#propertyRowoAuthGrantType').show();
 				$('#propertyRowoAuthGatewayIcon').show();
 				$('#propertyRowoAuthButtonBackgroundColor').show();
 				$('#propertyRowoAuthButtonTextColor').show();
@@ -9022,10 +9037,21 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowoAuthAccessTokenUrl').hide();
 				$('#propertyRowoAuthAuthorizeUrl').hide();
 				$('#propertyRowoAuthResourceOwnerUrl').hide();
+				$('#propertyRowoAuthLogoutUrl').hide();
 				$('#propertyRowoAuthScope').hide();
+				$('#propertyRowoAuthGrantType').hide();
+				$('#propertyRowoAuthPrivateKeys').hide();
 				$('#propertyRowoAuthGatewayIcon').hide();
 				$('#propertyRowoAuthButtonBackgroundColor').hide();
 				$('#propertyRowoAuthButtonTextColor').hide();
+			}
+		},
+		toggleOAuthPrivateKeysField: function () {
+			var oAuthGrantType = $("#oAuthGrantTypeSelect").val();
+			if (oAuthGrantType === 2 || oAuthGrantType === '2') {
+				$('#propertyRowoAuthPrivateKeys').show();
+			} else {
+				$('#propertyRowoAuthPrivateKeys').hide();
 			}
 		}
 	};
