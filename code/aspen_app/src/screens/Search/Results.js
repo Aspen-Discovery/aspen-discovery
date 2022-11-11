@@ -69,7 +69,6 @@ export default class Results extends React.Component {
 		const {navigation} = this.props;
 		const routes = navigation.getState()?.routes;
 		const prevRoute = routes[routes.length - 2];
-		console.log(prevRoute['name']);
 		if (prevRoute['name'] === 'SearchScreen') {
 			resetSearchGlobals();
 		}
@@ -454,12 +453,11 @@ export default class Results extends React.Component {
 	};
 
 	filterBarButton = () => {
-		const appliedFilters = _.filter(SEARCH.availableFacets.data, 'hasApplied');
 		const appliedFacets = SEARCH.appliedFilters;
-		console.log(SEARCH.id);
 		const navigation = this.props.navigation;
 		const searchTerm = this.state.query;
-		if (_.size(appliedFilters) > 0) {
+		const sort = _.find(appliedFacets['Sort By'], {'field': 'sort_by', 'value': 'relevance'});
+		if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 2 && _.size(sort) > 1)) {
 			return (
 					<Button.Group size="sm" space={1} vertical variant="outline">
 						{_.map(appliedFacets, function(item, index, collection) {
@@ -478,7 +476,9 @@ export default class Results extends React.Component {
 								navigation.push('modal', {
 									screen: 'Facet',
 									params: {
+										data: item,
 										navigation: navigation,
+										defaultValues: [],
 										key: item[0]['field'],
 										term: searchTerm,
 										title: cluster[0]['label'],
@@ -492,6 +492,7 @@ export default class Results extends React.Component {
 					</Button.Group>
 			);
 		} else {
+			//return null;
 			return this.filterBarDefaults();
 		}
 	};
@@ -508,16 +509,16 @@ export default class Results extends React.Component {
 										screen: 'Facet',
 										params: {
 											navigation: this.props.navigation,
-											key: obj['value'],
+											key: obj['field'],
 											term: this.state.query,
-											title: obj['display'],
-											facets: SEARCH.availableFacets.data[obj['display']].facets,
+											title: obj['label'],
+											facets: SEARCH.availableFacets.data[obj['label']].facets,
 											pendingUpdates: [],
 											extra: obj,
 										},
 									});
 								}}
-						>{obj.display}</Button>;
+						>{obj['label']}</Button>;
 					})}
 				</Button.Group>
 		);

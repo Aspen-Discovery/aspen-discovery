@@ -889,7 +889,7 @@ abstract class MarcRecordProcessor {
 
 	void loadClosedCaptioning(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords){
 		//Based on the 546 fields determine if the record is closed captioned
-		Pattern closedCaptionPattern = Pattern.compile(".*\\bclosed?[- ]caption.*", Pattern.CASE_INSENSITIVE);
+		Pattern closedCaptionPattern = Pattern.compile("\\b(closed?[- ]caption|hearing impaired)", Pattern.CASE_INSENSITIVE);
 		Set<String> languageNoteFields = MarcUtil.getFieldList(record, "546a");
 		boolean isClosedCaptioned = false;
 		for (String languageNoteField: languageNoteFields){
@@ -903,6 +903,9 @@ abstract class MarcRecordProcessor {
 			Set<String> subjectFields = MarcUtil.getFieldList(record, "655a:650a");
 			for (String subjectField : subjectFields) {
 				if (subjectField.toLowerCase(Locale.ROOT).startsWith("video recordings for the hearing impaired")) {
+					isClosedCaptioned = true;
+					break;
+				} else if (subjectField.toLowerCase(Locale.ROOT).startsWith("closed caption")) {
 					isClosedCaptioned = true;
 					break;
 				}
@@ -1326,11 +1329,6 @@ abstract class MarcRecordProcessor {
 			printFormats.add("PlayawayView");
 			return;
 		}
-		if (printFormats.contains("Playaway")){
-			printFormats.clear();
-			printFormats.add("Playaway");
-			return;
-		}
 		if (printFormats.contains("GoReader")){
 			printFormats.clear();
 			printFormats.add("GoReader");
@@ -1359,6 +1357,11 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("Wonderbook")){
 			printFormats.clear();
 			printFormats.add("Wonderbook");
+			return;
+		}
+		if (printFormats.contains("Playaway")){
+			printFormats.clear();
+			printFormats.add("Playaway");
 			return;
 		}
 		if (printFormats.contains("Kit")){
