@@ -62,7 +62,7 @@ export const UnsavedChangesBack = (props) => {
 };
 
 export const UnsavedChangesExit = (props) => {
-	const {updateSearch, discardChanges} = props;
+	const {updateSearch, discardChanges, prevRoute} = props;
 	const navigation = useNavigation();
 	const [isOpen, setIsOpen] = React.useState(false);
 	const onClose = () => setIsOpen(false);
@@ -90,7 +90,13 @@ export const UnsavedChangesExit = (props) => {
 		discardChanges();
 		setIsOpen(false);
 		SEARCH.hasPendingChanges = false;
-		navigation.getParent().pop();
+		if (prevRoute === 'SearchScreen') {
+			this.props.navigation.navigate('SearchResults', {
+				term: SEARCH.term,
+			});
+		} else {
+			navigation.getParent().pop();
+		}
 	};
 
 	return (

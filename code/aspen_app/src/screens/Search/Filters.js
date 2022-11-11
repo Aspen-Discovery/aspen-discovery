@@ -41,12 +41,14 @@ export default class Filters extends Component {
 			});
 		}
 		const {navigation} = this.props;
+		const routes = navigation.getState()?.routes;
+		const prevRoute = routes[routes.length - 2];
 		navigation.setOptions({
 			/* headerLeft: () => (
 			 <UnsavedChangesBack updateSearch={this.updateSearch}/>
 			 ), */
 			headerRight: () => (
-					<UnsavedChangesExit updateSearch={this.updateSearch}/>
+					<UnsavedChangesExit updateSearch={this.updateSearch} discardChanges={this.discardChanges} prevRoute="SearchScreen"/>
 			),
 		});
 	}
@@ -69,8 +71,6 @@ export default class Filters extends Component {
 		const facetData = _.filter(SEARCH.availableFacets.data, ['label', cluster]);
 		const pendingFacets = _.filter(this.state.pendingFilters, ['field', facetData[0]['field']]);
 		let text = '';
-
-		//console.log(SEARCH.appliedFilters[cluster]);
 
 		if ((!_.isUndefined(SEARCH.appliedFilters[cluster]))) {
 			const facet = SEARCH.appliedFilters[cluster];
@@ -135,6 +135,20 @@ export default class Filters extends Component {
 		});
 	};
 
+	discardChanges = () => {
+		SEARCH.hasPendingChanges = false;
+		SEARCH.appliedFilters = [];
+		SEARCH.sortMethod = 'relevance';
+		SEARCH.availableFacets = [];
+		SEARCH.pendingFilters = [];
+		SEARCH.appendedParams = '';
+
+		this.props.navigation.navigate('SearchResults', {
+			term: SEARCH.term,
+			pendingParams: '',
+		});
+	};
+
 	clearSelections = () => {
 		SEARCH.hasPendingChanges = false;
 		SEARCH.appliedFilters = [];
@@ -142,6 +156,7 @@ export default class Filters extends Component {
 		SEARCH.availableFacets = [];
 		SEARCH.pendingFilters = [];
 		SEARCH.appendedParams = '';
+
 		this.props.navigation.navigate('SearchResults', {
 			term: SEARCH.term,
 			pendingParams: '',
