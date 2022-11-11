@@ -96,7 +96,6 @@ export async function getSearchResults(
 		lookfor: searchTerm,
 		pageSize: pageSize,
 		page: page,
-		sort: SEARCH.sortMethod,
 	});
 	const response = getResponseCode(data);
 	if (response.success) {
@@ -186,6 +185,16 @@ export async function getAvailableFacets() {
 	if (response.success) {
 		await getAvailableFacetsKeys();
 		SEARCH.availableFacets = response.data.result;
+		let defaultOptions = response.data.result.data;
+		let i = 1;
+		let defaults = [];
+		_.map(defaultOptions, function(item, index, collection) {
+			if (i <= 5 && item['field'] !== 'sort_by') {
+				defaults = _.concat(defaults, item);
+				i++;
+			}
+		});
+		SEARCH.defaultFacets = defaults;
 		return response.data.result;
 	} else {
 		return response;
@@ -332,12 +341,14 @@ export function buildParamsForUrl() {
 	_.forEach(filters, function(filter) {
 		const field = filter.field;
 		const facets = filter.facets;
-
+		if (field === 'sort_by') {
+			console.log(filter);
+		}
 		if (_.size(facets) > 0) {
 			_.forEach(facets, function(facet) {
 				if (field === 'sort_by') {
 					//ignore adding sort here, we'll do it later
-					//todo: stop adding sort_by to SEARCH.pendingFilters
+					params = params.concat('&sort=' + facet);
 				} else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level') {
 					facet = facet.replaceAll(' ', '+');
 					params = params.concat('&filter[]=' + field + ':' + facet);
@@ -350,6 +361,7 @@ export function buildParamsForUrl() {
 
 	params = _.join(params, '');
 	SEARCH.appendedParams = params;
+	console.log(params);
 	return params;
 }
 

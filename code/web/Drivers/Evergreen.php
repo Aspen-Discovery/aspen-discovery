@@ -1123,7 +1123,29 @@ class Evergreen extends AbstractIlsDriver
 			$user->phone = $userData['other_phone'];
 		}
 
+		$numericPtype = $userData['profile'];
+		$staffUserInfo = $this->getStaffUserInfo();
 		$user->patronType = $userData['profile'];
+		if ($staffUserInfo['userValid']){
+			//Lookup the patron type
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers  = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.pcrud&method=open-ils.pcrud.retrieve.pgt';
+			$request .= '&param=' . json_encode($staffUserInfo['authToken']);
+			$request .= '&param=' . json_encode($numericPtype);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)){
+					$pTypeInfo = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('pgt'));
+					$user->patronType = $pTypeInfo['name'];
+				}
+			}
+		}
 
 		//TODO: Figure out how to parse the address we will need to look it up in web services
 		//$fullAddress = $userData['mailing_address'];
