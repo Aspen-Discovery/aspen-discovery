@@ -96,7 +96,7 @@ export default class Facet_Rating extends Component {
 				value: star,
 			});
 		}
-		this.props.updater();
+		this.props.updater(this.state.category, star);
 	};
 
 	render() {

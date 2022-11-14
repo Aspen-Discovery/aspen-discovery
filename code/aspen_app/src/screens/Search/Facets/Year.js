@@ -48,7 +48,7 @@ export default class Facet_Year extends Component {
 		});
 		const years = '[' + year + '+TO+*]';
 		addAppliedFilter(this.state.category, years, false);
-		this.props.updater();
+		this.props.updater(this.state.category, years);
 	};
 
 	updateValue = (type, value) => {
@@ -73,7 +73,7 @@ export default class Facet_Year extends Component {
 		}
 		const years = '[' + yearFrom + '+TO+' + yearTo + ']';
 		addAppliedFilter(category, years, false);
-		this.props.updater();
+		this.props.updater(category, years);
 	};
 
 	render() {

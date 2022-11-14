@@ -63,7 +63,7 @@ export default class Facet_Slider extends Component {
 			value = '[*+TO+*]';
 		}
 		addAppliedFilter(this.state.category, value, false);
-		this.props.updater();
+		this.props.updater(this.state.category, value);
 	};
 
 	appliedStartValue = () => {
