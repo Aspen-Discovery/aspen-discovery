@@ -260,9 +260,11 @@ function array_remove_by_value($array, $value){
 }
 
 function getValidServerNames() : array{
+	//Don't cache for now since server names get long
 	/* Memcache $memCache */
-	global $memCache;
-	$validServerNames = $memCache->get('validServerNames');
+	//global $memCache;
+	//$validServerNames = $memCache->get('validServerNames');
+	$validServerNames = null;
 	if (empty($validServerNames) || isset($_REQUEST['reload'])) {
 		//Get a list of valid server names
 		global $instanceName;
@@ -334,7 +336,7 @@ function getValidServerNames() : array{
 				$validServerNames[] = "$host";
 			}
 		}
-		$memCache->set('validServerNames', $validServerNames, 5 * 60 * 60);
+		//$memCache->set('validServerNames', $validServerNames, 5 * 60 * 60);
 	}
 	return $validServerNames;
 }

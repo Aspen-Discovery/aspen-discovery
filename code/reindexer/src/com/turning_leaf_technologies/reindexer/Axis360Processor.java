@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Axis360Scope;
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,7 +36,7 @@ class Axis360Processor {
 		}
 	}
 
-	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
+	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseIndexingLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();

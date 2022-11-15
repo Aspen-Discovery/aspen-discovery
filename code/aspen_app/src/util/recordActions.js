@@ -211,7 +211,7 @@ export async function getItemDetails(libraryUrl, id, format) {
 	});
 	const response = await api.post('/ItemAPI?method=getItemDetails', postBody);
 	if (response.ok) {
-		return _.values(response.data);
+		return response.data;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
 		console.log(response);

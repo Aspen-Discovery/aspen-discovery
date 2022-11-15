@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'getAvailableFacetsKeys', 'searchLite', 'getDefaultFacets', 'getFacetClusterByKey', 'searchFacetCluster', 'getFormatCategories'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SearchAPI', $method);
@@ -615,13 +615,14 @@ class SearchAPI extends Action
 
 			$facetSet = $searchObject->getFacetList();
 			$jsonResults['facetSet'] = [];
-			foreach ($facetSet as $name => $facetInfo){
+			foreach ($facetSet as $name => $facetInfo) {
 				$jsonResults['facetSet'][$name] = [
 					'label' => $facetInfo['label'],
 					'list' => $facetInfo['list'],
 					'hasApplied' => $facetInfo['hasApplied'],
 					'valuesToShow' => $facetInfo['valuesToShow'],
 					'showAlphabetically' => $facetInfo['showAlphabetically'],
+					'multiSelect' => (bool)$facetInfo['multiSelect'],
 				];
 			}
 
@@ -640,6 +641,9 @@ class SearchAPI extends Action
 			}
 			$jsonResults['categorySelected'] = $categorySelected;
 			$timer->logTime('finish checking to see if a format category has been loaded already');
+
+			$jsonResults['sortList'] = $searchObject->getSortList();
+			$jsonResults['sortedBy'] = $searchObject->getSort();
 
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
@@ -1855,7 +1859,11 @@ class SearchAPI extends Action
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if (!empty($searchResults['recordSet'])) {
+			$results['lookfor'] = $searchResults['lookfor'];
 			$results['count'] = count($searchResults['recordSet']);
+			$results['totalResults'] = $searchResults['recordCount'];
+			$results['categorySelected'] = $searchResults['categorySelected'];
+			$results['sortedBy'] = $searchResults['sortedBy'];
 			foreach ($searchResults['recordSet'] as $item) {
 				$groupedWork = new GroupedWorkDriver($item);
 				$author = $item['author_display'];
@@ -1904,6 +1912,10 @@ class SearchAPI extends Action
 				if (!empty($itemList)) {
 					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary, 'language' => $language);
 				}
+
+				$results['sortList'] = $searchResults['sortList'];
+				$results['facetSet'] = $searchResults['facetSet'];
+				$results['paging'] = $searchResults['paging'];
 			}
 		}
 
@@ -1917,6 +1929,477 @@ class SearchAPI extends Action
 			}
 		}
 
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function searchLite() {
+		global $timer;
+		global $configArray;
+
+		$results = [
+			'success' => false,
+			'count' => 0,
+			'totalResults' => 0,
+			'lookfor' => $_REQUEST['lookfor'],
+			'title' => translate(['text' => 'No Results Found', 'isPublicFacing' => true]),
+			'items' => [],
+			'message' => translate(['text'=> "Your search '%1%' did not match any resources.", 1=>$_REQUEST['lookfor'], 'isPublicFacing'=>true])
+		];
+
+		// Include Search Engine Class
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$timer->logTime('Include search engine');
+
+		// Initialise from the current search globals
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+
+		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])){
+			$searchObject->setLimit($_REQUEST['pageSize']);
+		}
+		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
+		$timer->logTime('Setup Search');
+
+		// Process Search
+		$searchResults = $searchObject->processSearch(false, true);
+		$timer->logTime('Process Search');
+
+		// 'Finish' the search... complete timers and log search history.
+		$searchObject->close();
+
+		if ($searchObject->getResultTotal() < 1) {
+			// No record found
+			$timer->logTime('no hits processing');
+		} else {
+			$timer->logTime('save search');
+			$summary = $searchObject->getResultSummary();
+			$results['id'] = $searchObject->getSearchId();
+			$results['lookfor'] = $searchObject->displayQuery();
+			$results['sort'] = $searchObject->getSort();
+			// Process Paging
+			$link = $searchObject->renderLinkPageTemplate();
+			$options = array('totalItems' => $summary['resultTotal'],
+				'fileName' => $link,
+				'perPage' => $summary['perPage']);
+			$pager = new Pager($options);
+			$results['totalResults'] = $pager->getTotalItems();
+			$results['count'] = $summary['resultTotal'];
+			$results['page_current'] = $pager->getCurrentPage();
+			$results['page_total'] = $pager->getTotalPages();
+			$timer->logTime('finish hits processing');
+			$records = $searchObject->getResultRecordSet();
+			$items = [];
+			foreach ($records as $recordKey => $record) {
+				$items[$recordKey]['key'] = $record['id'];
+				$items[$recordKey]['title'] = $record['title_display'];
+				$items[$recordKey]['author'] = $record['author_display'];
+				$items[$recordKey]['image'] = $configArray['Site']['url'] . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
+				$items[$recordKey]['language'] = $record['language'][0];
+				$items[$recordKey]['summary'] = $record['display_description'];
+				$i = 0;
+				foreach($record['format'] as $format) {
+					$items[$recordKey]['itemList'][$i]['key'] = $i;
+					$items[$recordKey]['itemList'][$i]['name'] = $format;
+					$i++;
+				}
+			}
+			$results['items'] = $items;
+			$results['success'] = true;
+			$results['time'] = round($searchObject->getTotalSpeed(), 2);
+			$results['title'] = translate(['text' => 'Catalog Search', 'isPublicFacing' => true]);
+			$results['message'] = translate(['text'=> "Your search '%1%' returned %2% results", 1=>$_REQUEST['lookfor'], 2=>$results['count'], 'isPublicFacing'=>true]);
+			$timer->logTime('load result records');
+			if($results['page_current'] == $results['page_total']) {
+				$results['message'] = "end of results";
+			}
+		}
+		if(empty($results['items'])) {
+			if($_REQUEST['page'] != 1) {
+				$results['message'] = "end of results";
+			}
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	private function restoreSearch($id) {
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$search = new SearchEntry();
+		$search->id = $id;
+		if($search->find(true)) {
+			$minSO = unserialize($search->search_object);
+			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
+			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
+			if($searchObj) {
+				$searchObj->processSearch(false, true);
+				return $searchObj;
+			}
+		}
+		return false;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSortList() {
+		$results = [
+			'success' => false,
+			'message' => '',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$id = $_REQUEST['id'];
+		$search = new SearchEntry();
+		$search->id = $id;
+		if($search->find(true)) {
+			$minSO = unserialize($search->search_object);
+			$searchObj = SearchObjectFactory::deminify($minSO, $search);
+			$sortList = $searchObj->getSortList();
+			$items = [];
+			$i = 0;
+			$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
+			$items['key'] = 0;
+			$items['label'] = $key;
+			$items['field'] = 'sort_by';
+			$items['hasApplied'] = true;
+			$items['multiSelect'] = false;
+			foreach($sortList as $value => $sort) {
+				$items['facets'][$i]['value'] = $value;
+				$items['facets'][$i]['display'] = translate(['text'=>$sort['desc'], 'isPublicFacing'=>true]);
+				$items['facets'][$i]['field'] = 'sort_by';
+				$items['facets'][$i]['count'] = 0;
+				$items['facets'][$i]['isApplied'] = $sort['selected'];
+				$items['facets'][$i]['multiSelect'] = false;
+				$i++;
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'data' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getFormatCategories() {
+		$results = [
+			'success' => false,
+			'message' => '',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$id = $_REQUEST['id'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			global $interface;
+			$topFacetSet = $interface->getVariable('topFacetSet');
+			$formatCategories = $topFacetSet['format_category'];
+			$items = [];
+			$i = 0;
+			$items['key'] = 0;
+			$items['label'] = $formatCategories['label'];
+			$items['field'] = $formatCategories['field_name'];
+			$items['hasApplied'] = $formatCategories['hasApplied'];
+			$items['multiSelect'] = (bool)$formatCategories['multiSelect'];
+			foreach($formatCategories['list'] as $category) {
+				$items['facets'][$i]['value'] = $category['value'];
+				$items['facets'][$i]['display'] = $category['display'];
+				$items['facets'][$i]['field'] = $formatCategories['field_name'];
+				$items['facets'][$i]['count'] = $category['count'];
+				$items['facets'][$i]['isApplied'] = $category['isApplied'];
+				$items['facets'][$i]['multiSelect'] = (bool)$formatCategories['multiSelect'];
+				$i++;
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'data' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getAvailableFacets() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		$includeSortList = $_REQUEST['includeSortList'] ?? true;
+		$id = $_REQUEST['id'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			global $interface;
+			$topFacetSet = $interface->getVariable('topFacetSet');
+			$facets = $interface->getVariable('sideFacetSet');
+			//$facets = $searchObj->getFacetList();
+			$items = [];
+			$index = 0;
+			if($includeSortList) {
+				$sortList = $searchObj->getSortList();
+				$i = 0;
+				$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
+				$items[$key]['key'] = 0;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = 'sort_by';
+				$items[$key]['hasApplied'] = true;
+				$items[$key]['multiSelect'] = false;
+				foreach($sortList as $value => $sort) {
+					$items[$key]['facets'][$i]['value'] = $value;
+					$items[$key]['facets'][$i]['display'] = translate(['text'=>$sort['desc'], 'isPublicFacing'=>true]);
+					$items[$key]['facets'][$i]['field'] = 'sort_by';
+					$items[$key]['facets'][$i]['count'] = 0;
+					$items[$key]['facets'][$i]['isApplied'] = $sort['selected'];
+					$items[$key]['facets'][$i]['multiSelect'] = false;
+					$i++;
+				}
+			}
+			foreach($facets as $facet) {
+				$index++;
+				$i = 0;
+				if($facet['field_name'] == 'availability_toggle') {
+					$availabilityToggle = $topFacetSet['availability_toggle'];
+					$key = $availabilityToggle['label'];
+					$items[$key]['key'] = $index;
+					$items[$key]['label'] = $key;
+					$items[$key]['field'] = $availabilityToggle['field_name'];
+					$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
+					$items[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
+					foreach($availabilityToggle['list'] as $item) {
+						$items[$key]['facets'][$i]['value'] = $item['value'];
+						$items[$key]['facets'][$i]['display'] = $item['display'];
+						$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$items[$key]['facets'][$i]['count'] = $item['count'];
+						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						if(isset($item['multiSelect'])) {
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						} else {
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+						}
+						$i++;
+					}
+				} else {
+					$key = $facet['label'];
+					$items[$key]['key'] = $index;
+					$items[$key]['label'] = $key;
+					$items[$key]['field'] = $facet['field_name'];
+					$items[$key]['hasApplied'] = $facet['hasApplied'];
+					$items[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+					if(isset($facet['sortedList'])) {
+						foreach($facet['sortedList'] as $item) {
+							$items[$key]['facets'][$i]['value'] = $item['value'];
+							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+							$items[$key]['facets'][$i]['count'] = $item['count'];
+							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							if(isset($item['multiSelect'])) {
+								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							} else {
+								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
+							$i++;
+						}
+					} else {
+						foreach($facet['list'] as $item) {
+							$items[$key]['facets'][$i]['value'] = $item['value'];
+							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+							$items[$key]['facets'][$i]['count'] = $item['count'];
+							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							if(isset($item['multiSelect'])) {
+								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							} else {
+								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
+							$i++;
+						}
+					}
+				}
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'data' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getAvailableFacetsKeys() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		$includeSort = $_REQUEST['includeSort'] ?? true;
+		$id = $_REQUEST['id'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			global $interface;
+			$facets = $interface->getVariable('sideFacetSet');
+			//$facets = $searchObj->getFacetList();
+			$items = array_keys($facets);
+			if($includeSort) {
+				$items[] = 'sort_by';
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'options' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getAppliedFilters() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		$id = $_REQUEST['id'];
+		$search = new SearchEntry();
+		$search->id = $id;
+		if($search->find(true)) {
+			$minSO = unserialize($search->search_object);
+			$searchObj = SearchObjectFactory::deminify($minSO, $search);
+			$filters = $searchObj->getFilterList();
+			$items = [];
+
+			$includeSort = $_REQUEST['includeSort'] ?? true;
+			if($includeSort) {
+				$list = $searchObj->getSortList();
+				$sort = [];
+				foreach($list as $index => $item) {
+					if($item['selected'] == true){
+						$sort = $item;
+						$sort['value'] = $index;
+						break;
+					}
+				}
+				$i = 0;
+				$key = translate(['text'=> 'Sort By' , 'isPublicFacing'=>true]);
+				$items[$key][$i]['value'] = $sort['value'];
+				$items[$key][$i]['display'] = $sort['desc'];
+				$items[$key][$i]['field'] = 'sort_by';
+				$items[$key][$i]['count'] = 0;
+				$items[$key][$i]['isApplied'] = true;
+			}
+
+			foreach($filters as $key => $filter) {
+				$i = 0;
+				foreach($filter as $item) {
+					$items[$key][$i]['value'] = $item['value'];
+					$items[$key][$i]['display'] = $item['display'];
+					$items[$key][$i]['field'] = $item['field'];
+					$items[$key][$i]['count'] = 0;
+					$items[$key][$i]['isApplied'] = true;
+					$i++;
+				}
+			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'data' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getDefaultFacets() {
+		$limit = $_REQUEST['limit'] ?? 5;
+		$searchObj = SearchObjectFactory::initSearchObject();
+		$searchObj->init();
+		$obj = $searchObj->getFacetConfig();
+		$searchObj->close();
+		$obj = array_slice($obj, 0, $limit);
+		$facets = [];
+		$i = 0;
+		foreach($obj as $facet) {
+			$facets[$i]['value'] = $facet->facetName;
+			$facets[$i]['display'] = $facet->displayName;
+			$facets[$i]['field'] = $facet->facetName;
+			$facets[$i]['count'] = 0;
+			$facets[$i]['isApplied'] = false;
+			$facets[$i]['multiSelect'] = (bool)$facet->multiSelect;
+			$i++;
+		}
+		return [
+			'success' => true,
+			'limit' => $limit,
+			'time' => round($searchObj->getQuerySpeed(), 2),
+			'data' => $facets,
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getFacetClusterByKey() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		if(empty($_REQUEST['cluster'])) {
+			return array('success' => false, 'message' => 'A valid cluster field_name not provided');
+		}
+		$id = $_REQUEST['id'];
+		$key = $_REQUEST['cluster'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			$facets = $searchObj->getFacetList();
+			$cluster = $facets[$key] ?? [];
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'field' => $cluster['field_name'],
+				'display' => $cluster['label'],
+				'hasApplied' => $cluster['hasApplied'],
+				'multiSelect' => (bool)$cluster['multiSelect'],
+				'options' => $cluster['list'],
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	// placeholder for fetching more facets when searching thru large (>100) clusters
+	function searchFacetCluster() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if(empty($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'A valid search id not provided');
+		}
+		$id = $_REQUEST['id'];
+		$term = $_REQUEST['term'];
+		$searchObj = $this->restoreSearch($id);
+		if($searchObj) {
+			// do something with the term
+		}
 		return $results;
 	}
 }

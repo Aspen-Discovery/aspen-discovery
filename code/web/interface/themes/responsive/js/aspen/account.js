@@ -788,10 +788,10 @@ AspenDiscovery.Account = (function () {
 			location.replace(location.pathname + paramString)
 		},
 
-		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation) {
+		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation, source) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation + "&source=" + source, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
 			} else {
@@ -1052,7 +1052,7 @@ AspenDiscovery.Account = (function () {
 			var params = {
 				method: 'showSearchToolbar',
 				displayMode: AspenDiscovery.Searches.displayMode,
-				showCovers: showCovers ?? 0,
+				showCovers: showCovers,
 				rssLink: rssLink,
 				excelLink: excelLink,
 				searchId: searchId,
@@ -1463,7 +1463,7 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 		handleACISpeedpayError: function (error) {
-			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, false);
 		},
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";

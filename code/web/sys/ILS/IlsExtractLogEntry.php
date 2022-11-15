@@ -20,5 +20,5 @@ class IlsExtractLogEntry extends BaseLogEntry
 	public $numDeleted;
 	public $numUpdated;
 	public $numSkipped;
-
+	public $numInvalidRecords;
 }

@@ -1,6 +1,6 @@
 package com.turning_leaf_technologies.hoopla;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -12,34 +12,35 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-class HooplaExtractLogEntry implements BaseLogEntry {
+class HooplaExtractLogEntry implements BaseIndexingLogEntry {
 	private Long logEntryId = null;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
 	private int numRegrouped = 0;
 	private int numChangedAfterGrouping = 0;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final ArrayList<String> notes = new ArrayList<>();
 	private int numProducts = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
 	private int numSkipped = 0;
-	private Logger logger;
+	private int numInvalidRecords = 0;
+	private final Logger logger;
 
 	HooplaExtractLogEntry(Connection dbConn, Logger logger) {
 		this.logger = logger;
 		this.startTime = new Date();
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into hoopla_export_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE hoopla_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numRegrouped =?, numChangedAfterGrouping = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE hoopla_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numRegrouped =?, numChangedAfterGrouping = ?, numInvalidRecords = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
 		saveResults();
 	}
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
@@ -97,6 +98,7 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numSkipped);
 				updateLogEntry.setInt(++curCol, numRegrouped);
 				updateLogEntry.setInt(++curCol, numChangedAfterGrouping);
+				updateLogEntry.setInt(++curCol, numInvalidRecords);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -167,5 +169,10 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 
 	public int getNumChangedAfterGrouping() {
 		return numChangedAfterGrouping;
+	}
+
+	public void incInvalidRecords(String invalidRecordId){
+		this.numInvalidRecords++;
+		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
 }

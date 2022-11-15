@@ -264,6 +264,9 @@ class Grouping_StatusInformation
 	function addLocalCopies(int $localCopies): void
 	{
 		$this->_localCopies += $localCopies;
+		if ($localCopies > 0) {
+			$this->_hasLocalItem = true;
+		}
 	}
 
 	function addOnOrderCopies(int $numCopies): void

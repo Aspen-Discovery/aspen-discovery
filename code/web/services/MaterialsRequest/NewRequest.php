@@ -32,7 +32,7 @@ class MaterialsRequest_NewRequest extends MyAccount
 		$interface->assign('pickupLocations', $pickupLocations);
 
 		//Get a list of formats to show
-		$availableFormats = MaterialsRequest::getFormats();
+		$availableFormats = MaterialsRequest::getFormats(true);
 		$interface->assign('availableFormats', $availableFormats);
 
 		//Setup a default title based on the search term

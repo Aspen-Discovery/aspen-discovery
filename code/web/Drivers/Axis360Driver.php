@@ -39,9 +39,15 @@ class Axis360Driver extends AbstractEContentDriver
 			$authorizationCurlWrapper->close_curl();
 			if ($authorizationResponse){
 				$jsonResponse = json_decode($authorizationResponse);
-				$this->accessToken = $jsonResponse->access_token;
-				$this->accessTokenExpiration = $now + ($jsonResponse->expires_in - 5);
-				return true;
+				if (isset($this->accessToken)){
+					$this->accessToken = $jsonResponse->access_token;
+					$this->accessTokenExpiration = $now + ($jsonResponse->expires_in - 5);
+					return true;
+				}else{
+					//An error occurred
+					$this->incrementStat('numApiErrors');
+					return false;
+				}
 			}else{
 				$this->incrementStat('numConnectionFailures');
 				return false;

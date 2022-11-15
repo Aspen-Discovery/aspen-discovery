@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +27,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
@@ -65,7 +66,7 @@ abstract class MarcRecordProcessor {
 	 * @param identifier the identifier to load information for
 	 * @param logEntry the log entry to store any errors
 	 */
-	public synchronized void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+	public synchronized void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseIndexingLogEntry logEntry){
 		//Check to be sure the record is not suppressed
 		boolean isSuppressed = false;
 		try {
@@ -109,7 +110,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier, BaseLogEntry logEntry) {
+	private Record loadMarcRecordFromDisk(String identifier, BaseIndexingLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
 		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
 	}
@@ -132,7 +133,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	protected void loadSubjects(AbstractGroupedWorkSolr groupedWork, Record record){
-		List<DataField> subjectFields = MarcUtil.getDataFields(record, new int[]{600, 610, 611, 630, 648, 650, 651, 655, 690});
+		List<DataField> subjectFields = MarcUtil.getDataFields(record, new int[]{600, 610, 611, 630, 648, 650, 651, 655, 690, 691});
 
 		HashSet<String> subjects = new HashSet<>();
 		for (DataField curSubjectField : subjectFields){
@@ -364,7 +365,9 @@ abstract class MarcRecordProcessor {
 					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
-				case "690": {
+				case "690":
+				case "691":
+				{
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						if (curSubfield.getCode() == 'a' ||
@@ -885,13 +888,27 @@ abstract class MarcRecordProcessor {
 	}
 
 	void loadClosedCaptioning(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords){
-		//Based on the 655 fields determine if the record is closed captioned
-		Set<String> subjectFields = MarcUtil.getFieldList(record, "655a:650a");
+		//Based on the 546 fields determine if the record is closed captioned
+		Pattern closedCaptionPattern = Pattern.compile("\\b(closed?[- ]caption|hearing impaired)", Pattern.CASE_INSENSITIVE);
+		Set<String> languageNoteFields = MarcUtil.getFieldList(record, "546a");
 		boolean isClosedCaptioned = false;
-		for (String subjectField : subjectFields){
-			if (subjectField.toLowerCase(Locale.ROOT).startsWith("video recordings for the hearing impaired")){
+		for (String languageNoteField: languageNoteFields){
+			if (closedCaptionPattern.matcher(languageNoteField).matches()) {
 				isClosedCaptioned = true;
 				break;
+			}
+		}
+		if (!isClosedCaptioned) {
+			//Based on the 650/655 fields determine if the record is closed captioned
+			Set<String> subjectFields = MarcUtil.getFieldList(record, "655a:650a");
+			for (String subjectField : subjectFields) {
+				if (subjectField.toLowerCase(Locale.ROOT).startsWith("video recordings for the hearing impaired")) {
+					isClosedCaptioned = true;
+					break;
+				} else if (subjectField.toLowerCase(Locale.ROOT).startsWith("closed caption")) {
+					isClosedCaptioned = true;
+					break;
+				}
 			}
 		}
 		if (isClosedCaptioned){
@@ -1312,11 +1329,6 @@ abstract class MarcRecordProcessor {
 			printFormats.add("PlayawayView");
 			return;
 		}
-		if (printFormats.contains("Playaway")){
-			printFormats.clear();
-			printFormats.add("Playaway");
-			return;
-		}
 		if (printFormats.contains("GoReader")){
 			printFormats.clear();
 			printFormats.add("GoReader");
@@ -1327,9 +1339,29 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
+		if (printFormats.contains("PlayawayLaunchpad")){
+			printFormats.clear();
+			printFormats.add("PlayawayLaunchpad");
+			return;
+		}
+		if (printFormats.contains("PlayawayBookpack")){
+			printFormats.clear();
+			printFormats.add("PlayawayBookpack");
+			return;
+		}
+		if (printFormats.contains("PlayawayView")){
+			printFormats.clear();
+			printFormats.add("PlayawayView");
+			return;
+		}
 		if (printFormats.contains("Wonderbook")){
 			printFormats.clear();
 			printFormats.add("Wonderbook");
+			return;
+		}
+		if (printFormats.contains("Playaway")){
+			printFormats.clear();
+			printFormats.add("Playaway");
 			return;
 		}
 		if (printFormats.contains("Kit")){
@@ -1352,9 +1384,18 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("DVD")){
 			printFormats.remove("VideoCassette");
 		}
+		if (printFormats.contains("4KBlu-ray")){
+			printFormats.remove("VideoDisc");
+			printFormats.remove("DVD");
+			printFormats.remove("Blu-ray");
+		}
 		if (printFormats.contains("Blu-ray")){
 			printFormats.remove("VideoDisc");
 			printFormats.remove("DVD");
+		}
+		if (printFormats.contains("4K/Blu-ray")){
+			printFormats.remove("Blu-ray");
+			printFormats.remove("4KBlu-ray");
 		}
 		if (printFormats.contains("Blu-ray/DVD")){
 			printFormats.remove("Blu-ray");
@@ -1402,6 +1443,12 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Book") && printFormats.contains("Kit")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Pop-UpBook")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("BoardBook")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
@@ -1530,12 +1577,15 @@ abstract class MarcRecordProcessor {
 				String editionData = edition.getSubfield('a').getData().toLowerCase();
 				if (editionData.contains("large type") || editionData.contains("large print")) {
 					result.add("LargePrint");
-				}else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
+				}else if (bluray4kComboRegex.matcher(editionData).matches()) {
+					result.add("4K/Blu-ray");
+				}
+				else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
 					result.add("Blu-ray/DVD");
 				}else if (editionData.contains("go reader") || editionData.contains("goreader")) {
 					result.add("GoReader");
 				}else if (editionData.contains("playaway view")) {
-					result.add("Playaway View");
+					result.add("PlayawayView");
 				}else if (editionData.contains("playaway")) {
 					result.add("Playaway");
 				}else if (editionData.contains("wonderbook")) {
@@ -1543,13 +1593,13 @@ abstract class MarcRecordProcessor {
 				}else if (editionData.contains("gamecube")) {
 					result.add("GameCube");
 				}else if (editionData.contains("nintendo switch")) {
-					result.add("Nintendo Switch");
+					result.add("NintendoSwitch");
 				}else if (editionData.contains("book club kit")) {
-					result.add("Book Club Kit");
+					result.add("BookClubKit");
 				}else if (editionData.contains("vox")) {
-					result.add("Vox");
+					result.add("VoxBooks");
 				}else if (editionData.contains("pop-up") || (editionData.contains("mini-pop-up"))) {
-					result.add("Pop-Up Book");
+					result.add("Pop-UpBook");
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
@@ -1575,6 +1625,10 @@ abstract class MarcRecordProcessor {
 						result.add("Atlas");
 					} else if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 						result.add("LargePrint");
+					} else if (subfield.getCode() == 'a' && (physicalDescriptionData.contains("launchpad"))) {
+						result.add("PlayawayLaunchpad");
+					}else if (physicalDescriptionData.contains("4k") && (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray"))) {
+						result.add("4KBlu-ray");
 					} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 						//Check to see if this is a combo pack.
 						Subfield subfieldE = field.getSubfield('e');
@@ -1607,7 +1661,7 @@ abstract class MarcRecordProcessor {
 							result.add("Book+DVD");
 						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd-rom")){
 							result.add("Book+CD-ROM");
-						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
+						}else if (subfieldE != null && (subfieldE.getData().toLowerCase().contains("cd") || subfieldE.getData().toLowerCase().contains("audio disc"))){
 							result.add("Book+CD");
 						}else{
 							result.add("Book");
@@ -1635,8 +1689,8 @@ abstract class MarcRecordProcessor {
 				} else {
 					if (sysDetailsValue.contains("playaway")) {
 						result.add("Playaway");
-					} else if (sysDetailsValue.contains("4k") && (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray"))) {
-						result.add("4K Blu-ray");
+					} else if (bluray4kComboRegex.matcher(sysDetailsValue).matches()) {
+						result.add("4K/Blu-ray");
 					} else if (dvdBlurayComboRegex.matcher(sysDetailsValue).matches()) {
 						result.add("Blu-ray/DVD");
 					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
@@ -1659,17 +1713,23 @@ abstract class MarcRecordProcessor {
 					if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");
 						break;
-					} else if (voxPattern.matcher(noteValue).matches()) {
+					}else if (voxPattern.matcher(noteValue).matches()) {
 						result.add("VoxBooks");
+						break;
+					}else if (bluray4kComboRegex.matcher(noteValue).matches()) {
+						result.add("4K/Blu-ray");
 						break;
 					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
 						result.add("Blu-ray/DVD");
 						break;
-					} else if (noteValue.contains("playaway view")) {
-						result.add("Playaway View");
-						break;
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("Wonderbook");
+						break;
+					} else if (noteValue.contains("playaway view")) {
+						result.add("PlayawayView");
+						break;
+					}  else if (noteValue.contains("playaway bookpack") || noteValue.contains("playaway bookpacks")) {
+						result.add("PlayawayBookpack");
 						break;
 					}
 				}
@@ -1762,9 +1822,9 @@ abstract class MarcRecordProcessor {
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("board books") || subfieldData.contains("board book")) {
-							result.add("Board Book");
+							result.add("BoardBook");
 						}else if (subfieldData.contains("pop-up")) {
-							result.add("Pop-Up Book");
+							result.add("Pop-UpBook");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1803,9 +1863,9 @@ abstract class MarcRecordProcessor {
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("board books") || subfieldData.contains("board book")) {
-							result.add("Board Book");
+							result.add("BoardBook");
 						}else if (subfieldData.contains("pop-up")) {
-							result.add("Pop-Up Book");
+							result.add("Pop-UpBook");
 						}else if (subfieldData.contains("graphic novel")) {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
@@ -1854,11 +1914,11 @@ abstract class MarcRecordProcessor {
 					if (fieldData.contains("playaway view")) {
 						result.add("PlayawayView");
 					}else if (fieldData.contains("playaway launchpad")) {
-						result.add("Playaway Launchpad");
+						result.add("PlayawayLaunchpad");
 					}else if (fieldData.contains("playaway bookpack")) {
-						result.add("Playaway Bookpack");
+						result.add("PlayawayBookpack");
 					}else if (fieldData.contains("playaway wonderbook")) {
-						result.add("Playaway Wonderbook");
+						result.add("Wonderbook");
 					}else if (fieldData.contains("playaway digital audio") || fieldData.contains("findaway world")) {
 						result.add("Playaway");
 					}

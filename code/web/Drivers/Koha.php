@@ -108,7 +108,7 @@ class Koha extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade If we are in masquerade mode
 	 * @return array                  Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade = false)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade = false) : array
 	{
 		$result = [
 			'success' => false,
@@ -443,14 +443,18 @@ class Koha extends AbstractIlsDriver
 			/** @noinspection SqlResolve */
 			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
-			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
-				$renewPref = $renewPrefRow['autorenew_checkouts'];
+			if ($renewPrefResults !== false){
+				if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+					$renewPref = $renewPrefRow['autorenew_checkouts'];
 
-				if ($renewPref == 0) {
-					$curCheckout->autoRenew = "0";
-				} else {
-					$curCheckout->autoRenew = $curRow['auto_renew'];
+					if ($renewPref == 0) {
+						$curCheckout->autoRenew = "0";
+					} else {
+						$curCheckout->autoRenew = $curRow['auto_renew'];
+					}
 				}
+
+				$renewPrefResults->close();
 			}
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
@@ -513,14 +517,17 @@ class Koha extends AbstractIlsDriver
 				/** @noinspection SqlResolve */
 				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+				if ($patronExpirationResults != false){
+					if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+						$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
+						$today = date("Y-m-d");
 
-				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
-					$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
-					$today = date("Y-m-d");
-
-					if ($expirationDate < $today) {
-						$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired', 'isPublicFacing' => true]);
+						if ($expirationDate < $today) {
+							$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired', 'isPublicFacing' => true]);
+						}
 					}
+
+					$patronExpirationResults->close();
 				}
 			}
 
@@ -653,7 +660,7 @@ class Koha extends AbstractIlsDriver
 				'password' => $password
 			];
 			$authenticationResponse = $this->getPostedXMLWebServiceResponse($authenticationURL, $params);
-			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $password]);
+			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $authenticationResponse->asXML(), ['password' => $password]);
 			if (isset($authenticationResponse->id)) {
 				$patronId = $authenticationResponse->id;
 				$result = $this->loadPatronInfoFromDB($patronId, $password);
@@ -1780,71 +1787,167 @@ class Koha extends AbstractIlsDriver
 		);
 	}
 
+	private function canRenewWithFines($patron)
+	{
+		$OPACFineNoRenewals = $this->getKohaSystemPreference('OPACFineNoRenewals');
+		if ($OPACFineNoRenewals) {
+			$totalOwed = (int)$this->getOutstandingFineTotal($patron);
+
+			$OPACFineNoRenewalsIncludeCredits = $this->getKohaSystemPreference('OPACFineNoRenewalsIncludeCredits');
+			if ($OPACFineNoRenewalsIncludeCredits) {
+				$outstandingCredits = $this->getOutstandingCreditTotal($patron);
+				$totalOwed = $totalOwed - $outstandingCredits;
+			}
+
+			if ($totalOwed >= $OPACFineNoRenewals) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		$this->initDatabaseConnection();
-		/** @noinspection SqlResolve */
-		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
-		$renewResults = mysqli_query($this->dbConnection, $renewSql);
-		$maxRenewals = 0;
-
-		$params = [
-			'service' => 'RenewLoan',
-			'patron_id' => $patron->username,
-			'item_id' => $itemId,
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'There was an error renewing your checkout.', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to renew checkout', 'isPublicFacing' => true]),
+				'message' => translate(['text' => 'There was an error renewing your checkout.', 'isPublicFacing' => true])
+			]
 		];
 
-		require_once ROOT_DIR . '/sys/User/Checkout.php';;
-		$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
-		$renewResponse = $this->getXMLWebServiceResponse($renewURL);
-		ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
-
-		//Parse the result
-		if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
-
-			while ($curRow = mysqli_fetch_assoc($renewResults)) {
-				$patronType = $patron->patronType;
-				$itemType = $curRow['itype'];
-				$checkoutBranch = $curRow['branchcode'];
-				$renewCount = $curRow['renewals'] + 1;
-				/** @noinspection SqlResolve */
-				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
-				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
-				if ($issuingRulesRS !== false) {
-					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-						$maxRenewals = $issuingRulesRow['rule_value'];
-					}
-					$issuingRulesRS->close();
-				}
-			}
-			$renewResults->close();
-
-			$renewsRemaining = ($maxRenewals - $renewCount);
-			//We renewed the hold
-			$success = true;
-			$message = 'Your item was successfully renewed.';
-			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
-
-			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Title successfully renewed', 'isPublicFacing'=>true]);
-			$result['api']['message'] = $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
-
-			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-			$patron->forceReloadOfCheckouts();
-		} else {
-			$error = $renewResponse->error;
-			$success = false;
-			$message = 'The item could not be renewed: ';
-			$message = $this->getRenewErrorMessage($error, $message);
-
-			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
-			$result['api']['message'] = $this->getRenewErrorMessage($error, "");
+		$canRenewWithFines = $this->canRenewWithFines($patron);
+		if (!$canRenewWithFines) {
+			$result['message'] = translate(['text' => 'Unable to renew because the patron has too many outstanding charges.', 'isPublicFacing' => true]);
+			$result['api']['message'] = translate(['text' => 'Unable to renew because the patron has too many outstanding charges.', 'isPublicFacing' => true]);
+			return $result;
 		}
 
-		$result['itemId'] = $itemId;
-		$result['success'] = $success;
-		$result['message'] = $message;
+		/** @noinspection PhpBooleanCanBeSimplifiedInspection */
+		if (false && $this->getKohaVersion() >= 19.11) {
+			$sourceId = null;
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
+			$checkout = new Checkout();
+			$checkout->recordId = $recordId;
+			if ($checkout->find(true)) {
+				$sourceId = $checkout->getSourceId();
+			}
+			if (is_null($sourceId)) {
+				$result['message'] = translate(['text' => 'Unable to renew because we were unable to find checkout.', 'isPublicFacing' => true]);
+				$result['api']['message'] = translate(['text' => 'Unable to renew because we were unable to find checkout.', 'isPublicFacing' => true]);
+				return $result;
+			}
+
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+				$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+			} else {
+				$apiUrl = $this->getWebServiceUrl() . "/api/v1/checkouts/$sourceId/renewal";
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					'Accept-Encoding: gzip, deflate',
+				], true);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', null);
+				$responseCode = $this->apiCurlWrapper->getResponseCode();
+				ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+				if ($responseCode == 201) {
+					$result['success'] = true;
+					$result['message'] = translate(['text' => "Your checkout was renewed successfully.", 'isPublicFacing' => true]);
+					$result['api']['title'] = translate(['text' => 'Checkout renewed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your checkout was renewed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfCheckouts();
+				} else if ($responseCode == 403) {
+					$result['success'] = false;
+					$result['api']['title'] = translate(['text' => 'Unable to renew checkout', 'isPublicFacing' => true]);
+					$result['message'] = translate(['text' => "Error renewing this title, the checkout was not renewed.", 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => "Error renewing this title, the checkout was not renewed.", 'isPublicFacing' => true]);
+
+					if (!empty($response)) {
+						$jsonResponse = json_decode($response);
+						if (!empty($jsonResponse->error)) {
+							$result['message'] = translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+							$result['api']['message'] = translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+						}
+					}
+				} else {
+					$result['success'] = false;
+					$result['message'] = translate(['text' => "Error (%1%) renewing this title.", 1 => $responseCode, 'isPublicFacing' => true]);
+				}
+			}
+		} else {
+			$this->initDatabaseConnection();
+			/** @noinspection SqlResolve */
+			$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
+			$renewResults = mysqli_query($this->dbConnection, $renewSql);
+			$maxRenewals = 0;
+
+			$params = [
+				'service' => 'RenewLoan',
+				'patron_id' => $patron->username,
+				'item_id' => $itemId,
+			];
+
+			require_once ROOT_DIR . '/sys/User/Checkout.php';;
+			$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
+			$renewResponse = $this->getXMLWebServiceResponse($renewURL);
+			ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
+
+			//Parse the result
+			if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+
+				while ($curRow = mysqli_fetch_assoc($renewResults)) {
+					$patronType = $patron->patronType;
+					$itemType = $curRow['itype'];
+					$checkoutBranch = $curRow['branchcode'];
+					$renewCount = $curRow['renewals'] + 1;
+					/** @noinspection SqlResolve */
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+					if ($issuingRulesRS !== false) {
+						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+							$maxRenewals = $issuingRulesRow['rule_value'];
+						}
+						$issuingRulesRS->close();
+					}
+				}
+				$renewResults->close();
+
+				$renewsRemaining = ($maxRenewals - $renewCount);
+				//We renewed the hold
+				$success = true;
+				$message = 'Your item was successfully renewed.';
+				$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Title successfully renewed', 'isPublicFacing' => true]);
+				$result['api']['message'] = $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfCheckouts();
+			} else {
+				$error = $renewResponse->error;
+				$success = false;
+				$message = 'The item could not be renewed: ';
+				$message = $this->getRenewErrorMessage($error, $message);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Unable to renew title', 'isPublicFacing' => true]);
+				$result['api']['message'] = $this->getRenewErrorMessage($error, "");
+			}
+
+			$result['itemId'] = $itemId;
+			$result['success'] = $success;
+			$result['message'] = $message;
+		}
 
 		return $result;
 	}
@@ -1935,6 +2038,36 @@ class Koha extends AbstractIlsDriver
 		}
 
 		return $amountOutstanding;
+	}
+
+	private function getOutstandingCreditTotal($patron)
+	{
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$renew_result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+			$renew_result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+		} else {
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/patrons/$patron->username/account";
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('koha.getOutstandingCreditTotal', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($responseCode == 200) {
+				$jsonResponse = json_decode($response);
+				if (!empty($jsonResponse->outstanding_credits)) {
+					return $jsonResponse->outstanding_credits->total;
+				}
+			}
+		}
+		return false;
 	}
 
 	private $oauthToken = null;
@@ -2421,17 +2554,17 @@ class Koha extends AbstractIlsDriver
 		//Identity
 		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_title' => array('property' => 'borrower_title', 'type' => 'enum', 'label' => 'Salutation', 'values' => ['' => '', 'Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss', 'Dr.' => 'Dr.'], 'description' => 'Your first name', 'required' => false),
-			'borrower_surname' => array('property' => 'borrower_surname', 'type' => 'text', 'label' => 'Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true),
-			'borrower_firstname' => array('property' => 'borrower_firstname', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true),
-			'borrower_dateofbirth' => array('property' => 'borrower_dateofbirth', 'type' => 'date', 'label' => 'Date of Birth (MM/DD/YYYY)', 'description' => 'Date of birth', 'maxLength' => 10, 'required' => true),
-			'borrower_initials' => array('property' => 'borrower_initials', 'type' => 'text', 'label' => 'Initials', 'description' => 'Initials', 'maxLength' => 25, 'required' => false),
-			'borrower_othernames' => array('property' => 'borrower_othernames', 'type' => 'text', 'label' => 'Other names', 'description' => 'Other names you go by', 'maxLength' => 128, 'required' => false),
+			'borrower_surname' => array('property' => 'borrower_surname', 'type' => 'text', 'label' => 'Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true, 'autocomplete'=>false),
+			'borrower_firstname' => array('property' => 'borrower_firstname', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true, 'autocomplete'=>false),
+			'borrower_dateofbirth' => array('property' => 'borrower_dateofbirth', 'type' => 'date', 'label' => 'Date of Birth (MM/DD/YYYY)', 'description' => 'Date of birth', 'maxLength' => 10, 'required' => true, 'autocomplete'=>false),
+			'borrower_initials' => array('property' => 'borrower_initials', 'type' => 'text', 'label' => 'Initials', 'description' => 'Initials', 'maxLength' => 25, 'required' => false, 'autocomplete'=>false),
+			'borrower_othernames' => array('property' => 'borrower_othernames', 'type' => 'text', 'label' => 'Other names', 'description' => 'Other names you go by', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
 			'borrower_sex' => array('property' => 'borrower_sex', 'type' => 'enum', 'label' => 'Gender', 'values' => ['' => 'None Specified', 'F' => 'Female', 'M' => 'Male'], 'description' => 'Gender', 'required' => false),
 
 		]);
 
 		if (empty($library->validSelfRegistrationStates)){
-			$borrowerStateField = array('property' => 'borrower_state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+			$borrowerStateField = array('property' => 'borrower_state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true, 'autocomplete'=>false);
 		}else{
 			$validStates = explode('|', $library->validSelfRegistrationStates);
 			$validStates = array_combine($validStates, $validStates);
@@ -2440,12 +2573,12 @@ class Koha extends AbstractIlsDriver
 
 		//Main Address
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_address' => array('property' => 'borrower_address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true),
-			'borrower_address2' => array('property' => 'borrower_address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false),
-			'borrower_city' => array('property' => 'borrower_city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true),
+			'borrower_address' => array('property' => 'borrower_address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true, 'autocomplete'=>false),
+			'borrower_address2' => array('property' => 'borrower_address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_city' => array('property' => 'borrower_city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true, 'autocomplete'=>false),
 			'borrower_state' => $borrowerStateField,
-			'borrower_zipcode' => array('property' => 'borrower_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true),
-			'borrower_country' => array('property' => 'borrower_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
+			'borrower_zipcode' => array('property' => 'borrower_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true, 'autocomplete'=>false),
+			'borrower_country' => array('property' => 'borrower_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
 		]);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
@@ -2453,39 +2586,39 @@ class Koha extends AbstractIlsDriver
 		}
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_phone' => array('property' => 'borrower_phone', 'type' => 'text', 'label' => 'Primary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
-			'borrower_email' => array('property' => 'borrower_email', 'type' => 'email', 'label' => 'Primary Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
+			'borrower_phone' => array('property' => 'borrower_phone', 'type' => 'text', 'label' => 'Primary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_email' => array('property' => 'borrower_email', 'type' => 'email', 'label' => 'Primary Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
 		]);
 		//Contact information
 		$fields['additionalContactInformationSection'] = array('property' => 'additionalContactInformationSection', 'type' => 'section', 'label' => 'Additional Contact Information', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			'borrower_phonepro' => array('property' => 'borrower_phonepro', 'type' => 'text', 'label' => 'Secondary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
-			'borrower_mobile' => array('property' => 'borrower_mobile', 'type' => 'text', 'label' => 'Other Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
-			'borrower_emailpro' => array('property' => 'borrower_emailpro', 'type' => 'email', 'label' => 'Secondary Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
-			'borrower_fax' => array('property' => 'borrower_fax', 'type' => 'text', 'label' => 'Fax' . $phoneFormat, 'description' => 'Fax', 'maxLength' => 128, 'required' => false),
+			'borrower_phonepro' => array('property' => 'borrower_phonepro', 'type' => 'text', 'label' => 'Secondary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_mobile' => array('property' => 'borrower_mobile', 'type' => 'text', 'label' => 'Other Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_emailpro' => array('property' => 'borrower_emailpro', 'type' => 'email', 'label' => 'Secondary Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_fax' => array('property' => 'borrower_fax', 'type' => 'text', 'label' => 'Fax' . $phoneFormat, 'description' => 'Fax', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
 		]);
 		//Alternate address
 		$fields['alternateAddressSection'] = array('property' => 'alternateAddressSection', 'type' => 'section', 'label' => 'Alternate address', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			'borrower_B_address' => array('property' => 'borrower_B_address', 'type' => 'text', 'label' => 'Alternate Address', 'description' => 'Address', 'maxLength' => 128, 'required' => false),
-			'borrower_B_address2' => array('property' => 'borrower_B_address2', 'type' => 'text', 'label' => 'Address 2', 'accessibleLabel' => 'Alternate Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false),
-			'borrower_B_city' => array('property' => 'borrower_B_city', 'type' => 'text', 'label' => 'City', 'accessibleLabel' => 'Alternate City', 'description' => 'City', 'maxLength' => 48, 'required' => false),
-			'borrower_B_state' => array('property' => 'borrower_B_state', 'type' => 'text', 'label' => 'State', 'accessibleLabel' => 'Alternate State', 'description' => 'State', 'maxLength' => 32, 'required' => false),
-			'borrower_B_zipcode' => array('property' => 'borrower_B_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'accessibleLabel' => 'Alternate Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => false),
-			'borrower_B_country' => array('property' => 'borrower_B_country', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
-			'borrower_B_phone' => array('property' => 'borrower_B_phone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
-			'borrower_B_email' => array('property' => 'borrower_B_email', 'type' => 'email', 'label' => 'Email', 'description' => 'Email', 'accessibleLabel' => 'Alternate Email', 'maxLength' => 128, 'required' => false),
-			'borrower_contactnote' => array('property' => 'borrower_contactnote', 'type' => 'textarea', 'label' => 'Contact  Notes', 'description' => 'Additional information for the alternate contact', 'maxLength' => 128, 'required' => false),
+			'borrower_B_address' => array('property' => 'borrower_B_address', 'type' => 'text', 'label' => 'Alternate Address', 'description' => 'Address', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_address2' => array('property' => 'borrower_B_address2', 'type' => 'text', 'label' => 'Address 2', 'accessibleLabel' => 'Alternate Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_city' => array('property' => 'borrower_B_city', 'type' => 'text', 'label' => 'City', 'accessibleLabel' => 'Alternate City', 'description' => 'City', 'maxLength' => 48, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_state' => array('property' => 'borrower_B_state', 'type' => 'text', 'label' => 'State', 'accessibleLabel' => 'Alternate State', 'description' => 'State', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_zipcode' => array('property' => 'borrower_B_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'accessibleLabel' => 'Alternate Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_country' => array('property' => 'borrower_B_country', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_phone' => array('property' => 'borrower_B_phone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_B_email' => array('property' => 'borrower_B_email', 'type' => 'email', 'label' => 'Email', 'description' => 'Email', 'accessibleLabel' => 'Alternate Email', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_contactnote' => array('property' => 'borrower_contactnote', 'type' => 'textarea', 'label' => 'Contact  Notes', 'description' => 'Additional information for the alternate contact', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
 		]);
 		//Alternate contact
 		$fields['alternateContactSection'] = array('property' => 'alternateContactSection', 'type' => 'section', 'label' => 'Alternate contact', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			'borrower_altcontactsurname' => array('property' => 'borrower_altcontactsurname', 'type' => 'text', 'label' => 'Surname', 'accessibleLabel' => 'Alternate Contact Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => false),
-			'borrower_altcontactfirstname' => array('property' => 'borrower_altcontactfirstname', 'type' => 'text', 'label' => 'First Name', 'accessibleLabel' => 'Alternate Contact First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => false),
-			'borrower_altcontactaddress1' => array('property' => 'borrower_altcontactaddress1', 'type' => 'text', 'label' => 'Address', 'accessibleLabel' => 'Alternate Contact Address', 'description' => 'Address', 'maxLength' => 128, 'required' => false),
-			'borrower_altcontactaddress2' => array('property' => 'borrower_altcontactaddress2', 'type' => 'text', 'label' => 'Address 2', 'accessibleLabel' => 'Alternate Contact Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false),
-			'borrower_altcontactaddress3' => array('property' => 'borrower_altcontactaddress3', 'type' => 'text', 'label' => 'City', 'accessibleLabel' => 'Alternate Contact City', 'description' => 'City', 'maxLength' => 48, 'required' => false),
-			'borrower_altcontactstate' => array('property' => 'borrower_altcontactstate', 'type' => 'text', 'label' => 'State', 'accessibleLabel' => 'Alternate Contact State', 'description' => 'State', 'maxLength' => 32, 'required' => false),
-			'borrower_altcontactzipcode' => array('property' => 'borrower_altcontactzipcode', 'type' => 'text', 'label' => 'Zip Code', 'accessibleLabel' => 'Alternate Contact Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => false),
-			'borrower_altcontactcountry' => array('property' => 'borrower_altcontactcountry', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Contact Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
-			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Contact Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_altcontactsurname' => array('property' => 'borrower_altcontactsurname', 'type' => 'text', 'label' => 'Surname', 'accessibleLabel' => 'Alternate Contact Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactfirstname' => array('property' => 'borrower_altcontactfirstname', 'type' => 'text', 'label' => 'First Name', 'accessibleLabel' => 'Alternate Contact First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactaddress1' => array('property' => 'borrower_altcontactaddress1', 'type' => 'text', 'label' => 'Address', 'accessibleLabel' => 'Alternate Contact Address', 'description' => 'Address', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactaddress2' => array('property' => 'borrower_altcontactaddress2', 'type' => 'text', 'label' => 'Address 2', 'accessibleLabel' => 'Alternate Contact Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactaddress3' => array('property' => 'borrower_altcontactaddress3', 'type' => 'text', 'label' => 'City', 'accessibleLabel' => 'Alternate Contact City', 'description' => 'City', 'maxLength' => 48, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactstate' => array('property' => 'borrower_altcontactstate', 'type' => 'text', 'label' => 'State', 'accessibleLabel' => 'Alternate Contact State', 'description' => 'State', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactzipcode' => array('property' => 'borrower_altcontactzipcode', 'type' => 'text', 'label' => 'Zip Code', 'accessibleLabel' => 'Alternate Contact Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactcountry' => array('property' => 'borrower_altcontactcountry', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Contact Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false, 'autocomplete'=>false),
+			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Contact Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false, 'autocomplete'=>false),
 		]);
 
 		// Patron extended attributes
@@ -2513,8 +2646,8 @@ class Koha extends AbstractIlsDriver
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
 			$fields['passwordSection'] = array('property' => 'passwordSection', 'type' => 'section', 'label' => $passwordLabel, 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-				'borrower_password' => array('property' => 'borrower_password', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false, 'showDescription' => true),
-				'borrower_password2' => array('property' => 'borrower_password2', 'type' => 'password', 'label' => 'Confirm ' . $passwordLabel, 'description' => 'Reenter your PIN', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false),
+				'borrower_password' => array('property' => 'borrower_password', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false, 'showDescription' => true, 'autocomplete'=>false),
+				'borrower_password2' => array('property' => 'borrower_password2', 'type' => 'password', 'label' => 'Confirm ' . $passwordLabel, 'description' => 'Reenter your PIN', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false, 'autocomplete'=>false),
 			]);
 		}
 
@@ -2561,6 +2694,83 @@ class Koha extends AbstractIlsDriver
 		}
 
 		return $fields;
+	}
+
+	function selfRegisterViaSSO($ssoUser) {
+		global $locationSingleton;
+
+		$result = [
+			'success' => false,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . '/api/v1/patrons';
+			$postParams = [
+				'firstname' => $ssoUser['lastname'],
+				'surname' => $ssoUser['lastname'],
+				'email' => $ssoUser['email'],
+				'address' => 'Unknown',
+				'city' => 'Unknown',
+				'library_id' => $locationSingleton->getBranchLocationCode(),
+				'category_id' => $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory')
+			];
+
+			$postParams = json_encode($postParams);
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
+			ExternalRequestLogEntry::logRequest('koha.selfRegisterViaSSO', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($this->apiCurlWrapper->getResponseCode() != 201) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						if (!empty($jsonResponse->error)) {
+							$result['messages'][] = $jsonResponse->error;
+						} else {
+							foreach ($jsonResponse->errors as $error) {
+								$result['messages'][] = $error->message;
+							}
+						}
+					} else {
+						$result['messages'][] = $response;
+					}
+				} else {
+					$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+				$result['message'] = 'Could not create your account. ' . implode($result['messages']);
+			} else {
+				$jsonResponse = json_decode($response);
+				$result['username'] = $jsonResponse->userid;
+				$result['success'] = true;
+				if ($this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail') != '0') {
+					$result['message'] = 'Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.';
+				} else {
+					if ($this->getKohaSystemPreference('autoMemberNum') == '1') {
+						$result['barcode'] = $jsonResponse->cardnumber;
+						$patronId = $jsonResponse->patron_id;
+						if (isset($_REQUEST['borrower_password'])) {
+							$tmpResult = $this->resetPinInKoha($patronId, $_REQUEST['borrower_password'], $oauthToken);
+							if ($tmpResult['success']) {
+								$result['password'] = $_REQUEST['borrower_password'];
+							}
+						}
+					} else {
+						$result['message'] = 'Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.';
+					}
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function selfRegister()

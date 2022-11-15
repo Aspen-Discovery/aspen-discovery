@@ -4,9 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import _ from "lodash";
 
 
-import {createAuthTokens, getHeaders, postData, problemCodeMap} from "../util/apiAuth";
+import {createAuthTokens, getHeaders} from "../util/apiAuth";
 import {GLOBALS} from "../util/globals";
-import {showILSMessage} from "../components/Notifications";
+import {LIBRARY} from "../util/loadLibrary";
 
 export async function getTranslation(term, language, libraryUrl) {
 	const api = create({
@@ -170,12 +170,18 @@ export async function getDefaultTranslation(term, language, libraryUrl) {
 		languageCode: language
 	});
 
-	if(response.ok) {
+	if (response.ok) {
 
 	} else {
 		console.log(response);
 		// no data yet
 	}
+}
+
+export function getLanguageDisplayName(code) {
+	let language = _.filter(LIBRARY.languages, ['code', code]);
+	language = _.values(language[0]);
+	return language[2]
 }
 
 export async function getAvailableTranslations() {

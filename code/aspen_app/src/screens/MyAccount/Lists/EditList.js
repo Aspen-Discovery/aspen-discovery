@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Button, Center, Modal, Stack, Text, Icon, FormControl, Input, TextArea, Heading, Radio, AlertDialog } from "native-base";
+import {Button, Center, Modal, Stack, Switch, Icon, FormControl, Input, TextArea, Heading, Radio, AlertDialog } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import {clearListTitles, deleteList, editList} from "../../../util/loadPatron";
 import {popAlert} from "../../../components/loadError";
@@ -27,7 +27,7 @@ const EditList = (props) => {
 					Edit</Button>
 				<DeleteList navigation={navigation} listId={listId} libraryUrl={libraryUrl} />
 			</Button.Group>
-			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full">
+			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full" avoidKeyboard>
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
 					<Modal.Header>

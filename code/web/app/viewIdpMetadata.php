@@ -8,14 +8,14 @@
 	$auth = new SAML2Authentication('/app/viewIdpMetadata.php');
 
 	// If we need to forward the user to an IdP
-	$url = $library->ssoXmlUrl;
+	$entityId = $library->ssoEntityId;
 	if (
 		array_key_exists('samlLogin', $_REQUEST) &&
 		array_key_exists('idp', $_REQUEST) &&
 		strlen($_REQUEST['samlLogin']) > 0 &&
 		strlen($_REQUEST['idp']) > 0 &&
-		$url &&
-		strlen($url) > 0
+		$entityId &&
+		strlen($entityId) > 0
 	) {
 		$auth->authenticate($_REQUEST['idp']);
 		header('Location: /');

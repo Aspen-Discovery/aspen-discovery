@@ -542,12 +542,12 @@ class Record_AJAX extends Action
 									$patron->rememberHoldPickupLocation = 1;
 									$patron->update();
 								}
-							}
-							$pickupLocation = new Location();
-							if ($pickupLocation->get('code', $pickupBranch)){
-								if ($pickupLocation->locationId != $user->pickupLocationId){
-									$patron->pickupLocationId = $pickupLocation->locationId;
-									$patron->update();
+								$pickupLocation = new Location();
+								if ($pickupLocation->get('code', $pickupBranch)){
+									if ($pickupLocation->locationId != $user->pickupLocationId){
+										$patron->pickupLocationId = $pickupLocation->locationId;
+										$patron->update();
+									}
 								}
 							}
 						}else if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']){
@@ -557,7 +557,7 @@ class Record_AJAX extends Action
 							require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 							require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 							//Check to see if we can use VDX.  We only allow VDX if the reason is: "hold not allowed"
-							if (isset($return['error_code']) && ($return['error_code'] == 'hatErrorResponse.17286')) {
+							if (array_key_exists('error_code', $return) && ($return['error_code'] == 'hatErrorResponse.17286')) {
 								$vdxSettings = new VdxSetting();
 								if ($vdxSettings->find(true)) {
 									$homeLocation = Location::getDefaultLocationForUser();
@@ -1073,6 +1073,60 @@ class Record_AJAX extends Action
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function showSelect856ToViewForm() : array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				list(, $id) = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$validUrls = $recordDriver->getViewable856Links();
+			$interface->assign('validUrls', $validUrls);
+
+			$buttonTitle = translate(['text' => 'Access Online', 'isPublicFacing' => true]);
+			return [
+				'title' => translate(['text' => 'Select Link to View', 'isPublicFacing' => true]),
+				'modalBody' => $interface->fetch("Record/select-view-856-link-form.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#view856\").submit()'>$buttonTitle</button>"
+			];
+		}else{
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'modalBody' => translate(['text' => 'Could not find a record with that id', 'isPublicFacing' => true]),
+				'modalButtons' => ""
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function View856() : string {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$linkId = $_REQUEST['linkId'];
+
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				list(, $id) = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$validUrls = $recordDriver->getViewable856Links();
+			header('Location: ' . $validUrls[$linkId]['url']);
+			die();
+		}else{
+			header('Location: ' . "/Record/$id");
+			die();
+		}
+	}
+
 	function getStaffView() : array {
 		$result = [
 			'success' => false,
@@ -1139,46 +1193,11 @@ class Record_AJAX extends Action
 		}
 
 		//Check to see if the record must be picked up at the holding branch
-		$pickupAt = 0;
 		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
-		$format = $marcRecord->getPrimaryFormat();
-		global $indexingProfiles;
-		$indexingProfile = $indexingProfiles[$relatedRecord->source];
-		$formatMap = $indexingProfile->formatMap;
-		/** @var FormatMapValue $formatMapValue */
-		foreach ($formatMap as $formatMapValue) {
-			if (strcasecmp($formatMapValue->format, $format) === 0) {
-				$pickupAt = max($pickupAt, $formatMapValue->pickupAt);
-				break;
-			}
-		}
-
-		//If we have to pickup at the holding branch, filter the list of available pickup locations to
-		//only include locations where the item is
-		if ($pickupAt > 0){
-			$itemLocations = [];
-			$items = $relatedRecord->getItems();
-			foreach ($items as $item){
-				if ($pickupAt == 2){
-					//Item can be picked up at any branch within the library
-					if (!isset($itemLocations[$item->locationCode])) {
-						$locationForLocationCode = new Location();
-						$locationForLocationCode->code = $item->locationCode;
-						if ($locationForLocationCode->find(true)){
-							$libraryForLocation = $locationForLocationCode->getParentLibrary();
-							foreach ($libraryForLocation->getLocations() as $libraryBranch){
-								$itemLocations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
-							}
-						}
-					}
-				}else{
-					//Item can be picked up at just the owning branch
-					$itemLocations[strtolower($item->locationCode)] = strtolower($item->locationCode);
-				}
-			}
-
-
-			foreach($locations as $locationKey => $location){
+		$pickupAt = $relatedRecord->getHoldPickupSetting();
+		if($pickupAt > 0) {
+			$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+			foreach($locations as $locationKey => $location) {
 				if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)){
 					unset($locations[$locationKey]);
 				}
@@ -1190,7 +1209,7 @@ class Record_AJAX extends Action
 		$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
 		$interface->assign('promptForHoldNotifications', $promptForHoldNotifications);
 		if ($promptForHoldNotifications) {
-			$interface->assign('holdNotificationTemplate', $user->getCatalogDriver()->getHoldNotificationTemplate());
+			$interface->assign('holdNotificationTemplate', $user->getCatalogDriver()->getHoldNotificationTemplate($user));
 		}
 
 		global $library;

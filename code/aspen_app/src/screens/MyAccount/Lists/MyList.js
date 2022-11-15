@@ -90,8 +90,10 @@ export default class MyList extends Component {
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
 					<VStack w="25%">
 						<Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
-						<Button onPress={() => {
-							removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl); this.loadList()}} colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs"/>} size="sm" variant="ghost">{translate('general.delete')}</Button>
+						<Button onPress={async () => {
+							await removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl);
+							await this.loadList()
+						}} colorScheme="danger" leftIcon={<Icon as={MaterialIcons} name="delete" size="xs"/>} size="sm" variant="ghost">{translate('general.delete')}</Button>
 					</VStack>
 					<VStack w="65%">
 						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "sm", lg: "md"}}>{item.title}</Text>

@@ -10,5 +10,5 @@ class ReindexLogEntry extends BaseLogEntry
 	public $notes;
 	public $numWorksProcessed;
 	public $numErrors;
-
+	public $numInvalidRecords;
 }

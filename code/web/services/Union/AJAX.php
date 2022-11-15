@@ -53,9 +53,9 @@ class Union_AJAX extends JSON_Action {
 		}elseif ($source == 'websites') {
 			$results = $this->getResultsFromSolrSearcher('Websites', $searchTerm, $numberOfResults, $fullResultsLink);
 		}else{
-			$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
+			$results = "<div>" . translate(['text'=>'Showing %1% for %2%.', 1=> $numberOfResults, 2=>$source, 'isPublicFacing'=>true, 'translateParameters'=>true]) . "</div>";
 		}
-		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>Full Results from {$sectionObject->displayName}</a></div>";
+		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>" . translate(['text'=>'Full Results from %1%', 1=>$sectionObject->displayName, 'isPublicFacing'=>true, 'translateParameters'=>true]) . "</a></div>";
 
 		return array(
 				'success' => true,

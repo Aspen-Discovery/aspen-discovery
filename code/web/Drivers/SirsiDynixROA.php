@@ -460,6 +460,10 @@ class SirsiDynixROA extends HorizonAPI
 		return $staffSessionToken;
 	}
 
+	function selfRegisterViaSSO(){
+		return false;
+	}
+
 	function selfRegister()
 	{
 		$selfRegResult = array(
@@ -546,7 +550,7 @@ class SirsiDynixROA extends HorizonAPI
 			//If the user is opted in to SMS messages, set up their notifications automatically.
 			if (!empty($_REQUEST['smsNotices']) && !empty($_REQUEST['cellPhone'])){
 				$defaultCountryCode = '';
-				$getCountryCodesResponse = $this->getWebServiceResponse('getMessagingSettings', $webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $staffSessionToken);
+				$getCountryCodesResponse = $this->getWebServiceResponse('getMessagingSettings', $webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $sessionToken);
 				foreach ($getCountryCodesResponse as $countryCodeInfo){
 					//This gets flipped later
 					if ($countryCodeInfo->fields->isDefault) {
@@ -1591,7 +1595,9 @@ class SirsiDynixROA extends HorizonAPI
 		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
 			$patron->cat_password = $newPin;
+			$patron->lastLoginValidation = 0;
 			$patron->update();
+			$patron->clearActiveSessions();
 			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 
 		} else {
@@ -1650,7 +1656,10 @@ class SirsiDynixROA extends HorizonAPI
 			if ($user != null) {
 				if ($user->username == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 					$user->cat_password = $newPin;
+					$user->lastLoginValidation = 0;
 					$user->update();
+
+					$user->clearActiveSessions();
 				}
 			}
 			return array(
@@ -1754,7 +1763,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @param bool $fromMasquerade
 	 * @return array
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		$result = [
 			'success' => false,
@@ -2372,7 +2381,8 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
 							if ($systemVariables->storeRecordDetailsInDatabase){
-                                $getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format, recordIdentifier FROM grouped_work_records 
+								/** @noinspection SqlResolve */
+								$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format, recordIdentifier FROM grouped_work_records 
 								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
@@ -2566,42 +2576,42 @@ class SirsiDynixROA extends HorizonAPI
 		if ($library->promptForParentInSelfReg){
 			$fields['identitySection']['properties'][] = array('property'=>'cardType', 'type'=>'enum', 'values'=>['adult'=>'Adult (18 and Over)', 'minor'=>'Minor (Under 18)'], 'label'=>'Type of Card', 'onchange'=>'AspenDiscovery.Account.updateSelfRegistrationFields()');
 		}
-		$fields['identitySection']['properties'][] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 255, 'required' => true);
-		$fields['identitySection']['properties'][] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 255, 'required' => false);
-		$fields['identitySection']['properties'][] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 255, 'required' => true);
+		$fields['identitySection']['properties'][] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 255, 'required' => true, 'autocomplete' => false);
+		$fields['identitySection']['properties'][] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 255, 'required' => false, 'autocomplete' => false);
+		$fields['identitySection']['properties'][] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 255, 'required' => true, 'autocomplete' => false);
 		if ($library->promptForParentInSelfReg){
-			$fields['identitySection']['properties'][] = array('property'=>'parentName', 'type'=>'text', 'label'=>'Parent/Guardian Name', 'maxLength' => 255, 'required' => false, 'hiddenByDefault'=>true);
+			$fields['identitySection']['properties'][] = array('property'=>'parentName', 'type'=>'text', 'label'=>'Parent/Guardian Name', 'maxLength' => 255, 'required' => false, 'hiddenByDefault'=>true, 'autocomplete' => false);
 		}
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields['identitySection']['properties'][] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM/DD/YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields['identitySection']['properties'][] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM/DD/YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true, 'autocomplete' => false);
 		}
 
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
-		$fields['mainAddressSection']['properties'][] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 255, 'required' => true);
-		$fields['mainAddressSection']['properties'][] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 255, 'required' => true);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 255, 'required' => true, 'autocomplete' => false);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 255, 'required' => true, 'autocomplete' => false);
 		if (empty($library->validSelfRegistrationStates)){
-			$fields['mainAddressSection']['properties'][] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
+			$fields['mainAddressSection']['properties'][] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true, 'autocomplete' => false);
 		}else{
 			$validStates = explode('|', $library->validSelfRegistrationStates);
 			$validStates = array_combine($validStates, $validStates);
 			$fields['mainAddressSection']['properties'][] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
-		$fields['mainAddressSection']['properties']['zip'] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 10, 'required' => true);
+		$fields['mainAddressSection']['properties']['zip'] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 10, 'required' => true, 'autocomplete' => false);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
 			$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
 		}
 
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
-		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=> $library->selfRegRequirePhone);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=> $library->selfRegRequirePhone, 'autocomplete' => false);
 		if ($library->promptForSMSNoticesInSelfReg){
 			$fields['contactInformationSection']['properties'][] = array('property'=>'smsNotices',  'type'=>'checkbox', 'label'=>'Receive notices via text', 'onchange'=>'AspenDiscovery.Account.updateSelfRegistrationFields()');
-			$fields['contactInformationSection']['properties'][] = array('property'=>'cellPhone', 'type'=>'text',  'label'=>'Cell Phone', 'maxLength'=>15, 'required'=>false, 'hiddenByDefault'=>true);
+			$fields['contactInformationSection']['properties'][] = array('property'=>'cellPhone', 'type'=>'text',  'label'=>'Cell Phone', 'maxLength'=>15, 'required'=>false, 'hiddenByDefault'=>true, 'autocomplete' => false);
 		}
-		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => $library->selfRegRequireEmail);
-		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => $library->selfRegRequireEmail);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => $library->selfRegRequireEmail, 'autocomplete' => false);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => $library->selfRegRequireEmail, 'autocomplete' => false);
 		return $fields;
 	}
 

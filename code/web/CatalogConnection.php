@@ -591,7 +591,7 @@ class CatalogConnection
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 	}
 
-	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false)
+	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false) : array
 	{
 		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade);
 	}
@@ -617,9 +617,13 @@ class CatalogConnection
 		return $result;
 	}
 
-	function selfRegister()
+	function selfRegister($viaSSO = false, $ssoUser = [])
 	{
-		$result = $this->driver->selfRegister();
+		if(!$viaSSO) {
+			$result = $this->driver->selfRegister();
+		} else {
+			$result = $this->driver->selfRegisterViaSSO($ssoUser);
+		}
 		if ($result['success'] == true){
 			//Track usage by the user
 			require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
@@ -667,7 +671,7 @@ class CatalogConnection
 
 	/**
 	 * @param ReadingHistoryEntry $readingHistoryDB
-	 * @param bool $forExport True if this is being ysed while exporting to Excel
+	 * @param bool $forExport True if this is being used while exporting to Excel
 	 * @return mixed
 	 */
 	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false)
@@ -1291,9 +1295,9 @@ class CatalogConnection
 		return $this->driver->isPromptForHoldNotifications();
 	}
 
-	public function getHoldNotificationTemplate() : ?string
+	public function getHoldNotificationTemplate(User $user) : ?string
 	{
-		return $this->driver->getHoldNotificationTemplate();
+		return $this->driver->getHoldNotificationTemplate($user);
 	}
 
 	public function validateUniqueId(User $user){
@@ -1309,4 +1313,15 @@ class CatalogConnection
 		return $this->driver->getPatronIDChanges($searchPatronID);
 	}
 
+	public function showHoldNotificationPreferences() : bool{
+		return $this->driver->showHoldNotificationPreferences();
+	}
+
+	public function getHoldNotificationPreferencesTemplate(User $user) : ?string {
+		return $this->driver->getHoldNotificationPreferencesTemplate($user);
+	}
+
+	public function processHoldNotificationPreferencesForm(User $user) : array {
+		return $this->driver->processHoldNotificationPreferencesForm($user);
+	}
 }

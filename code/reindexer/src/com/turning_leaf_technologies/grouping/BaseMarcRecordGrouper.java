@@ -1,9 +1,8 @@
 package com.turning_leaf_technologies.grouping;
 
 import com.turning_leaf_technologies.indexing.*;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -33,7 +32,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	private boolean isValid = true;
 
-	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, BaseLogEntry logEntry, Logger logger) {
+	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(dbConn, serverName, logEntry, logger);
 		this.dbConn = dbConn;
 		recordNumberTag = settings.getRecordNumberTag();
@@ -621,7 +620,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public int getNumExistingTitles(BaseLogEntry logEntry) {
+	public int getNumExistingTitles(BaseIndexingLogEntry logEntry) {
 		try {
 			//Clear previous records if we load multiple times
 			existingRecords = new HashMap<>();
@@ -643,7 +642,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean loadExistingTitles(BaseLogEntry logEntry) {
+	public boolean loadExistingTitles(BaseIndexingLogEntry logEntry) {
 		try {
 			//Clear previous records if we load multiple times
 			existingRecords = new HashMap<>();

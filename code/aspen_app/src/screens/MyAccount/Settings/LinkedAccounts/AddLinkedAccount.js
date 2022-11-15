@@ -19,7 +19,7 @@ const AddLinkedAccount = (props) => {
 	return (
 		<Center>
 			<Button onPress={() => setShowModal(true)}>Add an Account</Button>
-			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full">
+			<Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full" avoidKeyboard>
 				<Modal.Content maxWidth="95%">
 					<Modal.CloseButton/>
 					<Modal.Header>{translate('linked_accounts.account_to_manage')}</Modal.Header>
