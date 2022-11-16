@@ -617,7 +617,7 @@ class CatalogConnection
 		return $result;
 	}
 
-	function selfRegister($viaSSO = false, $ssoUser = [])
+	function selfRegister($viaSSO = false, $ssoUser = []) : array
 	{
 		if(!$viaSSO) {
 			$result = $this->driver->selfRegister();
