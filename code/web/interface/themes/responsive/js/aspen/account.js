@@ -625,7 +625,7 @@ AspenDiscovery.Account = (function () {
 		toggleAccountLinkingAccept: function() {
 			var url = Globals.path + "/MyAccount/AJAX?method=toggleAccountLinking";
 			$.getJSON(url, function (data) {
-					AspenDiscovery.showMessage(data.title, data.message);
+					AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
 			});
 			return false;
 		},
