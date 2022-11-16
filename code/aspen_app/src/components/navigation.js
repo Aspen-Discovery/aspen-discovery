@@ -9,6 +9,8 @@ import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import {create} from 'apisauce';
 import * as Sentry from 'sentry-expo';
+// Access any @sentry/react-native exports via:
+// Sentry.Native.*
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 
@@ -18,7 +20,6 @@ import {translate} from '../translations/translations';
 import {createAuthTokens, getHeaders} from '../util/apiAuth';
 import {popAlert, popToast} from './loadError';
 import {removeData} from '../util/logout';
-import {navigationRef} from '../helpers/RootNavigator';
 import {GLOBALS} from '../util/globals';
 
 // Before rendering any navigation stack
@@ -29,18 +30,25 @@ import {PATRON} from '../util/loadPatron';
 enableScreens();
 
 const Stack = createNativeStackNavigator();
+const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
 
 export const AuthContext = React.createContext();
 
 Sentry.init({
 	dsn: Constants.manifest.extra.sentryDSN,
-	enableInExpoDevelopment: true,
+	enableInExpoDevelopment: false,
 	enableAutoSessionTracking: true,
-	debug: false,
-	tracesSampleRate: 1.0,
+	sessionTrackingIntervalMillis: 10000,
+	debug: true,
+	tracesSampleRate: .25,
 	environment: Updates.releaseChannel,
 	release: Constants.manifest.version,
 	dist: GLOBALS.appPatch,
+	integrations: [
+		new Sentry.Native.ReactNativeTracing({
+			routingInstrumentation,
+		}),
+	],
 });
 
 const prefix = Linking.createURL('/');
@@ -289,8 +297,11 @@ export function App() {
 	return (
 			<AuthContext.Provider value={authContext}>
 				<NavigationContainer theme={navigationTheme}
-														 ref={navigationRef}
+														 ref={navigation}
 														 fallback={<Spinner/>}
+														 OnReady={() => {
+															 routingInstrumentation.registerNavigationContainer(navigation);
+														 }}
 														 linking={{
 															 prefixes: [prefix],
 															 config: {

@@ -342,7 +342,7 @@ export function buildParamsForUrl() {
 		const field = filter.field;
 		const facets = filter.facets;
 		if (field === 'sort_by') {
-			console.log(filter);
+			//console.log(filter);
 		}
 		if (_.size(facets) > 0) {
 			_.forEach(facets, function(facet) {

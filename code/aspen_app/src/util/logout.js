@@ -60,13 +60,15 @@ export async function removeData() {
 		PATRON.language = 'en';
 		PATRON.coords.lat = 0;
 		PATRON.coords.long = 0;
+		PATRON.linkedAccounts = [];
+		PATRON.holds = [];
 		LOGIN_DATA.showSelectLibrary = true;
 		LOGIN_DATA.runGreenhouse = true;
 		LOGIN_DATA.num = 0;
 		LOGIN_DATA.nearbyLocations = [];
 		LOGIN_DATA.allLocations = [];
 		LOGIN_DATA.hasPendingChanges = false;
-		
+
 		console.log('Storage data cleansed.');
 	}
 }
