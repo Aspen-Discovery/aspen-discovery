@@ -22,6 +22,7 @@ package org.marc4j.marc.impl;
 
 import java.util.*;
 
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.marc4j.MarcError;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -120,28 +121,31 @@ class RecordImpl implements Record {
     @Override
     public void addVariableField(final VariableField field) {
         final String tag = field.getTag();
-        if (field instanceof ControlField) {
-            final ControlField controlField = (ControlField) field;
+        //Ignore if this is not a numeric tag since it is invalid.
+        if (AspenStringUtils.isNumeric(tag)) {
+            if (field instanceof ControlField) {
+                final ControlField controlField = (ControlField) field;
 
-            if (Verifier.isLeaderField(tag)) {
-                // invalid operation, do nothing
-            } else if (Verifier.isControlNumberField(tag)) {
-                if (Verifier.hasControlNumberField(controlFields)) {
-                    controlFields.set(0, controlField);
+                if (Verifier.isLeaderField(tag)) {
+                    // invalid operation, do nothing
+                } else if (Verifier.isControlNumberField(tag)) {
+                    if (Verifier.hasControlNumberField(controlFields)) {
+                        controlFields.set(0, controlField);
+                    } else {
+                        controlFields.add(0, controlField);
+                    }
                 } else {
-                    controlFields.add(0, controlField);
+                    controlFields.add(controlField);
                 }
             } else {
-                controlFields.add(controlField);
+                dataFields.add((DataField) field);
             }
-        } else {
-            dataFields.add((DataField) field);
+            Integer tagAsInt = Integer.parseInt(tag);
+            if (!fieldsByTag.containsKey(tagAsInt)) {
+                fieldsByTag.put(tagAsInt, new ArrayList<>());
+            }
+            fieldsByTag.get(tagAsInt).add(field);
         }
-        Integer tagAsInt = Integer.parseInt(tag);
-        if (!fieldsByTag.containsKey(tagAsInt)){
-            fieldsByTag.put(tagAsInt, new ArrayList<>());
-        }
-        fieldsByTag.get(tagAsInt).add(field);
         stringRepresentation = null;
     }
 
