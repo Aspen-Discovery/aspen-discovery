@@ -1105,6 +1105,7 @@ class UserList extends DataObject
             $objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
             $objPHPExcel->disconnectWorksheets();
             unset($objPHPExcel);
+            exit();
         } catch (Exception $e) {
             global $logger;
             $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);

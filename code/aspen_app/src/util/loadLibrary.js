@@ -143,7 +143,13 @@ export async function getPickupLocations(libraryUrl) {
 				name: displayName,
 			}));
 		}
-		await AsyncStorage.setItem('@pickupLocations', JSON.stringify(locations));
+		
+		try {
+			await AsyncStorage.setItem('@pickupLocations', JSON.stringify(locations));
+		} catch (e) {
+			console.log(e);
+		}
+
 		PATRON.pickupLocations = locations;
 		return locations;
 	} else {

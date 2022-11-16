@@ -161,7 +161,7 @@ export default class Facet extends Component {
 
 	updateSearch = (resetFacetGroup = false, toFilters = false) => {
 		const params = buildParamsForUrl();
-		console.log(params);
+		//console.log(params);
 		SEARCH.hasPendingChanges = false;
 		const {navigation} = this.props;
 		if (toFilters) {

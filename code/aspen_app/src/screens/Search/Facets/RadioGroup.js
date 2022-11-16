@@ -71,10 +71,11 @@ export default class Facet_RadioGroup extends Component {
 				});
 			}
 		} else {
-			let sort = SEARCH.sortMethod;
-			if (payload === sort) {
+			console.log('payload > ', payload);
+			console.log('value > ', value);
+			if (payload === value) {
 				this.setState({
-					value: '',
+					value: 'relevance',
 				});
 			} else {
 				this.setState({
@@ -83,10 +84,10 @@ export default class Facet_RadioGroup extends Component {
 				SEARCH.sortMethod = payload;
 			}
 			addAppliedFilter(category, payload, false);
-			console.log(SEARCH.pendingFilters);
+			//console.log(SEARCH.pendingFilters);
 		}
 
-		this.props.updater();
+		this.props.updater(category, payload);
 	};
 
 	render() {
