@@ -33,6 +33,8 @@ export let PATRON = {
 		'lat': null,
 		'long': null,
 	},
+	'linkedAccounts': [],
+	'holds': [],
 };
 
 const endpoint = ENDPOINT.user;
@@ -57,8 +59,10 @@ export async function getProfile(reload = false) {
 		const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
 		await getILSMessages(libraryUrl);
 		if (response.ok) {
-			if (response.data.result && response.data.result.profile) {
-				return response.data.result.profile;
+			if (!_.isUndefined(response.data.result)) {
+				if (!_.isUndefined(response.data.result.profile)) {
+					return response.data.result.profile;
+				}
 			}
 		}
 	}
@@ -76,12 +80,14 @@ export async function reloadProfile(libraryUrl) {
 	const response = await api.post('/UserAPI?method=getPatronProfile&reload&linkedUsers=true', postBody);
 	//console.log(response);
 	if (response.ok) {
-		if (response.data.result && response.data.result.profile) {
-			const profile = response.data.result.profile;
-			console.log('User profile forcefully updated');
-			await reloadCheckedOutItems(libraryUrl);
-			await reloadHolds(libraryUrl);
-			return profile;
+		if (!_.isUndefined(response.data.result)) {
+			if (!_.isUndefined(response.data.result.profile)) {
+				const profile = response.data.result.profile;
+				console.log('User profile forcefully updated');
+				await reloadCheckedOutItems(libraryUrl);
+				await reloadHolds(libraryUrl);
+				return profile;
+			}
 		}
 	} else {
 		//console.log(response);
@@ -178,27 +184,33 @@ export async function getHolds(libraryUrl) {
 	response = await api.post('/UserAPI?method=getPatronHolds', postBody);
 	if (response.ok) {
 		//console.log(response.data);
-		const items = response.data.result.holds;
 		let holds;
 		let holdsReady = [];
 		let holdsNotReady = [];
+		if (!_.isUndefined(response.data.result)) {
+			if (!_.isUndefined(response.data.result.holds)) {
+				const items = response.data.result.holds;
 
-		if (typeof items !== 'undefined') {
-			if (typeof items.unavailable !== 'undefined') {
-				holdsNotReady = Object.values(items.unavailable);
-			}
+				if (typeof items !== 'undefined') {
+					if (typeof items.unavailable !== 'undefined') {
+						holdsNotReady = Object.values(items.unavailable);
+					}
 
-			if (typeof items.available !== 'undefined') {
-				holdsReady = Object.values(items.available);
+					if (typeof items.available !== 'undefined') {
+						holdsReady = Object.values(items.available);
+					}
+				}
+
+				holds = holdsReady.concat(holdsNotReady);
+				//console.log(holds);
+
+				await AsyncStorage.setItem('@patronHolds', JSON.stringify(holds));
+				await AsyncStorage.setItem('@patronHoldsNotReady', JSON.stringify(holdsNotReady));
+				await AsyncStorage.setItem('@patronHoldsReady', JSON.stringify(holdsReady));
 			}
 		}
 
-		holds = holdsReady.concat(holdsNotReady);
-		//console.log(holds);
-
-		await AsyncStorage.setItem('@patronHolds', JSON.stringify(holds));
-		await AsyncStorage.setItem('@patronHoldsNotReady', JSON.stringify(holdsNotReady));
-		await AsyncStorage.setItem('@patronHoldsReady', JSON.stringify(holdsReady));
+		PATRON.holds = holds;
 		return {
 			'holds': holds,
 			'holdsReady': holdsReady,
@@ -381,12 +393,17 @@ export async function getLinkedAccounts(libraryUrl) {
 	});
 	const response = await api.post('/UserAPI?method=getLinkedAccounts', postBody);
 	if (response.ok) {
-		const accounts = response.data.result.linkedAccounts;
-		try {
-			await AsyncStorage.setItem('@linkedAccounts', JSON.stringify(accounts));
-		} catch (e) {
-			console.log(e);
+		let accounts = [];
+		if (!_.isUndefined(response.data.result.linkedAccounts)) {
+			accounts = response.data.result.linkedAccounts;
+			try {
+				await AsyncStorage.setItem('@linkedAccounts', JSON.stringify(accounts));
+			} catch (e) {
+				console.log(e);
+			}
+			PATRON.linkedAccounts = accounts;
 		}
+
 		return accounts;
 		//console.log("Linked accounts saved")
 	} else {
@@ -429,7 +446,9 @@ export async function getLists(libraryUrl) {
 		//console.log(response);
 		let lists = [];
 		if (response.data.result.success) {
-			lists = response.data.result.lists;
+			if (!_.isUndefined(response.data.result.lists)) {
+				lists = response.data.result.lists;
+			}
 		}
 		return lists;
 	} else {
