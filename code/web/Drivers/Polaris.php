@@ -1334,6 +1334,9 @@ class Polaris extends AbstractIlsDriver
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
 				if ($jsonResponse->PAPIErrorCode == 0) {
+					//Check to see if we need to update the username
+
+
 					$result['success'] = true;
 					$result['messages'][] = 'Your account was updated successfully.';
 					$patron->update();
@@ -1780,6 +1783,7 @@ class Polaris extends AbstractIlsDriver
 //		];
 //	}
 
+	/** @noinspection PhpUndefinedFieldInspection */
 	function getPatronUpdateForm($user){
 		$patronUpdateFields = $this->getSelfRegistrationFields('patronUpdate');
 		//Display sections as headings
@@ -1992,13 +1996,13 @@ class Polaris extends AbstractIlsDriver
 			'txtCarrier' => array('property' => 'txtCarrier', 'type' => 'enum', 'values'=>$carriers, 'label' => 'Carrier', 'description' => 'The Carrier to use when sending TXT messages', 'required' => false),
 			'eReceipts' => array('property' => 'eReceipts', 'type' => 'enum', 'values'=>['0'=>'(None)', '2'=>'Email'], 'label' => 'E-receipts', 'description' => 'How you would like to receive E-receipts', 'maxLength' => 128, 'required' => false),
 		]);
-		$passwordLabel = $library->loginFormPasswordLabel;
-		$logonInfoSection = array('property' => 'logonInformationSection', 'type' => 'section', 'label' => 'Logon Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
-		$fields['logonInformationSection'] = $logonInfoSection;
-		$logonInfoSection['properties']['patronUsername'] = array('property' => 'patronUsername', 'type' => 'text', 'label' => 'Username (optional as an alternate to barcode)', 'description' => 'An optional username to use when logging in.', 'required' => false, 'maxLength' => 128, 'autocomplete' => false);
 		if ($type == 'selfReg') {
+			$passwordLabel = $library->loginFormPasswordLabel;
+			$logonInfoSection = array('property' => 'logonInformationSection', 'type' => 'section', 'label' => 'Logon Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+			$logonInfoSection['properties']['patronUsername'] = array('property' => 'patronUsername', 'type' => 'text', 'label' => 'Username (optional as an alternate to barcode)', 'description' => 'An optional username to use when logging in.', 'required' => false, 'maxLength' => 128, 'autocomplete' => false);
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
 			$logonInfoSection['properties']['patronPassword'] = array('property' => 'patronPassword', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => true, 'required' => true, 'showDescription' => true, 'autocomplete' => false);
+			$fields['logonInformationSection'] = $logonInfoSection;
 		}
 
 		return $fields;
