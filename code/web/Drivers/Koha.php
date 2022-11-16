@@ -2696,7 +2696,7 @@ class Koha extends AbstractIlsDriver
 		return $fields;
 	}
 
-	function selfRegisterViaSSO($ssoUser) {
+	function selfRegisterViaSSO($ssoUser) : array {
 		global $locationSingleton;
 
 		$result = [
@@ -2773,7 +2773,7 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	function selfRegister()
+	function selfRegister() : array
 	{
 		global $library;
 		$result = [

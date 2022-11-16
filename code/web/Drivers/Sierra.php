@@ -1184,11 +1184,7 @@ class Sierra extends Millennium{
 		// TODO: Use Sierra APIs to get Self Registration fields
 	}
 
-	public function selfRegisterViaSSO(){
-		return parent::selfRegister();
-	}
-
-	public function selfRegister()
+	public function selfRegister() : array
 	{
 		return parent::selfRegister();
 		// TODO: Use Sierra APIs to self register
