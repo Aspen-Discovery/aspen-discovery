@@ -1,51 +1,24 @@
-import React, {Component, useState} from "react";
+import React, {Component, useState} from 'react';
 import {SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-	Actionsheet,
-	Badge,
-	Box,
-	Button,
-	Center,
-	FlatList,
-	FormControl,
-	Icon,
-	Modal,
-	Pressable,
-	Text,
-	useDisclose,
-	HStack,
-	VStack,
-	IconButton,
-	Select,
-	CheckIcon,
-	Checkbox,
-	Image,
-	ScrollView
-} from "native-base";
-import {Ionicons, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
-import moment from "moment";
-import _ from "lodash";
+import {Actionsheet, Badge, Box, Button, Center, Checkbox, CheckIcon, FlatList, FormControl, HStack, Icon, IconButton, Image, Modal, Pressable, Select, Text, useDisclose, VStack} from 'native-base';
+import {Ionicons, MaterialCommunityIcons, MaterialIcons} from '@expo/vector-icons';
+import moment from 'moment';
+import _ from 'lodash';
 
 // custom components and helper files
 import {translate} from '../../translations/translations';
-import {loadingSpinner} from "../../components/loadingSpinner";
-import {getHolds, getProfile, reloadHolds} from '../../util/loadPatron';
-import {
-	cancelHold, cancelHolds, cancelVdxRequest,
-	changeHoldPickUpLocation,
-	freezeHold,
-	freezeHolds,
-	thawHold,
-	thawHolds
-} from '../../util/accountActions';
+import {loadingSpinner} from '../../components/loadingSpinner';
+import {getHolds, getProfile, PATRON, reloadHolds} from '../../util/loadPatron';
+import {cancelHold, cancelHolds, cancelVdxRequest, changeHoldPickUpLocation, freezeHold, freezeHolds, thawHold, thawHolds} from '../../util/accountActions';
 import {getPickupLocations} from '../../util/loadLibrary';
-import {userContext} from "../../context/user";
+import {userContext} from '../../context/user';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {DisplayMessage} from "../../components/Notifications";
-import {loadError} from "../../components/loadError";
+import {loadError} from '../../components/loadError';
 
 export default class Holds extends Component {
+
+	static contextType = userContext;
 
 	constructor(props, context) {
 		super(props, context);
@@ -59,23 +32,23 @@ export default class Holds extends Component {
 			holds: [],
 			isUpdating: false,
 			user: {
-				interfaceLanguage: "en",
+				interfaceLanguage: 'en',
 			},
 			library: this.context.library,
 			holdsNotReady: [],
 			holdsReady: [],
 			translation: {
-				author: "Author",
-				format: "Format",
-				onHoldFor: "On Hold For",
-				pickUpLocation: "Pickup Location",
-				pickupBy: "Pickup By",
-				position: "Position",
-				viewItemDetails: "View Item Details",
-				cancelHold: "Cancel Hold",
-				freezeHold: "Freeze Hold",
-				thawHold: "Thaw Hold",
-				changePickUpLocation: "Change Pickup Location"
+				author: 'Author',
+				format: 'Format',
+				onHoldFor: 'On Hold For',
+				pickUpLocation: 'Pickup Location',
+				pickupBy: 'Pickup By',
+				position: 'Position',
+				viewItemDetails: 'View Item Details',
+				cancelHold: 'Cancel Hold',
+				freezeHold: 'Freeze Hold',
+				thawHold: 'Thaw Hold',
+				changePickUpLocation: 'Change Pickup Location',
 			},
 			selectedStartDate: null,
 			selectedAllStartDate: null,
@@ -117,13 +90,13 @@ export default class Holds extends Component {
 			holds: holds,
 			holdsNotReady: holdsNotReady,
 			holdsReady: holdsReady,
-		})
-	}
+		});
+	};
 
 	_fetchHolds = async () => {
 		this.setState({
 			isLoading: true,
-		})
+		});
 
 		this._isMounted && await getHolds(this.context.library.baseUrl).then(r => {
 			this.setState({
@@ -131,14 +104,14 @@ export default class Holds extends Component {
 				holdsNotReady: r['holdsNotReady'],
 				holdsReady: r['holdsReady'],
 				isLoading: false,
-			})
+			});
 		});
-	}
+	};
 
 	_reloadHolds = async () => {
 		this.setState({
 			isLoading: true,
-		})
+		});
 
 		this._isMounted && await reloadHolds(this.context.library.baseUrl).then(r => {
 			this.setState({
@@ -146,37 +119,41 @@ export default class Holds extends Component {
 				holdsNotReady: r['holdsNotReady'],
 				holdsReady: r['holdsReady'],
 				isLoading: false,
-			})
+			});
 		});
-	}
-
+	};
 
 	loadPickupLocations = async () => {
+		let locations = [];
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
-		const locations = JSON.parse(tmp);
+		if (tmp) {
+			locations = JSON.parse(tmp);
+		} else {
+			locations = PATRON.pickupLocations;
+		}
 		this._isMounted && this.setState({
 			locations: locations,
-		})
-	}
+		});
+	};
 
 	_pickupLocations = async () => {
-		const { route } = this.props;
+		const {route} = this.props;
 		const libraryUrl = this.context.library.baseUrl;
 
-		this._isMounted && await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
-	}
+		this._isMounted && await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations());
+	};
 
 	componentDidMount = async () => {
 		this._isMounted = true;
-		if(this.context.library.discoveryVersion) {
+		if (this.context.library.discoveryVersion) {
 			let version = this.context.library.discoveryVersion;
-			version = version.split(" ");
+			version = version.split(' ');
 			this.setState({
 				discoveryVersion: version[0],
 			});
 		} else {
 			this.setState({
-				discoveryVersion: "22.06.00",
+				discoveryVersion: '22.06.00',
 			});
 		}
 
@@ -185,8 +162,8 @@ export default class Holds extends Component {
 		this._isMounted && await this.loadPickupLocations();
 
 		this.setState({
-			isLoading: false
-		})
+			isLoading: false,
+		});
 
 	};
 
@@ -196,50 +173,51 @@ export default class Holds extends Component {
 
 	// Handles opening the GroupedWork screen with the item data
 	openGroupedWork = (item, libraryUrl) => {
-		this.props.navigation.navigate("GroupedWork", {item: item, libraryUrl: libraryUrl});
+		this.props.navigation.navigate('GroupedWork', {item: item, libraryUrl: libraryUrl});
 	};
 
 	selectedItems = (items) => {
 		this.setState({
-			groupValue: items
-		})
-	}
+			groupValue: items,
+		});
+	};
 
 	setGroupValue = (values) => {
 		this.setState({
 			groupValues: values,
-		})
-	}
+		});
+	};
 
 	clearGroupValue = () => {
 		this.setState({
 			groupValues: [],
 			groupValue: [],
-		})
-	}
+		});
+	};
 
 	// Renders the hold items on the screen
-	renderHoldItem = (item, libraryUrl, user, updateProfile, _fetchHolds) => {
+	renderHoldItem = (item, libraryUrl, user) => {
 		return (
-			<HoldItem
-				data={item}
-				onPressItem={this.onPressItem}
-				navigation={this.props.navigation}
-				locations={this.state.locations}
-				openGroupedWork={this.openGroupedWork}
-				translations={this.state.translation}
-				libraryUrl={libraryUrl}
-				userProfile={user}
-				updateProfile = {updateProfile}
-				_fetchHolds = {_fetchHolds}
-				discoveryVersion={this.state.discoveryVersion}
-				onDateChange={this.onDateChange}
-				selectedReactivationDate={this.state.selectedStartDate}
-				groupValue={this.state.groupValues}
-				selectedItems={this.selectedItems}
-			/>
+				<HoldItem
+						data={item}
+						onPressItem={this.onPressItem}
+						navigation={this.props.navigation}
+						locations={this.state.locations}
+						openGroupedWork={this.openGroupedWork}
+						translations={this.state.translation}
+						libraryUrl={libraryUrl}
+						userProfile={user}
+						updateProfile={this.updateProfile}
+						_fetchHolds={this._fetchHolds}
+						discoveryVersion={this.state.discoveryVersion}
+						onDateChange={this.onDateChange}
+						selectedReactivationDate={this.state.selectedStartDate}
+						groupValue={this.state.groupValues}
+						selectedItems={this.selectedItems}
+						clearGroupValue={this.clearGroupValue}
+				/>
 		);
-	}
+	};
 
 	// Trigger a context refresh
 	updateProfile = async () => {
@@ -247,62 +225,65 @@ export default class Holds extends Component {
 			this.context.user = response;
 			this.setState({
 				groupValues: [],
-			})
+			});
 		});
-	}
+	};
 
 	_listEmptyComponent = () => {
 		return (
-			<Center mt={5} mb={5}>
-				<Text bold fontSize="lg">
-					{translate('holds.no_holds')}
-				</Text>
-			</Center>
+				<Center mt={5} mb={5}>
+					<Text bold fontSize="lg">
+						{translate('holds.no_holds')}
+					</Text>
+				</Center>
 		);
 	};
 
-	_listFooterComponent = (libraryUrl, updateProfile, _fetchHolds) => {
+	_listFooterComponent = (libraryUrl) => {
 		const groupValues = this.state.groupValues;
 		let showSelectOptions = false;
-		if(groupValues.length >= 1) {
+		if (groupValues.length >= 1) {
 			showSelectOptions = true;
 		}
 
-		if(showSelectOptions) {
+		if (showSelectOptions) {
 			return (
-				<Center mt={5} mb={5}>
-					<ManageSelectedHolds
-						selectedValues={this.state.groupValues}
-						libraryUrl={libraryUrl}
-						updateProfile={updateProfile}
-						_fetchHolds={_fetchHolds}
-						onAllDateChange={this.onDateChange}
-						selectedReactivationDate={this.state.selectedStartDate}
-						clearGroupValue={this.clearGroupValue}
-					/>
-					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadHolds()}}
-					/>
-				</Center>
+					<Center mt={5} mb={5}>
+						<ManageSelectedHolds
+								selectedValues={this.state.groupValues}
+								libraryUrl={libraryUrl}
+								updateProfile={this.updateProfile}
+								_fetchHolds={this._fetchHolds}
+								onAllDateChange={this.onDateChange}
+								selectedReactivationDate={this.state.selectedStartDate}
+								clearGroupValue={this.clearGroupValue}
+						/>
+						<IconButton _icon={{as: MaterialIcons, name: 'refresh', color: 'coolGray.500'}} onPress={() => {
+							this._reloadHolds();
+						}}
+						/>
+					</Center>
 			);
 		}
 
 		return (
-			<Center mt={5} mb={2}>
+				<Center mt={5} mb={2}>
 					<ManageAllHolds
-						data={this.state.holds}
-						libraryUrl={libraryUrl}
-						updateProfile={updateProfile}
-						_fetchHolds={_fetchHolds}
-						onDateChange={this.onDateChange}
-						selectedReactivationDate={this.state.selectedStartDate}
+							data={this.state.holds}
+							libraryUrl={libraryUrl}
+							updateProfile={this.updateProfile}
+							_fetchHolds={this._fetchHolds}
+							onDateChange={this.onDateChange}
+							selectedReactivationDate={this.state.selectedStartDate}
+							clearGroupValue={this.clearGroupValue}
 					/>
-					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._reloadHolds()}}
+					<IconButton _icon={{as: MaterialIcons, name: 'refresh', color: 'coolGray.500'}} onPress={() => {
+						this._reloadHolds();
+					}}
 					/>
-			</Center>
+				</Center>
 		);
 	};
-
-	static contextType = userContext;
 
 	render() {
 		const {holds} = this.state;
@@ -319,24 +300,26 @@ export default class Holds extends Component {
 		}
 
 		return (
-			<SafeAreaView style={{flex: 1}}>
-			<Box>
-				<Center pt={5} pb={10}>
-					<Checkbox.Group
-						defaultValue={this.state.groupValues}
-						accessibilityLabel="Choose multiple holds to manage"
-						onChange={values => {this.setGroupValue(values)}}>
-						<FlatList
-							data={holds}
-							ListEmptyComponent={this._listEmptyComponent()}
-							ListFooterComponent={this._listFooterComponent(library.baseUrl, this.updateProfile, this._fetchHolds)}
-							renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile, this._fetchHolds)}
-							keyExtractor={(item) => item.id.concat("_", item.position)}
-						/>
-					</Checkbox.Group>
-				</Center>
-			</Box>
-			</SafeAreaView>
+				<SafeAreaView style={{flex: 1}}>
+					<Box>
+						<Center pt={5} pb={10}>
+							<Checkbox.Group
+									defaultValue={this.state.groupValues}
+									accessibilityLabel="Choose multiple holds to manage"
+									onChange={values => {
+										this.setGroupValue(values);
+									}}>
+								<FlatList
+										data={holds}
+										ListEmptyComponent={this._listEmptyComponent()}
+										ListFooterComponent={this._listFooterComponent(library.baseUrl)}
+										renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user)}
+										keyExtractor={(item) => item.id.concat('_', item.position)}
+								/>
+							</Checkbox.Group>
+						</Center>
+					</Box>
+				</SafeAreaView>
 		);
 	}
 }
@@ -344,56 +327,56 @@ export default class Holds extends Component {
 function HoldItem(props) {
 	let expirationDate;
 	let availableDate;
-	const {data, locations, openGroupedWork, translations, libraryUrl, updateProfile, discoveryVersion, userProfile, onDateChange, selectedReactivationDate, _fetchHolds} = props;
+	const {data, locations, openGroupedWork, translations, libraryUrl, updateProfile, discoveryVersion, userProfile, onDateChange, selectedReactivationDate, _fetchHolds, clearGroupValue} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 
 	const [loading, setLoading] = useState(false);
 	const [thaw, setThaw] = useState(false);
-	const [loadingText, setLoadingText] = useState("Loading...");
+	const [loadingText, setLoadingText] = useState('Loading...');
 
 	//console.log(groupValue.length);
 
 	// format some dates
 	if (data.availableDate != null) {
 		const availableDateUnix = moment.unix(data.availableDate);
-		availableDate = moment(availableDateUnix).format("MMM D, YYYY");
+		availableDate = moment(availableDateUnix).format('MMM D, YYYY');
 	} else {
-		availableDate = "";
+		availableDate = '';
 	}
 
 	if (data.expirationDate) {
 		const expirationDateUnix = moment.unix(data.expirationDate);
-		expirationDate = moment(expirationDateUnix).format("MMM D, YYYY");
+		expirationDate = moment(expirationDateUnix).format('MMM D, YYYY');
 	} else {
-		expirationDate = "";
+		expirationDate = '';
 	}
 
 	// check freeze status to see which option to display
-	let label = "";
-	let method = "";
-	let icon = "";
+	let label = '';
+	let method = '';
+	let icon = '';
 	if (data.canFreeze === true) {
 		if (data.frozen === true) {
 			label = translations.thawHold;
-			method = "thawHold";
-			icon = "play";
+			method = 'thawHold';
+			icon = 'play';
 		} else {
 			label = translations.freezeHold;
-			method = "freezeHold";
-			icon = "pause";
+			method = 'freezeHold';
+			icon = 'pause';
 			if (data.available) {
 				label = translate('overdrive.delay_checkout');
-				method = "freezeHold";
-				icon = "pause";
+				method = 'freezeHold';
+				icon = 'pause';
 			}
 		}
 	}
 
-	if (data.status === "Pending") {
-		let statusColor = "green";
+	if (data.status === 'Pending') {
+		let statusColor = 'green';
 	}
 
-	let title = "";
+	let title = '';
 	if (data.title) {
 		title = data.title;
 		title = title.substring(0, title.lastIndexOf('/'));
@@ -402,7 +385,7 @@ function HoldItem(props) {
 		}
 	}
 
-	let author = "";
+	let author = '';
 	let countComma = 0;
 	if (data.author) {
 		author = data.author;
@@ -413,8 +396,8 @@ function HoldItem(props) {
 	}
 
 	let allowLinkedAccountAction = true;
-	if(discoveryVersion < "22.05.00") {
-		if(data.userId !== userProfile.id) {
+	if (discoveryVersion < '22.05.00') {
+		if (data.userId !== userProfile.id) {
 			allowLinkedAccountAction = false;
 		}
 	}
@@ -423,7 +406,7 @@ function HoldItem(props) {
 
 	let source = data.source;
 	let holdSource = data.holdSource;
-	let readyMessage = "";
+	let readyMessage = '';
 	if (source === 'ils') {
 		readyMessage = data.status;
 	} else {
@@ -449,169 +432,170 @@ function HoldItem(props) {
 	}
 
 	let cancelLabel = translate('holds.cancel_hold');
-	if(data.type === "interlibrary_loan") {
+	if (data.type === 'interlibrary_loan') {
 		cancelLabel = translate('holds.cancel_request');
 	}
 
-	let type = "Unknown";
-	if(data.type === "interlibrary_loan") {
-		type = "Interlibrary Loan";
+	let type = 'Unknown';
+	if (data.type === 'interlibrary_loan') {
+		type = 'Interlibrary Loan';
 	}
 
 	return (
-		<>
-			<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
-				<HStack space={3}>
+			<>
+				<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{borderColor: 'gray.600'}} borderColor="coolGray.200" pl="4" pr="5" py="2">
+					<HStack space={3}>
 
-					{data.coverUrl && data.source !== "vdx" ? (
-						<VStack>
-							<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
-							{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
-								<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
-								: null}
-						</VStack>
-					) : null}
+						{data.coverUrl && data.source !== 'vdx' ? (
+								<VStack>
+									<Image source={{uri: data.coverUrl}} borderRadius="md" size={{base: '80px', lg: '120px'}} alt={data.title}/>
+									{data.allowFreezeHolds && cancelable && allowLinkedAccountAction ?
+											<Center><Checkbox value={method + '|' + data.recordId + '|' + data.cancelId + '|' + data.source + '|' + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
+											: null}
+								</VStack>
+						) : null}
 
-					{!data.coverUrl && data.source !== "vdx" ? (
-						<Center><Checkbox value={method + '|' + data.recordId + "|" + data.cancelId + "|" + data.source + "|" + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
-					) : null}
+						{!data.coverUrl && data.source !== 'vdx' ? (
+								<Center><Checkbox value={method + '|' + data.recordId + '|' + data.cancelId + '|' + data.source + '|' + data.userId} my={3} size="md" accessibilityLabel="Check item"></Checkbox></Center>
+						) : null}
 
-					<VStack maxW="80%">
-						<Text bold mb={1} fontSize={{base: "sm", lg: "lg"}}>{title}</Text>
+						<VStack maxW="80%">
+							<Text bold mb={1} fontSize={{base: 'sm', lg: 'lg'}}>{title}</Text>
 							{data.frozen ?
-								<Text><Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge></Text> : null}
+									<Text><Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge></Text> : null}
 							{data.available ?
-								<Text><Badge colorScheme="green" rounded="4px" mt={-.5}>{readyMessage}</Badge></Text>
-								: null}
+									<Text><Badge colorScheme="green" rounded="4px" mt={-.5}>{readyMessage}</Badge></Text>
+									: null}
 
-						{author ?
-							<Text fontSize={{base: "xs", lg: "sm"}}>
-								<Text bold>{translations.author}:</Text> {author}
+							{author ?
+									<Text fontSize={{base: 'xs', lg: 'sm'}}>
+										<Text bold>{translations.author}:</Text> {author}
+									</Text>
+									: null}
+							{data.format ?
+									<Text fontSize={{base: 'xs', lg: 'sm'}}>
+										<Text bold>{translations.format}:</Text> {data.format}
+									</Text>
+									: null}
+							{type !== 'Unknown' ? (<Text fontSize={{base: 'xs', lg: 'sm'}}><Text bold>{translate('holds.type')}:</Text> {type}</Text>) : null}
+							<Text fontSize={{base: 'xs', lg: 'sm'}}>
+								<Text bold>{translations.onHoldFor}:</Text> {data.user}
 							</Text>
-							: null}
-						{data.format ?
-							<Text fontSize={{base: "xs", lg: "sm"}}>
-							<Text bold>{translations.format}:</Text> {data.format}
-							</Text>
-						: null}
-						{type !== "Unknown" ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.type')}:</Text> {type}</Text>) : null}
-						<Text fontSize={{base: "xs", lg: "sm"}}>
-							<Text bold>{translations.onHoldFor}:</Text> {data.user}
-						</Text>
-						{data.source === "ils" ? (<Text fontSize={{base: "xs", lg: "sm"}}>
+							{data.source === 'ils' ? (<Text fontSize={{base: 'xs', lg: 'sm'}}>
 								<Text bold>{translations.pickUpLocation}:</Text> {data.currentPickupName}</Text>) : null}
-						{data.available ? <Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.pickupBy}:</Text> {expirationDate}</Text> :
-							null}
-						{!data.available && data.position ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translations.position}:</Text> {data.position}</Text>) : null}
-						{data.status && data.source === "vdx" ? (<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.status')}:</Text> {data.status}</Text>) : null}
-					</VStack>
-				</HStack>
-			</Pressable>
-			<Actionsheet isOpen={isOpen} onClose={onClose} size="full">
-				<Actionsheet.Content>
-					<Box w="100%" h={60} px={4} justifyContent="center">
-						<Text
-							fontSize={16}
-							color="gray.500"
-							_dark={{
-								color: "gray.300",
-							}}
-						>
-							{title}
-						</Text>
-					</Box>
-					{data.groupedWorkId != null ?
-						<Actionsheet.Item
-							startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6"/>}
-							onPress={() => {
-								openGroupedWork(data.groupedWorkId, libraryUrl);
-								onClose(onClose);
-							}}>
-							{translations.viewItemDetails}
-						</Actionsheet.Item>
-						: ""
-					}
-					{cancelable && allowLinkedAccountAction && data.source !== "vdx" ?
-						<Actionsheet.Item
-							isLoading={loading}
-							isLoadingText="Cancelling..."
-							startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
-							onPress={() => {
-								setLoading(true);
-								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
-									updateProfile();
-									_fetchHolds();
-									onClose(onClose);
-									setLoading(false);
-								});
-							}}
-						>
-							{cancelLabel}
-						</Actionsheet.Item>
-						: ""}
-					{cancelable && allowLinkedAccountAction && data.source === "vdx" ? (
-						<Actionsheet.Item
-							isLoading={loading}
-							isLoadingText="Cancelling..."
-							startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
-							onPress={() => {
-								setLoading(true);
-								cancelVdxRequest(libraryUrl, data.sourceId, data.cancelId).then(r => {
-									updateProfile();
-									_fetchHolds();
-									onClose(onClose);
-									setLoading(false);
-								});
-							}}
-						>
-							{cancelLabel}
-						</Actionsheet.Item>
-					) : ""}
-					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === false ?
-						<SelectThawDate
-							handleOnDateChange={onDateChange}
-							onClose={onClose}
-							freezeId={data.cancelId}
-							recordId={data.recordId}
-							source={data.source}
-							libraryUrl={libraryUrl}
-							userId={data.userId}
-							reactivationDate={selectedReactivationDate}
-							_fetchHolds={_fetchHolds}
-							updateProfile={updateProfile}
-						/> : ""
- 					}
-					{data.allowFreezeHolds === "1" && allowLinkedAccountAction && data.frozen === true ?
-						<Actionsheet.Item
-							isLoading={thaw}
-							isLoadingText={loadingText}
-							startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1"
-							                 size="6"/>}
-							onPress={() => {
-								setThaw(true);
-								setLoadingText("Thawing...");
-								thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
-									updateProfile();
-									_fetchHolds();
-									onClose(onClose);
-									setThaw(false);
-								});
-							}}
-						>
-							{label}
-						</Actionsheet.Item>
-						: ""}
+							{data.available ? <Text fontSize={{base: 'xs', lg: 'sm'}}><Text bold>{translations.pickupBy}:</Text> {expirationDate}</Text> :
+									null}
+							{!data.available && data.position ? (<Text fontSize={{base: 'xs', lg: 'sm'}}><Text bold>{translations.position}:</Text> {data.position}</Text>) : null}
+							{data.status && data.source === 'vdx' ? (<Text fontSize={{base: 'xs', lg: 'sm'}}><Text bold>{translate('holds.status')}:</Text> {data.status}</Text>) : null}
+						</VStack>
+					</HStack>
+				</Pressable>
+				<Actionsheet isOpen={isOpen} onClose={onClose} size="full">
+					<Actionsheet.Content>
+						<Box w="100%" h={60} px={4} justifyContent="center">
+							<Text
+									fontSize={16}
+									color="gray.500"
+									_dark={{
+										color: 'gray.300',
+									}}
+							>
+								{title}
+							</Text>
+						</Box>
+						{data.groupedWorkId != null ?
+								<Actionsheet.Item
+										startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6"/>}
+										onPress={() => {
+											openGroupedWork(data.groupedWorkId, libraryUrl);
+											onClose(onClose);
+										}}>
+									{translations.viewItemDetails}
+								</Actionsheet.Item>
+								: ''
+						}
+						{cancelable && allowLinkedAccountAction && data.source !== 'vdx' ?
+								<Actionsheet.Item
+										isLoading={loading}
+										isLoadingText="Cancelling..."
+										startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
+										onPress={() => {
+											setLoading(true);
+											cancelHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+												updateProfile();
+												_fetchHolds();
+												onClose(onClose);
+												setLoading(false);
+											});
+										}}
+								>
+									{cancelLabel}
+								</Actionsheet.Item>
+								: ''}
+						{cancelable && allowLinkedAccountAction && data.source === 'vdx' ? (
+								<Actionsheet.Item
+										isLoading={loading}
+										isLoadingText="Cancelling..."
+										startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
+										onPress={() => {
+											setLoading(true);
+											cancelVdxRequest(libraryUrl, data.sourceId, data.cancelId).then(r => {
+												updateProfile();
+												_fetchHolds();
+												onClose(onClose);
+												setLoading(false);
+											});
+										}}
+								>
+									{cancelLabel}
+								</Actionsheet.Item>
+						) : ''}
+						{data.allowFreezeHolds === '1' && allowLinkedAccountAction && data.frozen === false ?
+								<SelectThawDate
+										handleOnDateChange={onDateChange}
+										onClose={onClose}
+										freezeId={data.cancelId}
+										recordId={data.recordId}
+										source={data.source}
+										libraryUrl={libraryUrl}
+										userId={data.userId}
+										reactivationDate={selectedReactivationDate}
+										_fetchHolds={_fetchHolds}
+										updateProfile={updateProfile}
+										clearGroupValue={clearGroupValue}
+								/> : ''
+						}
+						{data.allowFreezeHolds === '1' && allowLinkedAccountAction && data.frozen === true ?
+								<Actionsheet.Item
+										isLoading={thaw}
+										isLoadingText={loadingText}
+										startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1"
+																		 size="6"/>}
+										onPress={() => {
+											setThaw(true);
+											setLoadingText('Thawing...');
+											thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+												updateProfile();
+												_fetchHolds();
+												onClose(onClose);
+												setThaw(false);
+											});
+										}}
+								>
+									{label}
+								</Actionsheet.Item>
+								: ''}
 
-					{updateLocation && allowLinkedAccountAction ?
-						<SelectPickupLocation locations={locations} onClose={onClose} _fetchHolds={_fetchHolds}
-						                      userId = {data.userId}
-						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation} libraryUrl={libraryUrl}/>
-						: ""}
+						{updateLocation && allowLinkedAccountAction ?
+								<SelectPickupLocation locations={locations} onClose={onClose} _fetchHolds={_fetchHolds}
+																			userId={data.userId}
+																			currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation} libraryUrl={libraryUrl}/>
+								: ''}
 
-				</Actionsheet.Content>
-			</Actionsheet>
-		</>
-	)
+					</Actionsheet.Content>
+				</Actionsheet>
+			</>
+	);
 }
 
 const SelectThawDate = (props) => {
@@ -635,99 +619,102 @@ const SelectThawDate = (props) => {
 	};
 
 	return (
-	<>
-		{data ? (
-			<Actionsheet.Item
-				onPress={() => {
-					setShowModal(true)}}>
-				<Text>Freeze holds ({count})</Text>
-			</Actionsheet.Item>
-
-		) : (
-			<Actionsheet.Item startIcon={<Icon as={MaterialIcons} name="pause" color="trueGray.400" mr="1" size="6"/>}
-			                  onPress={() => {
-				                  setShowModal(true);
-			                  }}>
-				Freeze Hold
-			</Actionsheet.Item>
-		)}
-		<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick="false" size="full">
-			<Modal.Content>
-				<Modal.CloseButton/>
-				<Modal.Header>{data ? "Freeze Holds" : "Freeze Hold"}</Modal.Header>
-				<Modal.Body>
-					{data ? <Text>Select the date when you want the selected holds thawed.</Text> : <Text>Select the date when you want the hold thawed.</Text>}
-					<Box mt={3} mb={3}>
-						<DateTimePicker
-							testID="dateTimePicker"
-							value={date}
-							mode="date"
-							display="default"
-							minimumDate={minDate}
-							onChange={onChange}
-						/>
-
-					</Box>
-				</Modal.Body>
-				<Modal.Footer>
-					<Button.Group space={2} size="md">
-						<Button colorScheme="muted" variant="outline"
-						        onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
-						{data ? (
-							<Button
-								isLoading={loading}
-								isLoadingText="Freezing..."
+			<>
+				{data ? (
+						<Actionsheet.Item
 								onPress={() => {
-									setLoading(true);
-									freezeHolds(data, libraryUrl, date).then(r => {
-											clearGroupValue();
-											setShowModal(false);
-											updateProfile();
-											_fetchHolds();
-											onClose(onClose);
-											setLoading(false);
-										}
-									);
-								}}
-							>
-								Freeze Holds
-							</Button>
-						) : (
-							<Button
-								isLoading={loading}
-								isLoadingText="Freezing..."
-								onPress={() => {
-									setLoading(true);
-									freezeHold(freezeId, recordId, source, libraryUrl, userId, date).then(r => {
-											clearGroupValue();
-											setShowModal(false);
-											updateProfile();
-											_fetchHolds();
-											onClose(onClose);
-											setLoading(false);
-										}
-									);
-								}}
-							>
-								Freeze Hold
-							</Button>
-						)}
-					</Button.Group>
-				</Modal.Footer>
-			</Modal.Content>
-		</Modal>
-	</>
-	)
-}
+									setShowModal(true);
+								}}>
+							<Text>Freeze holds ({count})</Text>
+						</Actionsheet.Item>
+
+				) : (
+						<Actionsheet.Item startIcon={<Icon as={MaterialIcons} name="pause" color="trueGray.400" mr="1" size="6"/>}
+															onPress={() => {
+																setShowModal(true);
+															}}>
+							Freeze Hold
+						</Actionsheet.Item>
+				)}
+				<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick="false" size="full">
+					<Modal.Content>
+						<Modal.CloseButton/>
+						<Modal.Header>{data ? 'Freeze Holds' : 'Freeze Hold'}</Modal.Header>
+						<Modal.Body>
+							{data ? <Text>Select the date when you want the selected holds thawed.</Text> : <Text>Select the date when you want the hold thawed.</Text>}
+							<Box mt={3} mb={3}>
+								<DateTimePicker
+										testID="dateTimePicker"
+										value={date}
+										mode="date"
+										display="default"
+										minimumDate={minDate}
+										onChange={onChange}
+								/>
+
+							</Box>
+						</Modal.Body>
+						<Modal.Footer>
+							<Button.Group space={2} size="md">
+								<Button colorScheme="muted" variant="outline"
+												onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
+								{data ? (
+										<Button
+												isLoading={loading}
+												isLoadingText="Freezing..."
+												onPress={() => {
+													setLoading(true);
+													freezeHolds(data, libraryUrl, date).then(r => {
+																clearGroupValue();
+																setShowModal(false);
+																updateProfile();
+																_fetchHolds();
+																onClose(onClose);
+																setLoading(false);
+															},
+													);
+												}}
+										>
+											Freeze Holds
+										</Button>
+								) : (
+										<Button
+												isLoading={loading}
+												isLoadingText="Freezing..."
+												onPress={() => {
+													setLoading(true);
+													freezeHold(freezeId, recordId, source, libraryUrl, userId, date).then(r => {
+																clearGroupValue();
+																setShowModal(false);
+																updateProfile();
+																_fetchHolds();
+																onClose(onClose);
+																setLoading(false);
+															},
+													);
+												}}
+										>
+											Freeze Hold
+										</Button>
+								)}
+							</Button.Group>
+						</Modal.Footer>
+					</Modal.Content>
+				</Modal>
+			</>
+	);
+};
 
 const SelectPickupLocation = (props) => {
 
 	const {locations, label, onClose, currentPickupId, holdId, libraryUrl, userId, _fetchHolds} = props;
 
-	let pickupLocation = _.findIndex(locations, function(o) { return o.locationId === currentPickupId; });
+	let pickupLocation = _.findIndex(locations, function(o) {
+		return o.locationId === currentPickupId;
+	});
 	pickupLocation = _.nth(locations, pickupLocation);
 	let pickupLocationCode = _.get(pickupLocation, 'code', '');
-	pickupLocation = currentPickupId.concat("_", pickupLocationCode);
+	pickupLocation = currentPickupId.concat('_', pickupLocationCode);
 	// 									const locationId = item.locationId;
 	// 									const code = item.code;
 	// 									const id = locationId.concat("_", code);
@@ -739,69 +726,69 @@ const SelectPickupLocation = (props) => {
 	let [location, setLocation] = React.useState(pickupLocation);
 
 	return (
-		<>
-			<Actionsheet.Item startIcon={<Icon as={Ionicons} name="location" color="trueGray.400" mr="1" size="6"/>}
-			                  onPress={() => {
-				                  setShowModal(true);
-			                  }}>
-				{label}
-			</Actionsheet.Item>
-			<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false}>
-				<Modal.Content>
-					<Modal.CloseButton/>
-					<Modal.Header>{translate('pickup_locations.change_hold_location')}</Modal.Header>
-					<Modal.Body>
-						<FormControl>
-							<FormControl.Label>{translate('pickup_locations.select_new_pickup')}</FormControl.Label>
-							<Select
-								name="pickupLocations"
-								selectedValue={location}
-								minWidth="200"
-								accessibilityLabel="Select a new pickup location"
-								_selectedItem={{
-									bg: "tertiary.300",
-									endIcon: <CheckIcon size="5" />
-								}}
-								mt={1}
-								mb={3}
-								onValueChange={itemValue => setLocation(itemValue)}
-							>
-								{locations.map((item, index) => {
-									const locationId = item.locationId;
-									const code = item.code;
-									const id = locationId.concat("_", code);
-									return <Select.Item value={id} label={item.name}/>;
-								})}
-							</Select>
-						</FormControl>
-					</Modal.Body>
-					<Modal.Footer>
-						<Button.Group space={2} size="md">
-							<Button colorScheme="muted" variant="outline"
-							        onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
-							<Button
-								isLoading={loading}
-								isLoadingText="Updating..."
-								onPress={() => {
-									setLoading(true);
-									changeHoldPickUpLocation(holdId, location, libraryUrl, userId).then(r => {
-											setShowModal(false);
-											_fetchHolds();
-											onClose(onClose);
-											setLoading(false);
-										}
-									);
-								}}
-							>
-								{translate('pickup_locations.change_location')}
-							</Button>
-						</Button.Group>
-					</Modal.Footer>
-				</Modal.Content>
-			</Modal>
-		</>
-	)
-}
+			<>
+				<Actionsheet.Item startIcon={<Icon as={Ionicons} name="location" color="trueGray.400" mr="1" size="6"/>}
+													onPress={() => {
+														setShowModal(true);
+													}}>
+					{label}
+				</Actionsheet.Item>
+				<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false}>
+					<Modal.Content>
+						<Modal.CloseButton/>
+						<Modal.Header>{translate('pickup_locations.change_hold_location')}</Modal.Header>
+						<Modal.Body>
+							<FormControl>
+								<FormControl.Label>{translate('pickup_locations.select_new_pickup')}</FormControl.Label>
+								<Select
+										name="pickupLocations"
+										selectedValue={location}
+										minWidth="200"
+										accessibilityLabel="Select a new pickup location"
+										_selectedItem={{
+											bg: 'tertiary.300',
+											endIcon: <CheckIcon size="5"/>,
+										}}
+										mt={1}
+										mb={3}
+										onValueChange={itemValue => setLocation(itemValue)}
+								>
+									{locations.map((item, index) => {
+										const locationId = item.locationId;
+										const code = item.code;
+										const id = locationId.concat('_', code);
+										return <Select.Item value={id} label={item.name}/>;
+									})}
+								</Select>
+							</FormControl>
+						</Modal.Body>
+						<Modal.Footer>
+							<Button.Group space={2} size="md">
+								<Button colorScheme="muted" variant="outline"
+												onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
+								<Button
+										isLoading={loading}
+										isLoadingText="Updating..."
+										onPress={() => {
+											setLoading(true);
+											changeHoldPickUpLocation(holdId, location, libraryUrl, userId).then(r => {
+														setShowModal(false);
+														_fetchHolds();
+														onClose(onClose);
+														setLoading(false);
+													},
+											);
+										}}
+								>
+									{translate('pickup_locations.change_location')}
+								</Button>
+							</Button.Group>
+						</Modal.Footer>
+					</Modal.Content>
+				</Modal>
+			</>
+	);
+};
 
 const ManageSelectedHolds = (props) => {
 	const {selectedValues, onAllDateChange, libraryUrl, selectedReactivationDate, _fetchHolds, updateProfile, clearGroupValue} = props;
@@ -815,7 +802,7 @@ const ManageSelectedHolds = (props) => {
 	let titlesToCancel = [];
 
 	const categorizedValues = selectedValues.map((item, index) => {
-		if(item.includes("freeze")) {
+		if (item.includes('freeze')) {
 			let freezeArr = item.split('|');
 			titlesToFreeze.push({
 				'action': freezeArr[0],
@@ -823,9 +810,9 @@ const ManageSelectedHolds = (props) => {
 				'cancelId': freezeArr[2],
 				'source': freezeArr[3],
 				'patronId': freezeArr[4],
-			})
+			});
 		}
-		if(item.includes("thaw")) {
+		if (item.includes('thaw')) {
 			let thawArr = item.split('|');
 			titlesToThaw.push({
 				'action': thawArr[0],
@@ -833,7 +820,7 @@ const ManageSelectedHolds = (props) => {
 				'cancelId': thawArr[2],
 				'source': thawArr[3],
 				'patronId': thawArr[4],
-			})
+			});
 		}
 
 		let cancelArr = item.split('|');
@@ -843,55 +830,56 @@ const ManageSelectedHolds = (props) => {
 			'cancelId': cancelArr[2],
 			'source': cancelArr[3],
 			'patronId': cancelArr[4],
-		})
+		});
 
 	});
 
-	let numSelected = "Managed Selected (" + selectedValues.length + ")";
+	let numSelected = 'Managed Selected (' + selectedValues.length + ')';
 	let numToCancel = titlesToCancel.length;
 	let numToFreeze = titlesToFreeze.length;
 	let numToThaw = titlesToThaw.length;
 
 	return (
-		<Center>
-			<Button onPress={onOpen}>{numSelected}</Button>
-			<Actionsheet isOpen={isOpen} onClose={onClose}>
-				<Actionsheet.Content>
-					{numToCancel > 0 ? <Actionsheet.Item isLoading={cancelling} isLoadingText="Cancelling..." onPress={() => {
-						startCancelling(true);
-						cancelHolds(titlesToCancel, libraryUrl).then(r => {
-							clearGroupValue();
-							numToThaw = [];
-							numToCancel = [];
-							numToFreeze = [];
-							_fetchHolds();
-							onClose(onClose);
-							updateProfile();
-							startCancelling(false);
-						})
-					}}><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item>}
-					{numToFreeze > 0 ? <SelectThawDate count={numToFreeze} data={titlesToFreeze} handleOnDateChange={onAllDateChange} libraryUrl={libraryUrl} reactivationDate={selectedReactivationDate} _fetchHolds={_fetchHolds} onClose={onClose} updateProfile={updateProfile} clearGroupValue={clearGroupValue} /> : <Actionsheet.Item isDisabled><Text>Freeze holds ({numToFreeze})</Text></Actionsheet.Item>}
-					{numToThaw > 0 ? <Actionsheet.Item isLoading={thawing} isLoadingText="Thawing..." onPress={() => {
-						startThawing(true);
-						thawHolds(titlesToThaw, libraryUrl).then(r => {
-							clearGroupValue();
-							numToThaw = [];
-							numToCancel = [];
-							numToFreeze = [];
-							updateProfile();
-							_fetchHolds();
-							onClose(onClose);
-							startThawing(false);
-						})
-					}}><Text>Thaw holds ({numToThaw})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Thaw holds ({numToThaw})</Text></Actionsheet.Item>}
-				</Actionsheet.Content>
-			</Actionsheet>
-		</Center>
-	)
-}
+			<Center>
+				<Button onPress={onOpen}>{numSelected}</Button>
+				<Actionsheet isOpen={isOpen} onClose={onClose}>
+					<Actionsheet.Content>
+						{numToCancel > 0 ? <Actionsheet.Item isLoading={cancelling} isLoadingText="Cancelling..." onPress={() => {
+							startCancelling(true);
+							cancelHolds(titlesToCancel, libraryUrl).then(r => {
+								clearGroupValue();
+								numToThaw = [];
+								numToCancel = [];
+								numToFreeze = [];
+								_fetchHolds();
+								onClose(onClose);
+								updateProfile();
+								startCancelling(false);
+							});
+						}}><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Cancel holds ({numToCancel})</Text></Actionsheet.Item>}
+						{numToFreeze > 0 ? <SelectThawDate count={numToFreeze} data={titlesToFreeze} handleOnDateChange={onAllDateChange} libraryUrl={libraryUrl} reactivationDate={selectedReactivationDate} _fetchHolds={_fetchHolds} onClose={onClose}
+																							 updateProfile={updateProfile} clearGroupValue={clearGroupValue}/> : <Actionsheet.Item isDisabled><Text>Freeze holds ({numToFreeze})</Text></Actionsheet.Item>}
+						{numToThaw > 0 ? <Actionsheet.Item isLoading={thawing} isLoadingText="Thawing..." onPress={() => {
+							startThawing(true);
+							thawHolds(titlesToThaw, libraryUrl).then(r => {
+								clearGroupValue();
+								numToThaw = [];
+								numToCancel = [];
+								numToFreeze = [];
+								updateProfile();
+								_fetchHolds();
+								onClose(onClose);
+								startThawing(false);
+							});
+						}}><Text>Thaw holds ({numToThaw})</Text></Actionsheet.Item> : <Actionsheet.Item isDisabled><Text>Thaw holds ({numToThaw})</Text></Actionsheet.Item>}
+					</Actionsheet.Content>
+				</Actionsheet>
+			</Center>
+	);
+};
 
 const ManageAllHolds = (props) => {
-	const {data, libraryUrl, onDateChange, selectedReactivationDate, updateProfile, _fetchHolds} = props;
+	const {data, libraryUrl, onDateChange, selectedReactivationDate, updateProfile, _fetchHolds, clearGroupValue} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 	const [loading, setLoading] = useState(false);
 	const [cancelling, startCancelling] = useState(false);
@@ -904,29 +892,29 @@ const ManageAllHolds = (props) => {
 	//console.log(data);
 
 	const categorizedValues = data.map((item, index) => {
-		if(item.canFreeze && item.frozen && item.source !== "vdx") {
+		if (item.canFreeze && item.frozen && item.source !== 'vdx') {
 			titlesToThaw.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
 				'source': item.source,
 				'patronId': item.userId,
-			})
+			});
 		}
-		if(item.canFreeze && !item.frozen && item.source !== "vdx") {
+		if (item.canFreeze && !item.frozen && item.source !== 'vdx') {
 			titlesToFreeze.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
 				'source': item.source,
 				'patronId': item.userId,
-			})
+			});
 		}
-		if(item.cancelable && item.source !== "vdx") {
+		if (item.cancelable && item.source !== 'vdx') {
 			titlesToCancel.push({
 				'recordId': item.recordId,
 				'cancelId': item.cancelId,
 				'source': item.source,
 				'patronId': item.userId,
-			})
+			});
 		}
 	});
 
@@ -937,43 +925,44 @@ const ManageAllHolds = (props) => {
 	let numToManage = (numToCancel + numToFreeze + numToThaw);
 
 	return (
-		<Center>
-			{numToManage >= 1 ? <Button onPress={onOpen}>Manage All</Button> : null}
-			<Actionsheet isOpen={isOpen} onClose={onClose}>
-				<Actionsheet.Content>
-					<Actionsheet.Item
-						isLoading={cancelling}
-						isLoadingText="Cancelling..."
-						onPress={() => {
-							startCancelling(true);
-							cancelHolds(titlesToCancel, libraryUrl).then(r => {
-								_fetchHolds();
-								onClose(onClose);
-								startCancelling(false);
-								updateProfile();
-							})
-						}}
-					>
-						<Text>Cancel all holds ({numToCancel})</Text></Actionsheet.Item>
-					<Actionsheet.Item
-					>
-						<SelectThawDate count={numToFreeze} data={titlesToFreeze} handleOnDateChange={onDateChange} libraryUrl={libraryUrl} reactivationDate={selectedReactivationDate} updateProfile={updateProfile} _fetchHolds={_fetchHolds}/></Actionsheet.Item>
-					<Actionsheet.Item
-						isLoading={thawing}
-						isLoadingText="Thawing..."
-						onPress={() => {
-							startThawing(true);
-							thawHolds(titlesToThaw, libraryUrl).then(r => {
-								updateProfile();
-								_fetchHolds();
-								onClose(onClose);
-								startThawing(false);
-							})
-						}}
-					>
-						<Text>Thaw all holds ({numToThaw})</Text></Actionsheet.Item>
-				</Actionsheet.Content>
-			</Actionsheet>
-		</Center>
-	)
-}
+			<Center>
+				{numToManage >= 1 ? <Button onPress={onOpen}>Manage All</Button> : null}
+				<Actionsheet isOpen={isOpen} onClose={onClose}>
+					<Actionsheet.Content>
+						<Actionsheet.Item
+								isLoading={cancelling}
+								isLoadingText="Cancelling..."
+								onPress={() => {
+									startCancelling(true);
+									cancelHolds(titlesToCancel, libraryUrl).then(r => {
+										_fetchHolds();
+										onClose(onClose);
+										startCancelling(false);
+										updateProfile();
+									});
+								}}
+						>
+							<Text>Cancel all holds ({numToCancel})</Text></Actionsheet.Item>
+						<Actionsheet.Item
+						>
+							<SelectThawDate count={numToFreeze} data={titlesToFreeze} handleOnDateChange={onDateChange} libraryUrl={libraryUrl} reactivationDate={selectedReactivationDate} updateProfile={updateProfile}
+															_fetchHolds={_fetchHolds} clearGroupValue={clearGroupValue}/></Actionsheet.Item>
+						<Actionsheet.Item
+								isLoading={thawing}
+								isLoadingText="Thawing..."
+								onPress={() => {
+									startThawing(true);
+									thawHolds(titlesToThaw, libraryUrl).then(r => {
+										updateProfile();
+										_fetchHolds();
+										onClose(onClose);
+										startThawing(false);
+									});
+								}}
+						>
+							<Text>Thaw all holds ({numToThaw})</Text></Actionsheet.Item>
+					</Actionsheet.Content>
+				</Actionsheet>
+			</Center>
+	);
+};

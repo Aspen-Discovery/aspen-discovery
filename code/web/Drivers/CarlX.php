@@ -813,11 +813,7 @@ class CarlX extends AbstractIlsDriver{
 		return $fields;
 	}
 
-	function selfRegisterViaSSO(){
-		return false;
-	}
-
-	function selfRegister(){
+	function selfRegister() : array{
 		global $library,
 		       $configArray,
 		       $active_ip,
