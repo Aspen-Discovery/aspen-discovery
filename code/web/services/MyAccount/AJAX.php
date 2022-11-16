@@ -74,24 +74,31 @@ class MyAccount_AJAX extends JSON_Action
 				);
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
-					$addResult = $user->addLinkedUser($accountToLink);
-					if ($addResult === true) {
-						$result = array(
-							'result' => true,
-							'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
-						);
-					} else { // insert failure or user is blocked from linking account or account & account to link are the same account
-						$result = array(
-							'result' => false,
-							'message' => translate(['text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing' => true])
-						);
-					}
-				} else {
-					$result = array(
-						'result' => false,
-						'message' => translate(['text' => 'You cannot link to yourself.', 'isPublicFacing' => true])
-					);
-				}
+                    if ($accountToLink->disableAccountLinking==0){
+                        $addResult = $user->addLinkedUser($accountToLink);
+                        if ($addResult === true) {
+                            $result = array(
+                                'result' => true,
+                                'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
+                            );
+                        } else { // insert failure or user is blocked from linking account or account & account to link are the same account
+                            $result = array(
+                                'result' => false,
+                                'message' => translate(['text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing' => true])
+                            );
+                        }
+                    } else{
+                        $result = array(
+                            'result' => false,
+                            'message' => translate(['text' => 'Sorry, this user does not allow account linking', 'isPublicFacing' => true])
+                        );
+                    }
+                }else {
+                    $result = array(
+                        'result' => false,
+                        'message' => translate(['text' => 'You cannot link to yourself.', 'isPublicFacing' => true])
+                    );
+                }
 			} else {
 				$result = array(
 					'result' => false,
@@ -102,6 +109,31 @@ class MyAccount_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+    /** @noinspection PhpUnused */
+    function removeManagingAccount(){
+        if (!UserAccount::isLoggedIn()) {
+            $result = array(
+                'result' => false,
+                'message' => translate(['text' => 'Sorry, you must be logged in to manage accounts.', 'isPublicFacing' => true])
+            );
+        } else {
+            $accountToRemove = $_REQUEST['idToRemove'];
+            $user = UserAccount::getLoggedInUser();
+            if ($user->removeManagingAccount($accountToRemove)) {
+                $result = array(
+                    'result' => true,
+                    'message' => translate(['text' => 'Successfully removed linked account.', 'isPublicFacing' => true])
+                );
+            } else {
+                $result = array(
+                    'result' => false,
+                    'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+                );
+            }
+        }
+        return $result;
+    }
 
 	/** @noinspection PhpUnused */
 	function removeAccountLink()
@@ -119,15 +151,68 @@ class MyAccount_AJAX extends JSON_Action
 					'result' => true,
 					'message' => translate(['text' => 'Successfully removed linked account.', 'isPublicFacing' => true])
 				);
-			} else {
-				$result = array(
-					'result' => false,
-					'message' => translate(['text' => 'Sorry, we could remove that account.', 'isPublicFacing' => true])
-				);
 			}
-		}
+            else {
+                $result = array(
+                    'result' => false,
+                    'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+                );
+            }
+        }
 		return $result;
 	}
+
+    //WHAT IS IN MODAL POPUP FOR LINK DISABLE
+    /** @noinspection PhpUnused */
+    function disableAccountLinkingInfo(){
+        $user = UserAccount::getActiveUserObj();
+        if ($user->disableAccountLinking == 1) {
+            return array(
+                'title' => translate(['text' => 'Enable Account Linking', 'isPublicFacing' => true]),
+                'modalBody' => translate(['text' => 'Re-enabling account linking will allow others to link to your account. Do you want to continue?', 'isPublicFacing' => true]),
+                'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate(['text' => "Accept", 'isPublicFacing' => true]) . "</span>"
+            );
+        }else {
+            return array(
+                'title' => translate(['text' => 'Disable Account Linking', 'isPublicFacing' => true]),
+                'modalBody' => translate(['text' => 'Disabling account linking will sever any current links and prevent any new ones. Do you want to continue?', 'isPublicFacing' => true]),
+                'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate(['text' => "Accept", 'isPublicFacing' => true]) . "</span>"
+            );
+        }
+    }
+
+    //USED UPON SUBMITTING
+    /** @noinspection PhpUnused */
+    function toggleAccountLinking(){
+        if (!UserAccount::isLoggedIn()) {
+            $result = array(
+                'message' => translate(['text' => 'Sorry, you must be logged in to manage accounts.', 'isPublicFacing' => true])
+            );
+        } else {
+            $user = UserAccount::getActiveUserObj();
+            if ($user->disableAccountLinking == 1) {
+                $success = $user->accountLinkingToggle();
+                $result = array (
+                    'success' => $success,
+                    'title' => translate(['text' => 'Linking Enabled', 'isPublicFacing' => true]),
+                    'message' => translate(['text' => 'Account linking has been enabled', 'isPublicFacing' => true])
+                );
+            }else if ($user->disableAccountLinking == 0) {
+                $success = $user->accountLinkingToggle();
+                $result = array (
+                    'success' => $success,
+                    'title' => translate(['text' => 'Linking Disabled', 'isPublicFacing' => true]),
+                    'message' => translate(['text' => 'Account linking has been disabled', 'isPublicFacing' => true])
+                );
+            }else {
+                $result = array (
+                    'success' => false,
+                    'message' => translate(['text' => 'Sorry, something went wrong and we were unable to process this request.', 'isPublicFacing' => true])
+                );
+            }
+        }
+        return $result;
+    }
 
 	/** @noinspection PhpUnused */
 	function getAddAccountLinkForm()
