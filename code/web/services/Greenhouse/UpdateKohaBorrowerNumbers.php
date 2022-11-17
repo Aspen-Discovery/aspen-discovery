@@ -1,10 +1,9 @@
 <?php
-require_once ROOT_DIR . '/services/Greenhouse/UserMerger.php';
-class UpdateKohaBorrowerNumbers extends UserMerger
+require_once ROOT_DIR . '/services/Admin/Admin.php';
+class UpdateKohaBorrowerNumbers extends Admin_Admin
 {
 	function launch()
 	{
-		parent::launch();
 		global $interface;
 
 		require_once ROOT_DIR . '/CatalogFactory.php';
@@ -17,6 +16,7 @@ class UpdateKohaBorrowerNumbers extends UserMerger
 			$driver = $catalog->driver;
 			if ($driver instanceof Koha){
 				if (isset($_REQUEST['submit'])){
+					set_time_limit(-1);
 					$results = $driver->updateBorrowerNumbers();
 					$interface->assign('results', $results);
 				}
@@ -38,5 +38,20 @@ class UpdateKohaBorrowerNumbers extends UserMerger
 		$breadcrumbs[] = new Breadcrumb('', 'Update Koha Borrower Numbers');
 
 		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection() : string
+	{
+		return 'greenhouse';
+	}
+
+	function canView() : bool
+	{
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+				return true;
+			}
+		}
+		return false;
 	}
 }
