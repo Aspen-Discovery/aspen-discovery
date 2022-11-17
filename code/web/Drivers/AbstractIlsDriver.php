@@ -139,7 +139,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	function selfRegister()
+	function selfRegisterViaSSO($ssoUser) : array {
+		return [
+			'success' => false,
+		];
+	}
+
+	function selfRegister() : array
 	{
 		return [
 			'success' => false,

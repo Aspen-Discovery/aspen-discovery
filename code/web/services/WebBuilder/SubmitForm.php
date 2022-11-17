@@ -45,7 +45,12 @@ class WebBuilder_SubmitForm extends Action
 				DataObjectUtil::updateFromUI($serializedData, $structure);
 
 				//Convert the form values to JSON
-				$htmlData = $serializedData->getPrintableHtmlData($structure);
+				if ($this->form->includeIntroductoryTextInEmail){
+					$htmlData = '<div>' . $this->form->introText . '</div>';
+				}else{
+					$htmlData = '';
+				}
+				$htmlData .= $serializedData->getPrintableHtmlData($structure);
 
 				//Save the form values to the database
 				global $library;
@@ -72,6 +77,9 @@ class WebBuilder_SubmitForm extends Action
 					$mail = new Mailer();
 					$interface->assign('formTitle', $this->form->title);
 					$interface->assign('htmlData', $htmlData);
+
+					$interface->assign('includeIntroductoryTextInEmail', $this->form->includeIntroductoryTextInEmail);
+					$interface->assign('introductoryText', $this->form->introText);
 
 					$emailBody = $interface->fetch('WebBuilder/customFormSubmissionEmail.tpl');
 					$emailResult = $mail->send($this->form->emailResultsTo, $this->form->title . ' Submission', null, null, $emailBody);

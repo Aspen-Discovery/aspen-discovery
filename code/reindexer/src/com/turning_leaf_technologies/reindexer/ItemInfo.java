@@ -114,11 +114,11 @@ public class ItemInfo{
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
-		if (itemIdentifier.length() > 255){
-			itemIdentifier = itemIdentifier.substring(0, 255).trim();
-		}else if (itemIdentifier.length() == 0){
+		if (itemIdentifier == null || itemIdentifier.length() == 0){
 			//Don't use empty identifiers
 			itemIdentifier = null;
+		}else if (itemIdentifier.length() > 255){
+			itemIdentifier = itemIdentifier.substring(0, 255).trim();
 		}
 		this.itemIdentifier = itemIdentifier;
 	}

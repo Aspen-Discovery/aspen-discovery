@@ -460,7 +460,7 @@ class SirsiDynixROA extends HorizonAPI
 		return $staffSessionToken;
 	}
 
-	function selfRegister()
+	function selfRegister() : array
 	{
 		$selfRegResult = array(
 			'success' => false,

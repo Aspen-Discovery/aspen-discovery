@@ -9,6 +9,7 @@ class CustomForm extends DataObject
 	public $title;
 	public $urlAlias;
 	public $emailResultsTo;
+	public $includeIntroductoryTextInEmail;
 	public $requireLogin;
 	public $introText;
 	public $submissionResultText;
@@ -48,6 +49,7 @@ class CustomForm extends DataObject
 				'canEdit' => false,
 			),
 			'emailResultsTo' => array('property' => 'emailResultsTo', 'type' => 'text', 'label' => 'Email Results To (separate multiple addresses with semi-colons)', 'description' => 'An email address to send submission results to', 'size' => '40', 'maxLength' => 100),
+			'includeIntroductoryTextInEmail' => array('property' => 'includeIntroductoryTextInEmail', 'type' => 'checkbox', 'label' => 'Include Introductory Text in Email', 'description' => 'Whether or not the introductory text is included in the emailed results', 'default' => 0),
 			'submissionResultText' => array('property' => 'submissionResultText', 'type' => 'markdown', 'label' => 'Submission Result Text', 'description' => 'Text to be displayed to the user when submission is complete', 'hideInLists' => true),
 			'libraries' => array(
 				'property' => 'libraries',

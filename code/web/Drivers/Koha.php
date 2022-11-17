@@ -2553,7 +2553,7 @@ class Koha extends AbstractIlsDriver
 
 		//Identity
 		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_title' => array('property' => 'borrower_title', 'type' => 'enum', 'label' => 'Salutation', 'values' => ['' => '', 'Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss', 'Dr.' => 'Dr.'], 'description' => 'Your first name', 'required' => false),
+			'borrower_title' => array('property' => 'borrower_title', 'type' => 'enum', 'label' => 'Salutation', 'values' => ['' => '', 'Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss', 'Dr.' => 'Dr.'], 'description' => 'Your preferred salutation', 'required' => false),
 			'borrower_surname' => array('property' => 'borrower_surname', 'type' => 'text', 'label' => 'Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true, 'autocomplete'=>false),
 			'borrower_firstname' => array('property' => 'borrower_firstname', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true, 'autocomplete'=>false),
 			'borrower_dateofbirth' => array('property' => 'borrower_dateofbirth', 'type' => 'date', 'label' => 'Date of Birth (MM/DD/YYYY)', 'description' => 'Date of birth', 'maxLength' => 10, 'required' => true, 'autocomplete'=>false),
@@ -2696,7 +2696,84 @@ class Koha extends AbstractIlsDriver
 		return $fields;
 	}
 
-	function selfRegister()
+	function selfRegisterViaSSO($ssoUser) : array {
+		global $locationSingleton;
+
+		$result = [
+			'success' => false,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . '/api/v1/patrons';
+			$postParams = [
+				'firstname' => $ssoUser['lastname'],
+				'surname' => $ssoUser['lastname'],
+				'email' => $ssoUser['email'],
+				'address' => 'Unknown',
+				'city' => 'Unknown',
+				'library_id' => $locationSingleton->getBranchLocationCode(),
+				'category_id' => $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory')
+			];
+
+			$postParams = json_encode($postParams);
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
+			ExternalRequestLogEntry::logRequest('koha.selfRegisterViaSSO', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			if ($this->apiCurlWrapper->getResponseCode() != 201) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						if (!empty($jsonResponse->error)) {
+							$result['messages'][] = $jsonResponse->error;
+						} else {
+							foreach ($jsonResponse->errors as $error) {
+								$result['messages'][] = $error->message;
+							}
+						}
+					} else {
+						$result['messages'][] = $response;
+					}
+				} else {
+					$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+				$result['message'] = 'Could not create your account. ' . implode($result['messages']);
+			} else {
+				$jsonResponse = json_decode($response);
+				$result['username'] = $jsonResponse->userid;
+				$result['success'] = true;
+				if ($this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail') != '0') {
+					$result['message'] = 'Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.';
+				} else {
+					if ($this->getKohaSystemPreference('autoMemberNum') == '1') {
+						$result['barcode'] = $jsonResponse->cardnumber;
+						$patronId = $jsonResponse->patron_id;
+						if (isset($_REQUEST['borrower_password'])) {
+							$tmpResult = $this->resetPinInKoha($patronId, $_REQUEST['borrower_password'], $oauthToken);
+							if ($tmpResult['success']) {
+								$result['password'] = $_REQUEST['borrower_password'];
+							}
+						}
+					} else {
+						$result['message'] = 'Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.';
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	function selfRegister() : array
 	{
 		global $library;
 		$result = [

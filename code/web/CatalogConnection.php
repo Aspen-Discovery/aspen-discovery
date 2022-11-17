@@ -617,9 +617,13 @@ class CatalogConnection
 		return $result;
 	}
 
-	function selfRegister()
+	function selfRegister($viaSSO = false, $ssoUser = []) : array
 	{
-		$result = $this->driver->selfRegister();
+		if(!$viaSSO) {
+			$result = $this->driver->selfRegister();
+		} else {
+			$result = $this->driver->selfRegisterViaSSO($ssoUser);
+		}
 		if ($result['success'] == true){
 			//Track usage by the user
 			require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
