@@ -9765,11 +9765,7 @@ AspenDiscovery.Browse = (function(){
 				params['listId'] = listId.val()
 			}
 			$.getJSON(url, params, function (data) {
-				if (data.success === false) {
-					AspenDiscovery.showMessage("Unable to update category", data.message);
-				} else {
-					AspenDiscovery.showMessage("Successfully updated", "This search was updated to the homepage successfully.", true);
-				}
+				AspenDiscovery.showMessage(data.title, data.message, data.success);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
@@ -9792,6 +9788,10 @@ AspenDiscovery.Browse = (function(){
 			var reserveId = $("#reserveId");
 			if (reserveId){
 				params['reserveId'] = reserveId.val()
+			}
+			var addToHomePage = $("#addToHomePage");
+			if (addToHomePage){
+				params['addToHomePage'] = addToHomePage.prop('checked');
 			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {
