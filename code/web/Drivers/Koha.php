@@ -5358,4 +5358,55 @@ class Koha extends AbstractIlsDriver
 			]
 		];
 	}
+
+	/**
+	 * Updates
+	 * @return array
+	 */
+	public function updateBorrowerNumbers() : array{
+		$user = new User();
+		$user->source = $this->getIndexingProfile()->name;
+		$numBarcodesUpdated = 0;
+		$allUserBarcodes = $user->fetchAll('cat_username', 'username');
+		$this->initDatabaseConnection();
+		$errors = [];
+		foreach ($allUserBarcodes as $barcode => $currentBorrowerNummber){
+			$sql = "SELECT borrowernumber from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+			$borrowerNumberResult = mysqli_query($this->dbConnection, $sql);
+			if ($borrowerNumberResult !== FALSE){
+				if ($borrowerNumberResult->num_rows > 0) {
+					$borrowerNumberRow = $borrowerNumberResult->fetch_assoc();
+					if ($currentBorrowerNummber != $borrowerNumberRow['borrowernumber']) {
+						$user = new User();
+						$user->cat_username = $barcode;
+						if ($user->find(true)){
+							$user->username = $borrowerNumberRow['borrowernumber'];
+							if ($user->update()){
+								$numBarcodesUpdated++;
+							}else{
+								$errors[] = $user->getLastError();
+							}
+						}
+					}
+				}else{
+					//TODO? Patron no longer exists, make sure the reading history is off.
+//					$user = new User();
+//					$user->cat_username = $barcode;
+//					if ($user->find(true)){
+//						$user->trackReadingHistory = false;
+//						$user->update();
+//					}
+				}
+				$borrowerNumberResult->close();
+				usleep(100);
+			}else{
+				$errors[] = "Could not query database for barcode $barcode";
+			}
+		}
+		return [
+			'success' => count($errors) == 0,
+			'message' => translate(['text' => 'Updated %1% of %2% borrower numbers', 1=>$numBarcodesUpdated, 2=>count($allUserBarcodes), 'isAdminFacing'=>true]),
+			'errors' => $errors,
+		];
+	}
 }
