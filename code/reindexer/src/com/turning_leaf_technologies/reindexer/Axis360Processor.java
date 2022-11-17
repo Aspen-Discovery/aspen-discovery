@@ -223,7 +223,7 @@ class Axis360Processor {
 			}else if (audience.contains("Teen")) {
 				targetAudience = "Young Adult";
 			}else{
-				targetAudience = audience;
+				targetAudience = "Adult";
 			}
 
 			targetAudienceFull = gradeLevel;
