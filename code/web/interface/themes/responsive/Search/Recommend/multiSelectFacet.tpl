@@ -8,7 +8,7 @@
 		</div>
 	{/foreach}
 	{* Show more facet popup list *}
-	<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('More {$cluster.displayNamePlural}', '{$title}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
+	<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('{translate text='More %1%' isPublicFacing=true 1=$cluster.displayNamePlural translateParameters=true}', '{$title}', '{translate text='Apply Filters' isPublicFacing=true}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
 	<div id="moreFacetPopup_{$title}" style="display:none">
 		<p>{translate text="Please select one of the items below to narrow your search by %1%." 1=$cluster.label isPublicFacing=true}</p>
 		<form id="facetPopup_{$title|escapeCSS}" onsubmit="return AspenDiscovery.ResultsList.processMultiSelectMoreFacetForm('#facetPopup_{$title|escapeCSS}', '{$cluster.field_name}');">

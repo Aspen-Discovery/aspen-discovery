@@ -2553,7 +2553,7 @@ class Koha extends AbstractIlsDriver
 
 		//Identity
 		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_title' => array('property' => 'borrower_title', 'type' => 'enum', 'label' => 'Salutation', 'values' => ['' => '', 'Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss', 'Dr.' => 'Dr.'], 'description' => 'Your first name', 'required' => false),
+			'borrower_title' => array('property' => 'borrower_title', 'type' => 'enum', 'label' => 'Salutation', 'values' => ['' => '', 'Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss', 'Dr.' => 'Dr.'], 'description' => 'Your preferred salutation', 'required' => false),
 			'borrower_surname' => array('property' => 'borrower_surname', 'type' => 'text', 'label' => 'Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true, 'autocomplete'=>false),
 			'borrower_firstname' => array('property' => 'borrower_firstname', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true, 'autocomplete'=>false),
 			'borrower_dateofbirth' => array('property' => 'borrower_dateofbirth', 'type' => 'date', 'label' => 'Date of Birth (MM/DD/YYYY)', 'description' => 'Date of birth', 'maxLength' => 10, 'required' => true, 'autocomplete'=>false),
@@ -5433,6 +5433,57 @@ class Koha extends AbstractIlsDriver
 				'primary' => 'ssoCategoryIdAttr',
 				'fallback' => 'ssoCategoryIdFallback'
 			]
+		];
+	}
+
+	/**
+	 * Updates
+	 * @return array
+	 */
+	public function updateBorrowerNumbers() : array{
+		$user = new User();
+		$user->source = $this->getIndexingProfile()->name;
+		$numBarcodesUpdated = 0;
+		$allUserBarcodes = $user->fetchAll('cat_username', 'username');
+		$this->initDatabaseConnection();
+		$errors = [];
+		foreach ($allUserBarcodes as $barcode => $currentBorrowerNummber){
+			$sql = "SELECT borrowernumber from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+			$borrowerNumberResult = mysqli_query($this->dbConnection, $sql);
+			if ($borrowerNumberResult !== FALSE){
+				if ($borrowerNumberResult->num_rows > 0) {
+					$borrowerNumberRow = $borrowerNumberResult->fetch_assoc();
+					if ($currentBorrowerNummber != $borrowerNumberRow['borrowernumber']) {
+						$user = new User();
+						$user->cat_username = $barcode;
+						if ($user->find(true)){
+							$user->username = $borrowerNumberRow['borrowernumber'];
+							if ($user->update()){
+								$numBarcodesUpdated++;
+							}else{
+								$errors[] = $user->getLastError();
+							}
+						}
+					}
+				}else{
+					//TODO? Patron no longer exists, make sure the reading history is off.
+//					$user = new User();
+//					$user->cat_username = $barcode;
+//					if ($user->find(true)){
+//						$user->trackReadingHistory = false;
+//						$user->update();
+//					}
+				}
+				$borrowerNumberResult->close();
+				usleep(100);
+			}else{
+				$errors[] = "Could not query database for barcode $barcode";
+			}
+		}
+		return [
+			'success' => count($errors) == 0,
+			'message' => translate(['text' => 'Updated %1% of %2% borrower numbers', 1=>$numBarcodesUpdated, 2=>count($allUserBarcodes), 'isAdminFacing'=>true]),
+			'errors' => $errors,
 		];
 	}
 }

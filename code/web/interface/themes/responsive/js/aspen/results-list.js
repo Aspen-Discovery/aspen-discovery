@@ -17,8 +17,8 @@ AspenDiscovery.ResultsList = (function(){
 			AspenDiscovery.showMessage(title, $("#moreFacetPopup_" + name).html());
 		},
 
-		multiSelectMoreFacetPopup: function(title, name){
-			var button = "<a class='btn btn-primary' onclick='$(\"#facetPopup_" + name + "\").submit();'>Apply Filters</a>";
+		multiSelectMoreFacetPopup: function(title, name, buttonName){
+			var button = "<a class='btn btn-primary' onclick='$(\"#facetPopup_" + name + "\").submit();'>"+buttonName+"</a>";
 			AspenDiscovery.showMessageWithButtons(title, $("#moreFacetPopup_" + name).html(), button);
 		},
 
