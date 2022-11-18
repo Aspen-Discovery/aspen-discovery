@@ -434,7 +434,8 @@ public class EvolveExportMain {
 									try {
 										marcRecord = reader.next();
 									} catch (Exception e){
-										logEntry.incErrors("Error loading existing marc record for bib " + bibId);
+										logEntry.incInvalidRecords(bibId);
+										//logEntry.incErrors("Error loading marc record for bib " + bibId);
 										continue;
 									}
 

@@ -26,6 +26,8 @@ import {GLOBALS} from '../util/globals';
 import {enableScreens} from 'react-native-screens';
 import {formatDiscoveryVersion, LIBRARY} from '../util/loadLibrary';
 import {PATRON} from '../util/loadPatron';
+import {navigationRef} from "../helpers/RootNavigator";
+import {checkCachedUrl} from "../util/login";
 
 enableScreens();
 
@@ -116,7 +118,6 @@ export function App() {
 						});
 					} catch (e) {
 						console.log(e);
-						Sentry.Native.captureException(e);
 					}
 				}
 			}
@@ -133,16 +134,30 @@ export function App() {
 			await setAppDetails();
 
 			console.log('Checking existing session...');
-			let userToken;
+			let userToken
+			let libraryUrl;
 			try {
 				// Restore token stored in `AsyncStorage`
 				userToken = await AsyncStorage.getItem('@userToken');
+				libraryUrl = await AsyncStorage.getItem('@pathUrl');
 			} catch (e) {
 				// Restoring token failed
 				console.log(e);
 			}
-			console.log('Session OK!');
-			dispatch({type: 'RESTORE_TOKEN', token: userToken});
+			console.log('Session found');
+			console.log('Trying to connect to: ', libraryUrl);
+
+			await checkCachedUrl(libraryUrl).then(async result => {
+				if (result) {
+					console.log("Connection successful. Continuing...");
+					dispatch({type: 'RESTORE_TOKEN', token: userToken});
+				} else {
+					console.log("Connection failed, logging out.");
+					await removeData().then(res => {
+						dispatch({type: 'SIGN_OUT'});
+					});
+				}
+			});
 		};
 		bootstrapAsync();
 	}, []);
@@ -159,7 +174,7 @@ export function App() {
 						postBody.append('password', data.valueSecret);
 						const api = create({
 							baseURL: data.libraryUrl + '/API',
-							timeout: 6000,
+							timeout: 5000,
 							headers: getHeaders(true),
 							auth: createAuthTokens(),
 						});
@@ -238,7 +253,7 @@ export function App() {
 										await AsyncStorage.setItem('@libName', patronsLibrary['name']);
 										await SecureStore.setItemAsync('userKey', data.valueUser);
 										await SecureStore.setItemAsync('secretKey', data.valueSecret);
-										await SecureStore.setItemAsync('userToken', userToken);
+										//await SecureStore.setItemAsync('userToken', userToken);
 										// save variables in the Secure Store to access later on
 										await SecureStore.setItemAsync('patronName', patronName);
 										await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
@@ -297,15 +312,13 @@ export function App() {
 	return (
 			<AuthContext.Provider value={authContext}>
 				<NavigationContainer theme={navigationTheme}
-														 ref={navigation}
+														 ref={navigationRef}
 														 fallback={<Spinner/>}
-														 OnReady={() => {
-															 routingInstrumentation.registerNavigationContainer(navigation);
-														 }}
 														 linking={{
 															 prefixes: [prefix],
 															 config: {
 																 screens: {
+																	 Login: 'user/login',
 																	 Drawer: {
 																		 screens: {
 																			 Tabs: {
@@ -380,6 +393,7 @@ export function App() {
 				>
 					<Stack.Navigator
 							screenOptions={{headerShown: false}}
+							name="Root"
 					>
 						{state.userToken == null ? (
 								// No token found, user isn't signed in
