@@ -33,7 +33,11 @@
 					{/foreach}
 				</ul>
 				{if $user->id == $profile->id}{* Only allow account adding for the actual account user is logged in with *}
-					<button class="btn btn-primary btn-xs" onclick="AspenDiscovery.Account.addAccountLink()">{translate text="Add an Account" isPublicFacing=true}</button>
+					{if $profile->disableAccountLinking==0}
+						<button class="btn btn-primary btn-xs" onclick="AspenDiscovery.Account.addAccountLink()">{translate text="Add an Account" isPublicFacing=true}</button>
+						{else}
+						<p>{translate text="You currently have account linking disabled. Enable account linking for this account to add other accounts to it." isPublicFacing=true}</p>
+					{/if}
 				{else}
 					<p>{translate text="Log into this account to add other accounts to it." isPublicFacing=true}</p>
 				{/if}
@@ -41,11 +45,18 @@
 				<p>{translate text="The following accounts can view checkout and hold information from this account.  If someone is viewing your account that you do not want to have access, please contact library staff." isPublicFacing=true}</p>
 				<ul>
 				{foreach from=$profile->getViewers() item=tmpUser}
-					<li>{$tmpUser->getNameAndLibraryLabel()}</li>
+					<li>{$tmpUser->getNameAndLibraryLabel()} <button class="btn btn-xs btn-warning" onclick="AspenDiscovery.Account.removeManagingAccount({$tmpUser->id});">Remove</button> </li>
 				{foreachelse}
 					<li>{translate text="None" isPublicFacing=true}</li>
 				{/foreach}
 				</ul>
+				{if $user->id == $profile->id}{* Only allow disabling account linking for the actual account user is logged in with *}
+					{if $profile->disableAccountLinking==0}
+						<button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Account.disableAccountLinkingPopup()">{translate text="Disable Account Linking" isPublicFacing=true}</button>
+					{else}
+						<button class="btn btn-sm btn-primary" onclick="AspenDiscovery.Account.disableAccountLinkingPopup()">{translate text="Enable Account Linking" isPublicFacing=true}</button>
+					{/if}
+				{/if}
 			{/if}
 		{else}
 			<div class="page">

@@ -40,6 +40,7 @@ class User extends DataObject
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
+    public $disableAccountLinking;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -647,6 +648,40 @@ class User extends DataObject
 		}
 		return false;
 	}
+
+    //Individually remove accounts that have linked to user
+    function removeManagingAccount($userId){
+        require_once ROOT_DIR . '/sys/Account/UserLink.php';
+        $userLink                   = new UserLink();
+        $userLink->primaryAccountId = $userId;
+        $userLink->linkedAccountId  = $this->id;
+        $ret                        = $userLink->delete(true);
+
+        //Force a reload of data
+        $this->linkedUsers = null;
+        $this->getLinkedUsers();
+
+        return $ret == 1;
+    }
+
+    //THIS GETS USED BY TOGGLEACCOUNTLINKING AJAX
+    function accountLinkingToggle(){
+        require_once ROOT_DIR . '/sys/Account/UserLink.php';
+        if ($this->disableAccountLinking == 0){
+            $this->disableAccountLinking = 1;
+            //Remove Managing Accounts
+            $userLink = new UserLink();
+            $userLink->linkedAccountId = $this->id;
+            $userLink->delete(true);
+            //Remove Linked Users
+            $userLink = new UserLink();
+            $userLink->primaryAccountId = $this->id;
+            $userLink->delete(true);
+        }else{
+            $this->disableAccountLinking = 0;
+        }
+        return $this->update();
+    }
 
 	/**
 	 * @return int|bool

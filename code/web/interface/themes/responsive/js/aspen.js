@@ -5851,6 +5851,39 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		removeManagingAccount: function (idToRemove) {
+			if (confirm("Are you sure you want to break the link with this account?")) {
+				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
+				$.getJSON(url, function (data) {
+					if (data.result === true) {
+						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
+					} else {
+						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
+					}
+				});
+			}
+			return false;
+		},
+
+		//CALL FOR ON CLICK, INITIAL MODAL POPUP
+		disableAccountLinkingPopup: function () {
+			var url = Globals.path + "/MyAccount/AJAX?method=disableAccountLinkingInfo";
+			AspenDiscovery.loadingMessage();
+				$.getJSON(url, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+				return false;
+		},
+
+		//CALL FOR HITTING ACCEPT ON POPUP - GOES TO TOGGLEACCOUNTLINKING AJAX
+		toggleAccountLinkingAccept: function() {
+			var url = Globals.path + "/MyAccount/AJAX?method=toggleAccountLinking";
+			$.getJSON(url, function (data) {
+					AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
+			});
+			return false;
+		},
+
 		renewTitle: function (patronId, recordId, renewIndicator) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
@@ -9765,11 +9798,7 @@ AspenDiscovery.Browse = (function(){
 				params['listId'] = listId.val()
 			}
 			$.getJSON(url, params, function (data) {
-				if (data.success === false) {
-					AspenDiscovery.showMessage("Unable to update category", data.message);
-				} else {
-					AspenDiscovery.showMessage("Successfully updated", "This search was updated to the homepage successfully.", true);
-				}
+				AspenDiscovery.showMessage(data.title, data.message, data.success);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
@@ -9792,6 +9821,10 @@ AspenDiscovery.Browse = (function(){
 			var reserveId = $("#reserveId");
 			if (reserveId){
 				params['reserveId'] = reserveId.val()
+			}
+			var addToHomePage = $("#addToHomePage");
+			if (addToHomePage){
+				params['addToHomePage'] = addToHomePage.prop('checked');
 			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {
@@ -12680,8 +12713,8 @@ AspenDiscovery.ResultsList = (function(){
 			AspenDiscovery.showMessage(title, $("#moreFacetPopup_" + name).html());
 		},
 
-		multiSelectMoreFacetPopup: function(title, name){
-			var button = "<a class='btn btn-primary' onclick='$(\"#facetPopup_" + name + "\").submit();'>Apply Filters</a>";
+		multiSelectMoreFacetPopup: function(title, name, buttonName){
+			var button = "<a class='btn btn-primary' onclick='$(\"#facetPopup_" + name + "\").submit();'>"+buttonName+"</a>";
 			AspenDiscovery.showMessageWithButtons(title, $("#moreFacetPopup_" + name).html(), button);
 		},
 

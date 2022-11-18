@@ -8,7 +8,7 @@ import * as Updates from 'expo-updates';
 // custom components and helper files
 import {GLOBALS, LOGIN_DATA} from './globals';
 import {PATRON} from './loadPatron';
-import {getHeaders, problemCodeMap} from './apiAuth';
+import {createAuthTokens, getHeaders, postData, problemCodeMap} from './apiAuth';
 import {popToast} from '../components/loadError';
 
 export async function makeGreenhouseRequestNearby() {
@@ -87,4 +87,20 @@ export async function makeGreenhouseRequestAll() {
 		console.log(response);
 	}
 	return false;
+}
+
+export async function checkCachedUrl(url) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: url + '/API',
+		timeout: GLOBALS.timeoutFast,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+	});
+	const response = await api.post('/UserAPI?method=getValidPickupLocations', postBody);
+	if (response.ok) {
+		return true;
+	} else {
+		return false;
+	}
 }
