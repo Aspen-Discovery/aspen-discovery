@@ -52,6 +52,13 @@ function getUpdates22_12_00(): array {
 		], //add_oauth_private_keys
 
 		//kodi
+        'user_disableAccountLinking' => [
+            'title' => 'User Disable Account Linking',
+            'description' => 'Adds switch for the user to disable account linking',
+            'sql' => [
+                "ALTER TABLE user ADD COLUMN disableAccountLinking TINYINT(1) DEFAULT '0'",
+            ]
+        ],//user_disableAccountLinking
 
 		//other
 	];
