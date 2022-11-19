@@ -41,6 +41,8 @@ class User extends DataObject
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
     public $disableAccountLinking;
+	public $oAuthAccessToken;
+	public $oAuthRefreshToken;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
