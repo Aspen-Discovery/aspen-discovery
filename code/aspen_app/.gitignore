@@ -29,9 +29,12 @@ web-build/
 .pnp.js
 # @end @expo/next-adapter
 app-configs/**
+config/**
 !/app-configs/app.template.json
 !/app-configs/bumpVersions.php
-!/app-configs/makeNew.sh
+!/app-configs/copyConfig.js
+!/app-configs/updateConfig.js
+!/app-configs/restoreConfig.js
 !/app-configs/README.md
 /.tmp/*
 /google-services*.json
