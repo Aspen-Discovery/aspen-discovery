@@ -1,5 +1,5 @@
 const data = require('./apps.json');
-const bws = require('./bws.json');
+const owner = require('./projectOwner.json');
 function getArgs () {
 	const args = {};
 	process.argv
@@ -27,17 +27,17 @@ const args = getArgs();
 const instance = args.instance;
 const env = args.env;
 const app = data[instance];
-let versionAsInt = bws['versionCode'];
+let versionAsInt = owner['versionCode'];
 versionAsInt = parseInt(versionAsInt);
 
 const app_config = {
 	'name': app['name'],
 	'slug': app['slug'],
 	'scheme': app['scheme'],
-	'owner': bws['expoProjectOwner'],
+	'owner': owner['expoProjectOwner'],
 	'privacy': 'public',
 	'platforms': ['ios', 'android'],
-	'version': bws['versionCode'],
+	'version': owner['versionCode'],
 	'sdkVersion': '46.0.0',
 	'orientation': 'default',
 	'icon': app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
@@ -45,6 +45,10 @@ const app_config = {
 		'enabled': true,
 		'checkAutomatically': 'ON_LOAD',
 		'fallbackToCacheTimeout': 250000,
+		'url': 'https://u.expo.dev/' + app['easId'],
+	},
+	'runtimeVersion': {
+		'policy': 'sdkVersion'
 	},
 	'splash': {
 		'image': app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appSplash&slug=' + app['slug'],
@@ -53,7 +57,7 @@ const app_config = {
 	},
 	'assetBundlePatterns': ['**/*'],
 	'ios': {
-		'buildNumber': bws['buildCode'],
+		'buildNumber': owner['buildCode'],
 		'bundleIdentifier': app['reverseDns'],
 		'supportsTablet': true,
 		'icon': app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
@@ -103,7 +107,7 @@ const app_config = {
 			{
 				'file': 'sentry-expo/upload-sourcemaps',
 				'config': {
-					'organization': bws['expoProjectOwner'],
+					'organization': owner['expoProjectOwner'],
 					'project': app['sentryProject'],
 					'authToken': app['sentryAuth'],
 				},
