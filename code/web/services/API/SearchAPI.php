@@ -1444,9 +1444,9 @@ class SearchAPI extends Action
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
-							'id' => $categoryInformation->id,
+							'categoryId' => $categoryInformation->id,
 							'source' => $categoryInformation->source,
-							'listId' => $categoryInformation->sourceListId,
+							'sourceId' => $categoryInformation->sourceListId,
 							'isHidden' => $categoryInformation->isDismissed($appUser),
 						);
 						$formattedCategories[] = $categoryResponse;
