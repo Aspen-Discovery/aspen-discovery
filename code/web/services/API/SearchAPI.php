@@ -18,7 +18,7 @@ class SearchAPI extends Action
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'getAvailableFacetsKeys', 'searchLite', 'getDefaultFacets', 'getFacetClusterByKey', 'searchFacetCluster', 'getFormatCategories'))) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults', 'getListResults', 'getSavedSearchResults', 'getSortList', 'getAppliedFilters', 'getAvailableFacets', 'getAvailableFacetsKeys', 'searchLite', 'getDefaultFacets', 'getFacetClusterByKey', 'searchFacetCluster', 'getFormatCategories', 'getBrowseCategoryListForUser'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SearchAPI', $method);
@@ -1375,6 +1375,139 @@ class SearchAPI extends Action
 # * Functions for Aspen LiDA
 # *
 # ****************************************************************************************************************************
+	/** @noinspection PhpUnused */
+	function getBrowseCategoryListForUser() {
+		//Figure out which library or location we are looking at
+		global $library;
+		global $locationSingleton;
+		require_once ROOT_DIR . '/services/API/ListAPI.php';
+		$listApi = new ListAPI();
+
+		//Check to see if we have an active location, will be null if we don't have a specific location
+		//based off of url, branch parameter, or IP address
+		$activeLocation = $locationSingleton->getActiveLocation();
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$appUser = UserAccount::validateAccount($username, $password);
+
+		/** @var BrowseCategoryGroupEntry[] $browseCategories */
+		if ($activeLocation == null){
+			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA(null, $appUser, false);
+		}else{
+			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategoriesForLiDA(null, $appUser, false);
+		}
+		$formattedCategories = array();
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		foreach ($browseCategories as $curCategory){
+			$categoryResponse = [];
+			$categoryInformation = new BrowseCategory();
+			$categoryInformation->id = $curCategory->browseCategoryId;
+			if ($categoryInformation->find(true)) {
+				if ($categoryInformation->isValidForDisplay($appUser, false) && ($categoryInformation->source == 'GroupedWork' || $categoryInformation->source == 'List')) {
+					if ($categoryInformation->textId == ('system_saved_searches')) {
+						$savedSearches = $listApi->getSavedSearches($appUser->id);
+						$allSearches = $savedSearches['searches'];
+						foreach ($allSearches as $savedSearch) {
+							$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
+							$categoryResponse = [
+								'key' => $thisId,
+								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
+								'source' => 'SavedSearch',
+								'sourceId' => $savedSearch['id'],
+								'isHidden' => $categoryInformation->isDismissed($appUser),
+							];
+							$formattedCategories[] = $categoryResponse;
+						}
+					} elseif ($categoryInformation->textId == ('system_user_lists')) {
+						$userLists = $listApi->getUserLists();
+						$allUserLists = $userLists['lists'] ?? [];
+						if (count($allUserLists) > 0) {
+							foreach ($allUserLists as $userList) {
+								if ($userList['id'] != 'recommendations') {
+									$thisId = $categoryInformation->textId . '_' . $userList['id'];
+									$list = new UserList();
+									$list->id = $userList['id'];
+									if($list->find(true)) {
+										$categoryResponse = [
+											'key' => $thisId,
+											'title' => $categoryInformation->label . ': ' . $list->title,
+											'source' => 'List',
+											'sourceId' => $list->id,
+											'isHidden' => $list->isDismissed(),
+										];
+										$formattedCategories[] = $categoryResponse;
+									}
+								}
+							}
+						}
+					} elseif ($categoryInformation->source == 'List' && $categoryInformation->textId != ('system_user_lists') && $categoryInformation->sourceListId != '-1' && $categoryInformation->sourceListId) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'id' => $categoryInformation->id,
+							'source' => $categoryInformation->source,
+							'listId' => $categoryInformation->sourceListId,
+							'isHidden' => $categoryInformation->isDismissed($appUser),
+						);
+						$formattedCategories[] = $categoryResponse;
+					}
+					elseif ($categoryInformation->textId == ('system_recommended_for_you')) {
+						if (empty($appUser) && UserAccount::isLoggedIn()){
+							$appUser = UserAccount::getActiveUserObj();
+						}
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+							'isHidden' => $categoryInformation->isDismissed($appUser),
+						);
+						$formattedCategories[] = $categoryResponse;
+					} else {
+						$subCategories = $categoryInformation->getSubCategories();
+						if (count($subCategories) > 0) {
+							foreach ($subCategories as $subCategory) {
+								$temp = new BrowseCategory();
+								$temp->id = $subCategory->subCategoryId;
+								if ($temp->find(true)) {
+									if ($temp->isValidForDisplay($appUser, false)) {
+										if ($temp->source != '') {
+											$parent = new BrowseCategory();
+											$parent->id = $subCategory->browseCategoryId;
+											if ($parent->find(true)) {
+												$parentLabel = $parent->label;
+											}
+											if ($parentLabel == $temp->label) {
+												$displayLabel = $temp->label;
+											} else {
+												$displayLabel = $parentLabel . ': ' . $temp->label;
+											}
+											$categoryResponse = [
+												'key' => $temp->textId,
+												'title' => $displayLabel,
+												'source' => $temp->source,
+												'isHidden' => $temp->isDismissed($appUser),
+											];
+											$formattedCategories[] = $categoryResponse;
+										}
+									}
+								}
+							}
+						} else {
+							$categoryResponse = [
+								'key' => $categoryInformation->textId,
+								'title' => $categoryInformation->label,
+								'source' => $categoryInformation->source,
+								'isHidden' => $categoryInformation->isDismissed($appUser),
+							];
+							$formattedCategories[] = $categoryResponse;
+						}
+					}
+				}
+			}
+		}
+		return $formattedCategories;
+	}
+
 	/** @noinspection PhpUnused */
 	function getAppActiveBrowseCategories(){
 		//Figure out which library or location we are looking at
