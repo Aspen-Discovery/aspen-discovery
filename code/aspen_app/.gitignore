@@ -30,12 +30,13 @@ web-build/
 # @end @expo/next-adapter
 app-configs/**
 config/**
-!/app-configs/app.template.json
-!/app-configs/bumpVersions.php
 !/app-configs/copyConfig.js
 !/app-configs/updateConfig.js
 !/app-configs/restoreConfig.js
+!/app-configs/TEMPLATE_apps.json
+!/app-configs/TEMPLATE_projectOwner.json
 !/app-configs/README.md
+/change.sh
 /.tmp/*
 /google-services*.json
 /android/app/google-services*.json
