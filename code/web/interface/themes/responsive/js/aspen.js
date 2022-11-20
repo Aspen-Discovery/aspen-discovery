@@ -6657,12 +6657,14 @@ AspenDiscovery.Account = (function () {
 			return this.createGenericOrder(finesFormId, 'ACI', transactionType, token)
 		},
 
-		completeACIOrder: function (orderId, patronId, transactionType, token) {
+		completeACIOrder: function (fundingToken, patronId, transactionType, paymentId, accessToken) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completeACIOrder",
 				patronId: patronId,
-				orderId: orderId,
+				paymentId: paymentId,
+				accessToken: accessToken,
+				fundingToken: fundingToken,
 				type: transactionType
 			};
 			// noinspection JSUnresolvedFunction
