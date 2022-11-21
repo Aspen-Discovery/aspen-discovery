@@ -3,13 +3,11 @@
 require_once 'bootstrap.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuthAuthentication.php';
 
-class Authentication_OAuth extends Action
-{
+class Authentication_OAuth extends Action {
 	/**
 	 * @throws UnknownAuthenticationMethodException
 	 */
-	public function launch()
-	{
+	public function launch() {
 		global $logger;
 		global $interface;
 		$logger->log("Completing OAuth Authentication", Logger::LOG_ERROR);
@@ -29,8 +27,7 @@ class Authentication_OAuth extends Action
 		}
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 

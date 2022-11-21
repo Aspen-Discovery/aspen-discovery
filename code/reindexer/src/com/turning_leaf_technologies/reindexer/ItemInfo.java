@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
@@ -113,11 +114,11 @@ public class ItemInfo{
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
-		if (itemIdentifier.length() > 255){
-			itemIdentifier = itemIdentifier.substring(0, 255).trim();
-		}else if (itemIdentifier.length() == 0){
+		if (itemIdentifier == null || itemIdentifier.length() == 0){
 			//Don't use empty identifiers
 			itemIdentifier = null;
+		}else if (itemIdentifier.length() > 255){
+			itemIdentifier = itemIdentifier.substring(0, 255).trim();
 		}
 		this.itemIdentifier = itemIdentifier;
 	}
@@ -214,7 +215,7 @@ public class ItemInfo{
 	}
 
 	private String baseDetails = null;
-	String getDetails(BaseLogEntry logEntry){
+	String getDetails(BaseIndexingLogEntry logEntry){
 		if (baseDetails == null){
 			String formattedLastCheckinDate = "";
 			if (lastCheckinDate != null){
@@ -242,10 +243,10 @@ public class ItemInfo{
 		return baseDetails;
 	}
 
-	private String formatLastCheckInDate(Date lastCheckinDate, BaseLogEntry logEntry){
+	private String formatLastCheckInDate(Date lastCheckinDate, BaseIndexingLogEntry logEntry){
 		String formattedLastCheckinDate;
 		try {
-			//We need to create this each time because the DateTimeFomatter is not ThreadSafe and just synchronizing
+			//We need to create this each time because the DateTimeFormatter is not ThreadSafe and just synchronizing
 			// this method is not working. Eventually, we can convert everything that uses Date to Java 8's new Date classes
 			SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 			formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);

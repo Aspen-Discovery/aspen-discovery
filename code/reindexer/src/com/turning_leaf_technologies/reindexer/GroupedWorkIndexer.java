@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.grouping.*;
 import com.turning_leaf_technologies.indexing.*;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
@@ -29,7 +29,7 @@ import org.marc4j.marc.Record;
 
 public class GroupedWorkIndexer {
 	private final String serverName;
-	private final BaseLogEntry logEntry;
+	private final BaseIndexingLogEntry logEntry;
 	private final Logger logger;
 	private final Long indexStartTime;
 	private int totalRecordsHandled = 0;
@@ -156,11 +156,11 @@ public class GroupedWorkIndexer {
 	private int indexVersion;
 	private int searchVersion;
 
-	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
 	}
 
-	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean regroupAllRecords, BaseLogEntry logEntry, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean regroupAllRecords, BaseIndexingLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
 		this.logEntry = logEntry;
@@ -585,7 +585,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void finishIndexingFromExtract(BaseLogEntry logEntry){
+	public void finishIndexingFromExtract(BaseIndexingLogEntry logEntry){
 		try {
 			processScheduledWorks(logEntry, true, 100);
 
@@ -616,7 +616,7 @@ public class GroupedWorkIndexer {
 	 * @param doLogging if logging should be done
 	 * @param maxWorksToProcess the maximum number of works that should be processed this run.
 	 */
-	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging, int maxWorksToProcess) {
+	public void processScheduledWorks(BaseIndexingLogEntry logEntry, boolean doLogging, int maxWorksToProcess) {
 		//Check to see what records still need to be indexed based on a timed index
 		if (doLogging) {
 			logEntry.addNote("Checking for additional works that need to be indexed");
@@ -1314,7 +1314,9 @@ public class GroupedWorkIndexer {
 	private HashMap<String, String> loadSystemTranslationMap(File translationMapFile) {
 		Properties props = new Properties();
 		try {
-			props.load(new FileReader(translationMapFile));
+			FileReader translationMapReader = new FileReader(translationMapFile);
+			props.load(translationMapReader);
+			translationMapReader.close();
 		} catch (IOException e) {
 			logEntry.incErrors("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
 		}
@@ -2287,7 +2289,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public BaseLogEntry getLogEntry() {
+	public BaseIndexingLogEntry getLogEntry() {
 		return logEntry;
 	}
 
@@ -2433,7 +2435,7 @@ public class GroupedWorkIndexer {
 
 	//Create a small cache to hold recently used marc records to avoid time reloading them.
 	public MaxSizeHashMap<String, Record> marcRecordCache = new MaxSizeHashMap<>(100);
-	public Record loadMarcRecordFromDatabase(String source, String identifier, BaseLogEntry logEntry) {
+	public Record loadMarcRecordFromDatabase(String source, String identifier, BaseIndexingLogEntry logEntry) {
 		String key = source + identifier;
 		Record marcRecord = marcRecordCache.get(key);
 		if (marcRecord == null) {

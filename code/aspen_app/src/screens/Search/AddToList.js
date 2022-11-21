@@ -1,18 +1,33 @@
 import React, {useState} from "react";
-import {Button, Center, Modal, Box, Text, Icon, FormControl, Input, Radio, TextArea, Heading, Select, HStack, Stack, IconButton } from "native-base";
+import {
+	Box,
+	Button,
+	Center,
+	FormControl,
+	Heading,
+	HStack,
+	Icon,
+	Input,
+	Modal,
+	Radio,
+	Select,
+	Stack,
+	Text,
+	TextArea
+} from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
-import {addTitlesToList, createListFromTitle, getLists} from "../../util/loadPatron";
+import {addTitlesToList, createListFromTitle, getLists, PATRON} from "../../util/loadPatron";
 import _ from "lodash";
-import { translate } from '../../translations/translations';
+import {translate} from '../../translations/translations';
 
 export const AddToList = (props) => {
-	const { item, libraryUrl, updateLastListUsed, lastListUsed} = props;
+	const {item, libraryUrl, updateLastListUsed} = props;
 	const [showUseExistingModal, setShowUseExistingModal] = useState(false);
 	const [showCreateNewModal, setShowCreateNewModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 
 	const [lists, setLists] = useState([]);
-	const [listId, setListId] = useState(lastListUsed);
+	const [listId, setListId] = useState(PATRON.listLastUsed);
 
 	const [title, setTitle] = React.useState('');
 	const [description, setDescription] = React.useState('');

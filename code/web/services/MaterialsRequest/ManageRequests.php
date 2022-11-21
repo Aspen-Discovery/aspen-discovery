@@ -99,7 +99,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 		}
 
-		$availableFormats = MaterialsRequest::getFormats();
+		$availableFormats = MaterialsRequest::getFormats(false);
 		$interface->assign('availableFormats', $availableFormats);
 		$defaultFormatsToShow = array_keys($availableFormats);
 		if (isset($_REQUEST['formatFilter'])){
@@ -276,143 +276,197 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		);
 	}
 
-	function exportToExcel($selectedRequestIds, $allRequests){
+    /**
+     * @throws Exception
+     */
+    function exportToExcel($selectedRequestIds, $allRequests){
 		global $configArray;
-		//May need more time to export all records
-		set_time_limit(600);
-		//PHPEXCEL
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+        try {
+            //May need more time to export all records
+            set_time_limit(600);
+            //PHPEXCEL
+            // Create new PHPExcel object
+            $objPHPExcel = new PHPExcel();
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator("VuFind")
-		->setLastModifiedBy("VuFind")
-		->setTitle("Office 2007 XLSX Document")
-		->setSubject("Office 2007 XLSX Document")
-		->setDescription("Office 2007 XLSX, generated using PHP.")
-		->setKeywords("office 2007 openxml php")
-		->setCategory("Itemless eContent Report");
+            // Set properties
+            $objPHPExcel->getProperties()
+                ->setCreator("Aspen Discovery")
+                ->setLastModifiedBy("Aspen Discovery")
+                ->setTitle("Materials Requests");
 
-		// Add some data
-		$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-		$activeSheet->setCellValueByColumnAndRow(0, 1, 'Materials Requests');
+            // Add some data
+            $activeSheet = $objPHPExcel->setActiveSheetIndex(0);
+            $objPHPExcel->getActiveSheet()->setTitle('Titles');
+            $activeSheet->setCellValueByColumnAndRow(0, 1, 'Materials Requests');
 
-		//Define table headers
-		$curRow = 3;
-		$curCol = 0;
+            //Define table headers
+            $curRow = 3;
+            $curCol = 0;
 
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ID');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Season');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Magazine');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ID');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Season');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Magazine');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
 
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'OCLC Number');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publication Year');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Abridged');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'How did you hear about this?');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Comments');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Name');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Barcode');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'OCLC Number');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publication Year');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Abridged');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'How did you hear about this?');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Comments');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Name');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Barcode');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email');
 
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold Pickup Location');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
 
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Status');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Date Created');
-		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Assigned To');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Status');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Staff Comments');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email Sent');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Date Created');
+            $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Assigned To');
 
-		$numCols = $curCol;
-		//Loop Through The Report Data
-		/** @var MaterialsRequest $request */
-		foreach ($allRequests as $request) {
-			if (array_key_exists($request->id, $selectedRequestIds)){
-				$curRow++;
-				$curCol = 0;
+            $numCols = $curCol;
+            //Loop Through The Report Data
+            /** @var MaterialsRequest $request */
+            foreach ($allRequests as $request) {
+                if (array_key_exists($request->id, $selectedRequestIds)){
+                    $curRow++;
+                    $curCol = 0;
 
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->id);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->title);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->season);
-				$magazineInfo = '';
-				if ($request->magazineTitle){
-					$magazineInfo .= $request->magazineTitle . ' ';
-				}
-				if ($request->magazineDate){
-					$magazineInfo .= $request->magazineDate . ' ';
-				}
-				if ($request->magazineVolume){
-					$magazineInfo .= 'volume ' . $request->magazineVolume . ' ';
-				}
-				if ($request->magazineNumber){
-					$magazineInfo .= 'number ' . $request->magazineNumber . ' ';
-				}
-				if ($request->magazinePageNumbers){
-					$magazineInfo .= 'p. ' . $request->magazinePageNumbers . ' ';
-				}
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, trim($magazineInfo));
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->author);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->format);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->isbn);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->upc);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->issn);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->oclcNumber);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->publisher);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->publicationYear);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->abridged == 0 ? 'Unabridged' : ($request->abridged == 1 ? 'Abridged' : 'Not Applicable'));
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->about);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->comments);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName());
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->getBarcode());
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
-				if ($request->placeHoldWhenAvailable == 1){
-					$value = 'Yes ' . $request->holdPickupLocation;
-					if ($request->bookmobileStop){
-						$value .= ' ' . $request->bookmobileStop;
-					}
-				}else{
-					$value = 'No';
-				}
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
-				if ($request->illItem == 1){
-					$value = 'Yes';
-				}else{
-					$value = 'No';
-				}
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->id);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->title);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->season);
+                    $magazineInfo = '';
+                    if ($request->magazineTitle){
+                        $magazineInfo .= $request->magazineTitle . ' ';
+                    }
+                    if ($request->magazineDate){
+                        $magazineInfo .= $request->magazineDate . ' ';
+                    }
+                    if ($request->magazineVolume){
+                        $magazineInfo .= 'volume ' . $request->magazineVolume . ' ';
+                    }
+                    if ($request->magazineNumber){
+                        $magazineInfo .= 'number ' . $request->magazineNumber . ' ';
+                    }
+                    if ($request->magazinePageNumbers){
+                        $magazineInfo .= 'p. ' . $request->magazinePageNumbers . ' ';
+                    }
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, trim($magazineInfo));
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->author);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->format);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->isbn);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->upc);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->issn);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->oclcNumber);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->publisher);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->publicationYear);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->abridged == 0 ? 'Unabridged' : ($request->abridged == 1 ? 'Abridged' : 'Not Applicable'));
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->about);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->comments);
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName());
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->getBarcode());
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
 
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate(['text'=>$request->status,'isPublicFacing'=>true,'isMetadata'=>true]));
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
-				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->assignedTo);
-			}
-		}
+                    // Place hold?
+                    if ($request->placeHoldWhenAvailable == 1){
+                        $value = 'Yes';
+                    }else{
+                        $value = 'No';
+                    }
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
 
-		for ($i = 0; $i < $numCols; $i++){
-			$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-		}
+                    // Hold pickup location, including bookmobile stop if appropriate
+					if ($request->holdPickupLocation) {
+						$value = $request->getHoldLocationName($request->holdPickupLocation);
+						if ($request->bookmobileStop) {
+							$value .= ' ' . $request->bookmobileStop;
+						}
+					} else {
+                        $value = '';
+                    }
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
 
-		// Rename sheet
-		$activeSheet->setTitle('Materials Requests');
+                    // Place ILL request?
+                    if ($request->illItem == 1){
+                        $value = 'Yes';
+                    }else{
+                        $value = 'No';
+                    }
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
 
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename=MaterialsRequests.xls');
-		header('Cache-Control: max-age=0');
+                    // Status
+                    $materialsRequestStatus = new MaterialsRequestStatus();
+                    $materialsRequestStatus->libraryId = $request->libraryId;
+                    $materialsRequestStatus->id = $request->status;
+                    if ($materialsRequestStatus->find(true)){
+                        $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate(['text'=>$materialsRequestStatus->description,'isPublicFacing'=>true,'isMetadata'=>true]));
+                    } else {
+                        $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate(['text'=>'Request Status ID ' . $request->status . ' [description not found]','isPublicFacing'=>true,'isMetadata'=>true]));
+                    }
 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
-		exit;
+                    // Staff Comments
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->staffComments);
+
+                    // Email sent?
+                    if ($request->emailSent == 1){
+                        $value = 'Yes';
+                    }else{
+                        $value = 'No';
+                    }
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+
+                    // Date Created
+                    $activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
+
+                    // Assigned to
+                    if ($request->getAssigneeUser() !== false) {
+                        $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->getAssigneeUser()->displayName);
+                    } else {
+                        $activeSheet->setCellValueByColumnAndRow($curCol, $curRow, translate(['text'=>'Unassigned', 'isAdminFacing'=>true]));
+                    }
+                }
+            }
+
+            for ($i = 0; $i < $numCols; $i++){
+                $activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
+            }
+
+            // Rename sheet
+            $activeSheet->setTitle('Materials Requests');
+
+            // Redirect output to a client's web browser (Excel5)
+            //Output to the browser
+            header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+            header("Cache-Control: no-store, no-cache, must-revalidate");
+            header("Cache-Control: post-check=0, pre-check=0", false);
+            header("Pragma: no-cache");
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename=MaterialsRequests.xlsx');
+
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+            $objWriter->save('php://output');
+            $objPHPExcel->disconnectWorksheets();
+            unset($objPHPExcel);
+            exit();
+        } catch (Exception $e) {
+            global $logger;
+            $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+        }
 	}
 
 	function getBreadcrumbs() : array

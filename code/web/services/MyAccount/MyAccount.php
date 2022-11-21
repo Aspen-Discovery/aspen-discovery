@@ -63,6 +63,8 @@ abstract class MyAccount extends Action
 			// check if 2fa is available for user
 			$twoFactor = UserAccount::has2FAEnabledForPType();
 			$interface->assign('twoFactorEnabled', $twoFactor);
+
+			$this->loadAccountSidebarVariables();
 		}
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();
@@ -77,6 +79,12 @@ abstract class MyAccount extends Action
 	function display($mainContentTemplate, $pageTitle='Your Account', $sidebar='Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		$interface->setPageTitle($pageTitle);
-		parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);
+
+		// If neither sidebar sections are show, don't display the sidebar
+		if ($interface->getVariable('showMyAccount') || $interface->getVariable('showAccountSettings')) {
+			parent::display($mainContentTemplate, $pageTitle);
+		} else {
+			parent::display($mainContentTemplate, $pageTitle, false);
+		}
 	}
 }

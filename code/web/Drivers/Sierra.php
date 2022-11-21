@@ -1113,7 +1113,7 @@ class Sierra extends Millennium{
 		return $summary;
 	}
 
-	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		$result = [
 			'success' => false,
@@ -1184,7 +1184,7 @@ class Sierra extends Millennium{
 		// TODO: Use Sierra APIs to get Self Registration fields
 	}
 
-	public function selfRegister()
+	public function selfRegister() : array
 	{
 		return parent::selfRegister();
 		// TODO: Use Sierra APIs to self register

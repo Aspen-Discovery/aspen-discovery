@@ -115,8 +115,14 @@ function getUpdates22_10_00(): array
 				"ALTER TABLE grouped_work_display_settings ADD COLUMN show856LinksAsAccessOnlineButtons TINYINT(1) DEFAULT 0",
 			]
 		], //grouped_work_display_856_as_access_online
+		'hoopla_genres_to_exclude' => [
+			'title' => 'Hoopla Genres To Exclude',
+			'description' => 'Hoopla Genres To Exclude',
+			'sql' => [
+				"ALTER TABLE hoopla_scopes ADD COLUMN genresToExclude longtext COLLATE utf8mb4_general_ci",
+			]
+		], //hoopla_genres_to_exclude
 
-		//kirstien
 		'aci_speedpay_sdk_config' => [
 			'title' => 'Add SDK settings for ACI Speedpay',
 			'description' => 'Add SDK settings for ACI Speedpay integration',
@@ -341,11 +347,24 @@ function getUpdates22_10_00(): array
 				'ALTER TABLE library ADD COLUMN showUserContactInformation TINYINT(1) DEFAULT 1'
 			]
 		], //add_account_display_options
+		'add_theme_header_image' => [
+			'title' => 'Add option to upload a header background image for theme',
+			'description' => 'Add option to upload a header background image for theme',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN headerBackgroundImage VARCHAR(255)',
+				'ALTER TABLE themes ADD COLUMN headerBackgroundImageSize VARCHAR(75)',
+				'ALTER TABLE themes ADD COLUMN headerBackgroundImageRepeat VARCHAR(75)'
+			]
+		], //add_theme_header_image
 
-		//kodi
-
-		//other
-
+        'force_reload_of_hoopla_22_10' => [
+            'title' => 'Force reload of Hoopla',
+            'description' => 'Force Hoopla to be reloaded for 22.10',
+            'sql' => [
+                "UPDATE hoopla_settings set runFullUpdate = 1",
+            ]
+        ], //force_reload_of_hoopla_22_10
 	];
 }
 

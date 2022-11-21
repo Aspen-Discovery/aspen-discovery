@@ -34,7 +34,7 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$indexingProfile = new IndexingProfile();
 						$indexingProfileNames = $indexingProfile->fetchAll('id', 'name');
 
-							require_once ROOT_DIR . '/sys/Indexing/IndexedRecordSource.php';
+						require_once ROOT_DIR . '/sys/Indexing/IndexedRecordSource.php';
 						$indexedRecordSource = new IndexedRecordSource();
 						$indexedRecordSource->whereAddIn("source", $indexingProfileNames, true);
 						$indexedSourceIds = $indexedRecordSource->fetchAll('id');
@@ -76,6 +76,17 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$index = $solrSearcher->getIndexEngine();
 						if ($index->deleteAllRecords()) {
 							$message .= translate(['text' => 'Cleared Solr Index', 'isAdminFacing'=>true]) . '<br/>';
+						}
+
+						//Also force a nightly index
+						require_once ROOT_DIR . '/sys/SystemVariables.php';
+						SystemVariables::forceNightlyIndex();
+
+						$indexingProfile = new IndexingProfile();
+						$allIndexingProfiles = $indexingProfile->fetchAll();
+						foreach ($allIndexingProfiles as $indexingProfile){
+							$indexingProfile->runFullUpdate = true;
+							$indexingProfile->update();
 						}
 
 						$success = true;

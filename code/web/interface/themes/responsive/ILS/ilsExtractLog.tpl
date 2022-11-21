@@ -22,6 +22,7 @@
 						<th>{translate text="Products Changed After Grouping" isAdminFacing=true}</th>
 						<th>{translate text="Total Products" isAdminFacing=true}</th>
 						<th>{translate text="Records With Invalid MARC" isAdminFacing=true}</th>
+						<th>{translate text="Invalid Records" isAdminFacing=true}</th>
 						<th>{translate text="Num Errors" isAdminFacing=true}</th>
 						<th>{translate text="Products Added" isAdminFacing=true}</th>
 						<th>{translate text="Products Deleted" isAdminFacing=true}</th>
@@ -45,6 +46,7 @@
 						<td>{$logEntry->numChangedAfterGrouping}</td>
 						<td>{$logEntry->numProducts}</td>
 						<td>{$logEntry->numRecordsWithInvalidMarc}</td>
+						<td>{$logEntry->numInvalidRecords}</td>
 						<td>{$logEntry->numErrors}</td>
 						<td>{$logEntry->numAdded}</td>
 						<td>{$logEntry->numDeleted}</td>

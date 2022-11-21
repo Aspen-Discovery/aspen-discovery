@@ -45,6 +45,7 @@ class Grouping_Item
 	public $volumeId;
 	public $volumeOrder;
 	public $lastCheckInDate;
+	public $atLibraryMainBranch;
 	/**
 	 * @var array
 	 */
@@ -62,9 +63,10 @@ class Grouping_Item
 	 * @param Location $searchLocation
 	 * @param Library $library
 	 */
-	public function __construct($itemDetails, $scopingInfo, $searchLocation, $library)
+	public function __construct($itemDetails, $scopingInfo, $searchLocation, $library, $mainLocationScopeId)
 	{
 		if (is_null($scopingInfo)){
+			//Item details stored in the database
 			$this->itemId = $itemDetails['itemId'];
 			$this->shelfLocation = $itemDetails['shelfLocation'];
 			$this->callNumber = $itemDetails['callNumber'];
@@ -83,6 +85,10 @@ class Grouping_Item
 			$this->status = $itemDetails['status'];
 			$this->locallyOwned = strpos($itemDetails['locationOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
 			$this->libraryOwned = $this->locallyOwned || strpos($itemDetails['libraryOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
+			//check to see if it is at the main library
+			if ($mainLocationScopeId !== false) {
+				$this->atLibraryMainBranch = strpos($itemDetails['locationOwnedScopes'], "~{$mainLocationScopeId}~") !== false;
+			}
 			$this->available = $itemDetails['available'] == "1";
 			$this->holdable = $itemDetails['holdable'] == "1";
 			$this->inLibraryUseOnly = $itemDetails['inLibraryUseOnly'] == "1";
@@ -90,6 +96,7 @@ class Grouping_Item
 			$this->subLocation = $itemDetails['subLocationCode'];
 			$this->lastCheckInDate = $itemDetails['lastCheckInDate'];
 		}else {
+			//Item details stored in solr
 			$this->itemId = $itemDetails[1] == 'null' ? '' : $itemDetails[1];
 			$scopeKey = $itemDetails[0] . ':' . $this->itemId;
 
@@ -185,6 +192,8 @@ class Grouping_Item
 		$key .= $this->shelfLocation . ':' . $this->callNumber;
 		if ($this->locallyOwned) {
 			$key = '1 ' . $key;
+		} elseif ($this->atLibraryMainBranch) {
+			$key = '4 ' . $key;
 		} elseif ($this->libraryOwned) {
 			$key = '5 ' . $key;
 		} elseif ($this->isOrderItem) {

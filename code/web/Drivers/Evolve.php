@@ -350,7 +350,7 @@ class Evolve extends AbstractIlsDriver
 		return $result;
 	}
 
-	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
+	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade) : array
 	{
 		return [
 			'success' => false,

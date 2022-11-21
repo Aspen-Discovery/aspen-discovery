@@ -26,7 +26,7 @@
 {/if}
 {if $showStaffView}
 	<h2>{translate text="Staff View" isPublicFacing=true}</h2>
-	<div id="staffViewPlaceHolder">{translate text="Loading Staff View." isPublicFacing=true}</div>
+	<div id="staffViewPlaceHolder">{translate text='Loading Staff View.' isPublicFacing=true}</div>
 	<script type="text/javascript">
 		AspenDiscovery.Record.getStaffView('{$module}', '{$id}')
 	</script>

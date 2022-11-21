@@ -1,30 +1,24 @@
 {
-	"build": {
-		"production": {
-			"releaseChannel": "production",
-			"distribution": "store"
-		},
-		"beta": {
-			"releaseChannel": "beta",
-			"distribution": "store",
-			"android": {
-				"track": "beta",
-				"releaseStatus": "completed"
-			}
-		},
-		"development": {
-			"releaseChannel": "dev",
-			"developmentClient": true,
-			"distribution": "internal"
-		}
+  "build": {
+	"production": {
+	  "node": "16.16.0",
+	  "yarn": "1.22.19",
+	  "distribution": "store",
+	  "channel": "production",
+	  "env": {
+		"APP_ENV": "{{APP_ENV}}"
+	  }
 	},
-	"expo": {
-		"version": "1.0.0",
-		"ios": {
-			"buildNumber": 1
-		},
-		"android": {
-			"versionCode": 1
-		}
+	"beta": {
+	  "extends": "production",
+	  "channel": "beta"
+	},
+	"development": {
+	  "extends": "production",
+	  "channel": "dev",
+	  "ios": {
+		"simulator": true
+	  }
 	}
+  }
 }

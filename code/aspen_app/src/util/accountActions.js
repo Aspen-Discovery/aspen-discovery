@@ -1,26 +1,23 @@
 import React from "react";
-import * as SecureStore from 'expo-secure-store';
 import moment from "moment";
 import {create} from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
 import i18n from 'i18n-js';
-import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {popAlert, popToast} from "../components/loadError";
 import {
-	getCheckedOutItems,
-	getHolds,
 	getLinkedAccounts,
-	getPatronBrowseCategories, getProfile,
+	getPatronBrowseCategories,
+	getProfile,
+	PATRON,
 	reloadCheckedOutItems,
 	reloadHolds
 } from './loadPatron';
-import {getActiveBrowseCategories, getBrowseCategories} from "./loadLibrary";
+import {getBrowseCategories, LIBRARY} from "./loadLibrary";
 import {GLOBALS} from "./globals";
-import {userContext} from "../context/user";
 
 
 export async function isLoggedIn(pathUrl) {
@@ -780,18 +777,21 @@ export async function removeLinkedAccount(id, libraryUrl) {
 	}
 }
 
-export async function saveLanguage(code, libraryUrl) {
+export async function saveLanguage(code) {
 	let postBody = await postData();
 	const api = create({
-		baseURL: libraryUrl + '/API',
-		timeout: 10000,
-		headers: getHeaders(),
+		baseURL: LIBRARY.url + '/API',
+		timeout: GLOBALS.timeoutFast,
+		headers: getHeaders(true),
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=saveLanguage&languageCode=' + code, postBody);
-	if(response.ok) {
+	if (response.ok) {
 		console.log(response.data);
 		i18n.locale = code;
+		PATRON.language = code;
+		console.log(PATRON.language);
+		return code;
 	} else {
 		console.log(response);
 	}

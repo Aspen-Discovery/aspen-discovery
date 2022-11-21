@@ -25,6 +25,9 @@
 				{include file="DataObjectUtil/enum.tpl"} {* create select list *}
 			</div>
 			{/if}
+			<div class="form-group">
+				<label for="addToHomePage" class="control-label"><input type="checkbox" id="addToHomePage" name="addToHomePage" checked="checked">{translate text="Add to Home Page after creation (main categories only)" isAdminFacing=true}</label>
+			</div>
 		</div>
 	</form>
 </div>

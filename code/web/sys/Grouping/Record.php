@@ -166,7 +166,7 @@ class Grouping_Record
 					$this->_statusInformation->setIsLocallyOwned(true);
 					$this->_statusInformation->addLocalCopies($item->numCopies);
 					if ($item->available) {
-						$this->_statusInformation->addLocalCopies($item->numCopies);
+						$this->_statusInformation->addAvailableCopies($item->numCopies);
 						$this->_statusInformation->setAvailableHere(true);
 					}
 				}
@@ -702,5 +702,22 @@ class Grouping_Record
 	public function isLibraryOwned()
 	{
 		return $this->_statusInformation->isLibraryOwned();
+	}
+
+	public function getHoldPickupSetting()
+	{
+		$result = 0;
+		global $indexingProfiles;
+		if(array_key_exists($this->source, $indexingProfiles)) {
+			$indexingProfile = $indexingProfiles[$this->source];
+			$formatMap = $indexingProfile->formatMap;
+			/** @var FormatMapValue $formatMapValue */
+			foreach ($formatMap as $formatMapValue) {
+				if (strcasecmp($formatMapValue->format, $this->format) === 0) {
+					return max($result, $formatMapValue->pickupAt);
+				}
+			}
+		}
+		return $result;
 	}
 }

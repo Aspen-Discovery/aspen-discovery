@@ -1,7 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -51,7 +51,7 @@ class OverDriveProcessor {
 		}
 	}
 
-	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
+	void processRecord(AbstractGroupedWorkSolr groupedWork, String identifier, BaseIndexingLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -691,7 +691,7 @@ class OverDriveProcessor {
 		return formats;
 	}
 
-	private HashMap<String, String> loadOverDriveMetadata(AbstractGroupedWorkSolr groupedWork, long productId, String format, String formatCategory, BaseLogEntry logEntry) throws SQLException {
+	private HashMap<String, String> loadOverDriveMetadata(AbstractGroupedWorkSolr groupedWork, long productId, String format, String formatCategory, BaseIndexingLogEntry logEntry) throws SQLException {
 		HashMap<String, String> returnMetadata = new HashMap<>();
 		//Load metadata
 		getProductMetadataStmt.setLong(1, productId);

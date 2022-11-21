@@ -330,16 +330,22 @@ public class EvolveExportMain {
 								if (marcRecord != null) {
 									String itemBarcode = curItem.getString("Barcode");
 									List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
+
+									@SuppressWarnings("WrapperTypeMayBePrimitive")
+									Double holdingId = curItem.getDouble("HoldingID");
+									String holdingIdString = Integer.toString(holdingId.intValue());
+
 									boolean isExistingItem = false;
 									try {
 										for (DataField existingItemField : existingItemFields) {
-											Subfield existingBarcodeSubfield = existingItemField.getSubfield(indexingProfile.getBarcodeSubfield());
-											if (existingBarcodeSubfield == null) {
+											Subfield existingRecordNumberSubfield = existingItemField.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+											if (existingRecordNumberSubfield == null) {
 												//Just skip this item
 											} else {
-												if (StringUtils.equals(existingBarcodeSubfield.getData(), itemBarcode)) {
+												if (StringUtils.equals(existingRecordNumberSubfield.getData(), holdingIdString)) {
 													isExistingItem = true;
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
 													if (curItem.isNull("CallNumber")){
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
 													}else{
@@ -359,10 +365,8 @@ public class EvolveExportMain {
 										if (!isExistingItem) {
 											//Add a new field for the item
 											DataField newItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
-											@SuppressWarnings("WrapperTypeMayBePrimitive")
-											Double holdingId = curItem.getDouble("HoldingID");
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), Integer.toString(holdingId.intValue()), marcFactory);
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("Status"), marcFactory);
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), holdingIdString, marcFactory);
+											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
 											if (curItem.isNull("CallNumber")){
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
 											}else{
@@ -381,6 +385,8 @@ public class EvolveExportMain {
 										logEntry.incErrors("Error updating item field", e);
 									}
 									logEntry.incUpdated();
+									//Save the MARC record
+									getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibId, marcRecord);
 									//Regroup the record
 									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
 									//Reindex the record
@@ -414,6 +420,7 @@ public class EvolveExportMain {
 
 					try {
 						JSONArray responseAsArray = new JSONArray(rawMessage);
+						logEntry.addNote(" Found " + responseAsArray.length() + " changed bibs");
 						for (int i = 0; i < responseAsArray.length(); i++) {
 							numProcessed++;
 							JSONObject curRow = responseAsArray.getJSONObject(i);
@@ -427,7 +434,8 @@ public class EvolveExportMain {
 									try {
 										marcRecord = reader.next();
 									} catch (Exception e){
-										logEntry.incErrors("Error loading existing marc record for bib " + bibId);
+										logEntry.incInvalidRecords(bibId);
+										//logEntry.incErrors("Error loading marc record for bib " + bibId);
 										continue;
 									}
 

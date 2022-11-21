@@ -11,6 +11,7 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
+			{if $showUserCirculationModules}
 			<h1>{translate text='Your Account' isPublicFacing=true}</h1>
 			{if $userHasCatalogConnection}
 				<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
@@ -58,6 +59,7 @@
 						</div>
 					</div>
 				</div>
+			{/if}
 			{/if}
 			{if $showRatings}
 				<h2>{translate text='Recommended for you' isPublicFacing=true}</h2>

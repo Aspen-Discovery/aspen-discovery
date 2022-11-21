@@ -13,5 +13,5 @@ class HooplaExportLogEntry extends BaseLogEntry
 	public $numDeleted;
 	public $numUpdated;
 	public $numSkipped;
-
+	public $numInvalidRecords;
 }

@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9a5f64f5-13b8-49ff-9316-5e5798ffbd47" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="9a5f64f5-13b8-49ff-9316-5e5798ffbd47" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,6 +24,9 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="1tXi7i7c8XGY0GCNXA9o2XLwj9m" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -49,6 +43,9 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="TODO_SCOPE" value="All Places" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File" value="JSON" />
+    <property name="javascript.nodejs.core.library.configured.version" value="16.18.0" />
+    <property name="javascript.nodejs.core.library.typings.version" value="16.18.0" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -58,28 +55,64 @@
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="emulator" />
+    <property name="settings.editor.selected.configurable" value="terminal" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="RunManager">
-    <configuration name="Login" type="AndroidJUnit" factoryName="Android JUnit">
-      <module name="aspen_app" />
-      <shortenClasspath name="NONE" />
-      <useClassPathOnly />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="MAIN_CLASS_NAME" value="Login" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="wholeProject" />
-      </option>
-      <dir value="$PROJECT_DIR$" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
+  <component name="RunManager" selected="Shell Script.updater - Aspen LiDA">
+    <configuration default="true" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="$PROJECT_DIR$/../../../../bin/env" />
+      <option name="INTERPRETER_OPTIONS" value="bash" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
     </configuration>
+    <configuration name="start - Aspen LiDA" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="$PROJECT_DIR$/../../../../bin/env" />
+      <option name="INTERPRETER_OPTIONS" value="bash" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="updater - Aspen LiDA" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/updater.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="$PROJECT_DIR$/../../../../bin/env" />
+      <option name="INTERPRETER_OPTIONS" value="bash" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Shell Script.updater - Aspen LiDA" />
+      <item itemvalue="Shell Script.start - Aspen LiDA" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Shell Script.start - Aspen LiDA" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -90,6 +123,10 @@
       <option name="presentableId" value="Default" />
       <updated>1622921671332</updated>
       <workItem from="1639697971846" duration="8620000" />
+      <workItem from="1668651718513" duration="15219000" />
+      <workItem from="1668748238603" duration="124000" />
+      <workItem from="1668791950601" duration="25235000" />
+      <workItem from="1668883983636" duration="27130000" />
     </task>
     <servers />
   </component>
@@ -109,6 +146,9 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

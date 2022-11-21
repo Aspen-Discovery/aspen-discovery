@@ -42,7 +42,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				$collectionSpotlight->showTitle = 1;
 				$collectionSpotlight->showAuthor = 0;
 				$collectionSpotlight->showRatings = 0;
-				$collectionSpotlight->style = 'horizontal';
+				$collectionSpotlight->style = 'horizontal-carousel';
 				$collectionSpotlight->autoRotate = 0;
 				$collectionSpotlight->coverSize = 'medium';
 				$collectionSpotlight->description = '';

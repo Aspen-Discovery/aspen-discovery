@@ -963,22 +963,30 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 				if ($show856LinksAsAccessOnlineButtons){
 					//Get any 856 links for the marc record
-					$marcRecord = $this->getMarcRecord();
-					$marc856Fields = $marcRecord->getFields('856');
-					/** @var File_MARC_Data_Field $marc856Field */
-					foreach ($marc856Fields as $marc856Field){
-						if ($marc856Field->getIndicator(1) == '4' && $marc856Field->getIndicator(2) == '0'){
-							$subfieldU = $marc856Field->getSubfield('u');
-							if ($subfieldU != null){
-								$linkDestination = $subfieldU->getData();
-								$this->_actions[] = array(
-									'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
-									'url' => $linkDestination,
-									'requireLogin' => false,
-									'type' => 'marc_access_online'
-								);
-							}
-						}
+					$validUrls = $this->getViewable856Links();
+					if (count($validUrls) == 1){
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+							'url' => $validUrls[0]['url'],
+							'requireLogin' => false,
+							'type' => 'marc_access_online',
+							'target' => '_blank'
+						);
+					}elseif (count($validUrls) >= 2){
+//						$this->_actions[] = array(
+//							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+//							'url' => $validUrls[0],
+//							'requireLogin' => false,
+//							'type' => 'marc_access_online',
+//							'target' => '_blank'
+//						);
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+							'url' => "",
+							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
+							'requireLogin' => false,
+							'type' => 'marc_access_online'
+						);
 					}
 				}
 
@@ -1473,7 +1481,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
-				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
+				'body' => '<div id="staffViewPlaceHolder">' . translate(['text'=>'Loading Staff View.', 'isPublicFacing' => true]) . '</div>',
 			);
 		}
 
@@ -2231,7 +2239,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$localMarcHoldings = [];
 		$marcHoldings = [];
 		$marcRecord = $this->getMarcRecord();
-		if ($marcRecord){
+		if (!empty($marcRecord)){
 			//Get holdings information
 			$marc852Fields = $marcRecord->getFields('852');
 			if (count($marc852Fields) > 0){
@@ -2264,20 +2272,31 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if ($marc852subfield6 != false){
 						$marc852subfield6Data = $marc852subfield6->getData();
 						$marcHolding = [];
-						$owningLibraryCode = strtolower($marc852Field->getSubfield('b')->getData());
-						if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)){
-							$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+						$marcSubfieldB = $marc852Field->getSubfield('b');
+						if ($marcSubfieldB != false) {
+							$owningLibraryCode = strtolower($marcSubfieldB->getData());
+							if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)) {
+								$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
+							} else {
+								$owningLibrary = $owningLibraryCode;
+							}
+							$marcHolding['library'] = $owningLibrary;
 						}else{
-							$owningLibrary = $owningLibraryCode;
+							continue;
 						}
-						$marcHolding['library'] = $owningLibrary;
-						$shelfLocation = strtolower($marc852Field->getSubfield('c')->getData());
-						if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)){
-							$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+						$marcSubfieldC = $marc852Field->getSubfield('c');
+						if ($marcSubfieldC != false) {
+							$shelfLocation = strtolower($marcSubfieldC->getData());
+							if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
+								$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
+							}
+							$marcHolding['shelfLocation'] = $shelfLocation;
+						}else{
+							$marcHolding['shelfLocation'] = '';
 						}
-						$marcHolding['shelfLocation'] = $shelfLocation;
 						//Nothing super useful in 853, ignore it for now
 						//Load what is held in the 866
+						$is866Found = false;
 						foreach ($marc866Fields as $marc866Field) {
 							$marc866subfield6 = $marc866Field->getSubfield('6');
 							if ($marc866subfield6 != false) {
@@ -2285,10 +2304,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 								if ($marc866subfield6Data == $marc852subfield6Data){
 									$marc866subfieldA = $marc866Field->getSubfield('a');
 									if ($marc866subfieldA != false) {
-										$marcHolding['holdings'] = $marc866subfieldA->getData();
+										$marcHolding['holdings'][] = $marc866subfieldA->getData();
+										$is866Found = true;
 									}
 								}
 							}
+						}
+						if (!$is866Found){
+							continue;
 						}
 						if (array_key_exists($owningLibraryCode, $localLocationCodes)){
 							$localMarcHoldings[] = $marcHolding;
@@ -2306,6 +2329,76 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			}
 		}
 		return $marcHoldings;
+	}
+
+	public function getValidPickupLocations($pickupAtRule): array
+	{
+		$locations = [];
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		$items = $relatedRecord->getItems();
+		foreach($items as $item) {
+			if($pickupAtRule == 2) {
+				if(!isset($locations[$item->locationCode])) {
+					$location = new Location();
+					$location->code = $item->locationCode;
+					if($location->find(true)) {
+						$library = $location->getParentLibrary();
+						foreach($library->getLocations() as $libraryBranch) {
+							$locations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
+						}
+					}
+				}
+			} else {
+				$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
+			}
+		}
+
+		return $locations;
+	}
+
+	private $validUrls = null;
+	/**
+	 * @return array
+	 */
+	public function getViewable856Links(): array {
+		if ($this->validUrls == null) {
+			$validUrls = [];
+			$marcRecord = $this->getMarcRecord();
+			$marc856Fields = $marcRecord->getFields('856');
+			/** @var File_MARC_Data_Field $marc856Field */
+			foreach ($marc856Fields as $marc856Field) {
+				if ($marc856Field->getIndicator(1) == '4' && ($marc856Field->getIndicator(2) == '0' || $marc856Field->getIndicator(2) == '1')) {
+					$subfieldU = $marc856Field->getSubfield('u');
+					$showAction = false;
+					if ($marc856Field->getIndicator(2) == '1') {
+						$subfield3 = $marc856Field->getSubfield('3');
+						if ($subfield3 == null && $subfieldU != null) {
+							$showAction = true;
+						}
+					}
+					else {
+						if ($subfieldU != null) {
+							$showAction = true;
+						}
+					}
+					if ($showAction) {
+						$subfieldZ = $marc856Field->getSubfield('z');
+						if ($subfieldZ != null) {
+							$label = $subfieldZ->getData();
+						}
+						else {
+							$label = $subfieldU->getData();
+						}
+						$validUrls[] = [
+							'url' => $subfieldU->getData(),
+							'label' => $label
+						];
+					}
+				}
+			}
+			$this->validUrls = $validUrls;
+		}
+		return $this->validUrls;
 	}
 }
 

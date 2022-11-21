@@ -3,11 +3,10 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -41,7 +40,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
 	 */
-	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, BaseLogEntry logEntry, Logger logger) {
+	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(serverName, profile, dbConnection, logEntry, logger);
 		this.profile = profile;
 
@@ -174,23 +173,36 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 						//Loop through the records to see if they need to be added
 						for (String parentRecordId : parentRecords){
 							if (existingParentRecords.containsKey(parentRecordId)){
-								if (!existingParentRecords.get(parentRecordId).equals(title)){
-									updateChildTitleStmt.setString(1, title);
-									updateChildTitleStmt.setString(2, primaryIdentifier.getIdentifier());
-									updateChildTitleStmt.setString(3, parentRecordId);
-									updateChildTitleStmt.executeUpdate();
+								try{
+									if (!existingParentRecords.get(parentRecordId).equals(title)){
+										updateChildTitleStmt.setString(1, AspenStringUtils.trimTo(750, title));
+										updateChildTitleStmt.setString(2, primaryIdentifier.getIdentifier());
+										updateChildTitleStmt.setString(3, parentRecordId);
+										updateChildTitleStmt.executeUpdate();
+									}
+									existingParentRecords.remove(parentRecordId);
+								}catch (Exception e){
+									logEntry.incErrors("Error updating parent record for " + primaryIdentifier.getIdentifier() + " in the database", e);
 								}
-								existingParentRecords.remove(parentRecordId);
 							}else{
-								addParentRecordStmt.setString(1, primaryIdentifier.getIdentifier());
-								addParentRecordStmt.setString(2, parentRecordId);
-								addParentRecordStmt.setString(3, AspenStringUtils.trimTo(750, title));
-								addParentRecordStmt.executeUpdate();
+								try{
+									addParentRecordStmt.setString(1, primaryIdentifier.getIdentifier());
+									addParentRecordStmt.setString(2, parentRecordId);
+									addParentRecordStmt.setString(3, AspenStringUtils.trimTo(750, title));
+									addParentRecordStmt.executeUpdate();
+								}catch (Exception e){
+									logEntry.incErrors("Error adding parent record for " + primaryIdentifier.getIdentifier() + " in the database", e);
+								}
 							}
 						}
 						for (String oldParentRecordId : existingParentRecords.keySet()){
-							deleteParentRecordStmt.setString(1,oldParentRecordId);
-							deleteParentRecordStmt.executeUpdate();
+							try{
+								deleteParentRecordStmt.setString(1, primaryIdentifier.getIdentifier());
+								deleteParentRecordStmt.setString(2,oldParentRecordId);
+								deleteParentRecordStmt.executeUpdate();
+							}catch (Exception e){
+								logEntry.incErrors("Error deleting parent record for " + primaryIdentifier.getIdentifier() + ", " + oldParentRecordId, e);
+							}
 						}
 					}catch (Exception e){
 						logEntry.incErrors("Error adding parent records to the database", e);

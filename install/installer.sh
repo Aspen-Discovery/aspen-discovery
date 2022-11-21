@@ -16,6 +16,7 @@ yum -y install php-intl
 yum -y install php-mbstring
 yum -y install php-pecl-ssh2
 yum -y install php-pgsql
+yum -y install php-pecl-imagick
 service httpd start
 chkconfig httpd on
 # New PHP ini file

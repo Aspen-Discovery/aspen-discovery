@@ -1,0 +1,19 @@
+{
+  "app-name": {
+	"name": "",
+	"slug": "",
+	"scheme": "",
+	"easId": "",
+	"reverseDns": "",
+	"discoveryUrl": "",
+	"greenhouseUrl": "",
+	"libraryId": "",
+	"themeId": "",
+	"background": "",
+	"sentryProject": "",
+	"sentryAuth": "",
+	"sentryDsn": "",
+	"ascAppId": "",
+	"appleTeamId": ""
+  }
+}

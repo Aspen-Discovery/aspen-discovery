@@ -13,45 +13,64 @@ class Theme extends DataObject
 	public $fullWidth;
 
 	public $headerBackgroundColor;
-	public /** @noinspection PhpUnused */ $headerBackgroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$headerBackgroundColorDefault;
 	public $headerForegroundColor;
-	public /** @noinspection PhpUnused */ $headerForegroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$headerForegroundColorDefault;
 	public $headerBottomBorderWidth;
+	public $headerBackgroundImage;
+	public $headerBackgroundImageSize;
+	public $headerBackgroundImageRepeat;
 
 	public $pageBackgroundColor;
-	public /** @noinspection PhpUnused */ $pageBackgroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$pageBackgroundColorDefault;
 	public $bodyBackgroundColor;
-	public /** @noinspection PhpUnused */ $bodyBackgroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$bodyBackgroundColorDefault;
 	public $bodyTextColor;
-	public /** @noinspection PhpUnused */ $bodyTextColorDefault;
+	public /** @noinspection PhpUnused */
+		$bodyTextColorDefault;
 	public $linkColor;
-	public /** @noinspection PhpUnused */ $linkColorDefault;
+	public /** @noinspection PhpUnused */
+		$linkColorDefault;
 	public $linkHoverColor;
-	public /** @noinspection PhpUnused */ $linkHoverColorDefault;
+	public /** @noinspection PhpUnused */
+		$linkHoverColorDefault;
 	public $resultLabelColor;
-	public /** @noinspection PhpUnused */ $resultLabelColorDefault;
+	public /** @noinspection PhpUnused */
+		$resultLabelColorDefault;
 	public $resultValueColor;
-	public /** @noinspection PhpUnused */ $resultValueColorDefault;
+	public /** @noinspection PhpUnused */
+		$resultValueColorDefault;
 
 	public $breadcrumbsBackgroundColor;
-	public /** @noinspection PhpUnused */ $breadcrumbsBackgroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$breadcrumbsBackgroundColorDefault;
 	public $breadcrumbsForegroundColor;
-	public /** @noinspection PhpUnused */ $breadcrumbsForegroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$breadcrumbsForegroundColorDefault;
 
 	public $searchToolsBackgroundColor;
-	public /** @noinspection PhpUnused */ $searchToolsBackgroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$searchToolsBackgroundColorDefault;
 	public $searchToolsBorderColor;
-	public /** @noinspection PhpUnused */ $searchToolsBorderColorDefault;
+	public /** @noinspection PhpUnused */
+		$searchToolsBorderColorDefault;
 	public $searchToolsForegroundColor;
-	public /** @noinspection PhpUnused */ $searchToolsForegroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$searchToolsForegroundColorDefault;
 
 	public $footerLogo;
 	public $footerLogoLink;
 	public $footerLogoAlt;
 	public $footerBackgroundColor;
-	public /** @noinspection PhpUnused */ $footerBackgroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$footerBackgroundColorDefault;
 	public $footerForegroundColor;
-	public /** @noinspection PhpUnused */ $footerForegroundColorDefault;
+	public /** @noinspection PhpUnused */
+		$footerForegroundColorDefault;
 
 	//Primary color is used for the search bar
 	public $primaryBackgroundColor;
@@ -366,11 +385,23 @@ class Theme extends DataObject
 			"floating" => 'Shadow / Floating'
 		];
 
+		$headerBackgroundImageSizes = [
+			"cover" => 'Cover',
+			"contain" => 'Contain',
+		];
+
+		$headerBackgroundImageRepeat = [
+			"no-repeat" => 'No Repeat',
+			"repeat" => 'Repeat',
+			"repeat-x" => 'Repeat X',
+			"repeat-y" => 'Repeat Y'
+		];
+
 		$themesToExtend = [];
 		$themesToExtend[''] = 'None';
 		$theme = new Theme();
 		$theme->find();
-		while ($theme->fetch()){
+		while ($theme->fetch()) {
 			$themesToExtend[$theme->themeName] = $theme->themeName;
 		}
 
@@ -382,49 +413,53 @@ class Theme extends DataObject
 			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (1170 x 250px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'thumbWidth' => 750, 'maxWidth' => 1170, 'maxHeight' => 250, 'hideInLists' => true],
 			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab (.jpg and .png files supported)', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
 			'logoApp' => ['property' => 'logoApp', 'type' => 'image', 'label' => 'Logo for Aspen LiDA (512x512 pixels)', 'description' => 'The logo for use in Aspen LiDA, if none provided will use favicon', 'required' => false, 'thumbWidth' => 180, 'maxWidth' => 512, 'maxHeight' => 512, 'hideInLists' => true],
-			'coverStyle' => ['property' => 'coverStyle', 'type' => 'enum', 'values' => $coverStyles, 'label' => 'Cover Image Style', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'required' => false, 'hideInLists' => true],
+			'coverStyle' => ['property' => 'coverStyle', 'type' => 'enum', 'values' => $coverStyles, 'label' => 'Cover Image Style', 'description' => 'Choose a style for cover images throughout the catalog.)', 'required' => false, 'hideInLists' => true],
 
 			//Overall page colors
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
-			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'bodyTextColor'],
-			'bodyTextColor' => ['property' => 'bodyTextColor', 'type' => 'color', 'label' => 'Body Text Color', 'description' => 'Body Text Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
-			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
-			'linkHoverColor' => ['property' => 'linkHoverColor', 'type' => 'color', 'label' => 'Link Hover Color', 'description' => 'Color of Links when being hovered over', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
-			'resultLabelColor' => ['property' => 'resultLabelColor', 'type' => 'color', 'label' => 'Result Label Color', 'description' => 'Color of Labels within Results', 'required' => false, 'hideInLists' => true, 'default' => '#44484a', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
-			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'bodyTextColor'],
+			'bodyTextColor' => ['property' => 'bodyTextColor', 'type' => 'color', 'label' => 'Body Text Color', 'description' => 'Body Text Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith' => 'bodyBackgroundColor'],
+			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith' => 'bodyBackgroundColor', 'checkContrastOneWay' => true],
+			'linkHoverColor' => ['property' => 'linkHoverColor', 'type' => 'color', 'label' => 'Link Hover Color', 'description' => 'Color of Links when being hovered over', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith' => 'bodyBackgroundColor', 'checkContrastOneWay' => true],
+			'resultLabelColor' => ['property' => 'resultLabelColor', 'type' => 'color', 'label' => 'Result Label Color', 'description' => 'Color of Labels within Results', 'required' => false, 'hideInLists' => true, 'default' => '#44484a', 'checkContrastWith' => 'bodyBackgroundColor', 'checkContrastOneWay' => true],
+			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith' => 'bodyBackgroundColor', 'checkContrastOneWay' => true],
 
 			//Header Colors
-			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerForegroundColor'],
-			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'headerBackgroundColor'],
+			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'headerForegroundColor'],
+			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith' => 'headerBackgroundColor'],
 			'headerBottomBorderWidth' => ['property' => 'headerBottomBorderWidth', 'type' => 'text', 'label' => 'Header Bottom Border Width', 'description' => 'Header Bottom Border Width', 'required' => false, 'hideInLists' => true],
 
-			//Breadcrumbs
-			'breadcrumbsBackgroundColor' => ['property' => 'breadcrumbsBackgroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Background Color', 'description' => 'Breadcrumbs Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'breadcrumbsForegroundColor'],
-			'breadcrumbsForegroundColor' => ['property' => 'breadcrumbsForegroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Text Color', 'description' => 'Breadcrumbs Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'breadcrumbsBackgroundColor'],
+			'headerBackgroundImage' => ['property' => 'headerBackgroundImage', 'type' => 'image', 'label' => 'Header Background Image', 'description' => 'Use an image as a background for the header.', 'required' => false, 'hideInLists' => true, 'thumbWidth' => 750, 'maxWidth' => 1170],
+			'headerBackgroundImageSize' => ['property' => 'headerBackgroundImageSize', 'type' => 'enum', 'values' => $headerBackgroundImageSizes, 'label' => 'Header Background Image Fit', 'description' => 'Choose how the header background image displays. Cover = image will stretch to fit the entire header space. Contain = image size will not be adjusted. ', 'required' => false, 'hideInLists' => true, 'default' => 'cover'],
+			'headerBackgroundImageRepeat' => ['property' => 'headerBackgroundImageRepeat', 'type' => 'enum', 'values' => $headerBackgroundImageRepeat, 'label' => 'Header Background Image Repeat', 'description' => 'These options will allow the header background image to repeat horizontally or vertically.', 'required' => false, 'hideInLists' => true, 'default' => 'no-repeat'],
 
 			//Breadcrumbs
-			'searchToolsBackgroundColor' => ['property' => 'searchToolsBackgroundColor', 'type' => 'color', 'label' => 'Search Tools Background Color', 'description' => 'Search Tools Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'searchToolsForegroundColor'],
-			'searchToolsForegroundColor' => ['property' => 'searchToolsForegroundColor', 'type' => 'color', 'label' => 'Search Tools Text Color', 'description' => 'Search Tools Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'searchToolsBackgroundColor'],
+			'breadcrumbsBackgroundColor' => ['property' => 'breadcrumbsBackgroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Background Color', 'description' => 'Breadcrumbs Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith' => 'breadcrumbsForegroundColor'],
+			'breadcrumbsForegroundColor' => ['property' => 'breadcrumbsForegroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Text Color', 'description' => 'Breadcrumbs Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith' => 'breadcrumbsBackgroundColor'],
+
+			//Breadcrumbs
+			'searchToolsBackgroundColor' => ['property' => 'searchToolsBackgroundColor', 'type' => 'color', 'label' => 'Search Tools Background Color', 'description' => 'Search Tools Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith' => 'searchToolsForegroundColor'],
+			'searchToolsForegroundColor' => ['property' => 'searchToolsForegroundColor', 'type' => 'color', 'label' => 'Search Tools Text Color', 'description' => 'Search Tools Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith' => 'searchToolsBackgroundColor'],
 			'searchToolsBorderColor' => ['property' => 'searchToolsBorderColor', 'type' => 'color', 'label' => 'Search Tools Border Color', 'description' => 'Search Tools Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#e3e3e3'],
 
 			//Footer Colors
-			'footerBackgroundColor' => ['property' => 'footerBackgroundColor', 'type' => 'color', 'label' => 'Footer Background Color', 'description' => 'Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'footerForegroundColor'],
-			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'footerBackgroundColor'],
+			'footerBackgroundColor' => ['property' => 'footerBackgroundColor', 'type' => 'color', 'label' => 'Footer Background Color', 'description' => 'Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith' => 'footerForegroundColor'],
+			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith' => 'footerBackgroundColor'],
 			'footerImage' => ['property' => 'footerLogo', 'type' => 'image', 'label' => 'Footer Image (250px x 150px max)', 'description' => 'An image to be displayed in the footer', 'required' => false, 'maxWidth' => 250, 'maxHeight' => 150, 'hideInLists' => true],
 			'footerImageLink' => ['property' => 'footerLogoLink', 'type' => 'url', 'label' => 'Footer Image Link', 'description' => 'A link to be added to the footer logo', 'required' => false, 'hideInLists' => true],
 			'footerImageAlt' => ['property' => 'footerLogoAlt', 'type' => 'text', 'label' => 'Footer Image Alternative Text', 'description' => 'The text to be used for screen readers', 'required' => false, 'hideInLists' => true],
 
 			//Primary Color
-			'primaryBackgroundColor' => ['property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589', 'checkContrastWith'=>'primaryForegroundColor'],
-			'primaryForegroundColor' => ['property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'primaryBackgroundColor'],
+			'primaryBackgroundColor' => ['property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589', 'checkContrastWith' => 'primaryForegroundColor'],
+			'primaryForegroundColor' => ['property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'primaryBackgroundColor'],
 
 			//Secondary Color
-			'secondaryBackgroundColor' => ['property' => 'secondaryBackgroundColor', 'type' => 'color', 'label' => 'Secondary Background Color', 'description' => 'Secondary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de9d03', 'checkContrastWith'=>'secondaryForegroundColor'],
-			'secondaryForegroundColor' => ['property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Text Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'secondaryBackgroundColor'],
+			'secondaryBackgroundColor' => ['property' => 'secondaryBackgroundColor', 'type' => 'color', 'label' => 'Secondary Background Color', 'description' => 'Secondary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de9d03', 'checkContrastWith' => 'secondaryForegroundColor'],
+			'secondaryForegroundColor' => ['property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Text Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith' => 'secondaryBackgroundColor'],
 
 			//Tertiary Color
-			'tertiaryBackgroundColor' => ['property' => 'tertiaryBackgroundColor', 'type' => 'color', 'label' => 'Tertiary Background Color', 'description' => 'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de1f0b', 'checkContrastWith'=>'tertiaryForegroundColor'],
-			'tertiaryForegroundColor' => ['property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#000000', 'checkContrastWith'=>'tertiaryBackgroundColor'],
+			'tertiaryBackgroundColor' => ['property' => 'tertiaryBackgroundColor', 'type' => 'color', 'label' => 'Tertiary Background Color', 'description' => 'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#F76E5E', 'checkContrastWith' => 'tertiaryForegroundColor'],
+			'tertiaryForegroundColor' => ['property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#000000', 'checkContrastWith' => 'tertiaryBackgroundColor'],
 
 			'headingFont' => ['property' => 'headingFont', 'type' => 'font', 'label' => 'Heading Font', 'description' => 'Heading Font', 'validFonts' => $validHeadingFonts, 'previewFontSize' => '20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'],
 			'customHeadingFont' => ['property' => 'customHeadingFont', 'type' => 'uploaded_font', 'label' => 'Custom Heading Font', 'description' => 'Upload a custom font to use for headings', 'required' => false, 'hideInLists' => true],
@@ -457,17 +492,17 @@ class Theme extends DataObject
 			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
 				'browseCategoryPanelColor' => ['property' => 'browseCategoryPanelColor', 'type' => 'color', 'label' => 'Browse Category Panel Color', 'description' => 'Background Color of the Browse Category Panel', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'],
 
-				'selectedBrowseCategoryBackgroundColor' => ['property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB', 'checkContrastWith'=>'selectedBrowseCategoryForegroundColor'],
-				'selectedBrowseCategoryForegroundColor' => ['property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Text Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'selectedBrowseCategoryBackgroundColor'],
+				'selectedBrowseCategoryBackgroundColor' => ['property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#005C75', 'checkContrastWith' => 'selectedBrowseCategoryForegroundColor'],
+				'selectedBrowseCategoryForegroundColor' => ['property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Text Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'selectedBrowseCategoryBackgroundColor'],
 				'selectedBrowseCategoryBorderColor' => ['property' => 'selectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Selected Browse Category Border Color', 'description' => 'Selected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'],
 
-				'deselectedBrowseCategoryBackgroundColor' => ['property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB', 'checkContrastWith'=>'deselectedBrowseCategoryForegroundColor'],
-				'deselectedBrowseCategoryForegroundColor' => ['property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'deselectedBrowseCategoryBackgroundColor'],
+				'deselectedBrowseCategoryBackgroundColor' => ['property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#005C75', 'checkContrastWith' => 'deselectedBrowseCategoryForegroundColor'],
+				'deselectedBrowseCategoryForegroundColor' => ['property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith' => 'deselectedBrowseCategoryBackgroundColor'],
 				'deselectedBrowseCategoryBorderColor' => ['property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'],
 
-				'capitalizeBrowseCategories' => ['property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
+				'capitalizeBrowseCategories' => ['property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse category names', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
                 'browseCategoryImageSize' => ['property' => 'browseCategoryImageSize', 'type' => 'enum', 'values' => [0 => 'Medium', 1 => 'Large'], 'label' => 'Browse Category Image Size','description' => 'The size of cover images to be displayed in browse categories', 'required' => false, 'hideInLists' => true, 'default' => '0'],
-                'browseImageLayout' => ['property' => 'browseImageLayout', 'type' => 'enum', 'values' => [0 => 'Masonry', 1 => 'Grid'], 'label' => 'Browse Image Layout', 'description' => 'The layout of cover images in browse categories', 'required' => false, 'hidInLists' => true, 'default' => '0'],
+                'browseImageLayout' => ['property' => 'browseImageLayout', 'type' => 'enum', 'values' => [0 => 'Masonry', 1 => 'Grid'], 'label' => 'Browse Category Image Layout', 'description' => 'The layout of cover images in browse categories. Masonry has no fixed row heights, so maximizes space by reducing unnecessary vertical gaps between cover images. Grid layout will maintain fixed heights for rows, regardless of cover image dimensions.', 'required' => false, 'hidInLists' => true, 'default' => '0'],
 			]],
 
 			'badges' => ['property'=>'badgesSection', 'type' => 'section', 'label' =>'Badges', 'hideInLists' => true, 'properties' => [
@@ -832,7 +867,7 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('primaryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('secondaryBackgroundColor', '#de9d03', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#de1f0b', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#F76E5E', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#000000', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menubarBackgroundColor', '#f1f1f1', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menubarForegroundColor', '#303030', $appliedThemes);
@@ -846,10 +881,10 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('badgeBackgroundColor', Theme::$defaultBadgeBackgroundColor, $appliedThemes);
@@ -928,12 +963,16 @@ class Theme extends DataObject
 	{
 		$allAppliedThemes = $this->getAllAppliedThemes();
 		global $interface;
+		global $configArray;
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$additionalCSS = '';
 		$appendCSS = true;
 		$this->applyDefaults();
 		$interface->assign('headerBackgroundColor', $this->headerBackgroundColor);
 		$interface->assign('headerForegroundColor', $this->headerForegroundColor);
+		$interface->assign('headerBackgroundImage', $this->headerBackgroundImage);
+		$interface->assign('headerBackgroundImageSize', $this->headerBackgroundImageSize);
+		$interface->assign('headerBackgroundImageRepeat', $this->headerBackgroundImageRepeat);
 		$interface->assign('pageBackgroundColor', $this->pageBackgroundColor);
 		$interface->assign('breadcrumbsBackgroundColor', $this->breadcrumbsBackgroundColor);
 		$interface->assign('breadcrumbsForegroundColor', $this->breadcrumbsForegroundColor);

@@ -1,31 +1,25 @@
-import React, {Component, useEffect} from "react";
-import {SafeAreaView} from "react-native";
+import React, {Component, useEffect} from 'react';
+import {SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {MaterialIcons} from "@expo/vector-icons";
-import {
-	AlertDialog,
-	Box,
-	Button,
-	Center,
-	Text,
-	Icon,
-	Image,
-	ScrollView
-} from "native-base";
-import {Rating} from "react-native-elements";
+import {MaterialIcons} from '@expo/vector-icons';
+import {AlertDialog, Box, Button, Center, Icon, Image, ScrollView, Text} from 'native-base';
+import {Rating} from 'react-native-elements';
+import _ from 'lodash';
 
 // custom components and helper files
 import {translate} from '../../translations/translations';
-import Manifestation from "./Manifestation";
-import {loadingSpinner} from "../../components/loadingSpinner";
-import {loadError} from "../../components/loadError";
-import {getGroupedWork, getItemDetails} from "../../util/recordActions";
-import {AddToListFromItem} from "./AddToList";
-import {userContext} from "../../context/user";
-import {getLinkedAccounts, getProfile} from "../../util/loadPatron";
-import {GetOverDriveSettings} from "./OverDriveSettings";
+import Manifestation from './Manifestation';
+import {loadingSpinner} from '../../components/loadingSpinner';
+import {loadError} from '../../components/loadError';
+import {getGroupedWork, getItemDetails} from '../../util/recordActions';
+import {AddToListFromItem} from './AddToList';
+import {userContext} from '../../context/user';
+import {getLinkedAccounts, getProfile, PATRON} from '../../util/loadPatron';
+import {GetOverDriveSettings} from './OverDriveSettings';
 
 export default class GroupedWork extends Component {
+	static contextType = userContext;
+
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
@@ -56,19 +50,19 @@ export default class GroupedWork extends Component {
 	}
 
 	authorSearch = (author, libraryUrl) => {
-		const { navigation } = this.props;
-		this.props.navigation.navigate("SearchByAuthor", {
+		const {navigation} = this.props;
+		this.props.navigation.navigate('SearchByAuthor', {
 			term: author,
 			libraryUrl: libraryUrl,
-		})
+		});
 	};
 
 	openCheckouts = () => {
-		this.props.navigation.navigate("CheckedOut");
+		this.props.navigation.navigate('CheckedOut');
 	};
 
 	openHolds = () => {
-		this.props.navigation.navigate("Holds");
+		this.props.navigation.navigate('Holds');
 	};
 
 	componentDidMount = async () => {
@@ -84,24 +78,24 @@ export default class GroupedWork extends Component {
 			lastListUsed = await AsyncStorage.getItem('@lastListUsed');
 			this.setState({
 				lastListUsed: lastListUsed,
-			})
+			});
 		} catch (e) {
 			console.log(e);
 		}
-	}
+	};
 
 	_fetchItemData = async () => {
 
 		this.setState({
-			isLoading: true
+			isLoading: true,
 		});
 
-		const { navigation, route } = this.props;
+		const {navigation, route} = this.props;
 		const givenItem = route.params?.id ?? 'null';
 		const libraryUrl = this.context.library.baseUrl;
 
 		await getGroupedWork(libraryUrl, givenItem).then(response => {
-			if (response === "TIMEOUT_ERROR") {
+			if (response === 'TIMEOUT_ERROR') {
 				this.setState({
 					hasError: true,
 					error: translate('error.timeout'),
@@ -125,53 +119,58 @@ export default class GroupedWork extends Component {
 					this.setState({
 						hasError: true,
 						error: translate('error.no_data'),
-					})
+					});
 				}
 			}
-		})
+		});
 
 		await this.loadItemDetails(libraryUrl);
-	}
+	};
 
 	_fetchLocations = async () => {
+		let locations = [];
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
-		const locations = JSON.parse(tmp);
+		if (tmp) {
+			locations = JSON.parse(tmp);
+		} else {
+			locations = PATRON.pickupLocations;
+		}
 		this.setState({
 			locations: locations,
 			hasError: false,
 			error: null,
-		})
-	}
+		});
+	};
 
 	_fetchLinkedAccounts = async () => {
-		const { navigation, route } = this.props;
+		const {navigation, route} = this.props;
 		const libraryUrl = this.context.library.baseUrl;
 
 		await getLinkedAccounts(libraryUrl).then(response => {
 			this.setState({
 				linkedAccounts: response,
 				//numLinkedAccounts:  Object.keys(response).length,
-			})
+			});
 		});
-	}
+	};
 
 	// shows the author information on the screen and allows the link to be clickable. hides it if there is no author.
 	showAuthor = (libraryUrl) => {
 		if (this.state.data.author) {
 			return (
-				<Button
-					pt={2}
-					size="sm"
-					variant="link"
-					colorScheme="tertiary"
-					_text={{
-						fontWeight: "600",
-					}}
-					leftIcon={<Icon as={MaterialIcons} name="search" size="xs" mr="-1"/>}
-					onPress={() => this.authorSearch(this.state.data.author, libraryUrl)}
-				>
-					{this.state.data.author}
-				</Button>
+					<Button
+							pt={2}
+							size="sm"
+							variant="link"
+							colorScheme="tertiary"
+							_text={{
+								fontWeight: '600',
+							}}
+							leftIcon={<Icon as={MaterialIcons} name="search" size="xs" mr="-1"/>}
+							onPress={() => this.authorSearch(this.state.data.author, libraryUrl)}
+					>
+						{this.state.data.author}
+					</Button>
 			);
 		}
 	};
@@ -179,42 +178,42 @@ export default class GroupedWork extends Component {
 	formatOptions = () => {
 		return this.state.formats.map((format, index) => {
 
-			const btnVariant = this.state.format === format.format ? "solid" : "outline";
+			const btnVariant = this.state.format === format.format ? 'solid' : 'outline';
 
 			return <Button variant={btnVariant} size="sm" mb={1}
-			               onPress={() => this.setState({format: format.format})}>{format.format}</Button>
-		})
-	}
+										 onPress={() => this.setState({format: format.format})}>{format.format}</Button>;
+		});
+	};
 
 	languageOptions = () => {
 
 		return this.state.languages.map((language, index) => {
 
-			const btnVariant = this.state.language === language.language ? "solid" : "outline";
+			const btnVariant = this.state.language === language.language ? 'solid' : 'outline';
 
 			return <Button variant={btnVariant} size="sm"
-			               onPress={() => this.setState({language: language.language})}>{language.language}</Button>
-		})
-	}
+										 onPress={() => this.setState({language: language.language})}>{language.language}</Button>;
+		});
+	};
 
 	showAlert = (response) => {
-		if (response.message) {
+		if (!_.isUndefined(response.message)) {
 			this.setState({
 				alert: true,
 				alertTitle: response.title,
 				alertMessage: response.message,
 				alertAction: response.action,
 				alertStatus: response.success,
-			})
+			});
 
 			if (response.action) {
-				if (response.action.includes("Checkouts")) {
+				if (response.action.includes('Checkouts')) {
 					this.setState({
-						alertNavigateTo: "CheckedOut",
+						alertNavigateTo: 'CheckedOut',
 					});
-				} else if (response.action.includes("Holds")) {
+				} else if (response.action.includes('Holds')) {
 					this.setState({
-						alertNavigateTo: "Holds",
+						alertNavigateTo: 'Holds',
 					});
 				}
 			}
@@ -227,72 +226,70 @@ export default class GroupedWork extends Component {
 				promptTitle: translate('holds.hold_options'),
 			});
 		}
-	}
+	};
 
 	hideAlert = () => {
 		this.setState({alert: false});
 		setTimeout(
-			function () {
-				this._fetchItemData();
-			}.bind(this), 1000
+				function() {
+					this._fetchItemData();
+				}.bind(this), 1000,
 		);
-	}
+	};
 
 	hidePrompt = () => {
 		this.setState({prompt: false});
 		setTimeout(
-			function () {
-				this._fetchItemData();
-			}.bind(this), 1000
+				function() {
+					this._fetchItemData();
+				}.bind(this), 1000,
 		);
-	}
+	};
 
 	// Trigger a context refresh
 	updateProfile = async () => {
-		console.log("Getting new profile data from item details...");
+		console.log('Getting new profile data from item details...');
 		await getProfile().then(response => {
 			this.context.user = response;
 		});
-	}
+	};
 
 	cancelRef = () => {
 		useEffect(() => {
 			React.useRef();
-		})
-	}
+		});
+	};
 
 	initialRef = () => {
 		useEffect(() => {
 			React.useRef();
-		})
-	}
+		});
+	};
 
 	// handles the opening or closing of the GetOverDriveSettings() modal
 	handleOverDriveSettings = (newState) => {
 		//console.log("updating modal state...")
 		this.setState({
-			showOverDriveSettings: newState
-		})
+			showOverDriveSettings: newState,
+		});
 	};
 
 	loadItemDetails = async (libraryUrl) => {
-		await getItemDetails(libraryUrl, this.state.groupedWorkId, this.state.format).then(response =>{
+		await getItemDetails(libraryUrl, this.state.groupedWorkId, this.state.format).then(response => {
 			this.setState({
 				itemDetails: response,
 				isLoading: false,
 			});
-		})
-	}
+		});
+	};
 
 	setEmail = (email) => {
 		this.setState({overdriveEmail: email});
-	}
+	};
 
 	setRememberPrompt = (remember) => {
 		this.setState({promptForOverdriveEmail: remember});
-	}
-
-	static contextType = userContext;
+	};
 
 	render() {
 		const user = this.context.user;
@@ -308,136 +305,136 @@ export default class GroupedWork extends Component {
 		}
 
 		let displayTitle = this.state.data.title;
-		if(this.state.data.subtitle && this.state.data.subtitle !== "") {
-			displayTitle = displayTitle.concat(": ", this.state.data.subtitle)
+		if (this.state.data.subtitle && this.state.data.subtitle !== '') {
+			displayTitle = displayTitle.concat(': ', this.state.data.subtitle);
 		}
 
 		let ratingCount = 0;
-		if(this.state.ratingData != null) {
+		if (this.state.ratingData != null) {
 			ratingCount = this.state.ratingData.count;
 		}
 
 		let ratingAverage = 0;
-		if(this.state.ratingData != null) {
+		if (this.state.ratingData != null) {
 			ratingAverage = this.state.ratingData.average;
 		}
 
 		let discoveryVersion;
-		if(library.discoveryVersion) {
+		if (library.discoveryVersion) {
 			let version = library.discoveryVersion;
-			version = version.split(" ");
+			version = version.split(' ');
 			discoveryVersion = version[0];
 		} else {
-			discoveryVersion = "22.06.00";
+			discoveryVersion = '22.06.00';
 		}
 
 		//console.log(this.state.data);
 
 		return (
-			<SafeAreaView style={{flex: 1}}>
-				<ScrollView>
-					<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900" }} zIndex={-1} position="absolute" left={0}
-					     top={0}></Box>
-					<Box flex={1} safeArea={5}>
-						<Center mt={5}>
-							<Box w={{base: 200, lg: 300}} h={{base: 250, lg: 350}} shadow={3}>
-								<Image
-									alt={this.state.data.title}
-									source={{ uri:  this.state.data.cover }}
-									style={{width: '100%', height: '100%', borderRadius: 4}}
-								/>
-							</Box>
-							<Text fontSize={{base: "lg", lg: "2xl"}} bold pt={5} alignText="center">
-								{displayTitle}
+				<SafeAreaView style={{flex: 1}}>
+					<ScrollView>
+						<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{bgColor: 'coolGray.900'}} zIndex={-1} position="absolute" left={0}
+								 top={0}></Box>
+						<Box flex={1} safeArea={5}>
+							<Center mt={5}>
+								<Box w={{base: 200, lg: 300}} h={{base: 250, lg: 350}} shadow={3}>
+									<Image
+											alt={this.state.data.title}
+											source={{uri: this.state.data.cover}}
+											style={{width: '100%', height: '100%', borderRadius: 4}}
+									/>
+								</Box>
+								<Text fontSize={{base: 'lg', lg: '2xl'}} bold pt={5} alignText="center">
+									{displayTitle}
+								</Text>
+								{this.showAuthor(library.baseUrl)}
+								{ratingCount > 0 ?
+										<Rating imageSize={20} readonly count={ratingCount}
+														startingValue={ratingAverage} type="custom" tintColor="white"
+														ratingBackgroundColor="#E5E5E5" style={{paddingTop: 5}}/> : null}
+							</Center>
+							<Text fontSize={{base: 'xs', lg: 'md'}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
+							{this.state.formats ?
+									<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
+							<Text fontSize={{base: 'xs', lg: 'md'}} bold mt={3}
+										mb={1}>{translate('grouped_work.language')}</Text>
+							{this.state.languages && discoveryVersion <= '22.05.00' ?
+									<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
+
+							{discoveryVersion >= '22.06.00' && this.state.data.language ? <Text fontSize={{base: 'xs', lg: 'md'}} mt={3}
+																																									mb={1}>{this.state.data.language}</Text> : null}
+
+							{this.state.variations ? <Manifestation navigation={this.props.navigation} data={this.state.variations} format={this.state.format}
+																											language={this.state.language}
+																											patronId={user.id}
+																											locations={this.state.locations}
+																											showAlert={this.showAlert}
+																											itemDetails={this.state.itemDetails}
+																											groupedWorkId={this.state.groupedWorkId}
+																											groupedWorkTitle={this.state.groupedWorkTitle}
+																											groupedWorkAuthor={this.state.data.author}
+																											groupedWorkISBN={this.state.data.isbn}
+																											user={user}
+																											library={library}
+																											linkedAccounts={this.state.linkedAccounts}
+																											discoveryVersion={discoveryVersion}
+																											updateProfile={this.updateProfile}
+																											openHolds={this.openHolds}
+																											openCheckouts={this.openCheckouts}/> : null}
+
+							<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} lastListUsed={this.state.lastListUsed}/>
+
+							<Text mt={5} mb={5} fontSize={{base: 'md', lg: 'lg'}} lineHeight={{base: '22px', lg: '26px'}}>
+								{this.state.data.description}
 							</Text>
-							{this.showAuthor(library.baseUrl)}
-							{ratingCount > 0 ?
-								<Rating imageSize={20} readonly count={ratingCount}
-								        startingValue={ratingAverage} type='custom' tintColor="white"
-								        ratingBackgroundColor="#E5E5E5" style={{paddingTop: 5}}/> : null}
-						</Center>
-						<Text fontSize={{base: "xs", lg: "md"}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
-						{this.state.formats ?
-							<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
-						<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
-						      mb={1}>{translate('grouped_work.language')}</Text>
-						{this.state.languages && discoveryVersion <= "22.05.00" ?
-							<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
-
-						{discoveryVersion >= "22.06.00" && this.state.data.language ? 					<Text fontSize={{base: "xs", lg: "md"}} mt={3}
-						                                                                                       mb={1}>{this.state.data.language}</Text> : null}
-
-						{this.state.variations ? <Manifestation navigation={this.props.navigation} data={this.state.variations} format={this.state.format}
-						                                        language={this.state.language}
-						                                        patronId={user.id}
-						                                        locations={this.state.locations}
-						                                        showAlert={this.showAlert}
-						                                        itemDetails={this.state.itemDetails}
-						                                        groupedWorkId={this.state.groupedWorkId}
-						                                        groupedWorkTitle={this.state.groupedWorkTitle}
-						                                        groupedWorkAuthor={this.state.data.author}
-						                                        groupedWorkISBN={this.state.data.isbn}
-						                                        user={user}
-						                                        library={library}
-						                                        linkedAccounts={this.state.linkedAccounts}
-						                                        discoveryVersion={discoveryVersion}
-						                                        updateProfile={this.updateProfile}
-						                                        openHolds={this.openHolds}
-						                                        openCheckouts={this.openCheckouts}/> : null}
-
-						<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} lastListUsed={this.state.lastListUsed} />
-
-						<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
-							{this.state.data.description}
-						</Text>
-					</Box>
-					<Center>
-						<AlertDialog
-							leastDestructiveRef={this.cancelRef}
-							isOpen={this.state.alert}
-						>
-							<AlertDialog.Content>
-								<AlertDialog.Header fontSize="lg" fontWeight="bold">
-									{this.state.alertTitle}
-								</AlertDialog.Header>
-								<AlertDialog.Body>
-									{this.state.alertMessage}
-								</AlertDialog.Body>
-								<AlertDialog.Footer>
-									{this.state.alertAction ?
-										<Button onPress={() => {
-											this.setState({alert: false})
-											this.props.navigation.navigate("AccountScreenTab", {
-												screen: this.state.alertNavigateTo,
-												params: {libraryUrl: library.baseUrl}
-											})
-										}}>
-											{this.state.alertAction}
+						</Box>
+						<Center>
+							<AlertDialog
+									leastDestructiveRef={this.cancelRef}
+									isOpen={this.state.alert}
+							>
+								<AlertDialog.Content>
+									<AlertDialog.Header fontSize="lg" fontWeight="bold">
+										{this.state.alertTitle}
+									</AlertDialog.Header>
+									<AlertDialog.Body>
+										{this.state.alertMessage}
+									</AlertDialog.Body>
+									<AlertDialog.Footer>
+										{this.state.alertAction ?
+												<Button onPress={() => {
+													this.setState({alert: false});
+													this.props.navigation.navigate('AccountScreenTab', {
+														screen: this.state.alertNavigateTo,
+														params: {libraryUrl: library.baseUrl},
+													});
+												}}>
+													{this.state.alertAction}
+												</Button>
+												: null}
+										<Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
+											{translate('general.button_ok')}
 										</Button>
-										: null}
-									<Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
-										{translate('general.button_ok')}
-									</Button>
-								</AlertDialog.Footer>
-							</AlertDialog.Content>
-						</AlertDialog>
-					</Center>
-					<GetOverDriveSettings
-						promptTitle={this.state.promptTitle}
-						promptItemId={this.state.promptItemId}
-						promptSource={this.state.promptSource}
-						promptPatronId={this.state.promptPatronId}
-						overdriveEmail={this.state.overdriveEmail}
-						promptForOverdriveEmail={this.state.promptForOverdriveEmail}
-						showAlert={this.showAlert}
-						setEmail={this.setEmail}
-						setRememberPrompt={this.setRememberPrompt}
-						showOverDriveSettings={this.state.showOverDriveSettings}
-						handleOverDriveSettings={this.handleOverDriveSettings}
-						libraryUrl={library.baseUrl}
-					/>
-				</ScrollView>
-			</SafeAreaView>
+									</AlertDialog.Footer>
+								</AlertDialog.Content>
+							</AlertDialog>
+						</Center>
+						<GetOverDriveSettings
+								promptTitle={this.state.promptTitle}
+								promptItemId={this.state.promptItemId}
+								promptSource={this.state.promptSource}
+								promptPatronId={this.state.promptPatronId}
+								overdriveEmail={this.state.overdriveEmail}
+								promptForOverdriveEmail={this.state.promptForOverdriveEmail}
+								showAlert={this.showAlert}
+								setEmail={this.setEmail}
+								setRememberPrompt={this.setRememberPrompt}
+								showOverDriveSettings={this.state.showOverDriveSettings}
+								handleOverDriveSettings={this.handleOverDriveSettings}
+								libraryUrl={library.baseUrl}
+						/>
+					</ScrollView>
+				</SafeAreaView>
 		);
 	}
 }

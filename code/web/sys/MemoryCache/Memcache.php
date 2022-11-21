@@ -85,8 +85,10 @@ class Memcache
 					$logger->log("error caching data", Logger::LOG_DEBUG);
 				}
 			} else {
-				global $logger;
-				$logger->log("data for $name was too large to be cached", Logger::LOG_WARNING);
+				if (IPAddress::showDebuggingInformation()) {
+					global $logger;
+					$logger->log("data for $name was too large to be cached, fields was " . strlen($valueToCache) . " characters long", Logger::LOG_WARNING);
+				}
 				return false;
 			}
 		}

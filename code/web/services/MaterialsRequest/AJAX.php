@@ -139,7 +139,7 @@ class MaterialsRequest_AJAX extends Action{
 								if ($canUpdate) {
 									$interface->assign('isAdminUser', $isAdminUser);
 									//Get a list of formats to show
-									$availableFormats = MaterialsRequest::getFormats();
+									$availableFormats = MaterialsRequest::getFormats(false);
 									$interface->assign('availableFormats', $availableFormats);
 
 									// Get Author Labels for all Formats

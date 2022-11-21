@@ -212,7 +212,8 @@ class Browse_AJAX extends Action {
 		if ($browseCategory->find(true)){
 			return array(
 				'success' => false,
-				'message' => "Sorry the title of the category was not unique.  Please enter a new name."
+				'title' => translate(['text' => 'Error creating Browse Category', 'isAdminFacing' => true]),
+				'message' => translate(['text' => "Sorry the title of the category was not unique.  Please enter a new name.", 'isAdminFacing' => true])
 			);
 		}else{
 			if (isset($_REQUEST['searchId']) && strlen($_REQUEST['searchId']) > 0){
@@ -226,7 +227,8 @@ class Browse_AJAX extends Action {
 				if (!$browseCategory->updateFromSearch($searchObj)){
 					return array(
 							'success' => false,
-							'message' => "Sorry, this search is too complex to create a category from."
+							'title' => translate(['text' => 'Error creating Browse Category', 'isAdminFacing' => true]),
+							'message' => translate(['text' => "Sorry, this search is too complex to create a category from.", 'isAdminFacing' => true])
 					);
 				}
 			}else if (isset($_REQUEST['listId'])){
@@ -267,7 +269,8 @@ class Browse_AJAX extends Action {
 			if (!$browseCategory->insert()){
 				return array(
 					'success' => false,
-					'message' => "There was an error saving the category. "
+					'title' => translate(['text' => 'Error creating Browse Category', 'isAdminFacing' => true]),
+					'message' => translate(['text' => "There was an error saving the category. ", 'isAdminFacing' => true])
 				);
 			}elseif ($addAsSubCategoryOf) {
 				$id = $browseCategory->id; // get from above insertion operation
@@ -277,7 +280,8 @@ class Browse_AJAX extends Action {
 				if (!$subCategory->insert()){
 					return array(
 						'success' => false,
-						'message' => "There was an error saving the category as a sub-category."
+						'title' => translate(['text' => 'Error creating Browse Category', 'isAdminFacing' => true]),
+						'message' => translate(['text' => "There was an error saving the category as a sub-category.", 'isAdminFacing' => true])
 					);
 				}
 
@@ -291,16 +295,22 @@ class Browse_AJAX extends Action {
 			}
 
 			//Now add to the library/location
-			if ($library && !$addAsSubCategoryOf){ // Only add main browse categories to the library carousel
+			$addToHomePageEnabled = isset($_REQUEST['addToHomePage']) ? $_REQUEST['addToHomePage'] == 'true' : false;
+			if ($library && !$addAsSubCategoryOf && $addToHomePageEnabled){ // Only add main browse categories to the library carousel
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
 				$libraryBrowseCategory = new BrowseCategoryGroupEntry();
 				$libraryBrowseCategory->browseCategoryGroupId = $activeBrowseCategoryGroup->id;
 				$libraryBrowseCategory->browseCategoryId = $browseCategory->id;
 				$libraryBrowseCategory->insert();
+				$successMessage = "The search was added to the homepage successfully.";
+			}else{
+				$successMessage = "We created a new browse category for you, you can add it to your home page within your Browse Category groups.";
 			}
 
 			return array(
-				'success' => true
+				'success' => true,
+				'title' => translate(['text' => 'Browse Category Created', 'isAdminFacing' => true]),
+				'message' => translate(['text' => $successMessage, 'isAdminFacing' => true]),
 			);
 		}
 	}

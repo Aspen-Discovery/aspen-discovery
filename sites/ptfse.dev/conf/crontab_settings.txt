@@ -1,0 +1,70 @@
+##################
+## Crontab setting from a 'configuration' file
+##
+## crontab for the site should be linked to from /etc/cron.d
+## when updated, cron simply needs to be restarted.  I.e.
+## sudo service crond restart
+##
+##################
+
+###################
+# * * * * *  command to execute
+# │ │ │ │ │
+# │ │ │ │ └───── day of week (0 - 6)
+# │ │ │ │        (0 to 6 are Sunday to Saturday, or use names (Sun,Mon,Tue,Wed,Thu,Fri,Sat); 7 is Sunday, the same as 0)
+# │ │ │ └────────── month (1 - 12)
+# │ │ └─────────────── day of month (1 - 31)
+# │ └──────────────────── hour (0 - 23)
+# └───────────────────────── min (0 - 59)
+## taken from https://en.wikipedia.org/wiki/Cron
+##############
+
+#############
+# Indexing Tasks #
+#############
+@reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php ptfse.dev
+5 2 * * *     solr   php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php ptfse.dev
+7 3 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php ptfse.dev
+*/2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php ptfse.dev
+*/5 * * * *   aspen   php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php ptfse.dev
+
+########################################################
+# Regular extracts that don't need to run continuously #
+########################################################
+0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar ptfse.dev
+0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar ptfse.dev nightly
+
+######################
+# MySQL Nightly Dump #
+######################
+# backup important bits at 12:10am daily
+10 0 * * *    root    /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh ptfse.dev aspen 2>&1 >/dev/null
+
+#############################################
+# New York Times Best seller Lists Updating #
+#############################################
+15 7 * * 0-1  aspen   php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php ptfse.dev
+# update on Sundays and Mondays at 7:15
+
+###########################
+# Aspen Discovery Cleanup #
+###########################
+
+# Temp files
+26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
+
+# CRON for Aspen (book cover cache cleanup etc.)
+00 22 * * *   aspen   cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar ptfse.dev
+
+00 01 * * *   root    certbot renew
+
+############################
+# Fix Cover Permissions    #
+############################
+*/15 * * * * root chown aspen:aspen_apache /data/aspen-discovery/ptfse.dev/covers/original/*
+*/15 * * * * root chmod g+rw /data/aspen-discovery/ptfse.dev/covers/original/*
+
+#############################
+# Refresh SAML SSO metadata #
+#############################
+00 05  * * * www-data php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php ptfse.dev

@@ -1,24 +1,24 @@
-import React, {Component} from "react";
+import React, {Component} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
-import Constants from "expo-constants";
-import {NativeBaseProvider, StatusBar, HStack, Center, Spinner} from "native-base";
-import {SSRProvider} from "@react-aria/ssr";
-import App from "./src/components/navigation";
-import {createTheme, saveTheme} from "./src/themes/theme";
-import {userContext} from "./src/context/user";
+import Constants from 'expo-constants';
+import {Center, HStack, NativeBaseProvider, Spinner, StatusBar} from 'native-base';
+import {SSRProvider} from '@react-aria/ssr';
+import App from './src/components/navigation';
+import {createTheme, saveTheme} from './src/themes/theme';
+import {userContext} from './src/context/user';
 import {create} from 'apisauce';
-import * as SplashScreen from "expo-splash-screen";
-import _ from "lodash";
+import _ from 'lodash';
 import * as Sentry from 'sentry-expo';
+// Access any @sentry/react-native exports via:
+// Sentry.Native.*
+import {LogBox} from 'react-native';
+import {createAuthTokens, getHeaders, postData} from './src/util/apiAuth';
+import {GLOBALS} from './src/util/globals';
 
-import { LogBox } from 'react-native';
-import {createAuthTokens, getHeaders, postData} from "./src/util/apiAuth";
-import {GLOBALS} from "./src/util/globals";
+import {enableScreens} from 'react-native-screens';
+import {getPatronBrowseCategories} from './src/util/loadPatron';
+import {getBrowseCategories} from './src/util/loadLibrary';
 
-import { enableScreens } from 'react-native-screens';
-import {getPatronBrowseCategories} from "./src/util/loadPatron";
-import {getBrowseCategories} from "./src/util/loadLibrary";
 enableScreens();
 
 // Hide log error/warning popups in simulator (useful for demoing)
@@ -42,12 +42,12 @@ export default class AppContainer extends Component {
 	}
 
 	componentDidMount = async () => {
-		this.setState({ appReady: false });
+		this.setState({appReady: false});
 		await createTheme().then(async response => {
-			if(this.state.themeSetSession !== Constants.sessionId) {
+			if (this.state.themeSetSession !== Constants.sessionId) {
 				this.aspenTheme = response;
-				this.setState({ themeSet: true, themeSetSession: Constants.sessionId })
-				this.aspenTheme.colors.primary['baseContrast'] === "#000000" ? this.setState({ statusBar: "dark-content" }) : this.setState({ statusBar: "light-content" })
+				this.setState({themeSet: true, themeSetSession: Constants.sessionId})
+				this.aspenTheme.colors.primary['baseContrast'] === "#000000" ? this.setState({statusBar: "dark-content"}) : this.setState({statusBar: "light-content"})
 				console.log("Theme set from createTheme in App.js");
 				await saveTheme();
 			} else {
@@ -62,15 +62,15 @@ export default class AppContainer extends Component {
 			try {
 				userToken = await AsyncStorage.getItem('@userToken');
 				//userToken = await SecureStore.getItemAsync("userToken");
-			} catch(e) {
+			} catch (e) {
 				console.log(e);
 			}
 
 			//console.log(userToken);
 
-			if(userToken) {
+			if (userToken) {
 				//console.log("USER TOKEN FOUND");
-				if(_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
+				if (_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
 					//console.log("Trying to run async login...");
 					//await this.login(userToken);
 				}
@@ -127,7 +127,7 @@ export default class AppContainer extends Component {
 					}
 				}
 
-				if(libraryId) {
+				if (libraryId) {
 					const api = create({
 						baseURL: libraryUrl + '/API',
 						timeout: GLOBALS.timeoutAverage,
@@ -136,12 +136,12 @@ export default class AppContainer extends Component {
 					});
 
 					//const libraryProfile = await AsyncStorage.getItem('@libraryInfo');
-					if(_.isEmpty(this.state.library)) {
+					if (_.isEmpty(this.state.library)) {
 						//console.log("fetching getLibraryInfo...");
 						const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
-						if(response.ok) {
+						if (response.ok) {
 							let data = [];
-							if(response.data.result.library) {
+							if (response.data.result.library) {
 								data = response.data.result.library;
 								this.setState({library: data});
 								//await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
@@ -152,8 +152,7 @@ export default class AppContainer extends Component {
 
 				}
 
-
-				if(locationId && librarySolrScope) {
+				if (locationId && librarySolrScope) {
 					const api = create({
 						baseURL: libraryUrl + '/API',
 						timeout: GLOBALS.timeoutAverage,
@@ -162,16 +161,13 @@ export default class AppContainer extends Component {
 					});
 
 					//const locationProfile = await AsyncStorage.getItem('@locationInfo');
-					if(_.isEmpty(this.state.location)) {
-						//console.log("fetching getLocationInfo...");
+					if (_.isEmpty(this.state.location)) {
 						const response = await api.get('/SystemAPI?method=getLocationInfo', {id: locationId, library: librarySolrScope, version: Constants.manifest.version});
-						if(response.ok) {
+						if (response.ok) {
 							let data = [];
-							if(response.data.result.location) {
+							if (response.data.result.location) {
 								data = response.data.result.location;
 								this.setState({location: data});
-								//await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
-								//console.log("location loaded into context");
 							}
 						}
 					}
@@ -186,8 +182,7 @@ export default class AppContainer extends Component {
 					discoveryVersion = "22.06.00";
 				}
 
-
-				if(_.isEmpty(this.state.browseCategories)) {
+				if (_.isEmpty(this.state.browseCategories)) {
 
 					if (discoveryVersion >= "22.07.00") {
 						await getBrowseCategories(libraryUrl, discoveryVersion, 5).then(response => {
@@ -195,7 +190,7 @@ export default class AppContainer extends Component {
 								browseCategories: response,
 							})
 						})
-					} else if(discoveryVersion >= "22.05.00") {
+					} else if (discoveryVersion >= "22.05.00") {
 						await getBrowseCategories(libraryUrl, discoveryVersion).then(response => {
 							this.setState({
 								browseCategories: response,
@@ -225,40 +220,36 @@ export default class AppContainer extends Component {
 		const location = this.state.location;
 		const browseCategories = this.state.browseCategories;
 
-		if(this.state.themeSet) {
+		if (this.state.themeSet) {
 			return (
-				<userContext.Provider value={{ user, library, location, browseCategories }}>
-				<SSRProvider>
-					<NativeBaseProvider theme={this.aspenTheme}>
-						<StatusBar barStyle={this.state.statusBar} />
-						<App/>
-					</NativeBaseProvider>
-				</SSRProvider>
-				</userContext.Provider>
+					<userContext.Provider value={{user, library, location, browseCategories}}>
+						<SSRProvider>
+							<Sentry.Native.TouchEventBoundary>
+								<NativeBaseProvider theme={this.aspenTheme}>
+									<StatusBar barStyle={this.state.statusBar}/>
+									<App/>
+								</NativeBaseProvider>
+							</Sentry.Native.TouchEventBoundary>
+						</SSRProvider>
+					</userContext.Provider>
 			);
 		} else {
 			return (
-				<userContext.Provider value={{ user, library, location, browseCategories }}>
-				<SSRProvider>
-					<NativeBaseProvider>
-						<StatusBar barStyle="dark-content"/>
-						<Center flex={1}>
-							<HStack>
-								<Spinner size="lg" accessibilityLabel="Loading..."/>
-							</HStack>
-						</Center>
-					</NativeBaseProvider>
-				</SSRProvider>
-				</userContext.Provider>
+					<userContext.Provider value={{user, library, location, browseCategories}}>
+						<SSRProvider>
+							<Sentry.Native.TouchEventBoundary>
+								<NativeBaseProvider>
+									<StatusBar barStyle="dark-content"/>
+									<Center flex={1}>
+										<HStack>
+											<Spinner size="lg" accessibilityLabel="Loading..."/>
+										</HStack>
+									</Center>
+								</NativeBaseProvider>
+							</Sentry.Native.TouchEventBoundary>
+						</SSRProvider>
+					</userContext.Provider>
 			);
 		}
 	}
-}
-
-function sleep(milliseconds) {
-	const date = Date.now();
-	let currentDate = null;
-	do {
-		currentDate = Date.now();
-	} while (currentDate - date < milliseconds);
 }

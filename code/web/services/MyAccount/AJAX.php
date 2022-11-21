@@ -74,24 +74,31 @@ class MyAccount_AJAX extends JSON_Action
 				);
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
-					$addResult = $user->addLinkedUser($accountToLink);
-					if ($addResult === true) {
-						$result = array(
-							'result' => true,
-							'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
-						);
-					} else { // insert failure or user is blocked from linking account or account & account to link are the same account
-						$result = array(
-							'result' => false,
-							'message' => translate(['text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing' => true])
-						);
-					}
-				} else {
-					$result = array(
-						'result' => false,
-						'message' => translate(['text' => 'You cannot link to yourself.', 'isPublicFacing' => true])
-					);
-				}
+                    if ($accountToLink->disableAccountLinking==0){
+                        $addResult = $user->addLinkedUser($accountToLink);
+                        if ($addResult === true) {
+                            $result = array(
+                                'result' => true,
+                                'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
+                            );
+                        } else { // insert failure or user is blocked from linking account or account & account to link are the same account
+                            $result = array(
+                                'result' => false,
+                                'message' => translate(['text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing' => true])
+                            );
+                        }
+                    } else{
+                        $result = array(
+                            'result' => false,
+                            'message' => translate(['text' => 'Sorry, this user does not allow account linking', 'isPublicFacing' => true])
+                        );
+                    }
+                }else {
+                    $result = array(
+                        'result' => false,
+                        'message' => translate(['text' => 'You cannot link to yourself.', 'isPublicFacing' => true])
+                    );
+                }
 			} else {
 				$result = array(
 					'result' => false,
@@ -102,6 +109,31 @@ class MyAccount_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+    /** @noinspection PhpUnused */
+    function removeManagingAccount(){
+        if (!UserAccount::isLoggedIn()) {
+            $result = array(
+                'result' => false,
+                'message' => translate(['text' => 'Sorry, you must be logged in to manage accounts.', 'isPublicFacing' => true])
+            );
+        } else {
+            $accountToRemove = $_REQUEST['idToRemove'];
+            $user = UserAccount::getLoggedInUser();
+            if ($user->removeManagingAccount($accountToRemove)) {
+                $result = array(
+                    'result' => true,
+                    'message' => translate(['text' => 'Successfully removed linked account.', 'isPublicFacing' => true])
+                );
+            } else {
+                $result = array(
+                    'result' => false,
+                    'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+                );
+            }
+        }
+        return $result;
+    }
 
 	/** @noinspection PhpUnused */
 	function removeAccountLink()
@@ -119,15 +151,68 @@ class MyAccount_AJAX extends JSON_Action
 					'result' => true,
 					'message' => translate(['text' => 'Successfully removed linked account.', 'isPublicFacing' => true])
 				);
-			} else {
-				$result = array(
-					'result' => false,
-					'message' => translate(['text' => 'Sorry, we could remove that account.', 'isPublicFacing' => true])
-				);
 			}
-		}
+            else {
+                $result = array(
+                    'result' => false,
+                    'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+                );
+            }
+        }
 		return $result;
 	}
+
+    //WHAT IS IN MODAL POPUP FOR LINK DISABLE
+    /** @noinspection PhpUnused */
+    function disableAccountLinkingInfo(){
+        $user = UserAccount::getActiveUserObj();
+        if ($user->disableAccountLinking == 1) {
+            return array(
+                'title' => translate(['text' => 'Enable Account Linking', 'isPublicFacing' => true]),
+                'modalBody' => translate(['text' => 'Re-enabling account linking will allow others to link to your account. Do you want to continue?', 'isPublicFacing' => true]),
+                'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate(['text' => "Accept", 'isPublicFacing' => true]) . "</span>"
+            );
+        }else {
+            return array(
+                'title' => translate(['text' => 'Disable Account Linking', 'isPublicFacing' => true]),
+                'modalBody' => translate(['text' => 'Disabling account linking will sever any current links and prevent any new ones. Do you want to continue?', 'isPublicFacing' => true]),
+                'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.toggleAccountLinkingAccept(); return false;'>" . translate(['text' => "Accept", 'isPublicFacing' => true]) . "</span>"
+            );
+        }
+    }
+
+    //USED UPON SUBMITTING
+    /** @noinspection PhpUnused */
+    function toggleAccountLinking(){
+        if (!UserAccount::isLoggedIn()) {
+            $result = array(
+                'message' => translate(['text' => 'Sorry, you must be logged in to manage accounts.', 'isPublicFacing' => true])
+            );
+        } else {
+            $user = UserAccount::getActiveUserObj();
+            if ($user->disableAccountLinking == 1) {
+                $success = $user->accountLinkingToggle();
+                $result = array (
+                    'success' => $success,
+                    'title' => translate(['text' => 'Linking Enabled', 'isPublicFacing' => true]),
+                    'message' => translate(['text' => 'Account linking has been enabled', 'isPublicFacing' => true])
+                );
+            }else if ($user->disableAccountLinking == 0) {
+                $success = $user->accountLinkingToggle();
+                $result = array (
+                    'success' => $success,
+                    'title' => translate(['text' => 'Linking Disabled', 'isPublicFacing' => true]),
+                    'message' => translate(['text' => 'Account linking has been disabled', 'isPublicFacing' => true])
+                );
+            }else {
+                $result = array (
+                    'success' => false,
+                    'message' => translate(['text' => 'Sorry, something went wrong and we were unable to process this request.', 'isPublicFacing' => true])
+                );
+            }
+        }
+        return $result;
+    }
 
 	/** @noinspection PhpUnused */
 	function getAddAccountLinkForm()
@@ -959,8 +1044,8 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML
-		if (!empty($library->ssoXmlUrl)) {
-			$interface->assign('ssoXmlUrl', $library->ssoXmlUrl);
+		if (!empty($library->ssoMetadataFilename) && !empty($library->ssoEntityId)) {
+			$interface->assign('ssoEntityId', $library->ssoEntityId);
 		}
 		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
 
@@ -1029,6 +1114,9 @@ class MyAccount_AJAX extends JSON_Action
 			$id = $_REQUEST['holdId'];
 			$interface->assign('holdId', $id);
 
+			$recordId = $_REQUEST['recordId'];
+			$sourceId = $_REQUEST['source'] . ":" . $_REQUEST['recordId'];
+
 			$currentLocation = $_REQUEST['currentLocation'];
 			if (!is_numeric($currentLocation)) {
 				$location = new Location();
@@ -1043,6 +1131,24 @@ class MyAccount_AJAX extends JSON_Action
 
 			$location = new Location();
 			$pickupBranches = $location->getPickupBranches($patronOwningHold);
+
+			$pickupAt = 0;
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($recordId);
+			if ($marcRecord->isValid()) {
+				$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+				$pickupAt = $relatedRecord->getHoldPickupSetting();
+				if ($pickupAt > 0) {
+					$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+					foreach ($pickupBranches as $locationKey => $location) {
+						if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)) {
+							unset($pickupBranches[$locationKey]);
+						}
+					}
+				}
+			}
+
+			$interface->assign('pickupAt', $pickupAt);
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(
@@ -1775,6 +1881,7 @@ class MyAccount_AJAX extends JSON_Action
 		$ils = $configArray['Catalog']['ils'];
 		$showOut = ($ils == 'Horizon');
 		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+		$showRenewalsRemaining = ($ils == 'Evergreen');
 		$showWaitList = $ils == 'Horizon';
 
 		// Create new PHPExcel object
@@ -1901,7 +2008,7 @@ class MyAccount_AJAX extends JSON_Action
 		$user = UserAccount::getActiveUserObj();
 
 		$ils = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra');
+		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra' || $ils == 'Evergreen');
 		$showExpireTime = ($ils == 'Horizon' || $ils == 'Symphony');
 		$selectedAvailableSortOption = $this->setSort('availableHoldSort', 'availableHold');
 		$selectedUnavailableSortOption = $this->setSort('unavailableHoldSort', 'unavailableHold');
@@ -2255,10 +2362,12 @@ class MyAccount_AJAX extends JSON_Action
 			$ils = $configArray['Catalog']['ils'];
 			$showOut = ($ils == 'Horizon');
 			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+			$showRenewalsRemaining = ($ils == 'Evergreen');
 			$showWaitList = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon');
 
 			$interface->assign('showOut', $showOut);
 			$interface->assign('showRenewed', $showRenewed);
+			$interface->assign('showRenewalsRemaining', $showRenewalsRemaining);
 			$interface->assign('showWaitList', $showWaitList);
 
 			// Define sorting options
@@ -2360,7 +2469,7 @@ class MyAccount_AJAX extends JSON_Action
 				}
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra' || $ils == 'Evergreen');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');
@@ -5650,4 +5759,39 @@ class MyAccount_AJAX extends JSON_Action
 		);
 
 	}
+
+    function exportUserList() {
+        $result = [
+            'success' => false,
+            'message' => translate(['text' => 'Export User List to Excel: something went wrong.', 'isPublicFacing' => true])
+        ];
+        global $interface;
+        if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) { // validly formatted List Id
+            $userListId = $_REQUEST['listId'];
+            require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+            $list = new UserList();
+            $list->id = $userListId;
+            if ($list->find(true)) {
+                // Load the User object for the owner of the list (if necessary):
+                if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
+                    $list->buildExcel();
+                } else {
+                    $result = array(
+                        'result' => false,
+                        'message' => translate(['text' => 'Export User List to Excel: You do not have access to this list.', 'isPublicFacing' => true])
+                    );
+                }
+            } else {
+                $result = array(
+                    'result' => false,
+                    'message' => translate(['text' => 'Export User List to Excel: Unable to read list.', 'isPublicFacing' => true])
+                );
+            }
+        } else { // Invalid listId
+            $result = array(
+                'result' => false,
+                'message' => translate(['text' => 'Export User List to Excel: Invalid list id.', 'isPublicFacing' => true])
+            );
+        }
+    }
 }

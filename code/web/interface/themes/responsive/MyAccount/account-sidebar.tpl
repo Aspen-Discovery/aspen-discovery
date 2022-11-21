@@ -1,15 +1,11 @@
 {strip}
 	{if $loggedIn}
-		{if $showUserCirculationModules || $showCurbsidePickups || $showFines || $showRatings || $showFavorites || $enableSavedSearches || $displayMaterialsRequest || $enableReadingHistory}
-			{assign var='showMyAccount' value='true'}
-		{else}
-			{assign var='showMyAccount' value='false'}
-		{/if}
+
 		{* Setup the accordion *}
 		<!--suppress HtmlUnknownTarget -->
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
-				{if $showMyAccount == 'true'}
+				{if $showMyAccount}
 				<div class="panel active">
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
@@ -187,13 +183,14 @@
 					</div>
 				</div>
 
-				{if $action=='MyPreferences' || $action=='ContactInformation' || $action=='MessagingSettings' || $action=='LinkedAccounts' || $action=='Security' || $action=='ResetPinPage' || $action=='OverDriveOptions' || $action=='HooplaOptions' || $action=='Axis360Options' || $action=='StaffSettings'}
+				{if $action=='MyPreferences' || $action=='ContactInformation' || $action=='MessagingSettings' || $action=='LinkedAccounts' || $action=='Security' || $action=='ResetPinPage' || $action=='OverDriveOptions' || $action=='HooplaOptions' || $action=='Axis360Options' || $action=='StaffSettings' || $action=='HoldNotificationPreferences'}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
 				{/if}
 				{/if}
-				<div class="panel {if ($curSection || $showMyAccount == 'false')}active{/if}">
+				{if $showAccountSettings}
+				<div class="panel {if ($curSection || !$showMyAccount)}active{/if}">
 					{* Clickable header for account settings section *}
 					<a data-toggle="collapse" href="#mySettingsPanel" aria-label="{translate text="Account Settings Menu" inAttribute="true" isPublicFacing=true}">
 						<div class="panel-heading">
@@ -202,11 +199,14 @@
 							</div>
 						</div>
 					</a>
-					<div id="mySettingsPanel" class="panel-collapse collapse {if ($curSection || $showMyAccount == 'false')}in{/if}">
+					<div id="mySettingsPanel" class="panel-collapse collapse {if ($curSection || !$showMyAccount)}in{/if}">
 						<div class="panel-body">
 							{if !$offline}
 								{if $showUserPreferences}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
 								{if $showUserContactInformation}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
+								{if $user->showHoldNotificationPreferences()}
+									<div class="myAccountLink"><a href="/MyAccount/HoldNotificationPreferences">{translate text='Hold Notification Preferences' isPublicFacing=true}</a></div>
+								{/if}
 								{if $user->showMessagingSettings()}
 									<div class="myAccountLink"><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
 								{/if}
@@ -236,6 +236,7 @@
 					</div>
 				</div>
 			</div>
+			{/if}
 
 			{if $allowMasqueradeMode && !$masqueradeMode}
 				{if $canMasquerade}
@@ -244,6 +245,7 @@
 					</div>
 				{/if}
 			{/if}
+		{if !$showMyAccount}</div>{/if}
 		</div>
 	{/if}
 	<script type="text/javascript">

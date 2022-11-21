@@ -179,6 +179,19 @@
 						</div>
 					{/if}
 
+					{if empty($record->returnClaim) && ($showRenewalsRemaining)}{* Show times renewed when sorting by that value (even if 0)*}
+						<div class="row">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Renewals Remaining' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
+								{if empty($record->maxRenewals)}
+									0
+								{else}
+									{$record->maxRenewals}
+								{/if}
+							</div>
+						</div>
+					{/if}
+
 					{if $showWaitList}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Wait List' isPublicFacing=true}</div>

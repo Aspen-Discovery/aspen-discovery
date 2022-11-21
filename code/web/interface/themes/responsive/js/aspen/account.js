@@ -597,6 +597,39 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		removeManagingAccount: function (idToRemove) {
+			if (confirm("Are you sure you want to break the link with this account?")) {
+				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
+				$.getJSON(url, function (data) {
+					if (data.result === true) {
+						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
+					} else {
+						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
+					}
+				});
+			}
+			return false;
+		},
+
+		//CALL FOR ON CLICK, INITIAL MODAL POPUP
+		disableAccountLinkingPopup: function () {
+			var url = Globals.path + "/MyAccount/AJAX?method=disableAccountLinkingInfo";
+			AspenDiscovery.loadingMessage();
+				$.getJSON(url, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+				return false;
+		},
+
+		//CALL FOR HITTING ACCEPT ON POPUP - GOES TO TOGGLEACCOUNTLINKING AJAX
+		toggleAccountLinkingAccept: function() {
+			var url = Globals.path + "/MyAccount/AJAX?method=toggleAccountLinking";
+			$.getJSON(url, function (data) {
+					AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
+			});
+			return false;
+		},
+
 		renewTitle: function (patronId, recordId, renewIndicator) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
@@ -788,10 +821,10 @@ AspenDiscovery.Account = (function () {
 			location.replace(location.pathname + paramString)
 		},
 
-		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation) {
+		changeHoldPickupLocation: function (patronId, recordId, holdId, currentLocation, source) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&currentLocation=" + currentLocation + "&source=" + source, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
 			} else {
@@ -1052,7 +1085,7 @@ AspenDiscovery.Account = (function () {
 			var params = {
 				method: 'showSearchToolbar',
 				displayMode: AspenDiscovery.Searches.displayMode,
-				showCovers: showCovers ?? 0,
+				showCovers: showCovers,
 				rssLink: rssLink,
 				excelLink: excelLink,
 				searchId: searchId,
@@ -1246,7 +1279,7 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		createGenericOrder: function (finesFormId, paymentType, transactionType) {
+		createGenericOrder: function (finesFormId, paymentType, transactionType, token) {
 			var url = Globals.path + "/MyAccount/AJAX";
 
 			var params = {
@@ -1254,6 +1287,9 @@ AspenDiscovery.Account = (function () {
 				patronId: $(finesFormId + " input[name=patronId]").val(),
 				type: transactionType
 			};
+			if (token) {
+				params.token = token;
+			}
 			if (transactionType === 'donation') {
 
 				if ($(finesFormId + " input[name=customAmount]").val()) {
@@ -1309,6 +1345,8 @@ AspenDiscovery.Account = (function () {
 						} else if (paymentType === 'XpressPay') {
 							orderInfo = response.paymentRequestUrl;
 						} else if (paymentType === 'WorldPay') {
+							orderInfo = response.paymentId;
+						} else if (paymentType === 'ACI') {
 							orderInfo = response.paymentId;
 						}
 					}
@@ -1318,7 +1356,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		createMSBOrder: function (finesFormId, transactionType) {
-			var url = this.createGenericOrder(finesFormId, 'MSB', transactionType);
+			var url = this.createGenericOrder(finesFormId, 'MSB', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1327,15 +1365,15 @@ AspenDiscovery.Account = (function () {
 		},
 
 		createPayPalOrder: function (finesFormId, transactionType) {
-			return this.createGenericOrder(finesFormId, 'PayPal', transactionType);
+			return this.createGenericOrder(finesFormId, 'PayPal', transactionType, null);
 		},
 
 		createWorldPayOrder: function (finesFormId, transactionType) {
-			return this.createGenericOrder(finesFormId, 'WorldPay', transactionType);
+			return this.createGenericOrder(finesFormId, 'WorldPay', transactionType, null);
 		},
 
 		createCompriseOrder: function (finesFormId, transactionType) {
-			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType);
+			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1344,7 +1382,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		createProPayOrder: function (finesFormId, transactionType) {
-			var url = this.createGenericOrder(finesFormId, 'ProPay', transactionType);
+			var url = this.createGenericOrder(finesFormId, 'ProPay', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1353,7 +1391,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		createXpressPayOrder: function (finesFormId, transactionType) {
-			var url = this.createGenericOrder(finesFormId, 'XpressPay', transactionType);
+			var url = this.createGenericOrder(finesFormId, 'XpressPay', transactionType, null);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1361,82 +1399,18 @@ AspenDiscovery.Account = (function () {
 			}
 		},
 
-		createACISpeedpayOrder: function (finesFormId, transactionType, tokenId) {
-			var url = Globals.path + "/MyAccount/AJAX";
-
-			var params = {
-				method: "create" + paymentType + "Order",
-				patronId: $(finesFormId + " input[name=patronId]").val(),
-				type: transactionType,
-				token: tokenId
-			};
-			if (transactionType === 'donation') {
-				if ($(finesFormId + " input[name=customAmount]").val()) {
-					params.amount = $(finesFormId + " input[name=customAmount]").val();
-				} else {
-					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
-				}
-				params.earmark = $(finesFormId + " select[name=earmark]").val();
-				params.toLocation = $(finesFormId + " select[name=toLocation]").val();
-				params.isDedicated = $(finesFormId + " input[name=shouldBeDedicated]:checked").val();
-				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
-				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
-				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
-				params.firstName = $(finesFormId + " input[name=firstName]").val();
-				params.lastName = $(finesFormId + " input[name=lastName]").val();
-				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
-				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
-				params.settingId = $(finesFormId + " input[name=settingId]").val();
-			}
-			$(finesFormId + " .selectedFine:checked").each(
-				function () {
-					var name = $(this).attr('name');
-					params[name] = $(this).val();
-
-					var fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
-					if (fineAmount) {
-						params[fineAmount.attr('name')] = fineAmount.val();
-					}
-				}
-			);
-			var orderInfo = false;
-			// noinspection JSUnresolvedFunction
-			$.ajax({
-				url: url,
-				data: params,
-				dataType: 'json',
-				async: false,
-				method: 'GET'
-			}).success(
-				function (response) {
-					if (response.success === false) {
-						AspenDiscovery.showMessage("Error", response.message);
-						return false;
-					} else {
-						if (paymentType === 'PayPal') {
-							orderInfo = response.orderID;
-						} else if (paymentType === 'MSB') {
-							orderInfo = response.paymentRequestUrl;
-						} else if (paymentType === 'Comprise') {
-							orderInfo = response.paymentRequestUrl;
-						} else if (paymentType === 'ProPay') {
-							orderInfo = response.paymentRequestUrl;
-						} else if (paymentType === 'XpressPay') {
-							orderInfo = response.paymentRequestUrl;
-						} else if (paymentType === 'WorldPay') {
-							orderInfo = response.paymentId;
-						}
-					}
-				}
-			).fail(AspenDiscovery.ajaxFail);
-			return orderInfo;
+		createACIOrder: function (finesFormId, transactionType, token) {
+			return this.createGenericOrder(finesFormId, 'ACI', transactionType, token)
 		},
-		completeACISpeedpayOrder: function (orderId, patronId, transactionType) {
+
+		completeACIOrder: function (fundingToken, patronId, transactionType, paymentId, accessToken) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "completeACISpeedpayOrder",
+				method: "completeACIOrder",
 				patronId: patronId,
-				orderId: orderId,
+				paymentId: paymentId,
+				accessToken: accessToken,
+				fundingToken: fundingToken,
 				type: transactionType
 			};
 			// noinspection JSUnresolvedFunction
@@ -1462,8 +1436,8 @@ AspenDiscovery.Account = (function () {
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-		handleACISpeedpayError: function (error) {
-			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+		handleACIError: function (error) {
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, false);
 		},
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";

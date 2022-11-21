@@ -40,6 +40,9 @@ class User extends DataObject
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
+    public $disableAccountLinking;
+	public $oAuthAccessToken;
+	public $oAuthRefreshToken;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -114,7 +117,7 @@ class User extends DataObject
 
 	function getNumericColumnNames() : array
 	{
-		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
+		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError', 'rememberHoldPickupLocation'];
 	}
 
 	function getEncryptedFieldNames() : array {
@@ -647,6 +650,40 @@ class User extends DataObject
 		}
 		return false;
 	}
+
+    //Individually remove accounts that have linked to user
+    function removeManagingAccount($userId){
+        require_once ROOT_DIR . '/sys/Account/UserLink.php';
+        $userLink                   = new UserLink();
+        $userLink->primaryAccountId = $userId;
+        $userLink->linkedAccountId  = $this->id;
+        $ret                        = $userLink->delete(true);
+
+        //Force a reload of data
+        $this->linkedUsers = null;
+        $this->getLinkedUsers();
+
+        return $ret == 1;
+    }
+
+    //THIS GETS USED BY TOGGLEACCOUNTLINKING AJAX
+    function accountLinkingToggle(){
+        require_once ROOT_DIR . '/sys/Account/UserLink.php';
+        if ($this->disableAccountLinking == 0){
+            $this->disableAccountLinking = 1;
+            //Remove Managing Accounts
+            $userLink = new UserLink();
+            $userLink->linkedAccountId = $this->id;
+            $userLink->delete(true);
+            //Remove Linked Users
+            $userLink = new UserLink();
+            $userLink->primaryAccountId = $this->id;
+            $userLink->delete(true);
+        }else{
+            $this->disableAccountLinking = 0;
+        }
+        return $this->update();
+    }
 
 	/**
 	 * @return int|bool
@@ -1384,14 +1421,14 @@ class User extends DataObject
 //		}
 		if ($this->isRecordCheckedOut($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
+				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : translate(['text' => 'You', 'isPublicFacing' => true]), 'isPublicFacing' => true]),
 				'url' => "/MyAccount/CheckedOut",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
 			);
 		} elseif ($source != 'hoopla' && $this->isRecordOnHold($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
+				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : translate(['text' => 'You', 'isPublicFacing' => true]), 'isPublicFacing' => true]),
 				'url' => "/MyAccount/Holds",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
@@ -2085,7 +2122,7 @@ class User extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function showMessagingSettings(){
+	function showMessagingSettings() : bool{
 		global $library;
 		if ($library->showMessagingSettings) {
 			if ($this->hasIlsConnection()) {
@@ -2097,7 +2134,17 @@ class User extends DataObject
 		return false;
 	}
 
-	function getMessages(){
+	/** @noinspection PhpUnused */
+	function showHoldNotificationPreferences() : bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showHoldNotificationPreferences();
+		}
+		else {
+			return false;
+		}
+	}
+
+	function getMessages() : array{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		$userMessage = new UserMessage();
 		$userMessage->userId = $this->id;
@@ -2853,6 +2900,15 @@ class User extends DataObject
 
 		$this->holdInfoLastLoaded = 0;
 		$this->update();
+	}
+
+	public function clearActiveSessions() {
+		//Delete any sessions for the patron to ensure they are logged out
+		$session = new Session();
+		$session->whereAdd("data like '%activeUserId|s:" . strlen($this->id) . ":\"$this->id\"%'");
+		$session->whereAdd('session_id != "' . session_id() . '"');
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$numDeletions = $session->delete(true);
 	}
 
 	protected function clearRuntimeDataVariables(){

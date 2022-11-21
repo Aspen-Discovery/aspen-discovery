@@ -679,7 +679,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasqueradeo) {
+	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)  : array{
 		$result = [
 			'success' => false,
 			'messages' => []
@@ -796,24 +796,24 @@ class CarlX extends AbstractIlsDriver{
 	public function getSelfRegistrationFields() {
 		global $library;
 		$fields = array();
-		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
-		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true, 'autocomplete' => false);
+		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false, 'autocomplete' => false);
+		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true, 'autocomplete' => false);
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true, 'autocomplete' => false);
 		}
-		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
-		$fields[] = array('default'=>'TN','property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
-		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
-		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>true);
-		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true, 'autocomplete' => false);
+		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true, 'autocomplete' => false);
+		$fields[] = array('default'=>'TN','property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true, 'autocomplete' => false);
+		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true, 'autocomplete' => false);
+		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>true, 'autocomplete' => false);
+		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true, 'autocomplete' => false);
 		return $fields;
 	}
 
-	function selfRegister(){
+	function selfRegister() : array{
 		global $library,
 		       $configArray,
 		       $active_ip,

@@ -26,8 +26,19 @@ class Admin_DBMaintenance extends Admin_Admin
 			foreach ($availableUpdates as $key => $update) {
 				if (isset($_REQUEST["selected"][$key])) {
 					$systemAPI->runDatabaseUpdate($availableUpdates, $key);
-
 				}
+			}
+
+			//Also force a nightly index
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			SystemVariables::forceNightlyIndex();
+
+			//Optimize tables that have temporary data and need clearing regularly
+			try {
+				global $aspen_db;
+				$aspen_db->query('OPTIMIZE TABLE external_request_log');
+			} catch (PDOException $e) {
+				//Just ignore any errors for now
 			}
 		}
 
@@ -35,10 +46,6 @@ class Admin_DBMaintenance extends Admin_Admin
 		$availableUpdates = $systemAPI->checkWhichUpdatesHaveRun($availableUpdates);
 
 		$interface->assign('sqlUpdates', $availableUpdates);
-
-		//Also force a nightly index
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		SystemVariables::forceNightlyIndex();
 
 		$this->display('dbMaintenance.tpl', 'Database Maintenance');
 

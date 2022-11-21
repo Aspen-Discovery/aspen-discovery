@@ -424,6 +424,24 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
+		select856Link: function( recordId) {
+			var url = Globals.path + '/Record/' + recordId + '/AJAX';
+			var params = {
+				method: 'showSelect856ToViewForm'
+			};
+			$.getJSON(url, params, function (data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
+			return false;
+		},
+
+		view856Link: function () {
+			var selected856LinkId = $('#selected856Link').val();
+			var id = $('#id').val();
+			window.location = Globals.path + '/Record/' + id + '/AJAX?method=View856&linkId=' + selected856LinkId;
+			return false;
+		},
+
 		getStaffView: function (module, id) {
 			var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){

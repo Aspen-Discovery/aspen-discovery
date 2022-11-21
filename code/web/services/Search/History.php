@@ -116,6 +116,8 @@ class History extends Action {
 		}
 
 		if (UserAccount::isLoggedIn()){
+			$this->loadAccountSidebarVariables();
+
 			$this->display('history.tpl', 'Search History');
 		}else{
 			$this->display('history.tpl', 'Search History', '');
