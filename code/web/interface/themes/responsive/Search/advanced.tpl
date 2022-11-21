@@ -219,9 +219,9 @@
 	{/foreach}
 	{rdelim};
 	var searchJoins = {ldelim}
-		AND: '{translate text="All Terms (AND)" inAttribute=true isPublicFacing=true}'
-		,OR: '{translate text="Any Terms (OR)" inAttribute=true isPublicFacing=true}'
-		,NOT:'{translate text="No Terms (NOT)" inAttribute=true isPublicFacing=true}'
+		AND: "{translate text="All Terms (AND)" inAttribute=true isPublicFacing=true}"
+		,OR: "{translate text="Any Terms (OR)" inAttribute=true isPublicFacing=true}"
+		,NOT:"{translate text="No Terms (NOT)" inAttribute=true isPublicFacing=true}"
 		{rdelim};
 	var addSearchString = "{translate text="Add Search Field" inAttribute=true isPublicFacing=true}";
 	var searchLabel     = "{translate text="Search for" inAttribute=true isPublicFacing=true}";

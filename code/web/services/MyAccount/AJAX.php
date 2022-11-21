@@ -2472,7 +2472,7 @@ class MyAccount_AJAX extends JSON_Action
 				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra' || $ils == 'Evergreen');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-				$showPlacedColumn = ($ils == 'Symphony');
+				$showPlacedColumn = ($ils == 'Symphony' || $ils == 'Koha');
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
 
 				$location = new Location();
@@ -2501,6 +2501,7 @@ class MyAccount_AJAX extends JSON_Action
 					'author' => 'Author',
 					'format' => 'Format',
 					'expire' => 'Expiration Date',
+                    'placed' => 'Date Placed',
 				);
 				if ($source == 'all' || $source == 'ils') {
 					$availableHoldSortOptions['location'] = 'Pickup Location';
