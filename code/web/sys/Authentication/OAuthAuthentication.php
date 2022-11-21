@@ -6,7 +6,8 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 
-class OAuthAuthentication extends Action {
+class OAuthAuthentication extends Action
+{
 	protected $basicAuth;
 	protected $state;
 	protected $gateway;
@@ -19,7 +20,8 @@ class OAuthAuthentication extends Action {
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
-	public function __construct() {
+	public function __construct()
+	{
 		parent::__construct();
 
 		global $library;
@@ -33,8 +35,7 @@ class OAuthAuthentication extends Action {
 			$this->redirectUri = $ssoSettings->getRedirectUrl();
 			$this->matchpoints = $ssoSettings->getMatchpoints();
 			$this->grantType = $ssoSettings->getAuthenticationGrantType();
-		}
-		else {
+		} else {
 			global $logger;
 			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT);
 			echo("Single sign-on settings must be configured to use OAuth 2.0 for user authentication.");
@@ -42,11 +43,13 @@ class OAuthAuthentication extends Action {
 		}
 	}
 
-	protected function getRandomState($length = 32): string {
+	protected function getRandomState($length = 32): string
+	{
 		return bin2hex(random_bytes($length / 2));
 	}
 
-	public function verifyIdToken($payload): array {
+	public function verifyIdToken($payload): array
+	{
 		$success = false;
 		$error = '';
 		$message = '';
@@ -60,65 +63,41 @@ class OAuthAuthentication extends Action {
 			$ssoSettings->id = $library->ssoSettingId;
 			$ssoSettings->service = "oauth";
 			if ($ssoSettings->find(true)) {
-				$requestOptions = [
-					'client_id' => $ssoSettings->clientId,
-					'client_secret' => $ssoSettings->clientSecret,
-					'grant_type' => 'authorization_code',
-					'code' => $payload['code'],
-					'redirect_uri' => $this->redirectUri,
-					'access_type' => 'offline',
-				];
+				$requestOptions = ['client_id' => $ssoSettings->clientId, 'client_secret' => $ssoSettings->clientSecret, 'grant_type' => 'authorization_code', 'code' => $payload['code'], 'redirect_uri' => $this->redirectUri, 'access_type' => 'offline',];
 				$requestToken = $this->getAccessToken($ssoSettings->getAccessTokenUrl(), $requestOptions);
 				if (!$requestToken) {
 					$logger->log('Error getting access token', Logger::LOG_ERROR);
-					return [
-						'success' => false,
-						'message' => '',
-						'error' => 'Did not get expected JSON results from OAuth to get a valid Access Token',
-					];
+					return ['success' => false, 'message' => '', 'error' => 'Did not get expected JSON results from OAuth to get a valid Access Token',];
 				}
 
 				$resourceOwner = $this->getResourceOwner($ssoSettings->getResourceOwnerDetailsUrl());
 				if (!$resourceOwner) {
 					$logger->log('Error getting resource owner', Logger::LOG_ERROR);
-					return [
-						'success' => false,
-						'message' => '',
-						'error' => "Did not get expected JSON results from OAuth to get Resource Owner details",
-					];
+					return ['success' => false, 'message' => '', 'error' => "Did not get expected JSON results from OAuth to get Resource Owner details",];
 				}
 
 				$account = $this->validateAccount();
 				if (!$account) {
 					$logger->log('Error validating account', Logger::LOG_ERROR);
-					return [
-						'success' => false,
-						'message' => '',
-						'error' => "Unable to find and/or register user with provided credentials",
-					];
+					return ['success' => false, 'message' => '', 'error' => "Unable to find and/or register user with provided credentials",];
 				}
 
 				$success = true;
 				$message = 'Successfully logged in using OAuth';
 				$returnTo = '/MyAccount/Home';
 
-			}
-			else {
+			} else {
 				$error = 'OAuth is not setup for library.';
 			}
-		}
-		else {
+		} else {
 			$error = 'No data from OAuth provided, unable to log into system.';
 		}
 
-		return [
-			'success' => $success,
-			'message' => $success ? $message : $error,
-			'returnTo' => $returnTo
-		];
+		return ['success' => $success, 'message' => $success ? $message : $error, 'returnTo' => $returnTo];
 	}
 
-	public function getAccessToken($accessTokenUrl, array $options = [], $returnToken = false) {
+	public function getAccessToken($accessTokenUrl, array $options = [], $returnToken = false)
+	{
 		$queryString = $this->buildQueryString($options);
 		$url = $this->appendQuery($accessTokenUrl, $queryString);
 		$this->initCurlWrapper();
@@ -137,11 +116,13 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	protected function buildQueryString(array $params): string {
+	protected function buildQueryString(array $params): string
+	{
 		return http_build_query($params, '', '&', \PHP_QUERY_RFC3986);
 	}
 
-	protected function appendQuery($url, $query): string {
+	protected function appendQuery($url, $query): string
+	{
 		$query = trim($query, '?&');
 
 		if ($query) {
@@ -152,17 +133,15 @@ class OAuthAuthentication extends Action {
 		return $url;
 	}
 
-	protected function initCurlWrapper() {
+	protected function initCurlWrapper()
+	{
 		$this->curlWrapper = new CurlWrapper();
 		$this->curlWrapper->timeout = 5;
-		$this->curlWrapper->addCustomHeaders([
-			"Authorization: Basic $this->basicAuth",
-			"Cache-Control: no-cache",
-			"Content-Type: application/x-www-form-urlencoded"
-		], true);
+		$this->curlWrapper->addCustomHeaders(["Authorization: Basic $this->basicAuth", "Cache-Control: no-cache", "Content-Type: application/x-www-form-urlencoded"], true);
 	}
 
-	private function getResourceOwner($resourceOwnerDetailsUrl): bool {
+	private function getResourceOwner($resourceOwnerDetailsUrl): bool
+	{
 		$url = $resourceOwnerDetailsUrl . "?access_token=" . $this->accessToken;
 		$this->initCurlWrapper();
 		$response = $this->curlWrapper->curlGetPage($url);
@@ -174,14 +153,14 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	private function validateAccount(): bool {
+	private function validateAccount(): bool
+	{
 		global $logger;
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
 		if ($this->getUserId()) {
 			$logger->log('Checking to see if user ' . print_r($this->getUserId(), true) . ' exists in the database...', Logger::LOG_ERROR);
-		}
-		else {
+		} else {
 			$logger->log('Error searching resource owner for userId', Logger::LOG_ERROR);
 			return false;
 		}
@@ -219,11 +198,13 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	private function getUserId() {
+	private function getUserId()
+	{
 		return $this->searchArray($this->resourceOwner, $this->matchpoints['userId']);
 	}
 
-	public function searchArray($array, $needle) {
+	public function searchArray($array, $needle)
+	{
 		$result = false;
 		foreach ($array as $obj) {
 			if (is_array($obj)) {
@@ -233,8 +214,7 @@ class OAuthAuthentication extends Action {
 						break;
 					}
 				}
-			}
-			else {
+			} else {
 				if (array_key_exists($needle, $obj)) {
 					$result = $obj[$needle];
 					break;
@@ -244,19 +224,23 @@ class OAuthAuthentication extends Action {
 		return $result;
 	}
 
-	private function getEmail() {
+	private function getEmail()
+	{
 		return $this->searchArray($this->resourceOwner, $this->matchpoints['email']);
 	}
 
-	private function getFirstName() {
+	private function getFirstName()
+	{
 		return $this->searchArray($this->resourceOwner, $this->matchpoints['firstName']);
 	}
 
-	private function getLastName() {
+	private function getLastName()
+	{
 		return $this->searchArray($this->resourceOwner, $this->matchpoints['lastName']);
 	}
 
-	private function newSSOSession($id) {
+	private function newSSOSession($id)
+	{
 		global $configArray;
 		global $timer;
 		$session_type = $configArray['Session']['type'];
@@ -278,32 +262,23 @@ class OAuthAuthentication extends Action {
 		$_SESSION['loggedInViaSSO'] = true;
 	}
 
-	public function getAuthorizationRequestUrl(SSOSetting $settings): string {
+	public function getAuthorizationRequestUrl(SSOSetting $settings): string
+	{
 		$authorizationUrl = $settings->getAuthorizationUrl();
-		$requestOptions = [
-			'client_id' => $settings->clientId,
-			'response_type' => 'code',
-			'redirect_uri' => $this->redirectUri,
-			'state' => $this->state,
-			'scope' => $settings->getScope()
-		];
+		$requestOptions = ['client_id' => $settings->clientId, 'response_type' => 'code', 'redirect_uri' => $this->redirectUri, 'state' => $this->state, 'scope' => $settings->getScope()];
 
 		$queryString = $this->buildQueryString($requestOptions);
 		return $this->appendQuery($authorizationUrl, $queryString);
 	}
 
-	public function refreshAccessToken(): bool {
+	public function refreshAccessToken(): bool
+	{
 		global $library;
 		$ssoSettings = new SSOSetting();
 		$ssoSettings->id = $library->ssoSettingId;
 		$ssoSettings->service = 'oauth';
 		if ($ssoSettings->find(true)) {
-			$requestOptions = [
-				'client_id' => $ssoSettings->clientId,
-				'client_secret' => $ssoSettings->clientSecret,
-				'grant_type' => 'refresh_token',
-				'refresh_token' => $this->refreshToken,
-			];
+			$requestOptions = ['client_id' => $ssoSettings->clientId, 'client_secret' => $ssoSettings->clientSecret, 'grant_type' => 'refresh_token', 'refresh_token' => $this->refreshToken,];
 			if ($this->getAccessToken($ssoSettings->getAccessTokenUrl(), $requestOptions)) {
 				return true;
 			}
@@ -311,7 +286,8 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	public function logout(): bool {
+	public function logout(): bool
+	{
 		global $library;
 		$ssoSettings = new SSOSetting();
 		$ssoSettings->id = $library->ssoSettingId;
@@ -323,8 +299,7 @@ class OAuthAuthentication extends Action {
 			$this->curlWrapper->curlPostPage($url, '');
 			if ($this->curlWrapper->getResponseCode() == 400) {
 				return false;
-			}
-			else {
+			} else {
 				UserAccount::logout();
 				return true;
 			}
@@ -332,26 +307,23 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	function launch() {}
+	function launch()
+	{
+	}
 
-	function getBreadcrumbs(): array {
+	function getBreadcrumbs(): array
+	{
 		return [];
 	}
 
-	protected function getAccessTokenByResourceOwnerCredentials(string $username, string $password, $returnToken = false) {
+	protected function getAccessTokenByResourceOwnerCredentials(string $username, string $password, $returnToken = false)
+	{
 		global $library;
 		$ssoSettings = new SSOSetting();
 		$ssoSettings->id = $library->ssoSettingId;
 		$ssoSettings->service = 'oauth';
 		if ($ssoSettings->find(true)) {
-			$requestOptions = [
-				'client_id' => $ssoSettings->clientId,
-				'client_secret' => $ssoSettings->clientSecret,
-				'grant_type' => 'password',
-				'username' => $username,
-				'password' => $password,
-				'access_type' => 'offline'
-			];
+			$requestOptions = ['client_id' => $ssoSettings->clientId, 'client_secret' => $ssoSettings->clientSecret, 'grant_type' => 'password', 'username' => $username, 'password' => $password, 'access_type' => 'offline'];
 			$queryString = $this->buildQueryString($requestOptions);
 			$url = $this->appendQuery($ssoSettings->getAccessTokenUrl(), $queryString);
 			$this->initCurlWrapper();
@@ -370,23 +342,16 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	protected function getAccessTokenByClientCredentials($returnToken = false) {
+	protected function getAccessTokenByClientCredentials($returnToken = false)
+	{
 		global $library;
 		$ssoSettings = new SSOSetting();
 		$ssoSettings->id = $library->ssoSettingId;
 		$ssoSettings->service = 'oauth';
 		if ($ssoSettings->find(true)) {
-			$params = [
-				'client_id' => $ssoSettings->clientId,
-				'client_secret' => $this->createClientSecret($ssoSettings->oAuthPrivateKeys),
-				'grant_type' => 'client_credentials',
-			];
+			$params = ['client_id' => $ssoSettings->clientId, 'client_secret' => $this->createClientSecret($ssoSettings->oAuthPrivateKeys), 'grant_type' => 'client_credentials',];
 			$this->initCurlWrapper();
-			$response = $this->curlWrapper->curlPostPage($ssoSettings->getAccessTokenUrl(), [
-				'query' => $params,
-				'timeout' => 10,
-				'debug' => true
-			]);
+			$response = $this->curlWrapper->curlPostPage($ssoSettings->getAccessTokenUrl(), ['query' => $params, 'timeout' => 10, 'debug' => true]);
 			if ($this->curlWrapper->getResponseCode() == 200) {
 				$options = json_decode($response, true);
 				if (!empty($options['access_token'])) {
@@ -401,7 +366,8 @@ class OAuthAuthentication extends Action {
 		return false;
 	}
 
-	protected function createClientSecret($pkFile): string {
+	protected function createClientSecret($pkFile): string
+	{
 		$pk = openssl_pkey_get_private($pkFile);
 		$timestamp = (string)intval(microtime(true) * 1000);
 		openssl_private_encrypt($timestamp, $crypttext, $pk);
