@@ -35,6 +35,7 @@ export let PATRON = {
 	},
 	'linkedAccounts': [],
 	'holds': [],
+	'lists': [],
 };
 
 const endpoint = ENDPOINT.user;
@@ -64,6 +65,8 @@ export async function getProfile(reload = false) {
 					return response.data.result.profile;
 				}
 			}
+		} else {
+			console.log(response);
 		}
 	}
 }
@@ -450,6 +453,7 @@ export async function getLists(libraryUrl) {
 				lists = response.data.result.lists;
 			}
 		}
+		PATRON.lists = lists;
 		return lists;
 	} else {
 		console.log(response);

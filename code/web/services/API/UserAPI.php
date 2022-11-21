@@ -26,7 +26,8 @@ class UserAPI extends Action
 				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile',
 					'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations',
 					'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage',
-					'initMasquerade', 'endMasquerade', 'saveNotificationPushToken', 'deleteNotificationPushToken', 'getNotificationPushToken', 'submitVdxRequest', 'cancelVdxRequest', 'getNotificationPreference', 'setNotificationPreference', 'getNotificationPreferences'))) {
+					'initMasquerade', 'endMasquerade', 'saveNotificationPushToken', 'deleteNotificationPushToken', 'getNotificationPushToken', 'submitVdxRequest', 'cancelVdxRequest', 'getNotificationPreference',
+					'setNotificationPreference', 'getNotificationPreferences', 'updateBrowseCategoryStatus'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -2747,6 +2748,45 @@ class UserAPI extends Action
 			$results['message'] = 'No patron id was provided';
 		}
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function updateBrowseCategoryStatus() {
+		$result = [
+			'success' => false,
+			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+		];
+		if(isset($_REQUEST['browseCategoryId'])) {
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $_REQUEST['browseCategoryId'];
+				$browseCategoryDismissal->userId = $user->id;
+				if ($browseCategoryDismissal->find(true)) {
+					$browseCategoryDismissal->delete();
+					$result = [
+						'success' => true,
+						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+					];
+				}
+				else {
+					$browseCategoryDismissal->insert();
+					$result = [
+						'success' => true,
+						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Browse category has been unhidden', 'isPublicFacing' => true])
+					];
+				}
+			} else {
+				$result['message'] = translate(['text' => 'Incorrect user information, please login again', 'isPublicFacing' => true]);
+			}
+		} else {
+			$result['message'] = translate(['text' => 'Please provide a browse category', 'isPublicFacing' => true]);
+		}
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */

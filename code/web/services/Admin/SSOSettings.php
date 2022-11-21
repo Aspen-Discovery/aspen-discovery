@@ -4,25 +4,20 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 
-class SSOSettings extends ObjectEditor
-{
-	function getObjectType(): string
-	{
+class SSOSettings extends ObjectEditor {
+	function getObjectType(): string {
 		return 'SSOSetting';
 	}
 
-	function getToolName(): string
-	{
+	function getToolName(): string {
 		return 'SSOSettings';
 	}
 
-	function getPageTitle(): string
-	{
+	function getPageTitle(): string {
 		return 'Single Sign-on Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage): array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$list = array();
 
 		$object = new SSOSetting();
@@ -37,33 +32,27 @@ class SSOSettings extends ObjectEditor
 		return $list;
 	}
 
-	function getDefaultSort(): string
-	{
+	function getDefaultSort(): string {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array
-	{
+	function getObjectStructure(): array {
 		return SSOSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn(): string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn(): string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getInstructions(): string
-	{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
@@ -71,18 +60,15 @@ class SSOSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection(): string
-	{
+	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
 
-	function canView(): bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Single Sign-on');
 	}
 
-	function getInitializationJs(): string
-	{
+	function getInitializationJs(): string {
 		return 'AspenDiscovery.Admin.getSSOFields();';
 	}
 }

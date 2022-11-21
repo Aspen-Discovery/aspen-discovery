@@ -9,8 +9,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-.next/**
-.idea/**
+/.idea/*
 
 # macOS
 .DS_Store
@@ -30,10 +29,15 @@ web-build/
 .pnp.js
 # @end @expo/next-adapter
 app-configs/**
-!/app-configs/app.template.json
-!/app-configs/bumpVersions.php
-!/app-configs/makeNew.sh
+config/**
+!/app-configs/copyConfig.js
+!/app-configs/updateConfig.js
+!/app-configs/restoreConfig.js
+!/app-configs/TEMPLATE_apps.json
+!/app-configs/TEMPLATE_projectOwner.json
 !/app-configs/README.md
+/change.sh
 /.tmp/*
 /google-services*.json
 /android/app/google-services*.json
+/dist/**
