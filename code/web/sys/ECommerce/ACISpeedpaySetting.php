@@ -15,23 +15,97 @@ class ACISpeedpaySetting extends DataObject {
 	public $sdkClientSecret;
 	public $sdkApiAuthKey;
 	public $billerId;
+	public $billerAccountId;
 
 	private $_libraries;
 
 	static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
+		$billerAccount_options = array(
+			'username' => 'Username',
+			'cat_username' => 'Catalog Username/Barcode'
+		);
+
 		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
-			'sandboxMode' => array('property' => 'sandboxMode', 'type' => 'checkbox', 'label' => 'Use ACI Sandbox', 'description' => 'Whether or not to use ACI Speedpay in Sandbox mode', 'hideInLists' => false, 'note' => 'This is for testing only! No funds will be received by the library.'),
-			'clientId' => array('property' => 'clientId', 'type' => 'text', 'label' => 'Client ID', 'description' => 'Client identifier used for client authentication. This value is provided by ACI.', 'hideInLists' => true),
-			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client API token used for client authentication. This value is provided by ACI.', 'hideInLists' => true),
-			'apiAuthKey' => array('property' => 'apiAuthKey', 'type' => 'storedPassword', 'label' => 'API Auth Key', 'description' => 'The API key used to access the API. This value is provided by ACI.', 'hideInLists' => true),
-			'sdkClientId' => array('property' => 'sdkClientId', 'type' => 'text', 'label' => 'SDK Client ID', 'description' => 'Client identifier used for SDK client authentication. This value is provided by ACI.', 'hideInLists' => true),
-			'sdkClientSecret' => array('property' => 'sdkClientSecret', 'type' => 'storedPassword', 'label' => 'SDK Client Secret', 'description' => 'Client token used for SDK client authentication. This value is provided by ACI.', 'hideInLists' => true),
-			'sdkApiAuthKey' => array('property' => 'sdkApiAuthKey', 'type' => 'storedPassword', 'label' => 'SDK API Auth Key', 'description' => 'The API key used to access the SDK. This value is provided by ACI.', 'hideInLists' => true),
-			'billerId' => array('property' => 'billerId', 'type' => 'text', 'label' => 'Biller ID', 'description' => 'A unique identifier assigned by your ACI project manager.', 'hideInLists' => true),
+			'id' => array(
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id'
+			),
+			'name' => array(
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'A name for the settings',
+				'maxLength' => 50
+			),
+			'sandboxMode' => array(
+				'property' => 'sandboxMode',
+				'type' => 'checkbox',
+				'label' => 'Use ACI Sandbox',
+				'description' => 'Whether or not to use ACI Speedpay in Sandbox mode',
+				'hideInLists' => false,
+				'note' => 'This is for testing only! No funds will be received by the library.'
+			),
+			'clientId' => array(
+				'property' => 'clientId',
+				'type' => 'text',
+				'label' => 'Client ID',
+				'description' => 'Client identifier used for client authentication. This value is provided by ACI.',
+				'hideInLists' => true
+			),
+			'clientSecret' => array(
+				'property' => 'clientSecret',
+				'type' => 'storedPassword',
+				'label' => 'Client Secret',
+				'description' => 'Client API token used for client authentication. This value is provided by ACI.',
+				'hideInLists' => true
+			),
+			'apiAuthKey' => array(
+				'property' => 'apiAuthKey',
+				'type' => 'storedPassword',
+				'label' => 'API Auth Key',
+				'description' => 'The API key used to access the API. This value is provided by ACI.',
+				'hideInLists' => true
+			),
+			'sdkClientId' => array(
+				'property' => 'sdkClientId',
+				'type' => 'text',
+				'label' => 'SDK Client ID',
+				'description' => 'Client identifier used for SDK client authentication. This value is provided by ACI.',
+				'hideInLists' => true
+			),
+			'sdkClientSecret' => array(
+				'property' => 'sdkClientSecret',
+				'type' => 'storedPassword',
+				'label' => 'SDK Client Secret',
+				'description' => 'Client token used for SDK client authentication. This value is provided by ACI.',
+				'hideInLists' => true
+			),
+			'sdkApiAuthKey' => array(
+				'property' => 'sdkApiAuthKey',
+				'type' => 'storedPassword',
+				'label' => 'SDK API Auth Key',
+				'description' => 'The API key used to access the SDK. This value is provided by ACI.',
+				'hideInLists' => true
+			),
+			'billerId' => array(
+				'property' => 'billerId',
+				'type' => 'text',
+				'label' => 'Biller Id',
+				'description' => 'A unique identifier assigned by your ACI project manager.',
+				'hideInLists' => true
+			),
+			'billerAccountId' => array(
+				'property' => 'billerAccountId',
+				'type' => 'enum',
+				'label' => 'Biller Account Id Field',
+				'values' => $billerAccount_options,
+				'description' => 'The identifier field used to connect payments to users.',
+				'hideInLists' => true
+			),
 
 			'libraries' => array(
 				'property' => 'libraries',
@@ -66,8 +140,7 @@ class ACISpeedpaySetting extends DataObject {
 				}
 			}
 			return $this->_libraries;
-		}
-		else {
+		} else {
 			return $this->_data[$name];
 		}
 	}
@@ -75,8 +148,7 @@ class ACISpeedpaySetting extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}
-		else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
@@ -103,8 +175,7 @@ class ACISpeedpaySetting extends DataObject {
 						$library->aciSpeedpaySettingId = $this->id;
 						$library->update();
 					}
-				}
-				else {
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
 					if ($library->aciSpeedpaySettingId == $this->id) {
 						if ($library->finePaymentType == 8) {
@@ -140,16 +211,17 @@ class ACISpeedpaySetting extends DataObject {
 			"X-Auth-Key: $this->apiAuthKey",
 		], false);
 
-		$url = $this->getApiUrl() . '/fee/v3/fees/payments/servicefee';
+		$url = $this->getApiUrl() . '/fee/v3/fees/servicefee';
 		$postParams = [
 			'billerId' => $this->billerId,
 			'paymentChannel' => 'Web',
-			'isPayerEnrolled' => false,
+			'isPayerEnrolled' => true,
 			'fundingToken' => $token,
 			'paymentOptionKind' => 'OneTimeNow',
 			'paymentAmount' => [
 				'value' => $amount,
 				'currencyCode' => 'USD',
+				'precision' => 2
 			],
 		];
 
@@ -157,17 +229,48 @@ class ACISpeedpaySetting extends DataObject {
 		$serviceFeeResponse = json_decode($serviceFeeResponse, true);
 		if ($serviceFeeRequest->getResponseCode() == 200) {
 			return $serviceFeeResponse['feeAmount'];
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
 
+	public function createAuthCode() {
+		$baseUrl = $this->getApiUrl();
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$authCodeRequest = new CurlWrapper();
+		$authCodeRequest->addCustomHeaders([
+			"X-Auth-Key: $this->apiAuthKey",
+			'Content-Type: application/x-www-form-urlencoded',
+			'Host: api.acispeedpay.com',
+			'Accept: application/json',
+		], true);
+		$postParams = [
+			'grant_type' => 'client_credentials',
+			'client_id' => $this->clientId,
+			'client_secret' => $this->clientSecret
+		];
+		$url = $baseUrl . '/auth/v1/auth';
+		$authCodeResults = $authCodeRequest->curlPostPage($url, $postParams);
+		$authCodeResults = json_decode($authCodeResults, true);
+		if (empty($authCodeResults['access_token'])) {
+			return false;
+		} else {
+			return $authCodeResults['access_token'];
+		}
+	}
+
 	public function createAuthToken() {
+		$user = UserAccount::getLoggedInUser();
 		$baseUrl = $this->getApiUrl();
 		$apiAuthKey = $this->apiAuthKey;
 		$billerId = $this->billerId;
-		$billerAccountId = '56057';
+
+		$billerAccountId = $this->billerAccountId;
+		$billerAccountId = $user->$billerAccountId;
+
+		if ($this->sandboxMode == 1) {
+			$billerAccountId = '56053';
+		}
 
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$serviceAccountAuthorization = new CurlWrapper();
@@ -191,28 +294,30 @@ class ACISpeedpaySetting extends DataObject {
 		$accessTokenResults = json_decode($accessTokenResults, true);
 		if (empty($accessTokenResults['access_token'])) {
 			return false;
-		}
-		else {
+		} else {
 			return $accessTokenResults['access_token'];
 		}
 	}
 
-	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount) {
-		$authToken = $this->createAuthToken();
-		if (!$authToken) {
-			return false;
-		}
+	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount, $accessToken) {
+		$result = ['success' => false];
 
-		$serviceFee = $this->getServiceFee($payment, $fundingToken);
+		$this->createAuthCode();
 
+
+		$paymentAmount = $payment->totalPaid;
+		$paymentAmount = (int)((string)($paymentAmount)) * 100;
+
+		//$serviceFee = $this->getServiceFee($paymentAmount, $fundingToken);
 		$transactionRequest = new CurlWrapper();
 		$transactionRequest->addCustomHeaders([
-			'Authorization: Bearer ' . $authToken,
+			'Authorization: Bearer ' . $accessToken,
+			'Accept: application/json',
 			'Content-Type: application/json',
 			"X-Auth-Key: $this->apiAuthKey",
 		], false);
 
-		$url = $this->getApiUrl() . '/transaction-service/v6/payments';
+		$url = $this->getApiUrl() . '/transaction/v6/payments';
 		$postParams = [
 			'paymentDate' => date('YYYY-MM-DD'),
 			'origination' => [
@@ -221,24 +326,16 @@ class ACISpeedpaySetting extends DataObject {
 					'kind' => 'AppServiceOriginator',
 				],
 				'paymentChannelKind' => 'Web',
-				'paymentOption' => [
-					'kind' => 'OneTimeNow'
-				],
+				'paymentOption' => ['kind' => 'OneTimeNow'],
 			],
-			'fundingAccount' => [
-				'token' => $fundingToken
-			],
+			'fundingAccount' => ['token' => $fundingToken],
 			'accountPayments' => [
 				'billerAccount' => [
 					'billerId' => $this->billerId,
 					'billerAccountId' => $billerAccount,
 				],
 				'principalAmount' => [
-					'value' => $payment,
-					'currencyCode' => 'USD',
-				],
-				'serviceFeeAmount' => [
-					'value' => $serviceFee,
+					'value' => $paymentAmount,
 					'currencyCode' => 'USD',
 				],
 			],
@@ -253,7 +350,36 @@ class ACISpeedpaySetting extends DataObject {
 			]
 		];
 
-		return $transactionRequest->curlPostPage($url, $postParams);
+		$requestTransaction = $transactionRequest->curlPostBodyData($url, $postParams);
+		$transactionResponse = json_decode($requestTransaction, true);
+		if ($transactionRequest->getResponseCode() == 200) {
+			if (substr($transactionResponse['message'], 0, 1) === 'S') {
+				$totalPaid = $transactionResponse['accountTransactionResults']['principalAmount']['value'] + $transactionResponse['accountTransactionResults']['serviceFeeAmount']['value'];
+				$payment->transactionId = $transactionResponse['confirmationCode'];
+				$payment->orderId = $transactionResponse['id'];
+				$payment->completed = 1;
+				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
+				$payment->aciToken = $transactionResponse['fundingAccount']['token'];
+				$payment->update();
+				$result = [
+					'success' => true,
+					'message' => 'Payment completed.'
+				];
+			} else {
+				$payment->error = 1;
+				$payment->message = $transactionResponse['message'];
+				$payment->update();
+				$result['message'] = $transactionResponse['message'];
+			}
+		} else {
+			$error = $transactionResponse['error']['status'] . ': ' . $transactionResponse['error']['kind'] . '. ' . $transactionResponse['error']['message'];
+			$payment->error = 1;
+			$payment->message = $error;
+			$payment->update();
+			$result['message'] = $error;
+		}
+
+		return $result;
 	}
 
 	public function getApiUrl() {
