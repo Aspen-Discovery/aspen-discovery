@@ -1374,7 +1374,7 @@ class User extends DataObject
 					$indexToSortBy = $unavailableSort;
 					break;
 				case 'placed' :
-					$indexToSortBy = 'create';
+					$indexToSortBy = 'createDate';
 					break;
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';
