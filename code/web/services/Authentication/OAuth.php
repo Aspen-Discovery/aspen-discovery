@@ -17,12 +17,10 @@ class Authentication_OAuth extends Action {
 			$logger->log(print_r($result, true), Logger::LOG_ERROR);
 			if (isset($result['returnTo'])) {
 				header('Location: ' . $result['returnTo']);
-			}
-			else {
+			} else {
 				header('Location: /MyAccount/Home');
 			}
-		}
-		else {
+		} else {
 			$interface->assign('error', $result['error']);
 			$interface->assign('message', $result['message']);
 			$this->display('../MyAccount/login.tpl', 'Login', '');

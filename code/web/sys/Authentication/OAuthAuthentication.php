@@ -33,8 +33,7 @@ class OAuthAuthentication extends Action {
 			$this->redirectUri = $ssoSettings->getRedirectUrl();
 			$this->matchpoints = $ssoSettings->getMatchpoints();
 			$this->grantType = $ssoSettings->getAuthenticationGrantType();
-		}
-		else {
+		} else {
 			global $logger;
 			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT);
 			echo("Single sign-on settings must be configured to use OAuth 2.0 for user authentication.");
@@ -102,12 +101,10 @@ class OAuthAuthentication extends Action {
 				$message = 'Successfully logged in using OAuth';
 				$returnTo = '/MyAccount/Home';
 
-			}
-			else {
+			} else {
 				$error = 'OAuth is not setup for library.';
 			}
-		}
-		else {
+		} else {
 			$error = 'No data from OAuth provided, unable to log into system.';
 		}
 
@@ -178,16 +175,15 @@ class OAuthAuthentication extends Action {
 		global $logger;
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
-		$user = $this->getUserId();
-		if ($user) {
-			$logger->log('Checking to see if user ' . print_r($user, true) . ' exists in the database...', Logger::LOG_ERROR);
-		}
-		else {
+		if ($this->getUserId()) {
+			$logger->log('Checking to see if user ' . print_r($this->getUserId(), true) . ' exists in the database...', Logger::LOG_ERROR);
+		} else {
 			$logger->log('Error searching resource owner for userId', Logger::LOG_ERROR);
 			return false;
 		}
 
-		$user = $catalogConnection->findNewUser($user);
+		$user = $catalogConnection->findNewUser($this->getUserId());
+
 		if (!$user instanceof User) {
 			$logger->log('No user found in database... attempting to self-register...', Logger::LOG_ERROR);
 			$newUser['email'] = $this->getEmail();
@@ -200,16 +196,13 @@ class OAuthAuthentication extends Action {
 				$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
 				return false;
 			}
+			$user = $catalogConnection->findNewUser($this->getUserId());
+		} else {
+			$user->oAuthAccessToken = $this->accessToken;
+			$user->oAuthRefreshToken = $this->refreshToken;
+			$user->updatePatronInfo(true);
+			$user = $catalogConnection->findNewUser($this->getUserId());
 		}
-
-		$user->email = $this->getEmail();
-		$user->firstname = $this->getFirstName();
-		$user->lastname = $this->getLastName();
-		$user->oAuthAccessToken = $this->accessToken;
-		$user->oAuthRefreshToken = $this->refreshToken;
-		$user->updatePatronInfo(true);
-
-		$user = $catalogConnection->findNewUser($this->getUserId());
 
 		if ($user instanceof User) {
 			$_REQUEST['username'] = $this->getUserId();
@@ -236,8 +229,7 @@ class OAuthAuthentication extends Action {
 						break;
 					}
 				}
-			}
-			else {
+			} else {
 				if (array_key_exists($needle, $obj)) {
 					$result = $obj[$needle];
 					break;
@@ -326,8 +318,7 @@ class OAuthAuthentication extends Action {
 			$this->curlWrapper->curlPostPage($url, '');
 			if ($this->curlWrapper->getResponseCode() == 400) {
 				return false;
-			}
-			else {
+			} else {
 				UserAccount::logout();
 				return true;
 			}

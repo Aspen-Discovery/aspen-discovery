@@ -210,7 +210,7 @@ export class DrawerContent extends Component {
 	}
 
 	handleNavigation = (stack, screen, libraryUrl) => {
-		this.props.navigation.navigate(stack, {screen: screen, params: {libraryUrl: libraryUrl}});
+		this.props.navigation.navigate(stack, {screen: screen, params: {libraryUrl: libraryUrl, hasPendingChanges: false}});
 	};
 
 	loadProfile = async () => {
