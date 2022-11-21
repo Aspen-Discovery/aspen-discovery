@@ -59,8 +59,7 @@ class Koha extends AbstractIlsDriver {
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
-		}
-		else {
+		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);
 

@@ -21,12 +21,10 @@ class ListAPI extends Action {
 					header("Cache-Control: max-age=300");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('ListAPI', $method);
-				}
-				else {
+				} else {
 					$output = json_encode(array('error' => 'invalid_method'));
 				}
-			}
-			else {
+			} else {
 				header('HTTP/1.0 401 Unauthorized');
 				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
