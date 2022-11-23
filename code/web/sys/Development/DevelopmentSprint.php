@@ -49,7 +49,8 @@ class DevelopmentSprint extends DataObject {
 				'property' => 'active',
 				'type' => 'checkbox',
 				'label' => 'Active',
-				'description' => 'If the sprint is still active'
+				'description' => 'If the sprint is still active',
+				'default' => true,
 			],
 			'totalStoryPoints' => [
 				'property' => 'totalStoryPoints',

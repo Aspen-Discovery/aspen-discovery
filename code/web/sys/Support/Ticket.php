@@ -12,12 +12,12 @@ class Ticket extends DataObject {
 	public $status;
 	public $queue;
 	public $severity;
-	public $component;
 	public $partnerPriority;
 	public $partnerPriorityChangeDate;
 	public $dateClosed;
 
 	public $_relatedTasks;
+	public $_relatedComponents;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -66,6 +66,10 @@ class Ticket extends DataObject {
 		require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
 		$taskTicketLinkStructure = TaskTicketLink::getObjectStructure();
 		unset($taskTicketLinkStructure['ticketId']);
+
+		require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
+		$componentTicketLink = ComponentTicketLink::getObjectStructure();
+		unset($componentTicketLink['ticketId']);
 
 		return [
 			'id' => array(
@@ -145,6 +149,22 @@ class Ticket extends DataObject {
 				'required' => true,
 				'readOnly' => true
 			),
+			'relatedComponents' => [
+				'property' => 'relatedComponents',
+				'type' => 'oneToMany',
+				'label' => 'Related Components',
+				'description' => 'A list of components related to this ticket',
+				'keyThis' => 'id',
+				'keyOther' => 'epicId',
+				'subObjectType' => 'ComponentTicketLink',
+				'structure' => $componentTicketLink,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => [],
+				'hideInLists' => true
+			],
 			'requestingPartner' => array(
 				'property' => 'requestingPartner',
 				'type' => 'enum',
@@ -168,7 +188,6 @@ class Ticket extends DataObject {
 				'type' => 'timestamp',
 				'label' => 'Partner Priority Last Changed',
 				'description' => 'When the partner last changed the priority',
-				'required' => true,
 				'readOnly' => true
 			),
 			'dateClosed' => array(
@@ -235,6 +254,8 @@ class Ticket extends DataObject {
 	public function __get($name) {
 		if ($name == 'relatedTasks') {
 			return $this->getRelatedTasks();
+		} elseif ($name == 'relatedComponents') {
+			return $this->getRelatedComponents();
 		} else {
 			return $this->_data[$name];
 		}
@@ -243,6 +264,8 @@ class Ticket extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "relatedTasks") {
 			$this->_relatedTasks = $value;
+		} elseif ($name == "relatedComponents") {
+			$this->_relatedComponents = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
@@ -254,6 +277,7 @@ class Ticket extends DataObject {
 	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
+			$this->saveRelatedComponents();
 			$this->saveRelatedTasks();
 		}
 		return $ret;
@@ -262,6 +286,7 @@ class Ticket extends DataObject {
 	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
+			$this->saveRelatedComponents();
 			$this->saveRelatedTasks();
 		}
 		return $ret;
@@ -271,6 +296,13 @@ class Ticket extends DataObject {
 		if (isset ($this->_relatedTasks) && is_array($this->_relatedTasks)) {
 			$this->saveOneToManyOptions($this->_relatedTasks, 'ticketId');
 			unset($this->_relatedTasks);
+		}
+	}
+
+	public function saveRelatedComponents() {
+		if (isset ($this->_relatedComponents) && is_array($this->_relatedComponents)) {
+			$this->saveOneToManyOptions($this->_relatedComponents, 'ticketId');
+			unset($this->_relatedComponents);
 		}
 	}
 
@@ -289,5 +321,22 @@ class Ticket extends DataObject {
 			}
 		}
 		return $this->_relatedTasks;
+	}
+
+	/**
+	 * @return ComponentTicketLink[]
+	 */
+	private function getRelatedComponents(): ?array {
+		if (!isset($this->_relatedComponents) && $this->id) {
+			require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
+			$this->_relatedComponents = [];
+			$component = new ComponentTicketLink();
+			$component->ticketId = $this->id;
+			$component->find();
+			while ($component->fetch()) {
+				$this->_relatedComponents[$component->id] = clone($component);
+			}
+		}
+		return $this->_relatedComponents;
 	}
 }

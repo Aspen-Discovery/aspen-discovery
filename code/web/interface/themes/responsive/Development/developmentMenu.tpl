@@ -37,6 +37,7 @@
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketStatuses">{translate text="Ticket Statuses" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketQueues">{translate text="Ticket Queues" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketSeverities">{translate text="Ticket Severities" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketComponents">{translate text="Ticket Components" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>

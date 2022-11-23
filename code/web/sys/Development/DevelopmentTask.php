@@ -106,6 +106,10 @@ class DevelopmentTask extends DataObject {
 		$taskPartnerLink = TaskPartnerLink::getObjectStructure();
 		unset($taskPartnerLink['taskId']);
 
+		require_once ROOT_DIR . '/sys/Development/ComponentTaskLink.php';
+		$componentTaskLink = ComponentTaskLink::getObjectStructure();
+		unset($componentTaskLink['taskId']);
+
 		return [
 			'id' => [
 				'property' => 'id',
@@ -161,6 +165,22 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Description',
 				'description' => 'A Description for the Task',
 				'canBatchUpdate' => false,
+				'hideInLists' => true
+			],
+			'relatedComponents' => [
+				'property' => 'relatedComponents',
+				'type' => 'oneToMany',
+				'label' => 'Related Components',
+				'description' => 'A list of components related to this task',
+				'keyThis' => 'id',
+				'keyOther' => 'taskId',
+				'subObjectType' => 'ComponentTaskLink',
+				'structure' => $componentTaskLink,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => [],
 				'hideInLists' => true
 			],
 			'sprintId' => [
@@ -304,6 +324,8 @@ class DevelopmentTask extends DataObject {
 			return $this->_sprintId;
 		} elseif ($name == 'relatedTickets') {
 			return $this->getRelatedTickets();
+		} elseif ($name == 'relatedComponents') {
+			return $this->getRelatedComponents();
 		} elseif ($name == 'requestingPartners') {
 			return $this->getRequestingPartners();
 		} else {
@@ -318,6 +340,8 @@ class DevelopmentTask extends DataObject {
 			$this->_sprintId = $value;
 		} else if ($name == "relatedTickets") {
 			$this->_relatedTickets = $value;
+		} elseif ($name == "relatedComponents") {
+			$this->_relatedComponents = $value;
 		} elseif ($name == "requestingPartners") {
 			$this->_requestingPartners = $value;
 		} else {
@@ -334,6 +358,7 @@ class DevelopmentTask extends DataObject {
 			$this->saveRelatedEpic();
 			$this->saveRelatedSprint();
 			$this->saveRelatedTickets();
+			$this->saveRelatedComponents();
 			$this->saveRequestingPartners();
 		}
 		return $ret;
@@ -345,6 +370,7 @@ class DevelopmentTask extends DataObject {
 			$this->saveRelatedEpic();
 			$this->saveRelatedSprint();
 			$this->saveRelatedTickets();
+			$this->saveRelatedComponents();
 			$this->saveRequestingPartners();
 		}
 		return $ret;
@@ -399,6 +425,13 @@ class DevelopmentTask extends DataObject {
 		}
 	}
 
+	public function saveRelatedComponents() {
+		if (isset ($this->_relatedComponents) && is_array($this->_relatedComponents)) {
+			$this->saveOneToManyOptions($this->_relatedComponents, 'taskId');
+			unset($this->_relatedComponents);
+		}
+	}
+
 	public function saveRequestingPartners() {
 		if (isset ($this->_requestingPartners) && is_array($this->_requestingPartners)) {
 			$this->saveOneToManyOptions($this->_requestingPartners, 'taskId');
@@ -421,6 +454,23 @@ class DevelopmentTask extends DataObject {
 			}
 		}
 		return $this->_relatedTickets;
+	}
+
+	/**
+	 * @return ComponentTaskLink[]
+	 */
+	private function getRelatedComponents(): ?array {
+		if (!isset($this->_relatedComponents) && $this->id) {
+			require_once ROOT_DIR . '/sys/Development/ComponentTaskLink.php';
+			$this->_relatedComponents = [];
+			$component = new ComponentTaskLink();
+			$component->taskId = $this->id;
+			$component->find();
+			while ($component->fetch()) {
+				$this->_relatedComponents[$component->id] = clone($component);
+			}
+		}
+		return $this->_relatedComponents;
 	}
 
 	/**
