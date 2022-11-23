@@ -8,7 +8,7 @@
 					<th>{translate text="Sort" isAdminFacing=true}</th>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
-					{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList') }
+					{if (in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList'))   && !$subProperty.hideInLists }
 						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'multilineRegularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
@@ -29,7 +29,7 @@
 						</td>
 					{/if}
 					{foreach from=$property.structure item=subProperty}
-						{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
+						{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html'))  && !$subProperty.hideInLists}
 							<td>
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
@@ -160,7 +160,7 @@
 			{else}
 			newRow += "<select name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' id='{$propName}{$subPropName}_" + numAdditional{$propName} + "' class='form-control{if $subProperty.required == true} required{/if}' {if !empty($subProperty.onchange)}onchange=\"{$subProperty.onchange}\"{/if}>";
 			{foreach from=$subProperty.values item=propertyName key=propertyValue}
-			newRow += "<option value='{$propertyValue}' {if $subProperty.default == $propertyValue}selected='selected'{/if}>{$propertyName}</option>";
+			newRow += "<option value='{$propertyValue}' {if $subProperty.default == $propertyValue}selected='selected'{/if}>{$propertyName|escape:javascript}</option>";
 			{/foreach}
 			newRow += "</select>";
 			{/if}

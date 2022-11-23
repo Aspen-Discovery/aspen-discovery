@@ -285,5 +285,43 @@
 				</div>
 			</div>
 		</div>
+
+		<div class="adminSection grid-item" id="greenhouse-development-tools">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Development Tools " isAdminFacing=true}</div></div>
+				<div class="adminAction row">
+					<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+						<a href="/Development/AspenReleases" title="{translate text="Aspen Releases" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+					</div>
+					<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+						<div class="adminActionLabel"><a href="/Development/AspenReleases">{translate text="Aspen Releases"  isAdminFacing=true}</a></div>
+					</div>
+				</div>
+				<div class="adminAction row">
+					<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+						<a href="/Development/Sprints" title="{translate text="Aspen Sprints" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+					</div>
+					<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+						<div class="adminActionLabel"><a href="/Development/Sprints">{translate text="Aspen Sprints" isAdminFacing=true}</a></div>
+					</div>
+				</div>
+				<div class="adminAction row">
+					<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+						<a href="/Development/Epics" title="{translate text="Epics" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+					</div>
+					<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+						<div class="adminActionLabel"><a href="/Development/Epics">{translate text="Epics" isAdminFacing=true}</a></div>
+					</div>
+				</div>
+				<div class="adminAction row">
+					<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+						<a href="/Development/Tasks" title="{translate text="Development Tasks" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+					</div>
+					<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+						<div class="adminActionLabel"><a href="/Development/Tasks">{translate text="Development Tasks" isAdminFacing=true}</a></div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 {/strip}
