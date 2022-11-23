@@ -1621,70 +1621,55 @@ class SearchAPI extends Action {
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay($appUser) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List")) {
+				if ($categoryInformation->isValidForDisplay($appUser, false) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List")) {
 					if ($categoryInformation->textId == ("system_saved_searches")) {
-						$categoryResponse = array(
-							'key' => $categoryInformation->textId,
-							'title' => $categoryInformation->label,
-							'source' => $categoryInformation->source,
-							'isHidden' => false,
-						);
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
-						$categoryResponse['numNewTitles'] = $savedSearches['countNewResults'];
-						$categoryResponse['subCategories'] = [];
 						foreach ($allSearches as $savedSearch) {
-							$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
-							$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12);
-							$formattedSavedSearchResults = [];
-							if (count($savedSearchResults) > 0) {
-								foreach ($savedSearchResults as $savedSearchResult) {
-									$formattedSavedSearchResults[] = [
-										'id' => $savedSearchResult['id'],
-										'title_display' => $savedSearchResult['title'],
-										'isNew' => $savedSearchResult['isNew'],
-									];
+							if (!$categoryInformation->isDismissed($appUser)) {
+								$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
+								$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12);
+								$formattedSavedSearchResults = [];
+								if (count($savedSearchResults) > 0) {
+									foreach ($savedSearchResults as $savedSearchResult) {
+										$formattedSavedSearchResults[] = [
+											'id' => $savedSearchResult['id'],
+											'title_display' => $savedSearchResult['title'],
+											'isNew' => $savedSearchResult['isNew'],
+										];
+									}
 								}
-							}
-							$categoryResponse['subCategories'][] = [
-								'key' => $thisId,
-								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
-								'source' => "SavedSearch",
-								'sourceId' => $savedSearch['id'],
-								'isHidden' => false,
-								'records' => $formattedSavedSearchResults,
-							];
-							$numCategoriesProcessed++;
-							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-								break;
+								$categoryResponse = [
+									'key' => $thisId,
+									'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
+									'source' => "SavedSearch",
+									'sourceId' => $savedSearch['id'],
+									'isHidden' => $categoryInformation->isDismissed($appUser),
+									'records' => $formattedSavedSearchResults,
+								];
+								$formattedCategories[] = $categoryResponse;
+								$numCategoriesProcessed++;
+								if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+									break;
+								}
 							}
 						}
 					} elseif ($categoryInformation->textId == ("system_user_lists")) {
-						$categoryResponse = array(
-							'key' => $categoryInformation->textId,
-							'title' => $categoryInformation->label,
-							'source' => $categoryInformation->source,
-							'isHidden' => false,
-						);
 						$userLists = $listApi->getUserLists();
-						$categoryResponse['subCategories'] = [];
-						if (isset($userLists['lists'])) {
-							$allUserLists = $userLists['lists'];
-						} else {
-							$allUserLists = [];
-						}
+						$allUserLists = $userLists['lists'] ?? [];
 						if (count($allUserLists) > 0) {
 							foreach ($allUserLists as $userList) {
-								if ($userList['id'] != "recommendations") {
+								if ($userList['id'] != "recommendations" && !$categoryInformation->isDismissed($appUser)) {
 									$thisId = $categoryInformation->textId . '_' . $userList['id'];
-									$categoryResponse['subCategories'][] = [
+									$categoryResponse = [
 										'key' => $thisId,
 										'title' => $categoryInformation->label . ': ' . $userList['title'],
 										'source' => "List",
 										'sourceId' => $userList['id'],
-										'isHidden' => false,
+										'isHidden' => $categoryInformation->isDismissed($appUser),
 										'records' => $this->getAppBrowseCategoryResults($thisId, null, 12),
 									];
+									$formattedCategories[] = $categoryResponse;
 									$numCategoriesProcessed++;
 									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
 										break;
@@ -1693,45 +1678,48 @@ class SearchAPI extends Action {
 							}
 						}
 					} elseif ($categoryInformation->source == "List" && $categoryInformation->textId != ("system_user_lists") && $categoryInformation->sourceListId != "-1" && $categoryInformation->sourceListId) {
-						$categoryResponse = array(
-							'key' => $categoryInformation->textId,
-							'title' => $categoryInformation->label,
-							'id' => $categoryInformation->id,
-							'source' => $categoryInformation->source,
-							'listId' => $categoryInformation->sourceListId,
-							'isHidden' => false,
-							'records' => [],
-						);
+						if (!$categoryInformation->isDismissed($appUser)) {
+							$categoryResponse = array(
+								'key' => $categoryInformation->textId,
+								'title' => $categoryInformation->label,
+								'id' => $categoryInformation->id,
+								'source' => $categoryInformation->source,
+								'listId' => $categoryInformation->sourceListId,
+								'isHidden' => $categoryInformation->isDismissed($appUser),
+								'records' => [],
+							);
 
-						require_once(ROOT_DIR . '/sys/UserLists/UserList.php');
-						require_once(ROOT_DIR . '/sys/UserLists/UserListEntry.php');
-						$list = new UserList();
-						$list->id = $categoryInformation->sourceListId;
-						if ($list->find(true)) {
-							$listEntry = new UserListEntry();
-							$listEntry->listId = $list->id;
-							$listEntry->find();
-							$count = 0;
-							do {
-								if ($listEntry->source == "Lists") {
-									$categoryResponse['lists'][] = array(
-										'sourceId' => $listEntry->sourceId,
-										'title' => $listEntry->title,
-									);
-									$count++;
-								} else {
-									if ($listEntry->sourceId) {
-										$categoryResponse['records'][] = array(
-											'id' => $listEntry->sourceId,
+							require_once(ROOT_DIR . '/sys/UserLists/UserList.php');
+							require_once(ROOT_DIR . '/sys/UserLists/UserListEntry.php');
+							$list = new UserList();
+							$list->id = $categoryInformation->sourceListId;
+							if ($list->find(true)) {
+								$listEntry = new UserListEntry();
+								$listEntry->listId = $list->id;
+								$listEntry->find();
+								$count = 0;
+								do {
+									if ($listEntry->source == 'Lists') {
+										$categoryResponse['lists'][] = array(
+											'sourceId' => $listEntry->sourceId,
 											'title' => $listEntry->title,
 										);
 										$count++;
+									} else {
+										if ($listEntry->sourceId) {
+											$categoryResponse['records'][] = array(
+												'id' => $listEntry->sourceId,
+												'title' => $listEntry->title,
+											);
+											$count++;
+										}
 									}
+								} while ($listEntry->fetch() && $count < 12);
+								$formattedCategories[] = $categoryResponse;
+								$numCategoriesProcessed++;
+								if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+									break;
 								}
-							} while ($listEntry->fetch() && $count < 12);
-							$numCategoriesProcessed++;
-							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-								break;
 							}
 						}
 
@@ -1739,43 +1727,46 @@ class SearchAPI extends Action {
 						if (empty($appUser) && UserAccount::isLoggedIn()) {
 							$appUser = UserAccount::getActiveUserObj();
 						}
-						require_once(ROOT_DIR . '/sys/Suggestions.php');
-						$suggestions = Suggestions::getSuggestions($appUser->id);
 
-						$categoryResponse = array(
-							'key' => $categoryInformation->textId,
-							'title' => $categoryInformation->label,
-							'source' => $categoryInformation->source,
-							'isHidden' => false,
-						);
+						if (!$categoryInformation->isDismissed($appUser)) {
+							require_once(ROOT_DIR . '/sys/Suggestions.php');
+							$suggestions = Suggestions::getSuggestions($appUser->id);
 
-						$categoryResponse['records'] = [];
-						if (count($suggestions) > 0) {
-							foreach ($suggestions as $suggestion) {
-								$categoryResponse['records'][] = [
-									'id' => $suggestion['titleInfo']['id'],
-									'title_display' => $suggestion['titleInfo']['title_display'],
-								];
+							$categoryResponse = array(
+								'key' => $categoryInformation->textId,
+								'title' => $categoryInformation->label,
+								'source' => $categoryInformation->source,
+								'isHidden' => $categoryInformation->isDismissed($appUser),
+								'records' => []
+							);
+
+							if (count($suggestions) > 0) {
+								foreach ($suggestions as $suggestion) {
+									$categoryResponse['records'][] = [
+										'id' => $suggestion['titleInfo']['id'],
+										'title_display' => $suggestion['titleInfo']['title_display'],
+									];
+								}
+							}
+							$numCategoriesProcessed++;
+							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+								break;
 							}
 						}
-						$numCategoriesProcessed++;
-						if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-							break;
-						}
 					} else {
-						$categoryResponse = array(
-							'key' => $categoryInformation->textId,
-							'title' => $categoryInformation->label,
-							'source' => $categoryInformation->source,
-							'isHidden' => false,
-							'records' => [],
-						);
 						$subCategories = $categoryInformation->getSubCategories();
 						if (count($subCategories) == 0) {
-							$categoryResponse['records'] = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+							$categoryResponse = [
+								'key' => $categoryInformation->textId,
+								'title' => $categoryInformation->label,
+								'source' => $categoryInformation->source,
+								'isHidden' => $categoryInformation->isDismissed($appUser),
+								'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12),
+							];
+							$numCategoriesProcessed++;
+							$formattedCategories[] = $categoryResponse;
 						}
 						if ($includeSubCategories) {
-							$categoryResponse['subCategories'] = [];
 							if (count($subCategories) > 0) {
 								foreach ($subCategories as $subCategory) {
 									$temp = new BrowseCategory();
@@ -1793,13 +1784,14 @@ class SearchAPI extends Action {
 												} else {
 													$displayLabel = $parentLabel . ': ' . $temp->label;
 												}
-												$categoryResponse['subCategories'][] = [
+												$categoryResponse = [
 													'key' => $temp->textId,
 													'title' => $displayLabel,
 													'source' => $temp->source,
-													'isHidden' => false,
+													'isHidden' => $temp->isDismissed($appUser),
 													'records' => $this->getAppBrowseCategoryResults($temp->textId, null, 12)
 												];
+												$formattedCategories[] = $categoryResponse;
 												$numCategoriesProcessed++;
 												if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
 													break;
@@ -1813,9 +1805,7 @@ class SearchAPI extends Action {
 								}
 							}
 						}
-						$numCategoriesProcessed++;
 					}
-					$formattedCategories[] = $categoryResponse;
 					if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
 						break;
 					}
