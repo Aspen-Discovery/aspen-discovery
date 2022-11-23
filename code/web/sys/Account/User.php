@@ -41,6 +41,8 @@ class User extends DataObject
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
     public $disableAccountLinking;
+	public $oAuthAccessToken;
+	public $oAuthRefreshToken;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -1372,7 +1374,7 @@ class User extends DataObject
 					$indexToSortBy = $unavailableSort;
 					break;
 				case 'placed' :
-					$indexToSortBy = 'create';
+					$indexToSortBy = 'createDate';
 					break;
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';

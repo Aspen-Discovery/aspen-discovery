@@ -316,7 +316,7 @@ class BrowseCategory extends BaseBrowsable
 		return $validationResults;
 	}
 
-	public function isValidForDisplay($appUser = null){
+	public function isValidForDisplay($appUser = null, $checkDismiss = true){
 		$curTime = time();
 		if ($this->startDate != 0 && $this->startDate > $curTime){
 			return false;
@@ -336,20 +336,26 @@ class BrowseCategory extends BaseBrowsable
 		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you') {
 			if (UserAccount::isLoggedIn() || !empty($appUser)) {
 				if($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
-					if($this->isDismissed($user)) {
-						return false;
+					if($checkDismiss) {
+						if ($this->isDismissed($user)) {
+							return false;
+						}
 					}
 					return true;
 				}
 				if($this->textId == 'system_user_lists' && $user->hasLists()) {
-					if($this->isDismissed($user)) {
-						return false;
+					if($checkDismiss) {
+						if ($this->isDismissed($user)) {
+							return false;
+						}
 					}
 					return true;
 				}
 				if($this->textId == 'system_recommended_for_you' && $user->hasRatings()) {
-					if($this->isDismissed($user)) {
-						return false;
+					if($checkDismiss) {
+						if ($this->isDismissed($user)) {
+							return false;
+						}
 					}
 					return true;
 				}
@@ -358,9 +364,11 @@ class BrowseCategory extends BaseBrowsable
 			return false;
 		}
 
-		if (!empty($user)) {
-			if($this->isDismissed($user)) {
-				return false;
+		if($checkDismiss) {
+			if (!empty($user)) {
+				if ($this->isDismissed($user)) {
+					return false;
+				}
 			}
 		}
 		return true;
