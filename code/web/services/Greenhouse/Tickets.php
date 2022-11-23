@@ -119,4 +119,9 @@ class Greenhouse_Tickets extends ObjectEditor
 	{
 		return 'ticketId desc';
 	}
+
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
 }
