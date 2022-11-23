@@ -102,7 +102,7 @@ class SideLoadScope extends DataObject
 		);
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/SideLoads/Scopes?objectAction=edit&id=' . $this->id;
 	}
 

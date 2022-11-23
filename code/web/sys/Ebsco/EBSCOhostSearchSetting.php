@@ -293,7 +293,7 @@ class EBSCOhostSearchSetting extends DataObject
 		}
 	}
 
-	public function getEditLink() : string{
+	public function getEditLink($context) : string{
 		return '/EBSCO/EBSCOhostSearchSettings?objectAction=edit&id=' . $this->id;
 		
 	}

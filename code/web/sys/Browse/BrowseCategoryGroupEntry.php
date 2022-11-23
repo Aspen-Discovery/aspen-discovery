@@ -52,7 +52,7 @@ class BrowseCategoryGroupEntry extends DataObject
 		];
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->browseCategoryId;
 	}
 
