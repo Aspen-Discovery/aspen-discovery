@@ -7,11 +7,18 @@
 	  "channel": "production",
 	  "env": {
 		"APP_ENV": "{{APP_ENV}}"
-	  },
+	  }
 	},
 	"beta": {
 	  "extends": "production",
 	  "channel": "beta"
+	},
+	"beta-qa": {
+	  "extends": "production",
+	  "channel": "beta-qa",
+	  "ios": {
+		"simulator": true
+	  }
 	},
 	"development": {
 	  "extends": "production",
