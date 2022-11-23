@@ -602,7 +602,7 @@ AspenDiscovery.Account = (function () {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.result === true) {
-						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
+						AspenDiscovery.showMessageWithButtons('Linked Account Removed', data.message, data.modalButtons, true);
 					} else {
 						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
 					}
@@ -628,6 +628,10 @@ AspenDiscovery.Account = (function () {
 					AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
 			});
 			return false;
+		},
+
+		redirectPinReset: function() {
+			window.location.href = Globals.path + "/MyAccount/RequestPinReset";
 		},
 
 		renewTitle: function (patronId, recordId, renewIndicator) {

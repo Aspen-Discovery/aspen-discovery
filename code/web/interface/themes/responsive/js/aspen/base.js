@@ -376,11 +376,19 @@ var AspenDiscovery = (function(){
 			}
 		},
 
-		showMessageWithButtons: function(title, body, buttons){
+		showMessageWithButtons: function(title, body, buttons, refreshAfterClose){
+			if (refreshAfterClose === undefined){
+				refreshAfterClose = false;
+			}
 			$("#myModalLabel").html(title);
 			$(".modal-body").html(body);
 			$('.modal-buttons').html(buttons);
 			$("#modalDialog").modal('show');
+			if (refreshAfterClose) {
+				$("#modalDialog").on('hide.bs.modal', function(){
+					location.reload();
+				})
+			}
 		},
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
