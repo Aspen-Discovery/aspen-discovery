@@ -288,7 +288,7 @@
 
 		<div class="adminSection grid-item" id="greenhouse-development-tools">
 			<div class="adminPanel">
-				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Development Tools " isAdminFacing=true}</div></div>
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Development Planning " isAdminFacing=true}</div></div>
 				<div class="adminAction row">
 					<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 						<a href="/Development/AspenReleases" title="{translate text="Aspen Releases" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
