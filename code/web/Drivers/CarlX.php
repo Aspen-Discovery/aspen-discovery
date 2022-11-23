@@ -2226,4 +2226,7 @@ EOT;
 		return $data;
 	}
 
+	public function showHoldPosition() : bool {
+		return true;
+	}
 }

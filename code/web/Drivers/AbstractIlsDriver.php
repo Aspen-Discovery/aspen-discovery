@@ -482,4 +482,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'message' => 'Hold Notification Preferences are not implemented for this ILS'
 		];
 	}
+
+	public function showHoldPosition() : bool {
+		return false;
+	}
 }

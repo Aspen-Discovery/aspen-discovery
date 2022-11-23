@@ -1500,4 +1500,8 @@ class Evergreen extends AbstractIlsDriver
 	public function showHoldNotificationPreferences() : bool {
 		return true;
 	}
+
+	public function showHoldPosition() : bool {
+		return true;
+	}
 }

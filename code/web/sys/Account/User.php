@@ -1296,13 +1296,13 @@ class User extends DataObject
 		}
 
 		$indexToSortBy = 'sortTitle';
-		$holdSort = function ($a, $b) use (&$indexToSortBy) {
+		$holdSort = function (Hold $a, Hold $b) use (&$indexToSortBy) {
 			$titleA = $a->getSortTitle();
 			$titleB = $b->getSortTitle();
 			if ($indexToSortBy == 'sortTitle'){
 				$a = $titleA;
 				$b = $titleB;
-			}elseif ($indexToSortBy == 'user'){
+			}elseif ($indexToSortBy == 'user') {
 				$a = $a->getUserName();
 				$b = $b->getUserName();
 			}else {
@@ -2907,6 +2907,14 @@ class User extends DataObject
 		$session->whereAdd('session_id != "' . session_id() . '"');
 		/** @noinspection PhpUnusedLocalVariableInspection */
 		$numDeletions = $session->delete(true);
+	}
+
+	public function showHoldPosition() : bool {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->showHoldPosition();
+		}else{
+			return false;
+		}
 	}
 
 	protected function clearRuntimeDataVariables(){

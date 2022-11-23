@@ -2177,4 +2177,8 @@ class Polaris extends AbstractIlsDriver
 	{
 		return 'emailAspenResetLink';
 	}
+
+	public function showHoldPosition() : bool {
+		return true;
+	}
 }

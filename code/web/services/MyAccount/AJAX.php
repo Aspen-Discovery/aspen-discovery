@@ -2469,7 +2469,7 @@ class MyAccount_AJAX extends JSON_Action
 				}
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra' || $ils == 'Evergreen');
+				$showPosition = $user->showHoldPosition();
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');

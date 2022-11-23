@@ -5486,4 +5486,8 @@ class Koha extends AbstractIlsDriver
 			'errors' => $errors,
 		];
 	}
+
+	public function showHoldPosition() : bool {
+		return true;
+	}
 }
