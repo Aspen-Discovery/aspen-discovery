@@ -35,6 +35,25 @@ do
     esac
 done
 
+current_version=$(jq -c '.versionCode' './app-configs/projectOwner.json' | jq -r)
+printf "Apply new version code? (Currently %s)\n" "$current_version"
+PS3="> "
+versionOptions=("yes" "no")
+select item in "${versionOptions[@]}"
+do
+    case $REPLY in
+        *) versionUpdate=$item; break;;
+    esac
+done
+
+if [[ $versionUpdate == 'yes' ]]
+then
+  printf "\nNew version: "
+    read -r new_version
+    else
+      new_version=current_version
+  fi
+
 printf "Select platform(s):\n"
 PS3="> "
 platforms=("ios" "android" "all")
@@ -62,7 +81,7 @@ then
         fi
          printf "\nUpdating %s in channel %s for %s platform(s)... \n" "$site" "$channel" "$osPlatform"
           node /usr/local/aspen-discovery/code/aspen_app/app-configs/copyConfig.js
-          node /usr/local/aspen-discovery/code/aspen_app/app-configs/updateConfig.js --instance=$site --env=$channel
+          node /usr/local/aspen-discovery/code/aspen_app/app-configs/updateConfig.js --instance=$site --env=$channel --version=$new_version
           sed -i'.bak' "s/{{APP_ENV}}/$site/g" eas.json
           if [[ $otaUpdate == 'yes' ]]
           then
@@ -70,7 +89,7 @@ then
           else
             APP_ENV=$site eas build --platform $osPlatform --profile $channel
           fi
-          node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js
+          node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js --instance=$slug
           sed -i'.bak' "s/$site/{{APP_ENV}}/g" eas.json
       done
 else
@@ -83,15 +102,16 @@ else
     fi
   printf "\nUpdating %s in channel %s for %s platform(s)... \n" "$slug" "$channel" "$osPlatform"
   node /usr/local/aspen-discovery/code/aspen_app/app-configs/copyConfig.js
-  node /usr/local/aspen-discovery/code/aspen_app/app-configs/updateConfig.js --instance=$slug --env=$channel
+  node /usr/local/aspen-discovery/code/aspen_app/app-configs/updateConfig.js --instance=$slug --env=$channel --version=$new_version
   sed -i'.bak' "s/{{APP_ENV}}/$slug/g" eas.json
   if [[ $otaUpdate == 'yes' ]]
   then
     APP_ENV=$site eas update --branch $branchName --message "$comment" --platform $osPlatform
   else
+    #APP_ENV=$slug eas build --profile development --platform ios
     APP_ENV=$slug eas build --platform $osPlatform --profile $channel
   fi
-  node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js
+  node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js --instance=$slug
   sed -i'.bak' "s/$slug/{{APP_ENV}}/g" eas.json
 fi
 

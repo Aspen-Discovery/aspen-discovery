@@ -7,7 +7,7 @@
 	  "channel": "production",
 	  "env": {
 		"APP_ENV": "{{APP_ENV}}"
-	  }
+	  },
 	},
 	"beta": {
 	  "extends": "production",
@@ -16,8 +16,29 @@
 	"development": {
 	  "extends": "production",
 	  "channel": "dev",
+	  "developmentClient": true,
+	  "distribution": "internal",
 	  "ios": {
 		"simulator": true
+	  }
+	}
+  },
+  "submit": {
+	"release": {
+	  "android": {
+		"track": "production",
+		"releaseStatus": "draft"
+	  },
+	  "ios": {
+		"appleId": "{{DEV_APPLE_ID}}",
+		"ascAppId": "{{DEV_APP_ID}}",
+		"appleTeamId": "{{DEV_TEAM_ID}}"
+	  }
+	},
+	"beta": {
+	  "extends": "release",
+	  "android": {
+		"track": "beta"
 	  }
 	}
   }
