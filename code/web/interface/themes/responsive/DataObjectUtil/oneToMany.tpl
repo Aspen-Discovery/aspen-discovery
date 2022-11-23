@@ -79,7 +79,7 @@
 							{elseif $property.canEdit}
 								{if method_exists($subObject, 'getEditLink')}
 								<div class="btn-group btn-group-vertical" style="padding-top: 0">
-									<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
+									<a href='{$subObject->getEditLink($propName)}' title='Edit' class="btn btn-sm btn-default">
 										<i class="fas fa-pencil-alt"></i> {translate text="Edit" isAdminFacing=true}
 									</a>
 								{else}

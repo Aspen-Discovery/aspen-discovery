@@ -130,7 +130,7 @@ class DevelopmentSprint extends DataObject {
 	/**
 	 * @return TaskEpicLink[]
 	 */
-	private function getRelatedTasks(): array {
+	private function getRelatedTasks(): ?array {
 		if (!isset($this->_relatedTasks) && $this->id) {
 			require_once ROOT_DIR . '/sys/Development/TaskSprintLink.php';
 			$this->_relatedTasks = [];

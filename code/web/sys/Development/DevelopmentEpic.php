@@ -220,7 +220,7 @@ class DevelopmentEpic extends DataObject {
 	/**
 	 * @return TaskEpicLink[]
 	 */
-	private function getRelatedTasks(): array {
+	private function getRelatedTasks(): ?array {
 		if (!isset($this->_relatedTasks) && $this->id) {
 			require_once ROOT_DIR . '/sys/Development/TaskEpicLink.php';
 			$this->_relatedTasks = [];
@@ -238,7 +238,7 @@ class DevelopmentEpic extends DataObject {
 	/**
 	 * @return EpicPartnerLink[]
 	 */
-	private function getRequestingPartners(): array {
+	private function getRequestingPartners(): ?array {
 		if (!isset($this->_requestingPartners) && $this->id) {
 			require_once ROOT_DIR . '/sys/Development/EpicPartnerLink.php';
 			$this->_requestingPartners = [];

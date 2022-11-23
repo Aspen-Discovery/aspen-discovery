@@ -72,7 +72,7 @@ class TaskSprintLink extends DataObject {
 		return $this->_task;
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/Development/Tasks?objectAction=edit&id=' . $this->taskId;
 	}
 }

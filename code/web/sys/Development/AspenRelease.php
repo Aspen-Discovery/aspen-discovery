@@ -120,7 +120,7 @@ class AspenRelease extends DataObject {
 	/**
 	 * @return DevelopmentTask[]
 	 */
-	private function getRelatedTasks(): array {
+	private function getRelatedTasks(): ?array {
 		if (!isset($this->_relatedTasks) && $this->id) {
 			require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
 			$this->_relatedTasks = [];
