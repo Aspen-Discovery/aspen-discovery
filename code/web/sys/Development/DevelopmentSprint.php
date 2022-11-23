@@ -51,6 +51,12 @@ class DevelopmentSprint extends DataObject {
 				'label' => 'Active',
 				'description' => 'If the sprint is still active'
 			],
+			'totalStoryPoints' => [
+				'property' => 'totalStoryPoints',
+				'type' => 'label',
+				'label' => 'Total Story Points',
+				'description' => 'The total number of story points assigned to the release'
+			],
 			'relatedTasks' => [
 				'property' => 'relatedTasks',
 				'type' => 'oneToMany',
@@ -82,8 +88,6 @@ class DevelopmentSprint extends DataObject {
 			return $this->_totalStoryPoints;
 		} elseif ($name == 'relatedTasks') {
 			return $this->getRelatedTasks();
-		} elseif ($name == 'requestingPartners') {
-			return $this->getRequestingPartners();
 		} else {
 			return $this->_data[$name];
 		}
@@ -92,8 +96,6 @@ class DevelopmentSprint extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "relatedTasks") {
 			$this->_relatedTasks = $value;
-		} elseif ($name == "requestingPartners") {
-			$this->_requestingPartners = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}

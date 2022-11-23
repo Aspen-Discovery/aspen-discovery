@@ -7,6 +7,8 @@ class TaskSprintLink extends DataObject {
 	public $taskId;
 	public $weight;
 
+	private $_task;
+
 	static function getObjectStructure(): array {
 		$taskList = [];
 		require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
@@ -58,6 +60,16 @@ class TaskSprintLink extends DataObject {
 				'required' => true
 			),
 		);
+	}
+
+	public function getTask() : ?DevelopmentTask {
+		if (is_null($this->_task) && !empty($this->taskId)){
+			require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
+			$this->_task = new DevelopmentTask();
+			$this->_task->id = $this->taskId;
+			$this->_task->find(true);
+		}
+		return $this->_task;
 	}
 
 	function getEditLink() : string{
