@@ -57,7 +57,7 @@ class PortalRow extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink() : string{
+	public function getEditLink($context) : string{
 		return '/WebBuilder/PortalRows?objectAction=edit&id=' . $this->id;
 	}
 

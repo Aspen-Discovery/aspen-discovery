@@ -101,7 +101,7 @@ class AppSetting extends DataObject
 		}
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/AspenLiDA/AppSettings?objectAction=edit&id=' . $this->id;
 	}
 

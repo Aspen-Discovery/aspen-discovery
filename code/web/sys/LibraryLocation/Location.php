@@ -1478,7 +1478,7 @@ class Location extends DataObject
 		return $this->_groupedWorkDisplaySettings;
 	}
 
-	function getEditLink() : string
+	function getEditLink($context) : string
 	{
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
 	}

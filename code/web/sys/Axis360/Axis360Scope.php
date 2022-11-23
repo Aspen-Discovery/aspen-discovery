@@ -52,7 +52,7 @@ class Axis360Scope extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink() : string{
+	public function getEditLink($context) : string{
 		return '/Axis360/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
