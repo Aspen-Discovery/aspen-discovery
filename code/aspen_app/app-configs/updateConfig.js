@@ -1,3 +1,4 @@
+const fs = require('fs');
 const data = require('./apps.json');
 const owner = require('./projectOwner.json');
 
@@ -24,8 +25,49 @@ function getArgs() {
 const args = getArgs();
 const instance = args.instance;
 const env = args.env;
-const version = args.version;
+
 const app = data[instance];
+
+/* if (env === 'production' || env === 'beta') {
+ fs.readFile('app-configs/projectOwner.json', 'utf8', function (err, data) {
+ if (err) {
+ return console.log(err);
+ } else {
+ console.log('✅ Found projectOwner.json');
+ let json = JSON.stringify(data);
+ let curBuildCode = owner['buildCode'];
+ curBuildCode = parseInt(curBuildCode);
+ curBuildCode = curBuildCode + 1;
+ json = json.replace(owner['buildCode'], curBuildCode);
+ const obj = JSON.parse(json);
+ fs.writeFile('app-configs/projectOwner.json', obj, 'utf8', function (err) {
+ if (err) {
+ return console.log(err);
+ }
+ console.log('✅ Updated build number in projectOwner.json');
+ });
+ }
+ });
+ } */
+
+fs.readFile('eas.json', 'utf8', function (err, data) {
+     if (err) {
+          return console.log(err);
+     } else {
+          console.log('✅ Found eas.json');
+          let json = JSON.stringify(data);
+          json = json.replace('{{DEV_APP_ID}}', app['ascAppId']);
+          json = json.replace('{{DEV_TEAM_ID}}', app['appleTeamId']);
+          json = json.replace('{{DEV_APPLE_ID}}', owner['devAppleId']);
+          const obj = JSON.parse(json);
+          fs.writeFile('eas.json', obj, 'utf8', function (err) {
+               if (err) {
+                    return console.log(err);
+               }
+               console.log('✅ Updated eas.json');
+          });
+     }
+});
 
 let versionAsInt = owner['buildCode'];
 versionAsInt = parseInt(versionAsInt, 10);
@@ -36,8 +78,7 @@ const app_config = {
      scheme: app['scheme'],
      owner: owner['expoProjectOwner'],
      privacy: 'public',
-     platforms: ['ios',
-          'android'],
+     platforms: ['ios', 'android'],
      version: owner['versionCode'],
      sdkVersion: '46.0.0',
      orientation: 'default',
@@ -64,11 +105,7 @@ const app_config = {
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
           infoPlist: {
                NSLocationWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
-               LSApplicationQueriesSchemes: ['comgooglemaps',
-                    'citymapper',
-                    'uber',
-                    'lyft',
-                    'waze'],
+               LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
                CFBundleAllowMixedLocalizations: true,
           },
      },
@@ -76,8 +113,7 @@ const app_config = {
           allowBackup: false,
           package: app['reverseDns'],
           versionCode: versionAsInt,
-          permissions: ['ACCESS_COARSE_LOCATION',
-               'ACCESS_FINE_LOCATION'],
+          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION'],
           adaptiveIcon: {
                foregroundImage: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
                backgroundColor: app['background'],
@@ -115,14 +151,13 @@ const app_config = {
      plugins: ['sentry-expo'],
 };
 
-const fs = require('fs');
-fs.readFile('app.config.js', 'utf8', function(err, data) {
+fs.readFile('app.config.js', 'utf8', function (err, data) {
      if (err) {
           return console.log(err);
      } else {
           console.log('✅ Found app.config.js');
           const result = data.replace('{{LOAD_APP_CONFIG}}', JSON.stringify(app_config));
-          fs.writeFile('app.config.js', result, 'utf8', function(err) {
+          fs.writeFile('app.config.js', result, 'utf8', function (err) {
                if (err) {
                     return console.log(err);
                }
@@ -130,51 +165,3 @@ fs.readFile('app.config.js', 'utf8', function(err, data) {
           });
      }
 });
-
-fs.readFile('eas.json', 'utf8', function(err, data) {
-     if (err) {
-          return console.log(err);
-     } else {
-          console.log('✅ Found eas.json');
-          let json = JSON.stringify(data);
-          json = json.replace('{{DEV_APP_ID}}', app['ascAppId']);
-          json = json.replace('{{DEV_TEAM_ID}}', app['appleTeamId']);
-          json = json.replace('{{DEV_APPLE_ID}}', owner['devAppleId']);
-          const obj = JSON.parse(json);
-          fs.writeFile('eas.json', obj, 'utf8', function(err) {
-               if (err) {
-                    return console.log(err);
-               }
-               console.log('✅ Updated eas.json');
-          });
-     }
-});
-
-if (env === 'production' || env === 'beta') {
-     fs.readFile('app-configs/projectOwner.json', 'utf8', function(err, data) {
-          if (err) {
-               return console.log(err);
-          } else {
-               console.log('✅ Found projectOwner.json');
-               let json = JSON.stringify(data);
-               let curBuildCode = owner['buildCode'];
-               curBuildCode = parseInt(curBuildCode);
-               curBuildCode = curBuildCode + 1;
-               curVerisonCode = owner['versionCode'];
-               json = json.replace(owner['buildCode'], curBuildCode);
-               if (curVerisonCode !== version) {
-                    json = json.replace(owner['versionCode'], version);
-               }
-               const obj = JSON.parse(json);
-               fs.writeFile('app-configs/projectOwner.json', obj, 'utf8', function(err) {
-                    if (err) {
-                         return console.log(err);
-                    }
-                    if (curVerisonCode !== version) {
-                         console.log('✅ Updated version code in projectOwner.json');
-                    }
-                    console.log('✅ Updated build number in projectOwner.json');
-               });
-          }
-     });
-}
