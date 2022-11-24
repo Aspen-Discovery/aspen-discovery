@@ -1,7 +1,9 @@
 {
+  "cli": {
+	"version": ">= 0.60.0"
+  },
   "build": {
 	"production": {
-	  "node": "16.16.0",
 	  "yarn": "1.22.19",
 	  "distribution": "store",
 	  "channel": "production",
@@ -13,16 +15,16 @@
 	  "extends": "production",
 	  "channel": "beta"
 	},
-	"beta-qa": {
+	"alpha": {
 	  "extends": "production",
-	  "channel": "beta-qa",
+	  "channel": "alpha",
 	  "ios": {
 		"simulator": true
 	  }
 	},
 	"development": {
 	  "extends": "production",
-	  "channel": "dev",
+	  "channel": "development",
 	  "developmentClient": true,
 	  "distribution": "internal",
 	  "ios": {
