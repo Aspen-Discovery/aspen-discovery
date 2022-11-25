@@ -2,8 +2,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class UserAPI extends Action
-{
+class UserAPI extends Action {
 	/**
 	 * Processes method to determine return type and calls the correct method.
 	 * Should not be called directly.
@@ -11,8 +10,7 @@ class UserAPI extends Action
 	 * @see Action::launch()
 	 * @access private
 	 */
-	function launch()
-	{
+	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 
@@ -22,12 +20,48 @@ class UserAPI extends Action
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile',
-					'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations',
-					'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage',
-					'initMasquerade', 'endMasquerade', 'saveNotificationPushToken', 'deleteNotificationPushToken', 'getNotificationPushToken', 'submitVdxRequest', 'cancelVdxRequest', 'getNotificationPreference',
-					'setNotificationPreference', 'getNotificationPreferences', 'updateBrowseCategoryStatus'))) {
+			if ($this->grantTokenAccess()) {
+				if (in_array($method, array(
+					'isLoggedIn',
+					'logout',
+					'login',
+					'checkoutItem',
+					'placeHold',
+					'renewItem',
+					'renewAll',
+					'viewOnlineItem',
+					'changeHoldPickUpLocation',
+					'getPatronProfile',
+					'validateAccount',
+					'getPatronHolds',
+					'getPatronCheckedOutItems',
+					'cancelHold',
+					'activateHold',
+					'freezeHold',
+					'returnCheckout',
+					'updateOverDriveEmail',
+					'getValidPickupLocations',
+					'getHiddenBrowseCategories',
+					'getILSMessages',
+					'dismissBrowseCategory',
+					'showBrowseCategory',
+					'getLinkedAccounts',
+					'getViewers',
+					'addAccountLink',
+					'removeAccountLink',
+					'saveLanguage',
+					'initMasquerade',
+					'endMasquerade',
+					'saveNotificationPushToken',
+					'deleteNotificationPushToken',
+					'getNotificationPushToken',
+					'submitVdxRequest',
+					'cancelVdxRequest',
+					'getNotificationPreference',
+					'setNotificationPreference',
+					'getNotificationPreferences',
+					'updateBrowseCategoryStatus'
+				))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -84,8 +118,7 @@ class UserAPI extends Action
 	 *
 	 * @access private
 	 */
-	function isLoggedIn(): bool
-	{
+	function isLoggedIn(): bool {
 		global $logger;
 		$logger->log("UserAPI/isLoggedIn session: " . session_id(), Logger::LOG_DEBUG);
 		return UserAccount::isLoggedIn();
@@ -113,33 +146,43 @@ class UserAPI extends Action
 	 *
 	 * @access private
 	 */
-	function login() : array
-	{
+	function login(): array {
 		global $logger;
 		$logger->log("Starting UserAPI/login session: " . session_id(), Logger::LOG_DEBUG);
 		//Login the user.  Must be called via Post parameters.
 		if (isset($_POST['username']) && isset($_POST['password'])) {
 			$user = UserAccount::getLoggedInUser();
 			if ($user && !($user instanceof AspenError)) {
-				$logger->log("User is already logged in",Logger::LOG_DEBUG);
-				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname), 'session' => session_id());
+				$logger->log("User is already logged in", Logger::LOG_DEBUG);
+				return array(
+					'success' => true,
+					'name' => ucwords($user->firstname . ' ' . $user->lastname),
+					'session' => session_id()
+				);
 			} else {
 				try {
 					$user = UserAccount::login();
 					if ($user && !($user instanceof AspenError)) {
-						$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_DEBUG);
-						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname), 'session' => session_id());
+						$logger->log("User was logged in successfully session: " . session_id(), Logger::LOG_DEBUG);
+						return array(
+							'success' => true,
+							'name' => ucwords($user->firstname . ' ' . $user->lastname),
+							'session' => session_id()
+						);
 					} else {
-						$logger->log("Incorrect login parameters",Logger::LOG_DEBUG);
+						$logger->log("Incorrect login parameters", Logger::LOG_DEBUG);
 						return array('success' => false);
 					}
 				} catch (UnknownAuthenticationMethodException $e) {
-					$logger->log("Error logging user in $e",Logger::LOG_DEBUG);
+					$logger->log("Error logging user in $e", Logger::LOG_DEBUG);
 					return array('success' => false);
 				}
 			}
 		} else {
-			return array('success' => false, 'message' => 'This method must be called via POST.');
+			return array(
+				'success' => false,
+				'message' => 'This method must be called via POST.'
+			);
 		}
 	}
 
@@ -160,8 +203,7 @@ class UserAPI extends Action
 	 *
 	 * @access private
 	 */
-	function logout() : bool
-	{
+	function logout(): bool {
 		global $logger;
 		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_DEBUG);
 		UserAccount::logout();
@@ -221,8 +263,7 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function validateAccount() : array
-	{
+	function validateAccount(): array {
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
@@ -245,11 +286,13 @@ class UserAPI extends Action
 			$result = new stdClass();
 			$properties = get_object_vars($user);
 			foreach ($properties as $name => $value) {
-				if ($name[0] != '_'){
+				if ($name[0] != '_') {
 					$result->$name = $value;
-				}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-					if ($name != '_data'){
-						$result->$name = $value;
+				} else {
+					if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+						if ($name != '_data') {
+							$result->$name = $value;
+						}
 					}
 				}
 			}
@@ -354,8 +397,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronProfile() : array
-	{
+	function getPatronProfile(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			//Remove a bunch of junk from the user data
@@ -384,9 +426,9 @@ class UserAPI extends Action
 			$numHoldsAvailable = 0;
 			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
-			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
+			$userData->numHoldsIls = (int)$accountSummary->getNumHolds();
 			$userData->numHoldsAvailableIls = (int)($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
-			$userData->numHoldsRequestedIls = (int)($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numHoldsRequestedIls = (int)($accountSummary->numUnavailableHolds == null ? 0 : $accountSummary->numUnavailableHolds);
 			$userData->numOverdue = (int)$accountSummary->numOverdue;
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			$numCheckedOut += $userData->numCheckedOutIls;
@@ -418,11 +460,11 @@ class UserAPI extends Action
 			global $activeLanguage;
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
-			if ($variables->find(true)){
+			if ($variables->find(true)) {
 				$currencyCode = $variables->currencyCode;
 			}
 
-			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
 
 			//Add overdrive data
@@ -523,7 +565,7 @@ class UserAPI extends Action
 			}
 
 			//Add Interlibrary Loan
-			if ($user->hasInterlibraryLoan()){
+			if ($user->hasInterlibraryLoan()) {
 				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 				$driver = new VdxDriver();
 				$vdxSummary = $driver->getAccountSummary($user);
@@ -544,18 +586,18 @@ class UserAPI extends Action
 			// get list count
 			$userLists = new ListAPI();
 			$lists = $userLists->getUserLists();
-			if($lists['count']) {
+			if ($lists['count']) {
 				$numLists = $lists['count'];
 			}
 
 			// get saved search count
 			$savedSearches = new ListAPI(true);
 			$searches = $savedSearches->getSavedSearches($user->id);
-			if($searches['count']) {
+			if ($searches['count']) {
 				$numSavedSearches = $searches['count'];
 			}
 
-			if($searches['countNewResults']) {
+			if ($searches['countNewResults']) {
 				$numSavedSearchesNew = $searches['countNewResults'];
 			}
 
@@ -565,9 +607,15 @@ class UserAPI extends Action
 
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
-			return array('success' => true, 'profile' => $userData);
+			return array(
+				'success' => true,
+				'profile' => $userData
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -577,14 +625,19 @@ class UserAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	function getILSMessages() : array
-	{
+	function getILSMessages(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$messages = $user->getILSMessages();
-			return array('success' => true, 'messages' => $messages);
+			return array(
+				'success' => true,
+				'messages' => $messages
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -684,11 +737,13 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronHolds() : array
-	{
+	function getPatronHolds(): array {
 		global $offlineMode;
 		if ($offlineMode) {
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return array(
+				'success' => false,
+				'message' => 'Circulation system is offline'
+			);
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
@@ -703,15 +758,21 @@ class UserAPI extends Action
 				 * @var string $key
 				 * @var Hold $hold
 				 */
-				foreach ($allHolds['available'] as $key => $hold){
+				foreach ($allHolds['available'] as $key => $hold) {
 					$holdsToReturn['available'][$key] = $hold->getArrayForAPIs();
 				}
-				foreach ($allHolds['unavailable'] as $key => $hold){
+				foreach ($allHolds['unavailable'] as $key => $hold) {
 					$holdsToReturn['unavailable'][$key] = $hold->getArrayForAPIs();
 				}
-				return array('success' => true, 'holds' => $holdsToReturn);
+				return array(
+					'success' => true,
+					'holds' => $holdsToReturn
+				);
 			} else {
-				return array('success' => false, 'message' => 'Login unsuccessful');
+				return array(
+					'success' => false,
+					'message' => 'Login unsuccessful'
+				);
 			}
 		}
 	}
@@ -779,16 +840,21 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronHoldsOverDrive() : array
-	{
+	function getPatronHoldsOverDrive(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$eContentHolds = $driver->getHolds($user);
-			return array('success' => true, 'holds' => $eContentHolds);
+			return array(
+				'success' => true,
+				'holds' => $eContentHolds
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -830,8 +896,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronCheckedOutItemsOverDrive() : array
-	{
+	function getPatronCheckedOutItemsOverDrive(): array {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -839,12 +904,18 @@ class UserAPI extends Action
 			$driver = new OverDriveDriver();
 			$eContentCheckedOutItems = $driver->getCheckouts($user);
 			$items = [];
-			foreach ($eContentCheckedOutItems as $checkedOutItem){
+			foreach ($eContentCheckedOutItems as $checkedOutItem) {
 				$items[] = $checkedOutItem->toArray();
 			}
-			return array('success' => true, 'items' => $items);
+			return array(
+				'success' => true,
+				'items' => $items
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -882,16 +953,21 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronOverDriveSummary() : array
-	{
+	function getPatronOverDriveSummary(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$overDriveSummary = $driver->getAccountSummary($user);
-			return array('success' => true, 'summary' => $overDriveSummary->toArray());
+			return array(
+				'success' => true,
+				'summary' => $overDriveSummary->toArray()
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -930,8 +1006,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronFines() : array
-	{
+	function getPatronFines(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$includeLinkedUsers = $_REQUEST['includeLinkedUsers'] ?? false;
@@ -940,23 +1015,30 @@ class UserAPI extends Action
 			foreach ($fines as &$fine) {
 				if (isset($fine['amountOutstandingVal'])) {
 					$totalOwed += $fine['amountOutstandingVal'];
-				}elseif (isset($fine['amountVal'])) {
+				} elseif (isset($fine['amountVal'])) {
 					$totalOwed += $fine['amountVal'];
-				}elseif (isset($fine['amount'])) {
+				} elseif (isset($fine['amount'])) {
 					$totalOwed += $fine['amount'];
 				}
-				if (array_key_exists('amount', $fine) && array_key_exists('amountOutstanding', $fine)){
+				if (array_key_exists('amount', $fine) && array_key_exists('amountOutstanding', $fine)) {
 					$fine['amountOriginal'] = $fine['amount'];
 					$fine['amount'] = $fine['amountOutstanding'];
 				}
-				if (array_key_exists('amountVal', $fine) && array_key_exists('amountOutstandingVal', $fine)){
+				if (array_key_exists('amountVal', $fine) && array_key_exists('amountOutstandingVal', $fine)) {
 					$fine['amountOriginalVal'] = $fine['amountVal'];
 					$fine['amountVal'] = $fine['amountOutstandingVal'];
 				}
 			}
-			return array('success' => true, 'fines' => $fines, 'totalOwed' => $totalOwed);
+			return array(
+				'success' => true,
+				'fines' => $fines,
+				'totalOwed' => $totalOwed
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -966,15 +1048,20 @@ class UserAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	function getOverDriveLendingOptions() : array
-	{
+	function getOverDriveLendingOptions(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$driver = new OverDriveDriver();
 			$accountDetails = $driver->getOptions($user);
-			return array('success' => true, 'lendingOptions' => $accountDetails['lendingPeriods']);
+			return array(
+				'success' => true,
+				'lendingOptions' => $accountDetails['lendingPeriods']
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -1023,11 +1110,13 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronCheckedOutItems() : array
-	{
+	function getPatronCheckedOutItems(): array {
 		global $offlineMode;
 		if ($offlineMode) {
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return array(
+				'success' => false,
+				'message' => 'Circulation system is offline'
+			);
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
@@ -1035,85 +1124,124 @@ class UserAPI extends Action
 				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
 				$allCheckedOut = $user->getCheckouts($linkedUsers, $source);
 				$checkoutsList = [];
-				foreach ($allCheckedOut as $checkoutObj){
+				foreach ($allCheckedOut as $checkoutObj) {
 					$checkoutsList[] = $checkoutObj->getArrayForAPIs();
 				}
 
-				return array('success' => true, 'checkedOutItems' => $checkoutsList);
+				return array(
+					'success' => true,
+					'checkedOutItems' => $checkoutsList
+				);
 			} else {
-				return array('success' => false, 'message' => 'Login unsuccessful');
+				return array(
+					'success' => false,
+					'message' => 'Login unsuccessful'
+				);
 			}
 		}
 	}
 
-	function checkoutItem() : array
-	{
+	function checkoutItem(): array {
 		$source = $_REQUEST['itemSource'] ?? null;
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'overdrive') {
 				return $this->checkoutOverDriveItem();
-			} else if ($source == 'hoopla') {
-				return $this->checkoutHooplaItem();
-			} else if ($source == 'cloud_library') {
-				return $this->checkoutCloudLibraryItem();
-			} else if ($source == 'axis360') {
-				return $this->checkoutAxis360Item();
 			} else {
-				return array('success' => false, 'message' => 'This source does not permit checkouts.');
+				if ($source == 'hoopla') {
+					return $this->checkoutHooplaItem();
+				} else {
+					if ($source == 'cloud_library') {
+						return $this->checkoutCloudLibraryItem();
+					} else {
+						if ($source == 'axis360') {
+							return $this->checkoutAxis360Item();
+						} else {
+							return array(
+								'success' => false,
+								'message' => 'This source does not permit checkouts.'
+							);
+						}
+					}
+				}
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function returnCheckout() : array
-	{
+	function returnCheckout(): array {
 		$source = $_REQUEST['itemSource'];
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'overdrive') {
 				return $this->returnOverDriveCheckout();
-			} else if ($source == 'hoopla') {
-				return $this->returnHooplaItem();
-			} else if ($source == 'cloud_library') {
-				return $this->returnCloudLibraryItem();
-			} else if ($source == 'axis360') {
-				return $this->returnAxis360Item();
 			} else {
-				return array('success' => false, 'message' => 'Invalid source');
+				if ($source == 'hoopla') {
+					return $this->returnHooplaItem();
+				} else {
+					if ($source == 'cloud_library') {
+						return $this->returnCloudLibraryItem();
+					} else {
+						if ($source == 'axis360') {
+							return $this->returnAxis360Item();
+						} else {
+							return array(
+								'success' => false,
+								'message' => 'Invalid source'
+							);
+						}
+					}
+				}
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function viewOnlineItem() : array
-	{
+	function viewOnlineItem(): array {
 		$source = $_REQUEST['itemSource'];
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 
 			if ($source == 'overdrive') {
-				if(isset($_REQUEST['isPreview']) && $_REQUEST['isPreview'] == true) {
+				if (isset($_REQUEST['isPreview']) && $_REQUEST['isPreview'] == true) {
 					return $this->openOverDrivePreview();
 				} else {
 					return $this->openOverDriveItem();
 				}
-			} else if ($source == 'hoopla') {
-				return $this->openHooplaItem();
-			} else if ($source == 'cloud_library') {
-				return $this->openCloudLibraryItem();
-			} else if ($source == 'axis360') {
-				return $this->openAxis360Item();
 			} else {
-				return array('success' => false, 'message' => 'Invalid source');
+				if ($source == 'hoopla') {
+					return $this->openHooplaItem();
+				} else {
+					if ($source == 'cloud_library') {
+						return $this->openCloudLibraryItem();
+					} else {
+						if ($source == 'axis360') {
+							return $this->openAxis360Item();
+						} else {
+							return array(
+								'success' => false,
+								'message' => 'Invalid source'
+							);
+						}
+					}
+				}
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful when trying to view online checkout');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful when trying to view online checkout'
+			);
 		}
 	}
 
@@ -1158,8 +1286,7 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function renewCheckout() : array
-	{
+	function renewCheckout(): array {
 		$recordId = $_REQUEST['recordId'];
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$itemIndex = $_REQUEST['itemIndex'];
@@ -1172,15 +1299,20 @@ class UserAPI extends Action
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
-			return array('success' => true, 'renewalMessage' => $renewalMessage);
+			return array(
+				'success' => true,
+				'renewalMessage' => $renewalMessage
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function renewItem() : array
-	{
+	function renewItem(): array {
 		$source = $_REQUEST['itemSource'] ?? null;
 		$itemBarcode = $_REQUEST['itemBarcode'] ?? null;
 
@@ -1191,22 +1323,42 @@ class UserAPI extends Action
 				if ($result['success']) {
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', 'successfulRenewals');
-					return array('success' => true, 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+					return array(
+						'success' => true,
+						'title' => $result['api']['title'],
+						'message' => $result['api']['message']
+					);
 				} else {
-					return array('success' => false, 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+					return array(
+						'success' => false,
+						'title' => $result['api']['title'],
+						'message' => $result['api']['message']
+					);
 				}
-			} else if ($source == 'overdrive') {
-				return $this->renewOverDriveItem();
-			} else if ($source == 'cloud_library') {
-				return $this->renewCloudLibraryItem();
-			} else if ($source == 'axis360') {
-				return $this->renewAxis360Item();
 			} else {
-				return array('success' => false, 'message' => 'Invalid source');
+				if ($source == 'overdrive') {
+					return $this->renewOverDriveItem();
+				} else {
+					if ($source == 'cloud_library') {
+						return $this->renewCloudLibraryItem();
+					} else {
+						if ($source == 'axis360') {
+							return $this->renewAxis360Item();
+						} else {
+							return array(
+								'success' => false,
+								'message' => 'Invalid source'
+							);
+						}
+					}
+				}
 			}
 
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -1234,22 +1386,28 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function renewAll() : array
-	{
+	function renewAll(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$result = $user->renewAll();
-			$message = array_merge([$result['Renewed'] . ' of ' . $result['Total'] . ' titles were renewed'],$result['message']);
-			for ($i = 0; $i < $result['Renewed']; $i++){
+			$message = array_merge([$result['Renewed'] . ' of ' . $result['Total'] . ' titles were renewed'], $result['message']);
+			for ($i = 0; $i < $result['Renewed']; $i++) {
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
-			if($result['Renewed'] == 0) {
+			if ($result['Renewed'] == 0) {
 				$result['success'] = false;
 			}
-			return array('success' => $result['success'], 'title' => $result['title'], 'renewalMessage' => $message);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['title'],
+				'renewalMessage' => $message
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -1293,16 +1451,15 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function placeHold() : array
-	{
+	function placeHold(): array {
 
-		if(isset($_REQUEST['bibId'])){
+		if (isset($_REQUEST['bibId'])) {
 			$bibId = $_REQUEST['bibId'];
 		} else {
 			$bibId = $_REQUEST['itemId'];
 		}
 
-		if(isset($_REQUEST['itemSource'])) {
+		if (isset($_REQUEST['itemSource'])) {
 			$source = $_REQUEST['itemSource'];
 		} else {
 			$source = null;
@@ -1315,7 +1472,7 @@ class UserAPI extends Action
 				if ($source == 'ils' || $source == null) {
 					if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
 						if (isset($_REQUEST['pickupBranch'])) {
-							if(is_null($_REQUEST['pickupBranch'])) {
+							if (is_null($_REQUEST['pickupBranch'])) {
 								$location = new Location();
 								$userPickupLocations = $location->getPickupBranches($user);
 								foreach ($userPickupLocations as $tmpLocation) {
@@ -1332,51 +1489,116 @@ class UserAPI extends Action
 						}
 						$locationValid = $user->validatePickupBranch($pickupBranch);
 						if (!$locationValid) {
-							return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing' => true]));
+							return array(
+								'success' => false,
+								'message' => translate([
+									'text' => 'This location is no longer available, please select a different pickup location',
+									'isPublicFacing' => true
+								])
+							);
 						}
 					} else {
 						$pickupBranch = $user->_homeLocationCode;
 					}
 
-					if(isset($_REQUEST['volumeId'])) {
-						$result = $user->placeVolumeHold($bibId, $_REQUEST['volumeId'], $pickupBranch);
-						$action = $result['api']['action'] ?? null;
-						return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
-					}
+					$homeLibrary = $user->getHomeLibrary();
 
-					//Make sure that there are not volumes available
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-					$recordDriver = new MarcRecordDriver($bibId);
-					if ($recordDriver->isValid()) {
-						require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-						$volumeDataDB = new IlsVolumeInfo();
-						$volumeDataDB->recordId = $recordDriver->getIdWithSource();
-						if ($volumeDataDB->find(true)) {
-							return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+					if (!empty($_REQUEST['cancelDate'])) {
+						$cancelDate = $_REQUEST['cancelDate'];
+					} else {
+						if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+							$cancelDate = null;
+						} else {
+							//Default to a date based on the default not needed after days in the library configuration.
+							$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+							$cancelDate = date('Y-m-d', $nnaDate);
 						}
 					}
-					$result = $user->placeHold($bibId, $pickupBranch);
-					$action = $result['api']['action'] ?? null;
-					return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
-				} else if ($source == 'overdrive') {
-					return $this->placeOverDriveHold();
-				} else if ($source == 'cloud_library') {
-					return $this->placeCloudLibraryHold();
-				} else if ($source == 'axis360') {
-					return $this->placeAxis360Hold();
+
+					$holdType = $_REQUEST['holdType'];
+					if ($holdType == 'item' && isset($_REQUEST['itemId'])) {
+						$recordId = $_REQUEST['recordId'];
+						if (strpos($recordId, ':') > 0) {
+							list(, $shortId) = explode(':', $recordId, 2);
+						} else {
+							$shortId = $recordId;
+						}
+						$result = $user->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate);
+						$action = $result['api']['action'] ?? null;
+						return array(
+							'success' => $result['success'],
+							'title' => $result['api']['title'],
+							'message' => $result['api']['message'],
+							'action' => $action
+						);
+					} else {
+						if (isset($_REQUEST['volumeId']) && $holdType == 'volume') {
+							$result = $user->placeVolumeHold($bibId, $_REQUEST['volumeId'], $pickupBranch);
+							$action = $result['api']['action'] ?? null;
+							return array(
+								'success' => $result['success'],
+								'title' => $result['api']['title'],
+								'message' => $result['api']['message'],
+								'action' => $action
+							);
+						} else {
+							//Make sure that there are not volumes available
+							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+							$recordDriver = new MarcRecordDriver($bibId);
+							if ($recordDriver->isValid()) {
+								require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+								$volumeDataDB = new IlsVolumeInfo();
+								$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+								if ($volumeDataDB->find(true)) {
+									return array(
+										'success' => false,
+										'message' => translate(['text' => 'You must place a volume hold on this title.'])
+									);
+								}
+							}
+							$result = $user->placeHold($bibId, $pickupBranch, $cancelDate);
+							$action = $result['api']['action'] ?? null;
+							return array(
+								'success' => $result['success'],
+								'title' => $result['api']['title'],
+								'message' => $result['api']['message'],
+								'action' => $action
+							);
+						}
+					}
 				} else {
-					return array('success' => false, 'message' => 'Invalid source');
+					if ($source == 'overdrive') {
+						return $this->placeOverDriveHold();
+					} else {
+						if ($source == 'cloud_library') {
+							return $this->placeCloudLibraryHold();
+						} else {
+							if ($source == 'axis360') {
+								return $this->placeAxis360Hold();
+							} else {
+								return array(
+									'success' => false,
+									'message' => 'Invalid source'
+								);
+							}
+						}
+					}
 				}
-			}else{
-				return array('success' => false, 'message' => 'Sorry, holds are not currently allowed.');
+			} else {
+				return array(
+					'success' => false,
+					'message' => 'Sorry, holds are not currently allowed.'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function placeItemHold() : array
-	{
+	function placeItemHold(): array {
 		$bibId = $_REQUEST['bibId'];
 		$itemId = $_REQUEST['itemId'];
 
@@ -1387,8 +1609,14 @@ class UserAPI extends Action
 				if (isset($_REQUEST['pickupBranch'])) {
 					$pickupBranch = trim($_REQUEST['pickupBranch']);
 					$locationValid = $user->validatePickupBranch($pickupBranch);
-					if (!$locationValid){
-						return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
+					if (!$locationValid) {
+						return array(
+							'success' => false,
+							'message' => translate([
+								'text' => 'This location is no longer available, please select a different pickup location',
+								'isPublicFacing' => true
+							])
+						);
 					}
 				} else {
 					$pickupBranch = $user->_homeLocationCode;
@@ -1400,8 +1628,11 @@ class UserAPI extends Action
 					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 					$volumeDataDB = new IlsVolumeInfo();
 					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
-					if ($volumeDataDB->find(true)){
-						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+					if ($volumeDataDB->find(true)) {
+						return array(
+							'success' => false,
+							'message' => translate(['text' => 'You must place a volume hold on this title.'])
+						);
 					}
 				}
 				return $user->placeItemHold($bibId, $itemId, $pickupBranch);
@@ -1410,49 +1641,72 @@ class UserAPI extends Action
 			}
 			return $user->placeHold($bibId, $pickupBranch);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function changeHoldPickUpLocation() : array
-	{
+	function changeHoldPickUpLocation(): array {
 		$holdId = $_REQUEST['holdId'];
 		$newLocation = $_REQUEST['newLocation'];
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			list ($locationId, $locationCode) = explode('_', $newLocation);
 			$locationValid = $user->validatePickupBranch($locationCode);
-			if (!$locationValid){
-				return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
+			if (!$locationValid) {
+				return array(
+					'success' => false,
+					'message' => translate([
+						'text' => 'This location is no longer available, please select a different pickup location',
+						'isPublicFacing' => true
+					])
+				);
 			}
 			$result = $user->changeHoldPickUpLocation($holdId, $locationCode);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getValidPickupLocations() : array
-	{
+	function getValidPickupLocations(): array {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			if ($patron->hasIlsConnection()){
+			if ($patron->hasIlsConnection()) {
 				$tmpPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
 				$pickupLocations = [];
-				foreach ($tmpPickupLocations as $pickupLocation){
+				foreach ($tmpPickupLocations as $pickupLocation) {
 					if (!is_string($pickupLocation)) {
 						$pickupLocations[] = $pickupLocation->toArray();
 					}
 				}
-				return array('success' => true, 'pickupLocations' => $pickupLocations);
-			}else{
-				return array('success' => false, 'message' => 'Patron is not connected to an ILS.');
+				return array(
+					'success' => true,
+					'pickupLocations' => $pickupLocations
+				);
+			} else {
+				return array(
+					'success' => false,
+					'message' => 'Patron is not connected to an ILS.'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -1491,10 +1745,9 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function placeOverDriveHold() : array
-	{
+	function placeOverDriveHold(): array {
 		if ((isset($_REQUEST['overDriveId'])) || (isset($_REQUEST['itemId']))) {
-			if(isset($_REQUEST['overDriveId'])){
+			if (isset($_REQUEST['overDriveId'])) {
 				$overDriveId = $_REQUEST['overDriveId'];
 			} else {
 				$overDriveId = $_REQUEST['itemId'];
@@ -1506,20 +1759,31 @@ class UserAPI extends Action
 				$driver = new OverDriveDriver();
 				$result = $driver->placeHold($user, $overDriveId);
 				$action = $result['api']['action'] ?? null;
-				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+				return array(
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+					'action' => $action
+				);
 			} else {
-				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+				return array(
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Unable to validate user'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Please provide the overDriveId to be place the hold on');
+			return array(
+				'success' => false,
+				'message' => 'Please provide the overDriveId to be place the hold on'
+			);
 		}
 
 	}
 
-	function freezeOverDriveHold() : array
-	{
+	function freezeOverDriveHold(): array {
 		if ((isset($_REQUEST['overDriveId'])) || (isset($_REQUEST['recordId']))) {
-			if(isset($_REQUEST['overDriveId'])){
+			if (isset($_REQUEST['overDriveId'])) {
 				$overDriveId = $_REQUEST['overDriveId'];
 			} else {
 				$overDriveId = $_REQUEST['recordId'];
@@ -1532,12 +1796,23 @@ class UserAPI extends Action
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$result = $driver->freezeHold($user, $overDriveId, $reactivationDate);
-				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+				return array(
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message']
+				);
 			} else {
-				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+				return array(
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Unable to validate user'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Please provide the overDriveId to be place the hold on');
+			return array(
+				'success' => false,
+				'message' => 'Please provide the overDriveId to be place the hold on'
+			);
 		}
 
 	}
@@ -1575,8 +1850,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function activateOverDriveHold() : array
-	{
+	function activateOverDriveHold(): array {
 		$id = $_REQUEST['recordId'];
 
 		$user = $this->getUserForApiCall();
@@ -1585,9 +1859,17 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$result = $driver->thawHold($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -1622,9 +1904,8 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function cancelOverDriveHold() : array
-	{
-		if(isset($_REQUEST['overDriveId'])){
+	function cancelOverDriveHold(): array {
+		if (isset($_REQUEST['overDriveId'])) {
 			$overDriveId = $_REQUEST['overDriveId'];
 		} else {
 			$overDriveId = $_REQUEST['recordId'];
@@ -1635,15 +1916,22 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$result = $driver->cancelHold($user, $overDriveId);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function renewOverDriveItem() : array
-	{
-		if(isset($_REQUEST['overDriveId'])) {
+	function renewOverDriveItem(): array {
+		if (isset($_REQUEST['overDriveId'])) {
 			$overDriveId = $_REQUEST['overDriveId'];
 		} else {
 			$overDriveId = $_REQUEST['recordId'];
@@ -1654,15 +1942,22 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$result = $driver->renewCheckout($user, $overDriveId);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function returnOverDriveCheckout() : array
-	{
-		if(isset($_REQUEST['overDriveId'])) {
+	function returnOverDriveCheckout(): array {
+		if (isset($_REQUEST['overDriveId'])) {
 			$overDriveId = $_REQUEST['overDriveId'];
 		} elseif (isset($_REQUEST['itemId'])) {
 			$overDriveId = $_REQUEST['itemId'];
@@ -1675,9 +1970,17 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$result = $driver->returnCheckout($user, $overDriveId);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 
 	}
@@ -1713,9 +2016,8 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function checkoutOverDriveItem() : array
-	{
-		if(isset($_REQUEST['overDriveId'])) {
+	function checkoutOverDriveItem(): array {
+		if (isset($_REQUEST['overDriveId'])) {
 			$overDriveId = $_REQUEST['overDriveId'];
 		} else {
 			$overDriveId = $_REQUEST['itemId'];
@@ -1727,14 +2029,22 @@ class UserAPI extends Action
 			$driver = new OverDriveDriver();
 			$result = $driver->checkOutTitle($user, $overDriveId);
 			$action = $result['api']['action'] ?? null;
-			return array('success' => $result['success'], 'title' => $result['api']['title'],'message' => $result['api']['message'], 'action' => $action);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function openOverDriveItem() : array
-	{
+	function openOverDriveItem(): array {
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
 
@@ -1745,30 +2055,37 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$accessLink = $driver->getDownloadLink($overDriveId, $formatId, $patron);
-			return array('success' => true, 'title' => 'Download Url', 'url' => $accessLink['downloadUrl']);
+			return array(
+				'success' => true,
+				'title' => 'Download Url',
+				'url' => $accessLink['downloadUrl']
+			);
 
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function openOverDrivePreview() : array
-	{
+	function openOverDrivePreview(): array {
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
 
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 		$recordDriver = new OverDriveRecordDriver($overDriveId);
-		if ($recordDriver->isValid()){
+		if ($recordDriver->isValid()) {
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
 			$format = new OverDriveAPIProductFormats();
 			$format->id = $_REQUEST['formatId'];
-			if ($format->find(true)){
+			if ($format->find(true)) {
 				$result['success'] = true;
-				if ($_REQUEST['sampleNumber'] == 2){
+				if ($_REQUEST['sampleNumber'] == 2) {
 					$sampleUrl = $format->sampleUrl_2;
-				}else{
+				} else {
 					$sampleUrl = $format->sampleUrl_1;
 				}
 
@@ -1776,12 +2093,12 @@ class UserAPI extends Action
 				$overDriveDriver->incrementStat('numPreviews');
 
 				$result['url'] = $sampleUrl;
-			}else{
+			} else {
 				$result['success'] = false;
 				$result['title'] = "Error";
 				$result['message'] = 'The specified Format was not valid';
 			}
-		}else{
+		} else {
 			$result['success'] = false;
 			$result['title'] = "Error";
 			$result['message'] = 'The specified OverDrive Product was not valid';
@@ -1790,8 +2107,7 @@ class UserAPI extends Action
 		return $result;
 	}
 
-	function updateOverDriveEmail() : array
-	{
+	function updateOverDriveEmail(): array {
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
@@ -1817,16 +2133,23 @@ class UserAPI extends Action
 
 				return $this->placeOverDriveHold();
 			} else {
-				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+				return array(
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Unable to validate user'
+				);
 			}
 
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function checkoutCloudLibraryItem() : array
-	{
+	function checkoutCloudLibraryItem(): array {
 		$id = $_REQUEST['itemId'];
 		$user = $this->getUserForApiCall();
 
@@ -1838,14 +2161,22 @@ class UserAPI extends Action
 			$driver = new CloudLibraryDriver();
 			$result = $driver->checkOutTitle($user, $id);
 			$action = $result['api']['action'] ?? null;
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function renewCloudLibraryItem() : array
-	{
+	function renewCloudLibraryItem(): array {
 		$id = $_REQUEST['recordId'];
 
 		$user = $this->getUserForApiCall();
@@ -1857,14 +2188,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->renewCheckout($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function placeCloudLibraryHold() : array
-	{
+	function placeCloudLibraryHold(): array {
 		$id = $_REQUEST['itemId'];
 
 		$user = $this->getUserForApiCall();
@@ -1877,14 +2215,22 @@ class UserAPI extends Action
 			$driver = new CloudLibraryDriver();
 			$result = $driver->placeHold($user, $id);
 			$action = $result['api']['action'] ?? null;
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function cancelCloudLibraryHold() : array
-	{
+	function cancelCloudLibraryHold(): array {
 		$id = $_REQUEST['recordId'];
 		$user = $this->getUserForApiCall();
 
@@ -1895,14 +2241,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->cancelHold($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function returnCloudLibraryItem() : array
-	{
+	function returnCloudLibraryItem(): array {
 		$cloudLibraryId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
 		$user = $this->getUserForApiCall();
 
@@ -1913,14 +2266,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->returnCheckout($user, $cloudLibraryId);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function openCloudLibraryItem() : array
-	{
+	function openCloudLibraryItem(): array {
 		$id = $_REQUEST['itemId'];
 		$user = $this->getUserForApiCall();
 
@@ -1931,10 +2291,18 @@ class UserAPI extends Action
 			$driver = new CloudLibraryRecordDriver($id);
 			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
 
-			return array('success' => true, 'title' => 'Download Url', 'url' => $accessUrl);
+			return array(
+				'success' => true,
+				'title' => 'Download Url',
+				'url' => $accessUrl
+			);
 
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -1969,8 +2337,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function checkoutHooplaItem() : array
-	{
+	function checkoutHooplaItem(): array {
 		$titleId = $_REQUEST['itemId'];
 
 		$user = $this->getUserForApiCall();
@@ -1979,14 +2346,22 @@ class UserAPI extends Action
 			$driver = new HooplaDriver();
 			$result = $driver->checkOutTitle($user, $titleId);
 			$action = $result['api']['action'] ?? null;
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function returnHooplaItem() : array
-	{
+	function returnHooplaItem(): array {
 
 		$titleId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
 
@@ -1995,14 +2370,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
 			$result = $driver->returnCheckout($user, $titleId);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function openHooplaItem() : array
-	{
+	function openHooplaItem(): array {
 		$id = $_REQUEST['itemId'];
 		$user = $this->getUserForApiCall();
 
@@ -2011,14 +2393,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 			$hooplaRecord = new HooplaRecordDriver($id);
 			$accessLink = $hooplaRecord->getAccessLink();
-			return array('success' => true, 'title' => "Download Url", 'url' => $accessLink['url']);
+			return array(
+				'success' => true,
+				'title' => "Download Url",
+				'url' => $accessLink['url']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function placeAxis360Hold() : array
-	{
+	function placeAxis360Hold(): array {
 		$id = $_REQUEST['itemId'];
 
 		$user = $this->getUserForApiCall();
@@ -2031,14 +2420,22 @@ class UserAPI extends Action
 			$driver = new Axis360Driver();
 			$result = $driver->placeHold($user, $id);
 			$action = $result['api']['action'] ?? null;
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function freezeAxis360Hold() : array
-	{
+	function freezeAxis360Hold(): array {
 		$id = $_REQUEST['recordId'];
 		$user = $this->getUserForApiCall();
 
@@ -2050,9 +2447,17 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->freezeHold($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -2089,8 +2494,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function activateAxis360Hold() : array
-	{
+	function activateAxis360Hold(): array {
 		$id = $_REQUEST['recordId'];
 		$user = $this->getUserForApiCall();
 
@@ -2101,14 +2505,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->thawHold($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function cancelAxis360Hold() : array
-	{
+	function cancelAxis360Hold(): array {
 		$id = $_REQUEST['recordId'];
 		$user = $this->getUserForApiCall();
 
@@ -2119,14 +2530,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->cancelHold($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function checkoutAxis360Item() : array
-	{
+	function checkoutAxis360Item(): array {
 		$id = $_REQUEST['itemId'];
 		$user = $this->getUserForApiCall();
 
@@ -2139,14 +2557,22 @@ class UserAPI extends Action
 			$driver = new Axis360Driver();
 			$result = $driver->checkOutTitle($user, $id);
 			$action = $result['api']['action'] ?? null;
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function returnAxis360Item() : array
-	{
+	function returnAxis360Item(): array {
 		$id = $_REQUEST['itemId'] ?? $_REQUEST['id'];
 
 		$user = $this->getUserForApiCall();
@@ -2158,14 +2584,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->returnCheckout($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function renewAxis360Item() : array
-	{
+	function renewAxis360Item(): array {
 		$id = $_REQUEST['recordId'];
 
 		$user = $this->getUserForApiCall();
@@ -2177,14 +2610,21 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->renewCheckout($user, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
-	function openAxis360Item() : array
-	{
+	function openAxis360Item(): array {
 		$id = $_REQUEST['itemId'];
 		$user = $this->getUserForApiCall();
 
@@ -2193,9 +2633,17 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$driver = new Axis360RecordDriver($id);
 			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
-			return array('success' => true, 'title' => 'Download Url', 'url' => $accessUrl);
+			return array(
+				'success' => true,
+				'title' => 'Download Url',
+				'url' => $accessUrl
+			);
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -2242,8 +2690,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function cancelHold() : array
-	{
+	function cancelHold(): array {
 
 		// Cancel Hold requires one of these, which one depends on the ILS
 		$recordId = $_REQUEST['recordId'] ?? null;
@@ -2257,18 +2704,35 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
 				$result = $user->cancelHold($recordId, $cancelId, $isIll);
-				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
-			} else if ($source == 'overdrive') {
-				return $this->cancelOverDriveHold();
-			} else if ($source == 'cloud_library') {
-				return $this->cancelCloudLibraryHold();
-			} else if ($source == 'axis360') {
-				return $this->cancelAxis360Hold();
+				return array(
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message']
+				);
 			} else {
-				return array('success' => false, 'message' => 'Invalid source');
+				if ($source == 'overdrive') {
+					return $this->cancelOverDriveHold();
+				} else {
+					if ($source == 'cloud_library') {
+						return $this->cancelCloudLibraryHold();
+					} else {
+						if ($source == 'axis360') {
+							return $this->cancelAxis360Hold();
+						} else {
+							return array(
+								'success' => false,
+								'message' => 'Invalid source'
+							);
+						}
+					}
+				}
 			}
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -2307,8 +2771,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function freezeHold() : array
-	{
+	function freezeHold(): array {
 		$source = $_REQUEST['itemSource'] ?? null;
 		$user = $this->getUserForApiCall();
 
@@ -2316,21 +2779,35 @@ class UserAPI extends Action
 			$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
 			if ($source == 'ils' || $source == null) {
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
-					return array('success' => false, 'message' => 'recordId and holdId must be provided');
+					return array(
+						'success' => false,
+						'message' => 'recordId and holdId must be provided'
+					);
 				}
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
 				return $user->freezeHold($recordId, $holdId, $reactivationDate);
-			} else if ($source == 'overdrive') {
-				return $this->freezeOverDriveHold();
-			} else if ($source == 'axis360') {
-				return $this->freezeAxis360Hold();
 			} else {
-				return array('success' => false, 'message' => 'Invalid source');
+				if ($source == 'overdrive') {
+					return $this->freezeOverDriveHold();
+				} else {
+					if ($source == 'axis360') {
+						return $this->freezeAxis360Hold();
+					} else {
+						return array(
+							'success' => false,
+							'message' => 'Invalid source'
+						);
+					}
+				}
 			}
 
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -2340,7 +2817,10 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			return $user->freezeAllHolds();
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2380,29 +2860,43 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function activateHold() : array
-	{
+	function activateHold(): array {
 		$user = $this->getUserForApiCall();
 		$source = $_REQUEST['itemSource'] ?? null;
 
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
-					return array('success' => false, 'title' => 'Error', 'message' => 'recordId and holdId must be provided');
+					return array(
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'recordId and holdId must be provided'
+					);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
 					return $user->thawHold($recordId, $holdId);
 				}
-			} else if ($source == 'overdrive') {
-				return $this->activateOverDriveHold();
-			} else if ($source == 'axis360') {
-				return $this->activateAxis360Hold();
 			} else {
-				return array('success' => false, 'message' => 'Invalid source');
+				if ($source == 'overdrive') {
+					return $this->activateOverDriveHold();
+				} else {
+					if ($source == 'axis360') {
+						return $this->activateAxis360Hold();
+					} else {
+						return array(
+							'success' => false,
+							'message' => 'Invalid source'
+						);
+					}
+				}
 			}
 		} else {
-			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
 		}
 	}
 
@@ -2412,7 +2906,10 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			return $user->thawAllHolds();
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2423,34 +2920,56 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 			require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 			$vdxSettings = new VdxSetting();
-			if ($vdxSettings->find(true)){
+			if ($vdxSettings->find(true)) {
 				$vdxDriver = new VdxDriver();
 				return $vdxDriver->submitRequest($vdxSettings, $user, $_REQUEST, false);
-			}else{
-				return  array(
-					'title' => translate(['text'=>'Invalid Configuration', 'isPublicFacing'=>true]),
-					'message' => translate(['text'=>"VDX Settings do not exist, please contact the library to make a request.", 'isPublicFacing'=>true]),
+			} else {
+				return array(
+					'title' => translate([
+						'text' => 'Invalid Configuration',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => "VDX Settings do not exist, please contact the library to make a request.",
+						'isPublicFacing' => true
+					]),
 					'success' => false
 				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
 	function cancelVdxRequest() {
 		$user = $this->getUserForApiCall();
-		$title = translate(['text'=>'Error', 'isPublicFacing'=>true]);
+		$title = translate([
+			'text' => 'Error',
+			'isPublicFacing' => true
+		]);
 		if ($user && !($user instanceof AspenError)) {
 			$sourceId = $_REQUEST['sourceId'] ?? null;
 			$cancelId = $_REQUEST['cancelId'] ?? null;
 			$result = $user->cancelVdxRequest($sourceId, $cancelId);
-			if($result['success'] == true || $result['success'] == "true") {
-				$title = translate(['text'=>'Success', 'isPublicFacing'=>true]);
+			if ($result['success'] == true || $result['success'] == "true") {
+				$title = translate([
+					'text' => 'Success',
+					'isPublicFacing' => true
+				]);
 			}
-			return array('success' => $result['success'], 'title' => $title, 'message' => $result['message']);
+			return array(
+				'success' => $result['success'],
+				'title' => $title,
+				'message' => $result['message']
+			);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2512,29 +3031,39 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronReadingHistory() : array
-	{
+	function getPatronReadingHistory(): array {
 		global $offlineMode;
 		if ($offlineMode) {
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return array(
+				'success' => false,
+				'message' => 'Circulation system is offline'
+			);
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$readingHistory = $user->getReadingHistory();
 
-				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
+				return array(
+					'success' => true,
+					'readingHistory' => $readingHistory['titles']
+				);
 			} else {
-				return array('success' => false, 'message' => 'Login unsuccessful');
+				return array(
+					'success' => false,
+					'message' => 'Login unsuccessful'
+				);
 			}
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function updatePatronReadingHistory() : array
-	{
+	function updatePatronReadingHistory(): array {
 		global $offlineMode;
 		if ($offlineMode) {
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return array(
+				'success' => false,
+				'message' => 'Circulation system is offline'
+			);
 		} else {
 			$username = $_REQUEST['username'];
 			$user = new User();
@@ -2543,8 +3072,11 @@ class UserAPI extends Action
 				$user->updateReadingHistoryBasedOnCurrentCheckouts();
 
 				return array('success' => true);
-			}else{
-				return array('success' => false, 'message' => 'Could not find a user with that user name');
+			} else {
+				return array(
+					'success' => false,
+					'message' => 'Could not find a user with that user name'
+				);
 			}
 		}
 	}
@@ -2576,14 +3108,16 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function optIntoReadingHistory() : array
-	{
+	function optIntoReadingHistory(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$user->doReadingHistoryAction( 'optIn', array());
+			$user->doReadingHistoryAction('optIn', array());
 			return array('success' => true);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2613,14 +3147,16 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function optOutOfReadingHistory() : array
-	{
+	function optOutOfReadingHistory(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$user->doReadingHistoryAction( 'optOut', array());
+			$user->doReadingHistoryAction('optOut', array());
 			return array('success' => true);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2650,14 +3186,16 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function deleteAllFromReadingHistory() : array
-	{
+	function deleteAllFromReadingHistory(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$user->doReadingHistoryAction( 'deleteAll', array());
+			$user->doReadingHistoryAction('deleteAll', array());
 			return array('success' => true);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2688,15 +3226,17 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function deleteSelectedFromReadingHistory() : array
-	{
+	function deleteSelectedFromReadingHistory(): array {
 		$selectedTitles = $_REQUEST['selected'];
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$user->doReadingHistoryAction( 'deleteMarked', $selectedTitles);
+			$user->doReadingHistoryAction('deleteMarked', $selectedTitles);
 			return array('success' => true);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
@@ -2704,8 +3244,7 @@ class UserAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	private function loadUsernameAndPassword() : array
-	{
+	private function loadUsernameAndPassword(): array {
 		$username = $_REQUEST['username'] ?? '';
 		$password = $_REQUEST['password'] ?? '';
 
@@ -2721,31 +3260,44 @@ class UserAPI extends Action
 		if (is_array($password)) {
 			$password = reset($password);
 		}
-		return array($username, $password);
+		return array(
+			$username,
+			$password
+		);
 	}
 
 	/** @noinspection PhpUnused */
-	function getBarcodeForPatron() : array
-	{
-		$results = array('success' => false, 'message' => 'Unknown error loading barcode');
-		if (isset($_REQUEST['patronId'])){
+	function getBarcodeForPatron(): array {
+		$results = array(
+			'success' => false,
+			'message' => 'Unknown error loading barcode'
+		);
+		if (isset($_REQUEST['patronId'])) {
 			$user = new User();
 			$user->username = $_REQUEST['patronId'];
-			if ($user->find(true)){
-				$results = array('success' => true, 'barcode' => $user->getBarcode());
-			}else{
+			if ($user->find(true)) {
+				$results = array(
+					'success' => true,
+					'barcode' => $user->getBarcode()
+				);
+			} else {
 				$results['message'] = 'Invalid Patron';
 			}
-		}else if (isset($_REQUEST['id'])){
-			$user = new User();
-			$user->id = $_REQUEST['id'];
-			if ($user->find(true)){
-				$results = array('success' => true, 'barcode' => $user->getBarcode());
-			}else{
-				$results['message'] = 'Invalid Patron';
+		} else {
+			if (isset($_REQUEST['id'])) {
+				$user = new User();
+				$user->id = $_REQUEST['id'];
+				if ($user->find(true)) {
+					$results = array(
+						'success' => true,
+						'barcode' => $user->getBarcode()
+					);
+				} else {
+					$results['message'] = 'Invalid Patron';
+				}
+			} else {
+				$results['message'] = 'No patron id was provided';
 			}
-		}else{
-			$results['message'] = 'No patron id was provided';
 		}
 		return $results;
 	}
@@ -2754,10 +3306,16 @@ class UserAPI extends Action
 	function updateBrowseCategoryStatus() {
 		$result = [
 			'success' => false,
-			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
-			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+			'title' => translate([
+				'text' => 'Error updating preferences',
+				'isPublicFacing' => true
+			]),
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true
+			]),
 		];
-		if(isset($_REQUEST['browseCategoryId'])) {
+		if (isset($_REQUEST['browseCategoryId'])) {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
@@ -2768,83 +3326,129 @@ class UserAPI extends Action
 					$browseCategoryDismissal->delete();
 					$result = [
 						'success' => true,
-						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-						'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+						'title' => translate([
+							'text' => 'Preferences updated',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Browse category has been hidden',
+							'isPublicFacing' => true
+						])
 					];
-				}
-				else {
+				} else {
 					$browseCategoryDismissal->insert();
 					$result = [
 						'success' => true,
-						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-						'message' => translate(['text' => 'Browse category has been unhidden', 'isPublicFacing' => true])
+						'title' => translate([
+							'text' => 'Preferences updated',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Browse category has been unhidden',
+							'isPublicFacing' => true
+						])
 					];
 				}
 			} else {
-				$result['message'] = translate(['text' => 'Incorrect user information, please login again', 'isPublicFacing' => true]);
+				$result['message'] = translate([
+					'text' => 'Incorrect user information, please login again',
+					'isPublicFacing' => true
+				]);
 			}
 		} else {
-			$result['message'] = translate(['text' => 'Please provide a browse category', 'isPublicFacing' => true]);
+			$result['message'] = translate([
+				'text' => 'Please provide a browse category',
+				'isPublicFacing' => true
+			]);
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function dismissBrowseCategory() : array
-	{
+	function dismissBrowseCategory(): array {
 		$result = [
 			'success' => false,
-			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
-			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+			'title' => translate([
+				'text' => 'Error updating preferences',
+				'isPublicFacing' => true
+			]),
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true
+			]),
 		];
 
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if(strpos($browseCategoryId, "system_saved_searches") !== false) {
+			if (strpos($browseCategoryId, "system_saved_searches") !== false) {
 				$label = explode('_', $browseCategoryId);
 				$id = $label[3];
 				$searchEntry = new SearchEntry();
 				$searchEntry->id = $id;
-				if(!$searchEntry->find(true)) {
-					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				if (!$searchEntry->find(true)) {
+					$result['message'] = translate([
+						'text' => 'Invalid browse category provided, please try again',
+						'isPublicFacing' => true
+					]);
 				} else {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 					$browseCategoryDismissal = new BrowseCategoryDismissal();
 					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
 					$browseCategoryDismissal->userId = $user->id;
-					if($browseCategoryDismissal->find(true)) {
-						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+					if ($browseCategoryDismissal->find(true)) {
+						$result['message'] = translate([
+							'text' => 'You already dismissed this browse category',
+							'isPublicFacing' => true
+						]);
 					} else {
 						$browseCategoryDismissal->insert();
 						$result = [
 							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+							'title' => translate([
+								'text' => 'Preferences updated',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Browse category has been hidden',
+								'isPublicFacing' => true
+							])
 						];
 					}
 				}
-			} elseif(strpos($browseCategoryId, "system_user_lists") !== false) {
+			} elseif (strpos($browseCategoryId, "system_user_lists") !== false) {
 				$label = explode('_', $browseCategoryId);
 				$id = $label[3];
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$userList = new UserList();
 				$userList->id = $id;
-				if(!$userList->find(true)) {
-					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				if (!$userList->find(true)) {
+					$result['message'] = translate([
+						'text' => 'Invalid browse category provided, please try again',
+						'isPublicFacing' => true
+					]);
 				} else {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 					$browseCategoryDismissal = new BrowseCategoryDismissal();
 					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
 					$browseCategoryDismissal->userId = $user->id;
-					if($browseCategoryDismissal->find(true)) {
-						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+					if ($browseCategoryDismissal->find(true)) {
+						$result['message'] = translate([
+							'text' => 'You already dismissed this browse category',
+							'isPublicFacing' => true
+						]);
 					} else {
 						$browseCategoryDismissal->insert();
 						$result = [
 							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+							'title' => translate([
+								'text' => 'Preferences updated',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Browse category has been hidden',
+								'isPublicFacing' => true
+							])
 						];
 					}
 				}
@@ -2852,113 +3456,169 @@ class UserAPI extends Action
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 				$browseCategory = new BrowseCategory();
 				$browseCategory->textId = $browseCategoryId;
-				if (!$browseCategory->find(true)){
-					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
-				}else{
+				if (!$browseCategory->find(true)) {
+					$result['message'] = translate([
+						'text' => 'Invalid browse category provided, please try again',
+						'isPublicFacing' => true
+					]);
+				} else {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 					$browseCategoryDismissal = new BrowseCategoryDismissal();
 					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
 					$browseCategoryDismissal->userId = $user->id;
-					if($browseCategoryDismissal->find(true)) {
-						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+					if ($browseCategoryDismissal->find(true)) {
+						$result['message'] = translate([
+							'text' => 'You already dismissed this browse category',
+							'isPublicFacing' => true
+						]);
 					} else {
 						$browseCategoryDismissal->insert();
 						$browseCategory->numTimesDismissed += 1;
 						$browseCategory->update();
 						$result = [
 							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+							'title' => translate([
+								'text' => 'Preferences updated',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Browse category has been hidden',
+								'isPublicFacing' => true
+							])
 						];
 					}
 				}
 			}
 		} else {
-			$result['message'] = translate(['text'=>'Incorrect user information, please login again', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'Incorrect user information, please login again',
+				'isPublicFacing' => true
+			]);
 		}
 
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function showBrowseCategory() : array
-	{
+	function showBrowseCategory(): array {
 		$result = [
 			'success' => false,
-			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
-			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+			'title' => translate([
+				'text' => 'Error updating preferences',
+				'isPublicFacing' => true
+			]),
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true
+			]),
 		];
 
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if(strpos($browseCategoryId, "system_saved_searches") !== false) {
+			if (strpos($browseCategoryId, "system_saved_searches") !== false) {
 				$label = explode('_', $browseCategoryId);
 				$id = $label[3];
 				$searchEntry = new SearchEntry();
 				$searchEntry->id = $id;
-				if(!$searchEntry->find(true)) {
-					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				if (!$searchEntry->find(true)) {
+					$result['message'] = translate([
+						'text' => 'Invalid browse category provided, please try again',
+						'isPublicFacing' => true
+					]);
 				} else {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 					$browseCategoryDismissal = new BrowseCategoryDismissal();
 					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
 					$browseCategoryDismissal->userId = $user->id;
-					if($browseCategoryDismissal->find(true)) {
+					if ($browseCategoryDismissal->find(true)) {
 						$browseCategoryDismissal->delete();
 						$result = [
 							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+							'title' => translate([
+								'text' => 'Preferences updated',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Browse category will be visible again',
+								'isPublicFacing' => true
+							])
 						];
 					} else {
-						$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+						$result['message'] = translate([
+							'text' => 'You already have this browse category visible',
+							'isPublicFacing' => true
+						]);
 					}
 				}
-			} elseif(strpos($browseCategoryId, "system_user_lists") !== false) {
+			} elseif (strpos($browseCategoryId, "system_user_lists") !== false) {
 				$label = explode('_', $browseCategoryId);
 				$id = $label[3];
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$userList = new UserList();
 				$userList->id = $id;
-				if(!$userList->find(true)) {
-					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				if (!$userList->find(true)) {
+					$result['message'] = translate([
+						'text' => 'Invalid browse category provided, please try again',
+						'isPublicFacing' => true
+					]);
 				} else {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 					$browseCategoryDismissal = new BrowseCategoryDismissal();
 					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
 					$browseCategoryDismissal->userId = $user->id;
-					if($browseCategoryDismissal->find(true)) {
+					if ($browseCategoryDismissal->find(true)) {
 						$browseCategoryDismissal->delete();
 						$result = [
 							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+							'title' => translate([
+								'text' => 'Preferences updated',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Browse category will be visible again',
+								'isPublicFacing' => true
+							])
 						];
 					} else {
-						$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+						$result['message'] = translate([
+							'text' => 'You already have this browse category visible',
+							'isPublicFacing' => true
+						]);
 					}
 				}
 			} else {
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 				$browseCategory = new BrowseCategory();
 				$browseCategory->textId = $browseCategoryId;
-				if (!$browseCategory->find(true)){
-					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
-				}else{
+				if (!$browseCategory->find(true)) {
+					$result['message'] = translate([
+						'text' => 'Invalid browse category provided, please try again',
+						'isPublicFacing' => true
+					]);
+				} else {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 					$browseCategoryDismissal = new BrowseCategoryDismissal();
 					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
 					$browseCategoryDismissal->userId = $user->id;
-					if($browseCategoryDismissal->find(true)) {
+					if ($browseCategoryDismissal->find(true)) {
 						$browseCategoryDismissal->delete();
 						$result = [
 							'success' => true,
-							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-							'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+							'title' => translate([
+								'text' => 'Preferences updated',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Browse category will be visible again',
+								'isPublicFacing' => true
+							])
 						];
 					} else {
-						$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+						$result['message'] = translate([
+							'text' => 'You already have this browse category visible',
+							'isPublicFacing' => true
+						]);
 					}
 				}
 			}
@@ -2968,11 +3628,17 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getHiddenBrowseCategories() : array {
+	function getHiddenBrowseCategories(): array {
 		$result = [
 			'success' => false,
-			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
-			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+			'title' => translate([
+				'text' => 'Error updating preferences',
+				'isPublicFacing' => true
+			]),
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true
+			]),
 		];
 
 		$user = $this->getUserForApiCall();
@@ -2982,19 +3648,19 @@ class UserAPI extends Action
 			$browseCategoryDismissals = new BrowseCategoryDismissal();
 			$browseCategoryDismissals->userId = $user->id;
 			$browseCategoryDismissals->find();
-			while($browseCategoryDismissals->fetch()) {
+			while ($browseCategoryDismissals->fetch()) {
 				$hiddenCategories[] = clone($browseCategoryDismissals);
 			}
 
-			if($hiddenCategories > 0) {
+			if ($hiddenCategories > 0) {
 				$categories = [];
-				foreach($hiddenCategories as $hiddenCategory) {
-					if(strpos($hiddenCategory->browseCategoryId, "system_saved_searches") !== false) {
+				foreach ($hiddenCategories as $hiddenCategory) {
+					if (strpos($hiddenCategory->browseCategoryId, "system_saved_searches") !== false) {
 						$parentLabel = "";
 						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 						$savedSearchesBrowseCategory = new BrowseCategory();
 						$savedSearchesBrowseCategory->textId = "system_saved_searches";
-						if($savedSearchesBrowseCategory->find(true)) {
+						if ($savedSearchesBrowseCategory->find(true)) {
 							$parentLabel = $savedSearchesBrowseCategory->label . ": ";
 						}
 
@@ -3002,20 +3668,20 @@ class UserAPI extends Action
 						$id = $label[3];
 						$searchEntry = new SearchEntry();
 						$searchEntry->id = $id;
-						if($searchEntry->find(true)) {
+						if ($searchEntry->find(true)) {
 							$category['id'] = $hiddenCategory->browseCategoryId;
 							$category['name'] = $parentLabel;
-							if($searchEntry->title) {
+							if ($searchEntry->title) {
 								$category['name'] = $parentLabel . $searchEntry->title;
 							}
 							$categories[] = $category;
 						}
-					} elseif(strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
+					} elseif (strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
 						$parentLabel = "";
 						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 						$userListsBrowseCategory = new BrowseCategory();
 						$userListsBrowseCategory->textId = "system_user_lists";
-						if($userListsBrowseCategory->find(true)) {
+						if ($userListsBrowseCategory->find(true)) {
 							$parentLabel = $userListsBrowseCategory->label . ": ";
 						}
 
@@ -3027,7 +3693,7 @@ class UserAPI extends Action
 						if ($sourceList->find(true)) {
 							$category['id'] = $hiddenCategory->browseCategoryId;
 							$category['name'] = $parentLabel;
-							if($sourceList->title) {
+							if ($sourceList->title) {
 								$category['name'] = $parentLabel . $sourceList->title;
 							}
 							$categories[] = $category;
@@ -3036,7 +3702,7 @@ class UserAPI extends Action
 						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 						$browseCategory = new BrowseCategory();
 						$browseCategory->textId = $hiddenCategory->browseCategoryId;
-						if($browseCategory->find(true)){
+						if ($browseCategory->find(true)) {
 							$categoryResponse = array(
 								'id' => $browseCategory->textId,
 								'name' => $browseCategory->label
@@ -3048,11 +3714,11 @@ class UserAPI extends Action
 								foreach ($subCategories as $subCategory) {
 									$tempA = new BrowseCategory();
 									$tempA->id = $subCategory->subCategoryId;
-									if($tempA->find(true)) {
+									if ($tempA->find(true)) {
 										$tempB = new BrowseCategoryDismissal();
 										$tempB->userId = $user->id;
 										$tempB->browseCategoryId = $tempA->textId;
-										if($tempB->find(true)){
+										if ($tempB->find(true)) {
 											$categoryResponse['subCategories'][] = [
 												'id' => $tempA->textId,
 												'name' => $browseCategory->label . ': ' . $tempA->label,
@@ -3068,13 +3734,22 @@ class UserAPI extends Action
 				}
 				$result = [
 					'success' => true,
-					'title' => translate(['text' => 'Your hidden categories', 'isPublicFacing' => true]),
-					'message' => translate(['text' => 'You currently have these categories hidden', 'isPublicFacing' => true]),
+					'title' => translate([
+						'text' => 'Your hidden categories',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'You currently have these categories hidden',
+						'isPublicFacing' => true
+					]),
 					'categories' => $categories,
 				];
 			} else {
 				$result = [
-					'message' => translate(['text' => 'You have no hidden browse categories', 'isPublicFacing' => true]),
+					'message' => translate([
+						'text' => 'You have no hidden browse categories',
+						'isPublicFacing' => true
+					]),
 				];
 			}
 		}
@@ -3083,17 +3758,24 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getUserByBarcode() : array
-	{
-		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
-		if (isset($_REQUEST['username'])){
+	function getUserByBarcode(): array {
+		$results = array(
+			'success' => false,
+			'message' => 'Unknown error loading patronId'
+		);
+		if (isset($_REQUEST['username'])) {
 			$user = UserAccount::getUserByBarcode($_REQUEST['username']);
-			if ($user != false){
-				$results = array('success' => true, 'id' => $user->id, 'patronId' => $user->username, 'displayName' => $user->displayName);
-			}else{
+			if ($user != false) {
+				$results = array(
+					'success' => true,
+					'id' => $user->id,
+					'patronId' => $user->username,
+					'displayName' => $user->displayName
+				);
+			} else {
 				$results['message'] = 'Invalid Patron';
 			}
-		}else{
+		} else {
 			$results['message'] = 'No barcode was provided';
 		}
 		return $results;
@@ -3102,9 +3784,8 @@ class UserAPI extends Action
 	/**
 	 * @return bool|User
 	 */
-	protected function getUserForApiCall()
-	{
-		if($this->getLiDAVersion() === "v22.04.00") {
+	protected function getUserForApiCall() {
+		if ($this->getLiDAVersion() === "v22.04.00") {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			return UserAccount::validateAccount($username, $password);
 		}
@@ -3115,21 +3796,25 @@ class UserAPI extends Action
 			if (!$user->find(true)) {
 				$user = false;
 			}
-		} else if (isset($_REQUEST['userId'])) {
-			$user = new User();
-			$user->id = $_REQUEST['userId'];
-			if (!$user->find(true)) {
-				$user = false;
-			}
-		} else if (isset($_REQUEST['id'])) {
-			$user = new User();
-			$user->id = $_REQUEST['id'];
-			if (!$user->find(true)) {
-				$user = false;
-			}
 		} else {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			$user = UserAccount::validateAccount($username, $password);
+			if (isset($_REQUEST['userId'])) {
+				$user = new User();
+				$user->id = $_REQUEST['userId'];
+				if (!$user->find(true)) {
+					$user = false;
+				}
+			} else {
+				if (isset($_REQUEST['id'])) {
+					$user = new User();
+					$user->id = $_REQUEST['id'];
+					if (!$user->find(true)) {
+						$user = false;
+					}
+				} else {
+					list($username, $password) = $this->loadUsernameAndPassword();
+					$user = UserAccount::validateAccount($username, $password);
+				}
+			}
 		}
 		return $user;
 	}
@@ -3138,7 +3823,7 @@ class UserAPI extends Action
 		global $logger;
 		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
 		foreach (getallheaders() as $name => $value) {
-			if($name == 'version' || $name == 'Version') {
+			if ($name == 'version' || $name == 'Version') {
 				$version = explode(' ', $value);
 				return $version[0];
 			}
@@ -3146,15 +3831,14 @@ class UserAPI extends Action
 		return 0;
 	}
 
-	function getLinkedAccounts()
-	{
+	function getLinkedAccounts() {
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 			$linkedAccounts = $user->getLinkedUsers();
 			$account = [];
 			if (count($linkedAccounts) > 0) {
-				foreach($linkedAccounts as $linkedAccount) {
+				foreach ($linkedAccounts as $linkedAccount) {
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
 					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
@@ -3165,10 +3849,31 @@ class UserAPI extends Action
 					'linkedAccounts' => $account
 				);
 			} else {
-				return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' =>  translate(['text' => 'You have no linked accounts', 'isPublicFacing' => true]), 'linkedAccounts' => $account);
+				return array(
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'You have no linked accounts',
+						'isPublicFacing' => true
+					]),
+					'linkedAccounts' => $account
+				);
 			}
 		} else {
-			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+			return array(
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true
+				])
+			);
 		}
 	}
 
@@ -3182,10 +3887,10 @@ class UserAPI extends Action
 			$userLink->linkedAccountId = $user->id;
 			$userLink->linkingDisabled = "0";
 			$userLink->find();
-			while($userLink->fetch()) {
+			while ($userLink->fetch()) {
 				$linkedUser = new User();
 				$linkedUser->id = $userLink->primaryAccountId;
-				if ($linkedUser->find(true)){
+				if ($linkedUser->find(true)) {
 					if (!$linkedUser->isBlockedAccount($user->id)) {
 						$viewers[$linkedUser->id]['displayName'] = $linkedUser->displayName;
 						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->getHomeLocation()->displayName;
@@ -3195,17 +3900,26 @@ class UserAPI extends Action
 				}
 			}
 
-			return array (
+			return array(
 				'success' => true,
 				'viewers' => $viewers,
 			);
 		} else {
-			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+			return array(
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true
+				])
+			);
 		}
 	}
 
-	function addAccountLink()
-	{
+	function addAccountLink() {
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$accountToLinkUsername = $_POST['accountToLinkUsername'] ?? '';
@@ -3215,85 +3929,170 @@ class UserAPI extends Action
 		$patron = UserAccount::validateAccount($username, $password);
 
 		if ($patron && !($patron instanceof AspenError)) {
-			if($accountToLink) {
-				if($accountToLink->id != $patron->id) {
+			if ($accountToLink) {
+				if ($accountToLink->id != $patron->id) {
 					$addResult = $patron->addLinkedUser($accountToLink);
-					if($addResult === true) {
+					if ($addResult === true) {
 						return array(
 							'success' => true,
-							'title' => translate(['text' => 'Accounts linked', 'isPublicFacing' => true]),
-							'message' => translate(['text'=>'Successfully linked accounts.', 'isPublicFacing'=>true])
+							'title' => translate([
+								'text' => 'Accounts linked',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Successfully linked accounts.',
+								'isPublicFacing' => true
+							])
 						);
 					} else {
 						return array(
 							'success' => false,
-							'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
-							'message' => translate(['text'=>'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing'=>true])
+							'title' => translate([
+								'text' => 'Unable to link accounts',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.',
+								'isPublicFacing' => true
+							])
 						);
 					}
 				} else {
 					return array(
 						'success' => false,
-						'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
-						'message' => translate(['text'=>'You cannot link to yourself.', 'isPublicFacing'=>true])
+						'title' => translate([
+							'text' => 'Unable to link accounts',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'You cannot link to yourself.',
+							'isPublicFacing' => true
+						])
 					);
 				}
 			} else {
 				return array(
 					'success' => false,
-					'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
-					'message' => translate(['text'=>'Sorry, we could not find a user with that information to link to.', 'isPublicFacing'=>true])
+					'title' => translate([
+						'text' => 'Unable to link accounts',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Sorry, we could not find a user with that information to link to.',
+						'isPublicFacing' => true
+					])
 				);
 			}
 		} else {
-			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+			return array(
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true
+					]),
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true
+				])
+			);
 		}
 	}
 
-	function removeAccountLink()
-	{
+	function removeAccountLink() {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$accountToRemove = $_REQUEST['idToRemove'];
-			if($user->removeLinkedUser($accountToRemove)) {
+			if ($user->removeLinkedUser($accountToRemove)) {
 				return array(
 					'success' => true,
-					'title' => translate(['text' => 'Accounts no longer linked', 'isPublicFacing' => true]),
-					'message' => translate(['text'=>'Successfully removed linked account.', 'isPublicFacing'=>true])
+					'title' => translate([
+						'text' => 'Accounts no longer linked',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Successfully removed linked account.',
+						'isPublicFacing' => true
+					])
 				);
 			} else {
 				return array(
 					'success' => false,
-					'title' => translate(['text' => 'Unable to unlink accounts', 'isPublicFacing' => true]),
-					'message' => translate(['text'=>'Sorry, we could remove that account.', 'isPublicFacing'=>true])
+					'title' => translate([
+						'text' => 'Unable to unlink accounts',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Sorry, we could remove that account.',
+						'isPublicFacing' => true
+					])
 				);
 			}
 		} else {
-			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+			return array(
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true
+					]),
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true
+				])
+			);
 		}
 	}
 
-	function saveLanguage()
-	{
+	function saveLanguage() {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if (isset($_REQUEST['languageCode'])){
+			if (isset($_REQUEST['languageCode'])) {
 				$user->interfaceLanguage = $_REQUEST['languageCode'];
 				$user->update();
 				return array(
 					'success' => true,
-					'title' => translate(['text' => 'Language updated', 'isPublicFacing' => true]),
-					'message' => translate(['text'=> 'Your language preference was updated.', 'isPublicFacing'=>true])
+					'title' => translate([
+						'text' => 'Language updated',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Your language preference was updated.',
+						'isPublicFacing' => true
+					])
 				);
 			} else {
 				return array(
 					'success' => false,
-					'title' => translate(['text' => 'Unable to update language', 'isPublicFacing' => true]),
-					'message' => translate(['text'=>'A language code was no provided', 'isPublicFacing'=>true])
+					'title' => translate([
+						'text' => 'Unable to update language',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'A language code was no provided',
+						'isPublicFacing' => true
+					])
 				);
 			}
 		} else {
-			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+			return array(
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true
+					]),
+					'isPublicFacing' => true
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true
+				])
+			);
 		}
 	}
 
@@ -3303,145 +4102,232 @@ class UserAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	function saveNotificationPushToken() : array{
+	function saveNotificationPushToken(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if(isset($_POST['pushToken'])) {
+			if (isset($_POST['pushToken'])) {
 				$device = $_POST['deviceModel'] ?? "Unknown";
 				$result = $user->saveNotificationPushToken($_POST['pushToken'], $device);
-				if($result === true) {
+				if ($result === true) {
 					return array(
 						'success' => true,
-						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
-						'message' => translate(['text'=> 'Successfully updated notification preferences', 'isPublicFacing'=>true])
+						'title' => translate([
+							'text' => 'Success',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Successfully updated notification preferences',
+							'isPublicFacing' => true
+						])
 					);
 				} else {
 					return array(
 						'success' => false,
-						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
-						'message' => translate(['text'=>'Sorry, we could save your notification preferences at this time.', 'isPublicFacing'=>true])
+						'title' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Sorry, we could save your notification preferences at this time.',
+							'isPublicFacing' => true
+						])
 					);
 				}
 			} else {
-				return array('success' => false, 'message' => 'A push token was not provided');
+				return array(
+					'success' => false,
+					'message' => 'A push token was not provided'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function deleteNotificationPushToken() : array{
+	function deleteNotificationPushToken(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if(isset($_POST['pushToken'])) {
+			if (isset($_POST['pushToken'])) {
 				$device = $_POST['deviceModel'] ?? "Unknown";
 				$result = $user->deleteNotificationPushToken($_POST['pushToken']);
-				if($result === true) {
+				if ($result === true) {
 					return array(
 						'success' => true,
-						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
-						'message' => translate(['text'=> 'Successfully updated notification preferences', 'isPublicFacing'=>true])
+						'title' => translate([
+							'text' => 'Success',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Successfully updated notification preferences',
+							'isPublicFacing' => true
+						])
 					);
 				} else {
 					return array(
 						'success' => false,
-						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
-						'message' => translate(['text'=>'Sorry, we could save your notification preferences at this time.', 'isPublicFacing'=>true])
+						'title' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Sorry, we could save your notification preferences at this time.',
+							'isPublicFacing' => true
+						])
 					);
 				}
 			} else {
-				return array('success' => false, 'message' => 'A push token was not provided');
+				return array(
+					'success' => false,
+					'message' => 'A push token was not provided'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function getNotificationPushToken() : array{
+	function getNotificationPushToken(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$result = $user->getNotificationPushToken();
-			if(!empty($result)) {
+			if (!empty($result)) {
 				return array(
 					'success' => true,
-					'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
-					'message' => translate(['text'=> 'Notification push tokens found', 'isPublicFacing'=>true]),
+					'title' => translate([
+						'text' => 'Success',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'Notification push tokens found',
+						'isPublicFacing' => true
+					]),
 					'tokens' => $result,
 				);
 			} else {
 				return array(
 					'success' => false,
-					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
-					'message' => translate(['text'=>'No notification push tokens were found for this user', 'isPublicFacing'=>true]),
+					'title' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true
+					]),
+					'message' => translate([
+						'text' => 'No notification push tokens were found for this user',
+						'isPublicFacing' => true
+					]),
 					'tokens' => $result,
 				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function getNotificationPreferences() : array{
+	function getNotificationPreferences(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if (!empty($_POST['pushToken'])) {
 				$preferences = $user->getNotificationPreferencesByToken($_POST['pushToken']);
-				return array('success' => true, 'savedPreferences' => $preferences);
+				return array(
+					'success' => true,
+					'savedPreferences' => $preferences
+				);
 			} else {
-				return array('success' => false, 'message' => 'Push token not provided');
+				return array(
+					'success' => false,
+					'message' => 'Push token not provided'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function getNotificationPreference() : array{
+	function getNotificationPreference(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if (!empty($_REQUEST['type']) && !empty($_POST['pushToken'])) {
 				$allowNotificationType = $user->getNotificationPreference($_REQUEST['type'], $_POST['pushToken']);
-				return array('success' => true, 'type' => $_REQUEST['type'], 'allow' => $allowNotificationType);
+				return array(
+					'success' => true,
+					'type' => $_REQUEST['type'],
+					'allow' => $allowNotificationType
+				);
 			} else {
-				return array('success' => false, 'message' => 'Preference type or push token not provided');
+				return array(
+					'success' => false,
+					'message' => 'Preference type or push token not provided'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function setNotificationPreference() : array{
+	function setNotificationPreference(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			if (!empty($_REQUEST['type']) && !empty($_REQUEST['pushToken']) && !empty($_REQUEST['value'])) {
-				if($_REQUEST['value'] === "false") {
+				if ($_REQUEST['value'] === "false") {
 					$newValue = 0;
 				} else {
 					$newValue = 1;
 				}
 				$result = $user->setNotificationPreference($_REQUEST['type'], $newValue, $_REQUEST['pushToken']);
-				if($result) {
+				if ($result) {
 					return array(
 						'success' => true,
-						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
-						'message' => translate(['text'=> 'Successfully updated notification preferences', 'isPublicFacing'=>true]),
+						'title' => translate([
+							'text' => 'Success',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Successfully updated notification preferences',
+							'isPublicFacing' => true
+						]),
 					);
 				} else {
 					return array(
 						'success' => false,
-						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
-						'message' => translate(['text'=> 'Sorry, we could save your notification preferences at this time.', 'isPublicFacing'=>true]),
+						'title' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'Sorry, we could save your notification preferences at this time.',
+							'isPublicFacing' => true
+						]),
 					);
 				}
 			} else {
-				return array('success' => false, 'message' => 'Preference type, value, or push token not provided');
+				return array(
+					'success' => false,
+					'message' => 'Preference type, value, or push token not provided'
+				);
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 
@@ -3460,7 +4346,7 @@ class UserAPI extends Action
 						$accountProfile = new AccountProfile();
 						$accountProfile->find();
 						$masqueradedUser = null;
-						while ($accountProfile->fetch()){
+						while ($accountProfile->fetch()) {
 							$masqueradedUser = new User();
 							$masqueradedUser->source = $accountProfile->name;
 							if ($accountProfile->loginConfiguration == 'barcode_pin') {
@@ -3472,12 +4358,15 @@ class UserAPI extends Action
 								if ($masqueradedUser->id == $user->id) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'No need to masquerade as yourself.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'No need to masquerade as yourself.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								$foundExistingUser = true;
 								break;
-							}else{
+							} else {
 								$masqueradedUser = null;
 							}
 						}
@@ -3488,7 +4377,10 @@ class UserAPI extends Action
 							if (!$masqueradedUser) {
 								return array(
 									'success' => false,
-									'error' => translate(['text'=>'Invalid User', 'isAdminFacing'=>true])
+									'error' => translate([
+										'text' => 'Invalid User',
+										'isAdminFacing' => true
+									])
 								);
 							}
 						}
@@ -3506,63 +4398,90 @@ class UserAPI extends Action
 							}
 							if (UserAccount::userHasPermission('Masquerade as any user')) {
 								//The user can masquerade as anyone, no additional checks needed
-							}elseif (UserAccount::userHasPermission('Masquerade as unrestricted patron types')) {
+							} elseif (UserAccount::userHasPermission('Masquerade as unrestricted patron types')) {
 								if ($isRestrictedUser) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Cannot masquerade as patrons of this type.',
+											'isAdminFacing' => true
+										])
 									);
 								}
-							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
+							} elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
 								$guidingUserLibrary = $user->getHomeLibrary();
 								if (!$guidingUserLibrary) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'Could not determine your home library.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Could not determine your home library.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								$masqueradedUserLibrary = $masqueradedUser->getHomeLibrary();
 								if (!$masqueradedUserLibrary) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'Could not determine the patron\'s home library.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Could not determine the patron\'s home library.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								if ($guidingUserLibrary->libraryId != $masqueradedUserLibrary->libraryId) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'You do not have the same home library as the patron.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'You do not have the same home library as the patron.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home library')) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Cannot masquerade as patrons of this type.',
+											'isAdminFacing' => true
+										])
 									);
 								}
-							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
+							} elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
 								if (empty($user->homeLocationId)) {
 									return array(
 										'success' => false,
-										'error'   => translate(['text'=>'Could not determine your home library branch.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Could not determine your home library branch.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								if (empty($masqueradedUser->homeLocationId)) {
 									return array(
 										'success' => false,
-										'error'   => translate(['text'=>'Could not determine the patron\'s home library branch.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Could not determine the patron\'s home library branch.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								if ($user->homeLocationId != $masqueradedUser->homeLocationId) {
 									return array(
 										'success' => false,
-										'error'   => translate(['text'=>'You do not have the same home library branch as the patron.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'You do not have the same home library branch as the patron.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home location')) {
 									return array(
 										'success' => false,
-										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
+										'error' => translate([
+											'text' => 'Cannot masquerade as patrons of this type.',
+											'isAdminFacing' => true
+										])
 									);
 								}
 							}
@@ -3571,7 +4490,7 @@ class UserAPI extends Action
 							global $guidingUser;
 							$guidingUser = $user;
 							$user = $masqueradedUser;
-							if (!empty($user) && !($user instanceof AspenError)){
+							if (!empty($user) && !($user instanceof AspenError)) {
 								if ($user->lastLoginValidation < (time() - 15 * 60)) {
 									$user->loadContactInformation();
 									$user->validateUniqueId();
@@ -3590,37 +4509,58 @@ class UserAPI extends Action
 								unset($_SESSION['guidingUserId']);
 								return array(
 									'success' => false,
-									'error'   => translate(['text'=>'Failed to initiate masquerade as specified user.', 'isAdminFacing'=>true])
+									'error' => translate([
+										'text' => 'Failed to initiate masquerade as specified user.',
+										'isAdminFacing' => true
+									])
 								);
 							}
 						} else {
 							return array(
 								'success' => false,
-								'error'   => translate(['text'=>'Could not load user to masquerade as.', 'isAdminFacing'=>true])
+								'error' => translate([
+									'text' => 'Could not load user to masquerade as.',
+									'isAdminFacing' => true
+								])
 							);
 						}
 					} else {
 						return array(
 							'success' => false,
-							'error'   => $user ? translate(['text'=>'You are not allowed to Masquerade.', 'isAdminFacing'=>true]) : translate(['text'=>'Your session has expired, please sign in again.', 'isAdminFacing'=>true])
+							'error' => $user ? translate([
+								'text' => 'You are not allowed to Masquerade.',
+								'isAdminFacing' => true
+							]) : translate([
+								'text' => 'Your session has expired, please sign in again.',
+								'isAdminFacing' => true
+							])
 						);
 					}
 				} else {
 					return array(
 						'success' => false,
-						'error'   => translate(['text'=>'Already Masquerading.', 'isAdminFacing'=>true])
+						'error' => translate([
+							'text' => 'Already Masquerading.',
+							'isAdminFacing' => true
+						])
 					);
 				}
 			} else {
 				return array(
 					'success' => false,
-					'error'   => translate(['text'=>'Please enter a valid Library Card Number.', 'isAdminFacing'=>true])
+					'error' => translate([
+						'text' => 'Please enter a valid Library Card Number.',
+						'isAdminFacing' => true
+					])
 				);
 			}
 		} else {
 			return array(
 				'success' => false,
-				'error'   => translate(['text'=>'Masquerade Mode is not allowed.', 'isAdminFacing'=>true])
+				'error' => translate([
+					'text' => 'Masquerade Mode is not allowed.',
+					'isAdminFacing' => true
+				])
 			);
 		}
 	}
@@ -3638,7 +4578,7 @@ class UserAPI extends Action
 				$user = UserAccount::login();
 				if ($user && !($user instanceof AspenError)) {
 					return array('success' => true);
-				}else{
+				} else {
 					UserAccount::softLogout();
 				}
 			}
