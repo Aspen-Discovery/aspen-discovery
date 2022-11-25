@@ -28,6 +28,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('canBatchDelete', $this->canBatchDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
+		$interface->assign('showHistoryLinks', $this->showHistoryLinks());
 
 		$interface->assign('objectType', $this->getObjectType());
 		$interface->assign('toolName', $this->getToolName());
@@ -339,7 +340,9 @@ abstract class ObjectEditor extends Admin_Admin
 				$errorOccurred = true;
 			}
 		}
-		if (isset($_REQUEST['submitStay']) || $errorOccurred){
+		if (empty($id) && $errorOccurred) {
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+		}else if (isset($_REQUEST['submitStay']) || $errorOccurred){
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 		}elseif (isset($_REQUEST['submitAddAnother'])){
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
@@ -779,5 +782,9 @@ abstract class ObjectEditor extends Admin_Admin
 			}
 		}
 		return $structure;
+	}
+
+	protected function showHistoryLinks(){
+		return true;
 	}
 }

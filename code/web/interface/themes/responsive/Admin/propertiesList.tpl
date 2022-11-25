@@ -176,7 +176,7 @@
                                         <a class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" onclick="{$action.onClick}">{if $action.icon}<i class="fas {$action.icon}"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
                                     {/foreach}
 								{/if}
-								{if $dataItem->canActiveUserEdit()}
+								{if $dataItem->canActiveUserEdit() && $showHistoryLinks}
 									<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}"><i class="fas fa-history"></i> {translate text="History" isAdminFacing=true}</a>
 								{/if}
 								</div>
@@ -214,7 +214,7 @@
 		{/foreach}
 	</div>
 
-	{if $canBatchDelete}
+	{if $canDelete && $canBatchDelete}
 	<div class="row" style="padding-top: 1em">
         <div class="btn-group btn-group-sm col-sm-12">
             <button type='submit' value='batchDelete' class="btn btn-danger" onclick="return AspenDiscovery.Admin.showBatchDeleteForm('{$module}', '{$toolName}', 'selected')"><i class="fas fa-trash"></i> {translate text='Batch Delete Selected' isAdminFacing=true}</button>

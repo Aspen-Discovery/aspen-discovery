@@ -2688,4 +2688,8 @@ class SirsiDynixROA extends HorizonAPI
 //
 //		return $results;
 //	}
+
+	public function showHoldPosition() : bool {
+		return true;
+	}
 }

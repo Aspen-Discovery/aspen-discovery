@@ -265,7 +265,7 @@ class LibraryLink extends DataObject{
 		}
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/Admin/LibraryLinks?objectAction=edit&id=' . $this->id;
 	}
 

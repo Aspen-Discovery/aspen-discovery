@@ -33,7 +33,7 @@ class EBSCOhostDatabase extends DataObject
 		];
 	}
 
-	public function getEditLink(){
+	public function getEditLink($context) : string{
 		return '/EBSCO/EBSCOhostDatabases?objectAction=edit&id=' . $this->id;
 	}
 }

@@ -502,4 +502,8 @@ abstract class Horizon extends AbstractIlsDriver
 	{
 		return false;
 	}
+
+	public function showHoldPosition() : bool {
+		return true;
+	}
 }

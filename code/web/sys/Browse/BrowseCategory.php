@@ -277,7 +277,7 @@ class BrowseCategory extends BaseBrowsable
 		);
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->id;
 	}
 

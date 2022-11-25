@@ -1519,7 +1519,7 @@ class Sierra extends Millennium{
 		return $titleAndAuthor;
 	}
 
-	public function getTitleAndAuthorForInnReachHold($holdId){
+	public function getTitleAndAuthorForInnReachHold(string $holdId) : array{
 		/** @noinspection SqlResolve */
 		$holdInfoSql = "SELECT 
 			  bib_record_property.best_title as title,
@@ -1538,5 +1538,9 @@ class Sierra extends Millennium{
 		$res = pg_query_params($innReachConnection, $holdInfoSql, array($holdId));
 		$titleAndAuthor = pg_fetch_array($res, 0);
 		return $titleAndAuthor;
+	}
+
+	public function showHoldPosition() : bool {
+		return true;
 	}
 }
