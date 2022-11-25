@@ -87,11 +87,11 @@ else
   sed -i'.bak' "s/{{APP_ENV}}/$slug/g" eas.json
   if [[ $otaUpdate == 'yes' ]]
   then
-    APP_ENV=$site eas update --branch $branchName --message "$comment" --platform $osPlatform --no-wait
+    APP_ENV=$site eas update --branch $branchName --message "$comment" --platform $osPlatform
   else
     #APP_ENV=$slug eas build --profile development --platform ios
     APP_ENV=$slug npx expo prebuild
-    APP_ENV=$slug eas build --platform $osPlatform --profile $channel --no-wait --auto-submit-with-profile=beta
+    APP_ENV=$slug eas build --platform $osPlatform --profile $channel --no-wait
   fi
   node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js --instance=$slug
   sed -i'.bak' "s/$slug/{{APP_ENV}}/g" eas.json
