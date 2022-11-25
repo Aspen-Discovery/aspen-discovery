@@ -1,6 +1,6 @@
 {
   "cli": {
-	"version": ">= 0.60.0"
+	"version": "2.6.0"
   },
   "build": {
 	"production": {
@@ -20,6 +20,9 @@
 	  "channel": "alpha",
 	  "ios": {
 		"simulator": true
+	  },
+	  "android": {
+		"buildType": "apk"
 	  }
 	},
 	"development": {
