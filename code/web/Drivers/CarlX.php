@@ -382,7 +382,7 @@ class CarlX extends AbstractIlsDriver{
 					$expireDate     = isset($hold->ExpirationDate) ? $this->extractDateFromCarlXDateField($hold->ExpirationDate) : null;
 					$pickUpBranch   = $this->getBranchInformation($hold->PickUpBranch);
 
-					$curHold->sourceId = $bibId;
+					$curHold->sourceId = $carlID;
 					$curHold->itemId = $hold->ItemNumber;
 					$curHold->cancelId = trim($hold->Identifier);
 					$curHold->position = $hold->QueuePosition;
@@ -422,7 +422,7 @@ class CarlX extends AbstractIlsDriver{
 					$expireDate     = isset($hold->ExpirationDate) ? $this->extractDateFromCarlXDateField($hold->ExpirationDate) : null;
 					$pickUpBranch   = $this->getBranchInformation($hold->PickUpBranch);
 
-					$curHold->sourceId = $bibId;
+					$curHold->sourceId = $carlID;
 					$curHold->itemId = $hold->ItemNumber;
 					$curHold->cancelId = $hold->Identifier; // James Staub declares cancelId is synonymous with holdId 20200613
 					// CarlX API v1.9.6.3 does not accurately calculate hold queue position. See https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=500458
@@ -528,7 +528,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
-		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId); // "unavailable hold" is CarlX-speak for holds not yet on the hold shelf, i.e., "holds not yet ready for pickup"
+		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $this->BIDfromFullCarlID($recordId)); // "unavailable hold" is CarlX-speak for holds not yet on the hold shelf, i.e., "holds not yet ready for pickup"
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
 		if (preg_match('/\d{4}-\d{2}-\d{2}/', $dateToReactivate)) { // Aspen 21.10 set YYYY-MM-DD as reactivationDate format; CarlX 9.6.8 expects MM/DD/YYYY
@@ -540,7 +540,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	function thawHold(User $patron, $recordId, $itemToThawId) : array {
-		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
+		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $this->BIDfromFullCarlID($recordId));
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
 		$timeStamp = strtotime('+2 years'); // TO DO: read hold NNA or sync with default NNA (2 years?)
