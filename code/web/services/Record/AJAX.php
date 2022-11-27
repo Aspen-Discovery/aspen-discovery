@@ -387,19 +387,6 @@ class Record_AJAX extends Action
 				);
 			}
 
-			$numItemsWithVolumes = 0;
-			$numItemsWithoutVolumes = 0;
-			foreach ($relatedRecord->getItems() as $item){
-				if (empty($item->volume)){
-					$numItemsWithoutVolumes++;
-				}else{
-					$numItemsWithVolumes++;
-				}
-			}
-
-			$interface->assign('hasItemsWithoutVolumes', $numItemsWithoutVolumes > 0);
-			$interface->assign('majorityOfItemsHaveVolumes', $numItemsWithVolumes > $numItemsWithoutVolumes);
-
 			//Get a list of volumes for the record
 			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 			$volumeData = array();
@@ -408,11 +395,74 @@ class Record_AJAX extends Action
 			$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
 			if ($volumeDataDB->find()) {
 				while ($volumeDataDB->fetch()) {
-					$volumeData[] = clone($volumeDataDB);
+					$volumeData[$volumeDataDB->volumeId] = clone($volumeDataDB);
+					$volumeData[$volumeDataDB->volumeId]->setHasLocalItems(false);
 				}
+			}
+
+			$numItemsWithVolumes = 0;
+			$numItemsWithoutVolumes = 0;
+			foreach ($relatedRecord->getItems() as $item){
+				if (empty($item->volume)){
+					$numItemsWithoutVolumes++;
+				}else{
+					if ($item->libraryOwned || $item->locallyOwned) {
+						$volumeData[$item->volume]->setHasLocalItems(true);
+					}
+					$numItemsWithVolumes++;
+				}
+			}
+
+			$interface->assign('hasItemsWithoutVolumes', $numItemsWithoutVolumes > 0);
+			$interface->assign('majorityOfItemsHaveVolumes', $numItemsWithVolumes > $numItemsWithoutVolumes);
+
+			//Check to see if we need to place a volume hold
+			$alwaysPlaceVolumeHoldWhenVolumesArePresent = $marcRecord->getCatalogDriver()->alwaysPlaceVolumeHoldWhenVolumesArePresent();
+			$interface->assign('alwaysPlaceVolumeHoldWhenVolumesArePresent', $alwaysPlaceVolumeHoldWhenVolumesArePresent);
+
+			if ($numItemsWithoutVolumes > 0 && $alwaysPlaceVolumeHoldWhenVolumesArePresent){
+				$blankVolume = new IlsVolumeInfo();
+				$blankVolume->displayLabel = translate(['text'=>'*', 'isPublicFacing'=>true]);
+				$blankVolume->volumeId = '';
+				$blankVolume->recordId = $marcRecord->getIdWithSource();
+				$blankVolume->relatedItems = '';
+				$blankVolume->setHasLocalItems(false);
+				foreach ($relatedRecord->getItems() as $item){
+					if ($item->libraryOwned || $item->locallyOwned) {
+						$blankVolume->setHasLocalItems(true);
+					}
+					if (empty($item->volume)){
+						$blankVolume->relatedItems .= $item->itemId . '|';
+					}
+				}
+				$volumeData[] = $blankVolume;
+
+				$interface->assign('hasItemsWithoutVolumes', false);
+				$interface->assign('majorityOfItemsHaveVolumes', true);
 			}
 			$volumeDataDB = null;
 			unset($volumeDataDB);
+
+			//Sort the volumes so locally owned volumes are shown first
+			$volumeSorter = function (IlsVolumeInfo $a, IlsVolumeInfo $b){
+				if ($a->hasLocalItems() && !$b->hasLocalItems()){
+					return -1;
+				}elseif ($b->hasLocalItems() && !$a->hasLocalItems()){
+					return 1;
+				}else{
+					if ($a->displayOrder > $b->displayOrder){
+						return 1;
+					}elseif ($b->displayOrder > $a->displayOrder){
+						return -1;
+					}else{
+						return 0;
+					}
+				}
+			};
+			global $library;
+			if ($library->showVolumesWithLocalCopiesFirst){
+				uasort($volumeData, $volumeSorter);
+			}
 
 			$interface->assign('volumes', $volumeData);
 

@@ -6474,11 +6474,12 @@ class Koha extends AbstractIlsDriver {
 						$user = new User();
 						$user->cat_username = $barcode;
 						if ($user->find(true)) {
+							$oldValue = $user->username;
 							$user->username = $borrowerNumberRow['borrowernumber'];
 							if ($user->update()) {
 								$numBarcodesUpdated++;
-							} else {
-								$errors[] = $user->getLastError();
+							}else{
+								$errors[] = "Could not update username for $barcode to {$borrowerNumberRow['borrowernumber']} old value was $oldValue";
 							}
 						}
 					}
