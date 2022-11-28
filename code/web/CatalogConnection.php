@@ -1324,4 +1324,8 @@ class CatalogConnection
 	public function processHoldNotificationPreferencesForm(User $user) : array {
 		return $this->driver->processHoldNotificationPreferencesForm($user);
 	}
+
+	public function showHoldPosition() :bool {
+		return $this->driver->showHoldPosition();
+	}
 }

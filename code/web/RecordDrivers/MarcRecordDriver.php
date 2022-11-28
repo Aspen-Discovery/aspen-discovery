@@ -1467,7 +1467,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			);
 		}
 
-		//Check to see if the record has marc holdings (in 852, 853, 866)
+		//Check to see if the record has marc holdings (in 852, 853, 856, 866)
 		$marcHoldings = $this->getMarcHoldings();
 		if (count($marcHoldings) > 0){
 			$interface->assign('marcHoldings', $marcHoldings);
@@ -2104,6 +2104,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (!strpos($url, '://')){
 						$url = 'http://' . $url;
 					}
+					//Do not display the link if we have subfield 6 since that is a marc holding
+					if ($field->getSubfield('6') != null) {
+						continue;
+					}
 					if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0){
 					//if (!strpos($url, 'http://')){
 						if ($field->getSubfield('y') != null) {
@@ -2266,6 +2270,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 				//$marc853Fields = $marcRecord->getFields('853');
 				$marc866Fields = $marcRecord->getFields('866');
+				$marc856Fields = $marcRecord->getFields('856');
 				//@var File_MARC_Data_Field $marc82Field
 				foreach ($marc852Fields as $marc852Field){
 					$marc852subfield6 = $marc852Field->getSubfield('6');
@@ -2312,6 +2317,28 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						}
 						if (!$is866Found){
 							continue;
+						}
+						foreach ($marc856Fields as $marc856Field) {
+							$marc856subfield6 = $marc856Field->getSubfield('6');
+							if ($marc856subfield6 != false) {
+								$marc856subfield6Data = $marc856subfield6->getData();
+								if ($marc856subfield6Data == $marc852subfield6Data){
+									$marc856subfieldU = $marc856Field->getSubfield('u');
+									if ($marc856subfieldU != false) {
+										$marcHolding['link'] = $marc856subfieldU->getData();
+										$marcHolding['linkText'] = $marc856subfieldU->getData();
+									}
+									$marc856subfieldY = $marc856Field->getSubfield('y');
+									if ($marc856subfieldY != false) {
+										$marcHolding['linkText'] = $marc856subfieldY->getData();
+									}else{
+										$marc856subfieldZ = $marc856Field->getSubfield('z');
+										if ($marc856subfieldZ != false) {
+											$marcHolding['linkText'] = $marc856subfieldZ->getData();
+										}
+									}
+								}
+							}
 						}
 						if (array_key_exists($owningLibraryCode, $localLocationCodes)){
 							$localMarcHoldings[] = $marcHolding;

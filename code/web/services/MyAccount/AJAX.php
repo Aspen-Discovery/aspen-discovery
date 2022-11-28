@@ -121,19 +121,30 @@ class MyAccount_AJAX extends JSON_Action
             $accountToRemove = $_REQUEST['idToRemove'];
             $user = UserAccount::getLoggedInUser();
             if ($user->removeManagingAccount($accountToRemove)) {
-                $result = array(
-                    'result' => true,
-                    'message' => translate(['text' => 'Successfully removed linked account.', 'isPublicFacing' => true])
-                );
-            } else {
-                $result = array(
-                    'result' => false,
-                    'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
-                );
-            }
-        }
-        return $result;
-    }
+				global $librarySingleton;
+				// Get Library Settings from the home library of the current user-account being displayed
+				$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
+				if ($patronHomeLibrary->allowPinReset == 1){
+					$result = array(
+						'result' => true,
+						'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?', 'isPublicFacing' => true]),
+						'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate(['text' => "Request PIN Change", 'isPublicFacing' => true]) . "</span>",
+					);
+				}else{
+					$result = array(
+						'result' => true,
+						'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.', 'isPublicFacing' => true]),
+						);
+				}
+			} else {
+				$result = array(
+					'result' => false,
+					'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+				);
+			}
+		}
+		return $result;
+	}
 
 	/** @noinspection PhpUnused */
 	function removeAccountLink()
@@ -1134,7 +1145,7 @@ class MyAccount_AJAX extends JSON_Action
 
 			$pickupAt = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$marcRecord = new MarcRecordDriver($recordId);
+			$marcRecord = new MarcRecordDriver($sourceId);
 			if ($marcRecord->isValid()) {
 				$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 				$pickupAt = $relatedRecord->getHoldPickupSetting();
@@ -2469,10 +2480,10 @@ class MyAccount_AJAX extends JSON_Action
 				}
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris' || $ils == 'Sierra' || $ils == 'Evergreen');
+				$showPosition = $user->showHoldPosition();
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-				$showPlacedColumn = ($ils == 'Symphony');
+				$showPlacedColumn = ($ils == 'Symphony' || $ils == 'Koha');
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
 
 				$location = new Location();
@@ -2501,6 +2512,7 @@ class MyAccount_AJAX extends JSON_Action
 					'author' => 'Author',
 					'format' => 'Format',
 					'expire' => 'Expiration Date',
+                    'placed' => 'Date Placed',
 				);
 				if ($source == 'all' || $source == 'ils') {
 					$availableHoldSortOptions['location'] = 'Pickup Location';

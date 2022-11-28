@@ -482,4 +482,18 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'message' => 'Hold Notification Preferences are not implemented for this ILS'
 		];
 	}
+
+	public function showHoldPosition() : bool {
+		return false;
+	}
+
+	/**
+	 * Determine if volume level holds are always done when volumes are present.
+	 * When this is on, items without volumes will present a blank volume for the user to choose from.
+	 *
+	 * @return false
+	 */
+	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+		return false;
+	}
 }

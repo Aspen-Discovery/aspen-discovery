@@ -46,7 +46,7 @@ class AspenSite extends DataObject
 
 	public function getNumericColumnNames(): array
 	{
-		return ['siteType', 'libraryTYpe', 'libraryServes', 'implementationStatus', 'appAccess', 'ils'];
+		return ['siteType', 'libraryType', 'libraryServes', 'implementationStatus', 'appAccess', 'ils'];
 	}
 
 	public static function getObjectStructure() : array {

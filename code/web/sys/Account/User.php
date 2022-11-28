@@ -253,6 +253,7 @@ class User extends DataObject
 						$role = new Role();
 						$role->roleId = $patronType->assignedRoleId;
 						if ($role->find(true)){
+							$role->setAssignedFromPType(true);
 							$this->_roles[$role->roleId] = clone $role;
 							if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
 								$canUseTestRoles = true;
@@ -372,8 +373,10 @@ class User extends DataObject
 			//Now add the new values.
 			if (count($this->_roles) > 0){
 				$values = array();
-				foreach ($this->_roles as $roleId => $roleName){
-					$values[] = "({$this->id},{$roleId})";
+				foreach ($this->_roles as $roleId => $roleObj){
+					if (!$roleObj->isAssignedFromPType()) {
+						$values[] = "({$this->id},{$roleId})";
+					}
 				}
 				$values = join(', ', $values);
 				$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
@@ -1298,13 +1301,13 @@ class User extends DataObject
 		}
 
 		$indexToSortBy = 'sortTitle';
-		$holdSort = function ($a, $b) use (&$indexToSortBy) {
+		$holdSort = function (Hold $a, Hold $b) use (&$indexToSortBy) {
 			$titleA = $a->getSortTitle();
 			$titleB = $b->getSortTitle();
 			if ($indexToSortBy == 'sortTitle'){
 				$a = $titleA;
 				$b = $titleB;
-			}elseif ($indexToSortBy == 'user'){
+			}elseif ($indexToSortBy == 'user') {
 				$a = $a->getUserName();
 				$b = $b->getUserName();
 			}else {
@@ -1374,7 +1377,7 @@ class User extends DataObject
 					$indexToSortBy = $unavailableSort;
 					break;
 				case 'placed' :
-					$indexToSortBy = 'create';
+					$indexToSortBy = 'createDate';
 					break;
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';
@@ -2909,6 +2912,14 @@ class User extends DataObject
 		$session->whereAdd('session_id != "' . session_id() . '"');
 		/** @noinspection PhpUnusedLocalVariableInspection */
 		$numDeletions = $session->delete(true);
+	}
+
+	public function showHoldPosition() : bool {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->showHoldPosition();
+		}else{
+			return false;
+		}
 	}
 
 	protected function clearRuntimeDataVariables(){

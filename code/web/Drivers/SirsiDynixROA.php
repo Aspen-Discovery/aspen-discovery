@@ -523,6 +523,14 @@ class SirsiDynixROA extends HorizonAPI
 				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
+            if (isset($_REQUEST['city'])) {
+                $this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+            }
+
+            if (isset($_REQUEST['state'])) {
+                $this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+            }
+
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
 				$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
@@ -1120,24 +1128,28 @@ class SirsiDynixROA extends HorizonAPI
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
-		//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
-		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-		$volumeInfo = new IlsVolumeInfo();
-		$volumeInfo->volumeId = $volumeId;
-		$volumeInfo->recordId = $this->getIndexingProfile()->name . ':' . $recordId;
-		if ($volumeInfo->find(true)){
-			$relatedItems = explode('|', $volumeInfo->relatedItems);
-			$itemToHold = $relatedItems[0];
-			return $this->placeSirsiHold($patron, $recordId, $itemToHold, $volumeId, $pickupBranch);
-		}else{
-			return [
-				'success' => false,
-				'message' => 'Sorry, we could not find the specified volume, it may have been deleted.',
-				'api' => [
-					'title' => 'Unable to place hold',
-					'message' => 'Sorry, we could not find the specified volume, it may have been deleted.'
-				]
-			];
+		if ($volumeId == ''){
+			return $this->placeSirsiHold($patron, $recordId, '', $volumeId, $pickupBranch);
+		}else {
+			//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
+			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+			$volumeInfo = new IlsVolumeInfo();
+			$volumeInfo->volumeId = $volumeId;
+			$volumeInfo->recordId = $this->getIndexingProfile()->name . ':' . $recordId;
+			if ($volumeInfo->find(true)) {
+				$relatedItems = explode('|', $volumeInfo->relatedItems);
+				$itemToHold = $relatedItems[0];
+				return $this->placeSirsiHold($patron, $recordId, $itemToHold, $volumeId, $pickupBranch);
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Sorry, we could not find the specified volume, it may have been deleted.',
+					'api' => [
+						'title' => 'Unable to place hold',
+						'message' => 'Sorry, we could not find the specified volume, it may have been deleted.'
+					]
+				];
+			}
 		}
 	}
 
@@ -1794,6 +1806,16 @@ class SirsiDynixROA extends HorizonAPI
 								$patron->_address1 = $_REQUEST['address1'];
 							}
 
+                            if (isset($_REQUEST['city'])) {
+                                $this->setPatronUpdateFieldBySearch('CITY', $_REQUEST['city'], $updatePatronInfoParameters, $preferredAddress);
+                                $patron->_city = $_REQUEST['city'];
+                            }
+
+                            if (isset($_REQUEST['state'])) {
+                                $this->setPatronUpdateFieldBySearch('STATE', $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+                                $patron->_state = $_REQUEST['state'];
+                            }
+
 							if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
 								$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
 								$patron->_city = $_REQUEST['city'];
@@ -2028,9 +2050,13 @@ class SirsiDynixROA extends HorizonAPI
 								list($City, $State) = explode(' ', $cityState);
 							}
 						}else{
-							$City = '';
-							$State = '';
-						}
+                            if (empty($City)) {
+                                $City = '';
+                            }
+                            if (empty($State)) {
+                                $State = '';
+                            }
+                        }
 						break;
 					case 'ZIP' :
 						$Zip = $fields->data;
@@ -2688,4 +2714,18 @@ class SirsiDynixROA extends HorizonAPI
 //
 //		return $results;
 //	}
+
+	public function showHoldPosition() : bool {
+		return true;
+	}
+
+	/**
+	 * Determine if volume level holds are always done when volumes are present.
+	 * When this is on, items without volumes will present a blank volume for the user to choose from.
+	 *
+	 * @return false
+	 */
+	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+		return true;
+	}
 }

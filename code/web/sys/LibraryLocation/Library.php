@@ -88,6 +88,7 @@ class Library extends DataObject
 	public $showHoldButtonForUnavailableOnly;
 	public $allowRememberPickupLocation;
 	public $treatBibOrItemHoldsAs;
+	public $showVolumesWithLocalCopiesFirst;
 	public $showLoginButton;
 	public $showEmailThis;
 	public $showFavorites;
@@ -721,6 +722,7 @@ class Library extends DataObject
 					'showHoldCancelDate'                => array('property'=>'showHoldCancelDate', 'type'=>'checkbox', 'label'=>'Show Cancellation Date', 'description'=>'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.', 'hideInLists' => true, 'default' => 1),
 					'showLogMeOutAfterPlacingHolds'     => array('property'=>'showLogMeOutAfterPlacingHolds', 'type'=>'checkbox', 'label'=>'Show Log Me Out After Placing Holds', 'description'=>'Whether or a checkbox should be shown that will automatically log patrons out after a hold is placed.', 'hideInLists' => true, 'default' => 1),
 					'treatBibOrItemHoldsAs'             => array('property'=>'treatBibOrItemHoldsAs', 'type'=>'enum', 'values'=>array('1'=>'Either Bib or Item Level Hold', '2'=>'Force Bib Level Hold', '3' => 'Force Item Level Hold'), 'label'=>'Treat holds for formats that allow either bib or item holds as ', 'description'=>'How to handle holds when either bib or item level holds are allowed.'),
+					'showVolumesWithLocalCopiesFirst'   => array('property'=>'showVolumesWithLocalCopiesFirst', 'type'=>'checkbox', 'label'=>'Show volumes with local copies first when placing holds', 'description'=>'When true, volumes that have at least one copy owned locally are shown before volumes with no local copies.', 'default'=>0),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
 					'maxDaysToFreeze'                   => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true, 'default' => 365),
 					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
@@ -1726,7 +1728,7 @@ class Library extends DataObject
 		return $this->_layoutSettings;
 	}
 
-	function getEditLink() : string{
+	function getEditLink($context) : string{
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
 
