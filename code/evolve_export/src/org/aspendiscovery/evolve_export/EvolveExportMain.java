@@ -975,41 +975,43 @@ public class EvolveExportMain {
 					String identifier = allMarcRecordsRS.getString("ilsId");
 					String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
 					Record marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
-					List<DataField> allItemFields = MarcUtil.getDataFields(marcRecord, indexingProfile.getItemTagInt());
-					ArrayList<DataField> itemsToRemove = new ArrayList<>();
-					for (int i = 0; i < allItemFields.size() - 1; i++){
-						DataField item1 = allItemFields.get(i);
-						Subfield item1IdentifierSubfield = item1.getSubfield(indexingProfile.getItemRecordNumberSubfield());
-						if (item1IdentifierSubfield != null) {
-							String item1Identifier = item1IdentifierSubfield.getData();
-							for (int j = i + 1; j < allItemFields.size(); j++) {
-								DataField item2 = allItemFields.get(j);
-								Subfield item2IdentifierSubfield = item2.getSubfield(indexingProfile.getItemRecordNumberSubfield());
-								if (item2IdentifierSubfield != null){
-									String item2Identifier = item2IdentifierSubfield.getData();
-									if (item1Identifier.equals(item2Identifier)){
-										if (item1.getSubfields().size() > item2.getSubfields().size()){
-											itemsToRemove.add(item2);
-										}else{
-											itemsToRemove.add(item1);
+					if (marcRecord != null) {
+						List<DataField> allItemFields = MarcUtil.getDataFields(marcRecord, indexingProfile.getItemTagInt());
+						ArrayList<DataField> itemsToRemove = new ArrayList<>();
+						for (int i = 0; i < allItemFields.size() - 1; i++) {
+							DataField item1 = allItemFields.get(i);
+							Subfield item1IdentifierSubfield = item1.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+							if (item1IdentifierSubfield != null) {
+								String item1Identifier = item1IdentifierSubfield.getData();
+								for (int j = i + 1; j < allItemFields.size(); j++) {
+									DataField item2 = allItemFields.get(j);
+									Subfield item2IdentifierSubfield = item2.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+									if (item2IdentifierSubfield != null) {
+										String item2Identifier = item2IdentifierSubfield.getData();
+										if (item1Identifier.equals(item2Identifier)) {
+											if (item1.getSubfields().size() > item2.getSubfields().size()) {
+												itemsToRemove.add(item2);
+											} else {
+												itemsToRemove.add(item1);
+											}
 										}
 									}
 								}
+							} else {
+								//If there is no identifier remove the item?
+								itemsToRemove.add(item1);
 							}
-						}else{
-							//If there is no identifier remove the item?
-							itemsToRemove.add(item1);
 						}
-					}
-					if (itemsToRemove.size() > 0) {
-						numBibsWithDuplicateItems++;
-						for (DataField itemToRemove : itemsToRemove) {
-							marcRecord.removeVariableField(itemToRemove);
-							forceReindexOfRecordStmt.setString(1, identifier);
-							forceReindexOfRecordStmt.executeUpdate();
-						}
-						getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier, marcRecord);
+						if (itemsToRemove.size() > 0) {
+							numBibsWithDuplicateItems++;
+							for (DataField itemToRemove : itemsToRemove) {
+								marcRecord.removeVariableField(itemToRemove);
+								forceReindexOfRecordStmt.setString(1, identifier);
+								forceReindexOfRecordStmt.executeUpdate();
+							}
+							getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier, marcRecord);
 
+						}
 					}
 				}
 			}
