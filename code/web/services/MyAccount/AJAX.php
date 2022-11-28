@@ -121,30 +121,30 @@ class MyAccount_AJAX extends JSON_Action
             $accountToRemove = $_REQUEST['idToRemove'];
             $user = UserAccount::getLoggedInUser();
             if ($user->removeManagingAccount($accountToRemove)) {
-                global $librarySingleton;
-                // Get Library Settings from the home library of the current user-account being displayed
-                $patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
-                if ($patronHomeLibrary->allowPinReset == 1){
-                    $result = array(
-                        'result' => true,
-                        'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?', 'isPublicFacing' => true]),
-                        'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate(['text' => "Request PIN Change", 'isPublicFacing' => true]) . "</span>"
-                    );
-                }else{
-                    $result = array(
-                        'result' => true,
-                        'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.', 'isPublicFacing' => true]),
-                    );
-                }
-            } else {
-                $result = array(
-                    'result' => false,
-                    'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
-                );
-            }
-        }
-        return $result;
-    }
+				global $librarySingleton;
+				// Get Library Settings from the home library of the current user-account being displayed
+				$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
+				if ($patronHomeLibrary->allowPinReset == 1){
+					$result = array(
+						'result' => true,
+						'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?', 'isPublicFacing' => true]),
+						'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate(['text' => "Request PIN Change", 'isPublicFacing' => true]) . "</span>",
+					);
+				}else{
+					$result = array(
+						'result' => true,
+						'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.', 'isPublicFacing' => true]),
+						);
+				}
+			} else {
+				$result = array(
+					'result' => false,
+					'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+				);
+			}
+		}
+		return $result;
+	}
 
 	/** @noinspection PhpUnused */
 	function removeAccountLink()
