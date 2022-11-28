@@ -96,3 +96,8 @@ yum install epel-release
 yum install mod_evasive
 cp install/mod_evasive.conf /etc/httpd/conf.d/mod_evasive.conf
 service httpd restart
+
+#configure mod security
+yum update -y
+yum install mod_security -y
+service httpd restart
