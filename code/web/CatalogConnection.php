@@ -1207,7 +1207,7 @@ class CatalogConnection
 		return $this->driver->getEditableUsername($user);
 	}
 
-	public function updateEditableUsername(User $user, $username)
+	public function updateEditableUsername(User $user, string $username) : array
 	{
 		return $this->driver->updateEditableUsername($user, $username);
 	}
@@ -1327,5 +1327,18 @@ class CatalogConnection
 
 	public function showHoldPosition() :bool {
 		return $this->driver->showHoldPosition();
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink() : bool {
+		return $this->driver->showResetUsernameLink();
+	}
+
+	public function getUsernameValidationRules() : array {
+		return $this->driver->getUsernameValidationRules();
 	}
 }

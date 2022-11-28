@@ -2412,10 +2412,17 @@ class User extends DataObject
 		}
 	}
 
-	private function updateEditableUsername($username)
+	public function updateEditableUsername(string $username) : array
 	{
 		if ($this->hasIlsConnection()) {
-			return $this->getCatalogDriver()->updateEditableUsername($this, $username);
+			if (empty($username)){
+				return [
+					'success' => false,
+					'message' => 'A new username was not provided'
+				];
+			}else{
+				return $this->getCatalogDriver()->updateEditableUsername($this, $username);
+			}
 		}else{
 			return [
 				'success' => false,
@@ -3269,6 +3276,19 @@ class User extends DataObject
 	function validateUniqueId(){
 		if ($this->getCatalogDriver() != null){
 			$this->getCatalogDriver()->validateUniqueId($this);
+		}
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink() : bool {
+		if ($this->getCatalogDriver() != null){
+			return $this->getCatalogDriver()->showResetUsernameLink();
+		}else{
+			return false;
 		}
 	}
 }
