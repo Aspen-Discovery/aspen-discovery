@@ -677,84 +677,91 @@ class Koha extends AbstractIlsDriver {
 				'password' => $password
 			];
 			$authenticationResponse = $this->getPostedXMLWebServiceResponse($authenticationURL, $params);
-			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $authenticationResponse->asXML(), ['password' => $password]);
-			if (isset($authenticationResponse->id)) {
-				$patronId = $authenticationResponse->id;
-				$result = $this->loadPatronInfoFromDB($patronId, $password);
-				if ($result == false) {
-					global $logger;
-					$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
-					if ($i == count($barcodesToTest) - 1) {
-						return new AspenError('We cannot log you in at this time.  Please try again later.');
-					}
-				} else {
-					return $result;
-				}
-			} else {
-				if (isset($authenticationResponse->message) && preg_match('/ILS-DI is disabled/', $authenticationResponse->message)) {
-					global $logger;
-					$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
-				}
-				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
-				/** @noinspection SqlResolve */
-				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
-
-				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
-				if ($lookupUserResult->num_rows > 0) {
-					$userExistsInDB = true;
-					$lookupUserRow = $lookupUserResult->fetch_assoc();
-					if (UserAccount::isUserMasquerading() || $validatedViaSSO) {
-						$patronId = $lookupUserRow['borrowernumber'];
-						$newUser = $this->loadPatronInfoFromDB($patronId, null);
-						if (!empty($newUser) && !($newUser instanceof AspenError)) {
-							return $newUser;
+			$responseText = '';
+			if ($authenticationResponse != false) {
+				$responseText = $authenticationResponse->asXML();
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $responseText, ['password' => $password]);
+				if (isset($authenticationResponse->id)) {
+					$patronId = $authenticationResponse->id;
+					$result = $this->loadPatronInfoFromDB($patronId, $password);
+					if ($result == false) {
+						global $logger;
+						$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
+						if ($i == count($barcodesToTest) - 1) {
+							return new AspenError('We cannot log you in at this time.  Please try again later.');
 						}
 					} else {
-						//Check to see if the patron password has expired, this is not available on all systems.
-						if (isset($authenticationResponse->code) && $authenticationResponse->code == 'PasswordExpired') {
-							try {
-								$patronId = $lookupUserRow['borrowernumber'];
+						return $result;
+					}
+				} else {
+					if (isset($authenticationResponse->message) && preg_match('/ILS-DI is disabled/', $authenticationResponse->message)) {
+						global $logger;
+						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
+					}
+					//User is not valid, check to see if they have a valid account in Koha so we can return a different error
+					/** @noinspection SqlResolve */
+					$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 
-								/** @noinspection SqlResolve */
-								$sql = "SELECT password_expiration_date from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
-								$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
-								if ($passwordExpirationResult->num_rows > 0) {
-									$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
-									if (!empty($passwordExpirationRow['password_expiration_date'])) {
-										$passwordExpirationTime = date_create($passwordExpirationRow['password_expiration_date']);
-										if ($passwordExpirationTime->getTimestamp() < date_create('now')->getTimestamp()) {
-											//PatronId is the borrower number, need to get the actual user id
-											$user = new User();
-											$user->username = $patronId;
-											if (!$user->find(true)) {
-												$this->findNewUser($barcode);
-											}
+					$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+					if ($lookupUserResult->num_rows > 0) {
+						$userExistsInDB = true;
+						$lookupUserRow = $lookupUserResult->fetch_assoc();
+						if (UserAccount::isUserMasquerading() || $validatedViaSSO) {
+							$patronId = $lookupUserRow['borrowernumber'];
+							$newUser = $this->loadPatronInfoFromDB($patronId, null);
+							if (!empty($newUser) && !($newUser instanceof AspenError)) {
+								return $newUser;
+							}
+						} else {
+							//Check to see if the patron password has expired, this is not available on all systems.
+							if (isset($authenticationResponse->code) && $authenticationResponse->code == 'PasswordExpired') {
+								try {
+									$patronId = $lookupUserRow['borrowernumber'];
 
-											require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
-											$pinResetToken = new PinResetToken();
-											$pinResetToken->userId = $user->id;
-											$pinResetToken->generateToken();
-											$pinResetToken->dateIssued = time();
-											$resetToken = '';
-											if ($pinResetToken->insert()) {
-												$resetToken = $pinResetToken->token;
+									/** @noinspection SqlResolve */
+									$sql = "SELECT password_expiration_date from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+									$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
+									if ($passwordExpirationResult->num_rows > 0) {
+										$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
+										if (!empty($passwordExpirationRow['password_expiration_date'])) {
+											$passwordExpirationTime = date_create($passwordExpirationRow['password_expiration_date']);
+											if ($passwordExpirationTime->getTimestamp() < date_create('now')->getTimestamp()) {
+												//PatronId is the borrower number, need to get the actual user id
+												$user = new User();
+												$user->username = $patronId;
+												if (!$user->find(true)) {
+													$this->findNewUser($barcode);
+												}
+
+												require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+												$pinResetToken = new PinResetToken();
+												$pinResetToken->userId = $user->id;
+												$pinResetToken->generateToken();
+												$pinResetToken->dateIssued = time();
+												$resetToken = '';
+												if ($pinResetToken->insert()) {
+													$resetToken = $pinResetToken->token;
+												}
+												require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
+												return new ExpiredPasswordError($patronId, $passwordExpirationRow['password_expiration_date'], $resetToken);
 											}
-											require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
-											return new ExpiredPasswordError($patronId, $passwordExpirationRow['password_expiration_date'], $resetToken);
 										}
 									}
+								} catch (Exception $e) {
+									//This happens if password expiration is not enabled
 								}
-							} catch (Exception $e) {
-								//This happens if password expiration is not enabled
 							}
-						}
-						//Check to see if the user has reached the maximum number of login attempts
-						$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
-						if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']) {
-							return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
+							//Check to see if the user has reached the maximum number of login attempts
+							$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
+							if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']) {
+								return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
+							}
 						}
 					}
 				}
+			} else {
+				$params['password'] = '**password**';
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), "", ['password' => $password]);
 			}
 		}
 		if ($userExistsInDB) {
@@ -5808,7 +5815,7 @@ class Koha extends AbstractIlsDriver {
 		return null;
 	}
 
-	public function updateEditableUsername(User $patron, $username) {
+	public function updateEditableUsername(User $patron, string $username) : array {
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error updating username'
