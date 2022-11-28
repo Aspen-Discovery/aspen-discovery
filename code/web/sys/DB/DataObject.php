@@ -147,12 +147,12 @@ abstract class DataObject
 	public function fetch()
 	{
 		$this->__fetchingFromDB = true;
+		$this->clearRuntimeDataVariables();
 		if ($this->__queryStmt == null){
 			return null;
 		}else{
 			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
 		}
-		$this->clearRuntimeDataVariables();
 		$this->decryptFields();
 		$this->__fetchingFromDB = false;
 		return $return;

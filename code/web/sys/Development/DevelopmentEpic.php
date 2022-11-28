@@ -44,6 +44,10 @@ class DevelopmentEpic extends DataObject {
 		$taskEpicLinkStructure = TaskEpicLink::getObjectStructure();
 		unset($taskEpicLinkStructure['epicId']);
 
+		require_once ROOT_DIR . '/sys/Development/ComponentEpicLink.php';
+		$componentEpicLink = ComponentEpicLink::getObjectStructure();
+		unset($componentEpicLink['epicId']);
+
 		return [
 			'id' => [
 				'property' => 'id',
@@ -112,6 +116,22 @@ class DevelopmentEpic extends DataObject {
 				'description' => 'The current status of the epic',
 				'default' => 0
 			],
+			'relatedComponents' => [
+				'property' => 'relatedComponents',
+				'type' => 'oneToMany',
+				'label' => 'Related Components',
+				'description' => 'A list of components related to this epic',
+				'keyThis' => 'id',
+				'keyOther' => 'epicId',
+				'subObjectType' => 'ComponentEpicLink',
+				'structure' => $componentEpicLink,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => [],
+				'hideInLists' => true
+			],
 			'requestingPartners' => [
 				'property' => 'requestingPartners',
 				'type' => 'oneToMany',
@@ -165,6 +185,8 @@ class DevelopmentEpic extends DataObject {
 			return $this->_totalStoryPoints;
 		} elseif ($name == 'relatedTasks') {
 			return $this->getRelatedTasks();
+		} elseif ($name == 'relatedComponents') {
+			return $this->getRelatedComponents();
 		} elseif ($name == 'requestingPartners') {
 			return $this->getRequestingPartners();
 		} else {
@@ -175,6 +197,8 @@ class DevelopmentEpic extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "relatedTasks") {
 			$this->_relatedTasks = $value;
+		} elseif ($name == "relatedComponents") {
+			$this->_relatedComponents = $value;
 		} elseif ($name == "requestingPartners") {
 			$this->_requestingPartners = $value;
 		} else {
@@ -189,6 +213,7 @@ class DevelopmentEpic extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();
+			$this->saveRelatedComponents();
 			$this->saveRequestingPartners();
 		}
 		return $ret;
@@ -198,6 +223,7 @@ class DevelopmentEpic extends DataObject {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();
+			$this->saveRelatedComponents();
 			$this->saveRequestingPartners();
 		}
 		return $ret;
@@ -207,6 +233,13 @@ class DevelopmentEpic extends DataObject {
 		if (isset ($this->_relatedTasks) && is_array($this->_relatedTasks)) {
 			$this->saveOneToManyOptions($this->_relatedTasks, 'epicId');
 			unset($this->_relatedTasks);
+		}
+	}
+
+	public function saveRelatedComponents() {
+		if (isset ($this->_relatedComponents) && is_array($this->_relatedComponents)) {
+			$this->saveOneToManyOptions($this->_relatedComponents, 'epicId');
+			unset($this->_relatedComponents);
 		}
 	}
 
@@ -233,6 +266,23 @@ class DevelopmentEpic extends DataObject {
 			}
 		}
 		return $this->_relatedTasks;
+	}
+
+	/**
+	 * @return ComponentEpicLink[]
+	 */
+	private function getRelatedComponents(): ?array {
+		if (!isset($this->_relatedComponents) && $this->id) {
+			require_once ROOT_DIR . '/sys/Development/ComponentEpicLink.php';
+			$this->_relatedComponents = [];
+			$component = new ComponentEpicLink();
+			$component->epicId = $this->id;
+			$component->find();
+			while ($component->fetch()) {
+				$this->_relatedComponents[$component->id] = clone($component);
+			}
+		}
+		return $this->_relatedComponents;
 	}
 
 	/**

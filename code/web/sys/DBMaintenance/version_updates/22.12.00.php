@@ -135,7 +135,6 @@ function getUpdates22_12_00(): array {
 			'title' => 'Development - Link Epics To Tasks',
 			'description' => 'Development - Link Epics To Tasks',
 			'sql' => [
-				//'DROP TABLE IF EXISTS development_task_epic_link',
 				'CREATE TABLE IF NOT EXISTS development_task_epic_link (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					epicId INT(11), 
@@ -143,6 +142,44 @@ function getUpdates22_12_00(): array {
 					weight INT NOT NULL DEFAULT 0, 
 					UNIQUE INDEX (epicId, taskId),
 					INDEX (epicId, weight)
+				) ENGINE INNODB',
+			]
+		],
+		'development_tickets_to_components' => [
+			'title' => 'Development - Link Tickets to Components',
+			'description' => 'Development - Link Tickets to Components',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS component_ticket_link (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					ticketId INT(11), 
+					componentId INT(11), 
+					UNIQUE INDEX (ticketId, componentId)
+				) ENGINE INNODB',
+			]
+		],
+		'development_components_to_tasks' => [
+			'title' => 'Development - Link Components To Tasks',
+			'description' => 'Development - Link Components To Tasks',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS component_development_task_link (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					componentId INT(11), 
+					taskId INT(11), 
+					weight INT NOT NULL DEFAULT 0, 
+					UNIQUE INDEX (componentId, taskId),
+					INDEX (componentId, weight)
+				) ENGINE INNODB',
+			]
+		],
+		'development_components_to_epics' => [
+			'title' => 'Development - Link Components To Epics',
+			'description' => 'Development - Link Components To To Epics',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS component_development_epic_link (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					componentId INT(11), 
+					epicId INT(11), 
+					UNIQUE INDEX (componentId, epicId)
 				) ENGINE INNODB',
 			]
 		],

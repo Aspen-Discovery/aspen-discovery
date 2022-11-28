@@ -23,6 +23,7 @@ import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -665,6 +666,12 @@ public class EvolveExportMain {
 			fullExportFile = latestFile;
 		}
 
+
+		//If we are running a full update, process all bibs looking for duplicate items.
+		if (indexingProfile.isRunFullUpdate()){
+			removeDuplicateItems();
+		}
+
 		//Get a list of marc deltas since the last marc record, we will actually process all of these since the full export takes so long
 		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
@@ -953,5 +960,65 @@ public class EvolveExportMain {
 		}
 
 		return totalChanges;
+	}
+
+	private static void removeDuplicateItems() {
+		try {
+			logEntry.addNote("Processing all records looking for duplicate items");
+			PreparedStatement allMarcRecordsStmt = dbConn.prepareStatement("SELECT ilsId, UNCOMPRESS(sourceData) as sourceData from ils_records where deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement forceReindexOfRecordStmt = dbConn.prepareStatement("INSERT INTO record_identifiers_to_reload (type, identifier, processed) VALUES ('" + indexingProfile.getName() + "', ?, 0)");
+			ResultSet allMarcRecordsRS = allMarcRecordsStmt.executeQuery();
+			int numBibsWithDuplicateItems = 0;
+			while (allMarcRecordsRS.next()){
+				byte[] marcData = allMarcRecordsRS.getBytes("sourceData");
+				if (marcData != null && marcData.length > 0) {
+					String identifier = allMarcRecordsRS.getString("ilsId");
+					String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
+					Record marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
+					if (marcRecord != null) {
+						List<DataField> allItemFields = MarcUtil.getDataFields(marcRecord, indexingProfile.getItemTagInt());
+						ArrayList<DataField> itemsToRemove = new ArrayList<>();
+						for (int i = 0; i < allItemFields.size() - 1; i++) {
+							DataField item1 = allItemFields.get(i);
+							Subfield item1IdentifierSubfield = item1.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+							if (item1IdentifierSubfield != null) {
+								String item1Identifier = item1IdentifierSubfield.getData();
+								for (int j = i + 1; j < allItemFields.size(); j++) {
+									DataField item2 = allItemFields.get(j);
+									Subfield item2IdentifierSubfield = item2.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+									if (item2IdentifierSubfield != null) {
+										String item2Identifier = item2IdentifierSubfield.getData();
+										if (item1Identifier.equals(item2Identifier)) {
+											if (item1.getSubfields().size() > item2.getSubfields().size()) {
+												itemsToRemove.add(item2);
+											} else {
+												itemsToRemove.add(item1);
+											}
+										}
+									}
+								}
+							} else {
+								//If there is no identifier remove the item?
+								itemsToRemove.add(item1);
+							}
+						}
+						if (itemsToRemove.size() > 0) {
+							numBibsWithDuplicateItems++;
+							for (DataField itemToRemove : itemsToRemove) {
+								marcRecord.removeVariableField(itemToRemove);
+								forceReindexOfRecordStmt.setString(1, identifier);
+								forceReindexOfRecordStmt.executeUpdate();
+							}
+							getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier, marcRecord);
+
+						}
+					}
+				}
+			}
+			logEntry.addNote("Cleaned up " + numBibsWithDuplicateItems + "bibs with duplicate items");
+			logEntry.saveResults();
+		}catch (Exception e){
+			logEntry.incErrors("Error removing duplicate items.", e);
+		}
 	}
 }

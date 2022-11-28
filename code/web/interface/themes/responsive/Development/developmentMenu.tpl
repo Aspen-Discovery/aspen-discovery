@@ -37,6 +37,25 @@
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketStatuses">{translate text="Ticket Statuses" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketQueues">{translate text="Ticket Queues" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketSeverities">{translate text="Ticket Severities" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketComponents">{translate text="Ticket Components" isAdminFacing=true}</a></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel">
+					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
+						<div class="panel-heading">
+							<div class="panel-title">
+                                {translate text="Ticket Stats" isAdminFacing=true}
+							</div>
+						</div>
+					</a>
+					<div id="supportGroup" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsCreatedByDay">{translate text="Tickets Created By Day" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Development/TicketsCreatedByMonth">{translate text="Tickets Created By Month" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Development/TicketsClosedByDay">{translate text="Tickets Closed By Day" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Development/TicketsClosedByMonth">{translate text="Tickets Closed By Month" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>
