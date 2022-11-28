@@ -375,8 +375,10 @@ class User extends DataObject
 						$values[] = "({$this->id},{$roleId})";
 					}
 				}
-				$values = join(', ', $values);
-				$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
+				if (count($values) > 0) {
+					$values = join(', ', $values);
+					$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
+				}
 			}
 		}
 	}
