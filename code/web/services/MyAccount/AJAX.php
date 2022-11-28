@@ -1049,7 +1049,7 @@ class MyAccount_AJAX extends JSON_Action
 
 			$pickupAt = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$marcRecord = new MarcRecordDriver($recordId);
+			$marcRecord = new MarcRecordDriver($sourceId);
 			if ($marcRecord->isValid()) {
 				$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 				$pickupAt = $relatedRecord->getHoldPickupSetting();

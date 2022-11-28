@@ -1128,24 +1128,28 @@ class SirsiDynixROA extends HorizonAPI
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
-		//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
-		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-		$volumeInfo = new IlsVolumeInfo();
-		$volumeInfo->volumeId = $volumeId;
-		$volumeInfo->recordId = $this->getIndexingProfile()->name . ':' . $recordId;
-		if ($volumeInfo->find(true)){
-			$relatedItems = explode('|', $volumeInfo->relatedItems);
-			$itemToHold = $relatedItems[0];
-			return $this->placeSirsiHold($patron, $recordId, $itemToHold, $volumeId, $pickupBranch);
-		}else{
-			return [
-				'success' => false,
-				'message' => 'Sorry, we could not find the specified volume, it may have been deleted.',
-				'api' => [
-					'title' => 'Unable to place hold',
-					'message' => 'Sorry, we could not find the specified volume, it may have been deleted.'
-				]
-			];
+		if ($volumeId == ''){
+			return $this->placeSirsiHold($patron, $recordId, '', $volumeId, $pickupBranch);
+		}else {
+			//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
+			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+			$volumeInfo = new IlsVolumeInfo();
+			$volumeInfo->volumeId = $volumeId;
+			$volumeInfo->recordId = $this->getIndexingProfile()->name . ':' . $recordId;
+			if ($volumeInfo->find(true)) {
+				$relatedItems = explode('|', $volumeInfo->relatedItems);
+				$itemToHold = $relatedItems[0];
+				return $this->placeSirsiHold($patron, $recordId, $itemToHold, $volumeId, $pickupBranch);
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Sorry, we could not find the specified volume, it may have been deleted.',
+					'api' => [
+						'title' => 'Unable to place hold',
+						'message' => 'Sorry, we could not find the specified volume, it may have been deleted.'
+					]
+				];
+			}
 		}
 	}
 
@@ -2710,4 +2714,14 @@ class SirsiDynixROA extends HorizonAPI
 //
 //		return $results;
 //	}
+
+	/**
+	 * Determine if volume level holds are always done when volumes are present.
+	 * When this is on, items without volumes will present a blank volume for the user to choose from.
+	 *
+	 * @return false
+	 */
+	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+		return true;
+	}
 }

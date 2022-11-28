@@ -250,6 +250,7 @@ class User extends DataObject
 						$role = new Role();
 						$role->roleId = $patronType->assignedRoleId;
 						if ($role->find(true)){
+							$role->setAssignedFromPType(true);
 							$this->_roles[$role->roleId] = clone $role;
 							if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
 								$canUseTestRoles = true;
@@ -369,8 +370,10 @@ class User extends DataObject
 			//Now add the new values.
 			if (count($this->_roles) > 0){
 				$values = array();
-				foreach ($this->_roles as $roleId => $roleName){
-					$values[] = "({$this->id},{$roleId})";
+				foreach ($this->_roles as $roleId => $roleObj){
+					if (!$roleObj->isAssignedFromPType()) {
+						$values[] = "({$this->id},{$roleId})";
+					}
 				}
 				$values = join(', ', $values);
 				$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
