@@ -9,7 +9,7 @@
 					<span>{$title}</span>
 				{/if}
 				{if $collectionSpotlight->showAuthor}
-					<br/><span>{translate text="by %1%" 1=$author isPublicFacing=true}</span>
+					<span>{translate text=" by %1%" 1=$author isPublicFacing=true}</span>
 				{/if}
 			</div>
 		</a>
