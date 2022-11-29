@@ -40,7 +40,7 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="username" class="control-label">{translate text='Username' isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
-							<input type="text" name="username" id="username" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required">
+							<input type="text" name="username" id="username" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="false">
 						</div>
 					</div>
 					<div class="form-group">
