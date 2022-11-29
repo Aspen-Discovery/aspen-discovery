@@ -46,13 +46,14 @@
 				</div>
 			</div>
 
-
-			<div class="form-group">
-				<label for="listNotes" class="col-sm-3">{translate text='Notes' isPublicFacing=true} </label>
-				<div class="col-sm-9">
-					<textarea id="listNotes" name="notes" rows="3" cols="50" class="form-control">{$listEntry->notes|escape:"html"}</textarea>
+			{if $enableListDescriptions}
+				<div class="form-group">
+					<label for="listNotes" class="col-sm-3">{translate text='Notes' isPublicFacing=true} </label>
+					<div class="col-sm-9">
+						<textarea id="listNotes" name="notes" rows="3" cols="50" class="form-control">{$listEntry->notes|escape:"html"}</textarea>
+					</div>
 				</div>
-			</div>
+			{/if}
 
 		</div>
 	</form>

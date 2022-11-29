@@ -92,14 +92,16 @@ class Library extends DataObject
 	public $showLoginButton;
 	public $showEmailThis;
 	public $showFavorites;
+	public $enableListDescriptions;
+	public $allowableListNames;
 	public $showConvertListsFromClassic;
 	public $showUserCirculationModules;
 	public $showUserPreferences;
 	public $showUserContactInformation;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
-	public /** @noinspection PhpUnused */
-		$pTypes; //This is used as part of the indexing process
+	/** @noinspection PhpUnused */
+	public $pTypes; //This is used as part of the indexing process
 	public $facetLabel;
 	public $showAvailableAtAnyLocation;
 	public $finePaymentType; //0 = None, 1 = ILS, 2 = PayPal
@@ -111,7 +113,6 @@ class Library extends DataObject
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
 	public $msbUrl;
 	public $symphonyPaymentType;
-	//public $symphonyPaymentPolicy;
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
@@ -843,12 +844,15 @@ class Library extends DataObject
 			)),
 
 			// Catalog Enrichment //
-			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'], 'properties' => [
+			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'],
+				'properties' => [
 					//TODO database column rename for showFavorites to showLists?
-					'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+					'showFavorites' => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+					'enableListDescriptions' => array('property'=>'enableListDescriptions', 'type'=>'checkbox', 'label'=>'Enable List Descriptions & Notes', 'description'=>'Whether or not users can add descriptions & title notes to their lists', 'hideInLists' => true, 'default' => 1),
+					'allowableListNames' => array('property'=>'allowableListNames', 'type'=>'text', 'label'=>'Allowable List Names', 'description'=>'A pipe separated list of valid names for the patron to choose, leave blank to allow the patron to enter their own name for a list.', 'hideInLists' => true, 'default' => '', 'maxLength'=>'500'),
 					'showConvertListsFromClassic' => array('property'=>'showConvertListsFromClassic', 'type'=>'checkbox', 'label'=>'Enable Importing Lists From Old Catalog', 'description'=>'Whether or not users can import lists from the ILS', 'hideInLists' => true, 'default' => 0),
-					'showWikipediaContent'     => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
-					'showCitationStyleGuides'     => array('property'=>'showCitationStyleGuides', 'type'=>'checkbox', 'label'=>'Show Citation Style Guides', 'description'=>'Whether or not citations style guides should be shown', 'default'=>'1', 'hideInLists' => true,),
+					'showWikipediaContent' => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
+					'showCitationStyleGuides' => array('property'=>'showCitationStyleGuides', 'type'=>'checkbox', 'label'=>'Show Citation Style Guides', 'description'=>'Whether or not citations style guides should be shown', 'default'=>'1', 'hideInLists' => true,),
 				]
 			],
 

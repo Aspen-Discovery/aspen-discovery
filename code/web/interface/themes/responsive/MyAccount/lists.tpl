@@ -80,7 +80,7 @@
 					</div>
 
 					{* Description Section *}
-					{if $list->description}
+					{if $list->description && $enableListDescriptions}
 						<div class="row visible-xs">
 							<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 							<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$list->id|escape}" href="#" onclick="$('#descriptionValue{$list->id|escape},#descriptionLink{$list->id|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>

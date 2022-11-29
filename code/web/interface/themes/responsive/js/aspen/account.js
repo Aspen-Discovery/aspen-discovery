@@ -29,7 +29,14 @@ AspenDiscovery.Account = (function () {
 			if (searchableControl) {
 				isSearchable = searchableControl.prop("checked");
 			}
-			var title = form.find("input[name=title]").val();
+			var titleInput = form.find("input[name=title]");
+			var title;
+			if (titleInput.length > 0){
+				title = titleInput.val();
+			}else{
+				title = $('#listTitle option:selected').text();
+			}
+
 			var desc = $("#listDesc").val();
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {

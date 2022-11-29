@@ -248,6 +248,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
+
 		return array(
 			'title' => translate(['text' => 'Add titles to list', 'isPublicFacing' => true]),
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
@@ -980,6 +981,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		//Check to see if we will index the list if it is public
+		global $library;
 		$location = Location::getSearchLocation();
 		$ownerHasListPublisherRole = UserAccount::userHasPermission('Include Lists In Search Results');
 		if ($location != null) {
@@ -991,7 +993,6 @@ class MyAccount_AJAX extends JSON_Action
 				(($location->publicListsToInclude == 6) && $ownerHasListPublisherRole) //All lists for list publishers
 			;
 		} else {
-			global $library;
 			$publicListWillBeIndexed = ($library->publicListsToInclude == 2) || //All public lists
 				(($library->publicListsToInclude == 1)) || //All lists for the current library
 				(($library->publicListsToInclude == 3) && $ownerHasListPublisherRole) || //All lists for list publishers at the current library
@@ -999,11 +1000,26 @@ class MyAccount_AJAX extends JSON_Action
 			;
 		}
 		$interface->assign('publicListWillBeIndexed', $publicListWillBeIndexed);
+		$interface->assign('enableListDescriptions', $library->enableListDescriptions);
+
+		if (!empty($library->allowableListNames)) {
+			$validListNames = explode('|', $library->allowableListNames);
+			foreach ($validListNames as $index => $listName) {
+				$validListNames[$index] = translate([
+					'text' => $listName,
+					'isPublicFacing' => true,
+					'isAdminEnteredData' => true
+				]);
+			}
+		}else{
+			$validListNames = [];
+		}
+		$interface->assign('validListNames', $validListNames);
 
 		return array(
-			'title' => 'Create new List',
+			'title' => translate(['text'=>'Create new List', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("MyAccount/createListForm.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>Create List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>" . translate(['text'=>'Create List', 'isPublicFacing'=>true]) . "</span>"
 		);
 	}
 
@@ -3588,13 +3604,15 @@ class MyAccount_AJAX extends JSON_Action
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
-			/** @noinspection PhpUnusedLocalVariableInspection */
 			if ($transactionType == 'donation') {
+				/** @noinspection PhpUnusedLocalVariableInspection */
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
 				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
+				/** @noinspection PhpUnusedLocalVariableInspection */
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits) = $result;
 			}
+			/** @var Library $paymentLibrary */
 			$paymentRequestUrl = $paymentLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
 			$paymentRequestUrl .= "&PaymentType=CC";
@@ -4521,6 +4539,7 @@ class MyAccount_AJAX extends JSON_Action
 	function getSaveToListForm()
 	{
 		global $interface;
+		global $library;
 
 		$sourceId = $_REQUEST['sourceId'];
 		$source = $_REQUEST['source'];
@@ -4529,6 +4548,8 @@ class MyAccount_AJAX extends JSON_Action
 
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		UserList::getUserListsForSaveForm($source, $sourceId);
+
+		$interface->assign('enableListDescriptions', $library->enableListDescriptions);
 
 		return array(
 			'title' => translate(['text' => 'Add To List', 'isPublicFacing' => true]),
@@ -4972,6 +4993,9 @@ class MyAccount_AJAX extends JSON_Action
 					}
 				}
 			}
+
+			global $library;
+			$interface->assign('enableListDescriptions', $library->enableListDescriptions);
 
 			return array(
 				'title' => translate(['text' => 'Edit List Item', 'isPublicFacing' => true]),
