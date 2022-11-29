@@ -42,11 +42,11 @@
 								<div class="form-group">
 									<label for="listTitleEdit" class="control-label">{translate text="Title" isPublicFacing=true}</label>
 									{if empty($validListNames)}
-										<input type="text" id="listTitleEdit" name="newTitle" value="{$list->title|escape:"html"}" size="50" class="form-control">
+										<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" size="50" class="form-control">
 									{else}
 										<select id="listTitleEdit" name="titleSelect" class="form-control">
 											{foreach from=$validListNames item=listName key=listNameIndex}
-												<option value="{$listNameIndex}">{$listName}</option>
+												<option value="{$listNameIndex}" {if $userList->title == $listName}selected{/if}>{$listName}</option>
 											{/foreach}
 										</select>
 									{/if}
