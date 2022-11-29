@@ -2940,6 +2940,14 @@ class User extends DataObject
 		}
 	}
 
+	public function getUsernameValidationRules() : array {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getUsernameValidationRules();
+		}else{
+			return [];
+		}
+	}
+
 	protected function clearRuntimeDataVariables(){
 		if ($this->_accountProfile != null){
 			$this->_accountProfile->__destruct();

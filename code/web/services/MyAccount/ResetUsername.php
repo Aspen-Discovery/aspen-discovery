@@ -9,10 +9,10 @@ class MyAccount_ResetUsername extends MyAccount
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
-		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$usernameValidationRules = $catalog->getUsernameValidationRules();
-		$interface->assign('usernameValidationRules', $usernameValidationRules);
 		if ($user) {
+			$usernameValidationRules = $user->getUsernameValidationRules();
+			$interface->assign('usernameValidationRules', $usernameValidationRules);
+
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['submit']) && !$offlineMode) {
