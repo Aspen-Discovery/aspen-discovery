@@ -76,6 +76,9 @@
 					{if !empty($message->action2Title) && !empty($message->action2)}
 						<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{translate text=$message->action2Title isPublicFacing=true}</a>
 					{/if}
+					{if !empty($message->addendum)}
+						<a href="/MyAccount/LinkedAccounts" data-dismiss="alert" id="addendum"><br>{translate text=$message->addendum isPublicFacing=true}</a>
+					{/if}
 				</div>
 			{/foreach}
 		</div>
