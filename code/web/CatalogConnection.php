@@ -1341,4 +1341,8 @@ class CatalogConnection
 	public function getUsernameValidationRules() : array {
 		return $this->driver->getUsernameValidationRules();
 	}
+
+	public function showPreferredNameInProfile() : bool {
+		return $this->driver->showPreferredNameInProfile();
+	}
 }

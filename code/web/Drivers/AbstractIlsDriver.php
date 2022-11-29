@@ -518,4 +518,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'additionalRequirements' => ''
 		];
 	}
+
+	public function showPreferredNameInProfile() : bool {
+		return false;
+	}
 }

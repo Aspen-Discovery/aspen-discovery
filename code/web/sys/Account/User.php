@@ -78,6 +78,7 @@ class User extends DataObject
 
 	//Data that we load, but don't store in the User table
 	public $_fullname;
+	public $_preferredName;
 	public $_address1;
 	public $_address2;
 	public $_city;
@@ -2926,6 +2927,14 @@ class User extends DataObject
 	public function showHoldPosition() : bool {
 		if ($this->hasIlsConnection()){
 			return $this->getCatalogDriver()->showHoldPosition();
+		}else{
+			return false;
+		}
+	}
+
+	public function showPreferredNameInProfile() : bool {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->showPreferredNameInProfile();
 		}else{
 			return false;
 		}
