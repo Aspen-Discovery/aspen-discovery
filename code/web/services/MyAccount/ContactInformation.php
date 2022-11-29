@@ -24,7 +24,6 @@ class MyAccount_ContactInformation extends MyAccount
 				$user->loadContactInformation();
 			}
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
@@ -63,6 +62,7 @@ class MyAccount_ContactInformation extends MyAccount
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
 			$interface->assign('allowAccountLinking', $allowAccountLinking);
 			$interface->assign('passwordLabel', $passwordLabel);
+			$interface->assign('showPreferredNameInProfile', $user->showPreferredNameInProfile());
 
 			// Determine Pickup Locations
 			$pickupLocations = $user->getValidPickupBranches($user->getAccountProfile()->recordSource);

@@ -334,7 +334,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return null;
 	}
 
-	public function updateEditableUsername(User $patron, $username)
+	public function updateEditableUsername(User $patron, string $username) : array
 	{
 		return [
 			'success' => false,
@@ -494,6 +494,32 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @return false
 	 */
 	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+		return false;
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink() : bool {
+		return false;
+	}
+
+	/**
+	 * Returns an array of validation rules that should be applied when editing
+	 *
+	 * @return array
+	 */
+	public function getUsernameValidationRules() : array {
+		return [
+			'minLength' => 4,
+			'maxLength' => 50,
+			'additionalRequirements' => ''
+		];
+	}
+
+	public function showPreferredNameInProfile() : bool {
 		return false;
 	}
 }

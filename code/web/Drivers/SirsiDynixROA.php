@@ -92,7 +92,7 @@ class SirsiDynixROA extends HorizonAPI
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,pin,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,pin,blockList{owed}");
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('findNewUser', $webServiceURL . '/user/patron/search?q=ID:' . $patronBarcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
@@ -121,9 +121,15 @@ class SirsiDynixROA extends HorizonAPI
 					$user->lastname = isset($lastName) ? $lastName : '';
 					$forceDisplayNameUpdate = true;
 				}
-				if ($forceDisplayNameUpdate) {
-					$user->displayName = '';
+
+				if (!empty($lookupMyAccountInfoResponse->fields->preferredName)){
+					$user->displayName = $lookupMyAccountInfoResponse->fields->preferredName;
+				}else {
+					if ($forceDisplayNameUpdate) {
+						$user->displayName = '';
+					}
 				}
+
 				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $patronBarcode;
 				if (!empty($lookupMyAccountInfoResponse->fields->pin)) {
@@ -345,7 +351,7 @@ class SirsiDynixROA extends HorizonAPI
 			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse('patronStatusInfoDescribe', $webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
 			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse('patronDAddress1PolicyDescribe', $webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
 			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
@@ -372,8 +378,12 @@ class SirsiDynixROA extends HorizonAPI
 					$user->lastname = isset($lastName) ? $lastName : '';
 					$forceDisplayNameUpdate = true;
 				}
-				if ($forceDisplayNameUpdate) {
-					$user->displayName = '';
+				if (!empty($lookupMyAccountInfoResponse->fields->preferredName)){
+					$user->displayName = $lookupMyAccountInfoResponse->fields->preferredName;
+				}else {
+					if ($forceDisplayNameUpdate) {
+						$user->displayName = '';
+					}
 				}
 
 				$this->loadContactInformationFromApiResult($user, $lookupMyAccountInfoResponse);
@@ -1790,6 +1800,12 @@ class SirsiDynixROA extends HorizonAPI
 						if (isset($updatePatronInfoParameters['resource']) && $updatePatronInfoParameters['resource'] == '/user/patron') {
 							$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
+							if (isset($_REQUEST['preferredName'])) {
+								$updatePatronInfoParameters['fields']['preferredName'] = $_REQUEST['preferredName'];
+								$patron->_preferredName = $_REQUEST['preferredName'];
+								$patron->displayName = $_REQUEST['preferredName'];
+							}
+
 							// Update Address Field with new data supplied by the user
 							if (isset($_REQUEST['email'])) {
 								$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
@@ -1839,7 +1855,7 @@ class SirsiDynixROA extends HorizonAPI
 								}
 							}
 
-							$updateAccountInfoResponse = $this->getWebServiceResponse('updatePatronInfo', $webServiceURL . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+							$updateAccountInfoResponse = $this->getWebServiceResponse('updatePatronInfo', $webServiceURL . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,preferredName,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
 
 							if (isset($updateAccountInfoResponse->messageList)) {
 								foreach ($updateAccountInfoResponse->messageList as $message) {
@@ -1993,7 +2009,7 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$webServiceURL = $this->getWebServiceURL();
 		$staffSessionToken = $this->getStaffSessionToken();
-		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
 
 		// phoneList is for texting notification preferences
@@ -2015,6 +2031,12 @@ class SirsiDynixROA extends HorizonAPI
 		$fullName = $lastName . ', ' . $firstName;
 
 		$user->_fullname = isset($fullName) ? $fullName : '';
+
+		if (isset($lookupMyAccountInfoResponse->fields->preferredName)) {
+			$user->_preferredName = $lookupMyAccountInfoResponse->fields->preferredName;
+		}else{
+			$user->_preferredName = "";
+		}
 
 		$Address1 = "";
 		$City = "";
@@ -2050,13 +2072,13 @@ class SirsiDynixROA extends HorizonAPI
 								list($City, $State) = explode(' ', $cityState);
 							}
 						}else{
-                            if (empty($City)) {
-                                $City = '';
-                            }
-                            if (empty($State)) {
-                                $State = '';
-                            }
-                        }
+							if (empty($City)) {
+								$City = '';
+							}
+							if (empty($State)) {
+								$State = '';
+							}
+						}
 						break;
 					case 'ZIP' :
 						$Zip = $fields->data;
@@ -2465,7 +2487,7 @@ class SirsiDynixROA extends HorizonAPI
 				$webServiceURL = $this->getWebServiceURL();
 				if ($userID = $patron->username) {
 					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
-					$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInformation', $this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
+					$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInformation', $this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,preferredName,address1,address2,address3', null, $sessionToken );
 					if ($updatePatronInfoParametersClass) {
 						//Convert from stdClass to associative array
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
@@ -2475,7 +2497,7 @@ class SirsiDynixROA extends HorizonAPI
 							$updatePatronInfoParameters['keepCircHistory'] = 'ALLCHARGES';
 						}
 
-						$updateAccountInfoResponse = $this->getWebServiceResponse('updateReadingHistory', $webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+						$updateAccountInfoResponse = $this->getWebServiceResponse('updateReadingHistory', $webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,preferredName,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
 
 						if (isset($updateAccountInfoResponse->messageList)) {
 							foreach ($updateAccountInfoResponse->messageList as $message) {
@@ -2726,6 +2748,10 @@ class SirsiDynixROA extends HorizonAPI
 	 * @return false
 	 */
 	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+		return true;
+	}
+
+	public function showPreferredNameInProfile() : bool {
 		return true;
 	}
 }

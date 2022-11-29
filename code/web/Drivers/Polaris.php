@@ -1,6 +1,5 @@
 <?php
 
-//TODO: Update patron info
 //TODO: Cancel all holds
 //TODO: Freeze all holds
 //TODO: Self Register
@@ -2180,5 +2179,61 @@ class Polaris extends AbstractIlsDriver
 
 	public function showHoldPosition() : bool {
 		return true;
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink(): bool {
+		return true;
+	}
+
+	public function getUsernameValidationRules(): array {
+		return [
+			'minLength' => 4,
+			'maxLength' => 50,
+			'additionalRequirements' => translate([
+				'text' => 'All usernames must begin with a letter. Usernames can contain letters, numbers, and special characters. Spaces are not allowed, and special characters cannot be contiguous.',
+				'isPublicFacing' => true
+			])
+		];
+	}
+
+	public function updateEditableUsername(User $patron, string $newUsername): array {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown error updating username',
+				'isPublicFacing' => true
+			])
+		];
+
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/username/" . urlencode($newUsername);
+		$updateUsernameResponse = $this->getWebServiceResponse($polarisUrl, 'PUT', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken'], false, UserAccount::isUserMasquerading());
+		ExternalRequestLogEntry::logRequest('polaris.getCirculateBlocks', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $updateUsernameResponse, []);
+		if ($updateUsernameResponse && $this->lastResponseCode == 200) {
+			$updateUsernameResponse = json_decode($updateUsernameResponse);
+			if ($updateUsernameResponse->PAPIErrorCode == 0) {
+				$result = [
+					'success' => true,
+					'message' => translate([
+						'text' => 'Your username was updated successfully',
+						'isPublicFacing' => true
+					])
+				];
+			} else {
+				$result = [
+					'success' => false,
+					'message' => translate([
+						'text' => $updateUsernameResponse->ErrorMessage,
+						'isPublicFacing' => true
+					])
+				];
+			}
+		}
+
+		return $result;
 	}
 }

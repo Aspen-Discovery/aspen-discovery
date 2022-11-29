@@ -49,6 +49,12 @@
 								<div class="col-xs-4"><strong>{translate text='Expiration Date' isPublicFacing=true}</strong></div>
 								<div class="col-xs-8">{$profile->_expires|escape}</div>
 							</div>
+							{if $showPreferredNameInProfile}
+								<div class="form-group">
+									<div class="col-xs-4"><label for="preferredName">{translate text='Preferred Name' isPublicFacing=true}</label></div>
+									<div class="col-xs-8">{if $edit && $canUpdateContactInfo}<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">{else}{$profile->_preferredName|escape}{/if}</div>
+								</div>
+							{/if}
 						{/if}
 						{if !$offline}
 							{* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
