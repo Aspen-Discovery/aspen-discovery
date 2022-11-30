@@ -5899,6 +5899,19 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		allowAccountLink: function() {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "allowAccountLink"
+			};
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		redirectLinkedAccounts: function() {
+			window.location.href = Globals.path + "/MyAccount/LinkedAccounts";
+		},
+
 		redirectPinReset: function() {
 			window.location.href = Globals.path + "/MyAccount/RequestPinReset";
 		},
@@ -6526,26 +6539,6 @@ AspenDiscovery.Account = (function () {
 			var params = {
 				method: "dismissSystemMessage",
 				messageId: messageId
-			};
-			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		enableAccountLinking: function () {
-			var url = Globals.path + "/MyAccount/AJAX";
-			var params = {
-				method: "enableAccountLinking"
-			};
-			// noinspection JSUnresolvedFunction
-			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		stopAccountLinking: function () {
-			var url = Globals.path + "/MyAccount/AJAX";
-			var params = {
-				method: "stopAccountLinking"
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);

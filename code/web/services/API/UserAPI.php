@@ -3180,7 +3180,6 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/sys/Account/UserLink.php';
 			$userLink = new UserLink();
 			$userLink->linkedAccountId = $user->id;
-			$userLink->linkingDisabled = "0";
 			$userLink->find();
 			while($userLink->fetch()) {
 				$linkedUser = new User();
