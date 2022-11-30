@@ -1559,23 +1559,17 @@ class UserAPI extends Action {
 				} else {
 					return $this->openOverDriveItem();
 				}
-			} else {
-				if ($source == 'hoopla') {
+			} else if ($source == 'hoopla') {
 					return $this->openHooplaItem();
-				} else {
-					if ($source == 'cloud_library') {
-						return $this->openCloudLibraryItem();
-					} else {
-						if ($source == 'axis360') {
-							return $this->openAxis360Item();
-						} else {
-							return array(
-								'success' => false,
-								'message' => 'Invalid source'
-							);
-						}
-					}
-				}
+			} else if ($source == 'cloud_library') {
+					return $this->openCloudLibraryItem();
+			} else if ($source == 'axis360') {
+					return $this->openAxis360Item();
+			} else {
+				return array(
+					'success' => false,
+					'message' => 'Invalid source'
+				);
 			}
 		} else {
 			return array(
@@ -1808,23 +1802,17 @@ class UserAPI extends Action {
 						'message' => $result['api']['message']
 					);
 				}
+			} else if ($source == 'overdrive') {
+				return $this->renewOverDriveItem();
+			} else if ($source == 'cloud_library') {
+				return $this->renewCloudLibraryItem();
+			} else if ($source == 'axis360') {
+				return $this->renewAxis360Item();
 			} else {
-				if ($source == 'overdrive') {
-					return $this->renewOverDriveItem();
-				} else {
-					if ($source == 'cloud_library') {
-						return $this->renewCloudLibraryItem();
-					} else {
-						if ($source == 'axis360') {
-							return $this->renewAxis360Item();
-						} else {
-							return array(
-								'success' => false,
-								'message' => 'Invalid source'
-							);
-						}
-					}
-				}
+				return array(
+					'success' => false,
+					'message' => 'Invalid source'
+				);
 			}
 
 		} else {
@@ -2116,19 +2104,17 @@ class UserAPI extends Action {
 							);
 						}
 					}
-				} else {
-					if ($source == 'overdrive') {
+				} else if ($source == 'overdrive') {
 						return $this->placeOverDriveHold();
-					} else if ($source == 'cloud_library') {
-						return $this->placeCloudLibraryHold();
-					} else if ($source == 'axis360') {
-						return $this->placeAxis360Hold();
-					} else {
-						return array(
-							'success' => false,
-							'message' => 'Invalid source'
-						);
-					}
+				} else if ($source == 'cloud_library') {
+					return $this->placeCloudLibraryHold();
+				} else if ($source == 'axis360') {
+					return $this->placeAxis360Hold();
+				} else {
+					return array(
+						'success' => false,
+						'message' => 'Invalid source'
+					);
 				}
 			} else {
 				return array(
