@@ -122,37 +122,52 @@ class MyAccount_AJAX extends JSON_Action {
 
 		return $result;
 	}
-	
-    /** @noinspection PhpUnused */
-    function removeManagingAccount(){
-        if (!UserAccount::isLoggedIn()) {
-            $result = array(
-                'result' => false,
-                'message' => translate(['text' => 'Sorry, you must be logged in to manage accounts.', 'isPublicFacing' => true])
-            );
-        } else {
-            $accountToRemove = $_REQUEST['idToRemove'];
-            $user = UserAccount::getLoggedInUser();
-            if ($user->removeManagingAccount($accountToRemove)) {
+
+	/** @noinspection PhpUnused */
+	function removeManagingAccount() {
+		if (!UserAccount::isLoggedIn()) {
+			$result = array(
+				'result' => false,
+				'message' => translate([
+					'text' => 'Sorry, you must be logged in to manage accounts.',
+					'isPublicFacing' => true
+				])
+			);
+		} else {
+			$accountToRemove = $_REQUEST['idToRemove'];
+			$user = UserAccount::getLoggedInUser();
+			if ($user->removeManagingAccount($accountToRemove)) {
 				global $librarySingleton;
 				// Get Library Settings from the home library of the current user-account being displayed
 				$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
-				if ($patronHomeLibrary->allowPinReset == 1){
+				if ($patronHomeLibrary->allowPinReset == 1) {
 					$result = array(
 						'result' => true,
-						'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?', 'isPublicFacing' => true]),
-						'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate(['text' => "Request PIN Change", 'isPublicFacing' => true]) . "</span>",
+						'message' => translate([
+							'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?',
+							'isPublicFacing' => true
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate([
+								'text' => "Request PIN Change",
+								'isPublicFacing' => true
+							]) . "</span>",
 					);
-				}else{
+				} else {
 					$result = array(
 						'result' => true,
-						'message' => translate(['text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.', 'isPublicFacing' => true]),
-						);
+						'message' => translate([
+							'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+							'isPublicFacing' => true
+						]),
+					);
 				}
 			} else {
 				$result = array(
 					'result' => false,
-					'message' => translate(['text' => 'Sorry, we could not remove that account.', 'isPublicFacing' => true])
+					'message' => translate([
+						'text' => 'Sorry, we could not remove that account.',
+						'isPublicFacing' => true
+					])
 				);
 			}
 		}
@@ -1230,15 +1245,21 @@ class MyAccount_AJAX extends JSON_Action {
 					'isAdminEnteredData' => true
 				]);
 			}
-		}else{
+		} else {
 			$validListNames = [];
 		}
 		$interface->assign('validListNames', $validListNames);
 
 		return array(
-			'title' => translate(['text'=>'Create new List', 'isPublicFacing'=>true]),
+			'title' => translate([
+				'text' => 'Create new List',
+				'isPublicFacing' => true
+			]),
 			'modalBody' => $interface->fetch("MyAccount/createListForm.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>" . translate(['text'=>'Create List', 'isPublicFacing'=>true]) . "</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>" . translate([
+					'text' => 'Create List',
+					'isPublicFacing' => true
+				]) . "</span>"
 		);
 	}
 
@@ -2929,7 +2950,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'author' => 'Author',
 					'format' => 'Format',
 					'expire' => 'Expiration Date',
-                    'placed' => 'Date Placed',
+					'placed' => 'Date Placed',
 				);
 				if ($source == 'all' || $source == 'ils') {
 					$availableHoldSortOptions['location'] = 'Pickup Location';
