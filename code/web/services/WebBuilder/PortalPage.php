@@ -3,45 +3,21 @@
 class WebBuilder_PortalPage extends Action
 {
 	/** @var PortalPage */
-	private $page;
+	private $portalPage;
 
 	function __construct()
 	{
 		parent::__construct();
-
-		//Make sure the user has permission to access the page
-		$userCanAccess = $this->canView();
-
-		if (!$userCanAccess && isset($_REQUEST['raw'])){
-			//Check to see if this IP is ok for API calls
-			If (IPAddress::allowAPIAccessForClientIP()){
-				$userCanAccess = true;
-			}
-		}
-
-		if (!$userCanAccess){
-			global $interface;
-			$interface->assign('id', strip_tags($_REQUEST['id']));
-			$interface->assign('module', $_REQUEST['module']);
-			$interface->assign('action', $_REQUEST['action']);
-			$this->display('noPermission.tpl', 'Access Error', '');
-			exit();
-		}
-	}
-
-	function launch()
-	{
-		global $interface;
-
-		$interface->assign('inPageEditor', false);
-
-		$id = strip_tags($_REQUEST['id']);
-		$interface->assign('id', $id);
+		http_response_code(200);
 
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-		$this->page = new PortalPage();
-		$this->page->id = $id;
-		if (!$this->page->find(true)){
+		$this->portalPage = new PortalPage();
+		$id = strip_tags($_REQUEST['id']);
+		$this->portalPage->id = $id;
+		$userCanAccess = $this->canView();
+		$portalPageFounded = $this->portalPage->find(true);
+
+		if(!$portalPageFounded){
 			global $interface;
 			$interface->assign('module','Error');
 			$interface->assign('action','Handle404');
@@ -49,34 +25,55 @@ class WebBuilder_PortalPage extends Action
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
 			die();
-		}
+		} else {
+			if (!$userCanAccess && isset($_REQUEST['raw'])) {
+				//Check to see if this IP is ok for API calls
+				if (IPAddress::allowAPIAccessForClientIP()) {
+					$userCanAccess = true;
+				}
+			}
+			if (!$userCanAccess) {
+				global $interface;
+				$interface->assign('module', 'Error');
+				$interface->assign('action', 'Handle401');
+				require_once ROOT_DIR . "/services/Error/Handle401.php";
+				$actionClass = new Error_Handle401();
+				$actionClass->launch();
+				die();
+			}
 
-		$interface->assign('rows', $this->page->getRows());
+		}
+	}
+
+	function launch()
+	{
+		global $interface;
+		$interface->assign('inPageEditor', false);
+		$title = $this->portalPage->title;
+		$id = strip_tags($_REQUEST['id']);
+		$interface->assign('id', $id);
+		$interface->assign('title',$title);
+		$interface->assign('rows', $this->portalPage->getRows());
 
 		if (isset($_REQUEST['raw']) && $_REQUEST['raw'] == 'true'){
 			echo $interface->fetch('WebBuilder/portalPage.tpl');
 			exit();
 		}else{
-			$this->display('portalPage.tpl', $this->page->title, '', false);
+			$this->display('portalPage.tpl', $title, '', false);
 		}
+		$this->display('portalPage.tpl', $title, '', false);
 	}
 
 	function canView() : bool
 	{
-		require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAccess.php';
-		require_once ROOT_DIR . '/sys/Account/PType.php';
-		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+		$this->portalPage->find();
+		if($this->portalPage->fetch(true)){
 
-		$id = strip_tags($_REQUEST['id']);
-		$page = new PortalPage();
-		$page->id = $id;
-		$page->find();
-		if($page->fetch(true)){
-			return $page->canView();
-		}else{
+			return $this->portalPage->canView();
+		}
+		else{
 			return false;
 		}
-
 	}
 
 	function getBreadcrumbs() : array
