@@ -77,7 +77,7 @@ class UserAPI extends Action {
 			}
 			ExternalRequestLogEntry::logRequest('UserAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 			echo $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+		} else if (IPAddress::allowAPIAccessForClientIP()) {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
 				$result = [
@@ -288,7 +288,7 @@ class UserAPI extends Action {
 			foreach ($properties as $name => $value) {
 				if ($name[0] != '_') {
 					$result->$name = $value;
-				} elseif ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+				} else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
 					if ($name != '_data') {
 						$result->$name = $value;
 					}
@@ -300,6 +300,32 @@ class UserAPI extends Action {
 		} else {
 			return array('success' => false);
 		}
+	}
+
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword(): array {
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
+
+		// check for post request data
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return array(
+			$username,
+			$password
+		);
 	}
 
 	/**
@@ -615,6 +641,56 @@ class UserAPI extends Action {
 				'message' => 'Login unsuccessful'
 			);
 		}
+	}
+
+	/**
+	 * @return bool|User
+	 */
+	protected function getUserForApiCall() {
+		if ($this->getLiDAVersion() === "v22.04.00") {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			return UserAccount::validateAccount($username, $password);
+		}
+
+		if (isset($_REQUEST['patronId'])) {
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else {
+			if (isset($_REQUEST['userId'])) {
+				$user = new User();
+				$user->id = $_REQUEST['userId'];
+				if (!$user->find(true)) {
+					$user = false;
+				}
+			} else {
+				if (isset($_REQUEST['id'])) {
+					$user = new User();
+					$user->id = $_REQUEST['id'];
+					if (!$user->find(true)) {
+						$user = false;
+					}
+				} else {
+					list($username, $password) = $this->loadUsernameAndPassword();
+					$user = UserAccount::validateAccount($username, $password);
+				}
+			}
+		}
+		return $user;
+	}
+
+	function getLiDAVersion() {
+		global $logger;
+		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'version' || $name == 'Version') {
+				$version = explode(' ', $value);
+				return $version[0];
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -1013,9 +1089,9 @@ class UserAPI extends Action {
 			foreach ($fines as &$fine) {
 				if (isset($fine['amountOutstandingVal'])) {
 					$totalOwed += $fine['amountOutstandingVal'];
-				} elseif (isset($fine['amountVal'])) {
+				} else if (isset($fine['amountVal'])) {
 					$totalOwed += $fine['amountVal'];
-				} elseif (isset($fine['amount'])) {
+				} else if (isset($fine['amount'])) {
 					$totalOwed += $fine['amount'];
 				}
 				if (array_key_exists('amount', $fine) && array_key_exists('amountOutstanding', $fine)) {
@@ -1172,6 +1248,179 @@ class UserAPI extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
+
+	/**
+	 * Checkout an item in OverDrive by first adding to the cart and then processing the cart.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>overdriveId - The id of the record in OverDrive.</li>
+	 * </ul>
+	 *
+	 * Returns JSON encoded data as follows:
+	 * <ul>
+	 * <li>success - true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
+	 * <li>message - information about the process for display to the user.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function checkoutOverDriveItem(): array {
+		if (isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['itemId'];
+		}
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->checkOutTitle($user, $overDriveId);
+			$action = $result['api']['action'] ?? null;
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	/**
+	 * Checkout an item in Hoopla by first adding to the cart and then processing the cart.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>hooplaId - The id of the record in Hoopla.</li>
+	 * </ul>
+	 *
+	 * Returns JSON encoded data as follows:
+	 * <ul>
+	 * <li>success - true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
+	 * <li>message - information about the process for display to the user.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=checkoutHooplaItem&username=23025003575917&password=1234&id=13567811
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function checkoutHooplaItem(): array {
+		$titleId = $_REQUEST['itemId'];
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+			$driver = new HooplaDriver();
+			$result = $driver->checkOutTitle($user, $titleId);
+			$action = $result['api']['action'] ?? null;
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function checkoutCloudLibraryItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->checkOutTitle($user, $id);
+			$action = $result['api']['action'] ?? null;
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function checkoutAxis360Item(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($user->id);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->checkOutTitle($user, $id);
+			$action = $result['api']['action'] ?? null;
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message'],
+				'action' => $action
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	/** @noinspection PhpUnused */
+
 	function returnCheckout(): array {
 		$source = $_REQUEST['itemSource'];
 		$user = $this->getUserForApiCall();
@@ -1179,28 +1428,127 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'overdrive') {
 				return $this->returnOverDriveCheckout();
+			} else if ($source == 'hoopla') {
+				return $this->returnHooplaItem();
+			} else if ($source == 'cloud_library') {
+				return $this->returnCloudLibraryItem();
+			} else if ($source == 'axis360') {
+				return $this->returnAxis360Item();
 			} else {
-				if ($source == 'hoopla') {
-					return $this->returnHooplaItem();
-				} else {
-					if ($source == 'cloud_library') {
-						return $this->returnCloudLibraryItem();
-					} else {
-						if ($source == 'axis360') {
-							return $this->returnAxis360Item();
-						} else {
-							return array(
-								'success' => false,
-								'message' => 'Invalid source'
-							);
-						}
-					}
-				}
+				return array(
+					'success' => false,
+					'message' => 'Invalid source'
+				);
 			}
 		} else {
 			return array(
 				'success' => false,
 				'message' => 'Login unsuccessful'
+			);
+		}
+	}
+
+	/** @noinspection PhpUnused */
+
+	function returnOverDriveCheckout(): array {
+		if (isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else if (isset($_REQUEST['itemId'])) {
+			$overDriveId = $_REQUEST['itemId'];
+		} else {
+			$overDriveId = $_REQUEST['id'];
+		}
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->returnCheckout($user, $overDriveId);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+
+	}
+
+	function returnHooplaItem(): array {
+
+		$titleId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+			$driver = new HooplaDriver();
+			$result = $driver->returnCheckout($user, $titleId);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function returnCloudLibraryItem(): array {
+		$cloudLibraryId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($cloudLibraryId);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->returnCheckout($user, $cloudLibraryId);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function returnAxis360Item(): array {
+		$id = $_REQUEST['itemId'] ?? $_REQUEST['id'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->returnCheckout($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
 			);
 		}
 	}
@@ -1243,6 +1591,140 @@ class UserAPI extends Action {
 		}
 	}
 
+	function openOverDrivePreview(): array {
+		$overDriveId = $_REQUEST['overDriveId'];
+		$formatId = $_REQUEST['formatId'];
+
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+		$recordDriver = new OverDriveRecordDriver($overDriveId);
+		if ($recordDriver->isValid()) {
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
+			$format = new OverDriveAPIProductFormats();
+			$format->id = $_REQUEST['formatId'];
+			if ($format->find(true)) {
+				$result['success'] = true;
+				if ($_REQUEST['sampleNumber'] == 2) {
+					$sampleUrl = $format->sampleUrl_2;
+				} else {
+					$sampleUrl = $format->sampleUrl_1;
+				}
+
+				$overDriveDriver = new OverDriveDriver();
+				$overDriveDriver->incrementStat('numPreviews');
+
+				$result['url'] = $sampleUrl;
+			} else {
+				$result['success'] = false;
+				$result['title'] = "Error";
+				$result['message'] = 'The specified Format was not valid';
+			}
+		} else {
+			$result['success'] = false;
+			$result['title'] = "Error";
+			$result['message'] = 'The specified OverDrive Product was not valid';
+		}
+
+		return $result;
+	}
+
+	function openOverDriveItem(): array {
+		$overDriveId = $_REQUEST['overDriveId'];
+		$formatId = $_REQUEST['formatId'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($user->id);
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$accessLink = $driver->getDownloadLink($overDriveId, $formatId, $patron);
+			return array(
+				'success' => true,
+				'title' => 'Download Url',
+				'url' => $accessLink['downloadUrl']
+			);
+
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function openHooplaItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+
+			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+			$hooplaRecord = new HooplaRecordDriver($id);
+			$accessLink = $hooplaRecord->getAccessLink();
+			return array(
+				'success' => true,
+				'title' => "Download Url",
+				'url' => $accessLink['url']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function openCloudLibraryItem(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($user->id);
+
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$driver = new CloudLibraryRecordDriver($id);
+			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
+
+			return array(
+				'success' => true,
+				'title' => 'Download Url',
+				'url' => $accessUrl
+			);
+
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function openAxis360Item(): array {
+		$id = $_REQUEST['itemId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($user->id);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$driver = new Axis360RecordDriver($id);
+			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
+			return array(
+				'success' => true,
+				'title' => 'Download Url',
+				'url' => $accessUrl
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
 
 	/**
 	 * Renews an item that has been checked out within the ILS.
@@ -1309,7 +1791,6 @@ class UserAPI extends Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
 	function renewItem(): array {
 		$source = $_REQUEST['itemSource'] ?? null;
 		$itemBarcode = $_REQUEST['itemBarcode'] ?? null;
@@ -1356,6 +1837,84 @@ class UserAPI extends Action {
 			return array(
 				'success' => false,
 				'message' => 'Login unsuccessful'
+			);
+		}
+	}
+
+	function renewOverDriveItem(): array {
+		if (isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['recordId'];
+		}
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->renewCheckout($user, $overDriveId);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function renewCloudLibraryItem(): array {
+		$id = $_REQUEST['recordId'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->renewCheckout($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function renewAxis360Item(): array {
+		$id = $_REQUEST['recordId'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->renewCheckout($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
 			);
 		}
 	}
@@ -1503,15 +2062,14 @@ class UserAPI extends Action {
 
 					if (!empty($_REQUEST['cancelDate'])) {
 						$cancelDate = $_REQUEST['cancelDate'];
+					} else if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+						$cancelDate = null;
 					} else {
-						if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
-							$cancelDate = null;
-						} else {
-							//Default to a date based on the default not needed after days in the library configuration.
-							$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
-							$cancelDate = date('Y-m-d', $nnaDate);
-						}
+						//Default to a date based on the default not needed after days in the library configuration.
+						$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+						$cancelDate = date('Y-m-d', $nnaDate);
 					}
+
 
 					$holdType = $_REQUEST['holdType'];
 					if ($holdType == 'item' && isset($_REQUEST['itemId'])) {
@@ -1567,137 +2125,21 @@ class UserAPI extends Action {
 				} else {
 					if ($source == 'overdrive') {
 						return $this->placeOverDriveHold();
+					} else if ($source == 'cloud_library') {
+						return $this->placeCloudLibraryHold();
+					} else if ($source == 'axis360') {
+						return $this->placeAxis360Hold();
 					} else {
-						if ($source == 'cloud_library') {
-							return $this->placeCloudLibraryHold();
-						} else {
-							if ($source == 'axis360') {
-								return $this->placeAxis360Hold();
-							} else {
-								return array(
-									'success' => false,
-									'message' => 'Invalid source'
-								);
-							}
-						}
+						return array(
+							'success' => false,
+							'message' => 'Invalid source'
+						);
 					}
 				}
 			} else {
 				return array(
 					'success' => false,
 					'message' => 'Sorry, holds are not currently allowed.'
-				);
-			}
-		} else {
-			return array(
-				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
-		}
-	}
-
-	function placeItemHold(): array {
-		$bibId = $_REQUEST['bibId'];
-		$itemId = $_REQUEST['itemId'];
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			global $library;
-			if ($library->showHoldButton) {
-				if (isset($_REQUEST['pickupBranch'])) {
-					$pickupBranch = trim($_REQUEST['pickupBranch']);
-					$locationValid = $user->validatePickupBranch($pickupBranch);
-					if (!$locationValid) {
-						return array(
-							'success' => false,
-							'message' => translate([
-								'text' => 'This location is no longer available, please select a different pickup location',
-								'isPublicFacing' => true
-							])
-						);
-					}
-				} else {
-					$pickupBranch = $user->_homeLocationCode;
-				}
-				//Make sure that there are not volumes available
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($bibId);
-				if ($recordDriver->isValid()) {
-					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-					$volumeDataDB = new IlsVolumeInfo();
-					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
-					if ($volumeDataDB->find(true)) {
-						return array(
-							'success' => false,
-							'message' => translate(['text' => 'You must place a volume hold on this title.'])
-						);
-					}
-				}
-				return $user->placeItemHold($bibId, $itemId, $pickupBranch);
-			} else {
-				$pickupBranch = $user->_homeLocationCode;
-			}
-			return $user->placeHold($bibId, $pickupBranch);
-		} else {
-			return array(
-				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
-		}
-	}
-
-	/** @noinspection PhpUnused */
-	function changeHoldPickUpLocation(): array {
-		$holdId = $_REQUEST['holdId'];
-		$newLocation = $_REQUEST['newLocation'];
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			list ($locationId, $locationCode) = explode('_', $newLocation);
-			$locationValid = $user->validatePickupBranch($locationCode);
-			if (!$locationValid) {
-				return array(
-					'success' => false,
-					'message' => translate([
-						'text' => 'This location is no longer available, please select a different pickup location',
-						'isPublicFacing' => true
-					])
-				);
-			}
-			$result = $user->changeHoldPickUpLocation($holdId, $locationCode);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
-		}
-	}
-
-	/** @noinspection PhpUnused */
-	function getValidPickupLocations(): array {
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !($patron instanceof AspenError)) {
-			if ($patron->hasIlsConnection()) {
-				$tmpPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-				$pickupLocations = [];
-				foreach ($tmpPickupLocations as $pickupLocation) {
-					if (!is_string($pickupLocation)) {
-						$pickupLocations[] = $pickupLocation->toArray();
-					}
-				}
-				return array(
-					'success' => true,
-					'pickupLocations' => $pickupLocations
-				);
-			} else {
-				return array(
-					'success' => false,
-					'message' => 'Patron is not connected to an ILS.'
 				);
 			}
 		} else {
@@ -1779,427 +2221,6 @@ class UserAPI extends Action {
 
 	}
 
-	function freezeOverDriveHold(): array {
-		if ((isset($_REQUEST['overDriveId'])) || (isset($_REQUEST['recordId']))) {
-			if (isset($_REQUEST['overDriveId'])) {
-				$overDriveId = $_REQUEST['overDriveId'];
-			} else {
-				$overDriveId = $_REQUEST['recordId'];
-			}
-
-			$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
-
-			$user = $this->getUserForApiCall();
-			if ($user && !($user instanceof AspenError)) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
-				$result = $driver->freezeHold($user, $overDriveId, $reactivationDate);
-				return array(
-					'success' => $result['success'],
-					'title' => $result['api']['title'],
-					'message' => $result['api']['message']
-				);
-			} else {
-				return array(
-					'success' => false,
-					'title' => 'Error',
-					'message' => 'Unable to validate user'
-				);
-			}
-		} else {
-			return array(
-				'success' => false,
-				'message' => 'Please provide the overDriveId to be place the hold on'
-			);
-		}
-
-	}
-
-	/**
-	 * Activates a hold that was previously suspended within OverDrive.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin/password for the user. </li>
-	 * <li>recordId - The recordId for the item. </li>
-	 * </ul>
-	 *
-	 * Returns:
-	 * <ul>
-	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
-	 * <li>title - a brief title of failure or success</li>
-	 * <li>message - a reason why the method failed if success is false</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://aspenurl/API/UserAPI?method=activateOverDriveHold&username=23025003575917&password=1234&recordId=1004012
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "title":"Hold thawed successfully",
-	 *   "message":"Your hold was updated successfully."
-	 * }}
-	 * </code>
-	 *
-	 * @noinspection PhpUnused
-	 */
-	function activateOverDriveHold(): array {
-		$id = $_REQUEST['recordId'];
-
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-			$driver = new OverDriveDriver();
-			$result = $driver->thawHold($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	/**
-	 * Cancel a hold within OverDrive
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>overdriveId - The id of the record in OverDrive.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success - true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
-	 * <li>message - information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://aspenurl/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your hold was cancelled successfully."
-	 * }}
-	 * </code>
-	 *
-	 * @noinspection PhpUnused
-	 */
-	function cancelOverDriveHold(): array {
-		if (isset($_REQUEST['overDriveId'])) {
-			$overDriveId = $_REQUEST['overDriveId'];
-		} else {
-			$overDriveId = $_REQUEST['recordId'];
-		}
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-			$driver = new OverDriveDriver();
-			$result = $driver->cancelHold($user, $overDriveId);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function renewOverDriveItem(): array {
-		if (isset($_REQUEST['overDriveId'])) {
-			$overDriveId = $_REQUEST['overDriveId'];
-		} else {
-			$overDriveId = $_REQUEST['recordId'];
-		}
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-			$driver = new OverDriveDriver();
-			$result = $driver->renewCheckout($user, $overDriveId);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function returnOverDriveCheckout(): array {
-		if (isset($_REQUEST['overDriveId'])) {
-			$overDriveId = $_REQUEST['overDriveId'];
-		} elseif (isset($_REQUEST['itemId'])) {
-			$overDriveId = $_REQUEST['itemId'];
-		} else {
-			$overDriveId = $_REQUEST['id'];
-		}
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-			$driver = new OverDriveDriver();
-			$result = $driver->returnCheckout($user, $overDriveId);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-
-	}
-
-	/**
-	 * Checkout an item in OverDrive by first adding to the cart and then processing the cart.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>overdriveId - The id of the record in OverDrive.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success - true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
-	 * <li>message - information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://aspenurl/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
-	 * }}
-	 * </code>
-	 *
-	 * @noinspection PhpUnused
-	 */
-	function checkoutOverDriveItem(): array {
-		if (isset($_REQUEST['overDriveId'])) {
-			$overDriveId = $_REQUEST['overDriveId'];
-		} else {
-			$overDriveId = $_REQUEST['itemId'];
-		}
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-			$driver = new OverDriveDriver();
-			$result = $driver->checkOutTitle($user, $overDriveId);
-			$action = $result['api']['action'] ?? null;
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message'],
-				'action' => $action
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function openOverDriveItem(): array {
-		$overDriveId = $_REQUEST['overDriveId'];
-		$formatId = $_REQUEST['formatId'];
-
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
-			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-			$driver = new OverDriveDriver();
-			$accessLink = $driver->getDownloadLink($overDriveId, $formatId, $patron);
-			return array(
-				'success' => true,
-				'title' => 'Download Url',
-				'url' => $accessLink['downloadUrl']
-			);
-
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function openOverDrivePreview(): array {
-		$overDriveId = $_REQUEST['overDriveId'];
-		$formatId = $_REQUEST['formatId'];
-
-		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-		$recordDriver = new OverDriveRecordDriver($overDriveId);
-		if ($recordDriver->isValid()) {
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
-			$format = new OverDriveAPIProductFormats();
-			$format->id = $_REQUEST['formatId'];
-			if ($format->find(true)) {
-				$result['success'] = true;
-				if ($_REQUEST['sampleNumber'] == 2) {
-					$sampleUrl = $format->sampleUrl_2;
-				} else {
-					$sampleUrl = $format->sampleUrl_1;
-				}
-
-				$overDriveDriver = new OverDriveDriver();
-				$overDriveDriver->incrementStat('numPreviews');
-
-				$result['url'] = $sampleUrl;
-			} else {
-				$result['success'] = false;
-				$result['title'] = "Error";
-				$result['message'] = 'The specified Format was not valid';
-			}
-		} else {
-			$result['success'] = false;
-			$result['title'] = "Error";
-			$result['message'] = 'The specified OverDrive Product was not valid';
-		}
-
-		return $result;
-	}
-
-	function updateOverDriveEmail(): array {
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$user = UserAccount::validateAccount($username, $password);
-
-		if ($user && !($user instanceof AspenError)) {
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				if (isset($_REQUEST['overdriveEmail'])) {
-					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
-						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
-						$patron->update();
-					}
-				}
-				if (isset($_REQUEST['promptForOverdriveEmail'])) {
-					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
-						$patron->promptForOverdriveEmail = 1;
-					} else {
-						$patron->promptForOverdriveEmail = 0;
-					}
-					$patron->update();
-				}
-
-				return $this->placeOverDriveHold();
-			} else {
-				return array(
-					'success' => false,
-					'title' => 'Error',
-					'message' => 'Unable to validate user'
-				);
-			}
-
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function checkoutCloudLibraryItem(): array {
-		$id = $_REQUEST['itemId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->checkOutTitle($user, $id);
-			$action = $result['api']['action'] ?? null;
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message'],
-				'action' => $action
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function renewCloudLibraryItem(): array {
-		$id = $_REQUEST['recordId'];
-
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->renewCheckout($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
 	function placeCloudLibraryHold(): array {
 		$id = $_REQUEST['itemId'];
 
@@ -2218,183 +2239,6 @@ class UserAPI extends Action {
 				'title' => $result['api']['title'],
 				'message' => $result['api']['message'],
 				'action' => $action
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function cancelCloudLibraryHold(): array {
-		$id = $_REQUEST['recordId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->cancelHold($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function returnCloudLibraryItem(): array {
-		$cloudLibraryId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($cloudLibraryId);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->returnCheckout($user, $cloudLibraryId);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function openCloudLibraryItem(): array {
-		$id = $_REQUEST['itemId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
-
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$driver = new CloudLibraryRecordDriver($id);
-			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
-
-			return array(
-				'success' => true,
-				'title' => 'Download Url',
-				'url' => $accessUrl
-			);
-
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	/**
-	 * Checkout an item in Hoopla by first adding to the cart and then processing the cart.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>hooplaId - The id of the record in Hoopla.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success - true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
-	 * <li>message - information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://aspenurl/API/UserAPI?method=checkoutHooplaItem&username=23025003575917&password=1234&id=13567811
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
-	 * }}
-	 * </code>
-	 *
-	 * @noinspection PhpUnused
-	 */
-	function checkoutHooplaItem(): array {
-		$titleId = $_REQUEST['itemId'];
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$driver = new HooplaDriver();
-			$result = $driver->checkOutTitle($user, $titleId);
-			$action = $result['api']['action'] ?? null;
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message'],
-				'action' => $action
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function returnHooplaItem(): array {
-
-		$titleId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
-
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$driver = new HooplaDriver();
-			$result = $driver->returnCheckout($user, $titleId);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function openHooplaItem(): array {
-		$id = $_REQUEST['itemId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-
-			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
-			$hooplaRecord = new HooplaRecordDriver($id);
-			$accessLink = $hooplaRecord->getAccessLink();
-			return array(
-				'success' => true,
-				'title' => "Download Url",
-				'url' => $accessLink['url']
 			);
 		} else {
 			return array(
@@ -2433,18 +2277,73 @@ class UserAPI extends Action {
 		}
 	}
 
-	function freezeAxis360Hold(): array {
-		$id = $_REQUEST['recordId'];
+	function placeItemHold(): array {
+		$bibId = $_REQUEST['bibId'];
+		$itemId = $_REQUEST['itemId'];
+
 		$user = $this->getUserForApiCall();
-
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			global $library;
+			if ($library->showHoldButton) {
+				if (isset($_REQUEST['pickupBranch'])) {
+					$pickupBranch = trim($_REQUEST['pickupBranch']);
+					$locationValid = $user->validatePickupBranch($pickupBranch);
+					if (!$locationValid) {
+						return array(
+							'success' => false,
+							'message' => translate([
+								'text' => 'This location is no longer available, please select a different pickup location',
+								'isPublicFacing' => true
+							])
+						);
+					}
+				} else {
+					$pickupBranch = $user->_homeLocationCode;
+				}
+				//Make sure that there are not volumes available
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($bibId);
+				if ($recordDriver->isValid()) {
+					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+					if ($volumeDataDB->find(true)) {
+						return array(
+							'success' => false,
+							'message' => translate(['text' => 'You must place a volume hold on this title.'])
+						);
+					}
+				}
+				return $user->placeItemHold($bibId, $itemId, $pickupBranch);
+			} else {
+				$pickupBranch = $user->_homeLocationCode;
+			}
+			return $user->placeHold($bibId, $pickupBranch);
+		} else {
+			return array(
+				'success' => false,
+				'message' => 'Login unsuccessful'
+			);
+		}
+	}
 
-			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-			$driver = new Axis360Driver();
-			$result = $driver->freezeHold($user, $id);
+	function changeHoldPickUpLocation(): array {
+		$holdId = $_REQUEST['holdId'];
+		$newLocation = $_REQUEST['newLocation'];
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			list ($locationId, $locationCode) = explode('_', $newLocation);
+			$locationValid = $user->validatePickupBranch($locationCode);
+			if (!$locationValid) {
+				return array(
+					'success' => false,
+					'message' => translate([
+						'text' => 'This location is no longer available, please select a different pickup location',
+						'isPublicFacing' => true
+					])
+				);
+			}
+			$result = $user->changeHoldPickUpLocation($holdId, $locationCode);
 			return array(
 				'success' => $result['success'],
 				'title' => $result['api']['title'],
@@ -2453,189 +2352,74 @@ class UserAPI extends Action {
 		} else {
 			return array(
 				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
+				'message' => 'Login unsuccessful'
 			);
 		}
 	}
 
-	/**
-	 * Activates a hold that was previously suspended within Axis360.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin/password for the user. </li>
-	 * <li>recordId - The recordId for the item. </li>
-	 * </ul>
-	 *
-	 * Returns:
-	 * <ul>
-	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
-	 * <li>title - a brief title of failure or success</li>
-	 * <li>message - a reason why the method failed if success is false</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://aspenurl/API/UserAPI?method=activateAxis360Hold&username=23025003575917&password=1234&recordId=1004012
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "title":"Hold thawed successfully",
-	 *   "message":"Your hold was updated successfully."
-	 * }}
-	 * </code>
-	 *
-	 * @noinspection PhpUnused
-	 */
-	function activateAxis360Hold(): array {
-		$id = $_REQUEST['recordId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-			$driver = new Axis360Driver();
-			$result = $driver->thawHold($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
+	function getValidPickupLocations(): array {
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+		if ($patron && !($patron instanceof AspenError)) {
+			if ($patron->hasIlsConnection()) {
+				$tmpPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+				$pickupLocations = [];
+				foreach ($tmpPickupLocations as $pickupLocation) {
+					if (!is_string($pickupLocation)) {
+						$pickupLocations[] = $pickupLocation->toArray();
+					}
+				}
+				return array(
+					'success' => true,
+					'pickupLocations' => $pickupLocations
+				);
+			} else {
+				return array(
+					'success' => false,
+					'message' => 'Patron is not connected to an ILS.'
+				);
+			}
 		} else {
 			return array(
 				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
+				'message' => 'Login unsuccessful'
 			);
 		}
 	}
 
-	function cancelAxis360Hold(): array {
-		$id = $_REQUEST['recordId'];
-		$user = $this->getUserForApiCall();
+	function updateOverDriveEmail(): array {
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				if (isset($_REQUEST['overdriveEmail'])) {
+					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
+						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
+						$patron->update();
+					}
+				}
+				if (isset($_REQUEST['promptForOverdriveEmail'])) {
+					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
+						$patron->promptForOverdriveEmail = 1;
+					} else {
+						$patron->promptForOverdriveEmail = 0;
+					}
+					$patron->update();
+				}
 
-			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-			$driver = new Axis360Driver();
-			$result = $driver->cancelHold($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
+				return $this->placeOverDriveHold();
+			} else {
+				return array(
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Unable to validate user'
+				);
+			}
 
-	function checkoutAxis360Item(): array {
-		$id = $_REQUEST['itemId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-			$driver = new Axis360Driver();
-			$result = $driver->checkOutTitle($user, $id);
-			$action = $result['api']['action'] ?? null;
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message'],
-				'action' => $action
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function returnAxis360Item(): array {
-		$id = $_REQUEST['itemId'] ?? $_REQUEST['id'];
-
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-			$driver = new Axis360Driver();
-			$result = $driver->returnCheckout($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function renewAxis360Item(): array {
-		$id = $_REQUEST['recordId'];
-
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-			$driver = new Axis360Driver();
-			$result = $driver->renewCheckout($user, $id);
-			return array(
-				'success' => $result['success'],
-				'title' => $result['api']['title'],
-				'message' => $result['api']['message']
-			);
-		} else {
-			return array(
-				'success' => false,
-				'title' => 'Error',
-				'message' => 'Unable to validate user'
-			);
-		}
-	}
-
-	function openAxis360Item(): array {
-		$id = $_REQUEST['itemId'];
-		$user = $this->getUserForApiCall();
-
-		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($user->id);
-			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$driver = new Axis360RecordDriver($id);
-			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
-			return array(
-				'success' => true,
-				'title' => 'Download Url',
-				'url' => $accessUrl
-			);
 		} else {
 			return array(
 				'success' => false,
@@ -2710,21 +2494,124 @@ class UserAPI extends Action {
 			} else {
 				if ($source == 'overdrive') {
 					return $this->cancelOverDriveHold();
+				} else if ($source == 'cloud_library') {
+					return $this->cancelCloudLibraryHold();
+				} else if ($source == 'axis360') {
+					return $this->cancelAxis360Hold();
 				} else {
-					if ($source == 'cloud_library') {
-						return $this->cancelCloudLibraryHold();
-					} else {
-						if ($source == 'axis360') {
-							return $this->cancelAxis360Hold();
-						} else {
-							return array(
-								'success' => false,
-								'message' => 'Invalid source'
-							);
-						}
-					}
+					return array(
+						'success' => false,
+						'message' => 'Invalid source'
+					);
 				}
 			}
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	/**
+	 * Cancel a hold within OverDrive
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>overdriveId - The id of the record in OverDrive.</li>
+	 * </ul>
+	 *
+	 * Returns JSON encoded data as follows:
+	 * <ul>
+	 * <li>success - true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
+	 * <li>message - information about the process for display to the user.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "message":"Your hold was cancelled successfully."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function cancelOverDriveHold(): array {
+		if (isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['recordId'];
+		}
+
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->cancelHold($user, $overDriveId);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function cancelCloudLibraryHold(): array {
+		$id = $_REQUEST['recordId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->cancelHold($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	function cancelAxis360Hold(): array {
+		$id = $_REQUEST['recordId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->cancelHold($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
 		} else {
 			return array(
 				'success' => false,
@@ -2809,7 +2696,70 @@ class UserAPI extends Action {
 		}
 	}
 
+	function freezeOverDriveHold(): array {
+		if ((isset($_REQUEST['overDriveId'])) || (isset($_REQUEST['recordId']))) {
+			if (isset($_REQUEST['overDriveId'])) {
+				$overDriveId = $_REQUEST['overDriveId'];
+			} else {
+				$overDriveId = $_REQUEST['recordId'];
+			}
+
+			$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
+
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$result = $driver->freezeHold($user, $overDriveId, $reactivationDate);
+				return array(
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message']
+				);
+			} else {
+				return array(
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Unable to validate user'
+				);
+			}
+		} else {
+			return array(
+				'success' => false,
+				'message' => 'Please provide the overDriveId to be place the hold on'
+			);
+		}
+
+	}
+
 	/** @noinspection PhpUnused */
+
+	function freezeAxis360Hold(): array {
+		$id = $_REQUEST['recordId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($user->id);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->freezeHold($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
 	function freezeAllHolds() {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
@@ -2821,6 +2771,8 @@ class UserAPI extends Action {
 			);
 		}
 	}
+
+	/** @noinspection PhpUnused */
 
 	/**
 	 * Activates a hold that was previously suspended. For ILS, only unavailable holds can be activated.
@@ -2878,16 +2830,15 @@ class UserAPI extends Action {
 			} else {
 				if ($source == 'overdrive') {
 					return $this->activateOverDriveHold();
+				} else if ($source == 'axis360') {
+					return $this->activateAxis360Hold();
 				} else {
-					if ($source == 'axis360') {
-						return $this->activateAxis360Hold();
-					} else {
-						return array(
-							'success' => false,
-							'message' => 'Invalid source'
-						);
-					}
+					return array(
+						'success' => false,
+						'message' => 'Invalid source'
+					);
 				}
+
 			}
 		} else {
 			return array(
@@ -2898,7 +2849,120 @@ class UserAPI extends Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
+	/**
+	 * Activates a hold that was previously suspended within OverDrive.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin/password for the user. </li>
+	 * <li>recordId - The recordId for the item. </li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
+	 * <li>title - a brief title of failure or success</li>
+	 * <li>message - a reason why the method failed if success is false</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=activateOverDriveHold&username=23025003575917&password=1234&recordId=1004012
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "title":"Hold thawed successfully",
+	 *   "message":"Your hold was updated successfully."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function activateOverDriveHold(): array {
+		$id = $_REQUEST['recordId'];
+
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->thawHold($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
+	/**
+	 * Activates a hold that was previously suspended within Axis360.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin/password for the user. </li>
+	 * <li>recordId - The recordId for the item. </li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
+	 * <li>title - a brief title of failure or success</li>
+	 * <li>message - a reason why the method failed if success is false</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=activateAxis360Hold&username=23025003575917&password=1234&recordId=1004012
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "title":"Hold thawed successfully",
+	 *   "message":"Your hold was updated successfully."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function activateAxis360Hold(): array {
+		$id = $_REQUEST['recordId'];
+		$user = $this->getUserForApiCall();
+
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->thawHold($user, $id);
+			return array(
+				'success' => $result['success'],
+				'title' => $result['api']['title'],
+				'message' => $result['api']['message']
+			);
+		} else {
+			return array(
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user'
+			);
+		}
+	}
+
 	function activateAllHolds() {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
@@ -2910,6 +2974,8 @@ class UserAPI extends Action {
 			);
 		}
 	}
+
+	/** @noinspection PhpUnused */
 
 	function submitVdxRequest() {
 		$user = $this->getUserForApiCall();
@@ -3054,7 +3120,6 @@ class UserAPI extends Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
 	function updatePatronReadingHistory(): array {
 		global $offlineMode;
 		if ($offlineMode) {
@@ -3158,6 +3223,8 @@ class UserAPI extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
+
 	/**
 	 * Clears the user's reading history, but does not stop the collection of new data.  If items are currently checked out
 	 * to the user they will be added to the reading history the next time cron runs.
@@ -3196,6 +3263,8 @@ class UserAPI extends Action {
 			);
 		}
 	}
+
+	/** @noinspection PhpUnused */
 
 	/**
 	 * Removes one or more titles from the user's reading history.
@@ -3238,33 +3307,8 @@ class UserAPI extends Action {
 		}
 	}
 
-	/**
-	 * @return array
-	 * @noinspection PhpUnused
-	 */
-	private function loadUsernameAndPassword(): array {
-		$username = $_REQUEST['username'] ?? '';
-		$password = $_REQUEST['password'] ?? '';
-
-		// check for post request data
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return array(
-			$username,
-			$password
-		);
-	}
-
 	/** @noinspection PhpUnused */
+
 	function getBarcodeForPatron(): array {
 		$results = array(
 			'success' => false,
@@ -3301,6 +3345,7 @@ class UserAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
+
 	function updateBrowseCategoryStatus() {
 		$result = [
 			'success' => false,
@@ -3363,6 +3408,7 @@ class UserAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
+
 	function dismissBrowseCategory(): array {
 		$result = [
 			'success' => false,
@@ -3414,7 +3460,7 @@ class UserAPI extends Action {
 						];
 					}
 				}
-			} elseif (strpos($browseCategoryId, "system_user_lists") !== false) {
+			} else if (strpos($browseCategoryId, "system_user_lists") !== false) {
 				$label = explode('_', $browseCategoryId);
 				$id = $label[3];
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -3498,6 +3544,7 @@ class UserAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
+
 	function showBrowseCategory(): array {
 		$result = [
 			'success' => false,
@@ -3549,7 +3596,7 @@ class UserAPI extends Action {
 						]);
 					}
 				}
-			} elseif (strpos($browseCategoryId, "system_user_lists") !== false) {
+			} else if (strpos($browseCategoryId, "system_user_lists") !== false) {
 				$label = explode('_', $browseCategoryId);
 				$id = $label[3];
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -3625,7 +3672,6 @@ class UserAPI extends Action {
 		return $result;
 	}
 
-	/** @noinspection PhpUnused */
 	function getHiddenBrowseCategories(): array {
 		$result = [
 			'success' => false,
@@ -3674,7 +3720,7 @@ class UserAPI extends Action {
 							}
 							$categories[] = $category;
 						}
-					} elseif (strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
+					} else if (strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
 						$parentLabel = "";
 						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 						$userListsBrowseCategory = new BrowseCategory();
@@ -3755,7 +3801,6 @@ class UserAPI extends Action {
 		return $result;
 	}
 
-	/** @noinspection PhpUnused */
 	function getUserByBarcode(): array {
 		$results = array(
 			'success' => false,
@@ -3777,56 +3822,6 @@ class UserAPI extends Action {
 			$results['message'] = 'No barcode was provided';
 		}
 		return $results;
-	}
-
-	/**
-	 * @return bool|User
-	 */
-	protected function getUserForApiCall() {
-		if ($this->getLiDAVersion() === "v22.04.00") {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			return UserAccount::validateAccount($username, $password);
-		}
-
-		if (isset($_REQUEST['patronId'])) {
-			$user = new User();
-			$user->username = $_REQUEST['patronId'];
-			if (!$user->find(true)) {
-				$user = false;
-			}
-		} else {
-			if (isset($_REQUEST['userId'])) {
-				$user = new User();
-				$user->id = $_REQUEST['userId'];
-				if (!$user->find(true)) {
-					$user = false;
-				}
-			} else {
-				if (isset($_REQUEST['id'])) {
-					$user = new User();
-					$user->id = $_REQUEST['id'];
-					if (!$user->find(true)) {
-						$user = false;
-					}
-				} else {
-					list($username, $password) = $this->loadUsernameAndPassword();
-					$user = UserAccount::validateAccount($username, $password);
-				}
-			}
-		}
-		return $user;
-	}
-
-	function getLiDAVersion() {
-		global $logger;
-		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'version' || $name == 'Version') {
-				$version = explode(' ', $value);
-				return $version[0];
-			}
-		}
-		return 0;
 	}
 
 	function getLinkedAccounts() {
@@ -4396,7 +4391,7 @@ class UserAPI extends Action {
 							}
 							if (UserAccount::userHasPermission('Masquerade as any user')) {
 								//The user can masquerade as anyone, no additional checks needed
-							} elseif (UserAccount::userHasPermission('Masquerade as unrestricted patron types')) {
+							} else if (UserAccount::userHasPermission('Masquerade as unrestricted patron types')) {
 								if ($isRestrictedUser) {
 									return array(
 										'success' => false,
@@ -4406,7 +4401,7 @@ class UserAPI extends Action {
 										])
 									);
 								}
-							} elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
+							} else if (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
 								$guidingUserLibrary = $user->getHomeLibrary();
 								if (!$guidingUserLibrary) {
 									return array(
@@ -4445,7 +4440,7 @@ class UserAPI extends Action {
 										])
 									);
 								}
-							} elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
+							} else if (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
 								if (empty($user->homeLocationId)) {
 									return array(
 										'success' => false,
