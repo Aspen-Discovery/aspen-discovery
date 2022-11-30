@@ -85,4 +85,9 @@ class Greenhouse_TicketsClosedByMonth extends Admin_Admin
 	{
 		return 'greenhouse';
 	}
+
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
 }

@@ -318,7 +318,8 @@ class VdxDriver
 		$body .= "ReqPublisher=" . $newRequest->publisher . "\r\n";
 		$body .= "ReqPubDate=\r\n";
 		$body .= "ReqAdditional=Patron response to will pay: " . ($newRequest->feeAccepted ? 'Yes' : 'No') . "\r\n";
-		$body .= "ReqMaxCostCurr=USD " . $newRequest->maximumFeeAmount . "\r\n";
+		$body .= "ReqMaxCostCurr=USD " . "\r\n";
+		$body .= "ReqMaxCost=" . $newRequest->maximumFeeAmount . "\r\n";
 		$body .= "ReqISBN=" . $newRequest->isbn . "\r\n";
 		$body .= "ControlNumbers._new=1\r\n";
 		$body .= "ControlNumbers.icn_rota_pos=-1\r\n";

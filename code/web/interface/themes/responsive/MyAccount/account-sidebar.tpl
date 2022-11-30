@@ -216,6 +216,9 @@
 								{if $twoFactorEnabled}
 									<div class="myAccountLink"><a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></div>
 								{/if}
+								{if $showResetUsernameLink}
+									<div class="myAccountLink" ><a href="/MyAccount/ResetUsername">{translate text='Reset Username' isPublicFacing=true}</a></div>
+								{/if}
 								{if $allowPinReset}
 									<div class="myAccountLink" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
 								{/if}

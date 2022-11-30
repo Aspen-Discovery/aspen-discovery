@@ -334,7 +334,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return null;
 	}
 
-	public function updateEditableUsername(User $patron, $username)
+	public function updateEditableUsername(User $patron, string $username) : array
 	{
 		return [
 			'success' => false,
@@ -484,6 +484,42 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	}
 
 	public function showHoldPosition() : bool {
+		return false;
+	}
+
+	/**
+	 * Determine if volume level holds are always done when volumes are present.
+	 * When this is on, items without volumes will present a blank volume for the user to choose from.
+	 *
+	 * @return false
+	 */
+	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+		return false;
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink() : bool {
+		return false;
+	}
+
+	/**
+	 * Returns an array of validation rules that should be applied when editing
+	 *
+	 * @return array
+	 */
+	public function getUsernameValidationRules() : array {
+		return [
+			'minLength' => 4,
+			'maxLength' => 50,
+			'additionalRequirements' => ''
+		];
+	}
+
+	public function showPreferredNameInProfile() : bool {
 		return false;
 	}
 }

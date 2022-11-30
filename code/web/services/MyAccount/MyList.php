@@ -118,6 +118,23 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('userList', $list);
 		$interface->assign('listSelected', $list->id);
 
+		global $library;
+		$interface->assign('enableListDescriptions', $library->enableListDescriptions);
+
+		if (!empty($library->allowableListNames)) {
+			$validListNames = explode('|', $library->allowableListNames);
+			foreach ($validListNames as $index => $listName) {
+				$validListNames[$index] = translate([
+					'text' => $listName,
+					'isPublicFacing' => true,
+					'isAdminEnteredData' => true
+				]);
+			}
+		}else{
+			$validListNames = [];
+		}
+		$interface->assign('validListNames', $validListNames);
+
 		// Retrieve and format dates to send to template
 		$dateCreated = $list->created;
 		$dateUpdated = $list->dateUpdated;

@@ -63,7 +63,7 @@ function getUpdates22_12_00(): array {
 					suggestedForCommunityDev TINYINT(1) DEFAULT 0
 				) ENGINE INNODB',
 			]
-		],
+		], //development_tasks_take_2
 		'development_tickets_to_tasks' => [
 			'title' => 'Development - Link Tickets To Tasks',
 			'description' => 'Development - Link Tickets To Tasks',
@@ -75,7 +75,7 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (ticketId, taskId)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_tickets_to_tasks
 		'development_epics' => [
 			'title' => 'Development - Create Epics',
 			'description' => 'Development - Create Epics',
@@ -92,7 +92,7 @@ function getUpdates22_12_00(): array {
 					privateStatus INT(11) DEFAULT 0
 				) ENGINE INNODB',
 			]
-		],
+		], //development_epics
 		'development_sprints_to_tasks' => [
 			'title' => 'Development - Link Sprints To Tasks',
 			'description' => 'Development - Link Sprints To Tasks',
@@ -106,7 +106,7 @@ function getUpdates22_12_00(): array {
 					INDEX (sprintId, weight)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_sprints_to_tasks
 		'development_partners_to_tasks' => [
 			'title' => 'Development - Link Partners To Tasks',
 			'description' => 'Development - Link Partners To Tasks',
@@ -118,7 +118,7 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (partnerId, taskId)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_partners_to_tasks
 		'development_partners_to_epics' => [
 			'title' => 'Development - Link Partners To Epics',
 			'description' => 'Development - Link Partners To Epics',
@@ -130,7 +130,7 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (partnerId, epicId)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_partners_to_epics
 		'development_epics_to_tasks' => [
 			'title' => 'Development - Link Epics To Tasks',
 			'description' => 'Development - Link Epics To Tasks',
@@ -144,7 +144,7 @@ function getUpdates22_12_00(): array {
 					INDEX (epicId, weight)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_epics_to_tasks
 		'development_tickets_to_components' => [
 			'title' => 'Development - Link Tickets to Components',
 			'description' => 'Development - Link Tickets to Components',
@@ -156,7 +156,7 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (ticketId, componentId)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_tickets_to_components
 		'development_components_to_tasks' => [
 			'title' => 'Development - Link Components To Tasks',
 			'description' => 'Development - Link Components To Tasks',
@@ -170,7 +170,7 @@ function getUpdates22_12_00(): array {
 					INDEX (componentId, weight)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_components_to_tasks
 		'development_components_to_epics' => [
 			'title' => 'Development - Link Components To Epics',
 			'description' => 'Development - Link Components To To Epics',
@@ -182,7 +182,15 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (componentId, epicId)
 				) ENGINE INNODB',
 			]
-		],
+		], //development_components_to_epics
+		'library_lists_without_editable_text' => [
+			'title' => 'Library - Allow Lists to not have editable text',
+			'description' => 'Library - Allow Lists to not have editable text',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableListDescriptions TINYINT(1) default 1',
+				"ALTER TABLE library ADD COLUMN allowableListNames VARCHAR(500) default ''",
+			]
+		], //library_lists_without_editable_text
 
 		//kirstien
 		'add_oauth_logout' => [

@@ -75,6 +75,9 @@
 			{if $allowAccountLinking}
 				<div class="header-menu-option" ><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></div>
 			{/if}
+			{if $showResetUsernameLink}
+				<div class="header-menu-option" ><a href="/MyAccount/ResetUsername">{translate text='Reset Username' isPublicFacing=true}</a></div>
+			{/if}
 			{if $twoFactorEnabled}
 				<div class="header-menu-option"><a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></div>
 			{elseif $allowPinReset && !$offline}

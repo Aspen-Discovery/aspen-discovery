@@ -72,4 +72,13 @@ cp install/logrotate.conf /etc/logrotate.d/aspen_discovery
 cd /usr/local/aspen-discovery/install
 bash ./setup_aspen_user.sh
 
+# Disable apache server signature
+echo -e "ServerSignature Off \nServerTokens Prod" >> /etc/httpd/conf/httpd.conf
+
+# configure mod evasive
+yum install mod_evasive -y
+cp mod_evasive.conf /etc/httpd/conf.d/mod_evasive.conf
+
+#configure mod security
+yum install mod_security -y
 

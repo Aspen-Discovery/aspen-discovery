@@ -4888,11 +4888,19 @@ var AspenDiscovery = (function(){
 			}
 		},
 
-		showMessageWithButtons: function(title, body, buttons){
+		showMessageWithButtons: function(title, body, buttons, refreshAfterClose){
+			if (refreshAfterClose === undefined){
+				refreshAfterClose = false;
+			}
 			$("#myModalLabel").html(title);
 			$(".modal-body").html(body);
 			$('.modal-buttons').html(buttons);
 			$("#modalDialog").modal('show');
+			if (refreshAfterClose) {
+				$("#modalDialog").on('hide.bs.modal', function(){
+					location.reload();
+				})
+			}
 		},
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
@@ -5283,7 +5291,14 @@ AspenDiscovery.Account = (function () {
 			if (searchableControl) {
 				isSearchable = searchableControl.prop("checked");
 			}
-			var title = form.find("input[name=title]").val();
+			var titleInput = form.find("input[name=title]");
+			var title;
+			if (titleInput.length > 0){
+				title = titleInput.val();
+			}else{
+				title = $('#listTitle option:selected').text();
+			}
+
 			var desc = $("#listDesc").val();
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -5856,7 +5871,7 @@ AspenDiscovery.Account = (function () {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
 					if (data.result === true) {
-						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
+						AspenDiscovery.showMessageWithButtons('Linked Account Removed', data.message, data.modalButtons, true);
 					} else {
 						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
 					}
@@ -5882,6 +5897,10 @@ AspenDiscovery.Account = (function () {
 					AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
 			});
 			return false;
+		},
+
+		redirectPinReset: function() {
+			window.location.href = Globals.path + "/MyAccount/RequestPinReset";
 		},
 
 		renewTitle: function (patronId, recordId, renewIndicator) {

@@ -78,6 +78,7 @@ class User extends DataObject
 
 	//Data that we load, but don't store in the User table
 	public $_fullname;
+	public $_preferredName;
 	public $_address1;
 	public $_address2;
 	public $_city;
@@ -253,6 +254,7 @@ class User extends DataObject
 						$role = new Role();
 						$role->roleId = $patronType->assignedRoleId;
 						if ($role->find(true)){
+							$role->setAssignedFromPType(true);
 							$this->_roles[$role->roleId] = clone $role;
 							if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
 								$canUseTestRoles = true;
@@ -372,11 +374,15 @@ class User extends DataObject
 			//Now add the new values.
 			if (count($this->_roles) > 0){
 				$values = array();
-				foreach ($this->_roles as $roleId => $roleName){
-					$values[] = "({$this->id},{$roleId})";
+				foreach ($this->_roles as $roleId => $roleObj){
+					if (!$roleObj->isAssignedFromPType()) {
+						$values[] = "({$this->id},{$roleId})";
+					}
 				}
-				$values = join(', ', $values);
-				$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
+				if (count($values) > 0) {
+					$values = join(', ', $values);
+					$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
+				}
 			}
 		}
 	}
@@ -2409,10 +2415,17 @@ class User extends DataObject
 		}
 	}
 
-	private function updateEditableUsername($username)
+	public function updateEditableUsername(string $username) : array
 	{
 		if ($this->hasIlsConnection()) {
-			return $this->getCatalogDriver()->updateEditableUsername($this, $username);
+			if (empty($username)){
+				return [
+					'success' => false,
+					'message' => 'A new username was not provided'
+				];
+			}else{
+				return $this->getCatalogDriver()->updateEditableUsername($this, $username);
+			}
 		}else{
 			return [
 				'success' => false,
@@ -2919,6 +2932,22 @@ class User extends DataObject
 		}
 	}
 
+	public function showPreferredNameInProfile() : bool {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->showPreferredNameInProfile();
+		}else{
+			return false;
+		}
+	}
+
+	public function getUsernameValidationRules() : array {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getUsernameValidationRules();
+		}else{
+			return [];
+		}
+	}
+
 	protected function clearRuntimeDataVariables(){
 		if ($this->_accountProfile != null){
 			$this->_accountProfile->__destruct();
@@ -3266,6 +3295,19 @@ class User extends DataObject
 	function validateUniqueId(){
 		if ($this->getCatalogDriver() != null){
 			$this->getCatalogDriver()->validateUniqueId($this);
+		}
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink() : bool {
+		if ($this->getCatalogDriver() != null){
+			return $this->getCatalogDriver()->showResetUsernameLink();
+		}else{
+			return false;
 		}
 	}
 }

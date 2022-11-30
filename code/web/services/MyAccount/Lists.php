@@ -8,6 +8,8 @@ class Lists extends MyAccount
 	function launch()
 	{
 		global $interface;
+		global $library;
+
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = "0";
@@ -37,6 +39,8 @@ class Lists extends MyAccount
 		}
 		$interface->assign('lists', $lists);
 		$interface->assign('sortedBy', $sort);
+
+		$interface->assign('enableListDescriptions', $library->enableListDescriptions);
 
 		$options = array(
 			'totalItems' => $listCount,

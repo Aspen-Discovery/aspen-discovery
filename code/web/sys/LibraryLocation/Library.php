@@ -88,17 +88,20 @@ class Library extends DataObject
 	public $showHoldButtonForUnavailableOnly;
 	public $allowRememberPickupLocation;
 	public $treatBibOrItemHoldsAs;
+	public $showVolumesWithLocalCopiesFirst;
 	public $showLoginButton;
 	public $showEmailThis;
 	public $showFavorites;
+	public $enableListDescriptions;
+	public $allowableListNames;
 	public $showConvertListsFromClassic;
 	public $showUserCirculationModules;
 	public $showUserPreferences;
 	public $showUserContactInformation;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
-	public /** @noinspection PhpUnused */
-		$pTypes; //This is used as part of the indexing process
+	/** @noinspection PhpUnused */
+	public $pTypes; //This is used as part of the indexing process
 	public $facetLabel;
 	public $showAvailableAtAnyLocation;
 	public $finePaymentType; //0 = None, 1 = ILS, 2 = PayPal
@@ -110,7 +113,6 @@ class Library extends DataObject
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
 	public $msbUrl;
 	public $symphonyPaymentType;
-	//public $symphonyPaymentPolicy;
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
@@ -721,6 +723,7 @@ class Library extends DataObject
 					'showHoldCancelDate'                => array('property'=>'showHoldCancelDate', 'type'=>'checkbox', 'label'=>'Show Cancellation Date', 'description'=>'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.', 'hideInLists' => true, 'default' => 1),
 					'showLogMeOutAfterPlacingHolds'     => array('property'=>'showLogMeOutAfterPlacingHolds', 'type'=>'checkbox', 'label'=>'Show Log Me Out After Placing Holds', 'description'=>'Whether or a checkbox should be shown that will automatically log patrons out after a hold is placed.', 'hideInLists' => true, 'default' => 1),
 					'treatBibOrItemHoldsAs'             => array('property'=>'treatBibOrItemHoldsAs', 'type'=>'enum', 'values'=>array('1'=>'Either Bib or Item Level Hold', '2'=>'Force Bib Level Hold', '3' => 'Force Item Level Hold'), 'label'=>'Treat holds for formats that allow either bib or item holds as ', 'description'=>'How to handle holds when either bib or item level holds are allowed.'),
+					'showVolumesWithLocalCopiesFirst'   => array('property'=>'showVolumesWithLocalCopiesFirst', 'type'=>'checkbox', 'label'=>'Show volumes with local copies first when placing holds', 'description'=>'When true, volumes that have at least one copy owned locally are shown before volumes with no local copies.', 'default'=>0),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
 					'maxDaysToFreeze'                   => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true, 'default' => 365),
 					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
@@ -841,12 +844,15 @@ class Library extends DataObject
 			)),
 
 			// Catalog Enrichment //
-			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'], 'properties' => [
+			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'permissions' => ['Library Catalog Options'],
+				'properties' => [
 					//TODO database column rename for showFavorites to showLists?
-					'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+					'showFavorites' => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+					'enableListDescriptions' => array('property'=>'enableListDescriptions', 'type'=>'checkbox', 'label'=>'Enable List Descriptions & Notes', 'description'=>'Whether or not users can add descriptions & title notes to their lists', 'hideInLists' => true, 'default' => 1),
+					'allowableListNames' => array('property'=>'allowableListNames', 'type'=>'text', 'label'=>'Allowable List Names', 'description'=>'A pipe separated list of valid names for the patron to choose, leave blank to allow the patron to enter their own name for a list.', 'hideInLists' => true, 'default' => '', 'maxLength'=>'500'),
 					'showConvertListsFromClassic' => array('property'=>'showConvertListsFromClassic', 'type'=>'checkbox', 'label'=>'Enable Importing Lists From Old Catalog', 'description'=>'Whether or not users can import lists from the ILS', 'hideInLists' => true, 'default' => 0),
-					'showWikipediaContent'     => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
-					'showCitationStyleGuides'     => array('property'=>'showCitationStyleGuides', 'type'=>'checkbox', 'label'=>'Show Citation Style Guides', 'description'=>'Whether or not citations style guides should be shown', 'default'=>'1', 'hideInLists' => true,),
+					'showWikipediaContent' => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
+					'showCitationStyleGuides' => array('property'=>'showCitationStyleGuides', 'type'=>'checkbox', 'label'=>'Show Citation Style Guides', 'description'=>'Whether or not citations style guides should be shown', 'default'=>'1', 'hideInLists' => true,),
 				]
 			],
 

@@ -8,16 +8,30 @@ class WebBuilder_BasicPage extends Action{
 	function __construct()
 	{
 		parent::__construct();
-		//Make sure the user has permission to access the page
-		$userCanAccess = $this->canView();
 
-		if (!$userCanAccess){
-			global $interface;
-			$interface->assign('id', strip_tags($_REQUEST['id']));
-			$interface->assign('module', $_REQUEST['module']);
-			$interface->assign('action', $_REQUEST['action']);
-			$this->display('noPermission.tpl', 'Access Error', '');
-			exit();
+		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+
+		global $interface;
+
+		$id = strip_tags($_REQUEST['id']);
+		$this->basicPage = new BasicPage();
+		$this->basicPage->id = $id;
+
+		if (!$this->basicPage->find(true)) {
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
+			die();
+		}
+		else if ( !$this->canView() ) {
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle401');
+			require_once ROOT_DIR . "/services/Error/Handle401.php";
+			$actionClass = new Error_Handle401();
+			$actionClass->launch();
+			die();
 		}
 	}
 
@@ -25,24 +39,8 @@ class WebBuilder_BasicPage extends Action{
 	{
 		global $interface;
 
-		$id = strip_tags($_REQUEST['id']);
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-		$this->basicPage = new BasicPage();
-		$this->basicPage->id = $id;
-		if (!$this->basicPage->find(true)){
-			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
-			require_once ROOT_DIR . "/services/Error/Handle404.php";
-			$actionClass = new Error_Handle404();
-			$actionClass->launch();
-			die();
-		}else{
-			$title = $this->basicPage->title;
-		}
-
+		$title = $this->basicPage->title;
+		$interface->assign('id', $this->basicPage->id);
 		$interface->assign('contents', $this->basicPage->getFormattedContents());
 		$interface->assign('title', $title);
 
@@ -51,20 +49,9 @@ class WebBuilder_BasicPage extends Action{
 
 	function canView() : bool
 	{
-		require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAccess.php';
-		require_once ROOT_DIR . '/sys/Account/PType.php';
-		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-
-		$id = strip_tags($_REQUEST['id']);
-		$page = new BasicPage();
-		$page->id = $id;
-		if ($page->find(true)){
-			return $page->canView();
-		}else{
-			return false;
-		}
-
+		return $this->basicPage->canView();
 	}
+
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];

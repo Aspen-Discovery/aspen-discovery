@@ -62,8 +62,9 @@ abstract class Action
 		$allowPinReset = $interface->getVariable('allowPinReset');
 		$userIsStaff = $interface->getVariable('userIsStaff');
 
-
 		$user = UserAccount::getLoggedInUser();
+		$interface->assign('showResetUsernameLink', $user->showResetUsernameLink());
+
 		$showMyAccount = false;
 		if ($showUserCirculationModules || $showCurbsidePickups || $showFines || $showRatings || $showFavorites || $enableSavedSearches || $displayMaterialsRequest || $enableReadingHistory) {
 			$showMyAccount = true;

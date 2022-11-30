@@ -10,6 +10,7 @@ class Role extends DataObject
 	public $name;
 	public $description;
 	protected $_permissions;
+	protected $_assignedFromPType;
 
 	public function getUniquenessFields(): array
 	{
@@ -295,5 +296,17 @@ class Role extends DataObject
 		}
 		$this->setActivePermissions($permissions);
 		return $result;
+	}
+
+	public function setAssignedFromPType(bool $flag) {
+		$this->_assignedFromPType = $flag;
+	}
+
+	public function isAssignedFromPType() : bool {
+		if (empty($this->_assignedFromPType)) {
+			return false;
+		}else{
+			return $this->_assignedFromPType;
+		}
 	}
 }
