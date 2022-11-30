@@ -81,6 +81,7 @@ class MyAccount_AJAX extends JSON_Action
                                 'result' => true,
                                 'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
                             );
+							$accountToLink->newLinkMessage();
                         } else { // insert failure or user is blocked from linking account or account & account to link are the same account
                             $result = array(
                                 'result' => false,
@@ -224,6 +225,24 @@ class MyAccount_AJAX extends JSON_Action
         }
         return $result;
     }
+
+	/** @noinspection PhpUnused */
+	function allowAccountLink(){
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+
+		$activeUserId = UserAccount::getActiveUserId();
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'confirm_linked_accts';
+		$userMessage->userId = $activeUserId;
+		$userMessage->isDismissed = "0";
+		$userMessage->find();
+		while ($userMessage->fetch()) {
+			$userMessage->isDismissed = 1;
+			$userMessage->update();
+		}
+
+		return ['success' => true, 'message' => 'Account Link Accepted'];
+	}
 
 	/** @noinspection PhpUnused */
 	function getAddAccountLinkForm()
@@ -2871,81 +2890,6 @@ class MyAccount_AJAX extends JSON_Action
 				return ['success' => false, 'message' => 'Could not find the message to dismiss'];
 			}
 		}
-	}
-
-	/** @noinspection PhpUnused */
-	function enableAccountLinking()
-	{
-		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
-		require_once ROOT_DIR . '/sys/Account/UserLink.php';
-		$activeUserId = UserAccount::getActiveUserId();
-		$userLink = new UserLink();
-		$userLink->linkedAccountId = $activeUserId;
-		$userLink->find();
-		while ($userLink->fetch()) {
-			$userLink->linkingDisabled = "0";
-			$userLink->update();
-
-			$userMessage = new UserMessage();
-			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
-			$userMessage->userId = $userLink->primaryAccountId;
-			$userMessage->isDismissed = "0";
-			if ($userMessage->find()) {
-				while ($userMessage->fetch()) {
-					$userMessage->isDismissed = 1;
-					$userMessage->update();
-				}
-			}
-		}
-
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $activeUserId;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
-		}
-
-		return ['success' => true, 'message' => 'Account Linking Resumed'];
-	}
-
-	/** @noinspection PhpUnused */
-	function stopAccountLinking()
-	{
-		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
-		require_once ROOT_DIR . '/sys/Account/UserLink.php';
-		$activeUserId = UserAccount::getActiveUserId();
-		$userLink = new UserLink();
-		$userLink->linkedAccountId = $activeUserId;
-		$userLink->find();
-		while ($userLink->fetch()) {
-			$userLink->delete();
-
-			$userMessage = new UserMessage();
-			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
-			$userMessage->userId = $userLink->primaryAccountId;
-			$userMessage->isDismissed = "0";
-			if ($userMessage->find()) {
-				while ($userMessage->fetch()) {
-					$userMessage->message = "An account you are linking to changed their login. Account linking with them has been disabled.";
-					$userMessage->update();
-				}
-			}
-		}
-
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $activeUserId;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
-		}
-
-		return ['success' => true, 'message' => 'Account Linking Stopped'];
 	}
 
 	/** @noinspection PhpUnused */
