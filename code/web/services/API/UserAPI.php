@@ -1225,9 +1225,9 @@ class UserAPI extends Action {
 			} else if ($source == 'hoopla') {
 				return $this->checkoutHooplaItem();
 			} else if ($source == 'cloud_library') {
-					return $this->checkoutCloudLibraryItem();
+				return $this->checkoutCloudLibraryItem();
 			} else if ($source == 'axis360') {
-					return $this->checkoutAxis360Item();
+				return $this->checkoutAxis360Item();
 			} else {
 				return array(
 					'success' => false,
