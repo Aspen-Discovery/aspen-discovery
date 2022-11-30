@@ -303,32 +303,6 @@ class UserAPI extends Action {
 	}
 
 	/**
-	 * @return array
-	 * @noinspection PhpUnused
-	 */
-	private function loadUsernameAndPassword(): array {
-		$username = $_REQUEST['username'] ?? '';
-		$password = $_REQUEST['password'] ?? '';
-
-		// check for post request data
-		if (isset($_POST['username']) && isset($_POST['password'])) {
-			$username = $_POST['username'];
-			$password = $_POST['password'];
-		}
-
-		if (is_array($username)) {
-			$username = reset($username);
-		}
-		if (is_array($password)) {
-			$password = reset($password);
-		}
-		return array(
-			$username,
-			$password
-		);
-	}
-
-	/**
 	 * Load patron profile information for a user based on username and password.
 	 * Includes information about print titles and eContent titles that the user has checked out.
 	 * Does not include information about OverDrive titles since tat
@@ -641,56 +615,6 @@ class UserAPI extends Action {
 				'message' => 'Login unsuccessful'
 			);
 		}
-	}
-
-	/**
-	 * @return bool|User
-	 */
-	protected function getUserForApiCall() {
-		if ($this->getLiDAVersion() === "v22.04.00") {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			return UserAccount::validateAccount($username, $password);
-		}
-
-		if (isset($_REQUEST['patronId'])) {
-			$user = new User();
-			$user->username = $_REQUEST['patronId'];
-			if (!$user->find(true)) {
-				$user = false;
-			}
-		} else {
-			if (isset($_REQUEST['userId'])) {
-				$user = new User();
-				$user->id = $_REQUEST['userId'];
-				if (!$user->find(true)) {
-					$user = false;
-				}
-			} else {
-				if (isset($_REQUEST['id'])) {
-					$user = new User();
-					$user->id = $_REQUEST['id'];
-					if (!$user->find(true)) {
-						$user = false;
-					}
-				} else {
-					list($username, $password) = $this->loadUsernameAndPassword();
-					$user = UserAccount::validateAccount($username, $password);
-				}
-			}
-		}
-		return $user;
-	}
-
-	function getLiDAVersion() {
-		global $logger;
-		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
-		foreach (getallheaders() as $name => $value) {
-			if ($name == 'version' || $name == 'Version') {
-				$version = explode(' ', $value);
-				return $version[0];
-			}
-		}
-		return 0;
 	}
 
 	/**
@@ -3287,8 +3211,33 @@ class UserAPI extends Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword(): array {
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
 
+		// check for post request data
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return array(
+			$username,
+			$password
+		);
+	}
+
+	/** @noinspection PhpUnused */
 	function getBarcodeForPatron(): array {
 		$results = array(
 			'success' => false,
@@ -3802,6 +3751,56 @@ class UserAPI extends Action {
 			$results['message'] = 'No barcode was provided';
 		}
 		return $results;
+	}
+
+	/**
+	 * @return bool|User
+	 */
+	protected function getUserForApiCall() {
+		if ($this->getLiDAVersion() === "v22.04.00") {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			return UserAccount::validateAccount($username, $password);
+		}
+
+		if (isset($_REQUEST['patronId'])) {
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else {
+			if (isset($_REQUEST['userId'])) {
+				$user = new User();
+				$user->id = $_REQUEST['userId'];
+				if (!$user->find(true)) {
+					$user = false;
+				}
+			} else {
+				if (isset($_REQUEST['id'])) {
+					$user = new User();
+					$user->id = $_REQUEST['id'];
+					if (!$user->find(true)) {
+						$user = false;
+					}
+				} else {
+					list($username, $password) = $this->loadUsernameAndPassword();
+					$user = UserAccount::validateAccount($username, $password);
+				}
+			}
+		}
+		return $user;
+	}
+
+	function getLiDAVersion() {
+		global $logger;
+		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'version' || $name == 'Version') {
+				$version = explode(' ', $value);
+				return $version[0];
+			}
+		}
+		return 0;
 	}
 
 	function getLinkedAccounts() {
