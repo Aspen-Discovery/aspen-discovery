@@ -1222,23 +1222,17 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'overdrive') {
 				return $this->checkoutOverDriveItem();
+			} else if ($source == 'hoopla') {
+				return $this->checkoutHooplaItem();
+			} else if ($source == 'cloud_library') {
+					return $this->checkoutCloudLibraryItem();
+			} else if ($source == 'axis360') {
+					return $this->checkoutAxis360Item();
 			} else {
-				if ($source == 'hoopla') {
-					return $this->checkoutHooplaItem();
-				} else {
-					if ($source == 'cloud_library') {
-						return $this->checkoutCloudLibraryItem();
-					} else {
-						if ($source == 'axis360') {
-							return $this->checkoutAxis360Item();
-						} else {
-							return array(
-								'success' => false,
-								'message' => 'This source does not permit checkouts.'
-							);
-						}
-					}
-				}
+				return array(
+					'success' => false,
+					'message' => 'This source does not permit checkouts.'
+				);
 			}
 		} else {
 			return array(
