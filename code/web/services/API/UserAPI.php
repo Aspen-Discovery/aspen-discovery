@@ -288,11 +288,9 @@ class UserAPI extends Action {
 			foreach ($properties as $name => $value) {
 				if ($name[0] != '_') {
 					$result->$name = $value;
-				} else {
-					if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-						if ($name != '_data') {
-							$result->$name = $value;
-						}
+				} elseif ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+					if ($name != '_data') {
+						$result->$name = $value;
 					}
 				}
 			}
