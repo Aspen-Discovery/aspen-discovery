@@ -657,10 +657,19 @@ class User extends DataObject
     //Individually remove accounts that have linked to user
     function removeManagingAccount($userId){
         require_once ROOT_DIR . '/sys/Account/UserLink.php';
-        $userLink                   = new UserLink();
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+
+		$userLink                   = new UserLink();
         $userLink->primaryAccountId = $userId;
         $userLink->linkedAccountId  = $this->id;
         $ret                        = $userLink->delete(true);
+
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
+		$userMessage->userId = $userId;
+		$userMessage->isDismissed = "0";
+		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+		$userMessage->update();
 
         //Force a reload of data
         $this->linkedUsers = null;
@@ -672,12 +681,25 @@ class User extends DataObject
     //THIS GETS USED BY TOGGLEACCOUNTLINKING AJAX
     function accountLinkingToggle(){
         require_once ROOT_DIR . '/sys/Account/UserLink.php';
-        if ($this->disableAccountLinking == 0){
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+
+		if ($this->disableAccountLinking == 0){
             $this->disableAccountLinking = 1;
             //Remove Managing Accounts
             $userLink = new UserLink();
             $userLink->linkedAccountId = $this->id;
-            $userLink->delete(true);
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+
+				$userMessage = new UserMessage();
+				$userMessage->messageType = 'linked_acct_notify_disabled_' . $this->id;
+				$userMessage->userId = $userLink->primaryAccountId;
+				$userMessage->isDismissed = "0";
+				$userMessage->message = "An account you were previously linked to, $this->displayName, has disabled account linking. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+				$userMessage->update();
+			}
+            //$userLink->delete(true);
             //Remove Linked Users
             $userLink = new UserLink();
             $userLink->primaryAccountId = $this->id;
