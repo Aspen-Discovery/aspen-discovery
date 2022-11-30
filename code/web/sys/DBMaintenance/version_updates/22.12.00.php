@@ -191,6 +191,20 @@ function getUpdates22_12_00(): array {
 				"ALTER TABLE library ADD COLUMN allowableListNames VARCHAR(500) default ''",
 			]
 		], //library_lists_without_editable_text
+		'greenhouse_rt_auth_token' => [
+			'title' => 'Greenhouse Token - Add RT Auth Token',
+			'description' => 'Add an RT Auth Token for better querying of Request Tracker',
+			'sql' => [
+				'ALTER TABLE greenhouse_settings ADD COLUMN requestTrackerAuthToken VARCHAR(50)',
+			]
+		], //greenhouse_rt_auth_token
+		'greenhouse_rt_base_url' => [
+			'title' => 'Greenhouse Token - Add RT Base URL',
+			'description' => 'Add the Base URL to connect to RT',
+			'sql' => [
+				'ALTER TABLE greenhouse_settings ADD COLUMN requestTrackerBaseUrl VARCHAR(100)',
+			]
+		], //greenhouse_rt_base_url
 
 		//kirstien
 		'add_oauth_logout' => [

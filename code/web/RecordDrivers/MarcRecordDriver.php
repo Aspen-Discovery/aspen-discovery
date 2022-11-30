@@ -2402,8 +2402,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						if ($subfield3 == null && $subfieldU != null) {
 							$showAction = true;
 						}
-					}
-					else {
+					} else {
 						if ($subfieldU != null) {
 							$showAction = true;
 						}

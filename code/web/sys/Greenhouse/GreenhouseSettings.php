@@ -12,6 +12,8 @@ class GreenhouseSettings extends DataObject
 	public $apiKey4;
 	public $apiKey5;
 	public $notificationAccessToken;
+	public $requestTrackerBaseUrl;
+	public $requestTrackerAuthToken;
 
 	public static function getObjectStructure() : array {
 		return [
@@ -23,6 +25,8 @@ class GreenhouseSettings extends DataObject
 			'apiKey4' => ['property' => 'apiKey4', 'type' => 'storedPassword', 'label' => 'API Key 4', 'description' => 'API key for authenticating LiDA access', 'canBatchUpdate'=> false, 'hideInLists'=> true],
 			'apiKey5' => ['property' => 'apiKey5', 'type' => 'storedPassword', 'label' => 'API Key 5', 'description' => 'API key for authenticating LiDA access', 'canBatchUpdate'=> false, 'hideInLists'=> true],
 			'notificationAccessToken' => ['property' => 'notificationAccessToken', 'type' => 'storedPassword', 'label' => 'Notification API Access Token', 'description' => 'API key for authenticating access to Notification APIs', 'canBatchUpdate'=> false, 'hideInLists'=> true],
+			'requestTrackerBaseUrl' => ['property' => 'requestTrackerBaseUrl', 'type' => 'url', 'label' => 'Request Tracker Base Url', 'description' => 'The base url for a Request Tracker instance', 'canBatchUpdate'=> false, 'hideInLists'=> true, 'maxLength'=> 100],
+			'requestTrackerAuthToken' => ['property' => 'requestTrackerAuthToken', 'type' => 'storedPassword', 'label' => 'Request Tracker Auth Token', 'description' => 'Auth Token loading ticket information from Request Tracker', 'canBatchUpdate'=> false, 'hideInLists'=> true],
 		];
 	}
 }

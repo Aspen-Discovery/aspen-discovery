@@ -4,6 +4,13 @@ require_once __DIR__ . '/../bootstrap.php';
 //Update all tickets based on status
 require_once ROOT_DIR . '/sys/Support/TicketStatusFeed.php';
 require_once ROOT_DIR . '/sys/Support/Ticket.php';
+$greenhouseSettings = new GreenhouseSettings();
+$rtAuthToken = null;
+$baseRtUrl = null;
+if ($greenhouseSettings->find(true)){
+	$rtAuthToken = $greenhouseSettings->requestTrackerAuthToken;
+	$baseRtUrl = $greenhouseSettings->requestTrackerBaseUrl;
+}
 
 $openTicketsFound = [];
 $ticketStatusFeeds = new TicketStatusFeed();
@@ -72,7 +79,28 @@ while ($ticketSeverityFeeds->fetch()){
 }
 
 //Update all tickets based on assigned component
+$tmpTicket = new Ticket();
+$tmpTicket->whereAdd("status <> 'Closed'");
+/** @var Ticket[] $allOpenTickets */
+$allOpenTickets = $tmpTicket->fetchAll();
 
+//Get a list of all components
+$allComponents = new TicketComponentFeed();
+$allComponents->find();
+$allComponentsByName = [];
+while ($allComponents->fetch()){
+	$allComponentsByName[$allComponents->name] = clone $allComponents;
+}
+
+$curlConnection = new CurlWrapper();
+foreach ($allOpenTickets as $openTicket) {
+	$ticketInfoUrl = $baseRtUrl . '/REST/2.0/ticket/' . $openTicket->ticketId . "?token=$rtAuthToken";
+	$response = $curlConnection->curlGetPage($ticketInfoUrl);
+	$json = json_decode($response);
+	$customFields = $json->CustomFields;
+	/** @var ComponentTicketLink $relatedComponents */
+	$relatedComponents = [];
+	$existingComponents = $openTicket->getRelatedComponents();
 
 //Update all tickets from partner feeds
 
