@@ -546,32 +546,26 @@ class MyAccount_AJAX extends JSON_Action {
 							if ($tmpResult['success']) {
 								$success++;
 							}
-						} else {
-							if ($holdType == 'axis360') {
-								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-								$driver = new Axis360Driver();
-								$tmpResult = $driver->cancelHold($user, $recordId);
-								if ($tmpResult['success']) {
-									$success++;
-								}
-							} else {
-								if ($holdType == 'overdrive') {
-									require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-									$driver = new OverDriveDriver();
-									$tmpResult = $driver->cancelHold($user, $recordId);
-									if ($tmpResult['success']) {
-										$success++;
-									}
-								} else {
-									if ($holdType == 'cloud_library') {
-										require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-										$driver = new CloudLibraryDriver();
-										$tmpResult = $driver->cancelHold($user, $recordId);
-										if ($tmpResult['success']) {
-											$success++;
-										}
-									}
-								}
+						} else if ($holdType == 'axis360') {
+							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+							$driver = new Axis360Driver();
+							$tmpResult = $driver->cancelHold($user, $recordId);
+							if ($tmpResult['success']) {
+								$success++;
+							}
+						} else if ($holdType == 'overdrive') {
+							require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+							$driver = new OverDriveDriver();
+							$tmpResult = $driver->cancelHold($user, $recordId);
+							if ($tmpResult['success']) {
+								$success++;
+							}
+						} else if ($holdType == 'cloud_library') {
+							require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+							$driver = new CloudLibraryDriver();
+							$tmpResult = $driver->cancelHold($user, $recordId);
+							if ($tmpResult['success']) {
+								$success++;
 							}
 						}
 
@@ -664,32 +658,26 @@ class MyAccount_AJAX extends JSON_Action {
 					if ($tmpResult['success']) {
 						$success++;
 					}
-				} else {
-					if ($holdType == 'axis360') {
-						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-						$driver = new Axis360Driver();
-						$tmpResult = $driver->cancelHold($user, $recordId);
-						if ($tmpResult['success']) {
-							$success++;
-						}
-					} else {
-						if ($holdType == 'overdrive') {
-							require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-							$driver = new OverDriveDriver();
-							$tmpResult = $driver->cancelHold($user, $recordId);
-							if ($tmpResult['success']) {
-								$success++;
-							}
-						} else {
-							if ($holdType == 'cloud_library') {
-								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-								$driver = new CloudLibraryDriver();
-								$tmpResult = $driver->cancelHold($user, $recordId);
-								if ($tmpResult['success']) {
-									$success++;
-								}
-							}
-						}
+				} else if ($holdType == 'axis360') {
+					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+					$driver = new Axis360Driver();
+					$tmpResult = $driver->cancelHold($user, $recordId);
+					if ($tmpResult['success']) {
+						$success++;
+					}
+				} else if ($holdType == 'overdrive') {
+					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+					$driver = new OverDriveDriver();
+					$tmpResult = $driver->cancelHold($user, $recordId);
+					if ($tmpResult['success']) {
+						$success++;
+					}
+				} else if ($holdType == 'cloud_library') {
+					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+					$driver = new CloudLibraryDriver();
+					$tmpResult = $driver->cancelHold($user, $recordId);
+					if ($tmpResult['success']) {
+						$success++;
 					}
 				}
 
@@ -823,44 +811,38 @@ class MyAccount_AJAX extends JSON_Action {
 								} else {
 									$failed++;
 								}
-							} else {
-								if ($holdType == 'axis360') {
-									require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-									$driver = new Axis360Driver();
-									$tmpResult = $driver->freezeHold($patronOwningHold, $recordId);
-									if ($tmpResult['success']) {
-										$success++;
-									} else {
-										$failed++;
-									}
+							} else if ($holdType == 'axis360') {
+								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+								$driver = new Axis360Driver();
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId);
+								if ($tmpResult['success']) {
+									$success++;
 								} else {
-									if ($holdType == 'overdrive') {
-										require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-										$driver = new OverDriveDriver();
-										$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, null);
-										if ($tmpResult['success']) {
-											$success++;
-										} else {
-											$failed++;
-										}
+									$failed++;
+								}
+							} else if ($holdType == 'overdrive') {
+								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+								$driver = new OverDriveDriver();
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, null);
+								if ($tmpResult['success']) {
+									$success++;
+								} else {
+									$failed++;
+								}
 										//cloudLibrary holds can't be frozen
 //							} else if ($holdType == 'cloud_library') {
 //								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 //								$driver = new CloudLibraryDriver();
 //								$tmpResult = $driver->freezeHold($user, $recordId);
 //								if($tmpResult['success']){$success++;}else{$failed++;}
-									} else {
-										$failed++;
-									}
-								}
+							} else {
+								$failed++;
 							}
 						} else {
 							if ($canFreeze == 0) {
 								$failed++;
-							} else {
-								if ($frozen == 1) {
-									$failed++;
-								}
+							} else if ($frozen == 1) {
+								$failed++;
 							}
 						}
 
@@ -993,41 +975,35 @@ class MyAccount_AJAX extends JSON_Action {
 								} else {
 									$failed++;
 								}
-							} else {
-								if ($holdType == 'axis360') {
-									require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-									$driver = new Axis360Driver();
-									$tmpResult = $driver->thawHold($user, $recordId);
-									if ($tmpResult['success']) {
-										$success++;
-									} else {
-										$failed++;
-									}
+							} else if ($holdType == 'axis360') {
+								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+								$driver = new Axis360Driver();
+								$tmpResult = $driver->thawHold($user, $recordId);
+								if ($tmpResult['success']) {
+									$success++;
 								} else {
-									if ($holdType == 'overdrive') {
-										require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-										$driver = new OverDriveDriver();
-										$tmpResult = $driver->thawHold($user, $recordId);
-										if ($tmpResult['success']) {
-											$success++;
-										} else {
-											$failed++;
-										}
-									} else {
-										if ($holdType == 'cloud_library') {
-											require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-											$driver = new CloudLibraryDriver();
-											$tmpResult = $driver->thawHold($user, $recordId);
-											if ($tmpResult['success']) {
-												$success++;
-											} else {
-												$failed++;
-											}
-										} else {
-											$failed++;
-										}
-									}
+									$failed++;
 								}
+							} else if ($holdType == 'overdrive') {
+								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+								$driver = new OverDriveDriver();
+								$tmpResult = $driver->thawHold($user, $recordId);
+								if ($tmpResult['success']) {
+									$success++;
+								} else {
+									$failed++;
+								}
+							} else if ($holdType == 'cloud_library') {
+								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+								$driver = new CloudLibraryDriver();
+								$tmpResult = $driver->thawHold($user, $recordId);
+								if ($tmpResult['success']) {
+									$success++;
+								} else {
+									$failed++;
+								}
+							} else {
+								$failed++;
 							}
 						}
 
@@ -2319,78 +2295,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-
-	function setSort($requestParameter, $sortType) {
-		// Hide Covers when the user has set that setting on a Search Results Page
-		// this is the same setting as used by the MyAccount Pages for now.
-		$sort = null;
-		if (isset($_REQUEST[$requestParameter])) {
-			$sort = $_REQUEST[$requestParameter];
-			if (isset($_SESSION)) {
-				$_SESSION['sort_' . $sortType] = $sort;
-			}
-		} elseif (isset($_SESSION['sort_' . $sortType])) {
-			$sort = $_SESSION['sort_' . $sortType];
-		}
-		return $sort;
-	}
-
-	/** @noinspection PhpUnused */
-
-	/**
-	 * @param string $selectedSortOption
-	 * @param Checkout[] $allCheckedOut
-	 * @return array
-	 */
-	private function sortCheckouts(string $selectedSortOption, array $allCheckedOut): array {
-		//Do sorting now that we have all records
-		$curTransaction = 0;
-		foreach ($allCheckedOut as $i => $curTitle) {
-			$curTransaction++;
-			$sortTitle = !empty($curTitle->getSortTitle()) ? $curTitle->getSortTitle() : (empty($curTitle->getTitle()) ? $this::SORT_LAST_ALPHA : $curTitle->getTitle());
-			$sortKey = $sortTitle;
-			if ($selectedSortOption == 'title') {
-				$sortKey = $sortTitle;
-			} elseif ($selectedSortOption == 'author') {
-				$sortKey = (empty($curTitle->getAuthor()) ? $this::SORT_LAST_ALPHA : $curTitle->getAuthor()) . '-' . $sortTitle;
-			} elseif ($selectedSortOption == 'dueDate' || $selectedSortOption == 'dueDateDesc') {
-				if (isset($curTitle->dueDate)) {
-					$sortKey = $curTitle->dueDate . '-' . $sortTitle;
-				} else {
-					//Always put things where the due date isn't set last.
-					if ($selectedSortOption == 'dueDate') {
-						$sortKey = '9999999999-' . $sortTitle;
-					} else {
-						$sortKey = '0000000000-' . $sortTitle;
-					}
-				}
-			} elseif ($selectedSortOption == 'format') {
-				$sortKey = ((empty($curTitle->getPrimaryFormat()) || strcasecmp($curTitle->getPrimaryFormat(), 'unknown') == 0) ? $this::SORT_LAST_ALPHA : $curTitle->getPrimaryFormat()) . '-' . $sortTitle;
-			} elseif ($selectedSortOption == 'renewed') {
-				if (isset($curTitle->renewCount) && is_numeric($curTitle->renewCount)) {
-					$sortKey = str_pad($curTitle->renewCount, 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
-				} else {
-					$sortKey = '***' . '-' . $sortTitle;
-				}
-			} elseif ($selectedSortOption == 'libraryAccount') {
-				$sortKey = $curTitle->getUserName() . '-' . $sortTitle;
-			}
-			$sortKey = strtolower($sortKey);
-			$sortKey = utf8_encode($sortKey . '-' . $curTransaction);
-
-			$allCheckedOut[$sortKey] = $curTitle;
-			unset($allCheckedOut[$i]);
-		}
-
-		//Now that we have all the transactions we can sort them
-		if ($selectedSortOption == 'renewed' || $selectedSortOption == 'holdQueueLength' || $selectedSortOption == 'dueDateDesc') {
-			krsort($allCheckedOut);
-		} else {
-			ksort($allCheckedOut);
-		}
-		return $allCheckedOut;
-	}
-
 	public function exportHolds() {
 		global $configArray;
 		$source = $_REQUEST['source'];
@@ -2686,12 +2590,7 @@ class MyAccount_AJAX extends JSON_Action {
 		exit;
 	}
 
-	private function isValidTimeStamp($timestamp) {
-		return is_numeric($timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX);
-	}
-
 	/** @noinspection PhpUnused */
-
 	public function exportReadingHistory() {
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
@@ -2757,7 +2656,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-
 	public function getCheckouts(): array {
 		global $interface;
 
@@ -2854,23 +2752,7 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
-	function setShowCovers() {
-		global $interface;
-		// Hide Covers when the user has set that setting on a Search Results Page
-		// this is the same setting as used by the MyAccount Pages for now.
-		$showCovers = true;
-		if (isset($_REQUEST['showCovers'])) {
-			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
-			if (isset($_SESSION)) {
-				$_SESSION['showCovers'] = $showCovers;
-			}
-		} elseif (isset($_SESSION['showCovers'])) {
-			$showCovers = $_SESSION['showCovers'];
-		}
-		$interface->assign('showCovers', $showCovers);
-		return $showCovers;
-	}
-
+	/** @noinspection PhpUnused */
 	public function getHolds(): array {
 		global $interface;
 
@@ -3115,6 +2997,96 @@ class MyAccount_AJAX extends JSON_Action {
 		return "<a class='page-link btn btn-default btn-sm' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
 	}
 
+	private function isValidTimeStamp($timestamp) {
+		return is_numeric($timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX);
+	}
+
+	function setShowCovers() {
+		global $interface;
+		// Hide Covers when the user has set that setting on a Search Results Page
+		// this is the same setting as used by the MyAccount Pages for now.
+		$showCovers = true;
+		if (isset($_REQUEST['showCovers'])) {
+			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
+			if (isset($_SESSION)) {
+				$_SESSION['showCovers'] = $showCovers;
+			}
+		} elseif (isset($_SESSION['showCovers'])) {
+			$showCovers = $_SESSION['showCovers'];
+		}
+		$interface->assign('showCovers', $showCovers);
+		return $showCovers;
+	}
+
+	function setSort($requestParameter, $sortType) {
+		// Hide Covers when the user has set that setting on a Search Results Page
+		// this is the same setting as used by the MyAccount Pages for now.
+		$sort = null;
+		if (isset($_REQUEST[$requestParameter])) {
+			$sort = $_REQUEST[$requestParameter];
+			if (isset($_SESSION)) {
+				$_SESSION['sort_' . $sortType] = $sort;
+			}
+		} elseif (isset($_SESSION['sort_' . $sortType])) {
+			$sort = $_SESSION['sort_' . $sortType];
+		}
+		return $sort;
+	}
+
+	/**
+	 * @param string $selectedSortOption
+	 * @param Checkout[] $allCheckedOut
+	 * @return array
+	 */
+	private function sortCheckouts(string $selectedSortOption, array $allCheckedOut): array {
+		//Do sorting now that we have all records
+		$curTransaction = 0;
+		foreach ($allCheckedOut as $i => $curTitle) {
+			$curTransaction++;
+			$sortTitle = !empty($curTitle->getSortTitle()) ? $curTitle->getSortTitle() : (empty($curTitle->getTitle()) ? $this::SORT_LAST_ALPHA : $curTitle->getTitle());
+			$sortKey = $sortTitle;
+			if ($selectedSortOption == 'title') {
+				$sortKey = $sortTitle;
+			} elseif ($selectedSortOption == 'author') {
+				$sortKey = (empty($curTitle->getAuthor()) ? $this::SORT_LAST_ALPHA : $curTitle->getAuthor()) . '-' . $sortTitle;
+			} elseif ($selectedSortOption == 'dueDate' || $selectedSortOption == 'dueDateDesc') {
+				if (isset($curTitle->dueDate)) {
+					$sortKey = $curTitle->dueDate . '-' . $sortTitle;
+				} else {
+					//Always put things where the due date isn't set last.
+					if ($selectedSortOption == 'dueDate') {
+						$sortKey = '9999999999-' . $sortTitle;
+					} else {
+						$sortKey = '0000000000-' . $sortTitle;
+					}
+				}
+			} elseif ($selectedSortOption == 'format') {
+				$sortKey = ((empty($curTitle->getPrimaryFormat()) || strcasecmp($curTitle->getPrimaryFormat(), 'unknown') == 0) ? $this::SORT_LAST_ALPHA : $curTitle->getPrimaryFormat()) . '-' . $sortTitle;
+			} elseif ($selectedSortOption == 'renewed') {
+				if (isset($curTitle->renewCount) && is_numeric($curTitle->renewCount)) {
+					$sortKey = str_pad($curTitle->renewCount, 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
+				} else {
+					$sortKey = '***' . '-' . $sortTitle;
+				}
+			} elseif ($selectedSortOption == 'libraryAccount') {
+				$sortKey = $curTitle->getUserName() . '-' . $sortTitle;
+			}
+			$sortKey = strtolower($sortKey);
+			$sortKey = utf8_encode($sortKey . '-' . $curTransaction);
+
+			$allCheckedOut[$sortKey] = $curTitle;
+			unset($allCheckedOut[$i]);
+		}
+
+		//Now that we have all the transactions we can sort them
+		if ($selectedSortOption == 'renewed' || $selectedSortOption == 'holdQueueLength' || $selectedSortOption == 'dueDateDesc') {
+			krsort($allCheckedOut);
+		} else {
+			ksort($allCheckedOut);
+		}
+		return $allCheckedOut;
+	}
+
 	/** @noinspection PhpUnused */
 
 	function deleteReadingHistoryEntry() {
@@ -3265,206 +3237,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function enableAccountLinking() {
-		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
-		require_once ROOT_DIR . '/sys/Account/UserLink.php';
-		$activeUserId = UserAccount::getActiveUserId();
-		$userLink = new UserLink();
-		$userLink->linkedAccountId = $activeUserId;
-		$userLink->find();
-		while ($userLink->fetch()) {
-			$userLink->linkingDisabled = "0";
-			$userLink->update();
-
-			$userMessage = new UserMessage();
-			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
-			$userMessage->userId = $userLink->primaryAccountId;
-			$userMessage->isDismissed = "0";
-			if ($userMessage->find()) {
-				while ($userMessage->fetch()) {
-					$userMessage->isDismissed = 1;
-					$userMessage->update();
-				}
-			}
-		}
-
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $activeUserId;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
-		}
-
-		return [
-			'success' => true,
-			'message' => 'Account Linking Resumed'
-		];
-	}
-
-	/** @noinspection PhpUnused */
-	function stopAccountLinking() {
-		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
-		require_once ROOT_DIR . '/sys/Account/UserLink.php';
-		$activeUserId = UserAccount::getActiveUserId();
-		$userLink = new UserLink();
-		$userLink->linkedAccountId = $activeUserId;
-		$userLink->find();
-		while ($userLink->fetch()) {
-			$userLink->delete();
-
-			$userMessage = new UserMessage();
-			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
-			$userMessage->userId = $userLink->primaryAccountId;
-			$userMessage->isDismissed = "0";
-			if ($userMessage->find()) {
-				while ($userMessage->fetch()) {
-					$userMessage->message = "An account you are linking to changed their login. Account linking with them has been disabled.";
-					$userMessage->update();
-				}
-			}
-		}
-
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $activeUserId;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
-		}
-
-		return [
-			'success' => true,
-			'message' => 'Account Linking Stopped'
-		];
-	}
-
-	/** @noinspection PhpUnused */
-
-	function createPayPalOrder() {
-		global $configArray;
-
-		$transactionType = $_REQUEST['type'];
-		if ($transactionType == 'donation') {
-			$result = $this->createGenericDonation('paypal');
-		} else {
-			$result = $this->createGenericOrder('paypal');
-		}
-
-		if (array_key_exists('success', $result) && $result['success'] === false) {
-			return $result;
-		} else {
-			/** @var Library $paymentLibrary */ /** @var Library $userLibrary */ /** @var UserPayment $payment */
-			/** @var User $patron */
-			if ($transactionType == 'donation') {
-				/** @noinspection PhpUnusedLocalVariableInspection */
-				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
-			} else {
-				/** @noinspection PhpUnusedLocalVariableInspection */
-				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
-			}
-
-			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
-			$payPalSettings = new PayPalSetting();
-			$payPalSettings->id = $paymentLibrary->payPalSettingId;
-			if (!$payPalSettings->find(true)) {
-				return [
-					'success' => false,
-					'message' => "PayPal payments are not configured correctly for ."
-				];
-			}
-			require_once ROOT_DIR . '/sys/CurlWrapper.php';
-			$payPalAuthRequest = new CurlWrapper();
-			//Connect to PayPal
-			if ($payPalSettings->sandboxMode == 1) {
-				$baseUrl = 'https://api.sandbox.paypal.com';
-			} else {
-				$baseUrl = 'https://api.paypal.com';
-			}
-
-			$clientId = $payPalSettings->clientId;
-			$clientSecret = $payPalSettings->clientSecret;
-
-			//Get the access token
-			$authInfo = base64_encode("$clientId:$clientSecret");
-			$payPalAuthRequest->addCustomHeaders([
-				"Accept: application/json",
-				"Accept-Language: en_US",
-				"Authorization: Basic $authInfo"
-			], true);
-			$postParams = ['grant_type' => 'client_credentials',];
-
-			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
-			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
-				return [
-					'success' => false,
-					'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'
-				];
-			} else {
-				$accessToken = $accessTokenResults->access_token;
-			}
-
-			global $library;
-			foreach ($purchaseUnits['items'] as &$item) {
-				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . ($userLibrary == null ? 'none' : $userLibrary->subdomain);
-				$item['invoice_id'] = $payment->id;
-			}
-
-			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
-			$payPalPaymentRequest = new CurlWrapper();
-			$payPalPaymentRequest->addCustomHeaders([
-				"Accept: application/json",
-				"Content-Type: application/json",
-				"Accept-Language: en_US",
-				"Authorization: Bearer $accessToken",
-				"Prefer: return=representation"
-			], false);
-			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
-			$paymentRequestBody = [
-				'intent' => 'CAPTURE',
-				'application_context' => [
-					'brand_name' => $paymentLibrary->displayName,
-					'locale' => 'en-US',
-					'shipping_preference' => 'NO_SHIPPING',
-					'user_action' => 'PAY_NOW',
-					'return_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
-					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
-				],
-				'purchase_units' => [0 => $purchaseUnits,]
-			];
-
-			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
-			$paymentResponse = json_decode($paymentResponse);
-
-			if ($paymentResponse->status != 'CREATED') {
-				return [
-					'success' => false,
-					'message' => 'Unable to create your order in PayPal.'
-				];
-			}
-
-			//Log the request in the database so we can validate it on return
-			$payment->orderId = $paymentResponse->id;
-			$payment->update();
-
-			if ($payment->transactionType == 'donation') {
-				$this->addDonation($payment, $tempDonation);
-			}
-
-			return [
-				'success' => true,
-				'orderInfo' => $paymentResponse,
-				'orderID' => $paymentResponse->id
-			];
-		}
-	}
-
 	function createGenericDonation($paymentType = '') {
 		$transactionDate = time();
 		$user = UserAccount::getLoggedInUser();
@@ -3627,7 +3399,30 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function addDonation($payment, $tempDonation) {
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->paymentId = $payment->id;
+		$donation->firstName = $tempDonation['firstName'];
+		$donation->lastName = $tempDonation['lastName'];
+		$donation->email = $tempDonation['email'];
+		$donation->anonymous = $tempDonation['isAnonymous'];
+		$donation->dedicate = $tempDonation['isDedicated'];
+		if ($tempDonation['isDedicated'] == 1) {
+			$donation->dedicateType = $tempDonation['dedication']['type'];
+			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
+			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
+		}
+		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
+		$donation->comments = $tempDonation['comments'];
+		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->sendEmailToUser = 1;
+		$donation->insert();
 
+		return $donation;
+	}
+
+	/** @noinspection PhpUnused */
 	function createGenericOrder($paymentType = '') {
 		$transactionDate = time();
 		$user = UserAccount::getLoggedInUser();
@@ -3882,31 +3677,128 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
-	function addDonation($payment, $tempDonation) {
-		require_once ROOT_DIR . '/sys/Donations/Donation.php';
-		$donation = new Donation();
-		$donation->paymentId = $payment->id;
-		$donation->firstName = $tempDonation['firstName'];
-		$donation->lastName = $tempDonation['lastName'];
-		$donation->email = $tempDonation['email'];
-		$donation->anonymous = $tempDonation['isAnonymous'];
-		$donation->dedicate = $tempDonation['isDedicated'];
-		if ($tempDonation['isDedicated'] == 1) {
-			$donation->dedicateType = $tempDonation['dedication']['type'];
-			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
-			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
-		}
-		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
-		$donation->comments = $tempDonation['comments'];
-		$donation->donationSettingId = $tempDonation['donationSettingId'];
-		$donation->sendEmailToUser = 1;
-		$donation->insert();
+	/** @noinspection PhpUnused */
+	function createPayPalOrder() {
+		global $configArray;
 
-		return $donation;
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('paypal');
+		} else {
+			$result = $this->createGenericOrder('paypal');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			/** @var Library $paymentLibrary */ /** @var Library $userLibrary */ /** @var UserPayment $payment */
+			/** @var User $patron */
+			if ($transactionType == 'donation') {
+				/** @noinspection PhpUnusedLocalVariableInspection */
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+			} else {
+				/** @noinspection PhpUnusedLocalVariableInspection */
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
+
+			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+			$payPalSettings = new PayPalSetting();
+			$payPalSettings->id = $paymentLibrary->payPalSettingId;
+			if (!$payPalSettings->find(true)) {
+				return [
+					'success' => false,
+					'message' => "PayPal payments are not configured correctly for ."
+				];
+			}
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payPalAuthRequest = new CurlWrapper();
+			//Connect to PayPal
+			if ($payPalSettings->sandboxMode == 1) {
+				$baseUrl = 'https://api.sandbox.paypal.com';
+			} else {
+				$baseUrl = 'https://api.paypal.com';
+			}
+
+			$clientId = $payPalSettings->clientId;
+			$clientSecret = $payPalSettings->clientSecret;
+
+			//Get the access token
+			$authInfo = base64_encode("$clientId:$clientSecret");
+			$payPalAuthRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Basic $authInfo"
+			], true);
+			$postParams = ['grant_type' => 'client_credentials',];
+
+			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+			$accessTokenResults = json_decode($accessTokenResults);
+			if (empty($accessTokenResults->access_token)) {
+				return [
+					'success' => false,
+					'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'
+				];
+			} else {
+				$accessToken = $accessTokenResults->access_token;
+			}
+
+			global $library;
+			foreach ($purchaseUnits['items'] as &$item) {
+				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . ($userLibrary == null ? 'none' : $userLibrary->subdomain);
+				$item['invoice_id'] = $payment->id;
+			}
+
+			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
+			$payPalPaymentRequest = new CurlWrapper();
+			$payPalPaymentRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Content-Type: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Bearer $accessToken",
+				"Prefer: return=representation"
+			], false);
+			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
+			$paymentRequestBody = [
+				'intent' => 'CAPTURE',
+				'application_context' => [
+					'brand_name' => $paymentLibrary->displayName,
+					'locale' => 'en-US',
+					'shipping_preference' => 'NO_SHIPPING',
+					'user_action' => 'PAY_NOW',
+					'return_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+				],
+				'purchase_units' => [0 => $purchaseUnits,]
+			];
+
+			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
+			$paymentResponse = json_decode($paymentResponse);
+
+			if ($paymentResponse->status != 'CREATED') {
+				return [
+					'success' => false,
+					'message' => 'Unable to create your order in PayPal.'
+				];
+			}
+
+			//Log the request in the database so we can validate it on return
+			$payment->orderId = $paymentResponse->id;
+			$payment->update();
+
+			if ($payment->transactionType == 'donation') {
+				$this->addDonation($payment, $tempDonation);
+			}
+
+			return [
+				'success' => true,
+				'orderInfo' => $paymentResponse,
+				'orderID' => $paymentResponse->id
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
-
 	function completePayPalOrder() {
 		global $configArray;
 
@@ -5141,7 +5033,31 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function reloadCover() {
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$listId = htmlspecialchars($_GET["id"]);
+		$listEntry = new UserListEntry();
+		$listEntry->listId = $listId;
 
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = 'list';
+		$bookCoverInfo->recordId = $listEntry->listId;
+		if ($bookCoverInfo->find(true)) {
+			$bookCoverInfo->imageSource = '';
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			$bookCoverInfo->update();
+		}
+
+		return array(
+			'success' => true,
+			'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'
+		);
+	}
+
+	/** @noinspection PhpUnused */
 	function getUploadListCoverForm() {
 		global $interface;
 
@@ -5162,7 +5078,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-
 	function uploadListCover() {
 		$result = [
 			'success' => false,
@@ -5221,33 +5136,6 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-
-	function reloadCover() {
-		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-		$listId = htmlspecialchars($_GET["id"]);
-		$listEntry = new UserListEntry();
-		$listEntry->listId = $listId;
-
-		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
-		$bookCoverInfo = new BookCoverInfo();
-		$bookCoverInfo->recordType = 'list';
-		$bookCoverInfo->recordId = $listEntry->listId;
-		if ($bookCoverInfo->find(true)) {
-			$bookCoverInfo->imageSource = '';
-			$bookCoverInfo->thumbnailLoaded = 0;
-			$bookCoverInfo->mediumLoaded = 0;
-			$bookCoverInfo->largeLoaded = 0;
-			$bookCoverInfo->update();
-		}
-
-		return array(
-			'success' => true,
-			'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'
-		);
-	}
-
-	/** @noinspection PhpUnused */
-
 	function getUploadListCoverFormByURL() {
 		global $interface;
 
@@ -6474,5 +6362,84 @@ class MyAccount_AJAX extends JSON_Action {
 				])
 			);
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function enableAccountLinking() {
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+		require_once ROOT_DIR . '/sys/Account/UserLink.php';
+		$activeUserId = UserAccount::getActiveUserId();
+		$userLink = new UserLink();
+		$userLink->linkedAccountId = $activeUserId;
+		$userLink->find();
+		while ($userLink->fetch()) {
+			$userLink->linkingDisabled = "0";
+			$userLink->update();
+
+			$userMessage = new UserMessage();
+			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
+			$userMessage->userId = $userLink->primaryAccountId;
+			$userMessage->isDismissed = "0";
+			if ($userMessage->find()) {
+				while ($userMessage->fetch()) {
+					$userMessage->isDismissed = 1;
+					$userMessage->update();
+				}
+			}
+		}
+
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'confirm_linked_accts';
+		$userMessage->userId = $activeUserId;
+		$userMessage->isDismissed = "0";
+		$userMessage->find();
+		while ($userMessage->fetch()) {
+			$userMessage->isDismissed = 1;
+			$userMessage->update();
+		}
+
+		return [
+			'success' => true,
+			'message' => 'Account Linking Resumed'
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function stopAccountLinking() {
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+		require_once ROOT_DIR . '/sys/Account/UserLink.php';
+		$activeUserId = UserAccount::getActiveUserId();
+		$userLink = new UserLink();
+		$userLink->linkedAccountId = $activeUserId;
+		$userLink->find();
+		while ($userLink->fetch()) {
+			$userLink->delete();
+
+			$userMessage = new UserMessage();
+			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
+			$userMessage->userId = $userLink->primaryAccountId;
+			$userMessage->isDismissed = "0";
+			if ($userMessage->find()) {
+				while ($userMessage->fetch()) {
+					$userMessage->message = "An account you are linking to changed their login. Account linking with them has been disabled.";
+					$userMessage->update();
+				}
+			}
+		}
+
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'confirm_linked_accts';
+		$userMessage->userId = $activeUserId;
+		$userMessage->isDismissed = "0";
+		$userMessage->find();
+		while ($userMessage->fetch()) {
+			$userMessage->isDismissed = 1;
+			$userMessage->update();
+		}
+
+		return [
+			'success' => true,
+			'message' => 'Account Linking Stopped'
+		];
 	}
 }
