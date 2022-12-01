@@ -678,6 +678,16 @@ class User extends DataObject
 		$ret = $userLink->delete(true);
 
 		$userMessage = new UserMessage();
+		$userMessage->messageType = 'confirm_linked_accts';
+		$userMessage->userId = $this->id;
+		$userMessage->isDismissed = "0";
+		$userMessage->find();
+		while ($userMessage->fetch()) {
+			$userMessage->isDismissed = 1;
+			$userMessage->update();
+		}
+
+		$userMessage = new UserMessage();
 		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
 		$userMessage->userId = $userId;
 		$userMessage->isDismissed = "0";
@@ -710,6 +720,15 @@ class User extends DataObject
 				$userMessage->userId = $userLink->primaryAccountId;
 				$userMessage->isDismissed = "0";
 				$userMessage->message = "An account you were previously linked to, $this->displayName, has disabled account linking. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+				$userMessage->update();
+			}
+			$userMessage = new UserMessage();
+			$userMessage->messageType = 'confirm_linked_accts';
+			$userMessage->userId = $this->id;
+			$userMessage->isDismissed = "0";
+			$userMessage->find();
+			while ($userMessage->fetch()) {
+				$userMessage->isDismissed = 1;
 				$userMessage->update();
 			}
 			//$userLink->delete(true);
