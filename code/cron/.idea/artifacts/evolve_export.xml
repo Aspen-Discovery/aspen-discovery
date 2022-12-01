@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="evolve_export">
+    <output-path>$PROJECT_DIR$/../evolve_export</output-path>
+    <root id="archive" name="evolve_export.jar">
+      <element id="module-output" name="java_shared_libraries" />
+      <element id="module-output" name="evolve_export" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../evergreen_export/META-INF/MANIFEST.MF" />
+        <element id="file-copy" path="$PROJECT_DIR$/../evolve_export/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
