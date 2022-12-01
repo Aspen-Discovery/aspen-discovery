@@ -895,11 +895,7 @@ class CatalogConnection
 	 */
 	function updatePin(User $user, string $oldPin, string $newPin)
 	{
-		$result = $this->driver->updatePin($user, $oldPin, $newPin);
-		if ($result['success']) {
-			$user->disableLinkingDueToPasswordChange();
-		}
-		return $result;
+		return $this->driver->updatePin($user, $oldPin, $newPin);
 	}
 
 	function showOutstandingFines()

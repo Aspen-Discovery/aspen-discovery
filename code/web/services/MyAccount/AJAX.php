@@ -81,34 +81,33 @@ class MyAccount_AJAX extends JSON_Action {
 					])
 				);
 			} elseif ($accountToLink) {
-				if ($accountToLink->disableAccountLinking == 0) {
-					$addResult = $user->addLinkedUser($accountToLink);
-					if ($addResult === true) {
-						$result = array(
-							'result' => true,
-							'message' => translate([
-								'text' => 'Successfully linked accounts.',
-								'isPublicFacing' => true
-							])
-						);
-					} else { // insert failure or user is blocked from linking account or account & account to link are the same account
-						$result = array(
-							'result' => false,
-							'message' => translate([
-								'text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.',
-								'isPublicFacing' => true
-							])
-						);
-					}
-				} else {
-					$result = array(
-						'result' => false,
-						'message' => translate([
-							'text' => 'Sorry, this user does not allow account linking',
-							'isPublicFacing' => true
-						])
-					);
-				}
+				if ($accountToLink->id != $user->id) {
+                    if ($accountToLink->disableAccountLinking==0){
+                        $addResult = $user->addLinkedUser($accountToLink);
+                        if ($addResult === true) {
+                            $result = array(
+                                'result' => true,
+                                'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
+                            );
+							$accountToLink->newLinkMessage();
+                        } else { // insert failure or user is blocked from linking account or account & account to link are the same account
+                            $result = array(
+                                'result' => false,
+                                'message' => translate(['text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing' => true])
+                            );
+                        }
+                    } else{
+                        $result = array(
+                            'result' => false,
+                            'message' => translate(['text' => 'Sorry, this user does not allow account linking', 'isPublicFacing' => true])
+                        );
+                    }
+                }else {
+                    $result = array(
+                        'result' => false,
+                        'message' => translate(['text' => 'You cannot link to yourself.', 'isPublicFacing' => true])
+                    );
+                }
 			} else {
 				$result = array(
 					'result' => false,
