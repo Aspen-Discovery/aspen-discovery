@@ -231,8 +231,20 @@ class User extends DataObject
 		}
 	}
 
-	function setRoles($value){
-		$this->_roles = $value;
+	function setRoles($values){
+		$rolesToAssign = [];
+		foreach ($values as $index => $value){
+			if (is_object($value)){
+				$rolesToAssign[$index] = $value;
+			}else{
+				$role = new Role();
+				$role->roleId = $value;
+				if ($role->find(true)){
+					$rolesToAssign[$role->roleId] = clone $role;
+				}
+			}
+		}
+		$this->_roles = $rolesToAssign;
 		//Update the database, first remove existing values
 		$this->saveRoles();
 	}
@@ -368,20 +380,21 @@ class User extends DataObject
 	function saveRoles(){
 		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role = new Role();
-			$escapedId = $this->escape($this->id);
-			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$userRoles = new UserRoles();
+			$userRoles->userId = $this->id;
+			$userRoles->delete(true);
+
 			//Now add the new values.
 			if (count($this->_roles) > 0){
 				$values = array();
 				foreach ($this->_roles as $roleId => $roleObj){
 					if (!$roleObj->isAssignedFromPType()) {
-						$values[] = "({$this->id},{$roleId})";
+						$userRoles = new UserRoles();
+						$userRoles->userId = $this->id;
+						$userRoles->roleId = $roleObj->roleId;
+						$userRoles->insert();
 					}
-				}
-				if (count($values) > 0) {
-					$values = join(', ', $values);
-					$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
 				}
 			}
 		}
@@ -402,7 +415,6 @@ class User extends DataObject
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink = new UserLink();
 				$userLink->primaryAccountId = $this->id;
-				$userLink->linkingDisabled = "0";
 				try {
 					$userLink->find();
 					while ($userLink->fetch()) {
@@ -444,7 +456,6 @@ class User extends DataObject
 					require_once ROOT_DIR . '/sys/Account/UserLink.php';
 					$userLink = new UserLink();
 					$userLink->primaryAccountId = $this->id;
-					$userLink->linkingDisabled = "0";
 					$userLink->find();
 					while ($userLink->fetch()) {
 						if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
@@ -582,7 +593,6 @@ class User extends DataObject
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink = new UserLink();
 				$userLink->linkedAccountId = $this->id;
-				$userLink->linkingDisabled = "0";
 				$userLink->find();
 				while ($userLink->fetch()){
 					$linkedUser = new User();
@@ -660,10 +670,19 @@ class User extends DataObject
     //Individually remove accounts that have linked to user
     function removeManagingAccount($userId){
         require_once ROOT_DIR . '/sys/Account/UserLink.php';
-        $userLink                   = new UserLink();
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+
+		$userLink                   = new UserLink();
         $userLink->primaryAccountId = $userId;
         $userLink->linkedAccountId  = $this->id;
         $ret                        = $userLink->delete(true);
+
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
+		$userMessage->userId = $userId;
+		$userMessage->isDismissed = "0";
+		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+		$userMessage->update();
 
         //Force a reload of data
         $this->linkedUsers = null;
@@ -675,12 +694,25 @@ class User extends DataObject
     //THIS GETS USED BY TOGGLEACCOUNTLINKING AJAX
     function accountLinkingToggle(){
         require_once ROOT_DIR . '/sys/Account/UserLink.php';
-        if ($this->disableAccountLinking == 0){
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+
+		if ($this->disableAccountLinking == 0){
             $this->disableAccountLinking = 1;
             //Remove Managing Accounts
             $userLink = new UserLink();
             $userLink->linkedAccountId = $this->id;
-            $userLink->delete(true);
+			$userLink->find();
+			while ($userLink->fetch()) {
+				$userLink->delete();
+
+				$userMessage = new UserMessage();
+				$userMessage->messageType = 'linked_acct_notify_disabled_' . $this->id;
+				$userMessage->userId = $userLink->primaryAccountId;
+				$userMessage->isDismissed = "0";
+				$userMessage->message = "An account you were previously linked to, $this->displayName, has disabled account linking. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+				$userMessage->update();
+			}
+            //$userLink->delete(true);
             //Remove Linked Users
             $userLink = new UserLink();
             $userLink->primaryAccountId = $this->id;
@@ -2171,33 +2203,31 @@ class User extends DataObject
 		}
 	}
 
-	function disableLinkingDueToPasswordChange()
-	{
+	function newLinkMessage(){
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		require_once ROOT_DIR . '/sys/Account/UserLink.php';
 
 		$userLinks = new UserLink();
 		$userLinks->linkedAccountId = $this->id;
-		if ($userLinks->find()){
+		if ($userLinks->find()) {
+			//If we already have one of these messages that is unconfirmed, we don't need more.
 			$userMessage = new UserMessage();
 			$userMessage->userId = $this->id;
 			$userMessage->messageType = 'confirm_linked_accts';
-			$userMessage->message = translate(['text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?", 'isPublicFacing'=>true]);
-			$userMessage->action1Title = translate(['text' => "Yes", 'isPublicFacing'=>true]);
-			$userMessage->action1 = "return AspenDiscovery.Account.enableAccountLinking()";
-			$userMessage->action2Title = translate(['text' => "No", 'isPublicFacing'=>true]);
-			$userMessage->action2 = "return AspenDiscovery.Account.stopAccountLinking()";
-			$userMessage->messageLevel = 'warning';
-			$userMessage->insert();
-			while ($userLinks->fetch()){
+			$userMessage->isDismissed = 0;
+
+			if ($userMessage->find() == 0){
 				$userMessage = new UserMessage();
-				$userMessage->userId = $userLinks->primaryAccountId;
-				$userMessage->messageType = 'linked_acct_notify_pause_' . $this->id;
-				$userMessage->messageLevel = 'info';
-				$userMessage->message = translate(['text' => "An account you are linking to changed their login. Account linking with them has been temporarily disabled.", 'isPublicFacing'=>true]);
+				$userMessage->userId = $this->id;
+				$userMessage->messageType = 'confirm_linked_accts';
+				$userMessage->message = translate(['text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?", 'isPublicFacing' => true]);
+				$userMessage->action1Title = translate(['text' => "Yes", 'isPublicFacing' => true]);
+				$userMessage->action1 = "return AspenDiscovery.Account.allowAccountLink()";
+				$userMessage->action2Title = translate(['text' => "No", 'isPublicFacing' => true]);
+				$userMessage->action2 = "return AspenDiscovery.Account.redirectLinkedAccounts()";
+				$userMessage->messageLevel = 'warning';
+				$userMessage->addendum = translate(['text' => "Learn more about linked accounts", 'isPublicFacing' => true]);
 				$userMessage->insert();
-				$userLinks->linkingDisabled = 1;
-				$userLinks->update();
 			}
 		}
 	}

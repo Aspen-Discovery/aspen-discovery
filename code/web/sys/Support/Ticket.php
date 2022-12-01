@@ -309,7 +309,7 @@ class Ticket extends DataObject {
 	/**
 	 * @return TaskTicketLink[]
 	 */
-	private function getRelatedTasks(): ?array {
+	public function getRelatedTasks(): ?array {
 		if (!isset($this->_relatedTasks) && $this->id) {
 			require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
 			$this->_relatedTasks = [];
@@ -326,7 +326,7 @@ class Ticket extends DataObject {
 	/**
 	 * @return ComponentTicketLink[]
 	 */
-	private function getRelatedComponents(): ?array {
+	public function getRelatedComponents(): ?array {
 		if (!isset($this->_relatedComponents) && $this->id) {
 			require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
 			$this->_relatedComponents = [];
@@ -339,4 +339,13 @@ class Ticket extends DataObject {
 		}
 		return $this->_relatedComponents;
 	}
+
+	/**
+	 * @param ComponentTicketLink[] $relatedComponents
+	 * @return void
+	 */
+	public function setRelatedComponents(array $relatedComponents){
+		$this->_relatedComponents = $relatedComponents;
+	}
+
 }

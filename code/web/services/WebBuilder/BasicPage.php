@@ -24,8 +24,7 @@ class WebBuilder_BasicPage extends Action{
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
 			die();
-		}
-		else if ( !$this->canView() ) {
+		} else if ( !$this->canView() ) {
 			$interface->assign('module','Error');
 			$interface->assign('action','Handle401');
 			require_once ROOT_DIR . "/services/Error/Handle401.php";

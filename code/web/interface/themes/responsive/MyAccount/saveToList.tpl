@@ -37,14 +37,13 @@
 			<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
 		{/if}
 
-		{if $showLists}
+		{if $showLists && $enableListDescriptions}
 			<div class="form-group">
 				<label for="addToList-notes" class="col-sm-3">{translate text='Add a Note' isPublicFacing=true}</label>
 				<div class="col-sm-9">
 					<textarea name="notes" rows="3" cols="50" class="form-control" id="addToList-notes"></textarea>
 				</div>
 			</div>
-
 		{/if}
 	</div>
 </form>

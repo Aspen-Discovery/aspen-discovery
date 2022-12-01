@@ -3,7 +3,18 @@ require_once __DIR__ . '/../bootstrap.php';
 
 //Update all tickets based on status
 require_once ROOT_DIR . '/sys/Support/TicketStatusFeed.php';
+require_once ROOT_DIR . '/sys/Support/TicketComponentFeed.php';
 require_once ROOT_DIR . '/sys/Support/Ticket.php';
+require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
+
+$greenhouseSettings = new GreenhouseSettings();
+$rtAuthToken = null;
+$baseRtUrl = null;
+if ($greenhouseSettings->find(true)){
+	$rtAuthToken = $greenhouseSettings->requestTrackerAuthToken;
+	$baseRtUrl = $greenhouseSettings->requestTrackerBaseUrl;
+}
 
 $openTicketsFound = [];
 $ticketStatusFeeds = new TicketStatusFeed();
@@ -72,7 +83,63 @@ while ($ticketSeverityFeeds->fetch()){
 }
 
 //Update all tickets based on assigned component
+$tmpTicket = new Ticket();
+$tmpTicket->whereAdd("status <> 'Closed'");
+/** @var Ticket[] $allOpenTickets */
+$allOpenTickets = $tmpTicket->fetchAll();
 
+//Get a list of all components
+$allComponents = new TicketComponentFeed();
+$allComponents->find();
+$allComponentsByName = [];
+while ($allComponents->fetch()){
+	$allComponentsByName[$allComponents->name] = clone $allComponents;
+}
+
+$curlConnection = new CurlWrapper();
+foreach ($allOpenTickets as $openTicket) {
+	$ticketInfoUrl = $baseRtUrl . '/REST/2.0/ticket/' . $openTicket->ticketId . "?token=$rtAuthToken";
+	$response = $curlConnection->curlGetPage($ticketInfoUrl);
+	$json = json_decode($response);
+	$customFields = $json->CustomFields;
+	/** @var ComponentTicketLink $relatedComponents */
+	$relatedComponents = [];
+	$existingComponents = $openTicket->getRelatedComponents();
+	foreach ($customFields as $customField){
+		if ($customField->name == 'Aspen Discovery Components'){
+			foreach ($customField->values as $value){
+				//Get the right component object
+				if (array_key_exists($value, $allComponentsByName)){
+					$relatedComponent = $allComponentsByName[$value];
+				}else{
+					//This is a new component we haven't seen, add it
+					$ticketComponent = new TicketComponentFeed();
+					$ticketComponent->name = $value;
+					$ticketComponent->insert();
+					$allComponentsByName[$ticketComponent->name] = clone $ticketComponent;
+					$relatedComponent = $ticketComponent;
+				}
+				//Check to see if we are already linked to that component
+				$foundExistingLink = false;
+				foreach ($existingComponents as $existingComponent) {
+					if ($existingComponent->componentId == $relatedComponent->id){
+						$relatedComponents[] = $existingComponent;
+						$foundExistingLink = true;
+					}
+				}
+				if (!$foundExistingLink){
+					$componentLink = new ComponentTicketLink();
+					$componentLink->ticketId = $openTicket->id;
+					$componentLink->componentId = $relatedComponent->id;
+					$relatedComponents[] = $componentLink;
+				}
+			}
+			break;
+		}
+	}
+	$openTicket->setRelatedComponents($relatedComponents);
+	$openTicket->update();
+}
 
 //Update all tickets from partner feeds
 
@@ -173,6 +240,8 @@ while ($aspenSite->fetch()){
 		}
 	}
 }
+
+//Update Ticket Components, we will loop through all open tickets
 
 
 //Update stats for today

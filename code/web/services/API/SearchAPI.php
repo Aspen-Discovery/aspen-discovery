@@ -1460,15 +1460,20 @@ class SearchAPI extends Action {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
 						foreach ($allSearches as $savedSearch) {
-							$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
-							$categoryResponse = [
-								'key' => $thisId,
-								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
-								'source' => 'SavedSearch',
-								'sourceId' => $savedSearch['id'],
-								'isHidden' => $categoryInformation->isDismissed($appUser),
-							];
-							$formattedCategories[] = $categoryResponse;
+							require_once ROOT_DIR . '/sys/SearchEntry.php';
+							$obj = new SearchEntry();
+							$obj->id = $savedSearch['id'];
+							if ($obj->find(true)) {
+								$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
+								$categoryResponse = [
+									'key' => $thisId,
+									'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
+									'source' => 'SavedSearch',
+									'sourceId' => $obj->id,
+									'isHidden' => $obj->isDismissed(),
+								];
+								$formattedCategories[] = $categoryResponse;
+							}
 						}
 					} elseif ($categoryInformation->textId == ('system_user_lists')) {
 						$userLists = $listApi->getUserLists();
@@ -1477,15 +1482,16 @@ class SearchAPI extends Action {
 							foreach ($allUserLists as $userList) {
 								if ($userList['id'] != 'recommendations') {
 									$thisId = $categoryInformation->textId . '_' . $userList['id'];
-									$list = new UserList();
-									$list->id = $userList['id'];
-									if ($list->find(true)) {
+									require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+									$obj = new UserList();
+									$obj->id = $userList['id'];
+									if ($obj->find(true)) {
 										$categoryResponse = [
 											'key' => $thisId,
-											'title' => $categoryInformation->label . ': ' . $list->title,
+											'title' => $categoryInformation->label . ': ' . $obj->title,
 											'source' => 'List',
-											'sourceId' => $list->id,
-											'isHidden' => $list->isDismissed(),
+											'sourceId' => $obj->id,
+											'isHidden' => $obj->isDismissed(),
 										];
 										$formattedCategories[] = $categoryResponse;
 									}

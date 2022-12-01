@@ -830,13 +830,7 @@ class Koha extends AbstractIlsDriver {
 				$user->cat_username = $userFromDb['userid'];
 			}
 
-			if ($userExistsInDB) {
-				$passwordChanged = ($user->cat_password != $password);
-				if ($passwordChanged) {
-					//The password has changed, disable account linking and give users the appropriate messages
-					$user->disableLinkingDueToPasswordChange();
-				}
-			} else {
+			if (!$userExistsInDB) {
 				//For new users, we need to check to see if they are opted into reading history or not
 				switch ($userFromDb['privacy']) {
 					case 2:

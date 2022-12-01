@@ -37,16 +37,26 @@
 								</p>
 							</div>
 						{/if}
-					{if $allowEdit}
+						{if $allowEdit}
 							<div id="listEditControls" style="display:none" class="collapse">
 								<div class="form-group">
 									<label for="listTitleEdit" class="control-label">{translate text="Title" isPublicFacing=true}</label>
-									<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
+									{if empty($validListNames)}
+										<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" size="50" class="form-control">
+									{else}
+										<select id="listTitleEdit" name="titleSelect" class="form-control">
+											{foreach from=$validListNames item=listName key=listNameIndex}
+												<option value="{$listNameIndex}" {if $userList->title == $listName}selected{/if}>{$listName}</option>
+											{/foreach}
+										</select>
+									{/if}
 								</div>
-								<div class="form-group">
-									<label for="listDescriptionEdit" class="control-label">{translate text="Description" isPublicFacing=true}</label>&nbsp;
-									<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$userList->getCleanDescription()|escape:"html"}</textarea>
-								</div>
+								{if $enableListDescriptions}
+									<div class="form-group">
+										<label for="listDescriptionEdit" class="control-label">{translate text="Description" isPublicFacing=true}</label>&nbsp;
+										<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$userList->getCleanDescription()|escape:"html"}</textarea>
+									</div>
+								{/if}
 								<div class="form-group">
 									<label for="public" class="col-sm-3 control-label">{translate text="Access" isPublicFacing=true}</label>
 									<div class="col-sm-9">
@@ -84,59 +94,60 @@
 								});
 							{/literal}</script>
 						{/if}
-						<div class="clearer"></div>
-						<div id="listTopButtons" class="btn-toolbar">
-							{if $allowEdit}
-								<div class="btn-group btn-group-sm">
-									<button value="editList" id="FavEdit" class="btn btn-sm btn-info listViewButton" onclick="return AspenDiscovery.Lists.editListAction()">{translate text='Edit' isPublicFacing=true}</button>
-								</div>
-								<div class="btn-group btn-group-sm">
-									<button value="saveList" id="FavSave" class="btn btn-sm btn-primary listEditButton" style="display:none" onclick='return AspenDiscovery.Lists.updateListAction()'>{translate text='Update' isPublicFacing=true}</button>
-									<button value="cancelEditList" id="cancelEditList" class="btn btn-sm btn-default listEditButton" style="display:none" onclick='return AspenDiscovery.Lists.cancelEditListAction()'>{translate text='Cancel' isPublicFacing=true}</button>
-								</div>
-								<div class="btn-group btn-group-sm">
-									<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.batchAddToListAction({$userList->id})'>{translate text='Add Multiple Titles' isPublicFacing=true}</button>
-								</div>
-							{/if}
-							{if $userList->public == 1 && $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions) || in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
-								<div class="btn-group btn-group-sm">
-									{if (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
-										&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default listViewButton" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromList('{$userList->id}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
-									{/if}
-									{if (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
-										<a href="#" id="FavHome" class="btn btn-sm btn-default listViewButton" onclick="return AspenDiscovery.Lists.addToHomePage('{$userList->id}')">{translate text='Add To Browse' isAdminFacing=true}</a>
-									{/if}
-								</div>
-							{/if}
-
-							<div class="btn-group btn-group-sm">
-								{if $showEmailThis}
-								<button value="emailList" id="FavEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List' isPublicFacing=true}</button>
+						<div id="listTopButtons" class="btn-toolbar row">
+							<div class="col-sm-12">
+								{if $allowEdit}
+									<div class="btn-group btn-group-sm">
+										<button value="editList" id="FavEdit" class="btn btn-sm btn-info listViewButton" onclick="return AspenDiscovery.Lists.editListAction()">{translate text='Edit' isPublicFacing=true}</button>
+									</div>
+									<div class="btn-group btn-group-sm">
+										<button value="saveList" id="FavSave" class="btn btn-sm btn-primary listEditButton" style="display:none" onclick='return AspenDiscovery.Lists.updateListAction()'>{translate text='Update' isPublicFacing=true}</button>
+										<button value="cancelEditList" id="cancelEditList" class="btn btn-sm btn-default listEditButton" style="display:none" onclick='return AspenDiscovery.Lists.cancelEditListAction()'>{translate text='Cancel' isPublicFacing=true}</button>
+									</div>
+									<div class="btn-group btn-group-sm">
+										<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.batchAddToListAction({$userList->id})'>{translate text='Add Multiple Titles' isPublicFacing=true}</button>
+									</div>
 								{/if}
-								<button value="printList" id="FavPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List' isPublicFacing=true}</button>
-								<a id="FavExport" class="btn btn-sm btn-default listViewButton" href="/MyAccount/AJAX?method=exportUserList&listId={$userList->id}">{translate text='Export List to Excel' isPublicFacing=true}</a>
-								<button value="citeList" id="FavCite" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.citeListAction("{$userList->id}")'>{translate text='Generate Citations' isPublicFacing=true}</button>
+								{if $userList->public == 1 && $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions) || in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+									<div class="btn-group btn-group-sm">
+										{if (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
+											&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default listViewButton" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromList('{$userList->id}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
+										{/if}
+										{if (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+											<a href="#" id="FavHome" class="btn btn-sm btn-default listViewButton" onclick="return AspenDiscovery.Lists.addToHomePage('{$userList->id}')">{translate text='Add To Browse' isAdminFacing=true}</a>
+										{/if}
+									</div>
+								{/if}
 
-								<div class="btn-group" role="group">
-									<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle listViewButton" data-toggle="dropdown" aria-expanded="false">{translate text='Sort by' isPublicFacing=true}&nbsp;<span class="caret"></span></button>
-									<ul class="dropdown-menu dropdown-menu-right" role="menu">
-										{foreach from=$sortList item=sortData}
-											<li>
-												<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{/if}> {* only add link on un-selected options *}
-													{translate text=$sortData.desc isPublicFacing=true}
-													{if $sortData.selected} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
-												</a>
-											</li>
-										{/foreach}
-									</ul>
-								</div>
-
-							</div>
-							{if $allowEdit}
 								<div class="btn-group btn-group-sm">
-									<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger listViewButton" onclick='return AspenDiscovery.Lists.deleteListAction();'>{translate text='Delete List' isPublicFacing=true}</button>
+									{if $showEmailThis}
+									<button value="emailList" id="FavEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List' isPublicFacing=true}</button>
+									{/if}
+									<button value="printList" id="FavPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List' isPublicFacing=true}</button>
+									<a id="FavExport" class="btn btn-sm btn-default listViewButton" href="/MyAccount/AJAX?method=exportUserList&listId={$userList->id}">{translate text='Export List to Excel' isPublicFacing=true}</a>
+									<button value="citeList" id="FavCite" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.citeListAction("{$userList->id}")'>{translate text='Generate Citations' isPublicFacing=true}</button>
+
+									<div class="btn-group" role="group">
+										<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle listViewButton" data-toggle="dropdown" aria-expanded="false">{translate text='Sort by' isPublicFacing=true}&nbsp;<span class="caret"></span></button>
+										<ul class="dropdown-menu dropdown-menu-right" role="menu">
+											{foreach from=$sortList item=sortData}
+												<li>
+													<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{/if}> {* only add link on un-selected options *}
+														{translate text=$sortData.desc isPublicFacing=true}
+														{if $sortData.selected} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
+													</a>
+												</li>
+											{/foreach}
+										</ul>
+									</div>
+
 								</div>
-							{/if}
+								{if $allowEdit}
+									<div class="btn-group btn-group-sm">
+										<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger listViewButton" onclick='return AspenDiscovery.Lists.deleteListAction();'>{translate text='Delete List' isPublicFacing=true}</button>
+									</div>
+								{/if}
+							</div>
 						</div>
 					{/if}
 				</div>

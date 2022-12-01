@@ -4,15 +4,25 @@
 		<div class="form-group">
 			<label for="listTitle" class="col-sm-3 control-label">{translate text="List" isPublicFacing=true}</label>
 			<div class="col-sm-9">
-				<input type="text" id="listTitle" name="title" value="{$list->title|escape:"html"}" size="50" class="form-control">
+				{if empty($validListNames)}
+					<input type="text" id="listTitle" name="title" value="{$list->title|escape:"html"}" size="50" class="form-control">
+				{else}
+					<select id="listTitle" name="titleSelect" class="form-control">
+						{foreach from=$validListNames item=listName key=listNameIndex}
+							<option value="{$listNameIndex}">{$listName}</option>
+						{/foreach}
+					</select>
+				{/if}
 			</div>
 		</div>
-		<div class="form-group">
-		  <label for="listDesc" class="col-sm-3 control-label">{translate text="Description" isPublicFacing=true}</label>
-			<div class="col-sm-9">
-		    <textarea name="desc" id="listDesc" rows="3" cols="50" class="form-control">{$list->desc|escape:"html"}</textarea>
+		{if $enableListDescriptions}
+			<div class="form-group">
+			  <label for="listDesc" class="col-sm-3 control-label">{translate text="Description" isPublicFacing=true}</label>
+				<div class="col-sm-9">
+			    <textarea name="desc" id="listDesc" rows="3" cols="50" class="form-control">{$list->desc|escape:"html"}</textarea>
+				</div>
 			</div>
-		</div>
+		{/if}
 		<div class="form-group">
 			<label for="public" class="col-sm-3 control-label">{translate text="Access" isPublicFacing=true}</label>
 			<div class="col-sm-9">
