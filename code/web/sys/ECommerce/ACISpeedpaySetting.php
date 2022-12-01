@@ -241,9 +241,8 @@ class ACISpeedpaySetting extends DataObject {
 		$authCodeRequest->addCustomHeaders([
 			"X-Auth-Key: $this->apiAuthKey",
 			'Content-Type: application/x-www-form-urlencoded',
-			'Host: api.acispeedpay.com',
 			'Accept: application/json',
-		], true);
+		], false);
 		$postParams = [
 			'grant_type' => 'client_credentials',
 			'client_id' => $this->clientId,
@@ -269,7 +268,7 @@ class ACISpeedpaySetting extends DataObject {
 		$billerAccountId = $user->$billerAccountId;
 
 		if ($this->sandboxMode == 1) {
-			$billerAccountId = '56053';
+			$billerAccountId = '56050';
 		}
 
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';

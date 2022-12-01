@@ -425,7 +425,7 @@ AspenDiscovery.Browse = (function(){
 				if (data.success === false) {
 					AspenDiscovery.showMessage("Unable to create category", data.message);
 				} else {
-					AspenDiscovery.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
+					AspenDiscovery.showMessage("Successfully added", data.message, true);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;

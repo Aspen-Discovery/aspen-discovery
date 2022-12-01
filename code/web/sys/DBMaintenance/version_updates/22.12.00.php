@@ -245,6 +245,20 @@ function getUpdates22_12_00(): array {
 				"ALTER TABLE user ADD COLUMN disableAccountLinking TINYINT(1) DEFAULT '0'",
 			]
 		],//user_disableAccountLinking
+		'disable_linking_changes' => [
+		'title' => 'Remove Old Account Linking Functionality',
+		'description' => 'Remove linkingDisabled column',
+		'sql' => [
+			"ALTER TABLE user_link DROP COLUMN linkingDisabled",
+			]
+		],//disable_linking_changes
+		'user_message_addendum' => [
+			'title' => 'Add actions to user messaging',
+			'description' => 'Adds addendum for certain messages',
+			'sql' => [
+				'ALTER TABLE user_messages ADD COLUMN addendum VARCHAR(255)',
+			]
+		],//user_message_addendum
 
 		//other
 	];
