@@ -3000,6 +3000,14 @@ class User extends DataObject
 		}
 	}
 
+	public function getPasswordPinValidationRules() : array {
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getPasswordPinValidationRules();
+		}else{
+			return [];
+		}
+	}
+
 	protected function clearRuntimeDataVariables(){
 		if ($this->_accountProfile != null){
 			$this->_accountProfile->__destruct();
