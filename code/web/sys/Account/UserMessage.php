@@ -15,6 +15,10 @@ class UserMessage extends DataObject
 	public $action2;
 	public $addendum;
 
+	public function getNumericColumnNames(): array {
+		return ['isDismissed', 'userId'];
+	}
+
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
 		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);

@@ -56,10 +56,14 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function addAccountLink() {
+	function addAccountLink(): array {
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
-				'result' => false,
+				'success' => false,
+				'title' => translate([
+					'text' => 'Unable to link accounts',
+					'isPublicFacing' => true
+				]),
 				'message' => translate([
 					'text' => 'Sorry, you must be logged in to manage accounts.',
 					'isPublicFacing' => true
@@ -74,7 +78,11 @@ class MyAccount_AJAX extends JSON_Action {
 
 			if (!UserAccount::isLoggedIn()) {
 				$result = array(
-					'result' => false,
+					'success' => false,
+					'title' => translate([
+						'text' => 'Unable to link accounts',
+						'isPublicFacing' => true
+					]),
 					'message' => translate([
 						'text' => 'You must be logged in to link accounts, please login again',
 						'isPublicFacing' => true
@@ -82,37 +90,69 @@ class MyAccount_AJAX extends JSON_Action {
 				);
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
-                    if ($accountToLink->disableAccountLinking==0){
-                        $addResult = $user->addLinkedUser($accountToLink);
-                        if ($addResult === true) {
-                            $result = array(
-                                'result' => true,
-                                'message' => translate(['text' => 'Successfully linked accounts.', 'isPublicFacing' => true])
-                            );
+					if ($accountToLink->disableAccountLinking == 0) {
+						$addResult = $user->addLinkedUser($accountToLink);
+						if ($addResult === true) {
+							$result = array(
+								'success' => true,
+								'title' => translate([
+									'text' => 'Success',
+									'isPublicFacing' => true
+								]),
+								'message' => translate([
+									'text' => 'Successfully linked accounts.',
+									'isPublicFacing' => true
+								])
+							);
 							$accountToLink->newLinkMessage();
-                        } else { // insert failure or user is blocked from linking account or account & account to link are the same account
-                            $result = array(
-                                'result' => false,
-                                'message' => translate(['text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing' => true])
-                            );
-                        }
-                    } else{
-                        $result = array(
-                            'result' => false,
-                            'message' => translate(['text' => 'Sorry, this user does not allow account linking', 'isPublicFacing' => true])
-                        );
-                    }
-                }else {
-                    $result = array(
-                        'result' => false,
-                        'message' => translate(['text' => 'You cannot link to yourself.', 'isPublicFacing' => true])
-                    );
-                }
+						} else { // insert failure or user is blocked from linking account or account & account to link are the same account
+							$result = array(
+								'success' => false,
+								'title' => translate([
+									'text' => 'Unable to link accounts',
+									'isPublicFacing' => true
+								]),
+								'message' => translate([
+									'text' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.',
+									'isPublicFacing' => true
+								])
+							);
+						}
+					} else {
+						$result = array(
+							'success' => false,
+							'title' => translate([
+								'text' => 'Unable to link accounts',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Sorry, this user does not allow account linking',
+								'isPublicFacing' => true
+							])
+						);
+					}
+				} else {
+					$result = array(
+						'success' => false,
+						'title' => translate([
+							'text' => 'Unable to link accounts',
+							'isPublicFacing' => true
+						]),
+						'message' => translate([
+							'text' => 'You cannot link to yourself.',
+							'isPublicFacing' => true
+						])
+					);
+				}
 			} else {
 				$result = array(
-					'result' => false,
+					'success' => false,
+					'title' => translate([
+						'text' => 'Unable to link accounts',
+						'isPublicFacing' => true
+					]),
 					'message' => translate([
-						'text' => 'You cannot link to yourself.',
+						'text' => 'The information for the user to link to was not correct.',
 						'isPublicFacing' => true
 					])
 				);
@@ -123,10 +163,14 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function removeManagingAccount() {
+	function removeManagingAccount() : array {
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
-				'result' => false,
+				'success' => false,
+				'title' => translate([
+					'text' => 'Unable to Remove Account Link',
+					'isAdminFacing' => 'true'
+				]),
 				'message' => translate([
 					'text' => 'Sorry, you must be logged in to manage accounts.',
 					'isPublicFacing' => true
@@ -141,7 +185,11 @@ class MyAccount_AJAX extends JSON_Action {
 				$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
 				if ($patronHomeLibrary->allowPinReset == 1) {
 					$result = array(
-						'result' => true,
+						'success' => true,
+						'title' => translate([
+							'text' => 'Linked Account Removed',
+							'isAdminFacing' => 'true'
+						]),
 						'message' => translate([
 							'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?',
 							'isPublicFacing' => true
@@ -153,7 +201,11 @@ class MyAccount_AJAX extends JSON_Action {
 					);
 				} else {
 					$result = array(
-						'result' => true,
+						'success' => true,
+						'title' => translate([
+							'text' => 'Linked Account Removed',
+							'isAdminFacing' => 'true'
+						]),
 						'message' => translate([
 							'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
 							'isPublicFacing' => true
@@ -162,7 +214,11 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 			} else {
 				$result = array(
-					'result' => false,
+					'success' => false,
+					'title' => translate([
+						'text' => 'Unable to Remove Account Link',
+						'isAdminFacing' => 'true'
+					]),
 					'message' => translate([
 						'text' => 'Sorry, we could not remove that account.',
 						'isPublicFacing' => true
@@ -174,12 +230,19 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function removeAccountLink() {
+	function removeAccountLink() : array {
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
-				'result' => false,
+				'success' => false,
+				'title' => translate([
+					'text' => 'Unable to Remove Account Link',
+					'isPublicFacing' => true
+				]),
 				'message' => translate([
-					'text' => 'Sorry, you must be logged in to manage accounts.',
+					'text' => translate([
+						'Sorry, you must be logged in to manage accounts.',
+						'isPublicFacing' => true
+					]),
 					'isPublicFacing' => true
 				])
 			);
@@ -188,29 +251,43 @@ class MyAccount_AJAX extends JSON_Action {
 			$user = UserAccount::getLoggedInUser();
 			if ($user->removeLinkedUser($accountToRemove)) {
 				$result = array(
-					'result' => true,
+					'success' => true,
+					'title' => translate([
+						'text' => 'Success',
+						'isPublicFacing' => true
+					]),
 					'message' => translate([
-						'text' => 'Successfully removed linked account.',
+						'text' => translate([
+							'text' => 'Successfully removed linked account.',
+							'isPublicFacing' => true
+						]),
 						'isPublicFacing' => true
 					])
 				);
 			} else {
 				$result = array(
-					'result' => false,
+					'success' => false,
+					'title' => translate([
+						'text' => 'Unable to Remove Account Link',
+						'isPublicFacing' => true
+					]),
 					'message' => translate([
-						'text' => 'Sorry, we could remove that account.',
+						'text' => translate([
+							'text' => 'Sorry, we could remove that account.',
+							'isPublicFacing' => true
+						]),
 						'isPublicFacing' => true
 					])
 				);
-				return $result;
 			}
 		}
+		return $result;
 	}
 
 	//WHAT IS IN MODAL POPUP FOR LINK DISABLE
 
 	/** @noinspection PhpUnused */
-	function disableAccountLinkingInfo() {
+	function disableAccountLinkingInfo(): array {
 		$user = UserAccount::getActiveUserObj();
 		if ($user->disableAccountLinking == 1) {
 			return array(
@@ -319,6 +396,24 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true
 				]) . "</span>"
 		);
+	}
+
+	/** @noinspection PhpUnused */
+	function allowAccountLink(){
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+
+		$activeUserId = UserAccount::getActiveUserId();
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'confirm_linked_accts';
+		$userMessage->userId = $activeUserId;
+		$userMessage->isDismissed = "0";
+		$userMessage->find();
+		while ($userMessage->fetch()) {
+			$userMessage->isDismissed = 1;
+			$userMessage->update();
+		}
+
+		return ['success' => true, 'message' => 'Account Link Accepted'];
 	}
 
 	/** @noinspection PhpUnused */
@@ -6361,84 +6456,5 @@ class MyAccount_AJAX extends JSON_Action {
 				])
 			);
 		}
-	}
-
-	/** @noinspection PhpUnused */
-	function enableAccountLinking() {
-		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
-		require_once ROOT_DIR . '/sys/Account/UserLink.php';
-		$activeUserId = UserAccount::getActiveUserId();
-		$userLink = new UserLink();
-		$userLink->linkedAccountId = $activeUserId;
-		$userLink->find();
-		while ($userLink->fetch()) {
-			$userLink->linkingDisabled = "0";
-			$userLink->update();
-
-			$userMessage = new UserMessage();
-			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
-			$userMessage->userId = $userLink->primaryAccountId;
-			$userMessage->isDismissed = "0";
-			if ($userMessage->find()) {
-				while ($userMessage->fetch()) {
-					$userMessage->isDismissed = 1;
-					$userMessage->update();
-				}
-			}
-		}
-
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $activeUserId;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
-		}
-
-		return [
-			'success' => true,
-			'message' => 'Account Linking Resumed'
-		];
-	}
-
-	/** @noinspection PhpUnused */
-	function stopAccountLinking() {
-		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
-		require_once ROOT_DIR . '/sys/Account/UserLink.php';
-		$activeUserId = UserAccount::getActiveUserId();
-		$userLink = new UserLink();
-		$userLink->linkedAccountId = $activeUserId;
-		$userLink->find();
-		while ($userLink->fetch()) {
-			$userLink->delete();
-
-			$userMessage = new UserMessage();
-			$userMessage->messageType = 'linked_acct_notify_pause_' . $activeUserId;
-			$userMessage->userId = $userLink->primaryAccountId;
-			$userMessage->isDismissed = "0";
-			if ($userMessage->find()) {
-				while ($userMessage->fetch()) {
-					$userMessage->message = "An account you are linking to changed their login. Account linking with them has been disabled.";
-					$userMessage->update();
-				}
-			}
-		}
-
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $activeUserId;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
-		}
-
-		return [
-			'success' => true,
-			'message' => 'Account Linking Stopped'
-		];
 	}
 }

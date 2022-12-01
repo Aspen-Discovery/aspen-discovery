@@ -2210,17 +2210,25 @@ class User extends DataObject
 		$userLinks = new UserLink();
 		$userLinks->linkedAccountId = $this->id;
 		if ($userLinks->find()) {
+			//If we already have one of these messages that is unconfirmed, we don't need more.
 			$userMessage = new UserMessage();
 			$userMessage->userId = $this->id;
 			$userMessage->messageType = 'confirm_linked_accts';
-			$userMessage->message = translate(['text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?", 'isPublicFacing' => true]);
-			$userMessage->action1Title = translate(['text' => "Yes", 'isPublicFacing' => true]);
-			$userMessage->action1 = "return AspenDiscovery.Account.allowAccountLink()";
-			$userMessage->action2Title = translate(['text' => "No", 'isPublicFacing' => true]);
-			$userMessage->action2 = "return AspenDiscovery.Account.redirectLinkedAccounts()";
-			$userMessage->messageLevel = 'warning';
-			$userMessage->addendum = translate(['text' => "Learn more about linked accounts", 'isPublicFacing' => true]);
-			$userMessage->insert();
+			$userMessage->isDismissed = 0;
+
+			if ($userMessage->find() == 0){
+				$userMessage = new UserMessage();
+				$userMessage->userId = $this->id;
+				$userMessage->messageType = 'confirm_linked_accts';
+				$userMessage->message = translate(['text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?", 'isPublicFacing' => true]);
+				$userMessage->action1Title = translate(['text' => "Yes", 'isPublicFacing' => true]);
+				$userMessage->action1 = "return AspenDiscovery.Account.allowAccountLink()";
+				$userMessage->action2Title = translate(['text' => "No", 'isPublicFacing' => true]);
+				$userMessage->action2 = "return AspenDiscovery.Account.redirectLinkedAccounts()";
+				$userMessage->messageLevel = 'warning';
+				$userMessage->addendum = translate(['text' => "Learn more about linked accounts", 'isPublicFacing' => true]);
+				$userMessage->insert();
+			}
 		}
 	}
 

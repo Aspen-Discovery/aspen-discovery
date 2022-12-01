@@ -5833,16 +5833,15 @@ AspenDiscovery.Account = (function () {
 					url: url,
 					data: {username: username, password: password},
 					success: function (response) {
-						if (response.result === true) {
-							AspenDiscovery.showMessage(response.title, response.message ? response.message : "Successfully linked the account.", true, true);
+						if (response.success === true) {
+							AspenDiscovery.showMessage(response.title, response.message, true, response.success);
 						} else {
 							loginErrorElem.html(response.message);
 							loginErrorElem.show();
 						}
 					},
 					error: function () {
-						loginErrorElem.text("There was an error processing the account, please try again.")
-							.show();
+						loginErrorElem.text("There was an error processing the account, please try again.").show();
 					},
 					dataType: 'json',
 					type: 'post'
@@ -5856,10 +5855,10 @@ AspenDiscovery.Account = (function () {
 			if (confirm("Are you sure you want to stop managing this account?")) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
-					if (data.result === true) {
-						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
+					if (data.success === true) {
+						AspenDiscovery.showMessage(data.title, data.message, true, true);
 					} else {
-						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				});
 			}
@@ -5870,7 +5869,7 @@ AspenDiscovery.Account = (function () {
 			if (confirm("Are you sure you want to break the link with this account?")) {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeManagingAccount&idToRemove=" + idToRemove;
 				$.getJSON(url, function (data) {
-					if (data.result === true) {
+					if (data.success === true) {
 						AspenDiscovery.showMessageWithButtons('Linked Account Removed', data.message, data.modalButtons, true);
 					} else {
 						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
@@ -5884,17 +5883,17 @@ AspenDiscovery.Account = (function () {
 		disableAccountLinkingPopup: function () {
 			var url = Globals.path + "/MyAccount/AJAX?method=disableAccountLinkingInfo";
 			AspenDiscovery.loadingMessage();
-				$.getJSON(url, function(data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail);
-				return false;
+			$.getJSON(url, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
 		//CALL FOR HITTING ACCEPT ON POPUP - GOES TO TOGGLEACCOUNTLINKING AJAX
 		toggleAccountLinkingAccept: function() {
 			var url = Globals.path + "/MyAccount/AJAX?method=toggleAccountLinking";
 			$.getJSON(url, function (data) {
-					AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
+				AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
 			});
 			return false;
 		},
@@ -5904,7 +5903,9 @@ AspenDiscovery.Account = (function () {
 			var params = {
 				method: "allowAccountLink"
 			};
-			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			$.getJSON(url, params, function (data) {
+				AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
