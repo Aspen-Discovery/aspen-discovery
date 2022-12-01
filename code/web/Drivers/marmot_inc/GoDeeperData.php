@@ -108,26 +108,36 @@ class GoDeeperData{
 			require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 			$contentCafeSettings = new ContentCafeSetting();
 			if ($contentCafeSettings->find(true)){
-				$response = self::getContentCafeData($contentCafeSettings, $isbn, $upc);
-				if ($response != false){
-					$availableContent = $response[0]->AvailableContent;
-					if ($contentCafeSettings->hasExcerpt && $availableContent->Excerpt) {
-						$validEnrichmentTypes['excerpt'] = 'Excerpt';
-						if (!isset($defaultOption)) $defaultOption = 'excerpt';
+				if ($contentCafeSettings->enabled) {
+					$response = self::getContentCafeData($contentCafeSettings, $isbn, $upc);
+					if ($response != false) {
+						$availableContent = $response[0]->AvailableContent;
+						if ($contentCafeSettings->hasExcerpt && $availableContent->Excerpt) {
+							$validEnrichmentTypes['excerpt'] = 'Excerpt';
+							if (!isset($defaultOption)) {
+								$defaultOption = 'excerpt';
+							}
+						}
+						if ($contentCafeSettings->hasToc && $availableContent->TOC) {
+							$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
+							if (!isset($defaultOption)) {
+								$defaultOption = 'tableOfContents';
+							}
+						}
+						if ($contentCafeSettings->hasAuthorNotes && $availableContent->Biography) {
+							$validEnrichmentTypes['authorNotes'] = 'Author Notes';
+							if (!isset($defaultOption)) {
+								$defaultOption = 'authorNotes';
+							}
+						}
+						if ($contentCafeSettings->hasSummary && $availableContent->Annotation) {
+							$validEnrichmentTypes['summary'] = 'Summary';
+							if (!isset($defaultOption)) {
+								$defaultOption = 'summary';
+							}
+						}
+						$timer->logTime("Finished processing Content Cafe options");
 					}
-					if ($contentCafeSettings->hasToc && $availableContent->TOC) {
-						$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
-						if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
-					}
-					if ($contentCafeSettings->hasAuthorNotes && $availableContent->Biography) {
-						$validEnrichmentTypes['authorNotes'] = 'Author Notes';
-						if (!isset($defaultOption)) $defaultOption = 'authorNotes';
-					}
-					if ($contentCafeSettings->hasSummary && $availableContent->Annotation) {
-						$validEnrichmentTypes['summary'] = 'Summary';
-						if (!isset($defaultOption)) $defaultOption = 'summary';
-					}
-					$timer->logTime("Finished processing Content Cafe options");
 				}
 			}
 
@@ -153,6 +163,8 @@ class GoDeeperData{
 			$SOAP_options['trace'] = true;
 		}
 		try {
+			$defaultSocketTimeout = ini_get('default_socket_timeout');
+			ini_set('default_socket_timeout', 3);
 			$soapClient = new SoapClient($url, $SOAP_options);
 
 			$params = array(
@@ -167,6 +179,7 @@ class GoDeeperData{
 			if (IPAddress::showDebuggingInformation()) {
 				ExternalRequestLogEntry::logRequest('contentcafe.getData', 'GET', $url, $soapClient->__getLastRequestHeaders(), $soapClient->__getLastRequest(), 0, $soapClient->__getLastResponse(), []);
 			}
+			ini_set('default_socket_timeout', $defaultSocketTimeout);
 			if ($response) {
 				if (!isset($response->ContentCafe->Error)) {
 					return $response->ContentCafe->RequestItems->RequestItem;
@@ -194,7 +207,9 @@ class GoDeeperData{
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 		$contentCafeSettings = new ContentCafeSetting();
 		if ($contentCafeSettings->find(true)){
-			$summaryData = self::getContentCafeSummary($contentCafeSettings, $isbn, $upc);
+			if ($contentCafeSettings->enabled) {
+				$summaryData = self::getContentCafeSummary($contentCafeSettings, $isbn, $upc);
+			}
 		}
 		return $summaryData;
 	}
@@ -360,7 +375,9 @@ class GoDeeperData{
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 		$contentCafeSettings = new ContentCafeSetting();
 		if ($contentCafeSettings->find(true)){
-			$tocData = self::getContentCafeTableOfContents($contentCafeSettings, $isbn, $upc);
+			if ($contentCafeSettings->enabled) {
+				$tocData = self::getContentCafeTableOfContents($contentCafeSettings, $isbn, $upc);
+			}
 		}
 		return $tocData;
 	}
@@ -879,23 +896,24 @@ class GoDeeperData{
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 		$contentCafeSettings = new ContentCafeSetting();
 		if ($contentCafeSettings->find(true)){
-			switch (strtolower($dataType)) {
-				case 'tableofcontents' :
-					$data = GoDeeperData::getContentCafeTableOfContents($contentCafeSettings, $isbn, $upc);
-					$interface->assign('tocData', $data);
-					return $interface->fetch('Record/view-contentcafe-toc.tpl');
-				case 'authornotes' :
-					$data = GoDeeperData::getContentCafeAuthorNotes($contentCafeSettings, $isbn, $upc);
-					$interface->assign('authorData', $data);
-					return $interface->fetch('Record/view-syndetics-author-notes.tpl');
-				case 'excerpt' :
-					$data = GoDeeperData::getContentCafeExcerpt($contentCafeSettings, $isbn, $upc);
-					$interface->assign('excerptData', $data);
-					return $interface->fetch('Record/view-syndetics-excerpt.tpl');
-				default :
-					return "Loading data for Content Cafe $dataType still needs to be handled.";
+			if ($contentCafeSettings->enabled) {
+				switch (strtolower($dataType)) {
+					case 'tableofcontents' :
+						$data = GoDeeperData::getContentCafeTableOfContents($contentCafeSettings, $isbn, $upc);
+						$interface->assign('tocData', $data);
+						return $interface->fetch('Record/view-contentcafe-toc.tpl');
+					case 'authornotes' :
+						$data = GoDeeperData::getContentCafeAuthorNotes($contentCafeSettings, $isbn, $upc);
+						$interface->assign('authorData', $data);
+						return $interface->fetch('Record/view-syndetics-author-notes.tpl');
+					case 'excerpt' :
+						$data = GoDeeperData::getContentCafeExcerpt($contentCafeSettings, $isbn, $upc);
+						$interface->assign('excerptData', $data);
+						return $interface->fetch('Record/view-syndetics-excerpt.tpl');
+					default :
+						return "Loading data for Content Cafe $dataType still needs to be handled.";
+				}
 			}
-
 		}
 
 		return "Unhandled option or incorrectly configured option";

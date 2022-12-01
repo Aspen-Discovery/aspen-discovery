@@ -502,8 +502,10 @@ class BookCoverProcessor{
 			require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 			$contentCafeSettings = new ContentCafeSetting();
 			if ($contentCafeSettings->find(true)){
-				if ($this->contentCafe($contentCafeSettings)){
-					return true;
+				if ($contentCafeSettings->enabled) {
+					if ($this->contentCafe($contentCafeSettings)) {
+						return true;
+					}
 				}
 			}
 

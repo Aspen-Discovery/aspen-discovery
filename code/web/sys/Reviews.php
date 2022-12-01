@@ -46,9 +46,11 @@ class ExternalReviews
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 		$contentCafeSettings = new ContentCafeSetting();
 		if ($contentCafeSettings->find(true)){
-			$result = $this->contentCafe($contentCafeSettings);
-			if ($result != null){
-				$this->results['contentCafe'] = $result;
+			if ($contentCafeSettings->enabled) {
+				$result = $this->contentCafe($contentCafeSettings);
+				if ($result != null) {
+					$this->results['contentCafe'] = $result;
+				}
 			}
 		}
 
