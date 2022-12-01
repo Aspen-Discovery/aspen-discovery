@@ -4,6 +4,7 @@ class WebBuilder_PortalPage extends Action
 {
 	/** @var PortalPage */
 	private $portalPage;
+	private $portalPageFound;
 
 	function __construct()
 	{
@@ -14,10 +15,9 @@ class WebBuilder_PortalPage extends Action
 		$this->portalPage = new PortalPage();
 		$id = strip_tags($_REQUEST['id']);
 		$this->portalPage->id = $id;
-		$userCanAccess = $this->canView();
-		$portalPageFounded = $this->portalPage->find(true);
+		$this->portalPageFound = $this->portalPage->find(true);
 
-		if(!$portalPageFounded){
+		if(!$this->portalPageFound){
 			global $interface;
 			$interface->assign('module','Error');
 			$interface->assign('action','Handle404');
@@ -26,6 +26,7 @@ class WebBuilder_PortalPage extends Action
 			$actionClass->launch();
 			die();
 		} else {
+			$userCanAccess = $this->canView();
 			if (!$userCanAccess && isset($_REQUEST['raw'])) {
 				//Check to see if this IP is ok for API calls
 				if (IPAddress::allowAPIAccessForClientIP()) {
@@ -66,12 +67,9 @@ class WebBuilder_PortalPage extends Action
 
 	function canView() : bool
 	{
-		$this->portalPage->find();
-		if($this->portalPage->fetch(true)){
-
+		if($this->portalPageFound){
 			return $this->portalPage->canView();
-		}
-		else{
+		} else{
 			return false;
 		}
 	}
@@ -80,10 +78,10 @@ class WebBuilder_PortalPage extends Action
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
-		if ($this->page != null) {
-			$breadcrumbs[] = new Breadcrumb('', $this->page->title, true);
+		if ($this->portalPageFound) {
+			$breadcrumbs[] = new Breadcrumb('', $this->portalPage->title, true);
 			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
-				$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?id=' . $this->page->id . '&objectAction=edit', 'Edit', true);
+				$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?id=' . $this->portalPage->id . '&objectAction=edit', 'Edit', true);
 			}
 		}
 		return $breadcrumbs;
