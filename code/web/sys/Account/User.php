@@ -231,8 +231,20 @@ class User extends DataObject
 		}
 	}
 
-	function setRoles($value){
-		$this->_roles = $value;
+	function setRoles($values){
+		$rolesToAssign = [];
+		foreach ($values as $index => $value){
+			if (is_object($value)){
+				$rolesToAssign[$index] = $value;
+			}else{
+				$role = new Role();
+				$role->roleId = $value;
+				if ($role->find(true)){
+					$rolesToAssign[$role->roleId] = clone $role;
+				}
+			}
+		}
+		$this->_roles = $rolesToAssign;
 		//Update the database, first remove existing values
 		$this->saveRoles();
 	}
@@ -368,20 +380,21 @@ class User extends DataObject
 	function saveRoles(){
 		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role = new Role();
-			$escapedId = $this->escape($this->id);
-			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$userRoles = new UserRoles();
+			$userRoles->userId = $this->id;
+			$userRoles->delete(true);
+
 			//Now add the new values.
 			if (count($this->_roles) > 0){
 				$values = array();
 				foreach ($this->_roles as $roleId => $roleObj){
 					if (!$roleObj->isAssignedFromPType()) {
-						$values[] = "({$this->id},{$roleId})";
+						$userRoles = new UserRoles();
+						$userRoles->userId = $this->id;
+						$userRoles->roleId = $roleObj->roleId;
+						$userRoles->insert();
 					}
-				}
-				if (count($values) > 0) {
-					$values = join(', ', $values);
-					$role->query("INSERT INTO user_roles ( `userId` , `roleId` ) VALUES $values");
 				}
 			}
 		}
