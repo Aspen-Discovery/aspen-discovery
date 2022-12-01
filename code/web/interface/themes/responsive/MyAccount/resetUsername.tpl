@@ -38,9 +38,9 @@
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal" id="usernameForm">
 					<div class="form-group">
-						<div class="col-xs-4"><label for="username" class="control-label">{translate text='Username' isPublicFacing=true}</label></div>
+						<div class="col-xs-4"><label for="newUsername" class="control-label">{translate text='Username' isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
-							<input type="text" name="username" id="username" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="off">
+							<input type="text" name="newUsername" id="newUsername" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="off">
 						</div>
 					</div>
 					<div class="form-group">

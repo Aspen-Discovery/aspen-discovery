@@ -311,14 +311,15 @@ if ($isLoggedIn) {
 	$interface->assign('user', $activeUserObject);
 	$userIsStaff = $activeUserObject->isStaff();
 	$interface->assign('userIsStaff', $userIsStaff);
+	$interface->assign('showResetUsernameLink', $activeUserObject->showResetUsernameLink());
 } else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX') && ($module != 'API')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
-    try {
-        $user = UserAccount::login();
-    } catch (UnknownAuthenticationMethodException $e) {
-        AspenError::raiseError("Error authenticating patron " . $e->getMessage());
-    }
-    $timer->logTime('Login the user');
+	try {
+		$user = UserAccount::login();
+	} catch (UnknownAuthenticationMethodException $e) {
+		AspenError::raiseError("Error authenticating patron " . $e->getMessage());
+	}
+	$timer->logTime('Login the user');
 	require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
 	if ($user instanceof ExpiredPasswordError) {
 		$_REQUEST['token'] =  $user->resetToken;

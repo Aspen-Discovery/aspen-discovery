@@ -16,7 +16,7 @@ class MyAccount_ResetUsername extends MyAccount
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['submit']) && !$offlineMode) {
-				$newUsername = $_REQUEST['username'];
+				$newUsername = $_REQUEST['newUsername'];
 				$result = $user->updateEditableUsername($newUsername);
 				$user->updateMessage = $result['message'];
 				$user->updateMessageIsError = !$result['success'];
