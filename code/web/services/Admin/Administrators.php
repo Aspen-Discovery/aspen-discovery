@@ -126,10 +126,15 @@ class Admin_Administrators extends ObjectEditor
 
 			if ($newAdmin != false) {
 				if (isset($_REQUEST['roles'])) {
-					$newAdmin->setRoles($_REQUEST['roles']);
+					//Convert from a list of ids to the actual roles to be saved
+					$roleIds = $_REQUEST['roles'];
+					$newAdmin->setRoles($roleIds);
 					$newAdmin->update();
 				} else {
-					$newAdmin->query('DELETE FROM user_roles where user_roles.userId = ' . $newAdmin->id);
+					require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+					$userRoles = new UserRoles();
+					$userRoles->userId = $newAdmin->id;
+					$userRoles->delete(true);
 				}
 			}
 		}
