@@ -62,7 +62,6 @@ class WebBuilder_PortalPage extends Action
 		}else{
 			$this->display('portalPage.tpl', $title, '', false);
 		}
-		$this->display('portalPage.tpl', $title, '', false);
 	}
 
 	function canView() : bool
