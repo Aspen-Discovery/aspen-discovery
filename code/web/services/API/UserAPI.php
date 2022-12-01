@@ -2676,19 +2676,17 @@ class UserAPI extends Action {
 					'title' => $result['api']['title'],
 					'message' => $result['api']['message']
 				);
+			} else if ($source == 'overdrive') {
+				return $this->cancelOverDriveHold();
+			} else if ($source == 'cloud_library') {
+				return $this->cancelCloudLibraryHold();
+			} else if ($source == 'axis360') {
+				return $this->cancelAxis360Hold();
 			} else {
-				if ($source == 'overdrive') {
-					return $this->cancelOverDriveHold();
-				} else if ($source == 'cloud_library') {
-					return $this->cancelCloudLibraryHold();
-				} else if ($source == 'axis360') {
-					return $this->cancelAxis360Hold();
-				} else {
-					return array(
-						'success' => false,
-						'message' => 'Invalid source'
-					);
-				}
+				return array(
+					'success' => false,
+					'message' => 'Invalid source'
+				);
 			}
 		} else {
 			return array(
@@ -2750,19 +2748,15 @@ class UserAPI extends Action {
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
 				return $user->freezeHold($recordId, $holdId, $reactivationDate);
+			} else if ($source == 'overdrive') {
+				return $this->freezeOverDriveHold();
+			} else if ($source == 'axis360') {
+				return $this->freezeAxis360Hold();
 			} else {
-				if ($source == 'overdrive') {
-					return $this->freezeOverDriveHold();
-				} else {
-					if ($source == 'axis360') {
-						return $this->freezeAxis360Hold();
-					} else {
-						return array(
-							'success' => false,
-							'message' => 'Invalid source'
-						);
-					}
-				}
+				return array(
+					'success' => false,
+					'message' => 'Invalid source'
+				);
 			}
 
 		} else {
@@ -2840,18 +2834,15 @@ class UserAPI extends Action {
 					$holdId = $_REQUEST['holdId'];
 					return $user->thawHold($recordId, $holdId);
 				}
+			} else if ($source == 'overdrive') {
+				return $this->activateOverDriveHold();
+			} else if ($source == 'axis360') {
+				return $this->activateAxis360Hold();
 			} else {
-				if ($source == 'overdrive') {
-					return $this->activateOverDriveHold();
-				} else if ($source == 'axis360') {
-					return $this->activateAxis360Hold();
-				} else {
-					return array(
-						'success' => false,
-						'message' => 'Invalid source'
-					);
-				}
-
+				return array(
+					'success' => false,
+					'message' => 'Invalid source'
+				);
 			}
 		} else {
 			return array(
@@ -3246,21 +3237,19 @@ class UserAPI extends Action {
 			} else {
 				$results['message'] = 'Invalid Patron';
 			}
-		} else {
-			if (isset($_REQUEST['id'])) {
-				$user = new User();
-				$user->id = $_REQUEST['id'];
-				if ($user->find(true)) {
-					$results = array(
-						'success' => true,
-						'barcode' => $user->getBarcode()
-					);
-				} else {
-					$results['message'] = 'Invalid Patron';
-				}
+		} elseif (isset($_REQUEST['id'])) {
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if ($user->find(true)) {
+				$results = array(
+					'success' => true,
+					'barcode' => $user->getBarcode()
+				);
 			} else {
-				$results['message'] = 'No patron id was provided';
+				$results['message'] = 'Invalid Patron';
 			}
+		} else {
+			$results['message'] = 'No patron id was provided';
 		}
 		return $results;
 	}
@@ -3759,25 +3748,21 @@ class UserAPI extends Action {
 			if (!$user->find(true)) {
 				$user = false;
 			}
-		} else {
-			if (isset($_REQUEST['userId'])) {
-				$user = new User();
-				$user->id = $_REQUEST['userId'];
-				if (!$user->find(true)) {
-					$user = false;
-				}
-			} else {
-				if (isset($_REQUEST['id'])) {
-					$user = new User();
-					$user->id = $_REQUEST['id'];
-					if (!$user->find(true)) {
-						$user = false;
-					}
-				} else {
-					list($username, $password) = $this->loadUsernameAndPassword();
-					$user = UserAccount::validateAccount($username, $password);
-				}
+		} else if (isset($_REQUEST['userId'])) {
+			$user = new User();
+			$user->id = $_REQUEST['userId'];
+			if (!$user->find(true)) {
+				$user = false;
 			}
+		} else if (isset($_REQUEST['id'])) {
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
 		}
 		return $user;
 	}
