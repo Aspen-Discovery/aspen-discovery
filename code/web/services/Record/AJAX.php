@@ -407,7 +407,9 @@ class Record_AJAX extends Action
 					$numItemsWithoutVolumes++;
 				}else{
 					if ($item->libraryOwned || $item->locallyOwned) {
-						$volumeData[$item->volume]->setHasLocalItems(true);
+						if (array_key_exists($item->volume, $volumeData)) {
+							$volumeData[$item->volume]->setHasLocalItems(true);
+						}
 					}
 					$numItemsWithVolumes++;
 				}
