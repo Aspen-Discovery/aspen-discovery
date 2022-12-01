@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_Fines extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_Fines extends MyAccount {
+	function launch() {
 		global $interface;
 		global $configArray;
 
@@ -35,7 +33,7 @@ class MyAccount_Fines extends MyAccount
 				$userLibrary = $user->getHomeLibrary();
 
 				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables->libraryToUseForPayments == 1){
+				if ($systemVariables->libraryToUseForPayments == 1) {
 					global $library;
 					$userLibrary = $library;
 				}
@@ -64,24 +62,36 @@ class MyAccount_Fines extends MyAccount
 						if ($payment->find(true)) {
 							if ($payment->completed == 1) {
 								$finePaymentResult->success = true;
-								$finePaymentResult->message = translate(['text' => 'Your payment was processed successfully, thank you.', 'isPublicFacing'=> true]);
+								$finePaymentResult->message = translate([
+									'text' => 'Your payment was processed successfully, thank you.',
+									'isPublicFacing' => true
+								]);
 							} elseif ($payment->completed == 9) {
 								$finePaymentResult->success = false;
-								$finePaymentResult->message = translate(['text' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.', 'isPublicFacing'=> true]);
+								$finePaymentResult->message = translate([
+									'text' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.',
+									'isPublicFacing' => true
+								]);
 							} else { // i.e., $payment->completed == 0
 								$finePaymentResult->success = false;
-								$finePaymentResult->message = translate(['text' => 'Your payment has not completed processing.', 'isPublicFacing'=> true]);
+								$finePaymentResult->message = translate([
+									'text' => 'Your payment has not completed processing.',
+									'isPublicFacing' => true
+								]);
 							}
 						} else {
 							$finePaymentResult->success = false;
-							$finePaymentResult->message = translate(['text' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.', 'isPublicFacing'=> true]);
+							$finePaymentResult->message = translate([
+								'text' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.',
+								'isPublicFacing' => true
+							]);
 						}
 						$interface->assign('finePaymentResult', $finePaymentResult);
 					}
 				}
 
 				// FIS WorldPay data
-				if($userLibrary->finePaymentType == 7) {
+				if ($userLibrary->finePaymentType == 7) {
 					$aspenUrl = $configArray['Site']['url'];
 					$interface->assign('aspenUrl', $aspenUrl);
 
@@ -95,7 +105,7 @@ class MyAccount_Fines extends MyAccount
 					$paymentSite = "";
 					$useLineItems = 0;
 
-					if($worldPaySettings->find(true)){
+					if ($worldPaySettings->find(true)) {
 						$merchantCode = $worldPaySettings->merchantCode;
 						$settleCode = $worldPaySettings->settleCode;
 						$paymentSite = $worldPaySettings->paymentSite;
@@ -109,7 +119,7 @@ class MyAccount_Fines extends MyAccount
 				}
 
 				// ACI Speedpay data
-				if($userLibrary->finePaymentType == 8) {
+				if ($userLibrary->finePaymentType == 8) {
 					$aspenUrl = $configArray['Site']['url'];
 					$interface->assign('aspenUrl', $aspenUrl);
 
@@ -118,31 +128,36 @@ class MyAccount_Fines extends MyAccount
 					$aciSpeedpaySettings = new ACISpeedpaySetting();
 					$aciSpeedpaySettings->id = $library->aciSpeedpaySettingId;
 
-					if($aciSpeedpaySettings->find(true)){
+					if ($aciSpeedpaySettings->find(true)) {
 						// do things
+						$baseUrl = 'https://api.acispeedpay.com';
+						$sdkUrl = 'cds.officialpayments.com';
+						$billerAccountId = $aciSpeedpaySettings->billerAccountId;
+						$billerAccountId = $user->$billerAccountId;
+
 						if ($aciSpeedpaySettings->sandboxMode == 1) {
 							$baseUrl = 'https://sandbox-api.acispeedpay.com';
 							$sdkUrl = 'sandbox-cds.officialpayments.com';
-						} else {
-							$baseUrl = 'https://api.acispeedpay.com';
-							$sdkUrl = 'cds.officialpayments.com';
+							$billerAccountId = '56050';
 						}
 
 						$apiAuthKey = $aciSpeedpaySettings->apiAuthKey;
 						$billerId = $aciSpeedpaySettings->billerId;
-						$billerAccountId = $aciSpeedpaySettings->billerAccountId;
 
 						$interface->assign('billerId', $billerId);
-						$interface->assign('billerAccountId', $billerAccountId);
 						$interface->assign('aciHost', $baseUrl);
 						$interface->assign('sdkUrl', $sdkUrl);
-						$interface->assign('apiAuthKey', $apiAuthKey);
+						$interface->assign('sdkAuthKey', $aciSpeedpaySettings->sdkApiAuthKey);
+						$interface->assign('sdkClientId', $aciSpeedpaySettings->sdkClientId);
+						$interface->assign('sdkClientSecret', $aciSpeedpaySettings->sdkClientSecret);
+						$interface->assign('billerAccountId', $billerAccountId);
 
 						require_once ROOT_DIR . '/sys/CurlWrapper.php';
-						$aciAuthRequest = new CurlWrapper();
-						$aciAuthRequest->addCustomHeaders([
+						$serviceAccountAuthorization = new CurlWrapper();
+						$serviceAccountAuthorization->addCustomHeaders([
 							"X-Auth-Key: $aciSpeedpaySettings->sdkApiAuthKey",
 							"Content-Type: application/x-www-form-urlencoded",
+							"Accept: application/json"
 						], true);
 
 						$postParams = [
@@ -151,28 +166,30 @@ class MyAccount_Fines extends MyAccount
 							'client_secret' => $aciSpeedpaySettings->sdkClientSecret,
 							'scope' => 'token_exchange',
 							'biller_id' => $aciSpeedpaySettings->billerId,
-							'account_number' => $aciSpeedpaySettings->billerAccountId,
+							'account_number' => $billerAccountId,
 						];
 
-						$accessTokenUrl = $baseUrl . "/auth/v1/auth/token";
-						$accessTokenResults = $aciAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+						$url = $baseUrl . "/auth/v1/auth/token";
+						$accessTokenResults = $serviceAccountAuthorization->curlPostPage($url, $postParams);
 						$accessTokenResults = json_decode($accessTokenResults, true);
-						if(empty($accessTokenResults['access_token'])) {
-							return ['success' => false, 'message' => 'Unable to authenticate with ACI, please try again in a few minutes.'];
+						$accessToken = "";
+						if (empty($accessTokenResults['access_token'])) {
+							$interface->assign('aciError', 'Unable to authenticate with ACI, please try again in a few minutes.');
 						} else {
 							$accessToken = $accessTokenResults['access_token'];
-							$interface->assign('accessToken', $accessToken);
 						}
+						$interface->assign('accessToken', $accessToken);
 
-						$aciManifest = "https://cds.officialpayments.com/js-sdk/1.4.0/manifest.json";
+						$aciManifest = "https://cds.officialpayments.com/js-sdk/1.5.0/manifest.json";
 						$aciManifest = file_get_contents($aciManifest);
 						$aciManifest = json_decode($aciManifest, true);
-						if(empty($aciManifest['speedpay.js']['integrity'])) {
-							return ['success' => false, 'message' => 'Unable to authenticate with ACI, please try again in a few minutes.'];
+						$sriHash = "";
+						if (empty($aciManifest['speedpay.js']['integrity'])) {
+							$interface->assign('aciError', 'Unable to authenticate with ACI, please try again in a few minutes.');
 						} else {
 							$sriHash = $aciManifest['speedpay.js']['integrity'];
-							$interface->assign('sriHash', $sriHash);
 						}
+						$interface->assign('sriHash', $sriHash);
 					}
 				}
 
@@ -188,12 +205,16 @@ class MyAccount_Fines extends MyAccount
 					$total = $totalOutstanding = 0;
 					foreach ($finesDetails as $fine) {
 						$amount = $fine['amountVal'];
-						if (is_numeric($amount)) $total += $amount;
+						if (is_numeric($amount)) {
+							$total += $amount;
+						}
 						if ($useOutstanding && $fine['amountOutstandingVal']) {
 							$outstanding = $fine['amountOutstandingVal'];
-							if (is_numeric($outstanding)) $totalOutstanding += $outstanding;
+							if (is_numeric($outstanding)) {
+								$totalOutstanding += $outstanding;
+							}
 						}
-						if (!empty($fine['system'])){
+						if (!empty($fine['system'])) {
 							$showSystem = true;
 						}
 					}
@@ -216,8 +237,7 @@ class MyAccount_Fines extends MyAccount
 		$this->display('fines.tpl', 'My Fines');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'My Fines');

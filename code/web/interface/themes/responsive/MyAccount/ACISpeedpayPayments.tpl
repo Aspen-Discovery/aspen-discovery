@@ -73,18 +73,17 @@
                     (onCreateToken = function(event) {ldelim}
                         if(event.token.id) {ldelim}
                             console.log('Funding account has been created.');
-
                         {rdelim}
                     {rdelim}),
                     (onGetToken = function(event) {ldelim}
-                        if(event.id) {ldelim}
+                        if(event.token.id) {ldelim}
                             console.log('Funding account has been obtained successfully.');
                         {rdelim}
                     {rdelim}),
                     (onUpdatedToken = function(event) {ldelim}
-                        if(event.id) {ldelim}
+                        if(event) {ldelim}
+                        console.log(event);
                             console.log('Completing payment in Aspen.');
-                            return AspenDiscovery.Account.completeACIOrder(event.id, {$userId}, 'fine');
                         {rdelim}
                     {rdelim}),
                     (onError = function(event)
@@ -103,8 +102,8 @@
                         handler.createToken()
                        .then((tokenDetails) =>
                         {ldelim}
-                           var aspenPaymentId = AspenDiscovery.Account.createACIOrder('#fines{$userId}', 'fine', tokenDetails);
-                           console.log(aspenPaymentId);
+                           var paymentId = AspenDiscovery.Account.createACIOrder('#fines{$userId}', 'fine', tokenDetails.token.id, '{$accessToken}');
+                           return AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'fine', paymentId, '{$accessToken}');
                         {rdelim})
                        .catch((error) =>
                         {ldelim}

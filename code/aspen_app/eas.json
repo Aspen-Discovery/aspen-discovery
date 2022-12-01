@@ -1,7 +1,9 @@
 {
+  "cli": {
+	"version": "2.6.0"
+  },
   "build": {
 	"production": {
-	  "node": "16.16.0",
 	  "yarn": "1.22.19",
 	  "distribution": "store",
 	  "channel": "production",
@@ -13,11 +15,42 @@
 	  "extends": "production",
 	  "channel": "beta"
 	},
-	"development": {
+	"alpha": {
 	  "extends": "production",
-	  "channel": "dev",
+	  "channel": "alpha",
 	  "ios": {
 		"simulator": true
+	  },
+	  "android": {
+		"buildType": "apk"
+	  }
+	},
+	"development": {
+	  "extends": "production",
+	  "channel": "development",
+	  "developmentClient": true,
+	  "distribution": "internal",
+	  "ios": {
+		"simulator": true
+	  }
+	}
+  },
+  "submit": {
+	"release": {
+	  "android": {
+		"track": "production",
+		"releaseStatus": "draft"
+	  },
+	  "ios": {
+		"appleId": "{{DEV_APPLE_ID}}",
+		"ascAppId": "{{DEV_APP_ID}}",
+		"appleTeamId": "{{DEV_TEAM_ID}}"
+	  }
+	},
+	"beta": {
+	  "extends": "release",
+	  "android": {
+		"track": "beta"
 	  }
 	}
   }
