@@ -14,9 +14,7 @@
  *
  * @author  Mark Noble
  *
- * @version 2.0
- *
- * @param   string $string The string to escape
+ * @param string $string The string to escape
  * @return  string
  */
 function smarty_modifier_escapeCSS($string) {

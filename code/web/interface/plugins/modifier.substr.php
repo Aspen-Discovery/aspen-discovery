@@ -8,6 +8,5 @@
  * -------------------------------------------------------------
  */
 function smarty_modifier_substr($str, $start, $length = null) {
-    return substr($str, $start, $length);
+	return substr($str, $start, $length);
 }
-?>

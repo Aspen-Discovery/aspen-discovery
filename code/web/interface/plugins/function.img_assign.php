@@ -2,7 +2,7 @@
 /*
  * Smarty plugin
  * -------------------------------------------------------------
- * File:     function.img__ssign.php
+ * File:     function.img_assign.php
  * Type:     function
  * Name:     css
  * Purpose:  Loads an image source from the appropriate theme
@@ -11,20 +11,19 @@
  *                  interface/themes/[theme]/images/ folder.
  * -------------------------------------------------------------
  */
-function smarty_function_img_assign($params, &$smarty)
-{
+function smarty_function_img_assign($params, &$smarty) {
 	// Extract details from the config file and parameters so we can find CSS files:
 	global $configArray;
 	global $interface;
 	$local = $configArray['Site']['local'];
-	
+
 	$themes = $interface->getThemes();
 	$filename = $params['filename'];
 
 	// Loop through the available themes looking for the requested CSS file:
 	foreach ($themes as $theme) {
 		$theme = trim($theme);
-		
+
 		// If the file exists on the local file system, set $css to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/images/{$filename}")) {
@@ -32,12 +31,9 @@ function smarty_function_img_assign($params, &$smarty)
 			return;
 		}
 	}
-	
+
 	//Didn't find a theme specific image, try the images directory
 	if (file_exists("{$local}/images/{$filename}")) {
-		$smarty->assign($params['var'], "{$path}/images/{$filename}");
-		return;
+		$smarty->assign($params['var'], "/images/{$filename}");
 	}
-
-	// We couldn't find the file, return an empty value:
 }

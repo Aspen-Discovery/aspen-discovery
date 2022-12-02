@@ -18,8 +18,7 @@
  * @param UInterface $smarty
  * @return null|string
  */
-function smarty_function_implode($params, &$smarty)
-{
+function smarty_function_implode($params, &$smarty) {
 	if (!isset($params['subject'])) {
 		$smarty->trigger_error("implode: missing 'subject' parameter");
 		return "implode: missing 'subject' parameter";
@@ -36,47 +35,55 @@ function smarty_function_implode($params, &$smarty)
 	$subject = $params['subject'];
 
 	$implodedValue = null;
-	if (is_array($subject)){
-		if ($translate){
+	if (is_array($subject)) {
+		if ($translate) {
 			if (isset($params['isPublicFacing'])) {
 				$isPublicFacing = $params['isPublicFacing'];
-			}else{
+			} else {
 				$isPublicFacing = false;
 			}
 			if (isset($params['isAdminFacing'])) {
 				$isAdminFacing = $params['isAdminFacing'];
-			}else{
+			} else {
 				$isAdminFacing = false;
 			}
-			foreach ($subject as $index => $value){
-				$subject[$index] = translate(['text' => $value, 'isPublicFacing'=>$isPublicFacing, 'isAdminFacing'=>$isAdminFacing]);
+			foreach ($subject as $index => $value) {
+				$subject[$index] = translate([
+					'text' => $value,
+					'isPublicFacing' => $isPublicFacing,
+					'isAdminFacing' => $isAdminFacing,
+				]);
 			}
 		}
-		if (isset($params['sort'])){
+		if (isset($params['sort'])) {
 			sort($subject);
 		}
 		$implodedValue = implode($params['glue'], $subject);
-	}else{
-		if ($translate){
+	} else {
+		if ($translate) {
 			if (isset($params['isPublicFacing'])) {
 				$isPublicFacing = $params['isPublicFacing'];
-			}else{
+			} else {
 				$isPublicFacing = false;
 			}
 			if (isset($params['isAdminFacing'])) {
 				$isAdminFacing = $params['isAdminFacing'];
-			}else{
+			} else {
 				$isAdminFacing = false;
 			}
-			$implodedValue = translate(['text' => $subject, 'isPublicFacing'=>$isPublicFacing, 'isAdminFacing'=>$isAdminFacing]);
-		}else{
+			$implodedValue = translate([
+				'text' => $subject,
+				'isPublicFacing' => $isPublicFacing,
+				'isAdminFacing' => $isAdminFacing,
+			]);
+		} else {
 			$implodedValue = $subject;
 		}
 	}
 
 	if (!isset($params['assign'])) {
 		return $implodedValue;
-	}else{
+	} else {
 		$smarty->assign($params['assign'], $implodedValue);
 	}
 	return null;
