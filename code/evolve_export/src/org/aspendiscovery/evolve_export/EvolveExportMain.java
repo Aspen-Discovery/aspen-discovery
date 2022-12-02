@@ -900,7 +900,7 @@ public class EvolveExportMain {
 					logEntry.incErrors("Could not delete " + curBibFile);
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				logEntry.incErrors("Error loading Evolve bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 				//Since we had errors, rename it with a .err extension
 				if (!curBibFile.renameTo(new File(curBibFile + ".err"))){
 					logEntry.incErrors("Could not rename file to error file "+ curBibFile+ ".err");
