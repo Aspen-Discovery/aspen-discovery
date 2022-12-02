@@ -1,7 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
-class HooplaDriver extends AbstractEContentDriver{
+
+class HooplaDriver extends AbstractEContentDriver {
 	const memCacheKey = 'hoopla_api_access_token';
 	/** @var HooplaSetting|null */
 	private $hooplaSettings = null;
@@ -9,19 +10,18 @@ class HooplaDriver extends AbstractEContentDriver{
 	private $accessToken;
 	private $hooplaEnabled = false;
 
-	public function __construct()
-	{
+	public function __construct() {
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
-		try{
+		try {
 			$hooplaSettings = new HooplaSetting();
-			if ($hooplaSettings->find(true)){
+			if ($hooplaSettings->find(true)) {
 				$this->hooplaEnabled = true;
 
 				$this->hooplaAPIBaseURL = $hooplaSettings->apiUrl;
 				$this->hooplaSettings = $hooplaSettings;
 				$this->getAccessToken();
 			}
-		}catch (Exception $e){
+		} catch (Exception $e) {
 			global $logger;
 			$logger->log("Could not load Hoopla settings", Logger::LOG_ALERT);
 		}
@@ -32,33 +32,34 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param $hooplaRecordId
 	 * @return string
 	 */
-	public static function recordIDtoHooplaID($hooplaRecordId)
-	{
+	public static function recordIDtoHooplaID($hooplaRecordId) {
 		if (strpos($hooplaRecordId, ':') !== false) {
-			list(,$hooplaRecordId) = explode(':', $hooplaRecordId, 2);
+			[
+				,
+				$hooplaRecordId,
+			] = explode(':', $hooplaRecordId, 2);
 		}
 		return preg_replace('/^MWT/', '', $hooplaRecordId);
 	}
 
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	private function getAPIResponse($requestType, $url, $params = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [])
-	{
+	private function getAPIResponse($requestType, $url, $params = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = []) {
 		global $logger;
-		$logger->log('Hoopla API URL :' .$url, Logger::LOG_NOTICE);
+		$logger->log('Hoopla API URL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		$headers  = array(
+		$headers = [
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'Authorization: Bearer ' . $this->accessToken,
 			'Originating-App-Id: Aspen Discovery',
-		);
+		];
 		if (!empty($additionalHeaders) && is_array($additionalHeaders)) {
 			$headers = array_merge($headers, $additionalHeaders);
 		}
 		if (empty($customRequest)) {
-            $customRequest = 'GET';
+			$customRequest = 'GET';
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
@@ -82,9 +83,9 @@ class HooplaDriver extends AbstractEContentDriver{
 		}
 		$json = curl_exec($ch);
 
-        ExternalRequestLogEntry::logRequest($requestType, $customRequest, $url, $headers, '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $json,$dataToSanitize);
+		ExternalRequestLogEntry::logRequest($requestType, $customRequest, $url, $headers, '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $json, $dataToSanitize);
 
-        if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
+		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
 			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', Logger::LOG_WARNING);
 			$this->renewAccessToken();
 			return false;
@@ -106,13 +107,12 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param $url
 	 * @return bool
 	 */
-	private function getAPIResponseReturnHooplaTitle($url)
-	{
+	private function getAPIResponseReturnHooplaTitle($url) {
 		$ch = curl_init();
-		$headers  = array(
+		$headers = [
 			'Authorization: Bearer ' . $this->accessToken,
 			'Originating-App-Id: Aspen Discovery',
-		);
+		];
 
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
@@ -128,7 +128,7 @@ class HooplaDriver extends AbstractEContentDriver{
 		$response = curl_exec($ch);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        ExternalRequestLogEntry::logRequest('hoopla.returnCheckout', 'DELETE', $url, $headers, '', $http_code, $response,[]);
+		ExternalRequestLogEntry::logRequest('hoopla.returnCheckout', 'DELETE', $url, $headers, '', $http_code, $response, []);
 
 		curl_close($ch);
 		return $http_code == 204;
@@ -139,16 +139,16 @@ class HooplaDriver extends AbstractEContentDriver{
 
 	/**
 	 * @param User $user
-     *
-     * @return false|int
+	 *
+	 * @return false|int
 	 */
 	public function getHooplaLibraryID($user) {
 		if ($this->hooplaEnabled) {
 			if (isset(self::$hooplaLibraryIdsForUser[$user->id])) {
 				return self::$hooplaLibraryIdsForUser[$user->id]['libraryId'];
 			} else {
-				$library                                               = $user->getHomeLibrary();
-				$hooplaID                                              = $library->hooplaLibraryID;
+				$library = $user->getHomeLibrary();
+				$hooplaID = $library->hooplaLibraryID;
 				self::$hooplaLibraryIdsForUser[$user->id]['libraryId'] = $hooplaID;
 				return $hooplaID;
 			}
@@ -158,29 +158,33 @@ class HooplaDriver extends AbstractEContentDriver{
 
 	/**
 	 * @param User $user
-     *
-     * @return null|string
+	 *
+	 * @return null|string
 	 */
 	private function getHooplaBasePatronURL($user) {
 		$url = null;
 		if ($this->hooplaEnabled) {
 			$hooplaLibraryID = $this->getHooplaLibraryID($user);
-			$barcode         = $user->getBarcode();
+			$barcode = $user->getBarcode();
 			if (!empty($hooplaLibraryID) && !empty($barcode)) {
 				$url = $this->hooplaAPIBaseURL . '/api/v1/libraries/' . $hooplaLibraryID . '/patrons/' . $barcode;
 			}
 		}
 		return $url;
-    }
+	}
 
-	private $hooplaPatronStatuses = array();
+	private $hooplaPatronStatuses = [];
+
 	/**
 	 * @param $user User
-     *
-     * @return AccountSummary
+	 *
+	 * @return AccountSummary
 	 */
-	public function getAccountSummary(User $user) : AccountSummary{
-		list($existingId, $summary) = $user->getCachedAccountSummary('hoopla');
+	public function getAccountSummary(User $user): AccountSummary {
+		[
+			$existingId,
+			$summary,
+		] = $user->getCachedAccountSummary('hoopla');
 
 		if ($summary === null || isset($_REQUEST['reload'])) {
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
@@ -191,7 +195,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($getPatronStatusURL)) {
 				$getPatronStatusURL .= '/status';
-				$hooplaPatronStatusResponse = $this->getAPIResponse('hoopla.getAccountSummary',$getPatronStatusURL);
+				$hooplaPatronStatusResponse = $this->getAPIResponse('hoopla.getAccountSummary', $getPatronStatusURL);
 				if (!empty($hooplaPatronStatusResponse) && !isset($hooplaPatronStatusResponse->message)) {
 					$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
 
@@ -209,7 +213,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			if ($existingId != null) {
 				$summary->id = $existingId;
 				$summary->update();
-			}else{
+			} else {
 				$summary->insert();
 			}
 		}
@@ -220,19 +224,18 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param $patron User
 	 * @return Checkout[]
 	 */
-	public function getCheckouts(User $patron) : array
-	{
+	public function getCheckouts(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		$checkedOutItems = array();
+		$checkedOutItems = [];
 		if ($this->hooplaEnabled) {
 			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($hooplaCheckedOutTitlesURL)) {
-				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
+				$hooplaCheckedOutTitlesURL .= '/checkouts/current';
 				$checkOutsResponse = $this->getAPIResponse('hoopla.getCheckouts', $hooplaCheckedOutTitlesURL);
 				if (is_array($checkOutsResponse)) {
-                    $hooplaPatronStatus = null;
+					$hooplaPatronStatus = null;
 					foreach ($checkOutsResponse as $checkOut) {
-						$hooplaRecordID  = $checkOut->contentId;
+						$hooplaRecordID = $checkOut->contentId;
 						$currentTitle = new Checkout();
 						$currentTitle->type = 'hoopla';
 						$currentTitle->source = 'hoopla';
@@ -253,8 +256,8 @@ class HooplaDriver extends AbstractEContentDriver{
 						if ($hooplaRecordDriver->isValid()) {
 							// Get Record For other details
 							$currentTitle->groupedWorkId = $hooplaRecordDriver->getGroupedWorkId();
-							$currentTitle->author        = $hooplaRecordDriver->getPrimaryAuthor();
-							$currentTitle->format        = $hooplaRecordDriver->getPrimaryFormat();
+							$currentTitle->author = $hooplaRecordDriver->getPrimaryAuthor();
+							$currentTitle->format = $hooplaRecordDriver->getPrimaryFormat();
 						}
 						$key = $currentTitle->source . $currentTitle->sourceId . $currentTitle->userId; // This matches the key naming scheme in the Overdrive Driver
 						$checkedOutItems[$key] = $currentTitle;
@@ -271,11 +274,9 @@ class HooplaDriver extends AbstractEContentDriver{
 	/**
 	 * @return string
 	 */
-	private function getAccessToken()
-	{
+	private function getAccessToken() {
 		if (empty($this->accessToken)) {
-			/** @var Memcache $memCache */
-			global $memCache;
+			/** @var Memcache $memCache */ global $memCache;
 			$accessToken = $memCache->get(self::memCacheKey);
 			if (empty($accessToken)) {
 				$this->renewAccessToken();
@@ -287,9 +288,12 @@ class HooplaDriver extends AbstractEContentDriver{
 		return $this->accessToken;
 	}
 
-	private function renewAccessToken (){
+	private function renewAccessToken() {
 		if ($this->hooplaEnabled) {
-			$url = 'https://' . str_replace(array('http://', 'https://'),'', $this->hooplaAPIBaseURL) . '/v2/token';
+			$url = 'https://' . str_replace([
+					'http://',
+					'https://',
+				], '', $this->hooplaAPIBaseURL) . '/v2/token';
 			// Ensure https is used
 
 			$username = $this->hooplaSettings->apiUsername;
@@ -297,11 +301,11 @@ class HooplaDriver extends AbstractEContentDriver{
 
 			$curl = curl_init($url);
 			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 1);
-			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );
+			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 			curl_setopt($curl, CURLOPT_USERPWD, "$username:$password");
 			curl_setopt($curl, CURLOPT_POST, true);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl, CURLOPT_POSTFIELDS, array());
+			curl_setopt($curl, CURLOPT_POSTFIELDS, []);
 
 			global $instanceName;
 			if (stripos($instanceName, 'localhost') !== false) {
@@ -310,7 +314,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
-            ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($curl, CURLINFO_HTTP_CODE), $response,[]);
+			ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($curl, CURLINFO_HTTP_CODE), $response, []);
 
 			curl_close($curl);
 
@@ -319,8 +323,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				if (!empty($json->access_token)) {
 					$this->accessToken = $json->access_token;
 
-					/** @var Memcache $memCache */
-					global $memCache;
+					/** @var Memcache $memCache */ global $memCache;
 					global $configArray;
 					$memCache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
 
@@ -342,10 +345,10 @@ class HooplaDriver extends AbstractEContentDriver{
 	}
 
 	/**
-     * @param User $patron
-     * @param string $titleId
+	 * @param User $patron
+	 * @param string $titleId
 	 *
-     * @return array
+	 * @return array
 	 */
 	public function checkOutTitle($patron, $titleId) {
 		if ($this->hooplaEnabled) {
@@ -353,8 +356,8 @@ class HooplaDriver extends AbstractEContentDriver{
 			if (!empty($checkoutURL)) {
 
 				$titleId = self::recordIDtoHooplaID($titleId);
-				$checkoutURL      .= '/' . $titleId;
-				$checkoutResponse = $this->getAPIResponse('hoopla.checkoutTitle',$checkoutURL, array(), 'POST');
+				$checkoutURL .= '/' . $titleId;
+				$checkoutResponse = $this->getAPIResponse('hoopla.checkoutTitle', $checkoutURL, [], 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
 						$this->trackUserUsageOfHoopla($patron);
@@ -363,210 +366,276 @@ class HooplaDriver extends AbstractEContentDriver{
 						$patron->forceReloadOfCheckouts();
 
 						// Result for API or app use
-						$apiResult = array();
-						$apiResult['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
+						$apiResult = [];
+						$apiResult['title'] = translate([
+							'text' => 'Checked out title',
+							'isPublicFacing' => true,
+						]);
 						$apiResult['message'] = strip_tags($checkoutResponse->message);
 
 						//Prepare message for translation
 						$checkoutResponseMessage = $checkoutResponse->message;
 						$checkoutResponseMessage = str_replace($patron->getBarcode(), '%1%', $checkoutResponseMessage);
-						return array(
-							'success'   => true,
-							'message'   => translate(['text'=>$checkoutResponseMessage, 1=> $patron->getBarcode(), 'isPublicFacing'=>true]),
-							'title'     => translate(['text'=> $checkoutResponse->title, 'isPublicFacing'=>true]),
+						return [
+							'success' => true,
+							'message' => translate([
+								'text' => $checkoutResponseMessage,
+								1 => $patron->getBarcode(),
+								'isPublicFacing' => true,
+							]),
+							'title' => translate([
+								'text' => $checkoutResponse->title,
+								'isPublicFacing' => true,
+							]),
 							'HooplaURL' => $checkoutResponse->url,
-							'due'       => $checkoutResponse->due,
-							'api'       => $apiResult,
-						);
+							'due' => $checkoutResponse->due,
+							'api' => $apiResult,
+						];
 					} else {
 						// Result for API or app use
-						$apiResult = array();
-						$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+						$apiResult = [];
+						$apiResult['title'] = translate([
+							'text' => 'Unable to checkout title',
+							'isPublicFacing' => true,
+						]);
 						$apiResult['message'] = isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
 
-						$checkoutResponseMessage =  isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
+						$checkoutResponseMessage = isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
 						$checkoutResponseMessage = str_replace($patron->getBarcode(), '%1%', $checkoutResponseMessage);
-						return array(
+						return [
 							'success' => false,
-							'message' => translate(['text'=>$checkoutResponseMessage, 1=> $patron->getBarcode(), 'isPublicFacing'=>true]),
-							'api' => $apiResult
-						);
+							'message' => translate([
+								'text' => $checkoutResponseMessage,
+								1 => $patron->getBarcode(),
+								'isPublicFacing' => true,
+							]),
+							'api' => $apiResult,
+						];
 					}
 
 				} else {
 					// Result for API or app use
-					$apiResult = array();
-					$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
-					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);
+					$apiResult = [];
+					$apiResult['title'] = translate([
+						'text' => 'Unable to checkout title',
+						'isPublicFacing' => true,
+					]);
+					$apiResult['message'] = translate([
+						'text' => 'An error occurred checking out the Hoopla title.',
+						'isPublicFacing' => true,
+					]);
 
-					return array(
+					return [
 						'success' => false,
 						'message' => 'An error occurred checking out the Hoopla title.',
-						'api' => $apiResult
-					);
+						'api' => $apiResult,
+					];
 				}
 			} elseif (!$this->getHooplaLibraryID($patron)) {
 				// Result for API or app use
-				$apiResult = array();
-				$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
-				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
+				$apiResult = [];
+				$apiResult['title'] = translate([
+					'text' => 'Unable to checkout title',
+					'isPublicFacing' => true,
+				]);
+				$apiResult['message'] = translate([
+					'text' => 'Your library does not have Hoopla integration enabled.',
+					'isPublicFacing' => true,
+				]);
 
-				return array(
+				return [
 					'success' => false,
 					'message' => 'Your library does not have Hoopla integration enabled.',
-					'api' => $apiResult
-				);
+					'api' => $apiResult,
+				];
 			} else {
 				// Result for API or app use
-				$apiResult = array();
-				$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
-				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
+				$apiResult = [];
+				$apiResult['title'] = translate([
+					'text' => 'Unable to checkout title',
+					'isPublicFacing' => true,
+				]);
+				$apiResult['message'] = translate([
+					'text' => 'There was an error retrieving your library card number.',
+					'isPublicFacing' => true,
+				]);
 
-				return array(
+				return [
 					'success' => false,
 					'message' => 'There was an error retrieving your library card number.',
-					'api' => $apiResult
-				);
+					'api' => $apiResult,
+				];
 			}
 		} else {
 			// Result for API or app use
-			$apiResult = array();
-			$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
-			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
+			$apiResult = [];
+			$apiResult['title'] = translate([
+				'text' => 'Unable to checkout title',
+				'isPublicFacing' => true,
+			]);
+			$apiResult['message'] = translate([
+				'text' => 'Hoopla integration is not enabled.',
+				'isPublicFacing' => true,
+			]);
 
-			return array(
+			return [
 				'success' => false,
 				'message' => 'Hoopla integration is not enabled.',
-				'api' => $apiResult
-			);
+				'api' => $apiResult,
+			];
 		}
 	}
 
-    /**
-     * @param string $hooplaId
-     * @param User $patron
-     *
-     * @return array
-     */
+	/**
+	 * @param string $hooplaId
+	 * @param User $patron
+	 *
+	 * @return array
+	 */
 	public function returnCheckout($patron, $hooplaId) {
-		$apiResult = array();
+		$apiResult = [];
 		if ($this->hooplaEnabled) {
-            $returnCheckoutURL = $this->getHooplaBasePatronURL($patron);
+			$returnCheckoutURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($returnCheckoutURL)) {
 				$itemId = self::recordIDtoHooplaID($hooplaId);
-                $returnCheckoutURL .= "/$itemId";
+				$returnCheckoutURL .= "/$itemId";
 				$result = $this->getAPIResponseReturnHooplaTitle($returnCheckoutURL);
 				if ($result) {
 					$patron->clearCachedAccountSummaryForSource('hoopla');
 					$patron->forceReloadOfCheckouts();
 
 					// Result for API or app use
-					$apiResult['title'] = translate(['text'=>'Title returned', 'isPublicFacing'=>true]);
-					$apiResult['message'] = translate(['text'=>'The title was successfully returned.', 'isPublicFacing'=>true]);
+					$apiResult['title'] = translate([
+						'text' => 'Title returned',
+						'isPublicFacing' => true,
+					]);
+					$apiResult['message'] = translate([
+						'text' => 'The title was successfully returned.',
+						'isPublicFacing' => true,
+					]);
 
-					return array(
+					return [
 						'success' => true,
 						'message' => 'The title was successfully returned.',
-						'api' => $apiResult
-					);
+						'api' => $apiResult,
+					];
 				} else {
 					// Result for API or app use
-					$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
-					$apiResult['message'] = translate(['text'=>' There was an error returning this title.', 'isPublicFacing'=>true]);
+					$apiResult['title'] = translate([
+						'text' => 'Unable to return title',
+						'isPublicFacing' => true,
+					]);
+					$apiResult['message'] = translate([
+						'text' => ' There was an error returning this title.',
+						'isPublicFacing' => true,
+					]);
 
-					return array(
+					return [
 						'success' => false,
 						'message' => 'There was an error returning this title.',
-						'api' => $apiResult
-					);
+						'api' => $apiResult,
+					];
 				}
 
 			} elseif (!$this->getHooplaLibraryID($patron)) {
 				// Result for API or app use
-				$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
-				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
+				$apiResult['title'] = translate([
+					'text' => 'Unable to return title',
+					'isPublicFacing' => true,
+				]);
+				$apiResult['message'] = translate([
+					'text' => 'Your library does not have Hoopla integration enabled.',
+					'isPublicFacing' => true,
+				]);
 
-				return array(
+				return [
 					'success' => false,
 					'message' => 'Your library does not have Hoopla integration enabled.',
 					'api' => $apiResult,
-				);
+				];
 			} else {
 				// Result for API or app use
-				$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
-				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
+				$apiResult['title'] = translate([
+					'text' => 'Unable to return title',
+					'isPublicFacing' => true,
+				]);
+				$apiResult['message'] = translate([
+					'text' => 'There was an error retrieving your library card number.',
+					'isPublicFacing' => true,
+				]);
 
-				return array(
+				return [
 					'success' => false,
 					'message' => 'There was an error retrieving your library card number.',
-					'api' => $apiResult
-				);
+					'api' => $apiResult,
+				];
 			}
 		} else {
 			// Result for API or app use
-			$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
-			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
+			$apiResult['title'] = translate([
+				'text' => 'Unable to return title',
+				'isPublicFacing' => true,
+			]);
+			$apiResult['message'] = translate([
+				'text' => 'Hoopla integration is not enabled.',
+				'isPublicFacing' => true,
+			]);
 
-			return array(
+			return [
 				'success' => false,
 				'message' => 'Hoopla integration is not enabled.',
-				'api' => $apiResult
-			);
+				'api' => $apiResult,
+			];
 		}
 	}
 
-    public function hasNativeReadingHistory() : bool
-    {
-        return false;
-    }
+	public function hasNativeReadingHistory(): bool {
+		return false;
+	}
 
-    /**
-     * @return boolean true if the driver can renew all titles in a single pass
-     */
-    public function hasFastRenewAll() : bool
-    {
-        return false;
-    }
+	/**
+	 * @return boolean true if the driver can renew all titles in a single pass
+	 */
+	public function hasFastRenewAll(): bool {
+		return false;
+	}
 
-    /**
-     * Renew all titles currently checked out to the user
-     *
-     * @param $patron  User
-     * @return mixed
-     */
-    public function renewAll(User $patron)
-    {
-        return false;
-    }
+	/**
+	 * Renew all titles currently checked out to the user
+	 *
+	 * @param $patron  User
+	 * @return mixed
+	 */
+	public function renewAll(User $patron) {
+		return false;
+	}
 
-    /**
-     * Renew a single title currently checked out to the user
-     *
-     * @param $patron     User
-     * @param $recordId   string
-     * @param $itemId     string
-     * @param $itemIndex  string
-     * @return mixed
-     */
-    public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
-    {
-        return false;
-    }
+	/**
+	 * Renew a single title currently checked out to the user
+	 *
+	 * @param $patron     User
+	 * @param $recordId   string
+	 * @param $itemId     string
+	 * @param $itemIndex  string
+	 * @return mixed
+	 */
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null) {
+		return false;
+	}
 
-    /**
-     * Get Patron Holds
-     *
-     * This is responsible for retrieving all holds for a specific patron.
-     *
-     * @param User $patron The user to load transactions for
-     *
-     * @return array        Array of the patron's holds
-     * @access public
-     */
-    public function getHolds($patron) : array
-    {
-        return [];
-    }
+	/**
+	 * Get Patron Holds
+	 *
+	 * This is responsible for retrieving all holds for a specific patron.
+	 *
+	 * @param User $patron The user to load transactions for
+	 *
+	 * @return array        Array of the patron's holds
+	 * @access public
+	 */
+	public function getHolds($patron): array {
+		return [];
+	}
 
 	/**
 	 * Place Hold
@@ -584,13 +653,12 @@ class HooplaDriver extends AbstractEContentDriver{
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
-    {
-        return [
-            'result' => false,
-            'message' => 'Holds are not implemented for Hoopla'
-        ];
-    }
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
+		return [
+			'result' => false,
+			'message' => 'Holds are not implemented for Hoopla',
+		];
+	}
 
 	/**
 	 * Cancels a hold for a patron
@@ -600,16 +668,14 @@ class HooplaDriver extends AbstractEContentDriver{
 	 * @param null $cancelId ID to cancel for compatibility
 	 * @return false|array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
-    {
-        return false;
-    }
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false): array {
+		return false;
+	}
 
 	/**
 	 * @param $user
 	 */
-	public function trackUserUsageOfHoopla($user): void
-	{
+	public function trackUserUsageOfHoopla($user): void {
 		require_once ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php';
 		$userUsage = new UserHooplaUsage();
 		global $aspenUsage;
@@ -630,8 +696,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	/**
 	 * @param int $hooplaId
 	 */
-	public function trackRecordCheckout($hooplaId): void
-	{
+	public function trackRecordCheckout($hooplaId): void {
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaRecordUsage.php';
 		$recordUsage = new HooplaRecordUsage();
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
