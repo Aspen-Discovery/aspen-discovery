@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearch.php';
-class QuickSearchSetting extends DataObject
-{
+
+class QuickSearchSetting extends DataObject {
 	public $__table = 'aspen_lida_quick_search_setting';
 	public $id;
 	public $settingId;
@@ -10,50 +10,60 @@ class QuickSearchSetting extends DataObject
 
 	private $_libraries;
 
-	public static function getObjectStructure() : array
-	{
+	public static function getObjectStructure(): array {
 		$quickSearches = QuickSearch::getObjectStructure();
 		unset($quickSearches['libraryId']);
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
 		return [
-			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],
-			'name' => ['property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The name of the setting', 'maxLength' => 50],
-			'quickSearches' => array(
-				'property'      => 'quickSearches',
-				'type'          => 'oneToMany',
-				'label'         => 'Quick Searches',
-				'description'   => 'Define quick searches for the library',
-				'keyThis'       => 'libraryId',
-				'keyOther'      => 'libraryId',
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'The name of the setting',
+				'maxLength' => 50,
+			],
+			'quickSearches' => [
+				'property' => 'quickSearches',
+				'type' => 'oneToMany',
+				'label' => 'Quick Searches',
+				'description' => 'Define quick searches for the library',
+				'keyThis' => 'libraryId',
+				'keyOther' => 'libraryId',
 				'subObjectType' => 'QuickSearch',
-				'structure'     => $quickSearches,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-				'hideInLists'   => true
-			),
-			'libraries' => array(
+				'structure' => $quickSearches,
+				'sortable' => true,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'hideInLists' => true,
+			],
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this scope',
 				'values' => $libraryList,
-			),
+			],
 		];
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
+			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
 				$obj->lidaQuickSearchId = $this->id;
 				$obj->find();
-				while($obj->fetch()){
+				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
 				}
 			}
@@ -65,18 +75,17 @@ class QuickSearchSetting extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}elseif ($name == 'quickSearches') {
+		} elseif ($name == 'quickSearches') {
 			$this->_quickSearches = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
 	}
 
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -85,8 +94,7 @@ class QuickSearchSetting extends DataObject
 		return true;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -95,22 +103,22 @@ class QuickSearchSetting extends DataObject
 		return $ret;
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName){
+			foreach ($libraryList as $libraryId => $displayName) {
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
+				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the scope to this library
-					if ($library->lidaQuickSearchId != $this->id){
+					if ($library->lidaQuickSearchId != $this->id) {
 						$library->lidaQuickSearchId = $this->id;
 						$library->update();
 					}
-				}else{
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->lidaQuickSearchId == $this->id){
+					if ($library->lidaQuickSearchId == $this->id) {
 						$library->lidaQuickSearchId = -1;
 						$library->update();
 					}
@@ -122,10 +130,9 @@ class QuickSearchSetting extends DataObject
 
 	private $_quickSearches;
 
-	public function getQuickSearches()
-	{
+	public function getQuickSearches() {
 		if (!isset($this->_quickSearches) && $this->id) {
-			$this->_quickSearches = array();
+			$this->_quickSearches = [];
 
 			$quickSearches = new QuickSearch();
 			$quickSearches->quickSearchSettingId = $this->id;
@@ -141,7 +148,7 @@ class QuickSearchSetting extends DataObject
 	}
 
 	public function saveQuickSearches() {
-		if (isset ($this->_quickSearches) && is_array($this->_quickSearches)){
+		if (isset ($this->_quickSearches) && is_array($this->_quickSearches)) {
 			$this->saveOneToManyOptions($this->_quickSearches, 'quickSearchSettingId');
 			unset($this->_quickSearches);
 		}

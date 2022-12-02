@@ -1,13 +1,12 @@
 <?php
 
 require_once ROOT_DIR . '/sys/AdminSection.php';
-class AdminSection
-{
+
+class AdminSection {
 	public $label;
 	public $actions = [];
 
-	public function __construct($label)
-	{
+	public function __construct($label) {
 		$this->label = $label;
 	}
 
@@ -16,17 +15,17 @@ class AdminSection
 	 * @param boolean|string|string[] $requiredPermission
 	 * @return boolean
 	 */
-	public function addAction($adminAction, $requiredPermission){
-		if ($requiredPermission === true || UserAccount::userHasPermission($requiredPermission)){
+	public function addAction($adminAction, $requiredPermission) {
+		if ($requiredPermission === true || UserAccount::userHasPermission($requiredPermission)) {
 			$this->actions[] = $adminAction;
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function hasActions(){
+	public function hasActions() {
 		return count($this->actions) > 0;
 	}
 }

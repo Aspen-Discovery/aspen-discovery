@@ -1,19 +1,20 @@
 <?php
 
-class UserLink extends DataObject{
+class UserLink extends DataObject {
 	public $id;
 	public $primaryAccountId;
 	public $linkedAccountId;
 
 	public $__table = 'user_link';    // table name
 
-	public function getUniquenessFields(): array
-	{
-		return ['primaryAccountId', 'linkedAccountId'];
+	public function getUniquenessFields(): array {
+		return [
+			'primaryAccountId',
+			'linkedAccountId',
+		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
 
 		$primaryAccountOkToExport = false;
@@ -34,23 +35,21 @@ class UserLink extends DataObject{
 			}
 		}
 
-		if ($linkedAccountOkToExport && $primaryAccountOkToExport){
+		if ($linkedAccountOkToExport && $primaryAccountOkToExport) {
 			$okToExport = true;
 		}
 
 		return $okToExport;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['primaryAccountId']);
 		unset($return['linkedAccountId']);
 		return $return;
 	}
 
-	public function getLinksForJSON(): array
-	{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		$user = new User();
 		$user->id = $this->primaryAccountId;
@@ -65,21 +64,20 @@ class UserLink extends DataObject{
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['primaryAccount'])){
+		if (isset($jsonData['primaryAccount'])) {
 			$username = $jsonData['primaryAccount'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->primaryAccountId = $user->id;
 			}
 
 			$username = $jsonData['linkedAccount'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->linkedAccountId = $user->id;
 			}
 		}

@@ -6,12 +6,12 @@
  * This interface class is the definition of the required methods for
  * interacting with a particular metadata record format.
  */
-abstract class RecordInterface
-{
+abstract class RecordInterface {
 	//Used when displaying the title as part of a list
 	private $listNotes;
 	private $listEntryId;
 	private $listEntryWeight;
+
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
@@ -33,20 +33,17 @@ abstract class RecordInterface
 	 * @access  public
 	 * @return  string              Breadcrumb text to represent this record.
 	 */
-	public function getBreadcrumb()
-	{
+	public function getBreadcrumb() {
 		return $this->getTitle();
 	}
 
-	function getRecordUrl()
-	{
+	function getRecordUrl() {
 		$recordId = $this->getUniqueID();
 
 		return '/' . $this->getModule() . '/' . $recordId;
 	}
 
-	function getAbsoluteUrl()
-	{
+	function getAbsoluteUrl() {
 		global $configArray;
 		$recordId = $this->getUniqueID();
 
@@ -54,13 +51,13 @@ abstract class RecordInterface
 	}
 
 	protected $_linkUrl = null;
-	public function getLinkUrl($absolutePath = false)
-	{
-		if ($this->_linkUrl == null){
+
+	public function getLinkUrl($absolutePath = false) {
+		if ($this->_linkUrl == null) {
 			global $interface;
 			$this->_linkUrl = $this->getRecordUrl();
 
-			$extraParams = array();
+			$extraParams = [];
 			if ($interface != null && strlen($interface->get_template_vars('searchId')) > 0) {
 				$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
 				$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
@@ -73,15 +70,15 @@ abstract class RecordInterface
 			}
 		}
 
-		if ($absolutePath){
+		if ($absolutePath) {
 			global $configArray;
 			return $configArray['Site']['url'] . $this->_linkUrl;
-		}else{
+		} else {
 			return $this->_linkUrl;
 		}
 	}
 
-	public abstract function getModule() : string;
+	public abstract function getModule(): string;
 
 
 	/**
@@ -101,7 +98,7 @@ abstract class RecordInterface
 	 */
 	public abstract function getTitle();
 
-	public function getSortableTitle(){
+	public function getSortableTitle() {
 		return $this->getTitle();
 	}
 
@@ -119,8 +116,7 @@ abstract class RecordInterface
 
 	public abstract function getMoreDetailsOptions();
 
-	public function getBaseMoreDetailsOptions($isbn)
-	{
+	public function getBaseMoreDetailsOptions($isbn) {
 		global $interface;
 		global $configArray;
 		global $timer;
@@ -135,108 +131,110 @@ abstract class RecordInterface
 		}
 		$interface->assign('hasSyndeticsUnbound');
 
-		$moreDetailsOptions = array();
-		$moreDetailsOptions['description'] = array(
+		$moreDetailsOptions = [];
+		$moreDetailsOptions['description'] = [
 			'label' => 'Description',
-			'body' => '<div id="descriptionPlaceholder">'. translate(['text' => 'Loading Description...', 'isPublicFacing'=>true]) . '</div>',
+			'body' => '<div id="descriptionPlaceholder">' . translate([
+					'text' => 'Loading Description...',
+					'isPublicFacing' => true,
+				]) . '</div>',
 			'hideByDefault' => false,
-			'openByDefault' => true
-		);
+			'openByDefault' => true,
+		];
 		$timer->logTime('Loaded Description');
-		$moreDetailsOptions['series'] = array(
+		$moreDetailsOptions['series'] = [
 			'label' => 'Also in this Series',
 			'body' => $interface->fetch('GroupedWork/series.tpl'),
 			'hideByDefault' => false,
-			'openByDefault' => true
-		);
+			'openByDefault' => true,
+		];
 		$timer->logTime('Loaded Series Data');
 
-		$moreDetailsOptions['moreLikeThis'] = array(
+		$moreDetailsOptions['moreLikeThis'] = [
 			'label' => 'More Like This',
 			'body' => $interface->fetch('GroupedWork/moreLikeThis.tpl'),
 			'hideByDefault' => false,
-			'openByDefault' => true
-		);
+			'openByDefault' => true,
+		];
 
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enableProspectorIntegration')) {
-			$moreDetailsOptions['prospector'] = array(
+			$moreDetailsOptions['prospector'] = [
 				'label' => 'More Copies In Prospector',
 				'body' => '<div id="inProspectorPlaceholder">Loading Prospector Copies...</div>',
-				'hideByDefault' => false
-			);
+				'hideByDefault' => false,
+			];
 		}
 		if ($hasSyndeticsUnbound) {
-			$moreDetailsOptions['syndeticsUnbound'] = array(
+			$moreDetailsOptions['syndeticsUnbound'] = [
 				'label' => 'Syndetics Unbound',
 				'body' => $interface->fetch('GroupedWork/syndeticsUnbound.tpl'),
-				'hideByDefault' => false
-			);
+				'hideByDefault' => false,
+			];
 		}
 
-		$moreDetailsOptions['tableOfContents'] = array(
+		$moreDetailsOptions['tableOfContents'] = [
 			'label' => 'Table of Contents',
 			'body' => $interface->fetch('GroupedWork/tableOfContents.tpl'),
-			'hideByDefault' => true
-		);
+			'hideByDefault' => true,
+		];
 		$timer->logTime('Loaded Table of Contents');
-		$moreDetailsOptions['excerpt'] = array(
+		$moreDetailsOptions['excerpt'] = [
 			'label' => 'Excerpt',
 			'body' => '<div id="excerptPlaceholder">Loading Excerpt...</div>',
-			'hideByDefault' => true
-		);
-		$moreDetailsOptions['authornotes'] = array(
+			'hideByDefault' => true,
+		];
+		$moreDetailsOptions['authornotes'] = [
 			'label' => 'Author Notes',
 			'body' => '<div id="authornotesPlaceholder">Loading Author Notes...</div>',
 			'hideByDefault' => true,
-		);
+		];
 		if ($interface->getVariable('showComments')) {
-			$moreDetailsOptions['borrowerReviews'] = array(
+			$moreDetailsOptions['borrowerReviews'] = [
 				'label' => 'Borrower Reviews',
 				'body' => "<div id='customerReviewPlaceholder'></div>",
-			);
+			];
 		}
 		if ($isbn) {
-			$moreDetailsOptions['syndicatedReviews'] = array(
+			$moreDetailsOptions['syndicatedReviews'] = [
 				'label' => 'Published Reviews',
 				'body' => "<div id='syndicatedReviewPlaceholder'></div>",
-			);
+			];
 			if ($interface->getVariable('showGoodReadsReviews')) {
-				$moreDetailsOptions['goodreadsReviews'] = array(
+				$moreDetailsOptions['goodreadsReviews'] = [
 					'label' => 'Reviews from GoodReads',
 					'onShow' => "AspenDiscovery.GroupedWork.getGoodReadsComments('$isbn');",
-					'body' => '<div id="goodReadsPlaceHolder">Loading GoodReads Reviews.</div>'
-				);
+					'body' => '<div id="goodReadsPlaceHolder">Loading GoodReads Reviews.</div>',
+				];
 			}
 
 			if ($interface->getVariable('showSimilarTitles')) {
-				$moreDetailsOptions['similarTitles'] = array(
+				$moreDetailsOptions['similarTitles'] = [
 					'label' => 'Similar Titles From NoveList',
 					'body' => '<div id="novelistTitlesPlaceholder"></div>',
-					'hideByDefault' => true
-				);
+					'hideByDefault' => true,
+				];
 			}
 			if ($interface->getVariable('showSimilarAuthors')) {
-				$moreDetailsOptions['similarAuthors'] = array(
+				$moreDetailsOptions['similarAuthors'] = [
 					'label' => 'Similar Authors From NoveList',
 					'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-					'hideByDefault' => true
-				);
+					'hideByDefault' => true,
+				];
 			}
 			if ($interface->getVariable('showSimilarTitles')) {
-				$moreDetailsOptions['similarSeries'] = array(
+				$moreDetailsOptions['similarSeries'] = [
 					'label' => 'Similar Series From NoveList',
 					'body' => '<div id="novelistSeriesPlaceholder"></div>',
-					'hideByDefault' => true
-				);
+					'hideByDefault' => true,
+				];
 			}
 		}
 		//Do the filtering and sorting here so subclasses can use this directly
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function filterAndSortMoreDetailsOptions($allOptions)
-	{
+	public function filterAndSortMoreDetailsOptions($allOptions) {
 		global $library;
 		global $locationSingleton;
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -262,7 +260,7 @@ abstract class RecordInterface
 			$moreDetailsFilters = RecordInterface::getDefaultMoreDetailsOptions();
 		}
 
-		$filteredMoreDetailsOptions = array();
+		$filteredMoreDetailsOptions = [];
 		foreach ($moreDetailsFilters as $option => $initialState) {
 			if (array_key_exists($option, $allOptions)) {
 				$detailOptions = $allOptions[$option];
@@ -273,9 +271,8 @@ abstract class RecordInterface
 		return $filteredMoreDetailsOptions;
 	}
 
-	public static function getValidMoreDetailsSources()
-	{
-		return array(
+	public static function getValidMoreDetailsSources() {
+		return [
 			'description' => 'Description',
 			'series' => 'Also in this Series',
 			'formats' => 'Formats',
@@ -302,12 +299,11 @@ abstract class RecordInterface
 			'citations' => 'Citations',
 			'copyDetails' => 'Copy Details (OverDrive)',
 			'staff' => 'Staff View',
-		);
+		];
 	}
 
-	public static function getDefaultMoreDetailsOptions()
-	{
-		return array(
+	public static function getDefaultMoreDetailsOptions() {
+		return [
 			'description' => 'open',
 			'series' => 'open',
 			'formats' => 'open',
@@ -334,18 +330,18 @@ abstract class RecordInterface
 			'citations' => 'closed',
 			'copyDetails' => 'closed',
 			'staff' => 'closed',
-		);
+		];
 	}
 
-	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		global $interface;
 		$interface->assign('showRatings', $collectionSpotlight->showRatings);
 
 		$interface->assign('key', $index);
 
-		if ($collectionSpotlight->coverSize == 'small'){
+		if ($collectionSpotlight->coverSize == 'small') {
 			$imageUrl = $this->getBookcoverUrl('small');
-		}else{
+		} else {
 			$imageUrl = $this->getBookcoverUrl('medium');
 		}
 
@@ -357,7 +353,7 @@ abstract class RecordInterface
 		$interface->assign('titleURL', $this->getLinkUrl());
 		$interface->assign('imageUrl', $imageUrl);
 
-		if ($collectionSpotlight->showRatings){
+		if ($collectionSpotlight->showRatings) {
 			$interface->assign('ratingData', null);
 			$interface->assign('showNotInterested', false);
 		}
@@ -366,22 +362,22 @@ abstract class RecordInterface
 			'title' => $this->getTitle(),
 			'author' => $this->getPrimaryAuthor(),
 		];
-		if ($collectionSpotlight->style == 'text-list'){
+		if ($collectionSpotlight->style == 'text-list') {
 			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
-		}elseif ($collectionSpotlight->style == 'horizontal-carousel'){
+		} elseif ($collectionSpotlight->style == 'horizontal-carousel') {
 			$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
-		}else{
-			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+		} else {
+			$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
 
 		return $result;
 	}
 
-	function setListNotes($listNotes){
+	function setListNotes($listNotes) {
 		$this->listNotes = $listNotes;
 	}
 
-	function getListNotes(){
+	function getListNotes() {
 		return $this->listNotes;
 	}
 

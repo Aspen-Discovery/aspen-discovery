@@ -1,16 +1,15 @@
 <?php
 
 
-class EncryptionUtils
-{
-	public static function encryptField($fieldData){
+class EncryptionUtils {
+	public static function encryptField($fieldData) {
 		$key = EncryptionUtils::loadKey();
-		if ($key == false){
+		if ($key == false) {
 			return $fieldData;
-		}else{
-			if (empty($fieldData)){
+		} else {
+			if (empty($fieldData)) {
 				return $fieldData;
-			}else {
+			} else {
 				$initializationVector = openssl_random_pseudo_bytes(openssl_cipher_iv_length($key['cipher']));
 				$encryptedTextRaw = openssl_encrypt($fieldData, $key['cipher'], $key['key'], OPENSSL_RAW_DATA, $initializationVector, $tag);
 				$hmac = hash_hmac('sha256', $encryptedTextRaw, $key['key'], true);
@@ -19,20 +18,20 @@ class EncryptionUtils
 		}
 	}
 
-	public static function decryptField($fieldData){
+	public static function decryptField($fieldData) {
 		$key = EncryptionUtils::loadKey();
 		return EncryptionUtils::doDecryption($fieldData, $key);
 	}
 
-	private static function doDecryption($fieldData, $key){
-		if ($key == false){
-			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~'){
+	private static function doDecryption($fieldData, $key) {
+		if ($key == false) {
+			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~') {
 				return "Invalid encryption";
-			}else{
+			} else {
 				return $fieldData;
 			}
-		}else{
-			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~'){
+		} else {
+			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~') {
 				$decodedData = base64_decode(substr($fieldData, 4));
 				$initializationVectorLength = openssl_cipher_iv_length($key['cipher']);
 				$initializationVector = substr($decodedData, 0, $initializationVectorLength);
@@ -41,12 +40,12 @@ class EncryptionUtils
 				$rawEncodedData = substr($decodedData, $initializationVectorLength + 32 + 16);
 				$decryptedText = openssl_decrypt($rawEncodedData, $key['cipher'], $key['key'], OPENSSL_RAW_DATA, $initializationVector, $tag);
 				$calcMac = hash_hmac('sha256', $rawEncodedData, $key['key'], true);
-				if (hash_equals($hmac, $calcMac)){
+				if (hash_equals($hmac, $calcMac)) {
 					return $decryptedText;
-				}else{
+				} else {
 					return false;
 				}
-			}else{
+			} else {
 				//This field is not encoded
 				return $fieldData;
 			}
@@ -54,21 +53,26 @@ class EncryptionUtils
 	}
 
 	private static $_providedKeys = [];
-	public static function decryptFieldWithProvidedKey($fieldData, $key){
-		if (!array_key_exists($key, EncryptionUtils::$_providedKeys)){
-			list($cipher, $key) = explode(':', $key, 2);
+
+	public static function decryptFieldWithProvidedKey($fieldData, $key) {
+		if (!array_key_exists($key, EncryptionUtils::$_providedKeys)) {
+			[
+				$cipher,
+				$key,
+			] = explode(':', $key, 2);
 			EncryptionUtils::$_providedKeys[$key] = [
 				'cipher' => $cipher,
-				'key' => hex2bin($key)
+				'key' => hex2bin($key),
 			];
 		}
-		$keyData =  EncryptionUtils::$_providedKeys[$key];
+		$keyData = EncryptionUtils::$_providedKeys[$key];
 		return EncryptionUtils::doDecryption($fieldData, $keyData);
 	}
 
 	private static $_key = null;
-	private static function loadKey(){
-		if (EncryptionUtils::$_key == null){
+
+	private static function loadKey() {
+		if (EncryptionUtils::$_key == null) {
 			global $serverName;
 			$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
 			if (file_exists($passkeyFile)) {
@@ -76,10 +80,13 @@ class EncryptionUtils
 				$key = trim(fgets($passkeyFhnd));
 				fclose($passkeyFhnd);
 				if ($key != false) {
-					list($cipher, $key) = explode(':', $key, 2);
+					[
+						$cipher,
+						$key,
+					] = explode(':', $key, 2);
 					EncryptionUtils::$_key = [
 						'cipher' => $cipher,
-						'key' => hex2bin($key)
+						'key' => hex2bin($key),
 					];
 				} else {
 					EncryptionUtils::$_key = false;

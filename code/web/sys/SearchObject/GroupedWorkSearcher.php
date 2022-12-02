@@ -3,13 +3,15 @@
 require_once ROOT_DIR . '/sys/SearchObject/AbstractGroupedWorkSearcher.php';
 require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 
-class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkSearcher
-{
+class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkSearcher {
 	// Field List
 	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed,lc_subject,bisac_subject';
 
 	// Display Modes //
-	public $viewOptions = array('list', 'covers');
+	public $viewOptions = [
+		'list',
+		'covers',
+	];
 
 	private $fieldsToReturn = null;
 
@@ -18,8 +20,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		// Call base class constructor
 		parent::__construct(1);
 
@@ -56,7 +57,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'relevance' => 'Best Match',
 			'year desc,title asc' => "Publication Year Desc",
 			'year asc,title asc' => "Publication Year Asc",
@@ -66,8 +67,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			'callnumber_sort' => 'sort_callnumber',
 			'popularity desc' => 'sort_popularity',
 			'rating desc' => 'sort_rating',
-			'total_holds desc' => "Number of Holds"
-		);
+			'total_holds desc' => "Number of Holds",
+		];
 
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -91,8 +92,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	 *                                             a well formatted query
 	 * @return  array
 	 */
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
-	{
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		global $timer;
 		global $solrScope;
 
@@ -237,17 +237,17 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		}
 
 		//Check to see if we should apply a default filter
-		if ($availabilityToggleValue == null){
+		if ($availabilityToggleValue == null) {
 			global $library;
 			$location = Location::getSearchLocation(null);
-			if ($location != null){
+			if ($location != null) {
 				$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
-			}else{
+			} else {
 				$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 			}
 			$availabilityToggleValue = $groupedWorkDisplaySettings->defaultAvailabilityToggle;
 
-			$filterQuery['availability_toggle_'. $solrScope] = "availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
+			$filterQuery['availability_toggle_' . $solrScope] = "availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
 		}
 
 		//Check to see if we have both a format and availability facet applied.
@@ -263,7 +263,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 					$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
 				}
 				$filterQuery[] = '(' . implode(' OR ', $formatFilters) . ')';
-			}else{
+			} else {
 				foreach ($formatValues as $formatValue) {
 					$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
 					$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
@@ -275,7 +275,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
 				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
 			}
-			unset($filterQuery['availability_toggle_'. $solrScope]);
+			unset($filterQuery['availability_toggle_' . $solrScope]);
 		}
 
 		//Check to see if we have both a format and available at facet applied
@@ -324,7 +324,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		}
 
 		// Build a list of facets we want from the index
-		$facetSet = array();
+		$facetSet = [];
 		$facetConfig = $this->getFacetConfig();
 		if ($recommendations && !empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
@@ -339,7 +339,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 						} else {
 							$facetSet['field'][$facetField] = $facetField;
 						}
-					}else {
+					} else {
 						if ($facetInfo->multiSelect) {
 							$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
 							$facetSet['field'][$facetField] = "{!ex={$facetKey}}" . $facetField;
@@ -410,7 +410,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		// The "relevance" sort option is a VuFind reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
-		if ($finalSort == 'days_since_added asc'){
+		if ($finalSort == 'days_since_added asc') {
 			$finalSort = 'local_days_since_added_' . $solrScope . ' asc';
 		}
 
@@ -424,17 +424,17 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		if (preg_match('/^\\"[^\\"]+?\\"$/', $this->query)) {
 			if ($handler == 'Keyword') {
 				$handler = 'KeywordProper';
-			} else if ($handler == 'Author') {
+			} elseif ($handler == 'Author') {
 				$handler = 'AuthorProper';
-			} else if ($handler == 'Subject') {
+			} elseif ($handler == 'Subject') {
 				$handler = 'SubjectProper';
-			} else if ($handler == 'AllFields') {
+			} elseif ($handler == 'AllFields') {
 				$handler = 'KeywordProper';
-			} else if ($handler == 'Title') {
+			} elseif ($handler == 'Title') {
 				$handler = 'TitleProper';
-			} else if ($handler == 'Title') {
+			} elseif ($handler == 'Title') {
 				$handler = 'TitleProper';
-			} else if ($handler == 'Series') {
+			} elseif ($handler == 'Series') {
 				$handler = 'SeriesProper';
 			}
 		}
@@ -445,12 +445,15 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		global $solrScope;
 		if (!empty($filterQuery)) {
 			if (!is_array($filterQuery)) {
-				$filterQuery = array($filterQuery);
+				$filterQuery = [$filterQuery];
 			}
 
-			$validFilters = array();
+			$validFilters = [];
 			foreach ($filterQuery as $id => $filterTerm) {
-				list($fieldName, $term) = explode(":", $filterTerm, 2);
+				[
+					$fieldName,
+					$term,
+				] = explode(":", $filterTerm, 2);
 				$tagging = '';
 				if (preg_match("/({!tag=\d+})\(?(.*)/", $fieldName, $matches)) {
 					$tagging = $matches[1];
@@ -482,8 +485,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			$filterQuery = $validFilters;
 		}
 
-		$this->indexResult = $this->indexEngine->search(
-			$this->query,      // Query string
+		$this->indexResult = $this->indexEngine->search($this->query,      // Query string
 			$handler,      // DisMax Handler
 			$filterQuery,      // Filter query
 			$recordStart,      // Starting record
@@ -505,7 +507,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		if (is_null($this->indexResult)) {
 			//This happens with a timeout
 			$this->resultsTotal = 0;
-		} else if (!isset($this->indexResult['response']['numFound'])) {
+		} elseif (!isset($this->indexResult['response']['numFound'])) {
 			//An error occurred
 			$this->resultsTotal = 0;
 		} else {
@@ -540,15 +542,14 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	/**
 	 * @param String $fields - a list of comma separated fields to return
 	 */
-	function setFieldsToReturn($fields){
+	function setFieldsToReturn($fields) {
 		$this->fieldsToReturn = $fields;
 	}
 
-	protected function getFieldsToReturn()
-	{
+	protected function getFieldsToReturn() {
 		if (isset($_REQUEST['allFields'])) {
 			$fieldsToReturn = '*,score';
-		}elseif ($this->fieldsToReturn != null) {
+		} elseif ($this->fieldsToReturn != null) {
 			$fieldsToReturn = $this->fieldsToReturn;
 		} else {
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
@@ -593,8 +594,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	 * @param string $scopedFieldName
 	 * @return string
 	 */
-	protected function getUnscopedFieldName(string $scopedFieldName): string
-	{
+	protected function getUnscopedFieldName(string $scopedFieldName): string {
 		if (strpos($scopedFieldName, 'availability_toggle_') === 0) {
 			$scopedFieldName = 'availability_toggle';
 		} elseif (strpos($scopedFieldName, 'format') === 0) {
@@ -627,8 +627,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	 * @param $field
 	 * @return string
 	 */
-	protected function getScopedFieldName($field): string
-	{
+	protected function getScopedFieldName($field): string {
 		global $solrScope;
 		if ($solrScope) {
 			if ($field === 'availability_toggle') {
@@ -673,8 +672,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null)
-	{
+	public function getFacetList($filter = null) {
 		global $solrScope;
 		global $timer;
 		// If there is no filter, we'll use all facets as the filter:
@@ -683,7 +681,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])) {
@@ -695,16 +693,15 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
-		/** @var Location $locationSingleton */
-		global $locationSingleton;
+		/** @var Location $locationSingleton */ global $locationSingleton;
 		/** @var Library $currentLibrary */
 		$currentLibrary = Library::getActiveLibrary();
 		$activeLocationFacet = null;
 		$activeLocation = $locationSingleton->getActiveLocation();
 		if (!is_null($activeLocation)) {
-			if (empty($activeLocation->facetLabel)){
+			if (empty($activeLocation->facetLabel)) {
 				$activeLocationFacet = $activeLocation->displayName;
-			}else{
+			} else {
 				$activeLocationFacet = $activeLocation->facetLabel;
 			}
 		}
@@ -721,7 +718,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				$location = new Location();
 				$location->whereAddIn('code', $locationsToLookfor, true);
 				$location->find();
-				$additionalAvailableAtLocations = array();
+				$additionalAvailableAtLocations = [];
 				while ($location->fetch()) {
 					$additionalAvailableAtLocations[] = $location->facetLabel;
 				}
@@ -754,12 +751,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				}
 			}
 			// Initialize the settings for the current field
-			$list[$field] = array();
+			$list[$field] = [];
 			$list[$field]['field_name'] = $field;
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list'] = array();
+			$list[$field]['list'] = [];
 			$list[$field]['hasApplied'] = false;
 			$foundInstitution = false;
 			$doInstitutionProcessing = false;
@@ -782,9 +779,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings = array();
+				$currentSettings = [];
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate([
+					'text' => $facet[0],
+					'isPublicFacing' => true,
+				]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -803,7 +803,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				$valueKey = $facet[0];
 				$okToAdd = true;
 				//Don't include empty settings since they don't work properly with Solr
-				if (strlen(trim($facet[0])) == 0){
+				if (strlen(trim($facet[0])) == 0) {
 					$okToAdd = false;
 				}
 				if ($doInstitutionProcessing) {
@@ -824,7 +824,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 						$foundInstitution = true;
 						$numValidLibraries++;
 					}
-				} else if ($doBranchProcessing) {
+				} elseif ($doBranchProcessing) {
 					if (strlen($facet[0]) > 0) {
 						if ($activeLocationFacet != null && $facet[0] == $activeLocationFacet) {
 							$valueKey = '1' . $valueKey;
@@ -836,19 +836,19 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 						} elseif (isset($currentLibrary) && ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration')) {
 							$valueKey = '1' . $valueKey;
 							$numValidRelatedLocations++;
-						} else if (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)) {
+						} elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)) {
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
-						} else if (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)) {
+						} elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)) {
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
-						} else if (!is_null($relatedHomeLocationFacets) && in_array($facet[0], $relatedHomeLocationFacets)) {
+						} elseif (!is_null($relatedHomeLocationFacets) && in_array($facet[0], $relatedHomeLocationFacets)) {
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
 						} elseif (!is_null($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online') {
 							$valueKey = '3' . $valueKey;
 							$numValidRelatedLocations++;
-						} else if ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)) {
+						} elseif ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)) {
 							$valueKey = '4' . $valueKey;
 							$numValidRelatedLocations++;
 						}
@@ -863,26 +863,24 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			}
 
 			if (!$foundInstitution && $doInstitutionProcessing) {
-				$list[$field]['list']['1' . $currentLibrary->facetLabel] =
-					array(
-						'value' => $currentLibrary->facetLabel,
-						'display' => $currentLibrary->facetLabel,
-						'count' => 0,
-						'isApplied' => false,
-						'url' => null,
-						'countIsApproximate' => false
-					);
+				$list[$field]['list']['1' . $currentLibrary->facetLabel] = [
+					'value' => $currentLibrary->facetLabel,
+					'display' => $currentLibrary->facetLabel,
+					'count' => 0,
+					'isApplied' => false,
+					'url' => null,
+					'countIsApproximate' => false,
+				];
 			}
 			if (!$foundBranch && $doBranchProcessing && !empty($activeLocationFacet)) {
-				$list[$field]['list']['1' . $activeLocationFacet] =
-					array(
-						'value' => $activeLocationFacet,
-						'display' => $activeLocationFacet,
-						'count' => 0,
-						'isApplied' => false,
-						'url' => null,
-						'countIsApproximate' => false
-					);
+				$list[$field]['list']['1' . $activeLocationFacet] = [
+					'value' => $activeLocationFacet,
+					'display' => $activeLocationFacet,
+					'count' => 0,
+					'isApplied' => false,
+					'url' => null,
+					'countIsApproximate' => false,
+				];
 				$numValidRelatedLocations++;
 			}
 
@@ -890,9 +888,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			//Only show one system unless we are in the global scope
 			if ($field == 'owning_library_' . $solrScope && isset($currentLibrary)) {
 				$list[$field]['valuesToShow'] = $numValidLibraries;
-			} else if ($field == 'owning_location_' . $solrScope && isset($relatedLocationFacets) && $numValidRelatedLocations > 0) {
+			} elseif ($field == 'owning_location_' . $solrScope && isset($relatedLocationFacets) && $numValidRelatedLocations > 0) {
 				$list[$field]['valuesToShow'] = $numValidRelatedLocations;
-			} else if ($field == 'available_at_' . $solrScope) {
+			} elseif ($field == 'available_at_' . $solrScope) {
 				$list[$field]['valuesToShow'] = count($list[$field]['list']);
 			} else {
 				$list[$field]['valuesToShow'] = 5;
@@ -901,7 +899,11 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 			//Sort the facet alphabetically?
 			//Sort the system and location alphabetically unless we are in the global scope
 			global $solrScope;
-			if (in_array($field, array('owning_library_' . $solrScope, 'owning_location_' . $solrScope, 'available_at_' . $solrScope)) && isset($currentLibrary)) {
+			if (in_array($field, [
+					'owning_library_' . $solrScope,
+					'owning_location_' . $solrScope,
+					'available_at_' . $solrScope,
+				]) && isset($currentLibrary)) {
 				$list[$field]['showAlphabetically'] = true;
 			} else {
 				$list[$field]['showAlphabetically'] = false;

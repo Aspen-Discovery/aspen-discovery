@@ -37,35 +37,34 @@
  * -------------------------------------------------------------
  *
  * @param string $highlighted Highlighted, possibly abbreviated string
- * @param mixed  $fullString  Full, non-highlighted text
+ * @param mixed $fullString Full, non-highlighted text
  *
  * @return string             Highlighted string with ellipsis added
- */ // @codingStandardsIgnoreStart
-function smarty_modifier_addEllipsis($highlighted, $fullString)
-{   // @codingStandardsIgnoreEnd
-    // Remove highlighting markers from the string so we can perform a clean
-    // comparison:
-    $dehighlighted = str_replace(
-        array('{{{{START_HILITE}}}}', '{{{{END_HILITE}}}}'), '', $highlighted
-    );
+ */
+function smarty_modifier_addEllipsis($highlighted, $fullString) {
+	// Remove highlighting markers from the string so we can perform a clean
+	// comparison:
+	$dehighlighted = str_replace([
+		'{{{{START_HILITE}}}}',
+		'{{{{END_HILITE}}}}',
+	], '', $highlighted);
 
-    // If the dehighlighted string is shorter than the full string, we need
-    // to figure out where things changed:
-    if (strlen($dehighlighted) < strlen($fullString)) {
-        // If the first five characters don't match, chances are something was cut
-        // from the front:
-        if (substr($dehighlighted, 0, 5) != substr($fullString, 0, 5)) {
-            $highlighted = '...' . $highlighted;
-        }
-        
-        // If the last five characters don't match, chances are something was cut
-        // from the end:
-        if (substr($dehighlighted, -5) != substr($fullString, -5)) {
-            $highlighted .= '...';
-        }
-    }
+	// If the dehighlighted string is shorter than the full string, we need
+	// to figure out where things changed:
+	if (strlen($dehighlighted) < strlen($fullString)) {
+		// If the first five characters don't match, chances are something was cut
+		// from the front:
+		if (substr($dehighlighted, 0, 5) != substr($fullString, 0, 5)) {
+			$highlighted = '...' . $highlighted;
+		}
 
-    // Send back our augmented string:
-    return $highlighted;
+		// If the last five characters don't match, chances are something was cut
+		// from the end:
+		if (substr($dehighlighted, -5) != substr($fullString, -5)) {
+			$highlighted .= '...';
+		}
+	}
+
+	// Send back our augmented string:
+	return $highlighted;
 }
-?>

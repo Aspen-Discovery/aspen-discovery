@@ -2,11 +2,9 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-class Events_JSON extends JSON_Action
-{
+class Events_JSON extends JSON_Action {
 	/** @noinspection PhpUnused */
-	public function trackUsage()
-	{
+	public function trackUsage() {
 //		if (!isset($_REQUEST['id'])) {
 //			return ['success' => false, 'message' => 'ID was not provided'];
 //		}

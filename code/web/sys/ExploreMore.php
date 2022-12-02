@@ -4,34 +4,35 @@ class ExploreMore {
 	private $relatedCollections;
 
 	private $numEntriesToAdd = 3;
+
 	/**
 	 * @param string $activeSection
 	 * @param RecordInterface $recordDriver
 	 */
-	function loadExploreMoreSidebar($activeSection, $recordDriver){
+	function loadExploreMoreSidebar($activeSection, $recordDriver) {
 		global $interface;
 		global $timer;
 
-		$exploreMoreSectionsToShow = array();
+		$exploreMoreSectionsToShow = [];
 
-		$relatedCatalogContent = array();
+		$relatedCatalogContent = [];
 
 		//Get subjects that can be used for searching other systems
 		$subjects = $recordDriver->getAllSubjectHeadings();
-		$subjectsForSearching = array();
-		$quotedSubjectsForSearching = array();
-		foreach ($subjects as $subject){
-			if (is_array($subject)){
-				$searchSubject =  implode(" ", $subject);
-			}else{
+		$subjectsForSearching = [];
+		$quotedSubjectsForSearching = [];
+		foreach ($subjects as $subject) {
+			if (is_array($subject)) {
+				$searchSubject = implode(" ", $subject);
+			} else {
 				$searchSubject = $subject;
 			}
 			$separatorPosition = strpos($searchSubject, ' -- ');
-			if ($separatorPosition > 0){
+			if ($separatorPosition > 0) {
 				$searchSubject = substr($searchSubject, 0, $separatorPosition);
 			}
-			$searchSubject = preg_replace('/\(.*?\)/',"", $searchSubject);
-			$searchSubject = trim(preg_replace('/[\/|:.,"]/',"", $searchSubject));
+			$searchSubject = preg_replace('/\(.*?\)/', "", $searchSubject);
+			$searchSubject = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
 			$subjectsForSearching[] = $searchSubject;
 			$quotedSubjectsForSearching[] = '"' . $searchSubject . '"';
 		}
@@ -41,57 +42,54 @@ class ExploreMore {
 		$quotedSearchTerm = implode(' OR ', $quotedSubjectsForSearching);
 
 		//Get objects from the archive based on search subjects
-		if ($activeSection != 'archive'){
-			foreach ($subjectsForSearching as $curSubject){
-				$exactEntityMatches = $this->loadExactEntityMatches(array(), $curSubject);
-				if (count($exactEntityMatches) > 0){
-					$exploreMoreSectionsToShow['exactEntityMatches'] = array(
+		if ($activeSection != 'archive') {
+			foreach ($subjectsForSearching as $curSubject) {
+				$exactEntityMatches = $this->loadExactEntityMatches([], $curSubject);
+				if (count($exactEntityMatches) > 0) {
+					$exploreMoreSectionsToShow['exactEntityMatches'] = [
 						'format' => 'list',
-						'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
-					);
+						'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities'),
+					];
 				}
 			}
 			$timer->logTime("Loaded related entities");
 		}
 
 		//Always load ebsco even if we are already in that section
-		$ebscoMatches = $this->loadEbscoEDSOptions('', array(), $searchTerm);
-		if (count($ebscoMatches) > 0){
+		$ebscoMatches = $this->loadEbscoEDSOptions('', [], $searchTerm);
+		if (count($ebscoMatches) > 0) {
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
 
-		if ($activeSection != 'catalog'){
+		if ($activeSection != 'catalog') {
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedCatalogContent);
-			if ($relatedWorks['numFound'] > 0){
-				$exploreMoreSectionsToShow['relatedCatalog'] = array(
+			if ($relatedWorks['numFound'] > 0) {
+				$exploreMoreSectionsToShow['relatedCatalog'] = [
 					'format' => 'scrollerWithLink',
 					'values' => $relatedWorks['values'],
 					'link' => $relatedWorks['link'],
 					'numFound' => $relatedWorks['numFound'],
-				);
+				];
 			}
 		}
 
 		$interface->assign('exploreMoreSections', $exploreMoreSectionsToShow);
 	}
 
-	function getExploreMoreQuery(){
-		if (isset($_REQUEST['lookfor'])){
+	function getExploreMoreQuery() {
+		if (isset($_REQUEST['lookfor'])) {
 			$searchTerm = $_REQUEST['lookfor'];
-		}else{
+		} else {
 			$searchTerm = '';
 		}
-		if (!$searchTerm){
+		if (!$searchTerm) {
 			//No search term found, try to get a search term based on applied filters (just one)
-			if (isset($_REQUEST['filter'])){
-				foreach ($_REQUEST['filter'] as $filter){
+			if (isset($_REQUEST['filter'])) {
+				foreach ($_REQUEST['filter'] as $filter) {
 					if (!is_array($filter) && strlen($filter) > 0) {
-						if (strpos($filter, ':') !== false){
+						if (strpos($filter, ':') !== false) {
 							$filterVals = explode(':', $filter, 2);
-							if ($filterVals[0] != 'mods_genre_s' &&
-								$filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' &&
-								$filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full'
-							) {
+							if ($filterVals[0] != 'mods_genre_s' && $filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' && $filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full') {
 								$searchTerm = str_replace('"', '', $filterVals[1]);
 								break;
 							}
@@ -103,8 +101,8 @@ class ExploreMore {
 		return $searchTerm;
 	}
 
-	function loadExploreMoreBar($activeSection, $searchTerm){
-		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
+	function loadExploreMoreBar($activeSection, $searchTerm) {
+		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1) {
 			return [];
 		}
 		//Get data from the repository
@@ -115,16 +113,14 @@ class ExploreMore {
 		global $enabledModules;
 		$exploreMoreOptions = [
 			'sampleRecords' => [],
-			'searchLinks' => []
+			'searchLinks' => [],
 		];
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
 		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1) {
 			$exploreMoreOptions = $this->loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm);
-		}
-
-		else if (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
+		} elseif (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
 			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
@@ -142,7 +138,7 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
-		if ($library->enableGenealogy){
+		if ($library->enableGenealogy) {
 			$exploreMoreOptions = $this->loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
@@ -154,16 +150,16 @@ class ExploreMore {
 			$minSampleRecordsToAdd = 0;
 		}
 		//Get at least one sample record from each source
-		for ($sampleIndex = 0; $sampleIndex < 4; $sampleIndex++){
-			foreach ($exploreMoreOptions['sampleRecords'] as $sampleRecords){
-				if (array_key_exists($sampleIndex, $sampleRecords)){
+		for ($sampleIndex = 0; $sampleIndex < 4; $sampleIndex++) {
+			foreach ($exploreMoreOptions['sampleRecords'] as $sampleRecords) {
+				if (array_key_exists($sampleIndex, $sampleRecords)) {
 					$exploreMoreDisplayOptions[] = $sampleRecords[$sampleIndex];
-					if (count($exploreMoreDisplayOptions) >= $minSampleRecordsToAdd && $sampleIndex >= 1){
+					if (count($exploreMoreDisplayOptions) >= $minSampleRecordsToAdd && $sampleIndex >= 1) {
 						break;
 					}
 				}
 			}
-			if (count($exploreMoreDisplayOptions) >= $minSampleRecordsToAdd){
+			if (count($exploreMoreDisplayOptions) >= $minSampleRecordsToAdd) {
 				break;
 			}
 		}
@@ -175,8 +171,7 @@ class ExploreMore {
 		return $exploreMoreDisplayOptions;
 	}
 
-	protected function loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm)
-	{
+	protected function loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		if ($activeSection != 'websites') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['websites'] = [];
@@ -184,10 +179,10 @@ class ExploreMore {
 				$searchObjectSolr = SearchObjectFactory::initSearchObject('Websites');
 				$searchObjectSolr->init();
 				$searchObjectSolr->disableSpelling();
-				$searchObjectSolr->setSearchTerms(array(
+				$searchObjectSolr->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'WebsiteKeyword'
-				));
+					'index' => 'WebsiteKeyword',
+				]);
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
@@ -197,30 +192,38 @@ class ExploreMore {
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
-						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Web pages (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Web pages related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						$exploreMoreOptions['searchLinks'][] = [
+							'label' => translate([
+								'text' => "Web pages (%1%)",
+								1 => $numCatalogResults,
+								'isPublicFacing' => true,
+							]),
+							'description' => translate([
+								'text' => "All Results in Web pages related to %1%",
+								1 => $searchTerm,
+								'isPublicFacing' => true,
+							]),
 							//TODO: provide a better icon
 							'image' => '/images/webpage.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
-							'openInNewWindow' => false
-						);
+							'openInNewWindow' => false,
+						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
 						/** @var ListsRecordDriver $driver */
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
-							$exploreMoreOptions['sampleRecords']['websites'][] = array(
+							$exploreMoreOptions['sampleRecords']['websites'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
-								'onclick' => 'AspenDiscovery.Websites.trackUsage(' .  $driver->getId() .')',
+								'onclick' => 'AspenDiscovery.Websites.trackUsage(' . $driver->getId() . ')',
 								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 						}
 
 						$numCatalogResultsAdded++;
@@ -239,10 +242,10 @@ class ExploreMore {
 				$searchObjectSolr = SearchObjectFactory::initSearchObject('Events');
 				$searchObjectSolr->init();
 				$searchObjectSolr->disableSpelling();
-				$searchObjectSolr->setSearchTerms(array(
+				$searchObjectSolr->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'EventsKeyword'
-				));
+					'index' => 'EventsKeyword',
+				]);
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
@@ -252,28 +255,36 @@ class ExploreMore {
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
-						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Events (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Events related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						$exploreMoreOptions['searchLinks'][] = [
+							'label' => translate([
+								'text' => "Events (%1%)",
+								1 => $numCatalogResults,
+								'isPublicFacing' => true,
+							]),
+							'description' => translate([
+								'text' => "All Results in Events related to %1%",
+								1 => $searchTerm,
+								'isPublicFacing' => true,
+							]),
 							'image' => '/interface/themes/responsive/images/events.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
-							'openInNewWindow' => false
-						);
+							'openInNewWindow' => false,
+						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
 						/** @var EventRecordDriver $driver */
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
-							$exploreMoreOptions['sampleRecords']['events'][] = array(
+							$exploreMoreOptions['sampleRecords']['events'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
-								'openInNewWindow' => true
-							);
+								'openInNewWindow' => true,
+							];
 						}
 
 						$numCatalogResultsAdded++;
@@ -284,8 +295,7 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm)
-	{
+	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		if ($activeSection != 'lists') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['lists'] = [];
@@ -294,10 +304,10 @@ class ExploreMore {
 				$searchObjectSolr = SearchObjectFactory::initSearchObject('Lists');
 				$searchObjectSolr->init();
 				$searchObjectSolr->disableSpelling();
-				$searchObjectSolr->setSearchTerms(array(
+				$searchObjectSolr->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'ListsKeyword'
-				));
+					'index' => 'ListsKeyword',
+				]);
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
@@ -307,29 +317,37 @@ class ExploreMore {
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
-						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Lists (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Lists related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						$exploreMoreOptions['searchLinks'][] = [
+							'label' => translate([
+								'text' => "Lists (%1%)",
+								1 => $numCatalogResults,
+								'isPublicFacing' => true,
+							]),
+							'description' => translate([
+								'text' => "All Results in Lists related to %1%",
+								1 => $searchTerm,
+								'isPublicFacing' => true,
+							]),
 							//TODO: provide a better icon
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
-							'openInNewWindow' => false
-						);
+							'openInNewWindow' => false,
+						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
 						/** @var ListsRecordDriver $driver */
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
-							$exploreMoreOptions['sampleRecords']['lists'][] = array(
+							$exploreMoreOptions['sampleRecords']['lists'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 						}
 
 						$numCatalogResultsAdded++;
@@ -346,8 +364,7 @@ class ExploreMore {
 	 * @param $searchTerm
 	 * @return array
 	 */
-	protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm)
-	{
+	protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		if ($activeSection != 'open_archives') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['open_archives'] = [];
@@ -355,10 +372,10 @@ class ExploreMore {
 				$searchObjectSolr = SearchObjectFactory::initSearchObject('OpenArchives');
 				$searchObjectSolr->init();
 				$searchObjectSolr->disableSpelling();
-				$searchObjectSolr->setSearchTerms(array(
+				$searchObjectSolr->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'OpenArchivesKeyword'
-				));
+					'index' => 'OpenArchivesKeyword',
+				]);
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
@@ -368,30 +385,38 @@ class ExploreMore {
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
-						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Archive Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Archives related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						$exploreMoreOptions['searchLinks'][] = [
+							'label' => translate([
+								'text' => "Archive Results (%1%)",
+								1 => $numCatalogResults,
+								'isPublicFacing' => true,
+							]),
+							'description' => translate([
+								'text' => "All Results in Archives related to %1%",
+								1 => $searchTerm,
+								'isPublicFacing' => true,
+							]),
 							//TODO: Provide a better title
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
-							'openInNewWindow' => false
-						);
+							'openInNewWindow' => false,
+						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
 						/** @var OpenArchivesRecordDriver $driver */
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
-							$exploreMoreOptions['sampleRecords']['open_archives'][] = array(
+							$exploreMoreOptions['sampleRecords']['open_archives'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'onclick' => "AspenDiscovery.OpenArchives.trackUsage('{$driver->getId()}')",
 								'usageCount' => 1,
-								'openInNewWindow' => true
-							);
+								'openInNewWindow' => true,
+							];
 						}
 
 						$numCatalogResultsAdded++;
@@ -416,33 +441,33 @@ class ExploreMore {
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
 				$searchObjectSolr->disableSpelling();
-				$searchObjectSolr->setSearchTerms(array(
+				$searchObjectSolr->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'Keyword'
-				));
+					'index' => 'Keyword',
+				]);
 				$searchObjectSolr->clearHiddenFilters();
 				$searchObjectSolr->clearFilters();
 				if ($activeSection == 'open_archives' || $activeSection == 'archive') {
 					$facetConfig = $searchObjectSolr->getFacetConfig();
-					if (array_key_exists('literary_form', $facetConfig)){
+					if (array_key_exists('literary_form', $facetConfig)) {
 						$searchObjectSolr->addFilter('literary_form:"Non Fiction"');
-					}elseif (array_key_exists('literary_form_full', $facetConfig)){
+					} elseif (array_key_exists('literary_form_full', $facetConfig)) {
 						$searchObjectSolr->addFilter('literary_form_full:"Non Fiction"');
 					}
-					if (array_key_exists('target_audience', $facetConfig)){
-						if ($facetConfig['target_audience']->multiSelect){
+					if (array_key_exists('target_audience', $facetConfig)) {
+						if ($facetConfig['target_audience']->multiSelect) {
 							$searchObjectSolr->addFilter('target_audience:Adult');
 							$searchObjectSolr->addFilter('target_audience:Unknown');
 							$searchObjectSolr->addFilter('target_audience:General');
-						}else{
+						} else {
 							$searchObjectSolr->addFilter('target_audience:(Adult OR Unknown OR General)');
 						}
-					}elseif (array_key_exists('target_audience_full', $facetConfig)){
-						if ($facetConfig['target_audience_full']->multiSelect){
+					} elseif (array_key_exists('target_audience_full', $facetConfig)) {
+						if ($facetConfig['target_audience_full']->multiSelect) {
 							$searchObjectSolr->addFilter('target_audience_full:Adult');
 							$searchObjectSolr->addFilter('target_audience_full:Unknown');
 							$searchObjectSolr->addFilter('target_audience_full:General');
-						}else{
+						} else {
 							$searchObjectSolr->addFilter('target_audience_full:(Adult OR Unknown OR General)');
 						}
 					}
@@ -459,24 +484,32 @@ class ExploreMore {
 						$numCatalogResults = $results['response']['numFound'];
 						if ($numCatalogResultsAdded == $this->numEntriesToAdd && $numCatalogResults > ($this->numEntriesToAdd + 1)) {
 							//Add a link to remaining catalog results
-							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => translate(['text'=>"Catalog Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-								'description' => translate(['text'=>"All Results in Catalog related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+							$exploreMoreOptions['searchLinks'][] = [
+								'label' => translate([
+									'text' => "Catalog Results (%1%)",
+									1 => $numCatalogResults,
+									'isPublicFacing' => true,
+								]),
+								'description' => translate([
+									'text' => "All Results in Catalog related to %1%",
+									1 => $searchTerm,
+									'isPublicFacing' => true,
+								]),
 								'image' => '/interface/themes/responsive/images/library_symbol.png',
 								'link' => $searchObjectSolr->renderSearchUrl(),
 								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 						} else {
 							//Add a link to the actual title
-							$exploreMoreOptions['sampleRecords']['catalog'][] = array(
+							$exploreMoreOptions['sampleRecords']['catalog'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 						}
 
 						$numCatalogResultsAdded++;
@@ -507,30 +540,30 @@ class ExploreMore {
 					if ($database->allowSearching && $database->showInExploreMore) {
 						$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
 						//Find related titles
-						$ebscohostSearcher->setSearchTerms(array(
+						$ebscohostSearcher->setSearchTerms([
 							'lookfor' => $searchTerm,
-							'index' => 'TX'
-						));
+							'index' => 'TX',
+						]);
 						$ebscohostSearcher->setLimit($this->numEntriesToAdd + 1);
 						$ebscohostSearcher->addFilter("db:$database->shortName");
 						$ebscohostResults = $ebscohostSearcher->processSearch(true, false);
 
 						$numMatches = $ebscohostSearcher->getNumResults();
 						if ($numMatches > 0) {
-							if (empty($database->logo)){
+							if (empty($database->logo)) {
 								$image = '/interface/themes/responsive/images/ebscohost.png';
-							}else{
+							} else {
 								$image = '/files/original/' . $database->logo;
 							}
 							//Add a link to the actual title
-							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => $database->displayName. " ($numMatches)",
+							$exploreMoreOptions['searchLinks'][] = [
+								'label' => $database->displayName . " ($numMatches)",
 								'description' => $database->displayName,
 								'image' => $image,
 								'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm) . "&filter[]=db:$database->shortName",
 								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 							$hasMatches = true;
 						}
 					}
@@ -538,19 +571,27 @@ class ExploreMore {
 				if ($hasMatches) {
 					$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
 					//Find related titles
-					$ebscohostSearcher->setSearchTerms(array(
+					$ebscohostSearcher->setSearchTerms([
 						'lookfor' => $searchTerm,
-						'index' => 'TX'
-					));
+						'index' => 'TX',
+					]);
 					$ebscohostSearcher->processSearch(true, false);
 					$numMatches = $ebscohostSearcher->getNumResults();
-					$exploreMoreOptions['searchLinks'][] = array(
-						'label' => translate(['text' => "All EBSCOhost Results (%1%)", 1 => $numMatches, 'isPublicFacing' => true]),
-						'description' => translate(['text' => "All Results in EBSCOhost related to %1%", 1 => $searchTerm, 'isPublicFacing' => true]),
+					$exploreMoreOptions['searchLinks'][] = [
+						'label' => translate([
+							'text' => "All EBSCOhost Results (%1%)",
+							1 => $numMatches,
+							'isPublicFacing' => true,
+						]),
+						'description' => translate([
+							'text' => "All Results in EBSCOhost related to %1%",
+							1 => $searchTerm,
+							'isPublicFacing' => true,
+						]),
 						'image' => '/interface/themes/responsive/images/ebscohost.png',
 						'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm),
-						'openInNewWindow' => false
-					);
+						'openInNewWindow' => false,
+					];
 				}
 			}
 		}
@@ -572,10 +613,10 @@ class ExploreMore {
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			if ($edsSearcher->authenticate()) {
 				//Find related titles
-				$edsSearcher->setSearchTerms(array(
+				$edsSearcher->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'TX'
-				));
+					'index' => 'TX',
+				]);
 				$edsResults = $edsSearcher->processSearch(true, false);
 				if ($edsResults != null) {
 					$exploreMoreOptions['sampleRecords']['ebsco_eds'] = [];
@@ -586,16 +627,21 @@ class ExploreMore {
 							if ($facetInfo->Id == 'SourceType') {
 								foreach ($facetInfo->AvailableFacetValues as $facetValue) {
 									$facetValueStr = (string)$facetValue->Value;
-									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
+									if (in_array($facetValueStr, [
+										'Magazines',
+										'News',
+										'Academic Journals',
+										'Primary Source Documents',
+									])) {
 										$numFacetMatches = (int)$facetValue->Count;
 										$iconName = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
-										$exploreMoreOptions['searchLinks'][] = array(
+										$exploreMoreOptions['searchLinks'][] = [
 											'label' => "$facetValueStr ({$numFacetMatches})",
 											'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
 											'image' => "/interface/themes/responsive/images/{$iconName}.png",
 											'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
-											'openInNewWindow' => false
-										);
+											'openInNewWindow' => false,
+										];
 									}
 
 								}
@@ -603,13 +649,21 @@ class ExploreMore {
 						}
 
 						if ($numMatches > 1) {
-							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => translate(['text'=>"All EBSCO Results (%1%)", 1=>$numMatches, 'isPublicFacing'=>true]),
-								'description' => translate(['text'=>"All Results in EBSCO related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+							$exploreMoreOptions['searchLinks'][] = [
+								'label' => translate([
+									'text' => "All EBSCO Results (%1%)",
+									1 => $numMatches,
+									'isPublicFacing' => true,
+								]),
+								'description' => translate([
+									'text' => "All Results in EBSCO related to %1%",
+									1 => $searchTerm,
+									'isPublicFacing' => true,
+								]),
 								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm),
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 						}
 					}
 				}
@@ -620,7 +674,7 @@ class ExploreMore {
 
 	/**
 	 * @param string[] $relatedSubjects
-	 * @param array    $directlyRelatedRecords
+	 * @param array $directlyRelatedRecords
 	 *
 	 * @return array
 	 */
@@ -628,17 +682,17 @@ class ExploreMore {
 		//Load related catalog content
 		$searchTerm = implode(" OR ", $relatedSubjects);
 
-		$similarTitles = array(
+		$similarTitles = [
 			'numFound' => 0,
 			'link' => '',
-			'values' => array()
-		);
+			'values' => [],
+		];
 
 		if (strlen($searchTerm) > 0) {
 			//Do not include any records that we have specific links to
 			$recordsToAvoid = '';
-			foreach ($directlyRelatedRecords as $record){
-				if (strlen($recordsToAvoid) > 0){
+			foreach ($directlyRelatedRecords as $record) {
+				if (strlen($recordsToAvoid) > 0) {
 					$recordsToAvoid .= ' OR ';
 				}
 				$recordsToAvoid .= $record['id'];
@@ -651,10 +705,10 @@ class ExploreMore {
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
 			$searchObject->disableSpelling();
-			$searchObject->setSearchTerms(array(
+			$searchObject->setSearchTerms([
 				'lookfor' => $searchTerm,
-				'index' => 'Keyword'
-			));
+				'index' => 'Keyword',
+			]);
 			$searchObject->addFilter('literary_form_full:Non Fiction');
 			$searchObject->addFilter('target_audience:(Adult OR Unknown)');
 			$searchObject->addHiddenFilter('!id', $recordsToAvoid);
@@ -664,19 +718,19 @@ class ExploreMore {
 			$results = $searchObject->processSearch(true, false);
 
 			if ($results && isset($results['response'])) {
-				$similarTitles = array(
+				$similarTitles = [
 					'numFound' => $results['response']['numFound'],
 					'link' => $searchObject->renderSearchUrl(),
-					'topHits' => array()
-				);
+					'topHits' => [],
+				];
 				foreach ($results['response']['docs'] as $doc) {
 					/** @var GroupedWorkDriver $driver */
 					$driver = RecordDriverFactory::initRecordDriver($doc);
-					$similarTitle = array(
+					$similarTitle = [
 						'label' => $driver->getTitle(),
 						'link' => $driver->getLinkUrl(),
-						'image' => $driver->getBookcoverUrl('medium')
-					);
+						'image' => $driver->getBookcoverUrl('medium'),
+					];
 					$similarTitles['values'][] = $similarTitle;
 				}
 			}
@@ -684,8 +738,7 @@ class ExploreMore {
 		return $similarTitles;
 	}
 
-	private function loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm)
-	{
+	private function loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		if ($activeSection != 'genealogy') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['genealogy'] = [];
@@ -693,10 +746,10 @@ class ExploreMore {
 				$searchObjectSolr = SearchObjectFactory::initSearchObject('Genealogy');
 				$searchObjectSolr->init();
 				$searchObjectSolr->disableSpelling();
-				$searchObjectSolr->setSearchTerms(array(
+				$searchObjectSolr->setSearchTerms([
 					'lookfor' => $searchTerm,
-					'index' => 'GenealogyKeyword'
-				));
+					'index' => 'GenealogyKeyword',
+				]);
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
@@ -706,28 +759,36 @@ class ExploreMore {
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
 						//Add a link to remaining results
-						$exploreMoreOptions['searchLinks'][] = array(
-							'label' => translate(['text'=>"Genealogy Results (%1%)", 1=>$numCatalogResults, 'isPublicFacing'=>true]),
-							'description' => translate(['text'=>"All Results in Genealogy related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
+						$exploreMoreOptions['searchLinks'][] = [
+							'label' => translate([
+								'text' => "Genealogy Results (%1%)",
+								1 => $numCatalogResults,
+								'isPublicFacing' => true,
+							]),
+							'description' => translate([
+								'text' => "All Results in Genealogy related to %1%",
+								1 => $searchTerm,
+								'isPublicFacing' => true,
+							]),
 
 							'image' => '/interface/themes/responsive/images/person.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
-							'openInNewWindow' => false
-						);
+							'openInNewWindow' => false,
+						];
 					}
 					foreach ($results['response']['docs'] as $doc) {
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
-							$exploreMoreOptions['sampleRecords']['genealogy'][] = array(
+							$exploreMoreOptions['sampleRecords']['genealogy'][] = [
 								'label' => $driver->getTitle(),
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
-								'openInNewWindow' => false
-							);
+								'openInNewWindow' => false,
+							];
 						}
 
 						$numCatalogResultsAdded++;
@@ -739,8 +800,8 @@ class ExploreMore {
 	}
 }
 
-function sortBrandingResults($a, $b){
-	if ($a['sortIndex'] == $b['sortIndex']){
+function sortBrandingResults($a, $b) {
+	if ($a['sortIndex'] == $b['sortIndex']) {
 		return strcasecmp($a['label'], $b['label']);
 	}
 	return ($a['sortIndex'] < $b['sortIndex']) ? -1 : 1;

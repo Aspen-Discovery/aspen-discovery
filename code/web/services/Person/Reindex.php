@@ -3,8 +3,8 @@
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 require_once ROOT_DIR . '/Action.php';
 
-class Reindex extends Action{
-	function launch(){
+class Reindex extends Action {
+	function launch() {
 		global $timer;
 
 		$timer->logTime("Starting to reindex person");
@@ -12,20 +12,25 @@ class Reindex extends Action{
 		$quick = isset($_REQUEST['quick']) ? true : false;
 		$person = new Person();
 		$person->personId = $recordId;
-		if ($person->find(true)){
+		if ($person->find(true)) {
 			$ret = $person->saveToSolr($quick);
-			if ($ret){
-				echo(json_encode(array("success" => true)));
-			}else{
-				echo(json_encode(array("success" => false, "error" => "Could not update solr")));
+			if ($ret) {
+				echo(json_encode(["success" => true]));
+			} else {
+				echo(json_encode([
+					"success" => false,
+					"error" => "Could not update solr",
+				]));
 			}
-		}else{
-			echo(json_encode(array("success" => false, "error" => "Could not find a record with that id")));
+		} else {
+			echo(json_encode([
+				"success" => false,
+				"error" => "Could not find a record with that id",
+			]));
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

@@ -1,11 +1,10 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-class LibraryCard extends MyAccount
-{
 
-	function launch()
-	{
+class LibraryCard extends MyAccount {
+
+	function launch() {
 		global $interface;
 		global $library;
 		$user = UserAccount::getLoggedInUser();
@@ -22,7 +21,7 @@ class LibraryCard extends MyAccount
 
 		$linkedUsers = $user->getLinkedUsers();
 		$linkedCards = [];
-		foreach ($linkedUsers as $tmpUser){
+		foreach ($linkedUsers as $tmpUser) {
 			$tmpUser->loadContactInformation();
 			$linkedCards[] = [
 				'id' => $tmpUser->id,
@@ -45,11 +44,10 @@ class LibraryCard extends MyAccount
 
 		$interface->assign('profile', $user);
 
-		$this->display('libraryCard.tpl','Library Card');
+		$this->display('libraryCard.tpl', 'Library Card');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'My Library Card');

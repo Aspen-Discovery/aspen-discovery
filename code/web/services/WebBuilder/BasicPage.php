@@ -1,12 +1,11 @@
 <?php
 
 
-class WebBuilder_BasicPage extends Action{
+class WebBuilder_BasicPage extends Action {
 	/** @var BasicPage */
 	private $basicPage;
 
-	function __construct()
-	{
+	function __construct() {
 		parent::__construct();
 
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
@@ -18,15 +17,15 @@ class WebBuilder_BasicPage extends Action{
 		$this->basicPage->id = $id;
 
 		if (!$this->basicPage->find(true)) {
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
 			die();
-		} else if ( !$this->canView() ) {
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle401');
+		} elseif (!$this->canView()) {
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle401');
 			require_once ROOT_DIR . "/services/Error/Handle401.php";
 			$actionClass = new Error_Handle401();
 			$actionClass->launch();
@@ -34,8 +33,7 @@ class WebBuilder_BasicPage extends Action{
 		}
 	}
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		$title = $this->basicPage->title;
@@ -46,18 +44,19 @@ class WebBuilder_BasicPage extends Action{
 		$this->display('basicPage.tpl', $title, '', false);
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return $this->basicPage->canView();
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		if ($this->basicPage != null) {
 			$breadcrumbs[] = new Breadcrumb('', $this->basicPage->title, true);
-			if (UserAccount::userHasPermission(['Administer All Basic Pages', 'Administer Library Basic Pages'])){
+			if (UserAccount::userHasPermission([
+				'Administer All Basic Pages',
+				'Administer Library Basic Pages',
+			])) {
 				$breadcrumbs[] = new Breadcrumb('/WebBuilder/BasicPages?id=' . $this->basicPage->id . '&objectAction=edit', 'Edit', true);
 			}
 		}

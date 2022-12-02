@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_ResetUsername extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_ResetUsername extends MyAccount {
+	function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -28,9 +26,9 @@ class MyAccount_ResetUsername extends MyAccount
 			}
 
 			if (!empty($user->updateMessage)) {
-				if ($user->updateMessageIsError){
+				if ($user->updateMessageIsError) {
 					$interface->assign('profileUpdateErrors', $user->updateMessage);
-				}else{
+				} else {
 					$interface->assign('profileUpdateMessage', $user->updateMessage);
 				}
 				$user->updateMessage = '';
@@ -43,8 +41,7 @@ class MyAccount_ResetUsername extends MyAccount
 		$this->display('resetUsername.tpl', 'Reset Username');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Reset Username');

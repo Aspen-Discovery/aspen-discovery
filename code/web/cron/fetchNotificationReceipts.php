@@ -13,7 +13,7 @@ $notifications = array_filter($userNotification->fetchAll('receiptId'));
 
 $numProcessed = 0;
 
-foreach($notifications as $notification) {
+foreach ($notifications as $notification) {
 	$expoNotification = new ExpoNotification();
 	$expoNotification->getExpoNotificationReceipt($notification);
 	$numProcessed++;

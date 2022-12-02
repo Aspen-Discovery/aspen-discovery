@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/sys/Grouping/Variation.php';
 require_once ROOT_DIR . '/sys/Grouping/StatusInformation.php';
 
-class Grouping_Manifestation
-{
+class Grouping_Manifestation {
 	public $format;
 	public $formatCategory;
 
@@ -26,29 +25,28 @@ class Grouping_Manifestation
 	 * Grouping_Manifestation constructor.
 	 * @param Grouping_Record|array $record
 	 */
-	function __construct($record)
-	{
+	function __construct($record) {
 		$this->_statusInformation = new Grouping_StatusInformation();
 		if (is_array($record)) {
 			$this->format = $record['format'];
 			$this->formatCategory = $record['formatCategory'];
-		}else{
+		} else {
 			$this->format = $record->format;
 			$this->formatCategory = $record->formatCategory;
 			$this->addRecord($record);
 		}
 	}
 
-	function addVariation(Grouping_Variation $variation){
+	function addVariation(Grouping_Variation $variation) {
 		$variation->manifestation = $this;
 		$this->_variations[] = $variation;
 	}
 
-	function removeVariation($variationKey){
+	function removeVariation($variationKey) {
 		unset($this->_variations[$variationKey]);
 	}
-	function addRecord(Grouping_Record $record)
-	{
+
+	function addRecord(Grouping_Record $record) {
 		//Check our variations to see if we need to create a new one
 		$hasExistingVariation = false;
 		foreach ($this->_variations as $variation) {
@@ -72,43 +70,41 @@ class Grouping_Manifestation
 		$this->_relatedRecords[] = $record;
 	}
 
-	function setSortedRelatedRecords($relatedRecords){
+	function setSortedRelatedRecords($relatedRecords) {
 		$this->_relatedRecords = $relatedRecords;
 	}
 
 	/**
 	 * @return Grouping_Variation[]
 	 */
-	function getVariations()
-	{
+	function getVariations() {
 		return $this->_variations;
 	}
 
-	function getNumVariations()
-	{
+	function getNumVariations() {
 		return count($this->_variations);
 	}
 
 	protected $_isHideByDefault = null;
 	protected $_hasHiddenFormats = null;
+
 	/**
 	 * @return bool
 	 */
-	function isHideByDefault(): bool
-	{
+	function isHideByDefault(): bool {
 		$this->loadHiddenInformation();
 		return $this->_isHideByDefault;
 	}
 
-	function loadHiddenInformation(){
-		if ($this->_isHideByDefault == null){
+	function loadHiddenInformation() {
+		if ($this->_isHideByDefault == null) {
 			$this->_hasHiddenFormats = false;
 			if (!$this->_hideByDefault) {
 				$hideAllVariations = true;
 				foreach ($this->_variations as $variation) {
 					if (!$variation->isHideByDefault()) {
 						$hideAllVariations = false;
-					}else{
+					} else {
 						$this->_hasHiddenFormats = true;
 					}
 				}
@@ -120,8 +116,7 @@ class Grouping_Manifestation
 		}
 	}
 
-	function hasHiddenFormats(): bool
-	{
+	function hasHiddenFormats(): bool {
 		$this->loadHiddenInformation();
 		return $this->_hasHiddenFormats;
 	}
@@ -137,8 +132,7 @@ class Grouping_Manifestation
 	 * @param string $searchSource
 	 * @param bool $isSuperScope
 	 */
-	public function setHideByDefault(array $selectedFormat, array $selectedFormatCategory, array $selectedAvailability, ?string $selectedDetailedAvailability, bool $addOnlineMaterialsToAvailableNow, array $selectedEcontentSources, array $selectedLanguages, string $searchSource, bool $isSuperScope): void
-	{
+	public function setHideByDefault(array $selectedFormat, array $selectedFormatCategory, array $selectedAvailability, ?string $selectedDetailedAvailability, bool $addOnlineMaterialsToAvailableNow, array $selectedEcontentSources, array $selectedLanguages, string $searchSource, bool $isSuperScope): void {
 		if (!empty($selectedFormat) && !in_array($this->format, $selectedFormat)) {
 			$allHidden = true;
 			foreach ($selectedFormat as $tmpFormat) {
@@ -157,7 +151,7 @@ class Grouping_Manifestation
 		if (!empty($selectedFormatCategory) && !in_array($this->formatCategory, $selectedFormatCategory)) {
 			if (($this->format == 'eAudiobook') && (in_array('eBook', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
 				//This is a special case where the format is in 2 categories
-			} else  if (($this->format == 'VOX Books') && (in_array('Books', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
+			} elseif (($this->format == 'VOX Books') && (in_array('Books', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
 				//This is another special case where the format is in 2 categories
 			} else {
 				$this->_hideByDefault = true;
@@ -167,7 +161,7 @@ class Grouping_Manifestation
 			$hide = !empty($selectedAvailability);
 			if (in_array('available_online', $selectedAvailability) || (in_array('available', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
 				$hide = false;
-			} else if (in_array('global', $selectedAvailability) || in_array('local', $selectedAvailability)) {
+			} elseif (in_array('global', $selectedAvailability) || in_array('local', $selectedAvailability)) {
 				$hide = false;
 			}
 			if ($hide) {
@@ -184,11 +178,11 @@ class Grouping_Manifestation
 						} elseif (!$addOnlineMaterialsToAvailableNow) {
 							$this->_hideByDefault = true;
 						}
-					} else if ($isSuperScope) {
+					} elseif ($isSuperScope) {
 						if (!$this->getStatusInformation()->isAvailable()) {
 							$this->_hideByDefault = true;
 						}
-					} else if (!$this->getStatusInformation()->isAvailableLocally()) {
+					} elseif (!$this->getStatusInformation()->isAvailableLocally()) {
 						$this->_hideByDefault = true;
 					}
 				} elseif (in_array('local', $selectedAvailability) && !$isSuperScope && (!$this->getStatusInformation()->hasLocalItem() && !$this->isEContent())) {
@@ -201,7 +195,7 @@ class Grouping_Manifestation
 			$manifestationIsAvailable = false;
 			if ($this->getStatusInformation()->isAvailableOnline()) {
 				$manifestationIsAvailable = true;
-			} else if ($this->getStatusInformation()->isAvailable()) {
+			} elseif ($this->getStatusInformation()->isAvailable()) {
 				foreach ($this->getItemSummary() as $itemSummary) {
 					if (strlen($itemSummary['shelfLocation']) && substr_compare($itemSummary['shelfLocation'], $selectedDetailedAvailability, 0)) {
 						if ($itemSummary['available']) {
@@ -246,7 +240,7 @@ class Grouping_Manifestation
 					$hide = true;
 					if (in_array('available_online', $selectedAvailability) || (in_array('available', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
 						$hide = false;
-					} else if (in_array('local', $selectedAvailability) || in_array('global', $selectedAvailability)) {
+					} elseif (in_array('local', $selectedAvailability) || in_array('global', $selectedAvailability)) {
 						$hide = false;
 					}
 					$variation->setHideByDefault($hide);
@@ -258,11 +252,11 @@ class Grouping_Manifestation
 							} elseif (!$addOnlineMaterialsToAvailableNow) {
 								$variation->setHideByDefault(true);
 							}
-						} else if ($isSuperScope) {
+						} elseif ($isSuperScope) {
 							if (!$variation->getStatusInformation()->isAvailable()) {
 								$variation->setHideByDefault(true);
 							}
-						} else if (!$variation->getStatusInformation()->isAvailableLocally()) {
+						} elseif (!$variation->getStatusInformation()->isAvailableLocally()) {
 							$variation->setHideByDefault(true);
 						}
 					} elseif (in_array('local', $selectedAvailability) && !$isSuperScope && (!$variation->getStatusInformation()->hasLocalItem() && !$variation->isEContent())) {
@@ -276,34 +270,29 @@ class Grouping_Manifestation
 	/**
 	 * @return Grouping_Record[]
 	 */
-	function getRelatedRecords(): array
-	{
+	function getRelatedRecords(): array {
 		return $this->_relatedRecords;
 	}
 
-	function getNumRelatedRecords()
-	{
+	function getNumRelatedRecords() {
 		return count($this->_relatedRecords);
 	}
 
-	function getFirstRecord()
-	{
+	function getFirstRecord() {
 		return reset($this->_relatedRecords);
 	}
 
 	/**
 	 * @return bool
 	 */
-	function isEContent(): bool
-	{
+	function isEContent(): bool {
 		return $this->_isEContent;
 	}
 
 	/**
 	 * @return string
 	 */
-	function getUrl()
-	{
+	function getUrl() {
 		$firstVariation = reset($this->_variations);
 		return $firstVariation->getUrl();
 	}
@@ -311,8 +300,7 @@ class Grouping_Manifestation
 	/**
 	 * @return array
 	 */
-	function getActions(): array
-	{
+	function getActions(): array {
 		$firstVariation = reset($this->_variations);
 		return $firstVariation->getActions();
 	}
@@ -322,8 +310,7 @@ class Grouping_Manifestation
 	/**
 	 * @return array
 	 */
-	function getItemSummary()
-	{
+	function getItemSummary() {
 		if ($this->_itemSummary == null) {
 			global $timer;
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
@@ -341,8 +328,8 @@ class Grouping_Manifestation
 	protected $_itemsDisplayedByDefault = null;
 
 	/** @noinspection PhpUnused */
-	function getItemsDisplayedByDefault(){
-		if ($this->_itemsDisplayedByDefault == null){
+	function getItemsDisplayedByDefault() {
+		if ($this->_itemsDisplayedByDefault == null) {
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemsDisplayedByDefault = [];
 			foreach ($this->_variations as $variation) {
@@ -357,38 +344,33 @@ class Grouping_Manifestation
 	/**
 	 * @return Grouping_StatusInformation
 	 */
-	function getStatusInformation(): Grouping_StatusInformation
-	{
+	function getStatusInformation(): Grouping_StatusInformation {
 		return $this->_statusInformation;
 	}
 
-	function isAvailable(){
+	function isAvailable() {
 		return $this->_statusInformation->isAvailable();
 	}
 
-	function isAvailableOnline(){
+	function isAvailableOnline() {
 		return $this->_statusInformation->isAvailableOnline();
 	}
 
-	public function getCopies()
-	{
+	public function getCopies() {
 		return $this->_statusInformation->getCopies();
 	}
 
-	public function getNumAvailableCopies()
-	{
+	public function getNumAvailableCopies() {
 		return $this->_statusInformation->getAvailableCopies();
 	}
 
 
-	function getNumberOfCopiesMessage()
-	{
+	function getNumberOfCopiesMessage() {
 		return $this->_statusInformation->getNumberOfCopiesMessage();
 	}
 
 
-	function getVariationInformation()
-	{
+	function getVariationInformation() {
 		return $this->_variations;
 	}
 

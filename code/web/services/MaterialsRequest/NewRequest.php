@@ -6,11 +6,9 @@ require_once ROOT_DIR . "/sys/MaterialsRequest.php";
 /**
  * MaterialsRequest Home Page, displays an existing Materials Request.
  */
-class MaterialsRequest_NewRequest extends MyAccount
-{
+class MaterialsRequest_NewRequest extends MyAccount {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		global $library;
 
@@ -19,14 +17,14 @@ class MaterialsRequest_NewRequest extends MyAccount
 		$location = new Location();
 		$locations = $location->getPickupBranches($user);
 
-		$pickupLocations = array();
+		$pickupLocations = [];
 		foreach ($locations as $curLocation) {
 			if (is_object($curLocation)) {
-				$pickupLocations[] = array(
+				$pickupLocations[] = [
 					'id' => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
 					'selected' => is_object($curLocation) ? ($curLocation->locationId == $user->pickupLocationId ? 'selected' : '') : '',
-				);
+				];
 			}
 		}
 		$interface->assign('pickupLocations', $pickupLocations);
@@ -37,9 +35,9 @@ class MaterialsRequest_NewRequest extends MyAccount
 
 		//Setup a default title based on the search term
 		$interface->assign('new', true);
-		$request                         = new MaterialsRequest();
+		$request = new MaterialsRequest();
 		$request->placeHoldWhenAvailable = true; // set the place hold option on by default
-		$request->illItem                = true; // set the place hold option on by default
+		$request->illItem = true; // set the place hold option on by default
 		if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
 			$searchType = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : 'Keyword';
 			if (strcasecmp($searchType, 'author') == 0) {
@@ -47,16 +45,16 @@ class MaterialsRequest_NewRequest extends MyAccount
 			} else {
 				$request->title = $_REQUEST['lookfor'];
 			}
-		}else{
+		} else {
 			$lastSearchId = -1;
-			if (isset($_REQUEST['searchId'])){
+			if (isset($_REQUEST['searchId'])) {
 				$lastSearchId = $_REQUEST['searchId'];
-			}else if (isset($_SESSION['searchId'])){
+			} elseif (isset($_SESSION['searchId'])) {
 				$lastSearchId = $_SESSION['searchId'];
-			}else if (isset($_SESSION['lastSearchId'])){
+			} elseif (isset($_SESSION['lastSearchId'])) {
 				$lastSearchId = $_SESSION['lastSearchId'];
 			}
-			if ($lastSearchId != -1){
+			if ($lastSearchId != -1) {
 				$searchObj = SearchObjectFactory::initSearchObject();
 				$searchObj->init();
 				$searchObj = $searchObj->restoreSavedSearch($lastSearchId, false, true);
@@ -67,7 +65,7 @@ class MaterialsRequest_NewRequest extends MyAccount
 						if (count($searchTerms) == 1) {
 							if (!isset($searchTerms[0]['index'])) {
 								$request->title = $searchObj->displayQuery();
-							} else if ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
+							} elseif ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
 								$request->title = $searchTerms[0]['lookfor'];
 							} else {
 								if ($searchTerms[0]['index'] == 'Author') {
@@ -86,7 +84,10 @@ class MaterialsRequest_NewRequest extends MyAccount
 
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
-			$request->phone = str_replace(array('### TEXT ONLY ', '### TEXT ONLY'), '', $user->phone);
+			$request->phone = str_replace([
+				'### TEXT ONLY ',
+				'### TEXT ONLY',
+			], '', $user->phone);
 			if ($user->email != 'notice@salidalibrary.org') {
 				$request->email = $user->email;
 			}
@@ -103,11 +104,11 @@ class MaterialsRequest_NewRequest extends MyAccount
 			/** @var MaterialsRequestFormFields $formField */
 			foreach ($category as $formField) {
 				if ($formField->fieldType == 'bookmobileStop') {
-					$pickupLocations[] = array(
+					$pickupLocations[] = [
 						'id' => 'bookmobile',
 						'displayName' => $formField->fieldLabel,
 						'selected' => false,
-					);
+					];
 					$interface->assign('pickupLocations', $pickupLocations);
 					break 2;
 				}
@@ -115,7 +116,10 @@ class MaterialsRequest_NewRequest extends MyAccount
 		}
 
 		// Get Author Labels for all Formats and Formats that use Special Fields
-		list($formatAuthorLabels, $specialFieldFormats) = $request->getAuthorLabelsAndSpecialFields($library->libraryId);
+		[
+			$formatAuthorLabels,
+			$specialFieldFormats,
+		] = $request->getAuthorLabelsAndSpecialFields($library->libraryId);
 
 		$interface->assign('formatAuthorLabelsJSON', json_encode($formatAuthorLabels));
 		$interface->assign('specialFieldFormatsJSON', json_encode($specialFieldFormats));
@@ -131,8 +135,7 @@ class MaterialsRequest_NewRequest extends MyAccount
 		$this->display('new.tpl', 'Materials Request');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'New Materials Request');

@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/File/MARC.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
-class Record_Home extends GroupedWorkSubRecordHomeAction{
+class Record_Home extends GroupedWorkSubRecordHomeAction {
 	public $marcRecord;
 
 	public $record;
@@ -15,14 +15,14 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 	public $upc;
 
 	public $description;
-	function __construct()
-	{
+
+	function __construct() {
 		parent::__construct();
 
 		global $interface;
 		global $timer;
 
-		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
+		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()) {  // initRecordDriverById itself does a validity check and returns null if not.
 			$interface->assign('showStaffView', false);
 			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			die();
@@ -30,9 +30,9 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 
 		$hasGroupedWork = false;
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
-		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
+		if (is_null($groupedWork) || !$groupedWork->isValid()) {  // initRecordDriverById itself does a validity check and returns null if not.
 			$parentRecords = $this->recordDriver->getParentRecords();
-			if (count($parentRecords) == 0){
+			if (count($parentRecords) == 0) {
 				//If the record is invalid, we only want to show the staff view to staff even if the stff view is normally displayed to general public.
 				$interface->assign('showStaffView', $interface->getVariable('showStaffView') && UserAccount::isStaff());
 				$interface->assign('invalidWork', true);
@@ -61,33 +61,58 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$marcField = $marcRecord->getField('245');
 			$recordTitle = $this->getSubfieldData($marcField, 'a');
 			$interface->assign('recordTitle', $recordTitle);
-			$recordTitleSubtitle = trim($this->concatenateSubfieldData($marcField, array('a', 'b', 'h', 'n', 'p')));
+			$recordTitleSubtitle = trim($this->concatenateSubfieldData($marcField, [
+				'a',
+				'b',
+				'h',
+				'n',
+				'p',
+			]));
 			$recordTitleSubtitle = preg_replace('~\s+[/:]$~', '', $recordTitleSubtitle);
 			$interface->assign('recordTitleSubtitle', $recordTitleSubtitle);
-			$recordTitleWithAuth = trim($this->concatenateSubfieldData($marcField, array('a', 'b', 'h', 'n', 'p', 'c')));
+			$recordTitleWithAuth = trim($this->concatenateSubfieldData($marcField, [
+				'a',
+				'b',
+				'h',
+				'n',
+				'p',
+				'c',
+			]));
 			$interface->assign('recordTitleWithAuth', $recordTitleWithAuth);
 
 			$marcField = $marcRecord->getField('100');
-			if ($marcField){
-				$mainAuthor = $this->concatenateSubfieldData($marcField, array('a', 'b', 'c', 'd'));
+			if ($marcField) {
+				$mainAuthor = $this->concatenateSubfieldData($marcField, [
+					'a',
+					'b',
+					'c',
+					'd',
+				]);
 				$interface->assign('mainAuthor', $mainAuthor);
 			}
 
 			$marcFields = $marcRecord->getFields('250');
-			if ($marcFields){
-				$editionsThis = array();
-				foreach ($marcFields as $marcField){
+			if ($marcFields) {
+				$editionsThis = [];
+				foreach ($marcFields as $marcField) {
 					$editionsThis[] = $this->getSubfieldData($marcField, 'a');
 				}
 				$interface->assign('editionsThis', $editionsThis);
 			}
 
 			$marcFields = $marcRecord->getFields('300');
-			if ($marcFields){
-				$physicalDescriptions = array();
-				foreach ($marcFields as $marcField){
-					$description = $this->concatenateSubfieldData($marcField, array('a', 'b', 'c', 'e', 'f', 'g'));
-					if ($description != 'p. cm.'){
+			if ($marcFields) {
+				$physicalDescriptions = [];
+				foreach ($marcFields as $marcField) {
+					$description = $this->concatenateSubfieldData($marcField, [
+						'a',
+						'b',
+						'c',
+						'e',
+						'f',
+						'g',
+					]);
+					if ($description != 'p. cm.') {
 						$description = preg_replace("/[\/|;:]$/", '', $description);
 						$description = preg_replace("/p\./", 'pages', $description);
 						$physicalDescriptions[] = $description;
@@ -100,13 +125,13 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$mainIsbnSet = false;
 			/** @var File_MARC_Data_Field[] $isbnFields */
 			if ($isbnFields = $this->marcRecord->getFields('020')) {
-				$isbns = array();
+				$isbns = [];
 				//Use the first good ISBN we find.
-				foreach ($isbnFields as $isbnField){
+				foreach ($isbnFields as $isbnField) {
 					/** @var File_MARC_Subfield $isbnSubfieldA */
 					if ($isbnSubfieldA = $isbnField->getSubfield('a')) {
 						$tmpIsbn = trim($isbnSubfieldA->getData());
-						if (strlen($tmpIsbn) > 0){
+						if (strlen($tmpIsbn) > 0) {
 
 							$isbns[] = $isbnSubfieldA->getData();
 							$pos = strpos($tmpIsbn, ' ');
@@ -114,11 +139,11 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 								$tmpIsbn = substr($tmpIsbn, 0, $pos);
 							}
 							$tmpIsbn = trim($tmpIsbn);
-							if (strlen($tmpIsbn) > 0){
-								if (strlen($tmpIsbn) < 10){
+							if (strlen($tmpIsbn) > 0) {
+								if (strlen($tmpIsbn) < 10) {
 									$tmpIsbn = str_pad($tmpIsbn, 10, "0", STR_PAD_LEFT);
 								}
-								if (!$mainIsbnSet){
+								if (!$mainIsbnSet) {
 									$this->isbn = $tmpIsbn;
 									$interface->assign('isbn', $tmpIsbn);
 									$mainIsbnSet = true;
@@ -127,11 +152,11 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 						}
 					}
 				}
-				if (isset($this->isbn)){
-					if (strlen($this->isbn) == 13){
-						require_once(ROOT_DIR  . '/Drivers/marmot_inc/ISBNConverter.php');
+				if (isset($this->isbn)) {
+					if (strlen($this->isbn) == 13) {
+						require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php');
 						$this->isbn10 = ISBNConverter::convertISBN13to10($this->isbn);
-					}else{
+					} else {
 						$this->isbn10 = $this->isbn;
 					}
 					$interface->assign('isbn10', $this->isbn10);
@@ -162,7 +187,7 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			//Get street date
 			if ($streetDateField = $this->marcRecord->getField('263')) {
 				$streetDate = $this->getSubfieldData($streetDateField, 'a');
-				if ($streetDate != ''){
+				if ($streetDate != '') {
 					$interface->assign('streetDate', $streetDate);
 				}
 			}
@@ -180,7 +205,7 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$timer->logTime('Got detailed data from Marc Record');
 
 			$notes = $this->recordDriver->getNotes();
-			if (count($notes) > 0){
+			if (count($notes) > 0) {
 				$interface->assign('notes', $notes);
 			}
 		} else {
@@ -195,9 +220,9 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 
 
 		$interface->assign('id', $this->id);
-		if (substr($this->id, 0, 1) == '.'){
+		if (substr($this->id, 0, 1) == '.') {
 			$interface->assign('shortId', substr($this->id, 1));
-		}else{
+		} else {
 			$interface->assign('shortId', $this->id);
 		}
 
@@ -215,7 +240,7 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 		$interface->assign('staffDetails', $this->recordDriver->getStaffView());
 	}
 
-	function launch(){
+	function launch() {
 		global $interface;
 		global $timer;
 
@@ -224,10 +249,10 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 		$this->loadCitations();
 		$timer->logTime('Loaded Citations');
 
-		if (isset($_REQUEST['searchId'])){
+		if (isset($_REQUEST['searchId'])) {
 			$_SESSION['searchId'] = $_REQUEST['searchId'];
 			$interface->assign('searchId', $_SESSION['searchId']);
-		}else if (isset($_SESSION['searchId'])){
+		} elseif (isset($_SESSION['searchId'])) {
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
@@ -259,18 +284,18 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 	 * @param File_MARC_Data_Field[] $noteFields
 	 * @return array
 	 */
-	function processNoteFields($noteFields){
-		$notes = array();
+	function processNoteFields($noteFields) {
+		$notes = [];
 		/** File_MARC_Data_Field $marcField */
-		foreach ($noteFields as $marcField){
+		foreach ($noteFields as $marcField) {
 			/** @var File_MARC_Subfield $subfield */
-			foreach ($marcField->getSubfields() as $subfield){
+			foreach ($marcField->getSubfields() as $subfield) {
 				$note = $subfield->getData();
-				if ($subfield->getCode() == 't'){
+				if ($subfield->getCode() == 't') {
 					$note = "&nbsp;&nbsp;&nbsp;" . $note;
 				}
 				$note = trim($note);
-				if (strlen($note) > 0){
+				if (strlen($note) > 0) {
 					$notes[] = $note;
 				}
 			}
@@ -283,41 +308,45 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 	 * @param string $subField
 	 * @return string
 	 */
-	public function getSubfieldData($marcField, $subField){
-		if ($marcField){
+	public function getSubfieldData($marcField, $subField) {
+		if ($marcField) {
 			//Account for cases where a subfield is repeated
 			$subFields = $marcField->getSubfields($subField);
 			$fieldData = '';
 			/** @var File_MARC_Subfield $subFieldData */
-			foreach ($subFields as $subFieldData){
-				if (strlen($fieldData) > 0){
+			foreach ($subFields as $subFieldData) {
+				if (strlen($fieldData) > 0) {
 					$fieldData .= ' ';
 				}
 				$fieldData .= $subFieldData->getData();
 			}
 			return $fieldData;
-		}else{
+		} else {
 			return '';
 		}
 	}
-	public function concatenateSubfieldData($marcField, $subFields){
+
+	public function concatenateSubfieldData($marcField, $subFields) {
 		$value = '';
-		foreach ($subFields as $subField){
+		foreach ($subFields as $subField) {
 			$subFieldValue = $this->getSubfieldData($marcField, $subField);
-			if (strlen($subFieldValue) > 0){
+			if (strlen($subFieldValue) > 0) {
 				$value .= ' ' . $subFieldValue;
 			}
 		}
 		return $value;
 	}
 
-	function loadRecordDriver($id){
+	function loadRecordDriver($id) {
 		global $interface;
-		if (strpos($id, ':')){
-			list($source, $id) = explode(":", $id);
+		if (strpos($id, ':')) {
+			[
+				$source,
+				$id,
+			] = explode(":", $id);
 			$this->id = $id;
 			$interface->assign('id', $this->id);
-		}else{
+		} else {
 			$source = 'ils';
 		}
 

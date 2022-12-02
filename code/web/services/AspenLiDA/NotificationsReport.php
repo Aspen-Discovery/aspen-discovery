@@ -3,57 +3,57 @@
 require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class AspenLiDA_NotificationsReport extends ObjectEditor
-{
-	function getObjectType(): string
-	{
+class AspenLiDA_NotificationsReport extends ObjectEditor {
+	function getObjectType(): string {
 		return 'UserNotification';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'NotificationsReport';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Notifications Report';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new UserNotification();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
+		$objectList = [];
+		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
 
-	function getDefaultSort() : string
-	{
+	function getDefaultSort(): string {
 		return 'id desc';
 	}
 
-	function getObjectStructure() : array {
+	function getObjectStructure(): array {
 		return UserNotification::getObjectStructure();
 	}
-	function getIdKeyColumn() : string{
-		return 'id';
-	}
-	function canAddNew(){
-		return false;
-	}
-	function canDelete(){
-		return false;
-	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function canAddNew() {
+		return false;
+	}
+
+	function canDelete() {
+		return false;
+	}
+
+	function getPrimaryKeyColumn(): string {
+		return 'id';
+	}
+
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
@@ -61,27 +61,23 @@ class AspenLiDA_NotificationsReport extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'aspen_lida';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View Notifications Reports');
 	}
 
-	function canBatchEdit()
-	{
+	function canBatchEdit() {
 		return false;
 	}
 
-	function canCompare()
-	{
+	function canCompare() {
 		return false;
 	}
 
-	public function canEdit(DataObject $object){
+	public function canEdit(DataObject $object) {
 		return false;
 	}
 }

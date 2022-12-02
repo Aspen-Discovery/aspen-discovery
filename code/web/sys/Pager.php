@@ -6,8 +6,7 @@
  * Creates pagination links for search results and other locations
  *
  */
-class Pager
-{
+class Pager {
 	private $options;
 	private $_currentPage;
 	private $_totalPages;
@@ -21,16 +20,15 @@ class Pager
 	 * @param array $options The Pager options to override.
 	 * @access  public
 	 */
-	public function __construct($options = array())
-	{
+	public function __construct($options = []) {
 		// Set default Pager options:
-		$finalOptions = array(
+		$finalOptions = [
 			'perPage' => 20,
 			'urlVar' => 'page',
 			'totalItems' => 0,
 			'canChangeRecordsPerPage' => false,
-			'canJumpToPage' => false
-		);
+			'canJumpToPage' => false,
+		];
 
 		// Override defaults with user-provided values:
 		foreach ($options as $optionName => $optionValue) {
@@ -50,8 +48,7 @@ class Pager
 		$this->_baseUrl = preg_replace("/{$this->options['urlVar']}=\d+&|[?&]{$this->options['urlVar']}=\d+/", '', $this->_baseUrl);
 	}
 
-	private function curPageURL()
-	{
+	private function curPageURL() {
 		$pageURL = 'http';
 		if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
 			$pageURL .= "s";
@@ -72,23 +69,31 @@ class Pager
 	 * @access  public
 	 * @return  array
 	 */
-	public function getLinks()
-	{
-		$links = array();
+	public function getLinks() {
+		$links = [];
 		if ($this->_totalPages > 1) {
 			//$links['all'] = 'Pagination goes here.  On page ' . $this->getCurrentPage() . ' of ' . $this->getTotalPages();
 			$linksText = '<nav aria-label="Page navigation">';
-			if ($this->options['canJumpToPage']){
+			if ($this->options['canJumpToPage']) {
 				$linksText .= '<div class="form-group">';
-				$linksText .= '<label for="page" class="control-label">'. translate(['text' => 'Go to page', 'isPublicFacing'=>true]) . '&nbsp;</label>';
+				$linksText .= '<label for="page" class="control-label">' . translate([
+						'text' => 'Go to page',
+						'isPublicFacing' => true,
+					]) . '&nbsp;</label>';
 				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" id="page" name="page" size="2" class="input input-sm">';
-				$linksText .= '<button id="goToPageSubmit" name="goToPageSubmit" class="input-sm" onclick="return AspenDiscovery.changePage();">' . translate(['text' => 'Go', 'isPublicFacing'=>true]) . '</button>';
+				$linksText .= '<button id="goToPageSubmit" name="goToPageSubmit" class="input-sm" onclick="return AspenDiscovery.changePage();">' . translate([
+						'text' => 'Go',
+						'isPublicFacing' => true,
+					]) . '</button>';
 				$linksText .= '</div>';
 			}
 			$linksText .= '<div class="pagination btn-group btn-group-sm justify-content-end">';
 			if ($this->getCurrentPage() != 1) {
 				$linksText .= $this->renderLink(1) . '[1]</a>';
-				$linksText .= $this->renderLink($this->_currentPage - 1) . '&laquo; ' . translate(['text' => 'Previous', 'isPublicFacing'=>true]) . '</a>';
+				$linksText .= $this->renderLink($this->_currentPage - 1) . '&laquo; ' . translate([
+						'text' => 'Previous',
+						'isPublicFacing' => true,
+					]) . '</a>';
 			}
 
 			//Print links to pages before and after the current
@@ -113,11 +118,14 @@ class Pager
 				$linksText .= $this->renderLink($i, $active) . "$i</a>";
 			}
 			if ($this->_currentPage != $this->_totalPages) {
-				$linksText .= $this->renderLink($this->_currentPage + 1) . translate(['text' => 'Next', 'isPublicFacing'=>true]) . ' &raquo;</a>';
+				$linksText .= $this->renderLink($this->_currentPage + 1) . translate([
+						'text' => 'Next',
+						'isPublicFacing' => true,
+					]) . ' &raquo;</a>';
 				$linksText .= $this->renderLink($this->getTotalPages()) . '[' . $this->getTotalPages() . ']</a>';
 			}
 			$linksText .= '</div>';
-			if ($this->options['canChangeRecordsPerPage']){
+			if ($this->options['canChangeRecordsPerPage']) {
 				$linksText .= '<div class="form-group">';
 				$linksText .= '<select id="pageSize" name="pageSize" class="pageSize form-control input-sm" onchange="AspenDiscovery.changePageSize()">';
 				$linksText .= '<option value="25" ' . ($this->options['perPage'] == 25 ? 'selected="selected"' : '') . '>25</option>';
@@ -134,7 +142,10 @@ class Pager
 					}
 				}
 				$linksText .= '</select>';
-				$linksText .= '<label for="pageSize" class="control-label">'. translate(['text' => 'Per Page', 'isPublicFacing'=>true]) . '&nbsp;</label></div>';
+				$linksText .= '<label for="pageSize" class="control-label">' . translate([
+						'text' => 'Per Page',
+						'isPublicFacing' => true,
+					]) . '&nbsp;</label></div>';
 			}
 			$linksText .= '</nav>';
 			$links['all'] = $linksText;
@@ -144,8 +155,7 @@ class Pager
 		return $links;
 	}
 
-	public function renderLink($pageNumber, $active = false)
-	{
+	public function renderLink($pageNumber, $active = false) {
 		if (empty($this->options['linkRenderingFunction'])) {
 			return '<a class="page-link btn btn-default btn-sm' . ($active ? ' active' : '') . '" href="' . $this->getPageUrl($pageNumber) . '" alt="Page ' . $pageNumber . '">';
 		} else {
@@ -155,43 +165,36 @@ class Pager
 		}
 	}
 
-	public function isLastPage()
-	{
+	public function isLastPage() {
 		$currentPage = $this->_currentPage;
 		$totalPages = $this->_totalPages;
 		return $currentPage == $totalPages;
 	}
 
-	public function getNumRecordsOnPage()
-	{
+	public function getNumRecordsOnPage() {
 		if (!$this->isLastPage()) {
 			return $this->getItemsPerPage();
 		}
 		return $this->getTotalItems() - ($this->getItemsPerPage() * ($this->getCurrentPage() - 1));
 	}
 
-	public function getCurrentPage()
-	{
+	public function getCurrentPage() {
 		return $this->_currentPage;
 	}
 
-	public function getTotalPages()
-	{
+	public function getTotalPages() {
 		return $this->_totalPages;
 	}
 
-	public function getTotalItems()
-	{
+	public function getTotalItems() {
 		return $this->options['totalItems'];
 	}
 
-	public function getItemsPerPage()
-	{
+	public function getItemsPerPage() {
 		return $this->options['perPage'];
 	}
 
-	public function getPageUrl($page)
-	{
+	public function getPageUrl($page) {
 		if (strpos($this->_baseUrl, '?') > 0) {
 			$url = $this->_baseUrl . '&' . $this->options['urlVar'] . '=' . $page;
 		} else {

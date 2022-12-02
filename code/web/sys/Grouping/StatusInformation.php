@@ -1,8 +1,7 @@
 <?php
 
 
-class Grouping_StatusInformation
-{
+class Grouping_StatusInformation {
 	private $_available = false;
 	private $_availableLocally = false;
 	private $_availableHere = false;
@@ -25,16 +24,14 @@ class Grouping_StatusInformation
 	/**
 	 * @return bool
 	 */
-	public function isAvailable()
-	{
+	public function isAvailable() {
 		return $this->_available;
 	}
 
 	/**
 	 * @param Grouping_StatusInformation $statusInformation
 	 */
-	public function updateStatus($statusInformation)
-	{
+	public function updateStatus($statusInformation) {
 		if ($statusInformation->isAvailableLocally()) {
 			$this->_availableLocally = true;
 		}
@@ -44,7 +41,7 @@ class Grouping_StatusInformation
 		if ($statusInformation->isAvailableOnline()) {
 			$this->_availableOnline = true;
 		}
-		if ($statusInformation->isEContent()){
+		if ($statusInformation->isEContent()) {
 			$this->_isEcontent = true;
 		}
 		if (!$this->_available && $statusInformation->isAvailable()) {
@@ -72,7 +69,7 @@ class Grouping_StatusInformation
 			$this->_localAvailableCopies += $statusInformation->getLocalAvailableCopies();
 			$this->_hasLocalItem = true;
 		}
-		if ($statusInformation->isShowStatus()){
+		if ($statusInformation->isShowStatus()) {
 			$this->_isShowStatus = true;
 		}
 	}
@@ -80,211 +77,186 @@ class Grouping_StatusInformation
 	/**
 	 * @return bool
 	 */
-	public function isAvailableHere(): bool
-	{
+	public function isAvailableHere(): bool {
 		return $this->_availableHere;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isAvailableOnline(): bool
-	{
+	public function isAvailableOnline(): bool {
 		return $this->_availableOnline;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isAllLibraryUseOnly(): bool
-	{
+	public function isAllLibraryUseOnly(): bool {
 		return $this->_allLibraryUseOnly;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isAvailableLocally(): bool
-	{
+	public function isAvailableLocally(): bool {
 		return $this->_availableLocally;
 	}
 
 	/**
 	 * @return bool|mixed
 	 */
-	public function hasLocalItem()
-	{
+	public function hasLocalItem() {
 		return $this->_hasLocalItem;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isInLibraryUseOnly(): bool
-	{
+	public function isInLibraryUseOnly(): bool {
 		return $this->_inLibraryUseOnly;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getGroupedStatus(): string
-	{
+	public function getGroupedStatus(): string {
 		return $this->_groupedStatus;
 	}
 
 	/**
 	 * @param string $groupedStatus
 	 */
-	public function setGroupedStatus(string $groupedStatus): void
-	{
+	public function setGroupedStatus(string $groupedStatus): void {
 		$this->_groupedStatus = $groupedStatus;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getNumHolds() : int
-	{
+	public function getNumHolds(): int {
 		return $this->_numHolds;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getOnOrderCopies()
-	{
+	public function getOnOrderCopies() {
 		return $this->_onOrderCopies;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getCopies()
-	{
+	public function getCopies() {
 		return $this->_copies;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getAvailableCopies()
-	{
+	public function getAvailableCopies() {
 		return $this->_availableCopies;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getLocalCopies(): int
-	{
+	public function getLocalCopies(): int {
 		return $this->_localCopies;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getLocalAvailableCopies(): int
-	{
+	public function getLocalAvailableCopies(): int {
 		return $this->_localAvailableCopies;
 	}
 
 	/**
 	 * @param int $numHolds
 	 */
-	public function setNumHolds(int $numHolds): void
-	{
+	public function setNumHolds(int $numHolds): void {
 		$this->_numHolds = $numHolds;
 	}
 
 	/**
 	 * @param bool $available
 	 */
-	function setAvailable(bool $available): void
-	{
+	function setAvailable(bool $available): void {
 		$this->_available = $available;
 	}
 
 	/**
 	 * @param bool $availableOnline
 	 */
-	function setAvailableOnline(bool $availableOnline): void
-	{
+	function setAvailableOnline(bool $availableOnline): void {
 		$this->_availableOnline = $availableOnline;
 	}
 
-	function addAvailableCopies(int $numCopies): void
-	{
+	function addAvailableCopies(int $numCopies): void {
 		$this->_availableCopies += $numCopies;
 	}
 
 	/**
 	 * @param bool $allLibraryUseOnly
 	 */
-	function setAllLibraryUseOnly(bool $allLibraryUseOnly): void
-	{
+	function setAllLibraryUseOnly(bool $allLibraryUseOnly): void {
 		$this->_allLibraryUseOnly = $allLibraryUseOnly;
 	}
 
 	/**
 	 * @param bool $inLibraryUseOnly
 	 */
-	function setInLibraryUseOnly(bool $inLibraryUseOnly): void
-	{
+	function setInLibraryUseOnly(bool $inLibraryUseOnly): void {
 		$this->_inLibraryUseOnly = $inLibraryUseOnly;
 	}
 
 	/**
 	 * @param bool $availableHere
 	 */
-	function setAvailableHere(bool $availableHere): void
-	{
+	function setAvailableHere(bool $availableHere): void {
 		$this->_availableHere = $availableHere;
 	}
 
 	/**
 	 * @param bool $availableLocally
 	 */
-	function setAvailableLocally(bool $availableLocally): void
-	{
+	function setAvailableLocally(bool $availableLocally): void {
 		$this->_availableLocally = $availableLocally;
 	}
 
 	/**
 	 * @param int $copies
 	 */
-	function addCopies(int $copies)
-	{
+	function addCopies(int $copies) {
 		$this->_copies += $copies;
 	}
 
 	/**
 	 * @param int $localCopies
 	 */
-	function addLocalCopies(int $localCopies): void
-	{
+	function addLocalCopies(int $localCopies): void {
 		$this->_localCopies += $localCopies;
 		if ($localCopies > 0) {
 			$this->_hasLocalItem = true;
 		}
 	}
 
-	function addOnOrderCopies(int $numCopies): void
-	{
+	function addOnOrderCopies(int $numCopies): void {
 		$this->_onOrderCopies += $numCopies;
 	}
 
-	function getNumberOfCopiesMessage(){
+	function getNumberOfCopiesMessage() {
 		//Build the string to be translated
 		$numberOfCopiesMessage = '';
 		global $library;
 		//If we don't have holds or on order copies, we don't need to show anything.
-		if ($this->getNumHolds() == 0 && $this->getOnOrderCopies() == 0){
+		if ($this->getNumHolds() == 0 && $this->getOnOrderCopies() == 0) {
 			$numberOfCopiesMessage = '';
-		}else {
-			if ($this->getAvailableCopies() > 9999){
+		} else {
+			if ($this->getAvailableCopies() > 9999) {
 				$numberOfCopiesMessage .= 'Always Available';
-			}else {
+			} else {
 				if ($this->getNumHolds() == 0) {
 					if ($this->getAvailableCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy available';
@@ -308,19 +280,19 @@ class Grouping_StatusInformation
 					}
 				}
 			}
-			if (!empty($numberOfCopiesMessage)){
+			if (!empty($numberOfCopiesMessage)) {
 				$numberOfCopiesMessage .= '. ';
 			}
-			if ($this->getOnOrderCopies() > 0 && $this->getCopies() < 10000){
-				if ($library->showOnOrderCounts){
-					if ($this->getOnOrderCopies() == 1){
+			if ($this->getOnOrderCopies() > 0 && $this->getCopies() < 10000) {
+				if ($library->showOnOrderCounts) {
+					if ($this->getOnOrderCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy on order.';
-					}else{
+					} else {
 						$numberOfCopiesMessage .= '%3% copies on order.';
 					}
-				}else{
+				} else {
 					//Only show that additional copies are on order if there are existing copies
-					if ($this->getCopies() > 0){
+					if ($this->getCopies() > 0) {
 						$numberOfCopiesMessage .= 'Additional copies on order.';
 					}
 				}
@@ -336,48 +308,41 @@ class Grouping_StatusInformation
 		]);
 	}
 
-	public function setIsEContent(bool $flag)
-	{
+	public function setIsEContent(bool $flag) {
 		$this->_isEcontent = $flag;
 	}
 
-	public function isEContent(){
+	public function isEContent() {
 		return $this->_isEcontent;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isShowStatus(): bool
-	{
+	public function isShowStatus(): bool {
 		return $this->_isShowStatus;
 	}
 
 	/**
 	 * @param bool $isShowStatus
 	 */
-	public function setIsShowStatus(bool $isShowStatus): void
-	{
+	public function setIsShowStatus(bool $isShowStatus): void {
 		$this->_isShowStatus = $isShowStatus;
 	}
 
-	public function isLocallyOwned()
-	{
+	public function isLocallyOwned() {
 		return $this->_isLocallyOwned;
 	}
 
-	public function setIsLocallyOwned(bool $isLocallyOwned): void
-	{
+	public function setIsLocallyOwned(bool $isLocallyOwned): void {
 		$this->_isLocallyOwned = $isLocallyOwned;
 	}
 
-	public function isLibraryOwned()
-	{
+	public function isLibraryOwned() {
 		return $this->_isLibraryOwned;
 	}
 
-	public function setIsLibraryOwned(bool $isLibraryOwned): void
-	{
+	public function setIsLibraryOwned(bool $isLibraryOwned): void {
 		$this->_isLibraryOwned = $isLibraryOwned;
 	}
 }

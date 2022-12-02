@@ -4,11 +4,12 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+
 class ILS_TranslationMaps extends ObjectEditor {
-	function launch(){
+	function launch() {
 		global $interface;
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
-		if ($objectAction == 'loadFromFile'){
+		if ($objectAction == 'loadFromFile') {
 			$id = $_REQUEST['id'];
 			$translationMap = new TranslationMap();
 			if ($translationMap->get($id)) {
@@ -18,27 +19,27 @@ class ILS_TranslationMaps extends ObjectEditor {
 			$interface->assign('id', $id);
 			$this->display('../ILS/importTranslationMapData.tpl', "Import Translation Map Data");
 			exit();
-		}elseif($objectAction == 'doAppend' || $objectAction == 'doReload'){
+		} elseif ($objectAction == 'doAppend' || $objectAction == 'doReload') {
 			$id = $_REQUEST['id'];
 
 			$translationMapData = $_REQUEST['translationMapData'];
 			//Truncate the current data
 			$translationMap = new TranslationMap();
 			$translationMap->id = $id;
-			if ($translationMap->find(true)){
-				$newValues = array();
-				if ($objectAction == 'doReload'){
+			if ($translationMap->find(true)) {
+				$newValues = [];
+				if ($objectAction == 'doReload') {
 					/** @var TranslationMapValue $value */
 					/** @noinspection PhpUndefinedFieldInspection */
-					foreach($translationMap->translationMapValues as $value){
+					foreach ($translationMap->translationMapValues as $value) {
 						$value->delete();
 					}
 					/** @noinspection PhpUndefinedFieldInspection */
-					$translationMap->translationMapValues = array();
+					$translationMap->translationMapValues = [];
 					$translationMap->update();
-				}else{
+				} else {
 					/** @noinspection PhpUndefinedFieldInspection */
-					foreach($translationMap->translationMapValues as $value){
+					foreach ($translationMap->translationMapValues as $value) {
 						$newValues[$value->value] = $value;
 					}
 				}
@@ -46,17 +47,17 @@ class ILS_TranslationMaps extends ObjectEditor {
 				//Parse the new data
 				$data = preg_split('/\\r\\n|\\r|\\n/', $translationMapData);
 
-				foreach ($data as $dataRow){
-					if (strlen(trim($dataRow)) != 0 && $dataRow[0] != '#'){
+				foreach ($data as $dataRow) {
+					if (strlen(trim($dataRow)) != 0 && $dataRow[0] != '#') {
 						$dataFields = preg_split('/[,=]/', $dataRow, 2);
-						$value = trim(str_replace('"', '',$dataFields[0]));
-						if (array_key_exists($value, $newValues)){
+						$value = trim(str_replace('"', '', $dataFields[0]));
+						if (array_key_exists($value, $newValues)) {
 							$translationMapValue = $newValues[$value];
-						}else{
+						} else {
 							$translationMapValue = new TranslationMapValue();
 						}
 						$translationMapValue->value = $value;
-						$translationMapValue->translation = trim(str_replace('"', '',$dataFields[1]));
+						$translationMapValue->translation = trim(str_replace('"', '', $dataFields[1]));
 						$translationMapValue->translationMapId = $id;
 
 						$newValues[$translationMapValue->value] = $translationMapValue;
@@ -65,36 +66,36 @@ class ILS_TranslationMaps extends ObjectEditor {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$translationMap->translationMapValues = $newValues;
 				$translationMap->update();
-			}else{
+			} else {
 				$interface->assign('error', "Sorry we could not find a translation map with that id");
 			}
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'edit';
-		}else if ($objectAction == 'viewAsINI'){
+		} elseif ($objectAction == 'viewAsINI') {
 			$id = $_REQUEST['id'];
 			$translationMap = new TranslationMap();
 			$translationMap->id = $id;
-			if ($translationMap->find(true)){
+			if ($translationMap->find(true)) {
 				$interface->assign('id', $id);
 				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
 				/** @noinspection PhpUndefinedFieldInspection */
 				$interface->assign('translationMapValues', $translationMap->translationMapValues);
 				$this->display('../ILS/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
 				exit();
-			}else{
+			} else {
 				$interface->assign('error', "Sorry we could not find a translation map with that id");
 			}
-		}else if ($objectAction == 'downloadAsINI'){
+		} elseif ($objectAction == 'downloadAsINI') {
 			$id = $_REQUEST['id'];
 			$translationMap = new TranslationMap();
 			$translationMap->id = $id;
-			if ($translationMap->find(true)){
+			if ($translationMap->find(true)) {
 				$interface->assign('id', $id);
 
 				$translationMapAsCsv = '';
 				/** @var TranslationMapValue $mapValue */
-				foreach ($translationMap->translationMapValues as $mapValue){
+				foreach ($translationMap->translationMapValues as $mapValue) {
 					$translationMapAsCsv .= $mapValue->value . ' = ' . $mapValue->translation . "\r\n";
 				}
 				header('Content-Description: File Transfer');
@@ -110,56 +111,65 @@ class ILS_TranslationMaps extends ObjectEditor {
 				flush();
 				echo $translationMapAsCsv;
 				exit();
-			}else{
+			} else {
 				$interface->assign('error', "Sorry we could not find a translation map with that id");
 			}
 		}
 		parent::launch();
 	}
-	function getObjectType() : string{
+
+	function getObjectType(): string {
 		return 'TranslationMap';
 	}
-    function getModule() : string
-    {
-        return "ILS";
-    }
-	function getToolName() : string{
+
+	function getModule(): string {
+		return "ILS";
+	}
+
+	function getToolName(): string {
 		return 'TranslationMaps';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Translation Maps';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
-		$list = array();
+
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new TranslationMap();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
-	function getObjectStructure() : array {
+
+	function getObjectStructure(): array {
 		return TranslationMap::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function canAddNew(){
+
+	function canAddNew() {
 		return true;
 	}
-	function canDelete(){
+
+	function canDelete() {
 		return true;
 	}
 
@@ -167,45 +177,42 @@ class ILS_TranslationMaps extends ObjectEditor {
 	 * @param TranslationMap $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject) : array{
-		$actions = array();
-		if ($existingObject && $existingObject->id != ''){
-			$actions[] = array(
+	function getAdditionalObjectActions($existingObject): array {
+		$actions = [];
+		if ($existingObject && $existingObject->id != '') {
+			$actions[] = [
 				'text' => 'Load From CSV/INI',
-				'url'  => '/ILS/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,
-			);
-			$actions[] = array(
+				'url' => '/ILS/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,
+			];
+			$actions[] = [
 				'text' => 'View as INI',
-				'url'  => '/ILS/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
-			);
-			$actions[] = array(
+				'url' => '/ILS/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
+			];
+			$actions[] = [
 				'text' => 'Download as INI',
-				'url'  => '/ILS/TranslationMaps?objectAction=downloadAsINI&id=' . $existingObject->id,
-			);
+				'url' => '/ILS/TranslationMaps?objectAction=downloadAsINI&id=' . $existingObject->id,
+			];
 		}
 
 		return $actions;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
-		if (!empty($this->activeObject) && $this->activeObject instanceof TranslationMap){
+		if (!empty($this->activeObject) && $this->activeObject instanceof TranslationMap) {
 			$breadcrumbs[] = new Breadcrumb('/ILS/IndexingProfiles?objectAction=edit&id=' . $this->activeObject->indexingProfileId, 'Indexing Profile');
 		}
 		$breadcrumbs[] = new Breadcrumb('/ILS/TranslationMaps', 'Translation Maps');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ils_integration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Translation Maps');
 	}
 }

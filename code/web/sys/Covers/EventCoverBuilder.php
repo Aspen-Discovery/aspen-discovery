@@ -3,15 +3,13 @@ require_once ROOT_DIR . '/sys/Covers/AbstractCoverBuilder.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
-class EventCoverBuilder extends AbstractCoverBuilder
-{
+class EventCoverBuilder extends AbstractCoverBuilder {
 	/**
 	 * @param string $title
 	 * @param string $filename
 	 * @param array|null $props
 	 */
-	public function getCover($title, $filename, $props = null)
-	{
+	public function getCover($title, $filename, $props = null) {
 		//Create the background image
 		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 
@@ -49,8 +47,7 @@ class EventCoverBuilder extends AbstractCoverBuilder
 	 * @param DateTime $eventDate
 	 * @param false|int $textColor
 	 */
-	protected function drawEventText($imageCanvas, $title, $eventDate, $textColor)
-	{
+	protected function drawEventText($imageCanvas, $title, $eventDate, $textColor) {
 		$title_font_size = $this->imageWidth * 0.09;
 
 		$x = 17;
@@ -63,20 +60,24 @@ class EventCoverBuilder extends AbstractCoverBuilder
 		$y += 10;
 		$month = $eventDate->format('F');
 		$fontMultiplier = 1.75;
-		if (strlen($month) > 5){
+		if (strlen($month) > 5) {
 			$fontMultiplier = 1.5;
 		}
-		if (strlen($month) > 7){
+		if (strlen($month) > 7) {
 			$fontMultiplier = 1.3;
 		}
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $month, $title_font_size * $fontMultiplier, $title_font_size * .15 * 1.65, $x, $y, $this->imageWidth - 30, $textColor);
 		$y += 20;
 		$dayOfMonth = $eventDate->format('j');
-		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfMonth, $title_font_size * 5, $title_font_size * .15 * 5 , $x, $y, $this->imageWidth - 30, $textColor);
+		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfMonth, $title_font_size * 5, $title_font_size * .15 * 5, $x, $y, $this->imageWidth - 30, $textColor);
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
 		/** @noinspection PhpUnusedLocalVariableInspection */
-		list($totalHeight, $lines, $font_size) = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $this->imageHeight - $this->imageWidth - 20);
+		[
+			$totalHeight,
+			$lines,
+			$font_size,
+		] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $this->imageHeight - $this->imageWidth - 20);
 		$y = $this->imageWidth + 5;
 		addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $lines, $font_size, $font_size * .15, $x, $y, $this->imageWidth - 30, $textColor);
 	}

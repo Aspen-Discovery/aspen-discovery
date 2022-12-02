@@ -15,13 +15,17 @@ class IlsRecord extends DataObject {
 	public $suppressed;
 	public $suppressionNotes;
 
-	public function getNumericColumnNames(): array
-	{
-		return ['suppressed', 'deleted', 'dateFirstDetected', 'dateDeleted', 'suppressedNoMarcAvailable'];
+	public function getNumericColumnNames(): array {
+		return [
+			'suppressed',
+			'deleted',
+			'dateFirstDetected',
+			'dateDeleted',
+			'suppressedNoMarcAvailable',
+		];
 	}
 
-	public function getCompressedColumnNames(): array
-	{
+	public function getCompressedColumnNames(): array {
 		return ['sourceData'];
 	}
 }

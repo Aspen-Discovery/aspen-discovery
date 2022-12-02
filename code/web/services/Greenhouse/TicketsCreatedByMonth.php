@@ -1,11 +1,10 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Support/Ticket.php';
-class Greenhouse_TicketsCreatedByMonth extends Admin_Admin
-{
+
+class Greenhouse_TicketsCreatedByMonth extends Admin_Admin {
 	//TODO: Only show tickets created since Feb/March 2022 since we aren't loading all closed tickets.
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		$title = 'Tickets Created By Month';
 
@@ -16,10 +15,10 @@ class Greenhouse_TicketsCreatedByMonth extends Admin_Admin
 		require_once ROOT_DIR . '/sys/Support/Ticket.php';
 		$ticketQueueFeeds = new TicketQueueFeed();
 		$ticketQueueFeeds->find();
-		while ($ticketQueueFeeds->fetch()){
+		while ($ticketQueueFeeds->fetch()) {
 			$dataSeries[$ticketQueueFeeds->name] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		}
-		$dataSeries['Total']  = GraphingUtils::getDataSeriesArray(count($dataSeries));
+		$dataSeries['Total'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 
 		$tickets = new Ticket();
 		$tickets->groupBy('year, month, queue');
@@ -30,19 +29,19 @@ class Greenhouse_TicketsCreatedByMonth extends Admin_Admin
 		$tickets->selectAdd('COUNT(*) as numTickets');
 		$tickets->orderBy('year, month');
 		$tickets->find();
-		while ($tickets->fetch()){
+		while ($tickets->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$curPeriod = "{$tickets->month}-{$tickets->year}";
 			if (!in_array($curPeriod, $columnLabels)) {
 				$columnLabels[] = $curPeriod;
 			}
 
-			if (!array_key_exists($tickets->queue, $dataSeries)){
+			if (!array_key_exists($tickets->queue, $dataSeries)) {
 				//echo("Queue not set properly for ticket '" . $tickets->queue . "'");
-			}else{
+			} else {
 				//Populate all periods with 0's
-				if (!array_key_exists($curPeriod, $dataSeries[$tickets->queue]['data'])){
-					foreach ($dataSeries as $queue => $data){
+				if (!array_key_exists($curPeriod, $dataSeries[$tickets->queue]['data'])) {
+					foreach ($dataSeries as $queue => $data) {
 						$dataSeries[$queue]['data'][$curPeriod] = 0;
 					}
 				}
@@ -62,31 +61,27 @@ class Greenhouse_TicketsCreatedByMonth extends Admin_Admin
 		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/TicketsCreatedByMonth', 'Tickets Created By Month');
 		return $breadcrumbs;
 	}
 
-	function canView()
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView() {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	function getActiveAdminSection(): string
-	{
+	function getActiveAdminSection(): string {
 		return 'greenhouse';
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true)
-	{
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true) {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 }

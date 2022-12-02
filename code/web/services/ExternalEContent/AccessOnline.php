@@ -1,27 +1,27 @@
 <?php
 
-class ExternalEContent_AccessOnline extends Action
-{
+class ExternalEContent_AccessOnline extends Action {
 	/** @var ExternalEContentDriver $recordDriver */
 	private $recordDriver;
-	function launch(){
+
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
 
 		global $activeRecordProfile;
-		if (isset($activeRecordProfile)){
+		if (isset($activeRecordProfile)) {
 			$subType = $activeRecordProfile;
-		}else{
+		} else {
 			$indexingProfile = new IndexingProfile();
 			$indexingProfile->name = 'ils';
-			if ($indexingProfile->find(true)){
+			if ($indexingProfile->find(true)) {
 				$subType = $indexingProfile->name;
-			}else{
+			} else {
 				$indexingProfile = new IndexingProfile();
 				$indexingProfile->id = 1;
-				if ($indexingProfile->find(true)){
+				if ($indexingProfile->find(true)) {
 					$subType = $indexingProfile->name;
 				}
 			}
@@ -29,13 +29,13 @@ class ExternalEContent_AccessOnline extends Action
 
 		/** @var ExternalEContentDriver $recordDriver */
 		require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
-		$this->recordDriver = new ExternalEContentDriver($subType . ':'. $id);
+		$this->recordDriver = new ExternalEContentDriver($subType . ':' . $id);
 
 		if ($this->recordDriver->isValid()) {
 			$relatedRecord = $this->recordDriver->getRelatedRecord();
 			if ($relatedRecord) {
 				$recordActions = $relatedRecord->getActions();
-			}else{
+			} else {
 				$recordActions = [];
 			}
 
@@ -56,7 +56,7 @@ class ExternalEContent_AccessOnline extends Action
 				$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
 				$this->trackUserUsageOfSideLoad($sideLoadId);
 			}
-		}else{
+		} else {
 			$redirectUrl = $this->recordDriver->getLinkUrl(true);
 		}
 
@@ -64,8 +64,7 @@ class ExternalEContent_AccessOnline extends Action
 		die();
 	}
 
-	function trackRecordUsage(int $sideLoadId, string $recordId): void
-	{
+	function trackRecordUsage(int $sideLoadId, string $recordId): void {
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
 		global $aspenUsage;
@@ -83,16 +82,15 @@ class ExternalEContent_AccessOnline extends Action
 		}
 	}
 
-	public function trackUserUsageOfSideLoad(int $sideLoadId): void
-	{
+	public function trackUserUsageOfSideLoad(int $sideLoadId): void {
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
 		global $aspenUsage;
 		$userUsage->instance = $aspenUsage->instance;
-		if (UserAccount::getActiveUserId() == false){
+		if (UserAccount::getActiveUserId() == false) {
 			//User is not logged in
 			$userUsage->userId = -1;
-		}else{
+		} else {
 			$userUsage->userId = UserAccount::getActiveUserId();
 		}
 		$userUsage->sideLoadId = $sideLoadId;
@@ -108,8 +106,7 @@ class ExternalEContent_AccessOnline extends Action
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);

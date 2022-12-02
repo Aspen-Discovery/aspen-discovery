@@ -4,14 +4,12 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 global $configArray;
 
-class OverDrive_AJAX extends JSON_Action
-{
+class OverDrive_AJAX extends JSON_Action {
 
-	function launch($method = null)
-	{
+	function launch($method = null) {
 		$method = $_GET['method'];
 		//Backwards compatibility with old Pika calls
-		switch ($method){
+		switch ($method) {
 			case 'CheckoutOverDriveItem':
 				$method = 'checkOutTitle';
 				break;
@@ -28,8 +26,7 @@ class OverDrive_AJAX extends JSON_Action
 		parent::launch($method);
 	}
 
-	function placeHold()
-	{
+	function placeHold() {
 		global $logger;
 		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_DEBUG);
 		$user = UserAccount::getLoggedInUser();
@@ -60,16 +57,24 @@ class OverDrive_AJAX extends JSON_Action
 				return $driver->placeHold($patron, $overDriveId);
 			} else {
 				$logger->log("Logged in user {$user->id} not valid for patron {$patronId}", Logger::LOG_DEBUG);
-				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.', 'isPublicFacing'=> true]));
+				return [
+					'result' => false,
+					'message' => translate([
+						'text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.',
+						'isPublicFacing' => true,
+					]),
+				];
 			}
 		} else {
 			$logger->log("User is not logged in", Logger::LOG_DEBUG);
-			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to place a hold.',
+			];
 		}
 	}
 
-	function renewCheckout()
-	{
+	function renewCheckout() {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user) {
@@ -80,15 +85,20 @@ class OverDrive_AJAX extends JSON_Action
 				$driver = new OverDriveDriver();
 				return $driver->renewCheckout($patron, $overDriveId);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
+				return [
+					'result' => false,
+					'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.',
+				];
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to renew titles.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to renew titles.',
+			];
 		}
 	}
 
-	function checkOutTitle()
-	{
+	function checkOutTitle() {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user) {
@@ -100,20 +110,28 @@ class OverDrive_AJAX extends JSON_Action
 				$result = $driver->checkOutTitle($patron, $overDriveId);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']) {
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate(['text'=>'View My Check Outs', 'isPublicFacing'=>true]) . '</a>';
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate([
+							'text' => 'View My Check Outs',
+							'isPublicFacing' => true,
+						]) . '</a>';
 				}
 				return $result;
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
+				return [
+					'result' => false,
+					'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.',
+				];
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to checkout an item.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to checkout an item.',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function returnCheckout()
-	{
+	function returnCheckout() {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user) {
@@ -124,16 +142,21 @@ class OverDrive_AJAX extends JSON_Action
 				$driver = new OverDriveDriver();
 				return $driver->returnCheckout($patron, $overDriveId);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
+				return [
+					'result' => false,
+					'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.',
+				];
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to return an item.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to return an item.',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function selectOverDriveDownloadFormat()
-	{
+	function selectOverDriveDownloadFormat() {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
@@ -145,20 +168,25 @@ class OverDrive_AJAX extends JSON_Action
 				$driver = new OverDriveDriver();
 				return $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
+				return [
+					'result' => false,
+					'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.',
+				];
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to download a title.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to download a title.',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getDownloadLink()
-	{
+	function getDownloadLink() {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
-		$isSupplement = (int) filter_var($_REQUEST['isSupplement'], FILTER_VALIDATE_BOOLEAN);
+		$isSupplement = (int)filter_var($_REQUEST['isSupplement'], FILTER_VALIDATE_BOOLEAN);
 		if ($user) {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
@@ -167,20 +195,25 @@ class OverDrive_AJAX extends JSON_Action
 				$driver = new OverDriveDriver();
 				return $driver->getDownloadLink($overDriveId, $formatId, $patron, $isSupplement);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
+				return [
+					'result' => false,
+					'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.',
+				];
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to download a title.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to download a title.',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getHoldPrompts()
-	{
+	function getHoldPrompts() {
 		if (!UserAccount::isLoggedIn()) {
 			return [
 				'success' => false,
-				'message' => 'You must be logged in to place holds, please login again.'
+				'message' => 'You must be logged in to place holds, please login again.',
 			];
 		}
 		$user = UserAccount::getLoggedInUser();
@@ -206,16 +239,25 @@ class OverDrive_AJAX extends JSON_Action
 		if (count($overDriveUsers) == 0) {
 			return [
 				'success' => false,
-				'message' => translate(['text' => 'Your account is not valid for OverDrive, please contact your local library.', 'isPublicFacing' => true])
+				'message' => translate([
+					'text' => 'Your account is not valid for OverDrive, please contact your local library.',
+					'isPublicFacing' => true,
+				]),
 			];
-		} else if ($promptForEmail || count($overDriveUsers) > 1) {
+		} elseif ($promptForEmail || count($overDriveUsers) > 1) {
 			$promptTitle = 'OverDrive Hold Options';
 			return [
 				'success' => true,
 				'promptNeeded' => true,
-				'promptTitle' => translate(['text'=>$promptTitle,'isPublicFacing'=>true]),
+				'promptTitle' => translate([
+					'text' => $promptTitle,
+					'isPublicFacing' => true,
+				]),
 				'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
-				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate(['text' => 'Place Hold', 'isPublicFacing'=>true]) . '</button>'
+				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate([
+						'text' => 'Place Hold',
+						'isPublicFacing' => true,
+					]) . '</button>',
 			];
 		} else {
 			return [
@@ -229,8 +271,7 @@ class OverDrive_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getCheckOutPrompts()
-	{
+	function getCheckOutPrompts() {
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -245,7 +286,7 @@ class OverDrive_AJAX extends JSON_Action
 				'promptNeeded' => true,
 				'promptTitle' => $promptTitle,
 				'prompts' => $interface->fetch('OverDrive/ajax-checkout-prompt.tpl'),
-				'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.OverDrive.processOverDriveCheckoutPrompts();">'
+				'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.OverDrive.processOverDriveCheckoutPrompts();">',
 			];
 		} elseif (count($overDriveUsers) == 1) {
 			return [
@@ -259,15 +300,17 @@ class OverDrive_AJAX extends JSON_Action
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => 'Error',
-				'prompts' => translate(['text' => 'Your account is not valid for OverDrive, please contact your local library.', 'isPublicFacing' => true]),
-				'buttons' => ''
+				'prompts' => translate([
+					'text' => 'Your account is not valid for OverDrive, please contact your local library.',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '',
 			];
 		}
 
 	}
 
-	function cancelHold() : array
-	{
+	function cancelHold(): array {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user) {
@@ -278,32 +321,46 @@ class OverDrive_AJAX extends JSON_Action
 				$driver = new OverDriveDriver();
 				return $driver->cancelHold($patron, $overDriveId);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.');
+				return [
+					'result' => false,
+					'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.',
+				];
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
+			return [
+				'result' => false,
+				'message' => 'You must be logged in to cancel holds.',
+			];
 		}
 	}
 
-	function freezeHold() : array
-	{
+	function freezeHold(): array {
 		$user = UserAccount::getLoggedInUser();
-		$result = array(
+		$result = [
 			'success' => false,
-			'message' => 'Error freezing hold.'
-		);
+			'message' => 'Error freezing hold.',
+		];
 		if (!$user) {
-			$result['message'] = translate(['text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.',
+				'isPublicFacing' => true,
+			]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true]);
+				$result['message'] = translate([
+					'text' => 'Sorry, you do not have access to freeze holds for the supplied user.',
+					'isPublicFacing' => true,
+				]);
 			} else {
 				if (empty($_REQUEST['overDriveId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
-					$result['message'] = translate(['text' => 'Information about the hold to be frozen was not provided.', 'isPublicFacing'=>true]);
+					$result['message'] = translate([
+						'text' => 'Information about the hold to be frozen was not provided.',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$overDriveId = $_REQUEST['overDriveId'];
 					$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
@@ -326,15 +383,17 @@ class OverDrive_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = translate(['text' => 'No Patron was specified.', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'No Patron was specified.',
+				'isPublicFacing' => true,
+			]);
 		}
 
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function getReactivationDateForm()
-	{
+	function getReactivationDateForm() {
 		global $interface;
 
 		$user = UserAccount::getLoggedInUser();
@@ -344,39 +403,56 @@ class OverDrive_AJAX extends JSON_Action
 			$interface->assign('patronId', $patronId);
 			$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
-			$title = translate(['text' => 'Freeze Hold', 'isPublicFacing' => true]); // language customization
-			return array(
+			$title = translate([
+				'text' => 'Freeze Hold',
+				'isPublicFacing' => true,
+			]); // language customization
+			return [
 				'title' => $title,
 				'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
-			);
-		}else{
+				'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>",
+			];
+		} else {
 			return [
 				'success' => false,
-				'message' => translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => 'Sorry, you do not have access to freeze holds for the supplied user.',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 	}
 
-	function thawHold() : array
-	{
+	function thawHold(): array {
 		$user = UserAccount::getLoggedInUser();
-		$result = array( // set default response
+		$result = [ // set default response
 			'success' => false,
-			'message' => translate(['text' => 'Error thawing hold.', 'isPublicFacing'=>true])
-		);
+			'message' => translate([
+				'text' => 'Error thawing hold.',
+				'isPublicFacing' => true,
+			]),
+		];
 
 		if (!$user) {
-			$result['message'] = translate(['text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.',
+				'isPublicFacing' => true,
+			]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = translate(['text' => 'Sorry, you do not have access to thaw holds for the supplied user.', 'isPublicFacing'=>true]);
+				$result['message'] = translate([
+					'text' => 'Sorry, you do not have access to thaw holds for the supplied user.',
+					'isPublicFacing' => true,
+				]);
 			} else {
 				if (empty($_REQUEST['overDriveId'])) {
-					$result['message'] = translate(['text' => 'Information about the hold to be thawed was not provided.', 'isPublicFacing'=>true]);
+					$result['message'] = translate([
+						'text' => 'Information about the hold to be thawed was not provided.',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$overDriveId = $_REQUEST['overDriveId'];
 					$result = $patronOwningHold->thawOverDriveHold($overDriveId);
@@ -392,48 +468,56 @@ class OverDrive_AJAX extends JSON_Action
 		return $result;
 	}
 
-	function getStaffView(){
+	function getStaffView() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error loading staff view'
+			'message' => 'Unknown error loading staff view',
 		];
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 		$recordDriver = new OverDriveRecordDriver($id);
-		if ($recordDriver->isValid()){
+		if ($recordDriver->isValid()) {
 			global $interface;
 			$interface->assign('recordDriver', $recordDriver);
 			$result = [
 				'success' => true,
-				'staffView' => $interface->fetch($recordDriver->getStaffView())
+				'staffView' => $interface->fetch($recordDriver->getStaffView()),
 			];
-		}else{
+		} else {
 			$result['message'] = 'Could not find that record';
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function getPreview(){
+	function getPreview() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error loading preview'
+			'message' => 'Unknown error loading preview',
 		];
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 		$recordDriver = new OverDriveRecordDriver($id);
-		if ($recordDriver->isValid()){
+		if ($recordDriver->isValid()) {
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
 			$format = new OverDriveAPIProductFormats();
 			$format->id = $_REQUEST['formatId'];
-			if ($format->find(true)){
+			if ($format->find(true)) {
 				$result['success'] = true;
-				if ($_REQUEST['sampleNumber'] == 2){
-					$result['title'] =  translate(['text' => 'Preview ' . $format->sampleSource_2, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
+				if ($_REQUEST['sampleNumber'] == 2) {
+					$result['title'] = translate([
+						'text' => 'Preview ' . $format->sampleSource_2,
+						'isPublicFacing' => true,
+						'isAdminEnteredData' => true,
+					]);
 					$sampleUrl = $format->sampleUrl_2;
-				}else{
-					$result['title'] =  translate(['text' => 'Preview ' . $format->sampleSource_1, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
+				} else {
+					$result['title'] = translate([
+						'text' => 'Preview ' . $format->sampleSource_1,
+						'isPublicFacing' => true,
+						'isAdminEnteredData' => true,
+					]);
 					$sampleUrl = $format->sampleUrl_1;
 				}
 
@@ -441,11 +525,14 @@ class OverDrive_AJAX extends JSON_Action
 				$overDriveDriver->incrementStat('numPreviews');
 
 				$result['modalBody'] = "<iframe src='{$sampleUrl}' class='previewFrame'></iframe>";
-				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank'>" . translate(['text' => "View Full Screen", 'isPublicFacing'=>true]). "</a>";
-			}else{
+				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank'>" . translate([
+						'text' => "View Full Screen",
+						'isPublicFacing' => true,
+					]) . "</a>";
+			} else {
 				$result['message'] = 'The specified Format was not valid';
 			}
-		}else{
+		} else {
 			$result['message'] = 'The specified OverDrive Product was not valid';
 		}
 
@@ -453,17 +540,19 @@ class OverDrive_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getLargeCover()
-	{
+	function getLargeCover() {
 		global $interface;
 
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		return array(
-			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
+		return [
+			'title' => translate([
+				'text' => 'Cover Image',
+				'isPublicFacing' => true,
+			]),
 			'modalBody' => $interface->fetch("OverDrive/largeCover.tpl"),
-			'modalButtons' => ""
-		);
+			'modalButtons' => "",
+		];
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 
-class RBdigitalProduct extends DataObject
-{
+class RBdigitalProduct extends DataObject {
 	public $__table = 'rbdigital_title';
 
 	public $id;
@@ -9,12 +8,15 @@ class RBdigitalProduct extends DataObject
 	public $title;
 	public $primaryAuthor;
 	public $mediaType;
-	public /** @noinspection PhpUnused */$isFiction;
-	public /** @noinspection PhpUnused */$audience;
+	public /** @noinspection PhpUnused */
+		$isFiction;
+	public /** @noinspection PhpUnused */
+		$audience;
 	public $language;
 	public $rawChecksum;
 	public $rawResponse;
-	public /** @noinspection PhpUnused */$lastChange;
+	public /** @noinspection PhpUnused */
+		$lastChange;
 	public $dateFirstDetected;
 	public $deleted;
 }

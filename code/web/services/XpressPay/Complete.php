@@ -1,9 +1,8 @@
 <?php
 
 
-class XpressPay_Complete extends Action
-{
-	public function launch(){
+class XpressPay_Complete extends Action {
+	public function launch() {
 		global $interface;
 		$error = '';
 		$message = '';
@@ -11,12 +10,12 @@ class XpressPay_Complete extends Action
 		if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 			if (empty($_REQUEST['l1'])) {
 				$error = 'No Payment ID was provided, could not complete the payment';
-			}else{
+			} else {
 				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 				$result = UserPayment::completeXpressPayPayment($_REQUEST);
-				if ($result['success']){
+				if ($result['success']) {
 					$message = $result['message'];
-				}else {
+				} else {
 					$error = $result['message'];
 				}
 			}
@@ -27,8 +26,7 @@ class XpressPay_Complete extends Action
 		$this->display('paymentCompleted.tpl', 'Payment Completed');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Fines', 'Your Fines');

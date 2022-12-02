@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_Axis360Options extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_Axis360Options extends MyAccount {
+	function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -13,9 +11,9 @@ class MyAccount_Axis360Options extends MyAccount
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -41,8 +39,7 @@ class MyAccount_Axis360Options extends MyAccount
 		$this->display('axis360Options.tpl', 'Account Settings');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Axis 360 Options');

@@ -22,13 +22,13 @@ class Mailer {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
-		if ($amazonSesSettings->find(true)){
+		if ($amazonSesSettings->find(true)) {
 			return $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody);
-		}else{
+		} else {
 			$sendGridSettings = new SendGridSetting();
-			if ($sendGridSettings->find(true)){
+			if ($sendGridSettings->find(true)) {
 				return $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $body, $htmlBody);
-			}else{
+			} else {
 				return false;
 			}
 		}
@@ -43,13 +43,12 @@ class Mailer {
 	 * @param string $body
 	 * @return bool
 	 */
-	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, string $body, ?string $htmlBody)
-	{
+	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, string $body, ?string $htmlBody) {
 		//Send the email
 		$curlWrapper = new CurlWrapper();
 		$headers = [
 			'Authorization: Bearer ' . $sendGridSettings->apiKey,
-			'Content-Type: application/json'
+			'Content-Type: application/json',
 		];
 		$curlWrapper->addCustomHeaders($headers, false);
 
@@ -93,25 +92,24 @@ class Mailer {
 		}
 	}
 
-	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) : bool
-	{
+	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody): bool {
 		require_once ROOT_DIR . '/sys/Email/AmazonSesMessage.php';
 		$message = new AmazonSesMessage();
 		$toAddresses = explode(';', $to);
 		$message->addTo($toAddresses);
-		if (!empty($replyTo)){
+		if (!empty($replyTo)) {
 			$message->addReplyTo($replyTo);
 		}
 		$message->setSubject($subject);
 		$message->setMessageFromString($body, $htmlBody);
 
 		$response = $amazonSesSettings->sendEmail($message, false, false);
-		if ($response == false){
+		if ($response == false) {
 			return false;
-		}else{
-			if (isset($response->error) && count($response->error) > 0){
+		} else {
+			if (isset($response->error) && count($response->error) > 0) {
 				return false;
-			}else {
+			} else {
 				return true;
 			}
 		}

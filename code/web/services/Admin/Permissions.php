@@ -3,9 +3,9 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Administration/Role.php';
 require_once ROOT_DIR . '/sys/Administration/Permission.php';
-class Admin_Permissions extends Admin_Admin
-{
-	function launch(){
+
+class Admin_Permissions extends Admin_Admin {
+	function launch() {
 		global $interface;
 		global $enabledModules;
 
@@ -15,20 +15,20 @@ class Admin_Permissions extends Admin_Admin
 		$role->find();
 		/** @var Role $selectedRole */
 		$selectedRole = null;
-		while ($role->fetch()){
+		while ($role->fetch()) {
 			$roles[$role->roleId] = clone $role;
-			if ($selectedRole == null){
+			if ($selectedRole == null) {
 				$selectedRole = $roles[$role->roleId];
 			}
-			if (isset($_REQUEST['roleId']) && $_REQUEST['roleId'] == $role->roleId){
+			if (isset($_REQUEST['roleId']) && $_REQUEST['roleId'] == $role->roleId) {
 				$selectedRole = $roles[$role->roleId];
 			}
 		}
 		$interface->assign('selectedRole', $selectedRole);
-		if (isset($_REQUEST['submit']) && $selectedRole != null){
+		if (isset($_REQUEST['submit']) && $selectedRole != null) {
 			$selectedPermissions = [];
-			foreach ($_REQUEST['permission'] as $permissionId => $selected){
-				if ($selected){
+			foreach ($_REQUEST['permission'] as $permissionId => $selected) {
+				if ($selected) {
 					$selectedPermissions[] = $permissionId;
 				}
 			}
@@ -38,17 +38,20 @@ class Admin_Permissions extends Admin_Admin
 		$interface->assign('numRoles', count($roles));
 		$permissions = [];
 		$permission = new Permission();
-		$permission->orderBy(['sectionName', 'weight']);
+		$permission->orderBy([
+			'sectionName',
+			'weight',
+		]);
 		$permission->find();
 		$selectedSections = [];
-		while ($permission->fetch()){
-			if (!empty($permission->requiredModule) && !array_key_exists($permission->requiredModule, $enabledModules)){
+		while ($permission->fetch()) {
+			if (!empty($permission->requiredModule) && !array_key_exists($permission->requiredModule, $enabledModules)) {
 				continue;
 			}
-			if (!array_key_exists($permission->sectionName, $permissions)){
+			if (!array_key_exists($permission->sectionName, $permissions)) {
 				$permissions[$permission->sectionName] = [];
 			}
-			if ($selectedRole->hasPermission($permission->name)){
+			if ($selectedRole->hasPermission($permission->name)) {
 				$selectedSections[$permission->sectionName] = $permission->sectionName;
 			}
 			$permissions[$permission->sectionName][$permission->id] = clone $permission;
@@ -60,8 +63,7 @@ class Admin_Permissions extends Admin_Admin
 
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
@@ -70,13 +72,11 @@ class Admin_Permissions extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Permissions');
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_admin';
 	}
 }

@@ -2,25 +2,25 @@
 
 require_once ROOT_DIR . '/sys/File/FileUpload.php';
 require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-class ViewPDF extends Action
-{
+
+class ViewPDF extends Action {
 	/** @var MarcRecordDriver $recordDriver */
 	private $recordDriver;
 	private $title;
-	function launch()
-	{
+
+	function launch() {
 		//Get the id of the file to display
 		$fileId = $_REQUEST['id'];
 		$fileUpload = new FileUpload();
 		$fileUpload->id = $fileId;
-		if ($fileUpload->find(true)){
+		if ($fileUpload->find(true)) {
 			//Record the usage
 			$recordFile = new RecordFile();
 			$recordFile->fileId = $fileId;
-			if ($recordFile->find(true)){
+			if ($recordFile->find(true)) {
 				$this->recordDriver = RecordDriverFactory::initRecordDriverById($recordFile->type . ':' . $recordFile->identifier);
-				if ($this->recordDriver->isValid() && $this->recordDriver->getIndexingProfile() != null){
-					if (UserAccount::isLoggedIn()){
+				if ($this->recordDriver->isValid() && $this->recordDriver->getIndexingProfile() != null) {
+					if (UserAccount::isLoggedIn()) {
 						require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 						$userUsage = new UserILSUsage();
 						$userUsage->userId = UserAccount::getActiveUserId();
@@ -61,13 +61,12 @@ class ViewPDF extends Action
 			global $configArray;
 			$interface->assign('pdfPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
 			$this->display('pdfViewer.tpl', $this->title, '');
-		}else{
+		} else {
 			$this->display('invalidRecord.tpl', 'Invalid File', '');
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		if ($this->recordDriver != null) {
 			$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);

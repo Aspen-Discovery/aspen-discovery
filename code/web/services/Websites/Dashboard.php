@@ -6,10 +6,8 @@ require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsitePage.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
 
-class Websites_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class Websites_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('WebPageUsage');
@@ -20,7 +18,7 @@ class Websites_Dashboard extends Admin_Dashboard
 		$websitesToGetStatsFor = [];
 		$website->orderBy('name');
 		$website->find();
-		while ($website->fetch()){
+		while ($website->fetch()) {
 			$websitesToGetStatsFor[$website->id] = $website->name;
 		}
 
@@ -58,10 +56,9 @@ class Websites_Dashboard extends Admin_Dashboard
 	 * @param int[] $websitesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($instanceName, $month, $year, $websitesToGetStatsFor): array
-	{
+	public function getUserStats($instanceName, $month, $year, $websitesToGetStatsFor): array {
 		$userUsage = new UserWebsiteUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -93,12 +90,11 @@ class Websites_Dashboard extends Admin_Dashboard
 	 * @param int[] $websitesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getSiteStats($instanceName, $month, $year, $websitesToGetStatsFor): array
-	{
+	public function getSiteStats($instanceName, $month, $year, $websitesToGetStatsFor): array {
 		$usage = new WebPageUsage();
 		$recordInfo = new WebsitePage();
 		$usage->joinAdd($recordInfo, 'INNER', 'record', 'webPageId', 'id');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -119,21 +115,20 @@ class Websites_Dashboard extends Admin_Dashboard
 		foreach ($websitesToGetStatsFor as $websiteId => $siteName) {
 			$usageStats[$websiteId] = [
 				'numRecordViewed' => 0,
-				'numRecordsUsed' => 0
+				'numRecordsUsed' => 0,
 			];
 		}
 		while ($usage->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$usage->websiteId] = [
 				'numRecordViewed' => $usage->numRecordViewed,
-				'numRecordsUsed' => $usage->numRecordsUsed
+				'numRecordsUsed' => $usage->numRecordsUsed,
 			];
 		}
 		return $usageStats;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
@@ -141,13 +136,14 @@ class Websites_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'web_indexer';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

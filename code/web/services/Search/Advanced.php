@@ -1,10 +1,10 @@
 <?php
 
 require_once ROOT_DIR . '/services/Search/AdvancedBase.php';
+
 class Search_Advanced extends Search_AdvancedBase {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		global $searchObject;
 
@@ -22,24 +22,24 @@ class Search_Advanced extends Search_AdvancedBase {
 		$searchObject->close();
 
 		$searchIndex = 'advanced';
-		if (isset($_REQUEST['searchIndex'])){
+		if (isset($_REQUEST['searchIndex'])) {
 			$searchIndex = $_REQUEST['searchIndex'];
 		}
 
-		if ($searchIndex == 'editAdvanced'){
+		if ($searchIndex == 'editAdvanced') {
 			// Load a saved search, if any:
 			$savedSearch = $this->loadSavedSearch();
-		}else{
-			if (isset($_REQUEST['lookfor'])){
+		} else {
+			if (isset($_REQUEST['lookfor'])) {
 				/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 				$savedSearch = SearchObjectFactory::initSearchObject();
 				$interface->assign('lookfor', $_REQUEST['lookfor']);
 				$savedSearch->setSearchTerms([
 					'index' => 'Keyword',
-					'lookfor' => $_REQUEST['lookfor']
+					'lookfor' => $_REQUEST['lookfor'],
 				]);
 				$savedSearch->convertBasicToAdvancedSearch();
-			}else{
+			} else {
 				$savedSearch = false;
 			}
 		}
@@ -74,8 +74,8 @@ class Search_Advanced extends Search_AdvancedBase {
 
 		$this->display('advanced.tpl', 'Advanced Search', '');
 	}
-	function getBreadcrumbs() : array
-	{
+
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Catalog Advanced Search');
 		return $breadcrumbs;

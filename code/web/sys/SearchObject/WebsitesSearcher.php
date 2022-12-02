@@ -1,10 +1,8 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 
-class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
-{
-	public function __construct()
-	{
+class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
+	public function __construct() {
 		parent::__construct();
 
 		global $configArray;
@@ -30,8 +28,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) &&
-			is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -42,10 +39,10 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'relevance' => 'Best Match',
-			'title' => 'Title'
-		);
+			'title' => 'Title',
+		];
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -62,8 +59,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = null) {
 		// Call the standard initialization routine in the parent:
 		parent::init('website_pages');
 
@@ -74,7 +70,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if ($restored instanceof AspenError) {
+		} elseif ($restored instanceof AspenError) {
 			return false;
 		}
 
@@ -101,11 +97,18 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		return true;
 	} // End init()
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			'WebsiteKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'WebsiteTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'WebsiteKeyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'WebsiteTitle' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
@@ -113,43 +116,38 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 	 * Turn our results into an Excel document
 	 * @param array $result
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		// TODO: Implement buildExcel() method.
 	}
 
-	public function getUniqueField()
-	{
+	public function getUniqueField() {
 		return 'id';
 	}
 
-	public function getRecordDriverForResult($current)
-	{
+	public function getRecordDriverForResult($current) {
 		if ($current['recordtype'] == 'WebPage') {
 			require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
 			return new WebsitePageRecordDriver($current);
-		}elseif ($current['recordtype'] == 'WebResource'){
+		} elseif ($current['recordtype'] == 'WebResource') {
 			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 			return new WebResourceRecordDriver($current);
-		}elseif ($current['recordtype'] == 'BasicPage'){
+		} elseif ($current['recordtype'] == 'BasicPage') {
 			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
 			return new BasicPageRecordDriver($current);
-		}elseif ($current['recordtype'] == 'PortalPage'){
+		} elseif ($current['recordtype'] == 'PortalPage') {
 			require_once ROOT_DIR . '/RecordDrivers/PortalPageRecordDriver.php';
 			return new PortalPageRecordDriver($current);
-		}else{
+		} else {
 			AspenError::raiseError("Unknown type of Website result {$current['recordtype']}");
 		}
 		return null;
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'websiteSearches';
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -158,8 +156,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'WebsiteTitle') {
 			$suggestionHandler = 'title_suggest';
@@ -170,13 +167,12 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 
 			$websiteNameFacet = new LibraryFacetSetting();
-			$websiteNameFacet->id = count($facetConfig) +1;
+			$websiteNameFacet->id = count($facetConfig) + 1;
 			$websiteNameFacet->multiSelect = true;
 			$websiteNameFacet->facetName = "website_name";
 			$websiteNameFacet->displayName = "Site Name";
@@ -187,7 +183,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 			$facetConfig["website_name"] = $websiteNameFacet;
 
 			$searchCategoryFacet = new LibraryFacetSetting();
-			$searchCategoryFacet->id = count($facetConfig) +1;
+			$searchCategoryFacet->id = count($facetConfig) + 1;
 			$searchCategoryFacet->multiSelect = true;
 			$searchCategoryFacet->facetName = "search_category";
 			$searchCategoryFacet->displayName = "Website Type";
@@ -198,7 +194,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 			$facetConfig["search_category"] = $searchCategoryFacet;
 
 			$audienceFacet = new LibraryFacetSetting();
-			$audienceFacet->id = count($facetConfig) +1;
+			$audienceFacet->id = count($facetConfig) + 1;
 			$audienceFacet->multiSelect = true;
 			$audienceFacet->facetName = "audience_facet";
 			$audienceFacet->displayName = "Audience";
@@ -209,7 +205,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 			$facetConfig["audience_facet"] = $audienceFacet;
 
 			$categoryFacet = new LibraryFacetSetting();
-			$categoryFacet->id = count($facetConfig) +1;
+			$categoryFacet->id = count($facetConfig) + 1;
 			$categoryFacet->multiSelect = true;
 			$categoryFacet->facetName = "category_facet";
 			$categoryFacet->displayName = "Category";
@@ -224,12 +220,11 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'Websites';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'WebsiteKeyword';
 	}
 }

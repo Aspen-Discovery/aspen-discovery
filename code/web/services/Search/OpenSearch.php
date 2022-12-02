@@ -8,8 +8,7 @@ require_once ROOT_DIR . '/Action.php';
  */
 class OpenSearch extends Action {
 
-	function launch()
-	{
+	function launch() {
 		header('Content-type: text/xml');
 
 		if (isset($_GET['method'])) {
@@ -25,8 +24,7 @@ class OpenSearch extends Action {
 		}
 	}
 
-	function describe()
-	{
+	function describe() {
 		global $interface;
 		global $configArray;
 
@@ -35,8 +33,7 @@ class OpenSearch extends Action {
 		$interface->display('Search/opensearch-describe.tpl');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

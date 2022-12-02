@@ -1,14 +1,12 @@
 <?php
 
 
-abstract class BaseLogEntry extends DataObject
-{
+abstract class BaseLogEntry extends DataObject {
 	public $numErrors;
 	public $startTime;
 	public $endTime;
 
-	function getElapsedTime()
-	{
+	function getElapsedTime() {
 		if (!isset($this->endTime) || is_null($this->endTime)) {
 			return "";
 		} else {

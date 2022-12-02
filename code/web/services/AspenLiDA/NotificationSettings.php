@@ -3,60 +3,55 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 
-class AspenLiDA_NotificationSettings extends ObjectEditor
-{
-	function getObjectType() : string {
+class AspenLiDA_NotificationSettings extends ObjectEditor {
+	function getObjectType(): string {
 		return 'NotificationSetting';
 	}
 
-	function getToolName() : string {
+	function getToolName(): string {
 		return 'NotificationSettings';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'AspenLiDA';
 	}
 
-	function getPageTitle() : string {
+	function getPageTitle(): string {
 		return 'Notification Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array {
-		$list = array();
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new NotificationSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
 
-	function getDefaultSort() : string {
+	function getDefaultSort(): string {
 		return 'id asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return NotificationSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
@@ -64,13 +59,11 @@ class AspenLiDA_NotificationSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'aspen_lida';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Aspen LiDA Settings');
 	}
 

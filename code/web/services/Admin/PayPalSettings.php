@@ -4,49 +4,56 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+
 class Admin_PayPalSettings extends ObjectEditor {
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'PayPalSetting';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'PayPalSettings';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'PayPal Settings';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
-		$list = array();
+
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new PayPalSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array{
+	function getObjectStructure(): array {
 		return PayPalSetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-    function getInstructions() : string{
-        return 'https://help.aspendiscovery.org/help/admin/ecommerce';
-    }
-	function getBreadcrumbs() : array
-	{
+
+	function getInstructions(): string {
+		return 'https://help.aspendiscovery.org/help/admin/ecommerce';
+	}
+
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ecommerce', 'eCommerce');
@@ -54,13 +61,11 @@ class Admin_PayPalSettings extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer PayPal');
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 
-class SearchObjectFactory
-{
+class SearchObjectFactory {
 
 	/**
 	 * initSearchObject
@@ -12,20 +11,19 @@ class SearchObjectFactory
 	 * @param string $engine The type of SearchObject to build.
 	 * @return  SearchObject_BaseSearcher|false   The search object on success, false otherwise
 	 */
-	static function initSearchObject($engine = 'GroupedWork')
-	{
+	static function initSearchObject($engine = 'GroupedWork') {
 		global $configArray;
-		if ($engine == 'GroupedWork'){
+		if ($engine == 'GroupedWork') {
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->searchVersion == 1){
+			if ($systemVariables->searchVersion == 1) {
 				require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher.php';
 				return new SearchObject_GroupedWorkSearcher();
-			}else{
+			} else {
 				require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
 				return new SearchObject_GroupedWorkSearcher2();
 			}
-		}else {
+		} else {
 			$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}Searcher.php";
 			if (is_readable($path)) {
 				require_once $path;
@@ -49,8 +47,7 @@ class SearchObjectFactory
 	 * @param string $searchSource
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function initSearchObjectBySearchSource($searchSource = 'local')
-	{
+	static function initSearchObjectBySearchSource($searchSource = 'local') {
 		// Figure out the engine type for the object we're about to construct:
 		switch ($searchSource) {
 			case 'open_archives' :
@@ -75,7 +72,7 @@ class SearchObjectFactory
 				$systemVariables = SystemVariables::getSystemVariables();
 				if ($systemVariables->searchVersion == 1) {
 					$engine = 'GroupedWork';
-				}else{
+				} else {
 					require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher2.php';
 					return new SearchObject_GroupedWorkSearcher2();
 				}
@@ -105,12 +102,11 @@ class SearchObjectFactory
 	 * @param object $minSO The MinSO object to use as the base.
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function deminify($minSO, ?SearchEntry $searchEntry = null)
-	{
+	static function deminify($minSO, ?SearchEntry $searchEntry = null) {
 		// To avoid excessive constructor calls, we'll keep a static cache of
 		// objects to use for the deminification process:
 		/** @var SearchObject_BaseSearcher[] $objectCache */
-		static $objectCache = array();
+		static $objectCache = [];
 
 		// Figure out the engine type for the object we're about to construct:
 		switch ($minSO->ss) {

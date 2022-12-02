@@ -28,41 +28,41 @@ class TaskEpicLink extends DataObject {
 			$epicList[$epic->id] = $epic->name;
 		}
 
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'weight' => array(
+				'description' => 'The unique id',
+			],
+			'weight' => [
 				'property' => 'weight',
 				'type' => 'numeric',
 				'label' => 'Weight',
 				'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.',
-				'required' => true
-			),
-			'epicId' => array(
+				'required' => true,
+			],
+			'epicId' => [
 				'property' => 'epicId',
 				'type' => 'enum',
 				'values' => $epicList,
 				'label' => 'Epic',
 				'description' => 'The epic related to the task',
-				'required' => true
-			),
-			'taskId' => array(
+				'required' => true,
+			],
+			'taskId' => [
 				'property' => 'taskId',
 				'type' => 'enum',
 				'values' => $taskList,
 				'label' => 'Task',
 				'description' => 'The task related to the epic',
-				'required' => true
-			),
-		);
+				'required' => true,
+			],
+		];
 	}
 
-	public function getTask() : ?DevelopmentTask {
-		if (is_null($this->_task) && !empty($this->taskId)){
+	public function getTask(): ?DevelopmentTask {
+		if (is_null($this->_task) && !empty($this->taskId)) {
 			require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
 			$this->_task = new DevelopmentTask();
 			$this->_task->id = $this->taskId;
@@ -71,7 +71,7 @@ class TaskEpicLink extends DataObject {
 		return $this->_task;
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Development/Tasks?objectAction=edit&id=' . $this->taskId;
 	}
 }

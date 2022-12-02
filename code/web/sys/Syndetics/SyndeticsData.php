@@ -1,6 +1,6 @@
 <?php
 
-class SyndeticsData extends DataObject{
+class SyndeticsData extends DataObject {
 	public $id;
 	public $groupedRecordPermanentId;
 	public $primaryIsbn;

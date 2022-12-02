@@ -4,7 +4,7 @@
  */
 
 function getRBdigitalUpdates() {
-	return array(
+	return [
 //		'rbdigital_exportTables' => array(
 //			'title' => 'RBdigital title tables',
 //			'description' => 'Create tables to store data exported from RBdigital.',
@@ -296,18 +296,18 @@ function getRBdigitalUpdates() {
 //				'ALTER TABLE user_rbdigital_usage ADD UNIQUE INDEX (instance, userId, year, month)',
 //			]
 //		],
-	);
+	];
 }
 
 /** @noinspection PhpUnused */
-function updateRbDigitalScopes(){
+function updateRbDigitalScopes() {
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
 	$rbDigitalSettings = new RBdigitalSetting();
-	if ($rbDigitalSettings->find(true)){
+	if ($rbDigitalSettings->find(true)) {
 		$rbDigitalScopes = new RBdigitalScope();
 		$rbDigitalScopes->find();
-		while ($rbDigitalScopes->fetch()){
+		while ($rbDigitalScopes->fetch()) {
 			$rbDigitalScopes->settingId = $rbDigitalSettings->id;
 			$rbDigitalScopes->update();
 		}
@@ -315,12 +315,11 @@ function updateRbDigitalScopes(){
 }
 
 /** @noinspection PhpUnused */
-function updateRbDigitalAvailability(&$update){
+function updateRbDigitalAvailability(&$update) {
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 	$rbDigitalSettings = new RBdigitalSetting();
-	if ($rbDigitalSettings->find(true)){
-		/** @var PDO $aspen_db */
-		global $aspen_db;
+	if ($rbDigitalSettings->find(true)) {
+		/** @var PDO $aspen_db */ global $aspen_db;
 
 		try {
 			$aspen_db->query("UPDATE rbdigital_availability set settingId = {$rbDigitalSettings->id}");

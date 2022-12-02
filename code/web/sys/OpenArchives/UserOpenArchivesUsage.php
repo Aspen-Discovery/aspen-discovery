@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class UserOpenArchivesUsage extends DataObject
-{
+
+class UserOpenArchivesUsage extends DataObject {
 	public $__table = 'user_open_archives_usage';
 	public $id;
 	public $instance;
@@ -12,22 +12,25 @@ class UserOpenArchivesUsage extends DataObject
 	public $month;
 	public $usageCount;
 
-	public function getUniquenessFields(): array
-	{
-		return ['instance','userId', 'openArchivesCollectionId','year', 'month'];
+	public function getUniquenessFields(): array {
+		return [
+			'instance',
+			'userId',
+			'openArchivesCollectionId',
+			'year',
+			'month',
+		];
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);
 		return $return;
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
+		if (in_array($this->instance, $selectedFilters['instances'])) {
 			$okToExport = true;
 		}
 		if ($okToExport) {
@@ -43,25 +46,23 @@ class UserOpenArchivesUsage extends DataObject
 		return $okToExport;
 	}
 
-	public function getLinksForJSON(): array
-	{
-		$links =  parent::getLinksForJSON();
+	public function getLinksForJSON(): array {
+		$links = parent::getLinksForJSON();
 		$user = new User();
 		$user->id = $this->userId;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$links['user'] = $user->cat_username;
 		}
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['user'])){
+		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->userId = $user->id;
 			}
 		}

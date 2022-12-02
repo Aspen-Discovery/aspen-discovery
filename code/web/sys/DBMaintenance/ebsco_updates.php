@@ -1,15 +1,15 @@
 <?php
 /** @noinspection SqlResolve */
-function getEbscoUpdates(){
+function getEbscoUpdates() {
 	return [
 		'createEbscoModules' => [
 			'title' => 'Create EBSCO modules',
 			'description' => 'Setup modules for EBSCO Integration',
-			'sql' =>[
+			'sql' => [
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('EBSCO EDS', '', '')",
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('EBSCOhost','', '')"
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('EBSCOhost','', '')",
 
-			]
+			],
 		],
 		'createSettingsForEbscoEDS' => [
 			'title' => 'Create EBSCO EDS settings',
@@ -28,16 +28,16 @@ function getEbscoUpdates(){
 				'ALTER TABLE library DROP COLUMN edsApiUsername',
 				'ALTER TABLE library DROP COLUMN edsApiPassword',
 				'ALTER TABLE library DROP COLUMN edsSearchProfile',
-				'ALTER TABLE library ADD COLUMN edsSettingsId INT(11) DEFAULT -1'
-			]
+				'ALTER TABLE library ADD COLUMN edsSettingsId INT(11) DEFAULT -1',
+			],
 		],
 		'aspen_usage_ebsco_eds' => [
 			'title' => 'Aspen Usage for EBSCO EDS Searches',
 			'description' => 'Add a column to track usage of EBSCO EDS searches within Aspen',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE aspen_usage ADD COLUMN ebscoEdsSearches INT(11) DEFAULT 0',
-			)
+			],
 		],
 		'track_ebsco_eds_user_usage' => [
 			'title' => 'EBSCO EDS Usage by user',
@@ -93,7 +93,7 @@ function getEbscoUpdates(){
 				)',
 				'ALTER TABLE ebsco_research_starter_dismissals ADD UNIQUE INDEX (userId, researchStarterId)',
 				'ALTER TABLE user ADD COLUMN hideResearchStarters TINYINT(1) DEFAULT 0',
-			]
+			],
 		],
 
 		'ebsco_eds_usage_add_instance' => [
@@ -107,7 +107,7 @@ function getEbscoUpdates(){
 				'ALTER TABLE user_ebsco_eds_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_ebsco_eds_usage DROP INDEX year',
 				'ALTER TABLE user_ebsco_eds_usage ADD UNIQUE INDEX (instance, userId, year, month)',
-			]
+			],
 		],
 	];
 }

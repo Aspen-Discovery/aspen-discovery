@@ -66,7 +66,7 @@ class MillenniumReadingHistory {
 			$historyEntry['permanentId'] = null;
 			$historyEntry['linkUrl'] = null;
 			$historyEntry['coverUrl'] = null;
-			$historyEntry['format'] = array();
+			$historyEntry['format'] = [];
 			if (isset($historyEntry['shortId']) && strlen($historyEntry['shortId']) > 0) {
 				$historyEntry['recordId'] = "." . $historyEntry['shortId'] . $this->driver->getCheckDigit($historyEntry['shortId']);
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -97,11 +97,11 @@ class MillenniumReadingHistory {
 			$patron->update();
 		}
 
-		return array(
+		return [
 			'historyActive' => $historyActive,
 			'titles' => $readingHistoryTitles,
-			'numTitles' => $numTitles
-		);
+			'numTitles' => $numTitles,
+		];
 	}
 
 	/**
@@ -132,7 +132,7 @@ class MillenniumReadingHistory {
 		curl_setopt($curl_connection, CURLOPT_COOKIESESSION, true);
 		curl_setopt($curl_connection, CURLOPT_POST, true);
 		$post_data = $this->driver->_getLoginFormValues($patron);
-		$post_items = array();
+		$post_items = [];
 		foreach ($post_data as $key => $value) {
 			$post_items[] = $key . '=' . urlencode($value);
 		}
@@ -147,7 +147,7 @@ class MillenniumReadingHistory {
 			//Login again
 			$post_data['lt'] = $lt;
 			$post_data['_eventId'] = 'submit';
-			$post_items = array();
+			$post_items = [];
 			foreach ($post_data as $key => $value) {
 				$post_items[] = $key . '=' . $value;
 			}
@@ -161,7 +161,7 @@ class MillenniumReadingHistory {
 			if (!isset($selectedTitles) || count($selectedTitles) == 0) {
 				return;
 			}
-			$titles = array();
+			$titles = [];
 			foreach ($selectedTitles as $titleId) {
 				$titles[] = $titleId . '=1';
 			}
@@ -207,27 +207,27 @@ class MillenniumReadingHistory {
 
 		//Get the headers from the table
 		preg_match_all('/<th\\s+class="patFuncHeaders">\\s*(.*?)\\s*<\/th>/si', $pageContents, $result, PREG_SET_ORDER);
-		$sKeys = array();
+		$sKeys = [];
 		for ($matchi = 0; $matchi < count($result); $matchi++) {
 			$sKeys[] = strip_tags($result[$matchi][1]);
 		}
 
 		//Get the rows for the table
 		preg_match_all('/<tr\\s+class="patFuncEntry">(.*?)<\/tr>/si', $pageContents, $result, PREG_SET_ORDER);
-		$sRows = array();
+		$sRows = [];
 		for ($matchi = 0; $matchi < count($result); $matchi++) {
 			$sRows[] = $result[$matchi][1];
 		}
 
 		$sCount = 1;
-		$readingHistoryTitles = array();
+		$readingHistoryTitles = [];
 		foreach ($sRows as $sRow) {
 			preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
-			$sCols = array();
+			$sCols = [];
 			for ($matchi = 0; $matchi < count($result); $matchi++) {
 				$sCols[] = $result[$matchi][1];
 			}
-			$historyEntry = array();
+			$historyEntry = [];
 			for ($i = 0; $i < sizeof($sCols); $i++) {
 				$sCols[$i] = str_replace("&nbsp;", " ", $sCols[$i]);
 				$sCols[$i] = preg_replace("/<br+?>/", " ", $sCols[$i]);

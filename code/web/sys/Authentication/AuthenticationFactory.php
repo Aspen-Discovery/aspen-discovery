@@ -3,8 +3,8 @@ require_once 'UnknownAuthenticationMethodException.php';
 
 class AuthenticationFactory {
 
-	static function initAuthentication($authNHandler, $additionalInfo = array()){
-		switch(strtoupper($authNHandler)){
+	static function initAuthentication($authNHandler, $additionalInfo = []) {
+		switch (strtoupper($authNHandler)) {
 			case "DB":
 				require_once 'DatabaseAuthentication.php';
 				return new DatabaseAuthentication($additionalInfo);

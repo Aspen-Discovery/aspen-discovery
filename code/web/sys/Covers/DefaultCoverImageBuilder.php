@@ -4,8 +4,7 @@ require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
-class DefaultCoverImageBuilder
-{
+class DefaultCoverImageBuilder {
 	private $imageWidth = 280; //Pixels
 	private $imageHeight = 400; // Pixels
 	private $topMargin = 10;
@@ -14,8 +13,7 @@ class DefaultCoverImageBuilder
 	private $backgroundColor;
 	private $foregroundColor;
 
-	public function __construct($invertColors = false)
-	{
+	public function __construct($invertColors = false) {
 		global $interface;
 		if ($interface == null) {
 			//Need to initialize the interface to get access to the themes
@@ -48,7 +46,7 @@ class DefaultCoverImageBuilder
 					$this->backgroundColor = [
 						'r' => $colors[0],
 						'g' => $colors[1],
-						'b' => $colors[2]
+						'b' => $colors[2],
 					];
 				}
 				if (empty($this->foregroundColor) && !$theme->secondaryBackgroundColorDefault) {
@@ -56,7 +54,7 @@ class DefaultCoverImageBuilder
 					$this->foregroundColor = [
 						'r' => $colors[0],
 						'g' => $colors[1],
-						'b' => $colors[2]
+						'b' => $colors[2],
 					];
 				}
 				if ($invertColors) {
@@ -75,8 +73,7 @@ class DefaultCoverImageBuilder
 		$this->authorFont = realpath($this->authorFont);
 	}
 
-	private function setForegroundAndBackgroundColors($title, $author)
-	{
+	private function setForegroundAndBackgroundColors($title, $author) {
 		if (isset($this->backgroundColor) && isset($this->foregroundColor)) {
 			return;
 		}
@@ -90,11 +87,7 @@ class DefaultCoverImageBuilder
 		$color_seed = (int)_map(_clip($counts, 2, 80), 2, 80, 10, 360);
 
 		$this->foregroundColor = ColorUtils::colorHSLToRGB($color_seed, $base_saturation, $base_brightness - ($counts % 20) / 100);
-		$this->backgroundColor = ColorUtils::colorHSLToRGB(
-			($color_seed + $color_distance) % 360,
-			$base_saturation,
-			$base_brightness
-		);
+		$this->backgroundColor = ColorUtils::colorHSLToRGB(($color_seed + $color_distance) % 360, $base_saturation, $base_brightness);
 		if (($counts % 10) == 0) {
 			$tmp = $this->foregroundColor;
 			$this->foregroundColor = $this->backgroundColor;
@@ -102,8 +95,7 @@ class DefaultCoverImageBuilder
 		}
 	}
 
-	public function getCover($title, $author, $filename)
-	{
+	public function getCover($title, $author, $filename) {
 		$this->setForegroundAndBackgroundColors($title, $author);
 		//Create the background image
 		$imageCanvas = imagecreate($this->imageWidth, $this->imageHeight);
@@ -128,8 +120,7 @@ class DefaultCoverImageBuilder
 		imagedestroy($imageCanvas);
 	}
 
-	private function drawText($imageCanvas, $title, $author, $artworkHeight)
-	{
+	private function drawText($imageCanvas, $title, $author, $artworkHeight) {
 		$textColor = imagecolorallocate($imageCanvas, 50, 50, 50);
 
 		$title_font_size = $this->imageWidth * 0.07;
@@ -141,24 +132,33 @@ class DefaultCoverImageBuilder
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
 		/** @noinspection PhpUnusedLocalVariableInspection */
-		list($totalHeight, $lines) = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .1, $width);
+		[
+			$totalHeight,
+			$lines,
+		] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .1, $width);
 		addWrappedTextToImage($imageCanvas, $this->titleFont, $lines, $title_font_size, $title_font_size * .1, $x, $y, $textColor);
 
 		$author_font_size = $this->imageWidth * 0.055;
 
 		$width = $this->imageWidth - (2 * $this->imageHeight * $this->topMargin / 100);
 		$author = StringUtils::trimStringToLengthAtWordBoundary($author, 40, true);
-		list($totalHeight, $lines) = wrapTextForDisplay($this->authorFont, $author, $author_font_size, $author_font_size * .1, $width);
+		[
+			$totalHeight,
+			$lines,
+		] = wrapTextForDisplay($this->authorFont, $author, $author_font_size, $author_font_size * .1, $width);
 		$y = $this->imageHeight - $artworkHeight - $totalHeight - 5;
 		addWrappedTextToImage($imageCanvas, $this->authorFont, $lines, $author_font_size, $author_font_size * .1, $x, $y, $textColor);
 	}
 
-	private function drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title)
-	{
+	private function drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title) {
 		$artworkStartX = 0;
 		$artworkStartY = $this->imageHeight - $this->imageWidth;
 
-		list($gridCount, $gridTotal, $gridSize) = $this->breakGrid($title);
+		[
+			$gridCount,
+			$gridTotal,
+			$gridSize,
+		] = $this->breakGrid($title);
 		$c64_title = $this->c64Convert($title);
 		$c64_title = str_pad($c64_title, $gridTotal, ' ');
 
@@ -184,8 +184,7 @@ class DefaultCoverImageBuilder
 		return ($gridCount - $rowsToSkip) * $gridSize;
 	}
 
-	private function c64Convert($title)
-	{
+	private function c64Convert($title) {
 		$title = strtolower($title);
 		$c64_letters = " qwertyuiopasdfghjkl:zxcvbnm,;?<>@[]1234567890.=-+*/";
 		$c64_title = "";
@@ -202,8 +201,7 @@ class DefaultCoverImageBuilder
 
 	//Compute the graphics grid size based on the length of the book title.  We want to show as much of the title as
 	//possible without having extra blank space at the end
-	private function breakGrid($title)
-	{
+	private function breakGrid($title) {
 		$min_title = 2;
 		$max_title = 60;
 		$length = _clip(strlen($title), $min_title, $max_title);
@@ -211,156 +209,242 @@ class DefaultCoverImageBuilder
 		$grid_count = _clip(floor(sqrt($length)), 2, 11);
 		$grid_total = $grid_count * $grid_count;
 		$grid_size = $this->imageWidth / $grid_count;
-		return array($grid_count, $grid_total, $grid_size);
+		return [
+			$grid_count,
+			$grid_total,
+			$grid_size,
+		];
 	}
 
-	private function drawShape($imageCanvas, $backgroundColor, $foregroundColor, $char, $x, $y, $gridSize)
-	{
+	private function drawShape($imageCanvas, $backgroundColor, $foregroundColor, $char, $x, $y, $gridSize) {
 		$shape_thickness = 10;
 		$thick = _clip($gridSize * $shape_thickness / 100, 4, 10);
 		imagesetthickness($imageCanvas, $thick);
 		if ($char == "q") {
 			imagefilledellipse($imageCanvas, $x + $gridSize / 2, $y + $gridSize / 2, $gridSize, $gridSize, $foregroundColor);
-		} else if ($char == "w") {
+		} elseif ($char == "w") {
 			imagefilledellipse($imageCanvas, $x + $gridSize / 2, $y + $gridSize / 2, $gridSize, $gridSize, $foregroundColor);
 			imagefilledellipse($imageCanvas, $x + $gridSize / 2, $y + $gridSize / 2, $gridSize - ($thick * 2), $gridSize - ($thick * 2), $backgroundColor);
-		} else if ($char == "e") {
+		} elseif ($char == "e") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $thick, $gridSize, $thick, $foregroundColor);
-		} else if ($char == "r") {
+		} elseif ($char == "r") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $gridSize - ($thick * 2), $gridSize, $thick, $foregroundColor);
-		} else if ($char == "t") {
+		} elseif ($char == "t") {
 			$this->imageFilledRectangle($imageCanvas, $x + $thick, $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "y") {
+		} elseif ($char == "y") {
 			$this->imageFilledRectangle($imageCanvas, $x + $gridSize - ($thick * 2), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "u") {
+		} elseif ($char == "u") {
 			imagearc($imageCanvas, $x + $gridSize, $y + $gridSize, 2 * ($gridSize - $thick), 2 * ($gridSize - $thick), 180, 270, $foregroundColor);
-		} else if ($char == "i") {
+		} elseif ($char == "i") {
 			imagearc($imageCanvas, $x, $y + $gridSize, 2 * ($gridSize - $thick), 2 * ($gridSize - $thick), 270, 360, $foregroundColor);
-		} else if ($char == "o") {
+		} elseif ($char == "o") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "p") {
+		} elseif ($char == "p") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + $gridSize - $thick, $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "a") {
-			imagefilledpolygon($imageCanvas, [$x, $y + $gridSize, $x + ($gridSize / 2), $y, $x + $gridSize, $y + $gridSize], 3, $foregroundColor);
-		} else if ($char == "s") {
-			imagefilledpolygon($imageCanvas, [$x, $y, $x + ($gridSize / 2), $y + $gridSize, $x + $gridSize, $y], 3, $foregroundColor);
-		} else if ($char == "d") {
+		} elseif ($char == "a") {
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y + $gridSize,
+				$x + ($gridSize / 2),
+				$y,
+				$x + $gridSize,
+				$y + $gridSize,
+			], 3, $foregroundColor);
+		} elseif ($char == "s") {
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y,
+				$x + ($gridSize / 2),
+				$y + $gridSize,
+				$x + $gridSize,
+				$y,
+			], 3, $foregroundColor);
+		} elseif ($char == "d") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($thick * 2), $gridSize, $thick, $foregroundColor);
-		} else if ($char == "f") {
+		} elseif ($char == "f") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $gridSize - ($thick * 3), $gridSize, $thick, $foregroundColor);
-		} else if ($char == "g") {
+		} elseif ($char == "g") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($thick * 2), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "h") {
+		} elseif ($char == "h") {
 			$this->imageFilledRectangle($imageCanvas, $x + $gridSize - ($thick * 3), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "j") {
+		} elseif ($char == "j") {
 			imagearc($imageCanvas, $x + $gridSize, $y, 2 * ($gridSize - $thick), 2 * ($gridSize - $thick), 90, 180, $foregroundColor);
-		} else if ($char == "k") {
+		} elseif ($char == "k") {
 			imagearc($imageCanvas, $x, $y, 2 * ($gridSize - $thick), 2 * ($gridSize - $thick), 0, 90, $foregroundColor);
-		} else if ($char == "l") {
+		} elseif ($char == "l") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $thick, $gridSize, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $gridSize - $thick, $gridSize, $thick, $foregroundColor);
-		} else if ($char == ":") {
+		} elseif ($char == ":") {
 			$this->imageFilledRectangle($imageCanvas, $x + $gridSize - $thick, $y, $thick, $gridSize, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $gridSize - $thick, $gridSize, $thick, $foregroundColor);
-		} else if ($char == "z") {
-			imagefilledpolygon($imageCanvas, [$x, $y + ($gridSize / 2), $x + ($gridSize / 2), $y, $x + $gridSize, $y + ($gridSize / 2)], 3, $foregroundColor);
-			imagefilledpolygon($imageCanvas, [$x, $y + ($gridSize / 2), $x + ($gridSize / 2), $y + $gridSize, $x + $gridSize, $y + ($gridSize / 2)], 3, $foregroundColor);
-		} else if ($char == "x") {
+		} elseif ($char == "z") {
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y + ($gridSize / 2),
+				$x + ($gridSize / 2),
+				$y,
+				$x + $gridSize,
+				$y + ($gridSize / 2),
+			], 3, $foregroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y + ($gridSize / 2),
+				$x + ($gridSize / 2),
+				$y + $gridSize,
+				$x + $gridSize,
+				$y + ($gridSize / 2),
+			], 3, $foregroundColor);
+		} elseif ($char == "x") {
 			imagefilledellipse($imageCanvas, $x + ($gridSize / 2), $y + ($gridSize / 3), $thick * 2, $thick * 2, $foregroundColor);
 			imagefilledellipse($imageCanvas, $x + ($gridSize / 3), $y + $gridSize - ($gridSize / 3), $thick * 2, $thick * 2, $foregroundColor);
 			imagefilledellipse($imageCanvas, $x + $gridSize - ($gridSize / 3), $y + $gridSize - ($gridSize / 3), $thick * 2, $thick * 2, $foregroundColor);
-		} else if ($char == "c") {
+		} elseif ($char == "c") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($thick * 3), $gridSize, $thick, $foregroundColor);
-		} else if ($char == "v") {
+		} elseif ($char == "v") {
 			imagesetthickness($imageCanvas, 1);
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $gridSize, $foregroundColor);
-			imagefilledpolygon($imageCanvas, [$x + $thick, $y, $x + ($gridSize / 2), $y + ($gridSize / 2) - $thick, $x + $gridSize - $thick, $y], 3, $backgroundColor);
-			imagefilledpolygon($imageCanvas, [$x, $y + $thick, $x + ($gridSize / 2) - $thick, $y + ($gridSize / 2), $x, $y + $gridSize - $thick], 3, $backgroundColor);
-			imagefilledpolygon($imageCanvas, [$x + $thick, $y + $gridSize, $x + ($gridSize / 2), $y + ($gridSize / 2) + $thick, $x + $gridSize - $thick, $y + $gridSize], 3, $backgroundColor);
-			imagefilledpolygon($imageCanvas, [$x + $gridSize, $y + $thick, $x + $gridSize, $y + $gridSize - $thick, $x + ($gridSize / 2) + $thick, $y + ($gridSize / 2)], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x + $thick,
+				$y,
+				$x + ($gridSize / 2),
+				$y + ($gridSize / 2) - $thick,
+				$x + $gridSize - $thick,
+				$y,
+			], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y + $thick,
+				$x + ($gridSize / 2) - $thick,
+				$y + ($gridSize / 2),
+				$x,
+				$y + $gridSize - $thick,
+			], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x + $thick,
+				$y + $gridSize,
+				$x + ($gridSize / 2),
+				$y + ($gridSize / 2) + $thick,
+				$x + $gridSize - $thick,
+				$y + $gridSize,
+			], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x + $gridSize,
+				$y + $thick,
+				$x + $gridSize,
+				$y + $gridSize - $thick,
+				$x + ($gridSize / 2) + $thick,
+				$y + ($gridSize / 2),
+			], 3, $backgroundColor);
 			imagesetthickness($imageCanvas, $thick);
-		} else if ($char == "b") {
+		} elseif ($char == "b") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($thick * 3), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "n") {
+		} elseif ($char == "n") {
 			imagesetthickness($imageCanvas, 1);
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $gridSize, $foregroundColor);
-			imagefilledpolygon($imageCanvas, [$x, $y, $x + $gridSize - $thick, $y, $x, $y + $gridSize - $thick], 3, $backgroundColor);
-			imagefilledpolygon($imageCanvas, [$x + $thick, $y + $gridSize, $x + $gridSize, $y + $gridSize, $x + $gridSize, $y + $thick], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y,
+				$x + $gridSize - $thick,
+				$y,
+				$x,
+				$y + $gridSize - $thick,
+			], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x + $thick,
+				$y + $gridSize,
+				$x + $gridSize,
+				$y + $gridSize,
+				$x + $gridSize,
+				$y + $thick,
+			], 3, $backgroundColor);
 			imagesetthickness($imageCanvas, $thick);
-		} else if ($char == "m") {
+		} elseif ($char == "m") {
 			imagesetthickness($imageCanvas, 1);
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $gridSize, $foregroundColor);
-			imagefilledpolygon($imageCanvas, [$x + $thick, $y, $x + $gridSize, $y, $x + $gridSize, $y + $gridSize - $thick], 3, $backgroundColor);
-			imagefilledpolygon($imageCanvas, [$x, $y + $thick, $x, $y + $gridSize, $x + $gridSize - $thick, $y + $gridSize], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x + $thick,
+				$y,
+				$x + $gridSize,
+				$y,
+				$x + $gridSize,
+				$y + $gridSize - $thick,
+			], 3, $backgroundColor);
+			imagefilledpolygon($imageCanvas, [
+				$x,
+				$y + $thick,
+				$x,
+				$y + $gridSize,
+				$x + $gridSize - $thick,
+				$y + $gridSize,
+			], 3, $backgroundColor);
 			imagesetthickness($imageCanvas, $thick);
-		} else if ($char == ",") {
+		} elseif ($char == ",") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2), $y + ($gridSize / 2), $gridSize / 2, $gridSize / 2, $foregroundColor);
-		} else if ($char == ";") {
+		} elseif ($char == ";") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2), $gridSize / 2, $gridSize / 2, $foregroundColor);
-		} else if ($char == "?") {
+		} elseif ($char == "?") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize / 2, $gridSize / 2, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2), $y + ($gridSize / 2), $gridSize / 2, $gridSize / 2, $foregroundColor);
-		} else if ($char == "<") {
+		} elseif ($char == "<") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2), $y, $gridSize / 2, $gridSize / 2, $foregroundColor);
-		} else if ($char == ">") {
+		} elseif ($char == ">") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize / 2, $gridSize / 2, $foregroundColor);
-		} else if ($char == "@") {
+		} elseif ($char == "@") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize, $thick, $foregroundColor);
-		} else if ($char == "[") {
+		} elseif ($char == "[") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "]") {
+		} elseif ($char == "]") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "0") {
+		} elseif ($char == "0") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y + ($gridSize / 2) - ($thick / 2), $thick, $gridSize / 2 + $thick / 2, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y + ($gridSize / 2) - ($thick / 2), $gridSize / 2 + $thick / 2, $thick, $foregroundColor);
-		} else if ($char == "1") {
+		} elseif ($char == "1") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize / 2 + $thick / 2, $foregroundColor);
-		} else if ($char == "2") {
+		} elseif ($char == "2") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y + ($gridSize / 2) - ($thick / 2), $thick, $gridSize / 2 + $thick / 2, $foregroundColor);
-		} else if ($char == "3") {
+		} elseif ($char == "3") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize / 2 + $thick / 2, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "4") {
+		} elseif ($char == "4") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $thick * 2, $gridSize, $foregroundColor);
-		} else if ($char == "5") {
+		} elseif ($char == "5") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $thick * 3, $gridSize, $foregroundColor);
-		} else if ($char == "6") {
+		} elseif ($char == "6") {
 			$this->imageFilledRectangle($imageCanvas, $x + $gridSize - ($thick * 3), $y, $thick * 3, $gridSize, $foregroundColor);
-		} else if ($char == "7") {
+		} elseif ($char == "7") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $thick * 2, $foregroundColor);
-		} else if ($char == "8") {
+		} elseif ($char == "8") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $thick * 3, $foregroundColor);
-		} else if ($char == "9") {
+		} elseif ($char == "9") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $gridSize - ($thick * 3), $gridSize, $thick * 3, $foregroundColor);
-		} else if ($char == ".") {
+		} elseif ($char == ".") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y + ($gridSize / 2) - ($thick / 2), $thick, $gridSize / 2 + $thick / 2, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize / 2 + $thick / 2, $thick, $foregroundColor);
-		} else if ($char == "=") {
+		} elseif ($char == "=") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize / 2 + $thick / 2, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x, $y + ($gridSize / 2) - ($thick / 2), $gridSize / 2, $thick, $foregroundColor);
-		} else if ($char == "-") {
+		} elseif ($char == "-") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize / 2 + $thick / 2, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y + ($gridSize / 2) - ($thick / 2), $gridSize / 2 + $thick / 2, $thick, $foregroundColor);
-		} else if ($char == "+") {
+		} elseif ($char == "+") {
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y + ($gridSize / 2) - ($thick / 2), $gridSize / 2 + $thick / 2, $thick, $foregroundColor);
 			$this->imageFilledRectangle($imageCanvas, $x + ($gridSize / 2) - ($thick / 2), $y, $thick, $gridSize, $foregroundColor);
-		} else if ($char == "*") {
+		} elseif ($char == "*") {
 			$this->imageFilledRectangle($imageCanvas, $x + $gridSize - ($thick * 2), $y, $thick * 2, $gridSize, $foregroundColor);
-		} else if ($char == "/") {
+		} elseif ($char == "/") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y + $gridSize - ($thick * 2), $gridSize, $thick * 2, $foregroundColor);
-		} else if ($char == " ") {
+		} elseif ($char == " ") {
 			$this->imageFilledRectangle($imageCanvas, $x, $y, $gridSize, $gridSize, $backgroundColor);
 		}
 		imagesetthickness($imageCanvas, 1);
 	}
 
-	private function imageFilledRectangle($imageCanvas, $x, $y, $width, $height, $color)
-	{
+	private function imageFilledRectangle($imageCanvas, $x, $y, $width, $height, $color) {
 		imagefilledrectangle($imageCanvas, $x, $y, $x + $width, $y + $height, $color);
 	}
 

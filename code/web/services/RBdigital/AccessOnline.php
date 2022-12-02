@@ -1,9 +1,8 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
 
-class RBdigital_AccessOnline extends Action
-{
-	function launch(){
+class RBdigital_AccessOnline extends Action {
+	function launch() {
 		global $interface;
 
 		$interface->assign('showBreadcrumbs', false);
@@ -12,8 +11,7 @@ class RBdigital_AccessOnline extends Action
 		$this->display('../Error/410.tpl', 'Page Not Found');
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

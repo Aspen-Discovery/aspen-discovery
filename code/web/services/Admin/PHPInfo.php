@@ -14,7 +14,7 @@ class Admin_PHPInfo extends Admin_Admin {
 
 		// clean off unneeded html
 		$info = strstr($info, '<div');
-		$info = substr($info, 0,strrpos($info, '</div>')+6); //+6 to include closing tag
+		$info = substr($info, 0, strrpos($info, '</div>') + 6); //+6 to include closing tag
 		// re-add slightly modified styling
 
 		$info .= '<style type="text/css">
@@ -45,8 +45,7 @@ h2 {font-size: 125%;}
 		$this->display('adminInfo.tpl', 'PHP Information');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -54,13 +53,11 @@ h2 {font-size: 125%;}
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View System Reports');
 	}
 }

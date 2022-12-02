@@ -21,7 +21,7 @@ global $configArray;
 $nytSettings = new NewYorkTimesSetting();
 if (!$nytSettings->find(true)) {
 	$nytUpdateLog->addError("No settings found, not updating lists");
-}else{
+} else {
 	//Pass the log entry to the API so we can update it there
 	$nyt_api = new NYTApi($nytSettings->booksApiKey);
 
@@ -39,9 +39,9 @@ if (!$nytSettings->find(true)) {
 			if (!empty($availableLists->fault)) {
 				if (strpos($availableLists->fault->faultstring, 'quota violation')) {
 					$retry = ($numTries <= 3);
-					if ($retry){
+					if ($retry) {
 						sleep(rand(60, 300));
-					}else{
+					} else {
 						if ($nytUpdateLog != null) {
 							$nytUpdateLog->addError("Did not get a good response from the API. {$availableLists->fault->faultstring}");
 						}
@@ -62,10 +62,10 @@ if (!$nytSettings->find(true)) {
 	$listAPI = new ListAPI();
 
 	if ($availableLists != null && isset($availableLists->results)) {
-		$prevYear = date("Y-m-d",strtotime("-1 year"));
+		$prevYear = date("Y-m-d", strtotime("-1 year"));
 		$allListsNames = [];
-		foreach($availableLists->results as $availableList) {
-			if($availableList->newest_published_date > $prevYear) {
+		foreach ($availableLists->results as $availableList) {
+			if ($availableList->newest_published_date > $prevYear) {
 				$allListsNames[] = $availableList->list_name_encoded;
 			}
 		}

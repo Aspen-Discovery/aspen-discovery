@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_13_00() : array
-{
+function getUpdates21_13_00(): array {
 	global $configArray;
 
 	return [
@@ -16,23 +15,26 @@ function getUpdates21_13_00() : array
 			'title' => 'Open Archives Image Regular Expression',
 			'description' => 'Add a regular expression to get thumbnails for Open Archives',
 			'sql' => [
-				"ALTER TABLE open_archives_collection ADD COLUMN imageRegex VARCHAR(100) DEFAULT ''"
-			]
-		], //open_archives_image_regex
+				"ALTER TABLE open_archives_collection ADD COLUMN imageRegex VARCHAR(100) DEFAULT ''",
+			],
+		],
+		//open_archives_image_regex
 		'polaris_item_identifiers' => [
 			'title' => 'Store item identifiers for Polaris',
 			'description' => 'Store item identifiers for Polaris',
 			'sql' => [
-				"UPDATE indexing_profiles set itemRecordNumber = '9' WHERE indexingClass = 'Polaris'"
-			]
-		], //polaris_item_identifiers
+				"UPDATE indexing_profiles set itemRecordNumber = '9' WHERE indexingClass = 'Polaris'",
+			],
+		],
+		//polaris_item_identifiers
 		'polaris_full_update_21_13' => [
 			'title' => 'Run a full update for polaris',
 			'description' => 'Run a full update for polaris',
 			'sql' => [
-				"UPDATE indexing_profiles set runFullUpdate = 1 WHERE indexingClass = 'Polaris'"
-			]
-		], //polaris_full_update_21_13
+				"UPDATE indexing_profiles set runFullUpdate = 1 WHERE indexingClass = 'Polaris'",
+			],
+		],
+		//polaris_full_update_21_13
 		'utf8mb4support' => [
 			'title' => 'UTF-8 MB4 support',
 			'description' => 'Support emojis and other extended characters within the database',
@@ -54,30 +56,33 @@ function getUpdates21_13_00() : array
 				"ALTER TABLE indexed_edition ADD INDEX edition(edition(500))",
 				"ALTER TABLE indexed_physicalDescription ADD INDEX physicalDescription (physicalDescription(500))",
 				"ALTER TABLE translation_terms ADD INDEX term (term(500))",
-			]
+			],
 		],
 		'placard_alt_text' => [
 			'title' => 'Add alt text for Placard Images',
 			'description' => 'Add alt text for Placard Images',
 			'sql' => [
-				'ALTER TABLE placards ADD COLUMN altText VARCHAR(500)'
-			]
-		], //placard_alt_text
+				'ALTER TABLE placards ADD COLUMN altText VARCHAR(500)',
+			],
+		],
+		//placard_alt_text
 		'increase_nonHoldableITypes' => [
 			'title' => 'Increase nonHoldableITypes length',
 			'description' => 'Increase the length of the nonHoldableITypes field',
 			'sql' => [
-				'ALTER TABLE indexing_profiles CHANGE COLUMN nonHoldableITypes nonHoldableITypes varchar(600) DEFAULT NULL'
-			]
-		], //increase_nonHoldableITypes
+				'ALTER TABLE indexing_profiles CHANGE COLUMN nonHoldableITypes nonHoldableITypes varchar(600) DEFAULT NULL',
+			],
+		],
+		//increase_nonHoldableITypes
 		'increaseSymphonyPaymentTypeAndPolicyLengths' => [
 			'title' => 'Increase Symphony Payment Type And Policy Lengths',
 			'description' => 'Increase Symphony Payment Type And Policy Lengths',
 			'sql' => [
 				'ALTER TABLE library CHANGE COLUMN symphonyPaymentType symphonyPaymentType VARCHAR(10)',
 				'ALTER TABLE library CHANGE COLUMN symphonyPaymentPolicy symphonyPaymentPolicy VARCHAR(10)',
-			]
-		], //increaseSymphonyPaymentTypeAndPolicyLengths
+			],
+		],
+		//increaseSymphonyPaymentTypeAndPolicyLengths
 		'addThemeToCachedGreenhouseData' => [
 			'title' => 'Add Theme Data To Cached Greenhouse Data',
 			'description' => 'Add library theme data to cache',
@@ -90,42 +95,46 @@ function getUpdates21_13_00() : array
 				'ALTER TABLE greenhouse_cache ADD COLUMN secondaryForegroundColor VARCHAR(25)',
 				'ALTER TABLE greenhouse_cache ADD COLUMN tertiaryBackgroundColor VARCHAR(25)',
 				'ALTER TABLE greenhouse_cache ADD COLUMN tertiaryForegroundColor VARCHAR(25)',
-			]
-		], //addThemeToCachedGreenhouseData
+			],
+		],
+		//addThemeToCachedGreenhouseData
 		'sideload_access_button_label' => [
 			'title' => 'SideLoad Access Button Label',
 			'description' => 'Add a Label to SideloadS to allow the Access Online button to be renamed',
 			'sql' => [
 				"ALTER TABLE sideloads ADD COLUMN accessButtonLabel VARCHAR(50) DEFAULT 'Access Online'",
-			]
-		], //sideload_access_button_label
+			],
+		],
+		//sideload_access_button_label
 		'sideload_show_status' => [
 			'title' => 'SideLoad Show Status',
 			'description' => 'Allow status to be removed for SideLoad records',
 			'sql' => [
 				"ALTER TABLE sideloads ADD COLUMN showStatus TINYINT(1) DEFAULT 1",
-			]
-		], //sideload_show_status
+			],
+		],
+		//sideload_show_status
 		'library_consortial_interface' => [
 			'title' => 'Add consortial interface to library settings',
 			'description' => 'Add a setting to specifically ',
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN isConsortialCatalog TINYINT(1) default 0",
-				"UPDATE library set isConsortialCatalog = NOT restrictOwningBranchesAndSystems"
-			]
-		], //library_consortial_interface
+				"UPDATE library set isConsortialCatalog = NOT restrictOwningBranchesAndSystems",
+			],
+		],
+		//library_consortial_interface
 		'library_show_messaging_settings' => [
 			'title' => 'Library Show Messaging Settings',
 			'description' => 'Allow the display of messaging settings to be disabled',
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN showMessagingSettings TINYINT(1) default 1",
-			]
-		], //library_show_messaging_settings
+			],
+		],
+		//library_show_messaging_settings
 	];
 }
 
-function updateAllTablesToUtf8mb4(&$update)
-{
+function updateAllTablesToUtf8mb4(&$update) {
 	global $configArray;
 	set_time_limit(0);
 
@@ -133,7 +142,7 @@ function updateAllTablesToUtf8mb4(&$update)
 	$updateOk = true;
 	$result = $aspen_db->query("show tables", PDO::FETCH_ASSOC);
 	$allTables = $result->fetchAll();
-	foreach ($allTables as $tableInfo){
+	foreach ($allTables as $tableInfo) {
 		$tableName = reset($tableInfo);
 		$fullSQL = "";
 		try {
@@ -141,18 +150,18 @@ function updateAllTablesToUtf8mb4(&$update)
 			$modifyClause = '';
 			$columnInfoResult = $aspen_db->query("SELECT * FROM information_schema.COLUMNS WHERE table_schema = '{$configArray['Database']['database_aspen_dbname']}' AND table_name = '{$tableName}'", PDO::FETCH_ASSOC);
 			$allColumnInfo = $columnInfoResult->fetchAll();
-			foreach ($allColumnInfo as $columnInfo){
-				if ($columnInfo['COLLATION_NAME'] == 'utf8_bin' || $columnInfo['COLLATION_NAME'] == 'utf8mb4_bin'){
+			foreach ($allColumnInfo as $columnInfo) {
+				if ($columnInfo['COLLATION_NAME'] == 'utf8_bin' || $columnInfo['COLLATION_NAME'] == 'utf8mb4_bin') {
 					$modifyClause .= ", MODIFY {$columnInfo['COLUMN_NAME']} {$columnInfo['COLUMN_TYPE']} CHARACTER SET utf8mb4 COLLATE utf8mb4_bin";
-					if ($columnInfo['IS_NULLABLE']){
+					if ($columnInfo['IS_NULLABLE']) {
 						$modifyClause .= " NULL";
-					}else{
+					} else {
 						$modifyClause .= " NOT NULL";
 					}
-					if ($columnInfo['COLUMN_DEFAULT'] != null){
+					if ($columnInfo['COLUMN_DEFAULT'] != null) {
 						if ($columnInfo['COLUMN_DEFAULT'] == '"NULL"' || $columnInfo['COLUMN_DEFAULT'] == "'NULL'" || $columnInfo['COLUMN_DEFAULT'] == 'NULL') {
 							$modifyClause .= " DEFAULT NULL";
-						}else{
+						} else {
 							$modifyClause .= " DEFAULT '{$columnInfo['COLUMN_DEFAULT']}'";
 						}
 					}
@@ -160,18 +169,18 @@ function updateAllTablesToUtf8mb4(&$update)
 			}
 			if (empty($modifyClause)) {
 				$fullSQL = "ALTER TABLE $tableName CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-			}else{
+			} else {
 				$fullSQL = "ALTER TABLE $tableName DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci $modifyClause";
 			}
 			$aspen_db->exec($fullSQL);
-		}catch (Exception $e){
+		} catch (Exception $e) {
 			if (isset($update['continueOnError']) && $update['continueOnError']) {
 				if (!isset($update['status'])) {
 					$update['status'] = '';
 				}
-				$update['status'] .= '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> -  $fullSQL <br/> - " .$e->getMessage() . '<br/>';
+				$update['status'] .= '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> -  $fullSQL <br/> - " . $e->getMessage() . '<br/>';
 			} else {
-				$update['status'] = '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> - $fullSQL <br/> - ". $e->getMessage() . '<br/>';
+				$update['status'] = '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> - $fullSQL <br/> - " . $e->getMessage() . '<br/>';
 				$updateOk = false;
 			}
 		}

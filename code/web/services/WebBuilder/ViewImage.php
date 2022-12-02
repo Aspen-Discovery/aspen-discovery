@@ -1,10 +1,11 @@
 <?php
 
 require_once ROOT_DIR . '/sys/File/ImageUpload.php';
-class WebBuilder_ViewImage extends Action{
+
+class WebBuilder_ViewImage extends Action {
 	private $uploadedImage;
-	function launch()
-	{
+
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
@@ -13,10 +14,10 @@ class WebBuilder_ViewImage extends Action{
 		require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 		$this->uploadedImage = new ImageUpload();
 		$this->uploadedImage->id = $id;
-		if (!$this->uploadedImage->find(true)){
+		if (!$this->uploadedImage->find(true)) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -26,9 +27,9 @@ class WebBuilder_ViewImage extends Action{
 		global $serverName;
 		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/';
 		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
-		if ((isset($_REQUEST['size'])) && $extension != 'svg'){
+		if ((isset($_REQUEST['size'])) && $extension != 'svg') {
 			$size = $_REQUEST['size'];
-		}else{
+		} else {
 			$size = 'full';
 		}
 		$dataPath .= $size . '/';
@@ -41,7 +42,7 @@ class WebBuilder_ViewImage extends Action{
 
 			$size = intval(sprintf("%u", filesize($fullPath)));
 
-			if($extension == 'svg'){
+			if ($extension == 'svg') {
 				header('Content-Type: image/svg+xml');
 			} else {
 				header('Content-Type: image/png');
@@ -72,12 +73,11 @@ class WebBuilder_ViewImage extends Action{
 
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', $this->uploadedImage->title, true);
-		if (UserAccount::userHasPermission('Administer All Web Content')){
+		if (UserAccount::userHasPermission('Administer All Web Content')) {
 			$breadcrumbs[] = new Breadcrumb('/WebBuilder/Images?id=' . $this->uploadedImage->id . '&objectAction=edit', 'Edit', true);
 		}
 		return $breadcrumbs;

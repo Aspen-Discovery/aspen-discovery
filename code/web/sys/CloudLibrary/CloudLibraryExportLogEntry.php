@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/BaseLogEntry.php';
-class CloudLibraryExportLogEntry extends BaseLogEntry
-{
+
+class CloudLibraryExportLogEntry extends BaseLogEntry {
 	public $__table = 'cloud_library_export_log';   // table name
 	public $id;
 	public $settingId;

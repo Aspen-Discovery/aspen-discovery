@@ -1,8 +1,7 @@
 <?php
 
 
-class WebResourceCategory extends DataObject
-{
+class WebResourceCategory extends DataObject {
 	public $__table = 'web_builder_resource_category';
 	public $id;
 	public $webResourceId;
@@ -11,12 +10,12 @@ class WebResourceCategory extends DataObject
 	/**
 	 * @return bool|WebBuilderCategory
 	 */
-	public function getCategory(){
+	public function getCategory() {
 		$category = new WebBuilderCategory();
 		$category->id = $this->categoryId;
-		if ($category->find(true)){
+		if ($category->find(true)) {
 			return $category;
-		}else{
+		} else {
 			return false;
 		}
 	}

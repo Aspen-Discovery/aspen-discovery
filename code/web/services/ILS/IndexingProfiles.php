@@ -5,16 +5,14 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 
-class ILS_IndexingProfiles extends ObjectEditor
-{
-	function launch()
-	{
+class ILS_IndexingProfiles extends ObjectEditor {
+	function launch() {
 		global $interface;
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		if ($objectAction == 'viewMarcFiles') {
 			$id = $_REQUEST['id'];
 			$interface->assign('id', $id);
-			$files = array();
+			$files = [];
 			$indexProfile = new IndexingProfile();
 			if ($indexProfile->get($id) && !empty($indexProfile->marcPath)) {
 
@@ -31,7 +29,7 @@ class ILS_IndexingProfiles extends ObjectEditor
 					$this->display('marcFiles.tpl', 'Marc Files');
 				}
 			}
-		} else if ($objectAction == 'loadDefaultBibFormatMappings') {
+		} elseif ($objectAction == 'loadDefaultBibFormatMappings') {
 			$id = $_REQUEST['id'];
 			$interface->assign('id', $id);
 			$indexProfile = new IndexingProfile();
@@ -57,29 +55,24 @@ class ILS_IndexingProfiles extends ObjectEditor
 		}
 	}
 
-	function getObjectType() : string
-	{
+	function getObjectType(): string {
 		return 'IndexingProfile';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return "ILS";
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'IndexingProfiles';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'ILS Indexing Information';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
-		$list = array();
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new IndexingProfile();
 		$object->orderBy($this->getSort());
@@ -92,65 +85,56 @@ class ILS_IndexingProfiles extends ObjectEditor
 
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return IndexingProfile::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function canAddNew()
-	{
+	function canAddNew() {
 		return true;
 	}
 
-	function canDelete()
-	{
+	function canDelete() {
 		return true;
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
-		$actions = array();
+	function getAdditionalObjectActions($existingObject): array {
+		$actions = [];
 		if ($existingObject && $existingObject->id != '') {
-			$actions[] = array(
+			$actions[] = [
 				'text' => 'View MARC files',
 				'url' => '/ILS/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
-			);
-			$actions[] = array(
+			];
+			$actions[] = [
 				'text' => 'Load Default Bib Format Mappings',
 				'url' => '/ILS/IndexingProfiles?objectAction=loadDefaultBibFormatMappings&id=' . $existingObject->id,
-			);
+			];
 		}
 
 		return $actions;
 	}
 
-	function getInitializationJs() : string
-	{
+	function getInitializationJs(): string {
 		return 'return AspenDiscovery.Admin.updateIndexingProfileFields();';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
@@ -158,13 +142,11 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ils_integration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Indexing Profiles');
 	}
 }

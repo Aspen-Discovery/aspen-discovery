@@ -1,7 +1,6 @@
 <?php
 
-class NovelistData extends DataObject
-{
+class NovelistData extends DataObject {
 	public $id;
 	public $groupedRecordPermanentId;
 	public $groupedRecordHasISBN;
@@ -39,166 +38,146 @@ class NovelistData extends DataObject
 
 	public $__table = 'novelist_data';
 
-	public function getNumericColumnNames(): array
-	{
-		return ['hasNovelistData', 'groupedRecordHasISBN'];
+	public function getNumericColumnNames(): array {
+		return [
+			'hasNovelistData',
+			'groupedRecordHasISBN',
+		];
 	}
 
-	public function getCompressedColumnNames() : array
-	{
+	public function getCompressedColumnNames(): array {
 		return ['jsonResponse'];
 	}
 
-	public function getSeriesTitles()
-	{
+	public function getSeriesTitles() {
 		return $this->_seriesTitles;
 	}
 
-	public function setSeriesTitles($seriesTitles)
-	{
+	public function setSeriesTitles($seriesTitles) {
 		$this->_seriesTitles = $seriesTitles;
 	}
 
-	public function getSeriesDefaultIndex()
-	{
+	public function getSeriesDefaultIndex() {
 		return $this->_seriesDefaultIndex;
 	}
 
-	public function setSeriesDefaultIndex($seriesDefaultIndex)
-	{
+	public function setSeriesDefaultIndex($seriesDefaultIndex) {
 		$this->_seriesDefaultIndex = $seriesDefaultIndex;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getSeriesCount()
-	{
+	public function getSeriesCount() {
 		return $this->_seriesCount;
 	}
 
 	/**
 	 * @param int $seriesCount
 	 */
-	public function setSeriesCount($seriesCount)
-	{
+	public function setSeriesCount($seriesCount) {
 		$this->_seriesCount = $seriesCount;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getSeriesCountOwned()
-	{
+	public function getSeriesCountOwned() {
 		return $this->_seriesCountOwned;
 	}
 
 	/**
 	 * @param int $seriesCountOwned
 	 */
-	public function setSeriesCountOwned($seriesCountOwned)
-	{
+	public function setSeriesCountOwned($seriesCountOwned) {
 		$this->_seriesCountOwned = $seriesCountOwned;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getSimilarTitleCountOwned()
-	{
+	public function getSimilarTitleCountOwned() {
 		return $this->_similarTitleCountOwned;
 	}
 
 	/**
 	 * @param int $similarTitleCountOwned
 	 */
-	public function setSimilarTitleCountOwned($similarTitleCountOwned)
-	{
+	public function setSimilarTitleCountOwned($similarTitleCountOwned) {
 		$this->_similarTitleCountOwned = $similarTitleCountOwned;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getSimilarTitleCount()
-	{
+	public function getSimilarTitleCount() {
 		return $this->_similarTitles == null ? 0 : count($this->_similarTitles);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getSimilarTitles()
-	{
+	public function getSimilarTitles() {
 		return $this->_similarTitles;
 	}
 
 	/**
 	 * @param array $similarTitles
 	 */
-	public function setSimilarTitles($similarTitles)
-	{
+	public function setSimilarTitles($similarTitles) {
 		$this->_similarTitles = $similarTitles;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getAuthorCount()
-	{
+	public function getAuthorCount() {
 		return $this->_authors == null ? 0 : count($this->_authors);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getAuthors()
-	{
+	public function getAuthors() {
 		return $this->_authors;
 	}
 
 	/**
 	 * @param array $authors
 	 */
-	public function setAuthors($authors)
-	{
+	public function setAuthors($authors) {
 		$this->_authors = $authors;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getSimilarSeriesCount()
-	{
+	public function getSimilarSeriesCount() {
 		return $this->_similarSeries == null ? 0 : count($this->_similarSeries);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getSimilarSeries()
-	{
+	public function getSimilarSeries() {
 		return $this->_similarSeries;
 	}
 
 	/**
 	 * @param array $similarSeries
 	 */
-	public function setSimilarSeries($similarSeries)
-	{
+	public function setSimilarSeries($similarSeries) {
 		$this->_similarSeries = $similarSeries;
 	}
 
-	public function getJsonData()
-	{
+	public function getJsonData() {
 		if (empty($this->_jsonData) && $this->jsonResponse != null) {
 			$this->_jsonData = json_decode($this->jsonResponse);
 		}
 		return $this->_jsonData;
 	}
 
-	public function setSeriesNote($seriesNote)
-	{
+	public function setSeriesNote($seriesNote) {
 		if (strlen($seriesNote) > 255) {
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$this->seriesNote = StringUtils::truncate($seriesNote, 255);

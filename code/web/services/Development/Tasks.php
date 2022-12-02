@@ -2,107 +2,90 @@
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
-class Development_Tasks extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+
+class Development_Tasks extends ObjectEditor {
+	function getObjectType(): string {
 		return 'DevelopmentTask';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'Tasks';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'Development';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'Development Tasks';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new DevelopmentTask();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
-		$objectList = array();
+		$objectList = [];
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
 
-	function getDefaultSort() : string
-	{
+	function getDefaultSort(): string {
 		return 'id desc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return DevelopmentTask::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function canAddNew()
-	{
+	function canAddNew() {
 		return true;
 	}
 
-	function canDelete()
-	{
+	function canDelete() {
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Development/Tasks', 'Tasks');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'development';
 	}
 
-	function canView() : bool
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true)
-	{
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true) {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 

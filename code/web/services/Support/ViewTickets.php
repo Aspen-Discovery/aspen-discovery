@@ -1,10 +1,9 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-class ViewTickets extends Admin_Admin
-{
 
-	function launch()
-	{
+class ViewTickets extends Admin_Admin {
+
+	function launch() {
 		//Get a list of tickets from Request Tracker
 		require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 		$supportConnections = new RequestTrackerConnection();
@@ -13,12 +12,12 @@ class ViewTickets extends Admin_Admin
 			$activeTickets = $supportConnections->getActiveTickets();
 			$interface->assign('activeTickets', $activeTickets);
 			$this->display('viewTickets.tpl', 'View Tickets');
-		}else{
+		} else {
 			//User shouldn't get here
 			$module = 'Error';
 			$action = 'Handle404';
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -26,8 +25,7 @@ class ViewTickets extends Admin_Admin
 		}
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#support', 'Support');
@@ -35,13 +33,11 @@ class ViewTickets extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function canView()
-	{
+	function canView() {
 		return UserAccount::userHasPermission('View Active Tickets');
 	}
 
-	function getActiveAdminSection(): string
-	{
+	function getActiveAdminSection(): string {
 		return 'support';
 	}
 }

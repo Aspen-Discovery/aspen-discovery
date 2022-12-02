@@ -3,10 +3,8 @@
 
 require_once ROOT_DIR . '/Action.php';
 
-class Help_Home extends Action
-{
-	function launch()
-	{
+class Help_Home extends Action {
+	function launch() {
 		global $interface;
 
 		// Sanitize the topic name to include only alphanumeric characters
@@ -27,12 +25,12 @@ class Help_Home extends Action
 			$interface->setTemplate($tpl_user);
 
 			// Compromise -- help is available in the site's default language
-		} else if ($interface->template_exists($tpl_site)) {
+		} elseif ($interface->template_exists($tpl_site)) {
 			$interface->setTemplate($tpl_site);
 			$interface->assign('warning', true);
 
 			// Last resort -- help is available in English
-		} else if ($interface->template_exists($tpl_en)) {
+		} elseif ($interface->template_exists($tpl_en)) {
 			$interface->setTemplate($tpl_en);
 			$interface->assign('warning', true);
 
@@ -45,8 +43,7 @@ class Help_Home extends Action
 		$interface->display('Help/help.tpl');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		return $breadcrumbs;
 	}

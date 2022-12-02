@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Smarty plugin
@@ -17,21 +16,14 @@
  * @param integer
  * @return string
  */
-function smarty_modifier_file_size($bytes=0) {
-	$mb = 1024*1024;
-	if ($bytes > $mb)
-	{
-		$output = sprintf ("%01.2f",$bytes/$mb) . " MB";
-	}
-	elseif ( $bytes >= 1024 )
-	{
-		$output = sprintf ("%01.0f",$bytes/1024) . " Kb";
-	}
-	else
-	{
+function smarty_modifier_file_size($bytes = 0) {
+	$mb = 1024 * 1024;
+	if ($bytes > $mb) {
+		$output = sprintf("%01.2f", $bytes / $mb) . " MB";
+	} elseif ($bytes >= 1024) {
+		$output = sprintf("%01.0f", $bytes / 1024) . " Kb";
+	} else {
 		$output = $bytes . " bytes";
 	}
 	return $output;
 }
-/* vim: set expandtab: */
-?>

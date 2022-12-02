@@ -1,13 +1,11 @@
 <?php
 
-class StringUtils
-{
-	public static function trimStringToLengthAtWordBoundary($string, $maxLength, $addEllipsis)
-	{
+class StringUtils {
+	public static function trimStringToLengthAtWordBoundary($string, $maxLength, $addEllipsis) {
 		if (strlen($string) < $maxLength) {
 			return $string;
 		} else {
-			if ($addEllipsis){
+			if ($addEllipsis) {
 				$maxLength -= 3;
 			}
 			$lastDelimiter = strrpos(substr($string, 0, $maxLength), ' ');
@@ -19,14 +17,14 @@ class StringUtils
 		}
 	}
 
-	static function formatMoney($format, $number)
-	{
+	static function formatMoney($format, $number) {
 		if (function_exists('money_format')) {
 			return money_format($format, $number);
 		} else {
-			$regex = array('/%((?:[\^!\-]|\+|\(|\=.)*)([0-9]+)?(?:#([0-9]+))?',
-				'(?:\.([0-9]+))?([in%])/'
-			);
+			$regex = [
+				'/%((?:[\^!\-]|\+|\(|\=.)*)([0-9]+)?(?:#([0-9]+))?',
+				'(?:\.([0-9]+))?([in%])/',
+			];
 			$regex = implode('', $regex);
 			if (setlocale(LC_MONETARY, null) == '') {
 				setlocale(LC_MONETARY, '');
@@ -37,12 +35,13 @@ class StringUtils
 				trigger_error("No format specified or invalid format", E_USER_WARNING);
 				return $number;
 			}
-			$flags = array('fillchar' => preg_match('/\=(.)/', $fmatch[1], $match) ? $match[1] : ' ',
+			$flags = [
+				'fillchar' => preg_match('/\=(.)/', $fmatch[1], $match) ? $match[1] : ' ',
 				'nogroup' => preg_match('/\^/', $fmatch[1]) > 0,
 				'usesignal' => preg_match('/\+|\(/', $fmatch[1], $match) ? $match[0] : '+',
 				'nosimbol' => preg_match('/\!/', $fmatch[1]) > 0,
-				'isleft' => preg_match('/\-/', $fmatch[1]) > 0
-			);
+				'isleft' => preg_match('/\-/', $fmatch[1]) > 0,
+			];
 			$width = trim($fmatch[2]) ? (int)$fmatch[2] : 0;
 			$left = trim($fmatch[3]) ? (int)$fmatch[3] : 0;
 			$right = trim($fmatch[4]) ? (int)$fmatch[4] : $locale['int_frac_digits'];
@@ -110,10 +109,10 @@ class StringUtils
 		}
 	}
 
-	static function truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false)
-	{
-		if ($length == 0)
+	static function truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false) {
+		if ($length == 0) {
 			return '';
+		}
 
 		if (strlen($string) > $length) {
 			$length -= min($length, strlen($etc));
@@ -130,8 +129,7 @@ class StringUtils
 		}
 	}
 
-	static function removeTrailingPunctuation($str)
-	{
+	static function removeTrailingPunctuation($str) {
 		// We couldn't find the file, return an empty value:
 		$str = trim($str);
 		$str = preg_replace("~([-/:,]+)$~", "", $str);
@@ -140,7 +138,13 @@ class StringUtils
 	}
 
 	static function formatBytes($bytes, $precision = 2) {
-		$units = array('B', 'KB', 'MB', 'GB', 'TB');
+		$units = [
+			'B',
+			'KB',
+			'MB',
+			'GB',
+			'TB',
+		];
 
 		$bytes = max($bytes, 0);
 		$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
@@ -155,9 +159,18 @@ class StringUtils
 
 	static function unformatBytes($formattedBytes) {
 
-		$units = array('B' => 0, 'KB' =>1, 'MB'=>2, 'GB'=>3, 'TB'=>4);
+		$units = [
+			'B' => 0,
+			'KB' => 1,
+			'MB' => 2,
+			'GB' => 3,
+			'TB' => 4,
+		];
 
-		list($value, $unit) = explode(' ', $formattedBytes);
+		[
+			$value,
+			$unit,
+		] = explode(' ', $formattedBytes);
 
 		$bytes = (float)$value;
 		$bytes *= pow(1024, $units[$unit]);
@@ -165,16 +178,16 @@ class StringUtils
 		return $bytes;
 	}
 
-	static function startsWith( $haystack, $needle ) {
-		$length = strlen( $needle );
-		return substr( $haystack, 0, $length ) === $needle;
+	static function startsWith($haystack, $needle) {
+		$length = strlen($needle);
+		return substr($haystack, 0, $length) === $needle;
 	}
 
-	static function endsWith( $haystack, $needle ) {
-		$length = strlen( $needle );
-		if( !$length ) {
+	static function endsWith($haystack, $needle) {
+		$length = strlen($needle);
+		if (!$length) {
 			return true;
 		}
-		return substr( $haystack, -$length ) === $needle;
+		return substr($haystack, -$length) === $needle;
 	}
 }

@@ -4,62 +4,71 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
 
-class Admin_Marriages extends ObjectEditor
-{
-	function getObjectType() : string{
+class Admin_Marriages extends ObjectEditor {
+	function getObjectType(): string {
 		return 'Marriage';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Marriages';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Marriages';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new Marriage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
+		$objectList = [];
+		while ($object->fetch()) {
 			$objectList[$object->marriageId] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'marriageDate asc';
 	}
-    function getObjectStructure() : array {
+
+	function getObjectStructure(): array {
 		return Marriage::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
-		return array('personId', 'spouseName', 'date');
+
+	function getPrimaryKeyColumn(): string {
+		return [
+			'personId',
+			'spouseName',
+			'date',
+		];
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'marriageId';
 	}
 
-	function getRedirectLocation($objectAction, $curObject){
+	function getRedirectLocation($objectAction, $curObject) {
 		if ($curObject instanceof Marriage) {
 			return '/Person/' . $curObject->personId;
-		}else{
+		} else {
 			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
 		}
 	}
-	function showReturnToList(){
+
+	function showReturnToList() {
 		return false;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		if (!empty($this->activeObject) && $this->activeObject instanceof Marriage){
+		if (!empty($this->activeObject) && $this->activeObject instanceof Marriage) {
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 			$person = new Person();
 			$person->personId = $this->activeObject->personId;
-			if ($person->find(true)){
+			if ($person->find(true)) {
 				$breadcrumbs[] = new Breadcrumb('/Person/' . $person->personId, $person->displayName());
 			}
 		}
@@ -67,18 +76,15 @@ class Admin_Marriages extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
-	{
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true) {
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return '';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission(['Administer Genealogy']);
 	}
 }

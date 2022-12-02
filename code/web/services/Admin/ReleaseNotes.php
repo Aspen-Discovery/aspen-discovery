@@ -2,18 +2,16 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 
-class Admin_ReleaseNotes extends Action
-{
-	function launch()
-	{
+class Admin_ReleaseNotes extends Action {
+	function launch() {
 		global $interface;
 
 		//Get a list of all available release notes
 		$releaseNotesPath = ROOT_DIR . '/release_notes';
 		$releaseNoteFiles = scandir($releaseNotesPath);
 		$releaseNotes = [];
-		foreach ($releaseNoteFiles as $releaseNoteFile){
-			if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $releaseNoteFile)){
+		foreach ($releaseNoteFiles as $releaseNoteFile) {
+			if (preg_match('/\d{2}\.\d{2}\.\d{2}\.MD/', $releaseNoteFile)) {
 				$releaseNoteFile = str_replace('.MD', '', $releaseNoteFile);
 				$releaseNotes[$releaseNoteFile] = $releaseNoteFile;
 			}
@@ -22,15 +20,15 @@ class Admin_ReleaseNotes extends Action
 		arsort($releaseNotes);
 
 		$parsedown = AspenParsedown::instance();
-		$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '.MD'));
+		$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/' . reset($releaseNotes) . '.MD'));
 		$interface->assign('releaseNotesFormatted', $releaseNotesFormatted);
 		$interface->assign('releaseVersion', array_values($releaseNotes)[0]);
-		if (file_exists($releaseNotesPath . '/'. reset($releaseNotes) . '_action_items.MD')){
-			$actionItemsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '_action_items.MD'));
+		if (file_exists($releaseNotesPath . '/' . reset($releaseNotes) . '_action_items.MD')) {
+			$actionItemsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/' . reset($releaseNotes) . '_action_items.MD'));
 			$interface->assign('actionItemsFormatted', $actionItemsFormatted);
 		}
-		if (file_exists($releaseNotesPath . '/'. reset($releaseNotes) . '_testing.MD')){
-			$testingSuggestionsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '_testing.MD'));
+		if (file_exists($releaseNotesPath . '/' . reset($releaseNotes) . '_testing.MD')) {
+			$testingSuggestionsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/' . reset($releaseNotes) . '_testing.MD'));
 			$interface->assign('testingSuggestionsFormatted', $testingSuggestionsFormatted);
 		}
 
@@ -41,14 +39,13 @@ class Admin_ReleaseNotes extends Action
 			$interface->assign('activeAdminSection', $this->getActiveAdminSection());
 			$interface->assign('activeMenuOption', 'admin');
 			$sidebar = 'Admin/admin-sidebar.tpl';
-		}else{
+		} else {
 			$sidebar = '';
 		}
 		$this->display('releaseNotes.tpl', 'Release Notes', $sidebar);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
 			$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -58,13 +55,11 @@ class Admin_ReleaseNotes extends Action
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'support';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return true;
 	}
 }

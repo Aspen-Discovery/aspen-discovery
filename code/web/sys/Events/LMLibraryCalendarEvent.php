@@ -1,8 +1,7 @@
 <?php
 
 
-class LMLibraryCalendarEvent extends DataObject
-{
+class LMLibraryCalendarEvent extends DataObject {
 	public $__table = 'lm_library_calendar_events';
 	public $id;
 	public $settingsId;
@@ -14,8 +13,8 @@ class LMLibraryCalendarEvent extends DataObject
 
 	private $_rawDataDecoded = null;
 
-	function getDecodedData(){
-		if ($this->_rawDataDecoded == null){
+	function getDecodedData() {
+		if ($this->_rawDataDecoded == null) {
 			$this->_rawDataDecoded = json_decode($this->rawResponse);
 		}
 		return $this->_rawDataDecoded;

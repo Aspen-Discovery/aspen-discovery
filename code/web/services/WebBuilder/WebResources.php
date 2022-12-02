@@ -2,39 +2,33 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 
-class WebBuilder_WebResources extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class WebBuilder_WebResources extends ObjectEditor {
+	function getObjectType(): string {
 		return 'WebResource';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'WebResources';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'WebBuilder';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'Web Resources';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new WebResource();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingObjects = true;
-		if (!UserAccount::userHasPermission('Administer All Web Resources')){
+		if (!UserAccount::userHasPermission('Administer All Web Resources')) {
 			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryWebResource', 'webResourceId');
 		}
-		$objectList = array();
+		$objectList = [];
 		if ($userHasExistingObjects) {
 			$object->find();
 			while ($object->fetch()) {
@@ -43,38 +37,32 @@ class WebBuilder_WebResources extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return WebResource::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/webbuilder/webresources';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
@@ -82,13 +70,14 @@ class WebBuilder_WebResources extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Web Resources', 'Administer Library Web Resources']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Web Resources',
+			'Administer Library Web Resources',
+		]);
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
 }

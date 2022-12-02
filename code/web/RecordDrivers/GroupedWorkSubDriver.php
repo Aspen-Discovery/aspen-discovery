@@ -6,8 +6,7 @@
  */
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
-abstract class GroupedWorkSubDriver extends RecordInterface
-{
+abstract class GroupedWorkSubDriver extends RecordInterface {
 	/**
 	 * The Grouped Work that this record is connected to
 	 * @var  GroupedWork
@@ -25,8 +24,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @param GroupedWork $groupedWork ;
 	 * @access  public
 	 */
-	public function __construct($groupedWork = null)
-	{
+	public function __construct($groupedWork = null) {
 		if ($groupedWork == null) {
 			$this->loadGroupedWork();
 		} else {
@@ -36,20 +34,17 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 	public abstract function getIdWithSource();
 
-	public function getAcceleratedReaderData()
-	{
+	public function getAcceleratedReaderData() {
 		return $this->getGroupedWorkDriver()->getAcceleratedReaderData();
 	}
 
-	public function getAcceleratedReaderDisplayString()
-	{
+	public function getAcceleratedReaderDisplayString() {
 		return $this->getGroupedWorkDriver()->getAcceleratedReaderDisplayString();
 	}
 
-	function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		$id = $this->getIdWithSource();
-		$bookCoverUrl = "/bookcover.php?id={$id}&amp;size={$size}" ;
+		$bookCoverUrl = "/bookcover.php?id={$id}&amp;size={$size}";
 		$isbn = $this->getCleanISBN();
 		if ($isbn) {
 			$bookCoverUrl .= "&amp;isn={$isbn}";
@@ -76,8 +71,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Breadcrumb text to represent this record.
 	 */
-	public function getBreadcrumb()
-	{
+	public function getBreadcrumb() {
 		return $this->getShortTitle();
 	}
 
@@ -91,12 +85,11 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCitation($format)
-	{
+	public function getCitation($format) {
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
 		global $interface;
 		// Build author list:
-		$authors = array();
+		$authors = [];
 		$primary = $this->getPrimaryAuthor();
 		if (!empty($primary)) {
 			$authors[] = $primary;
@@ -107,7 +100,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		$publishers = $this->getPublishers();
 		$pubDates = $this->getPublicationDates();
 		$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
+		$details = [
 			'authors' => $authors,
 			'title' => $this->getShortTitle(),
 			'subtitle' => $this->getSubtitle(),
@@ -115,8 +108,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition' => $this->getEditions(),
-			'format' => $this->getFormats()
-		);
+			'format' => $this->getFormats(),
+		];
 
 		$interface->assign('dc_pubName', count($publishers) > 0 ? $publishers[0] : null);
 		$interface->assign('dc_pubDate', count($pubDates) > 0 ? $pubDates[0] : null);
@@ -145,9 +138,14 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @access  public
 	 * @return  array               Strings representing citation formats.
 	 */
-	public function getCitationFormats()
-	{
-		return array('AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA');
+	public function getCitationFormats() {
+		return [
+			'AMA',
+			'APA',
+			'ChicagoHumanities',
+			'ChicagoAuthDate',
+			'MLA',
+		];
 	}
 
 	/**
@@ -156,8 +154,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 *
 	 * @return  mixed
 	 */
-	public function getCleanISBN()
-	{
+	public function getCleanISBN() {
 		require_once ROOT_DIR . '/sys/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
@@ -184,11 +181,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $isbn13;
 	}
 
-	public function getCleanISBNs()
-	{
+	public function getCleanISBNs() {
 		require_once ROOT_DIR . '/sys/ISBN.php';
 
-		$cleanIsbns = array();
+		$cleanIsbns = [];
 		// Get all the ISBNs and initialize the return value:
 		$isbns = $this->getISBNs();
 
@@ -222,8 +218,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @access  protected
 	 * @return  mixed
 	 */
-	protected function getCleanISSN()
-	{
+	protected function getCleanISSN() {
 		$issns = $this->getISSNs();
 		if (empty($issns)) {
 			return false;
@@ -235,8 +230,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $issn;
 	}
 
-	public function getCleanUPC()
-	{
+	public function getCleanUPC() {
 		$upcs = $this->getUPCs();
 		if (empty($upcs)) {
 			return false;
@@ -248,9 +242,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $upc;
 	}
 
-	public function getCleanUPCs()
-	{
-		$cleanUPCs = array();
+	public function getCleanUPCs() {
+		$cleanUPCs = [];
 		$upcs = $this->getUPCs();
 		if (empty($upcs)) {
 			return $cleanUPCs;
@@ -281,8 +274,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 */
 	abstract function getEditions();
 
-	public function getExploreMoreInfo()
-	{
+	public function getExploreMoreInfo() {
 		return [];
 	}
 
@@ -294,8 +286,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	/**
 	 * @return string
 	 */
-	public function getPrimaryFormat()
-	{
+	public function getPrimaryFormat() {
 		$formats = $this->getFormats();
 		return reset($formats);
 	}
@@ -307,13 +298,11 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 */
 	abstract function getFormatCategory();
 
-	public function getFountasPinnellLevel()
-	{
+	public function getFountasPinnellLevel() {
 		return $this->getGroupedWorkDriver()->getFountasPinnellLevel();
 	}
 
-	public function getGroupedWorkId()
-	{
+	public function getGroupedWorkId() {
 		if ($this->groupedWork == null) {
 			return null;
 		} else {
@@ -321,8 +310,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		}
 	}
 
-	public function getGroupedWorkDriver()
-	{
+	public function getGroupedWorkDriver() {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if ($this->groupedWorkDriver == null) {
 			$this->groupedWorkDriver = new GroupedWorkDriver($this->getPermanentId());
@@ -330,7 +318,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $this->groupedWorkDriver;
 	}
 
-	public function hasValidGroupedWorkDriver(){
+	public function hasValidGroupedWorkDriver() {
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		return $groupedWorkDriver != null && $groupedWorkDriver->isValid();
 	}
@@ -351,32 +339,27 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 */
 	public abstract function getISSNs();
 
-	public function getItemActions($itemInfo)
-	{
+	public function getItemActions($itemInfo) {
 		return [];
 	}
 
-	public function getLexileCode()
-	{
+	public function getLexileCode() {
 		return $this->getGroupedWorkDriver()->getLexileCode();
 	}
 
-	public function getLexileScore()
-	{
+	public function getLexileScore() {
 		return $this->getGroupedWorkDriver()->getLexileScore();
 	}
 
-	public function getLexileDisplayString()
-	{
+	public function getLexileDisplayString() {
 		return $this->getGroupedWorkDriver()->getLexileDisplayString();
 	}
 
 	public abstract function getLanguage();
 
-	public abstract function getNumHolds() : int;
+	public abstract function getNumHolds(): int;
 
-	public function getPermanentId()
-	{
+	public function getPermanentId() {
 		return $this->getGroupedWorkId();
 	}
 
@@ -408,20 +391,17 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @access  public
 	 * @return  array
 	 */
-	function getPublicationDetails()
-	{
+	function getPublicationDetails() {
 		$places = $this->getPlacesOfPublication();
 		$names = $this->getPublishers();
 		$dates = $this->getPublicationDates();
 
 		$i = 0;
-		$returnVal = array();
+		$returnVal = [];
 		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
-			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') .
-				(isset($names[$i]) ? $names[$i] . ' ' : '') .
-				(isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
 			$publicationInfo = trim(str_replace('  ', ' ', $publicationInfo));
 			$publicationInfo = str_replace(' ,', ',', $publicationInfo);
 			$publicationInfo = htmlentities($publicationInfo);
@@ -432,8 +412,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $returnVal;
 	}
 
-	public function getRatingData()
-	{
+	public function getRatingData() {
 		require_once ROOT_DIR . '/services/API/WorkAPI.php';
 		$workAPI = new WorkAPI();
 		return $workAPI->getRatingData($this->getGroupedWorkId());
@@ -451,28 +430,26 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	/**
 	 * Load Record actions when we don't have detailed information about the record yet
 	 */
-	public function getRecordActionsFromIndex()
-	{
+	public function getRecordActionsFromIndex() {
 		$groupedWork = $this->getGroupedWorkDriver();
 		if ($groupedWork != null) {
 			$relatedRecords = $groupedWork->getRelatedRecords();
 			foreach ($relatedRecords as $relatedRecord) {
 				if ($relatedRecord->id == $this->getIdWithSource()) {
 					return $relatedRecord->getActions();
-				}else if ($relatedRecord->id == strtolower($this->getIdWithSource())) {
+				} elseif ($relatedRecord->id == strtolower($this->getIdWithSource())) {
 					return $relatedRecord->getActions();
 				}
 			}
 		}
-		return array();
+		return [];
 	}
 
 	abstract public function getRecordType();
 
 	public abstract function getSemanticData();
 
-	public function getSeries()
-	{
+	public function getSeries() {
 		return $this->getGroupedWorkDriver()->getSeries();
 	}
 
@@ -491,8 +468,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		global $interface;
 		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
@@ -522,13 +498,11 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 *
 	 * @return  array
 	 */
-	public function getUPCs()
-	{
-		return array();
+	public function getUPCs() {
+		return [];
 	}
 
-	public function getUPC()
-	{
+	public function getUPC() {
 		// If UPCs is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
 		$upcs = $this->getUPCs();
@@ -543,18 +517,16 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @param IlsVolumeInfo[] $volumeData
 	 * @return int
 	 */
-	function getVolumeHolds(/** @noinspection PhpUnusedParameterInspection */ $volumeData)
-	{
+	function getVolumeHolds(/** @noinspection PhpUnusedParameterInspection */ $volumeData) {
 		return 0;
 	}
 
-	static $groupedWorks = array();
+	static $groupedWorks = [];
 
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */
-	public function loadGroupedWork()
-	{
+	public function loadGroupedWork() {
 		if ($this->groupedWork == null) {
 			global $timer;
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
@@ -574,8 +546,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		}
 	}
 
-	public function getBookcoverInfo()
-	{
+	public function getBookcoverInfo() {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookcoverInfo = new BookCoverInfo();
 		$bookcoverInfo->recordId = $this->getUniqueID();
@@ -587,18 +558,15 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		}
 	}
 
-	public function getCancelledIsbns()
-	{
+	public function getCancelledIsbns() {
 		return [];
 	}
 
-	public function hasMarcRecord()
-	{
+	public function hasMarcRecord() {
 		return false;
 	}
 
-	public function __destruct()
-	{
+	public function __destruct() {
 		$this->groupedWork = null;
 		$this->groupedWorkDriver = null;
 	}

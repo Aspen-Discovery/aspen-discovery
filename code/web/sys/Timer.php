@@ -1,5 +1,6 @@
 <?php
-class Timer{
+
+class Timer {
 	private $lastTime = 0;
 	private $firstTime = 0;
 	private $timingMessages;
@@ -7,29 +8,31 @@ class Timer{
 	private $minTimeToLog = 0;
 	private $timingsWritten = false;
 
-	public function __construct($startTime = null){
+	public function __construct($startTime = null) {
 		global $configArray;
-		if ($configArray){
-			if (isset($configArray['System']['minTimeToLog'])){
+		if ($configArray) {
+			if (isset($configArray['System']['minTimeToLog'])) {
 				$this->minTimeToLog = $configArray['System']['minTimeToLog'];
 			}
 		}
 
-		if (!$startTime) $startTime = microtime(true);
+		if (!$startTime) {
+			$startTime = microtime(true);
+		}
 		$this->lastTime = $startTime;
 		$this->firstTime = $startTime;
-		$this->timingMessages = array();
+		$this->timingMessages = [];
 	}
 
-	public function getElapsedTime(){
+	public function getElapsedTime() {
 		return microtime(true) - $this->firstTime;
 	}
 
-	public function logTime($message){
-		if ($this->timingsEnabled){
+	public function logTime($message) {
+		if ($this->timingsEnabled) {
 			$curTime = microtime(true);
 			$elapsedTime = round($curTime - $this->lastTime, 4);
-			if ($elapsedTime > $this->minTimeToLog){
+			if ($elapsedTime > $this->minTimeToLog) {
 				$totalElapsedTime = round($curTime - $this->firstTime, 4);
 				$this->timingMessages[] = "\"$message\",\"$elapsedTime\",\"$totalElapsedTime\"";
 			}
@@ -37,26 +40,26 @@ class Timer{
 		}
 	}
 
-	public function enableTimings($enable){
+	public function enableTimings($enable) {
 		$this->timingsEnabled = $enable;
 	}
 
-	public function writeTimings(){
-		if ($this->timingsEnabled && !$this->timingsWritten){
+	public function writeTimings() {
+		if ($this->timingsEnabled && !$this->timingsWritten) {
 			$this->timingsWritten = true;
 			$minTimeToLog = 0;
 
 			$curTime = microtime(true);
 			$elapsedTime = round($curTime - $this->lastTime, 4);
-			if ($elapsedTime > $minTimeToLog){
+			if ($elapsedTime > $minTimeToLog) {
 				$this->timingMessages[] = "Finished run: $curTime ($elapsedTime sec)";
 			}
 			$this->lastTime = $curTime;
 			global $logger;
-			$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
+			$totalElapsedTime = round(microtime(true) - $this->firstTime, 4);
 			if (isset($_SERVER['REQUEST_URI'])) {
 				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
-			}else{
+			} else {
 				$timingInfo = "\r\nTiming info\r\n";
 			}
 			$timingInfo .= implode("\r\n", $this->timingMessages);
@@ -66,7 +69,7 @@ class Timer{
 	}
 
 	function __destruct() {
-		if ($this->timingsEnabled){
+		if ($this->timingsEnabled) {
 			$this->writeTimings();
 		}
 	}

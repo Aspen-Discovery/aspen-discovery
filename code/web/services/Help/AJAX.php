@@ -5,19 +5,17 @@ global $configArray;
 
 class Help_AJAX extends Action {
 
-	function AJAX() {
-
-	}
+	function AJAX() {}
 
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (in_array($method, array('getSupportForm'))){
+		if (in_array($method, ['getSupportForm'])) {
 			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			echo $this->$method();
-		}else{
-			header ('Content-type: text/xml');
+		} else {
+			header('Content-type: text/xml');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
@@ -34,8 +32,7 @@ class Help_AJAX extends Action {
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

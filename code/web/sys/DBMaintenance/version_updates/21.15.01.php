@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_15_01() : array
-{
+function getUpdates21_15_01(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -16,7 +15,8 @@ function getUpdates21_15_01() : array
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'View Donations Reports', '', 6, 'Controls if the user can view the Donations Report.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Donations Reports'))",
-			]
-		], //donations_report_permissions
+			],
+		],
+		//donations_report_permissions
 	];
 }

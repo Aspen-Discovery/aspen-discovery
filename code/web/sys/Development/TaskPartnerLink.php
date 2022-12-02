@@ -25,29 +25,29 @@ class TaskPartnerLink extends DataObject {
 			$partnerList[$partner->id] = $partner->name;
 		}
 
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'partnerId' => array(
+				'description' => 'The unique id',
+			],
+			'partnerId' => [
 				'property' => 'partnerId',
 				'type' => 'enum',
 				'values' => $partnerList,
 				'label' => 'Partner',
 				'description' => 'The partner who requested the task',
-				'required' => true
-			),
-			'taskId' => array(
+				'required' => true,
+			],
+			'taskId' => [
 				'property' => 'taskId',
 				'type' => 'enum',
 				'values' => $taskList,
 				'label' => 'Task',
 				'description' => 'The task related to the partner',
-				'required' => true
-			),
-		);
+				'required' => true,
+			],
+		];
 	}
 }

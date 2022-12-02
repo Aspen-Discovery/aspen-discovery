@@ -17,8 +17,13 @@ class ConfigurationReader {
 		if (empty($pathToConfigurationFile) || $pathToConfigurationFile == '') {
 			$actualPath = dirname(__FILE__);
 			// Handle forward and back slashes for Windows/Linux compatibility:
-			$this->pathToConfigurationFile = str_replace(array("/sys/authn", "\sys\authn"),
-				array("/conf/config.ini", "\conf\config.ini"), $actualPath);
+			$this->pathToConfigurationFile = str_replace([
+				"/sys/authn",
+				"\sys\authn",
+			], [
+					"/conf/config.ini",
+					"\conf\config.ini",
+				], $actualPath);
 
 		} else {
 			$this->pathToConfigurationFile = $pathToConfigurationFile;

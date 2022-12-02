@@ -2,24 +2,20 @@
 
 require_once 'Solr.php';
 
-class CourseReservesSolrConnector extends Solr
-{
-	function __construct($host)
-	{
+class CourseReservesSolrConnector extends Solr {
+	function __construct($host) {
 		parent::__construct($host, 'course_reserves');
 	}
 
 	/**
 	 * @return string
 	 */
-	function getSearchSpecsFile()
-	{
+	function getSearchSpecsFile() {
 		return ROOT_DIR . '/../../sites/default/conf/courseReservesSearchSpecs.yaml';
 	}
 
 	/** return string */
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'courseReservesSearches';
 	}
 
@@ -29,8 +25,7 @@ class CourseReservesSolrConnector extends Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation)
-	{
+	public function getScopingFilters($searchLibrary, $searchLocation) {
 		global $solrScope;
 		$filter = [];
 		if (!$solrScope) {

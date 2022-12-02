@@ -1,7 +1,6 @@
 <?php
 
-class LibraryWebsiteIndexing extends DataObject
-{
+class LibraryWebsiteIndexing extends DataObject {
 	public $__table = 'library_website_indexing';
 
 	public $id;

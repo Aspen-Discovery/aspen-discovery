@@ -9,8 +9,7 @@ require_once ROOT_DIR . '/sys/Donations/DonationFormFields.php';
 require_once ROOT_DIR . '/sys/Donations/DonationEarmark.php';
 require_once ROOT_DIR . '/sys/Donations/DonationDedicationType.php';
 
-class DonationsSetting extends DataObject
-{
+class DonationsSetting extends DataObject {
 	public $__table = 'donations_settings';
 	public $id;
 	public $name;
@@ -22,7 +21,7 @@ class DonationsSetting extends DataObject
 
 	private $_libraries;
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		$donationsValuesStructure = DonationValue::getObjectStructure();
 		unset($donationsValuesStructure['donationSettingId']);
 
@@ -37,64 +36,105 @@ class DonationsSetting extends DataObject
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
-		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
-			'allowDonationsToBranch' => array('property'=>'allowDonationsToBranch', 'type'=>'checkbox', 'label'=>'Allow users to select a specific branch to send their donation to', 'description'=>'Whether or not users can specify that their donation goes to a specific branch.', 'note' => 'You can manage the visibility of branches in Location Settings'),
-			'allowDonationEarmark' => array('property'=>'allowDonationEarmark', 'type'=>'checkbox', 'label'=>'Allow users to choose an earmark for their donation', 'description'=>'Whether or not users can specify that their donation goes to a specific library need.', 'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();'),
-			'allowDonationDedication' => array('property'=>'allowDonationDedication', 'type'=>'checkbox', 'label'=>'Allow users to make their donation in dedication of someone', 'description'=>'Whether or not users can ask that their donation be dedicated to someone.', 'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();'),
-			'donationsContent' => array('property'=>'donationsContent', 'type'=>'html', 'label'=>'Page Content', 'description'=>'Content that is displayed on the page before the form.', 'hideInLists' => true),
-			'donationEmailTemplate' => array('property'=>'donationEmailTemplate', 'type'=>'html', 'label'=>'Email Template', 'description'=>'Content that is displayed in the user\'s email receipt.', 'hideInLists' => true),
+		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'A name for the settings',
+				'maxLength' => 50,
+			],
+			'allowDonationsToBranch' => [
+				'property' => 'allowDonationsToBranch',
+				'type' => 'checkbox',
+				'label' => 'Allow users to select a specific branch to send their donation to',
+				'description' => 'Whether or not users can specify that their donation goes to a specific branch.',
+				'note' => 'You can manage the visibility of branches in Location Settings',
+			],
+			'allowDonationEarmark' => [
+				'property' => 'allowDonationEarmark',
+				'type' => 'checkbox',
+				'label' => 'Allow users to choose an earmark for their donation',
+				'description' => 'Whether or not users can specify that their donation goes to a specific library need.',
+				'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();',
+			],
+			'allowDonationDedication' => [
+				'property' => 'allowDonationDedication',
+				'type' => 'checkbox',
+				'label' => 'Allow users to make their donation in dedication of someone',
+				'description' => 'Whether or not users can ask that their donation be dedicated to someone.',
+				'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();',
+			],
+			'donationsContent' => [
+				'property' => 'donationsContent',
+				'type' => 'html',
+				'label' => 'Page Content',
+				'description' => 'Content that is displayed on the page before the form.',
+				'hideInLists' => true,
+			],
+			'donationEmailTemplate' => [
+				'property' => 'donationEmailTemplate',
+				'type' => 'html',
+				'label' => 'Email Template',
+				'description' => 'Content that is displayed in the user\'s email receipt.',
+				'hideInLists' => true,
+			],
 
-			'donationValues' => array(
-				'property'      => 'donationValues',
-				'type'          => 'oneToMany',
-				'label'         => 'Donation Values',
-				'description'   => 'Determine what values are available for users to select when making a donation.',
-				'keyThis'       => 'donationSettingId',
-				'keyOther'      => 'donationSettingId',
+			'donationValues' => [
+				'property' => 'donationValues',
+				'type' => 'oneToMany',
+				'label' => 'Donation Values',
+				'description' => 'Determine what values are available for users to select when making a donation.',
+				'keyThis' => 'donationSettingId',
+				'keyOther' => 'donationSettingId',
 				'subObjectType' => 'DonationValue',
-				'structure'     => $donationsValuesStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-				'hideInLists'   => true
-			),
+				'structure' => $donationsValuesStructure,
+				'sortable' => true,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'hideInLists' => true,
+			],
 
-			'donationEarmarks' => array(
-				'property'      => 'donationEarmarks',
-				'type'          => 'oneToMany',
-				'label'         => 'Donation Earmarks',
-				'description'   => 'Determine what earmarks are available to users when making a donation.',
-				'keyThis'       => 'donationSettingId',
-				'keyOther'      => 'donationSettingId',
+			'donationEarmarks' => [
+				'property' => 'donationEarmarks',
+				'type' => 'oneToMany',
+				'label' => 'Donation Earmarks',
+				'description' => 'Determine what earmarks are available to users when making a donation.',
+				'keyThis' => 'donationSettingId',
+				'keyOther' => 'donationSettingId',
 				'subObjectType' => 'DonationEarmark',
-				'structure'     => $donationsEarmarksStructure,
-				'sortable'      => true,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-				'hideInLists'   => true
-			),
+				'structure' => $donationsEarmarksStructure,
+				'sortable' => true,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'hideInLists' => true,
+			],
 
-			'donationDedicationTypes' => array(
-				'property'      => 'donationDedicationTypes',
-				'type'          => 'oneToMany',
-				'label'         => 'Donation Dedication Types',
-				'description'   => 'Determine what types of dedications are available to users when making a donation.',
-				'keyThis'       => 'donationSettingId',
-				'keyOther'      => 'donationSettingId',
+			'donationDedicationTypes' => [
+				'property' => 'donationDedicationTypes',
+				'type' => 'oneToMany',
+				'label' => 'Donation Dedication Types',
+				'description' => 'Determine what types of dedications are available to users when making a donation.',
+				'keyThis' => 'donationSettingId',
+				'keyOther' => 'donationSettingId',
 				'subObjectType' => 'DonationDedicationType',
-				'structure'     => $donationsDedicationTypesStructure,
-				'sortable'      => false,
-				'storeDb'       => true,
-				'allowEdit'     => false,
-				'canEdit'       => false,
-				'hideInLists'   => true
-			),
+				'structure' => $donationsDedicationTypesStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'hideInLists' => true,
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
@@ -102,23 +142,23 @@ class DonationsSetting extends DataObject
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
 				'hideInLists' => false,
-			),
-		);
+			],
+		];
 
-		if (!UserAccount::userHasPermission('Library eCommerce Options')){
+		if (!UserAccount::userHasPermission('Library eCommerce Options')) {
 			unset($structure['libraries']);
 		}
 		return $structure;
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
+			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
 				$obj->donationSettingId = $this->id;
 				$obj->find();
-				while($obj->fetch()){
+				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
 				}
 			}
@@ -136,24 +176,23 @@ class DonationsSetting extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}elseif ($name == 'donationFormFields') {
+		} elseif ($name == 'donationFormFields') {
 			$this->_donationFormFields = $value;
-		}elseif ($name == 'donationValues') {
+		} elseif ($name == 'donationValues') {
 			$this->_donationValues = $value;
-		}elseif ($name == 'donationEarmarks') {
+		} elseif ($name == 'donationEarmarks') {
 			$this->_donationEarmarks = $value;
-		}elseif ($name == 'donationDedicationTypes') {
+		} elseif ($name == 'donationDedicationTypes') {
 			$this->_donationDedicationTypes = $value;
-		}else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
 
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -165,8 +204,7 @@ class DonationsSetting extends DataObject
 		return true;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -178,22 +216,22 @@ class DonationsSetting extends DataObject
 		return $ret;
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName){
+			foreach ($libraryList as $libraryId => $displayName) {
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
+				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the scope to this library
-					if ($library->donationSettingId != $this->id){
+					if ($library->donationSettingId != $this->id) {
 						$library->donationSettingId = $this->id;
 						$library->update();
 					}
-				}else{
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->donationSettingId == $this->id){
+					if ($library->donationSettingId == $this->id) {
 						$library->donationSettingId = -1;
 						$library->update();
 					}
@@ -204,18 +242,17 @@ class DonationsSetting extends DataObject
 	}
 
 	private $_donationFormFields;
-	public function setDonationFormFields($value)
-	{
+
+	public function setDonationFormFields($value) {
 		$this->_donationFormFields = $value;
 	}
 
 	/**
 	 * @return array|null
 	 */
-	public function getDonationFormFields()
-	{
+	public function getDonationFormFields() {
 		if (!isset($this->_donationFormFields) && $this->id) {
-			$this->_donationFormFields = array();
+			$this->_donationFormFields = [];
 
 			$donationFormFields = new DonationFormFields();
 			$donationFormFields->donationSettingId = $this->id;
@@ -230,18 +267,17 @@ class DonationsSetting extends DataObject
 	}
 
 	private $_donationValues;
-	public function setDonationValues($value)
-	{
+
+	public function setDonationValues($value) {
 		$this->_donationValues = $value;
 	}
 
 	/**
 	 * @return array|null
 	 */
-	public function getDonationValues()
-	{
+	public function getDonationValues() {
 		if (!isset($this->_donationValues) && $this->id) {
-			$this->_donationValues = array();
+			$this->_donationValues = [];
 
 			$donationValues = new DonationValue();
 			$donationValues->donationSettingId = $this->id;
@@ -257,17 +293,17 @@ class DonationsSetting extends DataObject
 	}
 
 	private $_donationEarmarks;
-	public function setDonationEarmarks($value)
-	{
+
+	public function setDonationEarmarks($value) {
 		$this->_donationEarmarks = $value;
 	}
+
 	/**
 	 * @return array|null
 	 */
-	public function getDonationEarmarks()
-	{
+	public function getDonationEarmarks() {
 		if (!isset($this->_donationEarmarks) && $this->id) {
-			$this->_donationEarmarks = array();
+			$this->_donationEarmarks = [];
 
 			$donationEarmarks = new DonationEarmark();
 			$donationEarmarks->donationSettingId = $this->id;
@@ -283,17 +319,17 @@ class DonationsSetting extends DataObject
 	}
 
 	private $_donationDedicationTypes;
-	public function setDonationDedications($value)
-	{
+
+	public function setDonationDedications($value) {
 		$this->_donationDedicationTypes = $value;
 	}
+
 	/**
 	 * @return array|null
 	 */
-	public function getDonationDedicationTypes()
-	{
+	public function getDonationDedicationTypes() {
 		if (!isset($this->_donationDedicationTypes) && $this->id) {
-			$this->_donationDedicationTypes = array();
+			$this->_donationDedicationTypes = [];
 
 			$donationDedications = new DonationDedicationType();
 			$donationDedications->donationSettingId = $this->id;
@@ -308,29 +344,29 @@ class DonationsSetting extends DataObject
 		return $this->_donationDedicationTypes;
 	}
 
-	public function saveDonationFormFields(){
-		if (isset ($this->_donationFormFields) && is_array($this->_donationFormFields)){
+	public function saveDonationFormFields() {
+		if (isset ($this->_donationFormFields) && is_array($this->_donationFormFields)) {
 			$this->saveOneToManyOptions($this->_donationFormFields, 'donationSettingId');
 			unset($this->_donationFormFields);
 		}
 	}
 
-	public function saveDonationValues(){
-		if (isset ($this->_donationValues) && is_array($this->_donationValues)){
+	public function saveDonationValues() {
+		if (isset ($this->_donationValues) && is_array($this->_donationValues)) {
 			$this->saveOneToManyOptions($this->_donationValues, 'donationSettingId');
 			unset($this->_donationValues);
 		}
 	}
 
-	public function saveDonationEarmarks(){
-		if (isset ($this->_donationEarmarks) && is_array($this->_donationEarmarks)){
+	public function saveDonationEarmarks() {
+		if (isset ($this->_donationEarmarks) && is_array($this->_donationEarmarks)) {
 			$this->saveOneToManyOptions($this->_donationEarmarks, 'donationSettingId');
 			unset($this->_donationEarmarks);
 		}
 	}
 
-	public function saveDonationDedicationTypes(){
-		if (isset ($this->_donationDedicationTypes) && is_array($this->_donationDedicationTypes)){
+	public function saveDonationDedicationTypes() {
+		if (isset ($this->_donationDedicationTypes) && is_array($this->_donationDedicationTypes)) {
 			$this->saveOneToManyOptions($this->_donationDedicationTypes, 'donationSettingId');
 			unset($this->_donationDedicationTypes);
 		}
@@ -339,22 +375,21 @@ class DonationsSetting extends DataObject
 	/**
 	 * @return Location[]
 	 */
-	public function getLocations() : array
-	{
+	public function getLocations(): array {
 		$locations = [];
 		$location = new Location();
 		$location->orderBy('isMainBranch desc');
 		$location->orderBy('displayName');
 		$location->libraryId = $this->libraryId;
 		$location->find();
-		while ($location->fetch()){
+		while ($location->fetch()) {
 			$locations[$location->locationId] = clone($location);
 		}
 		return $locations;
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultDonationForm(){
+	function defaultDonationForm() {
 		$defaultFieldsToDisplay = DonationFormFields::getDefaults($this->id);
 		$this->clearDonationFormFields();
 		$this->setDonationFormFields($defaultFieldsToDisplay);
@@ -364,7 +399,7 @@ class DonationsSetting extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultDonationValues(){
+	function defaultDonationValues() {
 		$defaultValuesToDisplay = DonationValue::getDefaults($this->id);
 		$this->setDonationValues($defaultValuesToDisplay);
 		$this->update();
@@ -373,7 +408,7 @@ class DonationsSetting extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultDonationEarmarks(){
+	function defaultDonationEarmarks() {
 		$defaultEarmarksToDisplay = DonationEarmark::getDefaults($this->id);
 		$this->setDonationEarmarks($defaultEarmarksToDisplay);
 		$this->update();
@@ -382,7 +417,7 @@ class DonationsSetting extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultDonationDedicationTypes(){
+	function defaultDonationDedicationTypes() {
 		$defaultDedicationsToDisplay = DonationDedicationType::getDefaults($this->id);
 		$this->setDonationDedications($defaultDedicationsToDisplay);
 		$this->update();
@@ -390,13 +425,13 @@ class DonationsSetting extends DataObject
 		die();
 	}
 
-	public function clearDonationFormFields(){
+	public function clearDonationFormFields() {
 		$this->clearOneToManyOptions('DonationsFormFields', 'donationSettingId');
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->donationFormFields = array();
+		$this->donationFormFields = [];
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Admin/DonationsSettings?objectAction=edit&id=' . $this->id;
 	}
 }

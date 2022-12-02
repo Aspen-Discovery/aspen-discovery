@@ -34,7 +34,7 @@ class ISBN {
 	 * Constructor
 	 *
 	 * @access  public
-	 * @param   string $raw Raw ISBN string to convert/validate.
+	 * @param string $raw Raw ISBN string to convert/validate.
 	 */
 	public function __construct($raw) {
 		// Strip out irrelevant characters:
@@ -55,9 +55,7 @@ class ISBN {
 				return $this->raw;
 				// Is it a Bookland EAN?  If so, we can convert to ISBN-10.
 			} else {
-				if (strlen($this->raw) == 13 &&
-						substr($this->raw, 0, 3) == '978'
-				) {
+				if (strlen($this->raw) == 13 && substr($this->raw, 0, 3) == '978') {
 					$start = substr($this->raw, 3, 9);
 					return $start . self::getISBN10CheckDigit($start);
 				}

@@ -13,8 +13,7 @@
  *                  pass into <link> tag.
  * -------------------------------------------------------------
  */
-function smarty_function_css($params, &$smarty)
-{
+function smarty_function_css($params, &$smarty) {
 	// Extract details from the config file and parameters so we can find CSS files:
 	global $configArray;
 	global $interface;

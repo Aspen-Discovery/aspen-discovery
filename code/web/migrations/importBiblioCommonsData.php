@@ -10,13 +10,13 @@ global $serverName;
 
 set_time_limit(-1);
 
-ini_set('memory_limit','4G');
+ini_set('memory_limit', '4G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/bibliocommons_export/';
 
-if (!file_exists($exportPath)){
+if (!file_exists($exportPath)) {
 	echo("Could not find export path " . $exportPath . "\n");
-}else{
+} else {
 	$existingUsers = [];
 	$missingUsers = [];
 	$validRecords = []; // An array mapping the record id to the grouped work id
@@ -34,8 +34,7 @@ if (!file_exists($exportPath)){
 	}
 }
 
-function importRatings($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords)
-{
+function importRatings($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords) {
 	echo("Starting to import ratings\n");
 
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
@@ -54,42 +53,42 @@ function importRatings($startTime, $exportPath, &$existingUsers, &$missingUsers,
 		//$createdDate = strtotime($patronRatingRow[4]);
 		$updatedDate = strtotime($patronRatingRow[5]);
 
-		if ($isPrivate == 'FALSE'){
+		if ($isPrivate == 'FALSE') {
 			$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers, $usersWithSearchPermissions);
-			if ($userId == -1){
+			if ($userId == -1) {
 				$ratingsSkipped++;
 				continue;
 			}
 
 			$groupedWorkForRecordId = getGroupedWorkForRecordId($bibNumber, $validRecords, $invalidRecords);
-			if ($groupedWorkForRecordId != null){
+			if ($groupedWorkForRecordId != null) {
 				$userReview = new UserWorkReview();
 				$userReview->userId = $userId;
 				$userReview->groupedRecordPermanentId = $groupedWorkForRecordId;
-				if (!$userReview->find(true)){
+				if (!$userReview->find(true)) {
 					//The rating does not exist, insert a new one
 					$userReview->importedFrom = 'BiblioCommons';
 					$userReview->dateRated = $updatedDate;
-					if ($rating >= 9){
+					if ($rating >= 9) {
 						$userReview->rating = 5;
-					}elseif ($rating >= 7){
+					} elseif ($rating >= 7) {
 						$userReview->rating = 4;
-					}elseif ($rating >= 5){
+					} elseif ($rating >= 5) {
 						$userReview->rating = 3;
-					}elseif ($rating >= 3){
+					} elseif ($rating >= 3) {
 						$userReview->rating = 2;
-					}else{
+					} else {
 						$userReview->rating = 1;
 					}
 					$userReview->insert();
 				}
-			}else{
+			} else {
 				$ratingsSkipped++;
 				continue;
 			}
 		}
 
-		if ($numImports % 2500 == 0){
+		if ($numImports % 2500 == 0) {
 			gc_collect_cycles();
 			ob_flush();
 			usleep(10);
@@ -107,8 +106,7 @@ function importRatings($startTime, $exportPath, &$existingUsers, &$missingUsers,
 	fclose($patronsRatingsHnd);
 }
 
-function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords)
-{
+function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords) {
 	echo("Starting to import patron shelves\n");
 
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -134,12 +132,12 @@ function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missing
 
 		//Figure out the user for the list
 		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers, $usersWithSearchPermissions);
-		if ($userId == -1){
+		if ($userId == -1) {
 			$usersSkipped++;
 			continue;
 		}
 
-		switch ($listType){
+		switch ($listType) {
 			case "COMPLETED":
 				$listName = "Completed";
 				break;
@@ -153,13 +151,13 @@ function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missing
 				$listName = $listType;
 		}
 
-		if (!array_key_exists($userId . $listName, $existingLists)){
+		if (!array_key_exists($userId . $listName, $existingLists)) {
 			$userList = new UserList();
 			$userList->user_id = $userId;
 			$userList->title = $listName;
-			if ($userList->find(true)){
+			if ($userList->find(true)) {
 				$existingLists[$userId . $listName] = $userList;
-			}else{
+			} else {
 				$userList = new UserList();
 				$userList->user_id = $userId;
 				$userList->created = $createdDate;
@@ -173,25 +171,25 @@ function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missing
 				$userList->insert();
 				$existingLists[$userId . $listName] = $userList;
 			}
-		}else{
+		} else {
 			$userList = $existingLists[$userId . $listName];
 		}
 
 		//Get the grouped work id for the bib record
 		$groupedWorkForRecordId = getGroupedWorkForRecordId($bibNumber, $validRecords, $invalidRecords);
-		if ($groupedWorkForRecordId != null){
+		if ($groupedWorkForRecordId != null) {
 			$listEntry = new UserListEntry();
 			$listEntry->listId = $userList->id;
 			$listEntry->source = 'GroupedWork';
 			$listEntry->sourceId = $groupedWorkForRecordId;
-			if (!$listEntry->find(true)){
+			if (!$listEntry->find(true)) {
 				$listEntry->importedFrom = 'BiblioCommons';
 				$listEntry->dateAdded = $createdDate;
 				$listEntry->insert(false);
 			}
 		}
 
-		if ($numImports % 2500 == 0){
+		if ($numImports % 2500 == 0) {
 			gc_collect_cycles();
 			ob_flush();
 			usleep(10);
@@ -208,8 +206,7 @@ function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missing
 	echo("Processed $numImports Shelves in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 }
 
-function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords)
-{
+function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords) {
 	echo("Starting to import staff lists\n");
 
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -225,7 +222,7 @@ function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUse
 	while ($patronListRow = fgetcsv($staffListfHnd, 0, ',', '"', '"')) {
 		$numImports++;
 
-		if (sizeof($patronListRow) != 11){
+		if (sizeof($patronListRow) != 11) {
 			//We got a bad export, likely
 			continue;
 		}
@@ -243,18 +240,18 @@ function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUse
 
 		//Figure out the user for the list
 		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers, $usersWithSearchPermissions);
-		if ($userId == -1){
+		if ($userId == -1) {
 			$removedLists[$listId] = $listId;
 			continue;
 		}
 
-		if (!array_key_exists($listId, $existingLists)){
+		if (!array_key_exists($listId, $existingLists)) {
 			$userList = new UserList();
 			$userList->user_id = $userId;
 			$userList->title = $listName;
-			if ($userList->find(true)){
+			if ($userList->find(true)) {
 				$existingLists[$listId] = $userList->id;
-			}else{
+			} else {
 				$userList = new UserList();
 				$userList->user_id = $userId;
 				$userList->created = $createdDate;
@@ -274,12 +271,12 @@ function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUse
 
 		//Get the grouped work id for the bib record
 		$groupedWorkForRecordId = getGroupedWorkForRecordId($bibNumber, $validRecords, $invalidRecords);
-		if ($groupedWorkForRecordId != null){
+		if ($groupedWorkForRecordId != null) {
 			$listEntry = new UserListEntry();
 			$listEntry->listId = $userListId;
 			$listEntry->source = 'GroupedWork';
 			$listEntry->sourceId = $groupedWorkForRecordId;
-			if (!$listEntry->find(true)){
+			if (!$listEntry->find(true)) {
 				$listEntry->dateAdded = $createdDate;
 				$listEntry->notes = $userAnnotation;
 				$listEntry->weight = $index;
@@ -289,7 +286,7 @@ function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUse
 			$listEntry->__destruct();
 		}
 
-		if ($numImports % 2500 == 0){
+		if ($numImports % 2500 == 0) {
 			gc_collect_cycles();
 			ob_flush();
 			usleep(10);
@@ -307,33 +304,32 @@ function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUse
 	echo("Removed " . count($removedLists) . " lists because the user is not valid\n");
 }
 
-function getGroupedWorkForRecordId($bibNumber, &$validRecords, &$invalidRecords) : ?string
-{
+function getGroupedWorkForRecordId($bibNumber, &$validRecords, &$invalidRecords): ?string {
 	require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 	require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-	if (array_key_exists($bibNumber, $validRecords)){
+	if (array_key_exists($bibNumber, $validRecords)) {
 		return $validRecords[$bibNumber];
-	}elseif (array_key_exists($bibNumber, $invalidRecords)){
+	} elseif (array_key_exists($bibNumber, $invalidRecords)) {
 		return null;
-	}else{
+	} else {
 		$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
 		$groupedWorkPrimaryIdentifier->type = 'ils';
 		$groupedWorkPrimaryIdentifier->identifier = $bibNumber;
-		if ($groupedWorkPrimaryIdentifier->find(true)){
+		if ($groupedWorkPrimaryIdentifier->find(true)) {
 			$groupedWork = new GroupedWork();
 			$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
-			if ($groupedWork->find(true)){
+			if ($groupedWork->find(true)) {
 				$validRecords[$bibNumber] = $groupedWork->permanent_id;
 				$groupedWork->__destruct();
 				$groupedWorkPrimaryIdentifier->__destruct();
 				return $groupedWork->permanent_id;
-			}else{
+			} else {
 				$invalidRecords[$bibNumber] = true;
 				$groupedWork->__destruct();
 				$groupedWorkPrimaryIdentifier->__destruct();
 				return $groupedWork->permanent_id;
 			}
-		}else{
+		} else {
 			$invalidRecords[$bibNumber] = true;
 			$groupedWorkPrimaryIdentifier->__destruct();
 			return null;
@@ -341,24 +337,24 @@ function getGroupedWorkForRecordId($bibNumber, &$validRecords, &$invalidRecords)
 	}
 }
 
-function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$usersWithSearchPermissions) : int {
+function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$usersWithSearchPermissions): int {
 	if (array_key_exists($userBarcode, $missingUsers)) {
 		$userId = -1;
-	}elseif (array_key_exists($userBarcode, $existingUsers)){
+	} elseif (array_key_exists($userBarcode, $existingUsers)) {
 		$userId = $existingUsers[$userBarcode];
-	}else{
+	} else {
 		$user = new User();
 		$user->cat_username = $userBarcode;
-		if (!$user->find(true)){
+		if (!$user->find(true)) {
 			$user = UserAccount::findNewUser($userBarcode);
-			if ($user == false){
+			if ($user == false) {
 				$missingUsers[$userBarcode] = $userBarcode;
 				echo("Could not find user for $userBarcode\r\n");
 				return -1;
 			}
 		}
 		$existingUsers[$userBarcode] = $user->id;
-		if ($user->hasPermission('Include Lists In Search Results')){
+		if ($user->hasPermission('Include Lists In Search Results')) {
 			$usersWithSearchPermissions[$userBarcode] = true;
 		}
 		$userId = $user->id;
@@ -366,8 +362,8 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$us
 	return $userId;
 }
 
-function cleancsv($field){
-	if ($field == '\N'){
+function cleancsv($field) {
+	if ($field == '\N') {
 		return null;
 	}
 	$field = str_replace('\"', '"', $field);

@@ -4,76 +4,85 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 
-class CloudLibrary_Scopes extends ObjectEditor
-{
-	function getObjectType() : string{
+class CloudLibrary_Scopes extends ObjectEditor {
+	function getObjectType(): string {
 		return 'CloudLibraryScope';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Scopes';
 	}
-	function getModule() : string{
+
+	function getModule(): string {
 		return 'CloudLibrary';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'cloudLibrary Scopes';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new CloudLibraryScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
+		$objectList = [];
+		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
-	function getObjectStructure() : array{
+
+	function getObjectStructure(): array {
 		return CloudLibraryScope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function canAddNew(){
+
+	function canAddNew() {
 		return true;
 	}
-	function canDelete(){
+
+	function canDelete() {
 		return true;
 	}
-	function getAdditionalObjectActions($existingObject) : array{
+
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string{
+	function getInstructions(): string {
 		return '';
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLibraries(){
+	function addToAllLibraries() {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
-		if ($cloudLibraryScope->find(true)){
+		if ($cloudLibraryScope->find(true)) {
 			$existingLibrariesCloudLibraryScopes = $cloudLibraryScope->getLibraries();
 			$library = new Library();
 			$library->find();
-			while ($library->fetch()){
+			while ($library->fetch()) {
 				$alreadyAdded = false;
-				foreach($existingLibrariesCloudLibraryScopes as $libraryCloudLibraryScope){
-					if ($libraryCloudLibraryScope->libraryId == $library->libraryId){
+				foreach ($existingLibrariesCloudLibraryScopes as $libraryCloudLibraryScope) {
+					if ($libraryCloudLibraryScope->libraryId == $library->libraryId) {
 						$alreadyAdded = true;
 					}
 				}
-				if (!$alreadyAdded){
+				if (!$alreadyAdded) {
 					$newLibraryCloudLibraryScope = new LibraryCloudLibraryScope();
 					$newLibraryCloudLibraryScope->libraryId = $library->libraryId;
 					$newLibraryCloudLibraryScope->scopeId = $scopeId;
@@ -87,34 +96,33 @@ class CloudLibrary_Scopes extends ObjectEditor
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLibraries()
-	{
+	function clearLibraries() {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
-		if ($cloudLibraryScope->find(true)){
+		if ($cloudLibraryScope->find(true)) {
 			$cloudLibraryScope->clearLibraries();
 		}
 		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
 	}
 
 	/** @noinspection PhpUnused */
-	function addToAllLocations(){
+	function addToAllLocations() {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
-		if ($cloudLibraryScope->find(true)){
+		if ($cloudLibraryScope->find(true)) {
 			$existingLocationCloudLibraryScopes = $cloudLibraryScope->getLocations();
 			$location = new Location();
 			$location->find();
-			while ($location->fetch()){
+			while ($location->fetch()) {
 				$alreadyAdded = false;
-				foreach($existingLocationCloudLibraryScopes as $locationCloudLibraryScope){
-					if ($locationCloudLibraryScope->locationId == $location->locationId){
+				foreach ($existingLocationCloudLibraryScopes as $locationCloudLibraryScope) {
+					if ($locationCloudLibraryScope->locationId == $location->locationId) {
 						$alreadyAdded = true;
 					}
 				}
-				if (!$alreadyAdded){
+				if (!$alreadyAdded) {
 					$newLocationCloudLibraryScope = new LocationCloudLibraryScope();
 					$newLocationCloudLibraryScope->locationId = $location->locationId;
 					$newLocationCloudLibraryScope->scopeId = $scopeId;
@@ -128,19 +136,17 @@ class CloudLibrary_Scopes extends ObjectEditor
 	}
 
 	/** @noinspection PhpUnused */
-	function clearLocations()
-	{
+	function clearLocations() {
 		$scopeId = $_REQUEST['id'];
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->id = $scopeId;
-		if ($cloudLibraryScope->find(true)){
+		if ($cloudLibraryScope->find(true)) {
 			$cloudLibraryScope->clearLocations();
 		}
 		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'cloudLibrary');
@@ -148,13 +154,11 @@ class CloudLibrary_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'cloud_library';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Cloud Library');
 	}
 }

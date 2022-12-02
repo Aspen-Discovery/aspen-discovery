@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class BlockPatronAccountLink extends DataObject
-{
+class BlockPatronAccountLink extends DataObject {
 
 	public $__table = 'user_link_blocks';
 	public $id;
@@ -22,8 +21,7 @@ class BlockPatronAccountLink extends DataObject
 	 * @return bool
 	 * @see DB/DB_DataObject::fetch()
 	 */
-	function fetch($includeBarCodes = true)
-	{
+	function fetch($includeBarCodes = true) {
 		$return = parent::fetch();
 		if (!is_null($return) & $includeBarCodes) {
 			// Default values (clear out any previous values
@@ -50,8 +48,7 @@ class BlockPatronAccountLink extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update()
-	{
+	public function update() {
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) {
 			$this->setLastError("Could not find a user for the blocked barcode that was provided");
@@ -69,8 +66,7 @@ class BlockPatronAccountLink extends DataObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert()
-	{
+	public function insert() {
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) {
 			$this->setLastError("Could not find a user for the blocked barcode that was provided");
@@ -83,8 +79,7 @@ class BlockPatronAccountLink extends DataObject
 		return parent::insert();
 	}
 
-	private function getAccountIds()
-	{
+	private function getAccountIds() {
 		// Get Account Ids for the barcodes
 		$barcode = $this->getBarcode();
 		if ($this->_primaryAccountBarCode) {
@@ -101,14 +96,12 @@ class BlockPatronAccountLink extends DataObject
 		}
 	}
 
-	private function getBarcode()
-	{
+	private function getBarcode() {
 		global $configArray;
 		return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
 	}
 
-	static function getObjectStructure() : array
-	{
+	static function getObjectStructure(): array {
 		return [
 			[
 				'property' => 'id',
@@ -151,8 +144,7 @@ class BlockPatronAccountLink extends DataObject
 		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		return true;
 	}
 }

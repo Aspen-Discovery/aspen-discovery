@@ -5,26 +5,28 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class Union_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
-	function getCombinedResults()
-	{
+	function getCombinedResults() {
 		$source = $_REQUEST['source'];
 		$numberOfResults = $_REQUEST['numberOfResults'];
 		$sectionId = $_REQUEST['id'];
-		list($className, $id) = explode(':', $sectionId);
+		[
+			$className,
+			$id,
+		] = explode(':', $sectionId);
 		$sectionObject = null;
-		if ($className == 'LibraryCombinedResultSection'){
+		if ($className == 'LibraryCombinedResultSection') {
 			$sectionObject = new LibraryCombinedResultSection();
 			$sectionObject->id = $id;
 			$sectionObject->find(true);
-		}elseif ($className == 'LocationCombinedResultSection'){
+		} elseif ($className == 'LocationCombinedResultSection') {
 			$sectionObject = new LocationCombinedResultSection();
 			$sectionObject->id = $id;
 			$sectionObject->find(true);
-		}else{
-			return array(
-					'success' => false,
-					'error' => 'Invalid section id passed in'
-			);
+		} else {
+			return [
+				'success' => false,
+				'error' => 'Invalid section id passed in',
+			];
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		$searchType = $_REQUEST['searchType'];
@@ -34,33 +36,44 @@ class Union_AJAX extends JSON_Action {
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
 		if ($source == 'catalog') {
 			$results = $this->getResultsFromSolrSearcher('GroupedWork', $searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'dpla'){
+		} elseif ($source == 'dpla') {
 			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'ebsco_eds') {
+		} elseif ($source == 'ebsco_eds') {
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'ebscohost') {
+		} elseif ($source == 'ebscohost') {
 			$results = $this->getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'events') {
+		} elseif ($source == 'events') {
 			$results = $this->getResultsFromSolrSearcher('Events', $searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'genealogy') {
+		} elseif ($source == 'genealogy') {
 			$results = $this->getResultsFromSolrSearcher('Genealogy', $searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'lists') {
+		} elseif ($source == 'lists') {
 			$results = $this->getResultsFromSolrSearcher('Lists', $searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'open_archives') {
+		} elseif ($source == 'open_archives') {
 			$results = $this->getResultsFromSolrSearcher('OpenArchives', $searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'prospector'){
+		} elseif ($source == 'prospector') {
 			$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'websites') {
+		} elseif ($source == 'websites') {
 			$results = $this->getResultsFromSolrSearcher('Websites', $searchTerm, $numberOfResults, $fullResultsLink);
-		}else{
-			$results = "<div>" . translate(['text'=>'Showing %1% for %2%.', 1=> $numberOfResults, 2=>$source, 'isPublicFacing'=>true, 'translateParameters'=>true]) . "</div>";
+		} else {
+			$results = "<div>" . translate([
+					'text' => 'Showing %1% for %2%.',
+					1 => $numberOfResults,
+					2 => $source,
+					'isPublicFacing' => true,
+					'translateParameters' => true,
+				]) . "</div>";
 		}
-		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>" . translate(['text'=>'Full Results from %1%', 1=>$sectionObject->displayName, 'isPublicFacing'=>true, 'translateParameters'=>true]) . "</a></div>";
+		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>" . translate([
+				'text' => 'Full Results from %1%',
+				1 => $sectionObject->displayName,
+				'isPublicFacing' => true,
+				'translateParameters' => true,
+			]) . "</a></div>";
 
-		return array(
-				'success' => true,
-				'results' => $results
-		);
+		return [
+			'success' => true,
+			'results' => $results,
+		];
 	}
 
 	/**
@@ -70,24 +83,23 @@ class Union_AJAX extends JSON_Action {
 	 * @param $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromSolrSearcher($searcherType, $searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromSolrSearcher($searcherType, $searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		/** @var SearchObject_SolrSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($searcherType);
 		//$searchObject->init('local', $searchTerm);
 		$searchObject->setLimit($numberOfResults);
-		$searchObject->setSearchTerms(array(
-				'index' => $searchObject->getDefaultIndex(),
-				'lookfor' => $searchTerm
-		));
+		$searchObject->setSearchTerms([
+			'index' => $searchObject->getDefaultIndex(),
+			'lookfor' => $searchTerm,
+		]);
 		$searchObject->processSearch(true, false);
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultsHTML();
-		if ($summary['resultTotal'] == 0){
+		if ($summary['resultTotal'] == 0) {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-		}else{
+		} else {
 			$formattedNumResults = number_format($summary['resultTotal']);
 			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 
@@ -98,21 +110,21 @@ class Union_AJAX extends JSON_Action {
 		return $results;
 	}
 
-	private function getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink){
+	private function getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		if ($searchTerm == ''){
+		if ($searchTerm == '') {
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
-		}else {
+		} else {
 			/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
 			$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
 			$ebscohostSearcher->init();
-			$ebscohostSearcher->setSearchTerms(array(
+			$ebscohostSearcher->setSearchTerms([
 				'index' => $ebscohostSearcher->getDefaultIndex(),
-				'lookfor' => $searchTerm
-			));
+				'lookfor' => $searchTerm,
+			]);
 			$searchSettings = $ebscohostSearcher->getSearchSettings();
-			if ($searchSettings != null){
+			if ($searchSettings != null) {
 				foreach ($searchSettings->getDatabases() as $database) {
 					if ($database->allowSearching && $database->showInCombinedResults) {
 						$ebscohostSearcher->addFilter('db:' . $database->shortName);
@@ -145,20 +157,19 @@ class Union_AJAX extends JSON_Action {
 	 * @param string $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		if ($searchTerm == ''){
+		if ($searchTerm == '') {
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
-		}else {
+		} else {
 			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			$edsSearcher->init();
-			$edsSearcher->setSearchTerms(array(
+			$edsSearcher->setSearchTerms([
 				'index' => $edsSearcher->getDefaultIndex(),
-				'lookfor' => $searchTerm
-			));
+				'lookfor' => $searchTerm,
+			]);
 			$edsSearcher->processSearch(true, false);
 			$summary = $edsSearcher->getResultSummary();
 			$records = $edsSearcher->getCombinedResultHTML();
@@ -185,16 +196,15 @@ class Union_AJAX extends JSON_Action {
 	 * @param $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
 		$dpla = new DPLA();
 		$dplaResults = $dpla->getDPLAResults($searchTerm, $numberOfResults);
-		if (!isset($dplaResults['resultTotal']) || ($dplaResults['resultTotal'] == 0)){
+		if (!isset($dplaResults['resultTotal']) || ($dplaResults['resultTotal'] == 0)) {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-		}else {
+		} else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
 			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
@@ -210,19 +220,20 @@ class Union_AJAX extends JSON_Action {
 	 * @param $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-		if ($searchTerm == ''){
+		if ($searchTerm == '') {
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
-		}else {
+		} else {
 			$prospector = new Prospector();
-			$searchTerms = array(array(
+			$searchTerms = [
+				[
 					'index' => $searchType,
-					'lookfor' => $searchTerm
-			));
+					'lookfor' => $searchTerm,
+				],
+			];
 			$prospectorResults = $prospector->getTopSearchResults($searchTerms, $numberOfResults);
 			global $interface;
 			if ($prospectorResults['resultTotal'] == 0) {

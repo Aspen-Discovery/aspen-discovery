@@ -4,18 +4,16 @@ require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
-class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
-{
+class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher {
 	// Facets information
-	protected $allFacetSettings = array();
+	protected $allFacetSettings = [];
 
 	/**
 	 * Constructor. Initialise some details about the server
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		// Call base class constructor
 		parent::__construct();
 
@@ -40,8 +38,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) &&
-			is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -52,7 +49,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'relevance' => 'Best Match',
 			'lastName' => 'Last Name',
 			'firstName' => 'First Name',
@@ -60,7 +57,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			'deathYear asc' => "Year of Death Asc",
 			'birthYear desc' => 'Year of Birth',
 			'birthYear asc' => "Year of Birth Asc",
-		);
+		];
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -77,8 +74,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @param string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = 'genealogy')
-	{
+	public function init($searchSource = 'genealogy') {
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');
 
@@ -92,7 +88,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if (($restored instanceof AspenError)) {
+		} elseif (($restored instanceof AspenError)) {
 			return false;
 		}
 
@@ -126,8 +122,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initAdvancedFacets()
-	{
+	public function initAdvancedFacets() {
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
@@ -143,10 +138,10 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
+		$this->searchTerms[] = [
 			'index' => $this->getDefaultIndex(),
-			'lookfor' => ""
-		);
+			'lookfor' => "",
+		];
 
 		return true;
 	}
@@ -157,8 +152,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  string   The searched index
 	 */
-	public function getSearchIndex()
-	{
+	public function getSearchIndex() {
 		// Use normal parent method for non-advanced searches.
 		if ($this->searchType == $this->basicSearchType) {
 			return parent::getSearchIndex();
@@ -173,8 +167,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  array   recordSet
 	 */
-	public function getResultRecordSet()
-	{
+	public function getResultRecordSet() {
 		//Marmot add shortIds without dot for use in display.
 		$recordSet = $this->indexResult['response']['docs'];
 		foreach ($recordSet as $key => $record) {
@@ -189,8 +182,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @param array $ids Record IDs to load
 	 */
-	public function setQueryIDs($ids)
-	{
+	public function setQueryIDs($ids) {
 		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
 	}
 
@@ -200,8 +192,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @param string $newQuery Query string
 	 */
-	public function setQueryString($newQuery)
-	{
+	public function setQueryString($newQuery) {
 		$this->query = $newQuery;
 	}
 
@@ -211,13 +202,14 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @param string $newSort Sort string
 	 */
-	public function setFacetSortOrder($newSort)
-	{
+	public function setFacetSortOrder($newSort) {
 		// As of Solr 1.4 valid values are:
 		// 'count' = relevancy ranked
 		// 'index' = index order, most likely alphabetical
 		// more info : http://wiki.apache.org/solr/SimpleFacetParameters#facet.sort
-		if ($newSort == 'count' || $newSort == 'index') $this->facetSort = $newSort;
+		if ($newSort == 'count' || $newSort == 'index') {
+			$this->facetSort = $newSort;
+		}
 	}
 
 	/**
@@ -227,8 +219,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  array    Sort value => description array.
 	 */
-	protected function getSortOptions()
-	{
+	protected function getSortOptions() {
 		// Everywhere else -- use normal default behavior
 		return parent::getSortOptions();
 	}
@@ -239,8 +230,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  string    URL
 	 */
-	public function getRSSUrl()
-	{
+	public function getRSSUrl() {
 		// Stash our old data for a minute
 		$oldView = $this->view;
 		$oldPage = $this->page;
@@ -263,8 +253,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  string    URL
 	 */
-	public function getExcelUrl()
-	{
+	public function getExcelUrl() {
 		// Stash our old data for a minute
 		$oldView = $this->view;
 		$oldPage = $this->page;
@@ -287,8 +276,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  protected
 	 * @return  string   Base URL
 	 */
-	protected function getBaseUrl()
-	{
+	protected function getBaseUrl() {
 		// Base URL is different for author searches:
 //		return '/Genealogy/Results?';
 		return '/Union/Search?';
@@ -303,15 +291,14 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null)
-	{
+	public function getFacetList($filter = null) {
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
 			$filter = $this->getFacetConfig();
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])) {
@@ -337,11 +324,11 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			}
 
 			// Initialize the settings for the current field
-			$list[$field] = array();
+			$list[$field] = [];
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list'] = array();
+			$list[$field]['list'] = [];
 
 			// Should we translate values for the current facet?
 			$translate = $facetConfig[$field]->translate;
@@ -350,9 +337,13 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings = array();
+				$currentSettings = [];
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true,'isMetadata'=>true]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate([
+					'text' => $facet[0],
+					'isPublicFacing' => true,
+					'isMetadata' => true,
+				]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -392,8 +383,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * Turn our results into an Excel document
 	 * @param null|array $result
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		try {
 			// First, get the search results if none were provided
 			// (we'll go for 50 at a time)
@@ -483,8 +473,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @return  array               The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecord($id)
-	{
+	function getRecord($id) {
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 	}
 
@@ -495,8 +484,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
-	protected function getSearchParams()
-	{
+	protected function getSearchParams() {
 		$params = parent::getSearchParams();
 
 		if (isset($_REQUEST['searchIndex'])) {
@@ -509,34 +497,37 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		return $params;
 	}
 
-	public function setPrimarySearch($flag)
-	{
+	public function setPrimarySearch($flag) {
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			"GenealogyKeyword" => translate(['text'=>"Keyword", 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			"GenealogyName" => translate(['text'=>"Name", 'isPublicFacing'=>true, 'inAttribute'=>true])
+			"GenealogyKeyword" => translate([
+				'text' => "Keyword",
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			"GenealogyName" => translate([
+				'text' => "Name",
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
 	/** @return PersonRecord */
-	public function getRecordDriverForResult($current)
-	{
+	public function getRecordDriverForResult($current) {
 		require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
 		return new PersonRecord($current);
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'genealogySearches';
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -545,8 +536,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'GenealogyName') {
 			$suggestionHandler = 'name_suggest';
@@ -554,14 +544,12 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	protected function getFieldsToReturn()
-	{
+	protected function getFieldsToReturn() {
 		return 'id,recordtype,title,comments,firstName,lastName,middleName,maidenName,otherName,nickName,fullName,veteranOf,birthDate,birthYear,deathYear,ageAtDeath,cemeteryName,mortuaryName,sex,race,causeOfDeath,obituaryDate,obituarySource,obituaryText,spouseName,marriageDate,marriageComments';
 	}
 
 	//TODO: Convert this to use definitions
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$birthYear = new LibraryFacetSetting();
@@ -634,12 +622,11 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'Genealogy';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'GenealogyKeyword';
 	}
 }

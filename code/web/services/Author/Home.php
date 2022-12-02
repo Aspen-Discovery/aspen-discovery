@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/ResultsAction.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
-class Author_Home extends ResultsAction
-{
-	function launch()
-	{
+class Author_Home extends ResultsAction {
+	function launch() {
 		global $interface;
 		global $library;
 
@@ -20,23 +18,23 @@ class Author_Home extends ResultsAction
 		}
 
 		//Check to see if the year has been set and if so, convert to a filter and resend.
-		$dateFilters = array('publishDate');
-		foreach ($dateFilters as $dateFilter){
-			if ((isset($_REQUEST[$dateFilter . 'yearfrom']) && !empty($_REQUEST[$dateFilter . 'yearfrom'])) || (isset($_REQUEST[$dateFilter . 'yearto']) && !empty($_REQUEST[$dateFilter . 'yearto']))){
+		$dateFilters = ['publishDate'];
+		foreach ($dateFilters as $dateFilter) {
+			if ((isset($_REQUEST[$dateFilter . 'yearfrom']) && !empty($_REQUEST[$dateFilter . 'yearfrom'])) || (isset($_REQUEST[$dateFilter . 'yearto']) && !empty($_REQUEST[$dateFilter . 'yearto']))) {
 				$queryParams = $_GET;
 				$yearFrom = preg_match('/^\d{2,4}$/', $_REQUEST[$dateFilter . 'yearfrom']) ? $_REQUEST[$dateFilter . 'yearfrom'] : '*';
 				$yearTo = preg_match('/^\d{2,4}$/', $_REQUEST[$dateFilter . 'yearto']) ? $_REQUEST[$dateFilter . 'yearto'] : '*';
-				if (strlen($yearFrom) == 2){
+				if (strlen($yearFrom) == 2) {
 					$yearFrom = '19' . $yearFrom;
-				}else if (strlen($yearFrom) == 3){
+				} elseif (strlen($yearFrom) == 3) {
 					$yearFrom = '0' . $yearFrom;
 				}
-				if (strlen($yearTo) == 2){
+				if (strlen($yearTo) == 2) {
 					$yearTo = '19' . $yearTo;
-				}else if (strlen($yearFrom) == 3){
+				} elseif (strlen($yearFrom) == 3) {
 					$yearTo = '0' . $yearTo;
 				}
-				if ($yearTo != '*' && $yearFrom != '*' && $yearTo < $yearFrom){
+				if ($yearTo != '*' && $yearFrom != '*' && $yearTo < $yearFrom) {
 					$tmpYear = $yearTo;
 					$yearTo = $yearFrom;
 					$yearFrom = $tmpYear;
@@ -45,24 +43,24 @@ class Author_Home extends ResultsAction
 				unset($queryParams['action']);
 				unset($queryParams[$dateFilter . 'yearfrom']);
 				unset($queryParams[$dateFilter . 'yearto']);
-				if (!isset($queryParams['sort'])){
+				if (!isset($queryParams['sort'])) {
 					$queryParams['sort'] = 'year';
 				}
-				$queryParamStrings = array();
-				foreach($queryParams as $paramName => $queryValue){
-					if (is_array($queryValue)){
-						foreach ($queryValue as $arrayValue){
-							if (strlen($arrayValue) > 0){
+				$queryParamStrings = [];
+				foreach ($queryParams as $paramName => $queryValue) {
+					if (is_array($queryValue)) {
+						foreach ($queryValue as $arrayValue) {
+							if (strlen($arrayValue) > 0) {
 								$queryParamStrings[] = $paramName . '[]=' . urlencode($arrayValue);
 							}
 						}
-					}else{
-						if (strlen($queryValue)){
+					} else {
+						if (strlen($queryValue)) {
 							$queryParamStrings[] = $paramName . '=' . urlencode($queryValue);
 						}
 					}
 				}
-				if ($yearFrom != '*' || $yearTo != '*'){
+				if ($yearFrom != '*' || $yearTo != '*') {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
@@ -71,14 +69,18 @@ class Author_Home extends ResultsAction
 			}
 		}
 
-		$rangeFilters = array('lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value');
-		foreach ($rangeFilters as $filter){
-			if ((isset($_REQUEST[$filter . 'from']) && strlen($_REQUEST[$filter . 'from']) > 0) || (isset($_REQUEST[$filter . 'to']) && strlen($_REQUEST[$filter . 'to']) > 0)){
+		$rangeFilters = [
+			'lexile_score',
+			'accelerated_reader_reading_level',
+			'accelerated_reader_point_value',
+		];
+		foreach ($rangeFilters as $filter) {
+			if ((isset($_REQUEST[$filter . 'from']) && strlen($_REQUEST[$filter . 'from']) > 0) || (isset($_REQUEST[$filter . 'to']) && strlen($_REQUEST[$filter . 'to']) > 0)) {
 				$queryParams = $_GET;
 				$from = (isset($_REQUEST[$filter . 'from']) && preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$filter . 'from'])) ? $_REQUEST[$filter . 'from'] : '*';
 				$to = (isset($_REQUEST[$filter . 'to']) && preg_match('/^\d+(\.\d*)?$/', $_REQUEST[$filter . 'to'])) ? $_REQUEST[$filter . 'to'] : '*';
 
-				if ($to != '*' && $from != '*' && $to < $from){
+				if ($to != '*' && $from != '*' && $to < $from) {
 					$tmpFilter = $to;
 					$to = $from;
 					$from = $tmpFilter;
@@ -87,21 +89,21 @@ class Author_Home extends ResultsAction
 				unset($queryParams['action']);
 				unset($queryParams[$filter . 'from']);
 				unset($queryParams[$filter . 'to']);
-				$queryParamStrings = array();
-				foreach($queryParams as $paramName => $queryValue){
-					if (is_array($queryValue)){
-						foreach ($queryValue as $arrayValue){
-							if (strlen($arrayValue) > 0){
+				$queryParamStrings = [];
+				foreach ($queryParams as $paramName => $queryValue) {
+					if (is_array($queryValue)) {
+						foreach ($queryValue as $arrayValue) {
+							if (strlen($arrayValue) > 0) {
 								$queryParamStrings[] = $paramName . '[]=' . urlencode($arrayValue);
 							}
 						}
-					}else{
-						if (strlen($queryValue)){
+					} else {
+						if (strlen($queryValue)) {
 							$queryParamStrings[] = $paramName . '=' . urlencode($queryValue);
 						}
 					}
 				}
-				if ($from != '*' || $to != '*'){
+				if ($from != '*' || $to != '*') {
 					$queryParamStrings[] = "&filter[]=$filter:[$from+TO+$to]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
@@ -146,7 +148,7 @@ class Author_Home extends ResultsAction
 
 		// Clean up author string
 		$author = $_GET['author'];
-		if (is_array($author)){
+		if (is_array($author)) {
 			$author = array_pop($author);
 		}
 
@@ -180,8 +182,7 @@ class Author_Home extends ResultsAction
 			$authorName = $firstName . ' ';
 		} else {
 			// No initial so strip any punctuation from the end
-			if ((substr(trim($firstName), -1) == ',') ||
-			(substr(trim($firstName), -1) == '.')) {
+			if ((substr(trim($firstName), -1) == ',') || (substr(trim($firstName), -1) == '.')) {
 				$authorName = substr(trim($firstName), 0, -1) . ' ';
 			} else {
 				$authorName = $firstName . ' ';
@@ -198,8 +199,8 @@ class Author_Home extends ResultsAction
 				$interface->assign('showWikipedia', true);
 
 				//Strip anything in parenthesis
-				if (strpos($wikipediaAuthorName, '(') > 0){
-					$wikipediaAuthorName = substr($wikipediaAuthorName, 0, strpos($wikipediaAuthorName, '(') );
+				if (strpos($wikipediaAuthorName, '(') > 0) {
+					$wikipediaAuthorName = substr($wikipediaAuthorName, 0, strpos($wikipediaAuthorName, '('));
 				}
 				$wikipediaAuthorName = trim($wikipediaAuthorName);
 				$interface->assign('wikipediaAuthorName', $wikipediaAuthorName);
@@ -208,9 +209,9 @@ class Author_Home extends ResultsAction
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('viewList',  $searchObject->getViewList());
-		$interface->assign('rssLink',    $searchObject->getRSSUrl());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('viewList', $searchObject->getViewList());
+		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
@@ -237,30 +238,30 @@ class Author_Home extends ResultsAction
 		$summary = $searchObject->getResultSummary();
 		$interface->assign('recordCount', $summary['resultTotal']);
 		$interface->assign('recordStart', $summary['startRecord']);
-		$interface->assign('recordEnd',   $summary['endRecord']);
+		$interface->assign('recordEnd', $summary['endRecord']);
 		$interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
 
 		//Enable and disable functionality based on library settings
 		global $library;
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
-		if ($location != null){
+		if ($location != null) {
 			$interface->assign('showFavorites', $library->showFavorites);
 			$interface->assign('showHoldButton', (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0);
-		}else{
+		} else {
 			$interface->assign('showFavorites', $library->showFavorites);
 			$interface->assign('showHoldButton', $library->showHoldButton);
 		}
 
 		// Big one - our results
 		$authorTitles = $searchObject->getResultRecordHTML();
-		$interface->assign('recordSet',  $authorTitles);
+		$interface->assign('recordSet', $authorTitles);
 		$template = $searchObject->getDisplayTemplate();
 		$interface->assign('resultsTemplate', $template);
 
 		//Load similar author information.
 		$groupedWorkId = null;
-		foreach ($searchObject->getResultRecordSet() as $title){
+		foreach ($searchObject->getResultRecordSet() as $title) {
 			$groupedWorkId = $title['id'];
 			$interface->assign('firstWorkId', $groupedWorkId);
 			break;
@@ -268,9 +269,11 @@ class Author_Home extends ResultsAction
 
 		// Process Paging
 		$link = $searchObject->renderLinkPageTemplate();
-		$options = array('totalItems' => $summary['resultTotal'],
-                         'fileName'   => $link,
-                         'perPage'    => $summary['perPage']);
+		$options = [
+			'totalItems' => $summary['resultTotal'],
+			'fileName' => $link,
+			'perPage' => $summary['perPage'],
+		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
@@ -279,19 +282,18 @@ class Author_Home extends ResultsAction
 		// Save the URL of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 		//Get view & load template
-		$currentView  = $searchObject->getView();
+		$currentView = $searchObject->getView();
 		$interface->assign('displayMode', $currentView);
-		if ($searchObject->getResultTotal() == 0){
+		if ($searchObject->getResultTotal() == 0) {
 			$this->display('invalidAuthor.tpl', 'Unknown Author', 'Author/sidebar.tpl');
-		}else {
+		} else {
 			$interface->assign('subpage', 'Search/list-' . $currentView . '.tpl');
 
 			$this->display('home.tpl', $authorName, 'Author/sidebar.tpl', false);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		global $interface;
 		return parent::getResultsBreadcrumbs($interface->getVariable('authorName'));
 	}

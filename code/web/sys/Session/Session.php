@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class Session extends DataObject
-{
+class Session extends DataObject {
 	###START_AUTOCODE
 	/* the code below is auto generated do not remove the above tag */
 
@@ -15,16 +14,17 @@ class Session extends DataObject
 	public $created;
 	public $remember_me;
 
-	function getNumericColumnNames() : array
-	{
-		return ['remember_me', 'last_used'];
+	function getNumericColumnNames(): array {
+		return [
+			'remember_me',
+			'last_used',
+		];
 	}
 
 	/* the code above is auto generated do not remove the tag below */
 	###END_AUTOCODE
 
-	function update()
-	{
+	function update() {
 		if ($this->data == null) {
 			$this->data = '';
 		}
@@ -36,8 +36,7 @@ class Session extends DataObject
 		return $ret;
 	}
 
-	function insert()
-	{
+	function insert() {
 		if ($this->data == null) {
 			$this->data = '';
 		}

@@ -38,8 +38,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 */
 	private $searchIndex = 'TX';
 
-	public function __construct()
-	{
+	public function __construct() {
 		parent::__construct();
 		$this->searchSource = 'ebscohost';
 		$this->searchType = 'ebscohost';
@@ -47,10 +46,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		$this->resultsAction = 'Results';
 
 		global $library;
-		if ($library->ebscohostSearchSettingId > 0){
+		if ($library->ebscohostSearchSettingId > 0) {
 			$searchSettings = new EBSCOhostSearchSetting();
 			$searchSettings->id = $library->ebscohostSearchSettingId;
-			if (!$searchSettings->find(true)){
+			if (!$searchSettings->find(true)) {
 				$searchSettings = null;
 			}
 			$this->ebscohostSearchSettings = $searchSettings;
@@ -65,8 +64,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 * @param string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = null) {
 		//********************
 		// Check if we have a saved search to restore -- if restored successfully,
 		// our work here is done; if there is an error, we should report failure;
@@ -74,7 +72,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if ($restored instanceof AspenError) {
+		} elseif ($restored instanceof AspenError) {
 			return false;
 		}
 
@@ -104,23 +102,23 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	/**
 	 * @return SearchObject_EbscohostSearcher
 	 */
-	public static function getInstance(){
-		if (SearchObject_EbscohostSearcher::$instance == null){
+	public static function getInstance() {
+		if (SearchObject_EbscohostSearcher::$instance == null) {
 			SearchObject_EbscohostSearcher::$instance = new SearchObject_EbscohostSearcher();
 		}
 		return SearchObject_EbscohostSearcher::$instance;
 	}
 
-	public function getSearchSettings() : ?EBSCOhostSearchSetting{
+	public function getSearchSettings(): ?EBSCOhostSearchSetting {
 		return $this->ebscohostSearchSettings;
 	}
 
 	/**
 	 * @return EBSCOhostSetting|null
 	 */
-	private function getSettings() : ?EBSCOhostSetting{
+	private function getSettings(): ?EBSCOhostSetting {
 		global $library;
-		if ($this->ebscohostSettings == null){
+		if ($this->ebscohostSettings == null) {
 			require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostSearchSetting.php';
 			$searchSettings = new EBSCOhostSearchSetting();
 			$searchSettings->id = $library->ebscohostSearchSettingId;
@@ -135,15 +133,15 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $this->ebscohostSettings;
 	}
 
-	public function setSettings($ebscohostSettings){
+	public function setSettings($ebscohostSettings) {
 		$this->ebscohostSettings = $ebscohostSettings;
 	}
 
-	public function getCurlConnection(){
-		if ($this->curl_connection == null){
+	public function getCurlConnection() {
+		if ($this->curl_connection == null) {
 			$this->curl_connection = curl_init();
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
-			curl_setopt($this->curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($this->curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($this->curl_connection, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($this->curl_connection, CURLOPT_FOLLOWLOCATION, 1);
@@ -153,7 +151,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $this->curl_connection;
 	}
 
-	public function __destruct(){
+	public function __destruct() {
 		if ($this->curl_connection) {
 			curl_close($this->curl_connection);
 		}
@@ -169,8 +167,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 *
 	 * @access protected
 	 */
-	protected function startQueryTimer()
-	{
+	protected function startQueryTimer() {
 		// Get time before the query
 		$time = explode(" ", microtime());
 		$this->queryStartTime = $time[1] + $time[0];
@@ -182,8 +179,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 *
 	 * @access protected
 	 */
-	protected function stopQueryTimer()
-	{
+	protected function stopQueryTimer() {
 		$time = explode(" ", microtime());
 		$this->queryEndTime = $time[1] + $time[0];
 		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
@@ -196,10 +192,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 * @return  array   summary of results
 	 */
 	public function getResultSummary() {
-		$summary = array();
+		$summary = [];
 
-		$summary['page']        = $this->page;
-		$summary['perPage']     = $this->limit;
+		$summary['page'] = $this->page;
+		$summary['perPage'] = $this->limit;
 		$summary['resultTotal'] = $this->resultsTotal;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
@@ -218,7 +214,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $summary;
 	}
 
-	public function getNumResults() : int{
+	public function getNumResults(): int {
 		return $this->resultsTotal;
 	}
 
@@ -248,10 +244,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML() {
 		global $interface;
-		$html = array();
+		$html = [];
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->SearchResults->records)) {
@@ -284,10 +279,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getCombinedResultHTML()
-	{
+	public function getCombinedResultHTML() {
 		global $interface;
-		$html = array();
+		$html = [];
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->SearchResults->records)) {
@@ -309,8 +303,8 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $html;
 	}
 
-	public function getSearchOptions() : ?SimpleXMLElement{
-		if (SearchObject_EbscohostSearcher::$searchOptions == null){
+	public function getSearchOptions(): ?SimpleXMLElement {
+		if (SearchObject_EbscohostSearcher::$searchOptions == null) {
 			$settings = $this->getSettings();
 			if ($settings != null) {
 				$curlConnection = $this->getCurlConnection();
@@ -324,24 +318,24 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 				} else {
 					return null;
 				}
-			}else{
+			} else {
 				return null;
 			}
-		}else{
+		} else {
 			return SearchObject_EbscohostSearcher::$searchOptions;
 		}
 	}
 
-	public function getSearchIndexes(){
+	public function getSearchIndexes() {
 		global $memCache;
 		$settings = $this->getSettings();
-		if ($settings == null){
+		if ($settings == null) {
 			return [];
-		}else {
+		} else {
 			$searchIndexes = $memCache->get('ebscohost_search_indexes_' . $settings->profileId);
 			if ($searchIndexes === false) {
 				$searchOptions = $this->getSearchOptions();
-				$searchIndexes = array();
+				$searchIndexes = [];
 //				if ($searchOptions != null) {
 //					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
 //						$searchIndexes[$searchField->FieldCode] = translate(['text'=>$searchField->Label, 'isPublicFacing'=>true, 'inAttribute'=>true]);
@@ -357,14 +351,14 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 	public function getSortList() {
 		$sortOptions = $this->getSortOptions();
-		$list = array();
-		if ($sortOptions != null){
-			foreach ($sortOptions as $sort => $label){
-				$list[$sort] = array(
+		$list = [];
+		if ($sortOptions != null) {
+			foreach ($sortOptions as $sort => $label) {
+				$list[$sort] = [
 					'sortUrl' => $this->renderLinkWithSort($sort),
 					'desc' => $label,
-					'selected' => ($sort == $this->sort)
-				);
+					'selected' => ($sort == $this->sort),
+				];
 
 			}
 		}
@@ -375,20 +369,20 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	public function getSortOptions() {
 		$appliedDatabases = $this->getAppliedDatabases();
 		$searchOptions = $this->getSearchOptions();
-		if ($searchOptions == null){
+		if ($searchOptions == null) {
 			return [];
 		}
-		$sortOptions = array();
-		if (empty($appliedDatabases)){
+		$sortOptions = [];
+		if (empty($appliedDatabases)) {
 			$isFirstDb = true;
 			//Get the sort options that apply to all default databases
-			if (!empty($this->ebscohostSearchSettings)){
+			if (!empty($this->ebscohostSearchSettings)) {
 				$defaultDatabases = $this->ebscohostSearchSettings->getDefaultSearchDatabases();
-			}else{
+			} else {
 				$defaultDatabases = [];
 			}
 
-			foreach ($searchOptions->dbInfo->db as $db){
+			foreach ($searchOptions->dbInfo->db as $db) {
 				$shortName = (string)$db->attributes()['shortName'];
 				if (empty($defaultDatabases) || in_array($shortName, $defaultDatabases)) {
 					if ($isFirstDb) {
@@ -414,10 +408,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					}
 				}
 			}
-		}else{
-			foreach ($searchOptions->dbInfo->db as $db){
-				if (in_array($db->attributes()['shortName'], $appliedDatabases)){
-					foreach ($db->sortOptions->sort as $sortOption){
+		} else {
+			foreach ($searchOptions->dbInfo->db as $db) {
+				if (in_array($db->attributes()['shortName'], $appliedDatabases)) {
+					foreach ($db->sortOptions->sort as $sortOption) {
 						$id = (string)$sortOption->attributes()['id'];
 						$name = (string)$sortOption->attributes()['name'];
 						$sortOptions[$id] = $name;
@@ -433,11 +427,10 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 * Return a url for the current search with a new sort
 	 *
 	 * @access  public
-	 * @param   string   $newSort   A field to sort by
+	 * @param string $newSort A field to sort by
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkWithSort($newSort)
-	{
+	public function renderLinkWithSort($newSort) {
 		// Stash our old data for a minute
 		$oldSort = $this->sort;
 		// Add the new sort
@@ -454,16 +447,16 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		$searchOptions = $this->getSearchOptions();
 
 		$selectedDatabases = [];
-		foreach ($this->filterList as $field=>$value){
-			if ($field == 'db'){
-				if (is_array($value)){
+		foreach ($this->filterList as $field => $value) {
+			if ($field == 'db') {
+				if (is_array($value)) {
 					$selectedDatabases = $value;
-				}else{
+				} else {
 					$selectedDatabases = [$value];
 				}
 			}
 		}
-		$availableFacets = array();
+		$availableFacets = [];
 		$availableFacets['db'] = [
 			'multiSelect' => true,
 			'showAsDropDown' => false,
@@ -471,10 +464,18 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			'showMoreFacetPopup' => true,
 			'label' => 'Source',
 			'field_name' => 'db',
-			'defaultValue' => translate(['text'=>'All Databases', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'defaultValue' => translate([
+				'text' => 'All Databases',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 			'hasSelectedOption' => empty($selectedDatabases),
-			'displayNamePlural' => translate(['text'=>'Sources', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'list' => []
+			'displayNamePlural' => translate([
+				'text' => 'Sources',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'list' => [],
 		];
 		if ($searchOptions != null) {
 			//Handle databases a little differently
@@ -482,14 +483,14 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 				$shortName = (string)$dbInfo->attributes()['shortName'];
 				$longName = (string)$dbInfo->attributes()['longName'];
 				$isApplied = array_key_exists('db', $this->filterList) && in_array($shortName, $this->filterList['db']);
-				$availableFacets['db']['list'][$shortName] = array(
+				$availableFacets['db']['list'][$shortName] = [
 					'type' => 'db',
 					'value' => $shortName,
 					'display' => $longName,
 					'url' => $this->renderLinkWithFilter('db', $shortName),
 					'removalUrl' => $this->renderLinkWithoutFilter("db:$shortName"),
 					'isApplied' => $isApplied,
-				);
+				];
 			}
 			if (!empty($this->lastSearchResults->Statistics)) {
 				foreach ($this->lastSearchResults->Statistics->Statistic as $statistic) {
@@ -499,14 +500,14 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					}
 				}
 			}
-			if (!empty($this->ebscohostSearchSettings)){
-				foreach ($this->ebscohostSearchSettings->getDatabases() as $database){
-					if (!$database->allowSearching){
+			if (!empty($this->ebscohostSearchSettings)) {
+				foreach ($this->ebscohostSearchSettings->getDatabases() as $database) {
+					if (!$database->allowSearching) {
 						unset($availableFacets['db']['list'][$database->shortName]);
 					}
 				}
 			}
-			$sorter = function($a, $b) {
+			$sorter = function ($a, $b) {
 				if (isset($a['count']) && isset($b['count'])) {
 					$countA = $a['count'];
 					$countB = $b['count'];
@@ -517,17 +518,17 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					} else {
 						return strcasecmp($a['display'], $b['display']);
 					}
-				}elseif (isset($a['count'])) {
+				} elseif (isset($a['count'])) {
 					return -1;
-				}elseif (isset($b['count'])) {
+				} elseif (isset($b['count'])) {
 					return 1;
-				}else{
+				} else {
 					return strcasecmp($a['display'], $b['display']);
 				}
 			};
 			uasort($availableFacets['db']['list'], $sorter);
 
-			$sortedList = array();
+			$sortedList = [];
 			foreach ($availableFacets['db']['list'] as $key => $value) {
 				$sortedList[strtolower($value['display'])] = $value;
 			}
@@ -544,13 +545,13 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 						require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostFacet.php';
 						$ebscohostFacet = new EBSCOhostFacet();
 						$ebscohostFacet->shortName = $tag;
-						if (!$ebscohostFacet->find(true)){
+						if (!$ebscohostFacet->find(true)) {
 							//Add this to the database so we can display the name later
 
 							$displayName = preg_replace('~([a-z])([A-Z])~', '\\1 \\2', $id);
 							$ebscohostFacet->displayName = $displayName;
 							$ebscohostFacet->insert();
-						}else{
+						} else {
 							$displayName = $ebscohostFacet->displayName;
 						}
 
@@ -560,19 +561,19 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 							'valuesToShow' => 5,
 							'collapseByDefault' => false,
 							'label' => $displayName,
-							'list' => []
+							'list' => [],
 						];
-						foreach ($facetCluster->Cluster as $clusterData){
+						foreach ($facetCluster->Cluster as $clusterData) {
 							$facetValue = (string)$clusterData;
 							$isApplied = array_key_exists($tag, $this->filterList) && in_array($facetValue, $this->filterList[$tag]);
-							$availableFacets[$tag]['list'][$facetValue] = array(
+							$availableFacets[$tag]['list'][$facetValue] = [
 								'type' => $tag,
 								'value' => $facetValue,
 								'display' => $facetValue,
 								'url' => $this->renderLinkWithFilter($tag, $facetValue),
 								'removalUrl' => $this->renderLinkWithoutFilter("$tag:$facetValue"),
 								'isApplied' => $isApplied,
-							);
+							];
 						}
 					}
 				}
@@ -582,7 +583,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $availableFacets;
 	}
 
-	public function getLimitList(){
+	public function getLimitList() {
 		return [];
 	}
 
@@ -605,28 +606,25 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					return null;
 				}
 			}
-		}else{
+		} else {
 			return null;
 		}
 	}
 
-	public function getEngineName()
-	{
+	public function getEngineName() {
 		return 'Ebscohost';
 	}
 
-	function getSearchesFile()
-	{
+	function getSearchesFile() {
 		// EBSCOhost does not have a searches file, we load dynamically
 		return false;
 	}
 
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
-	{
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		$settings = $this->getSettings();
-		if ($settings == null){
+		if ($settings == null) {
 			return new AspenError("EBSCOhost searching is not configured for this library.");
-		}else {
+		} else {
 			$this->startQueryTimer();
 			$hasSearchTerm = false;
 			$searchUrl = $this->ebscohostBaseUrl . "/Search?authType=profile&prof={$this->getSettings()->profileId}&pwd={$this->getSettings()->profilePwd}&format=detailed";
@@ -636,7 +634,9 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 				$termIndex = 1;
 				foreach ($this->searchTerms as $term) {
 					if (!empty($term)) {
-						if ($termIndex > 1) $searchUrl .= ' AND ';
+						if ($termIndex > 1) {
+							$searchUrl .= ' AND ';
+						}
 						$searchUrl .= urlencode($term['lookfor']);
 						$termIndex++;
 						$hasSearchTerm = true;
@@ -650,12 +650,12 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			}
 			foreach ($this->filterList as $field => $filter) {
 				if ($field != 'db') {
-					if (is_array($filter)){
-						foreach ($filter as $filterValue){
+					if (is_array($filter)) {
+						foreach ($filter as $filterValue) {
 							$searchUrl .= "%20AND%20$field%20\"" . urlencode('"' . $filterValue . '"');
 						}
-					}else{
-						$searchUrl .= "%20AND%20$field%20" . urlencode('"' . $filter . '"') ;
+					} else {
+						$searchUrl .= "%20AND%20$field%20" . urlencode('"' . $filter . '"');
 					}
 				}
 			}
@@ -687,12 +687,12 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 
 			if (!$hasAppliedDatabase) {
 				//Apply all databases to the search (by default)
-				if ($this->ebscohostSearchSettings != null){
+				if ($this->ebscohostSearchSettings != null) {
 					$defaultSearchDatabases = $this->ebscohostSearchSettings->getDefaultSearchDatabases();
 					foreach ($defaultSearchDatabases as $defaultDB) {
 						$searchUrl .= '&db=' . $defaultDB;
 					}
-				}else {
+				} else {
 					$searchOptions = $this->getSearchOptions();
 					/** @var SimpleXMLElement $dbInfo */
 					foreach ($searchOptions->dbInfo->db as $dbInfo) {
@@ -707,18 +707,18 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 			$curlConnection = $this->getCurlConnection();
 			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
 
-			curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
+			curl_setopt($curlConnection, CURLOPT_HTTPHEADER, [
 				'Content-Type: application/json',
 				'Accept: application/json',
-			));
+			]);
 			curl_setopt($curlConnection, CURLOPT_URL, $searchUrl);
 			$result = curl_exec($curlConnection);
 			try {
 				$searchData = simplexml_load_string($result);
 				if ($searchData->Message) {
 					$message = (string)$searchData->Message;
-					if (strpos($message, 'name=')){
-						if (preg_match('/name="(.*?)"/', $message, $matches)){
+					if (strpos($message, 'name=')) {
+						if (preg_match('/name="(.*?)"/', $message, $matches)) {
 							$message = $matches[1];
 						}
 					}
@@ -730,7 +730,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 					$this->lastSearchResults = $searchData;
 
 					return $searchData->SearchResults->records;
-				} else if ($searchData && !empty($searchData->ErrorNumber)) {
+				} elseif ($searchData && !empty($searchData->ErrorNumber)) {
 					return new AspenError("Error processing search in EBSCOhost: " . (string)$searchData->ErrorNumber);
 				} else {
 					global $logger;
@@ -752,22 +752,22 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	/**
 	 * @return EBSCOhostDatabase[]
 	 */
-	public function getDatabases() : array{
+	public function getDatabases(): array {
 		$databases = [];
 		$searchOptions = $this->getSearchOptions();
 		/** @var SimpleXMLElement $dbInfo */
-		foreach ($searchOptions->dbInfo->db as $dbInfo){
+		foreach ($searchOptions->dbInfo->db as $dbInfo) {
 			$shortName = (string)$dbInfo->attributes()['shortName'];
 			$databases[$shortName] = [];
-			foreach ($dbInfo->attributes() as $attributeName => $attributeValue){
+			foreach ($dbInfo->attributes() as $attributeName => $attributeValue) {
 				$databases[$shortName][(string)$attributeName] = (string)$attributeValue;
 			}
 			$hasRelevancySort = false;
 			$hasDateSort = false;
-			foreach ($dbInfo->sortOptions->sort as $sortOptions){
-				if ($sortOptions->attributes()['id'] == 'relevance'){
+			foreach ($dbInfo->sortOptions->sort as $sortOptions) {
+				if ($sortOptions->attributes()['id'] == 'relevance') {
 					$hasRelevancySort = true;
-				}elseif ($sortOptions->attributes()['id'] == 'date'){
+				} elseif ($sortOptions->attributes()['id'] == 'date') {
 					$hasDateSort = true;
 				}
 			}
@@ -777,50 +777,42 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $databases;
 	}
 
-	public function getIndexError()
-	{
+	public function getIndexError() {
 		// TODO: Implement getIndexError() method.
 	}
 
-	public function buildRSS($result = null)
-	{
+	public function buildRSS($result = null) {
 		// TODO: Implement buildRSS() method.
 	}
 
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		// TODO: Implement buildExcel() method.
 	}
 
-	public function getResultRecordSet()
-	{
+	public function getResultRecordSet() {
 		// TODO: Implement getResultRecordSet() method.
 	}
 
-	function getSearchName()
-	{
+	function getSearchName() {
 		return $this->searchSource;
 	}
 
-	function loadValidFields()
-	{
+	function loadValidFields() {
 		// TODO: Implement loadValidFields() method.
 	}
 
-	function loadDynamicFields()
-	{
+	function loadDynamicFields() {
 		// TODO: Implement loadDynamicFields() method.
 	}
 
-	public function getRecordDriverForResult($current) : EbscohostRecordDriver
-	{
+	public function getRecordDriverForResult($current): EbscohostRecordDriver {
 		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
 		return new EbscohostRecordDriver($current);
 	}
 
-	function getBrowseRecordHTML(){
+	function getBrowseRecordHTML() {
 		global $interface;
-		$html = array();
+		$html = [];
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->SearchResults->records)) {
@@ -843,7 +835,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $html;
 	}
 
-	public function getSpotlightResults(CollectionSpotlight $spotlight){
+	public function getSpotlightResults(CollectionSpotlight $spotlight) {
 		$spotlightResults = [];
 		if (isset($this->lastSearchResults->SearchResults->records)) {
 			for ($x = 0; $x < count($this->lastSearchResults->SearchResults->records->rec); $x++) {
@@ -867,28 +859,29 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 		return $spotlightResults;
 	}
 
-	public function setSearchTerm($searchTerm)
-	{
-		if (strpos($searchTerm, ':') !== false){
-			list($searchIndex, $term) = explode(':', $searchTerm, 2);
+	public function setSearchTerm($searchTerm) {
+		if (strpos($searchTerm, ':') !== false) {
+			[
+				$searchIndex,
+				$term,
+			] = explode(':', $searchTerm, 2);
 			$this->setSearchTerms([
-				'lookfor' =>$term,
-				'index' => $searchIndex
+				'lookfor' => $term,
+				'index' => $searchIndex,
 			]);
-		}else {
+		} else {
 			$this->setSearchTerms([
 				'lookfor' => $searchTerm,
-				'index' => $this->getDefaultIndex()
+				'index' => $this->getDefaultIndex(),
 			]);
 		}
 	}
 
-	public function disableSpelling(){
+	public function disableSpelling() {
 		//Do nothing for now
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'TX';
 	}
 
@@ -899,60 +892,61 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 	 * @access  public
 	 * @return  array              The requested resources
 	 */
-	public function getRecords($ids){
+	public function getRecords($ids) {
 		$records = [];
 		require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
-		foreach ($ids as $index => $id){
+		foreach ($ids as $index => $id) {
 			$records[$index] = new EbscohostRecordDriver($id);
 		}
 		return $records;
 	}
 
-	public function getAppliedDatabases(){
+	public function getAppliedDatabases() {
 		$appliedDatabase = null;
 		if (isset($this->filterList['db'])) {
 			$filter = $this->filterList['db'];
 			if (is_array($filter)) {
 				$appliedDatabase = $filter;
-			}else{
+			} else {
 				$appliedDatabase = [$filter];
 			}
 		}
 		return $appliedDatabase;
 	}
 
-	public function getFilterList()
-	{
-		$list = array();
+	public function getFilterList() {
+		$list = [];
 		// Loop through all the current filter fields
 		foreach ($this->filterList as $field => $values) {
-			if ($field == 'db'){
+			if ($field == 'db') {
 				$databases = $this->getDatabases();
 				$facetLabel = 'Source';
-			}else{
+			} else {
 				require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostFacet.php';
 				$ebscohostFacet = new EBSCOhostFacet();
 				$ebscohostFacet->shortName = $field;
-				if ($ebscohostFacet->find(true)){
+				if ($ebscohostFacet->find(true)) {
 					$facetLabel = $ebscohostFacet->displayName;
-				}else{
+				} else {
 					$facetLabel = $field;
 				}
 			}
 			$list[$facetLabel] = [];
 			foreach ($values as $value) {
-				if ($field == 'db'){
+				if ($field == 'db') {
 					$displayValue = $databases[$value]['longName'];
-				}else{
+				} else {
 					$displayValue = $value;
 				}
-				$list[$facetLabel][] = array(
-					'value' => $value,     // raw value for use with Solr
-					'display' => $displayValue,   // version to display to user
+				$list[$facetLabel][] = [
+					'value' => $value,
+					// raw value for use with Solr
+					'display' => $displayValue,
+					// version to display to user
 					'field' => $field,
 					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value"),
-					'countIsApproximate' => false
-				);
+					'countIsApproximate' => false,
+				];
 			}
 		}
 		return $list;

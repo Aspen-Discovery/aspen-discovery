@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/VDX/VdxHoldGroupLocation.php';
 
-class VdxHoldGroup extends DataObject
-{
+class VdxHoldGroup extends DataObject {
 	public $__table = 'vdx_hold_groups';
 	public $id;
 	public $name;
@@ -11,31 +10,40 @@ class VdxHoldGroup extends DataObject
 	protected $_locations;
 	protected $_locationCodes;
 
-	public static function getObjectStructure(): array
-	{
+	public static function getObjectStructure(): array {
 		$locationList = Location::getLocationList(false);
 
 		return [
-			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
-			'name' => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The Name of the Hold Group', 'maxLength' => 50],
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'The Name of the Hold Group',
+				'maxLength' => 50,
+			],
 
-			'locations' => array(
+			'locations' => [
 				'property' => 'locations',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Locations',
 				'description' => 'Define locations that make up this hold group',
 				'values' => $locationList,
-				'hideInLists' => false
-			),
+				'hideInLists' => false,
+			],
 		];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getUniquenessFields(): array
-	{
+	public function getUniquenessFields(): array {
 		return ['name'];
 	}
 
@@ -44,8 +52,7 @@ class VdxHoldGroup extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
@@ -53,8 +60,7 @@ class VdxHoldGroup extends DataObject
 		return $ret;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
@@ -62,8 +68,7 @@ class VdxHoldGroup extends DataObject
 		return $ret;
 	}
 
-	public function delete($useWhere = false)
-	{
+	public function delete($useWhere = false) {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$holdGroupLocation = new VdxHoldGroupLocation();
@@ -73,8 +78,7 @@ class VdxHoldGroup extends DataObject
 		return $ret;
 	}
 
-	public function __get($name)
-	{
+	public function __get($name) {
 		if ($name == "locations") {
 			return $this->getLocations();
 		} else {
@@ -85,8 +89,7 @@ class VdxHoldGroup extends DataObject
 	/**
 	 * @return int[]
 	 */
-	public function getLocations(): ?array
-	{
+	public function getLocations(): ?array {
 		if (!isset($this->_locations) && $this->id) {
 			$this->_locations = [];
 			$obj = new VdxHoldGroupLocation();
@@ -103,10 +106,10 @@ class VdxHoldGroup extends DataObject
 		if (!isset($this->_locationCodes) && $this->id) {
 			$this->_locationCodes = [];
 			$locationIds = $this->getLocations();
-			foreach ($locationIds as $locationId){
+			foreach ($locationIds as $locationId) {
 				$location = new Location();
 				$location->locationId = $locationId;
-				if ($location->find(true)){
+				if ($location->find(true)) {
 					$this->_locationCodes[] = $location->code;
 				}
 			}
@@ -114,8 +117,7 @@ class VdxHoldGroup extends DataObject
 		return $this->_locationCodes;
 	}
 
-	public function __set($name, $value)
-	{
+	public function __set($name, $value) {
 		if ($name == "locations") {
 			$this->_locations = $value;
 		} else {
@@ -124,8 +126,7 @@ class VdxHoldGroup extends DataObject
 	}
 
 
-	public function saveLocations()
-	{
+	public function saveLocations() {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
 			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer VDX Hold Groups'));
 			foreach ($locationList as $locationId => $displayName) {
@@ -145,8 +146,7 @@ class VdxHoldGroup extends DataObject
 		}
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		return parent::okToExport($selectedFilters);
 	}
 }

@@ -19,9 +19,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * @category VuFind
- * @package  Authentication
  * @author   Franck Borel <franck.borel@gbv.de>
+ * @package  Authentication
+ * @category VuFind
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     http://vufind.org/wiki/building_an_authentication_handler Wiki
  */
@@ -29,12 +29,11 @@
 /**
  * Exception class used for unrecognized authentication handler.
  *
- * @category VuFind
- * @package  Authentication
  * @author   Franck Borel <franck.borel@gbv.de>
+ * @package  Authentication
+ * @category VuFind
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     http://vufind.org/wiki/building_an_authentication_handler Wiki
  */
-class UnknownAuthenticationHandlerException extends Exception
-{
+class UnknownAuthenticationHandlerException extends Exception {
 }
