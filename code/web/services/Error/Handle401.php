@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
+
 class Error_Handle401 extends Action {
 	function launch() {
 		global $interface;
@@ -9,8 +10,7 @@ class Error_Handle401 extends Action {
 		$this->display('401.tpl', 'Unauthorized', false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

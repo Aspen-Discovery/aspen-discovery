@@ -3,35 +3,36 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Admin_Administrators extends ObjectEditor
-{
-	function getObjectType() : string{
+class Admin_Administrators extends ObjectEditor {
+	function getObjectType(): string {
 		return 'User';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Administrators';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Administrators';
 	}
 
 	//TODO: This currently does not respect loading by page or filtering
-	function getAllObjects($page, $recordsPerPage) : array{
+	function getAllObjects($page, $recordsPerPage): array {
 		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 		$userRole = new UserRoles();
 		$userRole->find();
-		$adminList = array();
-		while ($userRole->fetch()){
+		$adminList = [];
+		while ($userRole->fetch()) {
 			$userId = $userRole->userId;
-			if (!array_key_exists($userId, $adminList)){
+			if (!array_key_exists($userId, $adminList)) {
 				$admin = new User();
 				$admin->id = $userId;
-				if ($admin->find(true)){
+				if ($admin->find(true)) {
 					$homeLibrary = Library::getLibraryForLocation($admin->homeLocationId);
-					if ($homeLibrary != null){
+					if ($homeLibrary != null) {
 						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLibraryName = $homeLibrary->displayName;
-					}else{
+					} else {
 						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLibraryName = 'Unknown';
 					}
@@ -41,7 +42,7 @@ class Admin_Administrators extends ObjectEditor
 					if ($location->find(true)) {
 						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLocation = $location->displayName;
-					}else{
+					} else {
 						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLocation = 'Unknown';
 					}
@@ -52,44 +53,50 @@ class Admin_Administrators extends ObjectEditor
 
 		return $adminList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'id';
 	}
-	function canSort() : bool
-	{
+
+	function canSort(): bool {
 		return false;
 	}
 
-	function getObjectStructure() : array {
+	function getObjectStructure(): array {
 		return User::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'cat_password';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function canAddNew(){
-		return false;
-	}
-	function canCompare()
-	{
-		return false;
-	}
-	function canCopy()
-	{
+
+	function canAddNew() {
 		return false;
 	}
 
-	function customListActions(){
-		return array(
-		array('label'=>'Add Administrator', 'action'=>'addAdministrator'),
-		);
+	function canCompare() {
+		return false;
+	}
+
+	function canCopy() {
+		return false;
+	}
+
+	function customListActions() {
+		return [
+			[
+				'label' => 'Add Administrator',
+				'action' => 'addAdministrator',
+			],
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	function addAdministrator(){
+	function addAdministrator() {
 		global $interface;
 		global $configArray;
 		$interface->assign('ils', $configArray['Catalog']['ils']);
@@ -98,7 +105,7 @@ class Admin_Administrators extends ObjectEditor
 	}
 
 	/** @noinspection PhpUnused */
-	function processNewAdministrator(){
+	function processNewAdministrator() {
 		global $interface;
 		global $configArray;
 		$loginRaw = trim($_REQUEST['login']);
@@ -115,13 +122,19 @@ class Admin_Administrators extends ObjectEditor
 				//See if we can fetch the user from the ils
 				$newAdmin = UserAccount::findNewUser($login);
 				if ($newAdmin == false) {
-					$errors[$login] = translate(['text' => 'Could not find a user with that barcode.', 'isAdminFacing' => true]);
+					$errors[$login] = translate([
+						'text' => 'Could not find a user with that barcode.',
+						'isAdminFacing' => true,
+					]);
 				}
 			} elseif ($numResults == 1) {
 				$newAdmin->fetch();
 			} elseif ($numResults > 1) {
 				$newAdmin = false;
-				$errors[$login] = translate(['text' => "Found multiple (%1%) users with that barcode. (The database needs to be cleaned up.)", 'isAdminFacing' => true]);
+				$errors[$login] = translate([
+					'text' => "Found multiple (%1%) users with that barcode. (The database needs to be cleaned up.)",
+					'isAdminFacing' => true,
+				]);
 			}
 
 			if ($newAdmin != false) {
@@ -139,7 +152,7 @@ class Admin_Administrators extends ObjectEditor
 			}
 		}
 
-		if (count($errors) == 0){
+		if (count($errors) == 0) {
 			header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			die();
 		} else {
@@ -151,12 +164,11 @@ class Admin_Administrators extends ObjectEditor
 		}
 	}
 
-	function getInstructions() : string{
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/admin/users';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
@@ -164,36 +176,31 @@ class Admin_Administrators extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_admin';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Users');
 	}
 
-	function canDelete()
-	{
+	function canDelete() {
 		return false;
 	}
 
-	function canBatchEdit()
-	{
+	function canBatchEdit() {
 		return false;
 	}
 
-	function canFilter($objectStructure)
-	{
+	function canFilter($objectStructure) {
 		return false;
 	}
 
-	protected function showQuickFilterOnPropertiesList(){
+	protected function showQuickFilterOnPropertiesList() {
 		return true;
 	}
 
-	protected function supportsPagination(){
+	protected function supportsPagination() {
 		return false;
 	}
 }

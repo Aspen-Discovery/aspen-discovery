@@ -1,7 +1,6 @@
 <?php
 
-class CloudLibraryAvailability extends DataObject
-{
+class CloudLibraryAvailability extends DataObject {
 	public $__table = 'cloud_library_availability';
 
 	public $id;

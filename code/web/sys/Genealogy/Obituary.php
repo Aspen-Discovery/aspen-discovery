@@ -1,9 +1,10 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+
 class Obituary extends DataObject {
 	public $__table = 'obituary'; // table name
-    public $__primaryKey = 'obituaryId';
+	public $__primaryKey = 'obituaryId';
 	public $obituaryId;
 	public $personId;
 	public $source;
@@ -23,8 +24,7 @@ class Obituary extends DataObject {
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
-	function getNumericColumnNames() : array
-	{
+	function getNumericColumnNames(): array {
 		return [
 			'dateDay',
 			'dateMonth',
@@ -32,17 +32,71 @@ class Obituary extends DataObject {
 		];
 	}
 
-	static function getObjectStructure() : array {
-		return array(
-			array('property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true),
-			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true),
+	static function getObjectStructure(): array {
+		return [
+			[
+				'property' => 'obituaryId',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id of the obituary in the database',
+				'storeDb' => true,
+			],
+			[
+				'property' => 'personId',
+				'type' => 'hidden',
+				'label' => 'Person Id',
+				'description' => 'The id of the person this obituary is for',
+				'storeDb' => true,
+			],
 			//array('property'=>'person', 'type'=>'method', 'label'=>'Person', 'description'=>'The person this obituary is for', 'storeDb' => false),
-			array('property' => 'source', 'type' => 'text', 'maxLength' => 100, 'label' => 'Source', 'description' => 'The source of the obituary', 'storeDb' => true),
-			array('property' => 'sourcePage', 'type' => 'text', 'maxLength' => 25, 'label' => 'Source Page', 'description' => 'The page where the obituary was found', 'storeDb' => true),
-			array('property' => 'date', 'type' => 'partialDate', 'label' => 'Date', 'description' => 'The date of the obituary.', 'storeDb' => true, 'propNameMonth' => 'dateMonth', 'propNameDay' => 'dateDay', 'propNameYear' => 'dateYear'),
-			array('property' => 'contents', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Full Text of the Obituary', 'description' => 'The full text of the obituary.', 'storeDb' => true, 'hideInLists' => true),
-			array('property' => 'picture', 'type' => 'image', 'thumbWidth' => 65, 'mediumWidth' => 250, 'label' => 'Picture', 'description' => 'A scanned image of the obituary.', 'storeDb' => true, 'storeSolr' => false, 'hideInLists' => true),
-		);
+			[
+				'property' => 'source',
+				'type' => 'text',
+				'maxLength' => 100,
+				'label' => 'Source',
+				'description' => 'The source of the obituary',
+				'storeDb' => true,
+			],
+			[
+				'property' => 'sourcePage',
+				'type' => 'text',
+				'maxLength' => 25,
+				'label' => 'Source Page',
+				'description' => 'The page where the obituary was found',
+				'storeDb' => true,
+			],
+			[
+				'property' => 'date',
+				'type' => 'partialDate',
+				'label' => 'Date',
+				'description' => 'The date of the obituary.',
+				'storeDb' => true,
+				'propNameMonth' => 'dateMonth',
+				'propNameDay' => 'dateDay',
+				'propNameYear' => 'dateYear',
+			],
+			[
+				'property' => 'contents',
+				'type' => 'textarea',
+				'rows' => 10,
+				'cols' => 80,
+				'label' => 'Full Text of the Obituary',
+				'description' => 'The full text of the obituary.',
+				'storeDb' => true,
+				'hideInLists' => true,
+			],
+			[
+				'property' => 'picture',
+				'type' => 'image',
+				'thumbWidth' => 65,
+				'mediumWidth' => 250,
+				'label' => 'Picture',
+				'description' => 'A scanned image of the obituary.',
+				'storeDb' => true,
+				'storeSolr' => false,
+				'hideInLists' => true,
+			],
+		];
 	}
 
 	function insert() {

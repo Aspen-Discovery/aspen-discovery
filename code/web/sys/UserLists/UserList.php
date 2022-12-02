@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
-class UserList extends DataObject
-{
+class UserList extends DataObject {
 	public $__table = 'user_list';
 	public $id;
 	public $user_id;
@@ -18,24 +17,22 @@ class UserList extends DataObject
 	public $defaultSort;
 	public $importedFrom;
 	public $nytListModified;
-    /**
-     * @var int
-     */
-    private $limit;
+	/**
+	 * @var int
+	 */
+	private $limit;
 
-    public function getUniquenessFields(): array
-	{
+	public function getUniquenessFields(): array {
 		return ['id'];
 	}
 
-	public static function getSourceListsForBrowsingAndCarousels()
-	{
+	public static function getSourceListsForBrowsingAndCarousels() {
 		$userLists = new UserList();
 		$userLists->public = 1;
 		$userLists->deleted = 0;
 		$userLists->orderBy('title asc');
 		$userLists->find();
-		$sourceLists = array();
+		$sourceLists = [];
 		$sourceLists[-1] = 'Generate from search term and filters';
 		while ($userLists->fetch()) {
 			$numItems = $userLists->numValidListItems();
@@ -46,53 +43,59 @@ class UserList extends DataObject
 		return $sourceLists;
 	}
 
-	public function getNumericColumnNames() : array
-	{
-		return ['id', 'user_id', 'public', 'deleted', 'searchable'];
+	public function getNumericColumnNames(): array {
+		return [
+			'id',
+			'user_id',
+			'public',
+			'deleted',
+			'searchable',
+		];
 	}
 
 	// Used by FavoriteHandler as well//
-	private static $__userListSortOptions = array(
+	private static $__userListSortOptions = [
 		// URL_value => SQL code for Order BY clause
 		'title' => 'title ASC',
 		'dateAdded' => 'dateAdded ASC',
 		'recentlyAdded' => 'dateAdded DESC',
-		'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
-	);
+		'custom' => 'weight ASC',
+		// this puts items with no set weight towards the end of the list
+	];
 
-	static function getObjectStructure() : array {
-		return array(
-			'id' => array(
-				'property'=>'id',
-				'type'=>'label',
-				'label'=>'Id',
-				'description'=>'The unique id of the user list.',
+	static function getObjectStructure(): array {
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id of the user list.',
 				'storeDb' => true,
 				'storeSolr' => false,
-			),
-			'title' => array(
+			],
+			'title' => [
 				'property' => 'title',
 				'type' => 'text',
 				'size' => 100,
-				'maxLength'=>255,
+				'maxLength' => 255,
 				'label' => 'Title',
 				'description' => 'The title of the item.',
-				'required'=> true,
+				'required' => true,
 				'storeDb' => true,
 				'storeSolr' => true,
-			),
-			'description' => array(
+			],
+			'description' => [
 				'property' => 'description',
 				'type' => 'textarea',
 				'label' => 'Description',
-				'rows'=>3,
-				'cols'=>80,
+				'rows' => 3,
+				'cols' => 80,
 				'description' => 'A brief description of the file for indexing and display if there is not an existing record within the catalog.',
-				'required'=> false,
+				'required' => false,
 				'storeDb' => true,
 				'storeSolr' => true,
-			),
-		);
+			],
+		];
 	}
 
 	function numValidListItems() {
@@ -103,9 +106,9 @@ class UserList extends DataObject
 		return $listEntry->count();
 	}
 
-	function insert($createNow = true){
+	function insert($createNow = true) {
 		if ($createNow) {
-			$this->created     = time();
+			$this->created = time();
 			if (empty($this->dateUpdated)) {
 				$this->dateUpdated = time();
 			}
@@ -114,8 +117,9 @@ class UserList extends DataObject
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return parent::insert();
 	}
-	function update(){
-		if ($this->created == 0){
+
+	function update() {
+		if ($this->created == 0) {
 			$this->created = time();
 		}
 		$this->dateUpdated = time();
@@ -127,7 +131,8 @@ class UserList extends DataObject
 
 		return $result;
 	}
-	function delete($useWhere = false){
+
+	function delete($useWhere = false) {
 		if (!$useWhere && $this->id >= 1) {
 			$this->deleted = 1;
 			$this->dateUpdated = time();
@@ -137,7 +142,7 @@ class UserList extends DataObject
 			$listEntry = new UserListEntry();
 			$listEntry->listId = $this->id;
 			$listEntry->delete(true);
-		}else{
+		} else {
 			parent::delete($useWhere);
 		}
 
@@ -149,13 +154,13 @@ class UserList extends DataObject
 	/**
 	 * @var array An array of resources keyed by the list id since we can iterate over multiple lists while fetching from the DB
 	 */
-	private $listTitles = array();
+	private $listTitles = [];
 
 	/**
-	 * @param null $sort  optional SQL for the query's ORDER BY clause
+	 * @param null $sort optional SQL for the query's ORDER BY clause
 	 * @return array      of list entries
 	 */
-	function getListEntries($sort = null){
+	function getListEntries($sort = null) {
 		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
@@ -166,7 +171,9 @@ class UserList extends DataObject
 		$nullCount = 0;
 
 		//Sort the list appropriately
-		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
+		if (!empty($sort)) {
+			$listEntry->orderBy(UserList::getSortOptions()[$sort]);
+		}
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -174,9 +181,9 @@ class UserList extends DataObject
 		$listEntries = [];
 		$idsBySource = [];
 		$listEntry->find();
-		while ($listEntry->fetch()){
+		while ($listEntry->fetch()) {
 			$entryPosition++;
-			if (!array_key_exists($listEntry->source, $idsBySource)){
+			if (!array_key_exists($listEntry->source, $idsBySource)) {
 				$idsBySource[$listEntry->source] = [];
 			}
 			$idsBySource[$listEntry->source][] = $listEntry->sourceId;
@@ -190,15 +197,15 @@ class UserList extends DataObject
 				'weight' => $listEntry->weight,
 			];
 
-			if($listEntry->weight === '0'){
+			if ($listEntry->weight === '0') {
 				$zeroCount++;
 			}
 
-			if (empty($listEntry->weight)){
+			if (empty($listEntry->weight)) {
 				$nullCount++;
 			}
 
-			if(($zeroCount >= 1) || ($nullCount >= 1)) {
+			if (($zeroCount >= 1) || ($nullCount >= 1)) {
 				$listEntry->weight = $entryPosition;
 				$listEntry->update();
 			}
@@ -208,13 +215,13 @@ class UserList extends DataObject
 		$listEntry->__destruct();
 		$listEntry = null;
 
-		if(($interface != null) && (($entryPosition != '') || ($entryPosition != null))){
+		if (($interface != null) && (($entryPosition != '') || ($entryPosition != null))) {
 			$interface->assign('listEntryCount', $entryPosition);
 		}
 
 		return [
 			'listEntries' => $listEntries,
-			'idsBySource' => $idsBySource
+			'idsBySource' => $idsBySource,
 		];
 	}
 
@@ -222,17 +229,16 @@ class UserList extends DataObject
 	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return UserListEntry[]|null
 	 */
-	function getListTitles($sortName = null)
-	{
-		if (isset($this->listTitles[$this->id])){
+	function getListTitles($sortName = null) {
+		if (isset($this->listTitles[$this->id])) {
 			return $this->listTitles[$this->id];
 		}
-		if ($sortName == null){
+		if ($sortName == null) {
 			$sortName = $this->defaultSort;
 		}
 		$listEntries = $this->getListEntries($sortName);
 		$this->listTitles[$this->id] = [];
-		foreach ($listEntries['listEntries'] as $listEntry){
+		foreach ($listEntries['listEntries'] as $listEntry) {
 			$this->listTitles[$this->id][] = $listEntry['listEntry'];
 		}
 
@@ -245,9 +251,9 @@ class UserList extends DataObject
 	 * @param UserListEntry $listEntry - The resource to be cleaned
 	 * @return UserListEntry|bool
 	 */
-	function cleanListEntry($listEntry){
+	function cleanListEntry($listEntry) {
 		//Filter list information for bad words as needed.
-		if (!UserAccount::isLoggedIn() || $this->user_id != UserAccount::getActiveUserId()){
+		if (!UserAccount::isLoggedIn() || $this->user_id != UserAccount::getActiveUserId()) {
 			//Load all bad words.
 			global $library;
 			require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
@@ -255,7 +261,7 @@ class UserList extends DataObject
 
 			//Determine if we should censor bad words or hide the comment completely.
 			$censorWords = $library->getGroupedWorkDisplaySettings()->hideCommentsWithBadWords == 0;
-			if ($censorWords){
+			if ($censorWords) {
 				//Filter Title
 				$titleText = $badWords->censorBadWords($this->title);
 				$this->title = $titleText;
@@ -267,18 +273,18 @@ class UserList extends DataObject
 				//Filter notes
 				$notesText = $badWords->censorBadWords($listEntry->notes);
 				$listEntry->notes = $notesText;
-			}else{
+			} else {
 				//Check for bad words in the title or description
 				$titleText = $badWords->censorBadWords($this->title);
 				$this->title = $titleText;
 
-				if (isset($this->description)){
-					if ($badWords->hasBadWords($this->description)){
+				if (isset($this->description)) {
+					if ($badWords->hasBadWords($this->description)) {
 						$this->description = '';
 					}
 				}
 				//Filter notes
-				if ($badWords->hasBadWords($listEntry->notes)){
+				if ($badWords->hasBadWords($listEntry->notes)) {
 					$listEntry->notes = '';
 				}
 			}
@@ -290,30 +296,29 @@ class UserList extends DataObject
 	 * @param String $listEntryToRemove
 	 * @param bool $updateBrowseCategories
 	 */
-	function removeListEntry($listEntryToRemove, $updateBrowseCategories = true)
-	{
+	function removeListEntry($listEntryToRemove, $updateBrowseCategories = true) {
 		// Remove the Saved List Entry
-		if ($listEntryToRemove instanceof UserListEntry){
+		if ($listEntryToRemove instanceof UserListEntry) {
 			$listEntryToRemove->delete(false, $updateBrowseCategories);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$listEntry = new UserListEntry();
 			$listEntry->id = $listEntryToRemove;
 
 			// update weights
-			if($listEntry->find(true)){
+			if ($listEntry->find(true)) {
 				$userLists = new UserListEntry();
 				$userLists->listId = $listEntry->listId;
 				$userLists->find();
 				$entries = [];
-				while ($userLists->fetch()){
+				while ($userLists->fetch()) {
 					$entries[] = clone $userLists;
 				}
 
 				$entryIndex = $listEntry->weight;
-				foreach ($entries as $entry){
+				foreach ($entries as $entry) {
 					$weight = $entry->weight;
-					if($weight > $entryIndex) {
+					if ($weight > $entryIndex) {
 						$weight--;
 						$entry->weight = $weight;
 						$entry->update();
@@ -334,8 +339,8 @@ class UserList extends DataObject
 	private $_cleanDescription = null;
 
 	/** @noinspection PhpUnused */
-	function getCleanDescription() :?string{
-		if ($this->_cleanDescription == null){
+	function getCleanDescription(): ?string {
+		if ($this->_cleanDescription == null) {
 			$this->_cleanDescription = strip_tags($this->description, '<p><b><em><strong><i><br>');
 		}
 		return $this->_cleanDescription;
@@ -345,9 +350,9 @@ class UserList extends DataObject
 	 * remove all resources within this list
 	 * @param bool $updateBrowseCategories
 	 */
-	function removeAllListEntries(bool $updateBrowseCategories = true){
+	function removeAllListEntries(bool $updateBrowseCategories = true) {
 		$allListEntries = $this->getListTitles();
-		foreach ($allListEntries as $listEntry){
+		foreach ($allListEntries as $listEntry) {
 			$this->removeListEntry($listEntry, $updateBrowseCategories);
 		}
 	}
@@ -361,7 +366,7 @@ class UserList extends DataObject
 	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null) : array {
+	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null): array {
 		//Get all entries for the list
 		if ($sortName == null) {
 			$sortName = $this->defaultSort;
@@ -369,15 +374,15 @@ class UserList extends DataObject
 		$listEntryInfo = $this->getListEntries($sortName);
 
 		//Trim to the number of records we want to return
-		if ($numItems > 0){
+		if ($numItems > 0) {
 			$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
-		}else{
+		} else {
 			$filteredListEntries = $listEntryInfo['listEntries'];
 		}
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
-			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)) {
 				$filteredIdsBySource[$listItemEntry['source']] = [];
 			}
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
@@ -385,21 +390,21 @@ class UserList extends DataObject
 
 		//Load the actual items from each source
 		$listResults = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false){
+			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			}else{
+			} else {
 				$records = $searchObject->getRecords($sourceIds);
 				if ($format == 'html') {
 					$listResults = $listResults + $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start);
-				}elseif ($format == 'summary') {
+				} elseif ($format == 'summary') {
 					$listResults = $listResults + $this->getResultListSummary($records, $filteredListEntries);
-				}elseif ($format == 'recordDrivers') {
+				} elseif ($format == 'recordDrivers') {
 					$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredListEntries);
-				}elseif ($format == 'citations') {
+				} elseif ($format == 'citations') {
 					$listResults = $listResults + $this->getResultListCitations($records, $filteredListEntries, $citationFormat);
-				}else{
+				} else {
 					AspenError::raiseError("Unknown display format $format in getListRecords");
 				}
 			}
@@ -438,10 +443,9 @@ class UserList extends DataObject
 	 * @param int $startRecord The first record being displayed
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getResultListHTML($records, $allListEntryIds, $allowEdit, $startRecord = 0) :array
-	{
+	private function getResultListHTML($records, $allListEntryIds, $allowEdit, $startRecord = 0): array {
 		global $interface;
-		$html = array();
+		$html = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentListEntry) {
 			// use $IDList as the order guide for the html
@@ -473,9 +477,8 @@ class UserList extends DataObject
 		return $html;
 	}
 
-	private function getResultListSummary($records, $allListEntryIds) :array
-	{
-		$results = array();
+	private function getResultListSummary($records, $allListEntryIds): array {
+		$results = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -498,9 +501,9 @@ class UserList extends DataObject
 		return $results;
 	}
 
-	private function getResultListCitations($records, $allListEntryIds, $format) : array {
+	private function getResultListCitations($records, $allListEntryIds, $format): array {
 		global $interface;
-		$results = array();
+		$results = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -523,9 +526,8 @@ class UserList extends DataObject
 		return $results;
 	}
 
-	private function getResultListRecordDrivers($records, $allListEntryIds) : array
-	{
-		$results = array();
+	private function getResultListRecordDrivers($records, $allListEntryIds): array {
+		$results = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -550,11 +552,11 @@ class UserList extends DataObject
 	}
 
 	/**
-	 * @param int $start     position of first list item to fetch
-	 * @param int $numItems  Number of items to fetch for this result
+	 * @param int $start position of first list item to fetch
+	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecords($start, $numItems) : array {
+	public function getBrowseRecords($start, $numItems): array {
 		//Get all entries for the list
 		$listEntryInfo = $this->getListEntries($this->defaultSort);
 
@@ -563,7 +565,7 @@ class UserList extends DataObject
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
-			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)) {
 				$filteredIdsBySource[$listItemEntry['source']] = [];
 			}
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
@@ -571,11 +573,11 @@ class UserList extends DataObject
 
 		//Load catalog items
 		$browseRecords = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false){
+			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			}else{
+			} else {
 				$records = $searchObject->getRecords($sourceIds);
 				$browseRecords = array_merge($browseRecords, $this->getBrowseRecordHTML($records, $listEntryInfo['listEntries'], $start));
 			}
@@ -588,11 +590,11 @@ class UserList extends DataObject
 	}
 
 	/**
-	 * @param int $start     position of first list item to fetch
-	 * @param int $numItems  Number of items to fetch for this result
+	 * @param int $start position of first list item to fetch
+	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecordsRaw($start, $numItems) : array {
+	public function getBrowseRecordsRaw($start, $numItems): array {
 		//Get all entries for the list
 		$listEntryInfo = $this->getListEntries();
 
@@ -601,7 +603,7 @@ class UserList extends DataObject
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
-			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)) {
 				$filteredIdsBySource[$listItemEntry['source']] = [];
 			}
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
@@ -609,19 +611,19 @@ class UserList extends DataObject
 
 		//Load catalog items
 		$browseRecords = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false){
+			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			}else{
+			} else {
 				$records = $searchObject->getRecords($sourceIds);
-				foreach ($records as $key => $record){
-					if ($record instanceof ListsRecordDriver){
+				foreach ($records as $key => $record) {
+					if ($record instanceof ListsRecordDriver) {
 						$browseRecords[$key] = $record->getFields();
-					}else{
+					} else {
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$groupedWorkDriver = new GroupedWorkDriver($key);
-						if($groupedWorkDriver->isValid()){
+						if ($groupedWorkDriver->isValid()) {
 							$browseRecords[$key]['id'] = $groupedWorkDriver->getPermanentId();
 							$browseRecords[$key]['title_display'] = $groupedWorkDriver->getShortTitle();
 							$browseRecords[$key]['author_display'] = $groupedWorkDriver->getPrimaryAuthor();
@@ -652,10 +654,9 @@ class UserList extends DataObject
 	 * @param int $start
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getBrowseRecordHTML($records, $allListEntryIds, $start) : array
-	{
+	private function getBrowseRecordHTML($records, $allListEntryIds, $start): array {
 		global $interface;
-		$html = array();
+		$html = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -681,26 +682,25 @@ class UserList extends DataObject
 	/**
 	 * @return array
 	 */
-	public static function getSortOptions() : array
-	{
+	public static function getSortOptions(): array {
 		return UserList::$__userListSortOptions;
 	}
 
-	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight) : array
-	{
+	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight): array {
 		$allEntries = $this->getListTitles();
 
 		$results = [];
 		/**
 		 * @var string $key
-		 * @var UserListEntry $entry */
-		foreach ($allEntries as $key => $entry){
+		 * @var UserListEntry $entry
+		 */
+		foreach ($allEntries as $key => $entry) {
 			$recordDriver = $entry->getRecordDriver();
-			if ($recordDriver != null && $recordDriver->isValid()){
+			if ($recordDriver != null && $recordDriver->isValid()) {
 				$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
 			}
 
-			if (count($results) == $collectionSpotlight->numTitlesToShow){
+			if (count($results) == $collectionSpotlight->numTitlesToShow) {
 				break;
 			}
 		}
@@ -708,13 +708,13 @@ class UserList extends DataObject
 		return $results;
 	}
 
-	public static function getUserListsForSaveForm($source, $sourceId) : array{
+	public static function getUserListsForSaveForm($source, $sourceId): array {
 		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 		//Get a list of all lists for the user
-		$containingLists = array();
-		$nonContainingLists = array();
+		$containingLists = [];
+		$nonContainingLists = [];
 
 		$user = UserAccount::getActiveUserObj();
 
@@ -723,24 +723,24 @@ class UserList extends DataObject
 		$userLists->whereAdd('deleted = 0');
 		$userLists->orderBy('title');
 		$userLists->find();
-		while ($userLists->fetch()){
+		while ($userLists->fetch()) {
 			//Check to see if the user has already added the title to the list.
 			$userListEntry = new UserListEntry();
 			$userListEntry->listId = $userLists->id;
 			$userListEntry->source = $source;
 			$userListEntry->sourceId = $sourceId;
-			if ($userListEntry->find(true)){
-				$containingLists[] = array(
-					'id' => $userLists->id,
-					'title' => $userLists->title
-				);
-			}else{
-				$selected = $user->lastListUsed == $userLists->id;
-				$nonContainingLists[] = array(
+			if ($userListEntry->find(true)) {
+				$containingLists[] = [
 					'id' => $userLists->id,
 					'title' => $userLists->title,
-					'selected' => $selected
-				);
+				];
+			} else {
+				$selected = $user->lastListUsed == $userLists->id;
+				$nonContainingLists[] = [
+					'id' => $userLists->id,
+					'title' => $userLists->title,
+					'selected' => $selected,
+				];
 			}
 		}
 
@@ -749,12 +749,11 @@ class UserList extends DataObject
 
 		return [
 			'containingLists' => $containingLists,
-			'nonContainingLists' => $nonContainingLists
+			'nonContainingLists' => $nonContainingLists,
 		];
 	}
 
-	public static function getUserListsForRecord($source, $sourceId) : array
-	{
+	public static function getUserListsForRecord($source, $sourceId): array {
 		$userLists = [];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -762,18 +761,18 @@ class UserList extends DataObject
 		$userListEntry->source = $source;
 		$userListEntry->sourceId = $sourceId;
 		$userListEntry->find();
-		while ($userListEntry->fetch()){
+		while ($userListEntry->fetch()) {
 			//Check to see if the user has access to the list
 			$userList = new UserList();
 			$userList->id = $userListEntry->listId;
-			if ($userList->find(true)){
+			if ($userList->find(true)) {
 				$okToShow = false;
 				$key = '';
 				if (!$userList->deleted) {
 					if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id) {
 						$okToShow = true;
 						$key = 0 . strtolower($userList->title);
-					} else if ($userList->public == 1 && $userList->searchable == 1) {
+					} elseif ($userList->public == 1 && $userList->searchable == 1) {
 						$okToShow = true;
 						$key = 1 . strtolower($userList->title);
 					}
@@ -781,7 +780,7 @@ class UserList extends DataObject
 				if ($okToShow) {
 					$userLists[$key] = [
 						'link' => '/MyAccount/MyList/' . $userList->id,
-						'title' => $userList->title
+						'title' => $userList->title,
 					];
 				}
 			}
@@ -790,14 +789,13 @@ class UserList extends DataObject
 		return $userLists;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['user_id']);
 		return $return;
 	}
 
-	public function okToExport(array $selectedFilters) : bool{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
 		$user = new User();
 		$user->id = $this->user_id;
@@ -809,12 +807,11 @@ class UserList extends DataObject
 		return $okToExport;
 	}
 
-	public function getLinksForJSON(): array
-	{
-		$links =  parent::getLinksForJSON();
+	public function getLinksForJSON(): array {
+		$links = parent::getLinksForJSON();
 		$user = new User();
 		$user->id = $this->user_id;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$links['user'] = $user->cat_username;
 		}
 
@@ -823,7 +820,7 @@ class UserList extends DataObject
 		$userListEntry = new UserListEntry();
 		$userListEntry->listId = $this->id;
 		$userListEntry->find();
-		while ($userListEntry->fetch()){
+		while ($userListEntry->fetch()) {
 			$userListEntryArray = $userListEntry->toArray(false, true);
 			$userListEntryArray['links'] = $userListEntry->getLinksForJSON();
 			$userListEntries[] = $userListEntryArray;
@@ -833,35 +830,32 @@ class UserList extends DataObject
 		return $links;
 	}
 
-	public function loadObjectPropertiesFromJSON($jsonData, $mappings)
-	{
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings) {
 		parent::loadObjectPropertiesFromJSON($jsonData, $mappings);
 		//Need to load ID for lists since we link to a list based on the id
 		$this->id = (int)$jsonData['id'];
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['user'])){
+		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->user_id = $user->id;
 			}
 		}
 	}
 
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
-	{
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (array_key_exists('userListEntries', $jsonData)){
+		if (array_key_exists('userListEntries', $jsonData)) {
 			//Remove any list entries that we already have for this list
 			$tmpListEntry = new UserListEntry();
 			$tmpListEntry->listId = $this->id;
 			$tmpListEntry->delete(true);
-			foreach ($jsonData['userListEntries'] as $listEntry){
+			foreach ($jsonData['userListEntries'] as $listEntry) {
 				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 				$userListEntry = new UserListEntry();
 				$userListEntry->listId = $this->id;
@@ -890,16 +884,15 @@ class UserList extends DataObject
 		}
 		return false;
 	}
-	
-	public function isValidForDisplay()
-	{
+
+	public function isValidForDisplay() {
 		if ($this->isDismissed()) {
 			return false;
 		}
 		return true;
 	}
 
-	public function fixWeights(){
+	public function fixWeights() {
 		$changeMade = false;
 
 		$listEntries = new UserListEntry();
@@ -908,8 +901,8 @@ class UserList extends DataObject
 		/** @var UserListEntry[] $allListEntries */
 		$allListEntries = $listEntries->fetchAll();
 		$curIndex = 1;
-		foreach ($allListEntries as $listEntry){
-			if ($listEntry->weight != $curIndex){
+		foreach ($allListEntries as $listEntry) {
+			if ($listEntry->weight != $curIndex) {
 				$listEntry->weight = $curIndex;
 				$listEntry->update();
 				$changeMade = true;
@@ -917,204 +910,200 @@ class UserList extends DataObject
 			$curIndex++;
 		}
 
-		if ($changeMade){
+		if ($changeMade) {
 			$this->update();
 		}
 	}
 
-    /**
-     * Turn our results into an Excel document
-     * @param null|array $result
-     */
-    public function buildExcel()
-    {
-        try {
-            global $configArray;
-            $titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for email list, not just a page's worth
+	/**
+	 * Turn our results into an Excel document
+	 * @param null|array $result
+	 */
+	public function buildExcel() {
+		try {
+			global $configArray;
+			$titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for email list, not just a page's worth
 
-            // Create new PHPExcel object
-            $objPHPExcel = new PHPExcel();
-            // Set properties
-            $objPHPExcel->getProperties()
-                ->setCreator("Aspen Discovery")
-                ->setLastModifiedBy("Aspen Discovery")
-                ->setTitle("User List");
+			// Create new PHPExcel object
+			$objPHPExcel = new PHPExcel();
+			// Set properties
+			$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("User List");
 
-            $objPHPExcel->setActiveSheetIndex(0);
-            $objPHPExcel->getActiveSheet()->setTitle('Titles');
+			$objPHPExcel->setActiveSheetIndex(0);
+			$objPHPExcel->getActiveSheet()->setTitle('Titles');
 
-            //Add headers to the table
-            $sheet = $objPHPExcel->getActiveSheet();
-            $curRow = 1;
-            $curCol = 0;
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
+			//Add headers to the table
+			$sheet = $objPHPExcel->getActiveSheet();
+			$curRow = 1;
+			$curCol = 0;
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
 
-            $maxColumn = $curCol - 1;
+			$maxColumn = $curCol - 1;
 
-            for ($i = 0; $i < count($titleDetails); $i++) {
-                $curDoc = $titleDetails[$i];
-                $curRow++;
-                $curCol = 0;
-                if ($curDoc instanceof GroupedWorkDriver) {
-                    // Hyperlink to title
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $curDoc->getLinkUrl(true));
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($curDoc->getLinkUrl(true));
+			for ($i = 0; $i < count($titleDetails); $i++) {
+				$curDoc = $titleDetails[$i];
+				$curRow++;
+				$curCol = 0;
+				if ($curDoc instanceof GroupedWorkDriver) {
+					// Hyperlink to title
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $curDoc->getLinkUrl(true));
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($curDoc->getLinkUrl(true));
 
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
 
-                    // Publisher list
-                    $publishers = $curDoc->getPublishers();
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $publishers));
+					// Publisher list
+					$publishers = $curDoc->getPublishers();
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $publishers));
 
-                    // Publication dates: min - max
-                    if (!is_array($curDoc->getPublicationDates())) {
-                        $publishDates = (array)$curDoc->getPublicationDates();
-                    } else {
-                        $publishDates = $curDoc->getPublicationDates();
-                    }
-                    $publishDate = '';
-                    if (count($publishDates) == 1) {
-                        $publishDate = $publishDates[0];
-                    } elseif (count($publishDates) > 1) {
-                        $publishDate = min($publishDates) . ' - ' . max($publishDates);
-                    }
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
+					// Publication dates: min - max
+					if (!is_array($curDoc->getPublicationDates())) {
+						$publishDates = (array)$curDoc->getPublicationDates();
+					} else {
+						$publishDates = $curDoc->getPublicationDates();
+					}
+					$publishDate = '';
+					if (count($publishDates) == 1) {
+						$publishDate = $publishDates[0];
+					} elseif (count($publishDates) > 1) {
+						$publishDate = min($publishDates) . ' - ' . max($publishDates);
+					}
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
 
-                    // Formats
-                    if (!is_array($curDoc->getFormats())) {
-                        $formats = (array)$curDoc->getFormats();
-                    } else {
-                        $formats = $curDoc->getFormats();
-                    }
-                    $uniqueFormats = array_unique($formats);
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
+					// Formats
+					if (!is_array($curDoc->getFormats())) {
+						$formats = (array)$curDoc->getFormats();
+					} else {
+						$formats = $curDoc->getFormats();
+					}
+					$uniqueFormats = array_unique($formats);
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
 
-                    // Format / Location / Call number, max 3 records
-                    //Get the Grouped Work Driver so we can get information about the formats and locations within the record
-                    require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-                    $output = [];
-                    foreach ($curDoc->getRelatedManifestations() as $relatedManifestation){
-                        //Manifestation gives us Format & Format Category
-                        if (!$relatedManifestation->isHideByDefault()) {
-                            $format = $relatedManifestation->format;
-                            //Variation gives us the sort
-                            foreach ($relatedManifestation->getVariations() as $variation) {
-                                if (!$variation->isHideByDefault()) {
-                                    //Record will give us the call number, and location
-                                    //Only do up to 3 records per format?
-                                    foreach ($variation->getRecords() as $record) {
-                                        if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
-                                            $copySummary = $record->getItemSummary();
-                                            foreach ($copySummary as $item) {
-                                                $output[] = $format . "::" . $item['description'];
-                                            }
-                                            $output = array_unique($output);
-                                            $output = array_slice($output, 0, 3);
-                                            if (count($output)==0) {
-                                                $output[] = "No copies currently owned by this library";
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
+					// Format / Location / Call number, max 3 records
+					//Get the Grouped Work Driver so we can get information about the formats and locations within the record
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$output = [];
+					foreach ($curDoc->getRelatedManifestations() as $relatedManifestation) {
+						//Manifestation gives us Format & Format Category
+						if (!$relatedManifestation->isHideByDefault()) {
+							$format = $relatedManifestation->format;
+							//Variation gives us the sort
+							foreach ($relatedManifestation->getVariations() as $variation) {
+								if (!$variation->isHideByDefault()) {
+									//Record will give us the call number, and location
+									//Only do up to 3 records per format?
+									foreach ($variation->getRecords() as $record) {
+										if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+											$copySummary = $record->getItemSummary();
+											foreach ($copySummary as $item) {
+												$output[] = $format . "::" . $item['description'];
+											}
+											$output = array_unique($output);
+											$output = array_slice($output, 0, 3);
+											if (count($output) == 0) {
+												$output[] = "No copies currently owned by this library";
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
 
-                } elseif ($curDoc instanceof ListsRecordDriver) {
-                    // Hyperlink to title
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // User List Title
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-                    // User List creator
-                    $fields = $curDoc->getFields();
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
+				} elseif ($curDoc instanceof ListsRecordDriver) {
+					// Hyperlink to title
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// User List Title
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+					// User List creator
+					$fields = $curDoc->getFields();
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
 
-                } elseif ($curDoc instanceof PersonRecord) {
-                    // Hyperlink to Person Record
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // Person Name
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getName() ?? '');
+				} elseif ($curDoc instanceof PersonRecord) {
+					// Hyperlink to Person Record
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// Person Name
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getName() ?? '');
 
-                } elseif ($curDoc instanceof OpenArchivesRecordDriver) {
-                    // Hyperlink to Open Archive target
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // Record Title
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+				} elseif ($curDoc instanceof OpenArchivesRecordDriver) {
+					// Hyperlink to Open Archive target
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// Record Title
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
 
-                } elseif ($curDoc instanceof EbscohostRecordDriver) {
-                    // Hyperlink to EBSCOHost record
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // Record Title
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-                    // Record Primary Author
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+				} elseif ($curDoc instanceof EbscohostRecordDriver) {
+					// Hyperlink to EBSCOHost record
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// Record Title
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+					// Record Primary Author
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
 
-                } elseif ($curDoc instanceof EbscoRecordDriver) {
-                    // Hyperlink to EBSCO record
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // Record Title
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-                    // Record Primary Author
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+				} elseif ($curDoc instanceof EbscoRecordDriver) {
+					// Hyperlink to EBSCO record
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// Record Title
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+					// Record Primary Author
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
 
-                } elseif ($curDoc instanceof WebsitePageRecordDriver) {
-                    // Hyperlink
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // Record Title
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
+					// Hyperlink
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// Record Title
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
 
-                } elseif ($curDoc instanceof WebResourceRecordDriver) {
-                    // Hyperlink
-                    $link = $curDoc->getLinkUrl();
-                    $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                    $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                    // Record Title
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+				} elseif ($curDoc instanceof WebResourceRecordDriver) {
+					// Hyperlink
+					$link = $curDoc->getLinkUrl();
+					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					// Record Title
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
 
-                }
-            }
+				}
+			}
 
-            for ($i = 0; $i < $maxColumn; $i++) {
-                $sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-            }
+			for ($i = 0; $i < $maxColumn; $i++) {
+				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
+			}
 
-            //Output to the browser
-            header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-            header("Cache-Control: no-store, no-cache, must-revalidate");
-            header("Cache-Control: post-check=0, pre-check=0", false);
-            header("Pragma: no-cache");
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="UserList.xlsx"');
+			//Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+			header('Content-Disposition: attachment;filename="UserList.xlsx"');
 
-            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-            $objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-            $objPHPExcel->disconnectWorksheets();
-            unset($objPHPExcel);
-            exit();
-        } catch (Exception $e) {
-            global $logger;
-            $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
-        }
-    }
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
+			$objPHPExcel->disconnectWorksheets();
+			unset($objPHPExcel);
+			exit();
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+		}
+	}
 
 }

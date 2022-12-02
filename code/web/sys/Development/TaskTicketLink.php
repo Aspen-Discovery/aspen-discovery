@@ -27,33 +27,33 @@ class TaskTicketLink extends DataObject {
 			$ticketList[$ticket->id] = $ticket->ticketId . ': ' . $ticket->title;
 		}
 
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'ticketId' => array(
+				'description' => 'The unique id',
+			],
+			'ticketId' => [
 				'property' => 'ticketId',
 				'type' => 'enum',
 				'values' => $ticketList,
 				'label' => 'Ticket',
 				'description' => 'The ticket related to the task',
-				'required' => true
-			),
-			'taskId' => array(
+				'required' => true,
+			],
+			'taskId' => [
 				'property' => 'taskId',
 				'type' => 'enum',
 				'values' => $taskList,
 				'label' => 'Task',
 				'description' => 'The task related to the ticket',
-				'required' => true
-			),
-		);
+				'required' => true,
+			],
+		];
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		if ($context == 'relatedTickets') {
 			return '/Greenhouse/Tickets?objectAction=edit&id=' . $this->ticketId;
 		} else {

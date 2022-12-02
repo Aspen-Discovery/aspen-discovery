@@ -1,4 +1,5 @@
 <?php
+
 interface Authentication {
 	public function __construct($additionalInfo);
 

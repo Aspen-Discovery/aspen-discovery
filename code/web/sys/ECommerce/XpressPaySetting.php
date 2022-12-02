@@ -3,8 +3,7 @@
 /**
  * Class XpressPaySetting - Store settings for Xpress-Pay
  */
-class XpressPaySetting extends DataObject
-{
+class XpressPaySetting extends DataObject {
 	public $__table = 'xpresspay_settings';
 	public $id;
 	public $name;
@@ -12,15 +11,32 @@ class XpressPaySetting extends DataObject
 
 	private $_libraries;
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
-		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
-			'paymentTypeCode' => array('property' => 'paymentTypeCode', 'type' => 'text', 'label' => 'Payment Type Code', 'description' => 'The payment type code provided by Systems East', 'maxLength' => 20),
+		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'A name for the settings',
+				'maxLength' => 50,
+			],
+			'paymentTypeCode' => [
+				'property' => 'paymentTypeCode',
+				'type' => 'text',
+				'label' => 'Payment Type Code',
+				'description' => 'The payment type code provided by Systems East',
+				'maxLength' => 20,
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
@@ -28,28 +44,27 @@ class XpressPaySetting extends DataObject
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
 				'hideInLists' => true,
-			),
-		);
+			],
+		];
 
-		if (!UserAccount::userHasPermission('Library eCommerce Options')){
+		if (!UserAccount::userHasPermission('Library eCommerce Options')) {
 			unset($structure['libraries']);
 		}
 		return $structure;
 	}
 
-	function getNumericColumnNames() : array
-	{
+	function getNumericColumnNames(): array {
 		return ['customerId'];
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
+			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
 				$obj->xpressPaySettingId = $this->id;
 				$obj->find();
-				while($obj->fetch()){
+				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
 				}
 			}
@@ -59,16 +74,15 @@ class XpressPaySetting extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
 
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -76,8 +90,7 @@ class XpressPaySetting extends DataObject
 		return true;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -85,24 +98,26 @@ class XpressPaySetting extends DataObject
 		return $ret;
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName){
+			foreach ($libraryList as $libraryId => $displayName) {
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
+				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the scope to this library
-					if ($library->xpressPaySettingId != $this->id){
+					if ($library->xpressPaySettingId != $this->id) {
 						$library->finePaymentType = 6;
 						$library->xpressPaySettingId = $this->id;
 						$library->update();
 					}
-				}else{
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->xpressPaySettingId == $this->id){
-						if ($library->finePaymentType == 6) {$library->finePaymentType = 0;}
+					if ($library->xpressPaySettingId == $this->id) {
+						if ($library->finePaymentType == 6) {
+							$library->finePaymentType = 0;
+						}
 						$library->xpressPaySettingId = -1;
 						$library->update();
 					}

@@ -2,10 +2,8 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class OverDrive_APIData extends Admin_Admin
-{
-	function launch()
-	{
+class OverDrive_APIData extends Admin_Admin {
+	function launch() {
 		global $interface;
 		global $library;
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
@@ -13,7 +11,7 @@ class OverDrive_APIData extends Admin_Admin
 		$setting = new OverDriveSetting();
 		$setting->orderBy('url');
 		$setting->find();
-		$allSettings = array();
+		$allSettings = [];
 		while ($setting->fetch()) {
 			$allSettings[$setting->id] = clone $setting;
 		}
@@ -21,12 +19,12 @@ class OverDrive_APIData extends Admin_Admin
 
 		$driver = new OverDriveDriver();
 
-		if (isset($_REQUEST['settingId'])){
+		if (isset($_REQUEST['settingId'])) {
 			$activeSetting = $allSettings[$_REQUEST['settingId']];
-		}else{
-			if ($library->overDriveScopeId > 0){
+		} else {
+			if ($library->overDriveScopeId > 0) {
 				$activeSetting = $allSettings[$library->getOverdriveScope()->settingId];
-			}else {
+			} else {
 				$activeSetting = reset($allSettings);
 			}
 		}
@@ -34,15 +32,15 @@ class OverDrive_APIData extends Admin_Admin
 		$allScopes = $activeSetting->scopes;
 		$interface->assign('scopes', $allScopes);
 		$activeScope = null;
-		if (isset($_REQUEST['scopeId'])){
-			if (in_array($_REQUEST['scopeId'], $allScopes)){
+		if (isset($_REQUEST['scopeId'])) {
+			if (in_array($_REQUEST['scopeId'], $allScopes)) {
 				$activeScope = $allScopes[$_REQUEST['scopeId']];
 			}
 		}
-		if (is_null($activeScope)){
-			if ($library->overDriveScopeId > 0 && in_array($library->overDriveScopeId, $allScopes)){
+		if (is_null($activeScope)) {
+			if ($library->overDriveScopeId > 0 && in_array($library->overDriveScopeId, $allScopes)) {
 				$activeScope = $allScopes[$library->overDriveScopeId];
-			}else{
+			} else {
 				$activeScope = reset($allScopes);
 			}
 		}
@@ -52,9 +50,9 @@ class OverDrive_APIData extends Admin_Admin
 
 		$contents = '';
 		$tokenData = $driver->getTokenData();
-		if ($tokenData == false){
+		if ($tokenData == false) {
 			$contents .= "<strong>Could not connect to the APIs.  Please check the OverDrive settings.</strong>";
-		}else{
+		} else {
 			$contents .= "<h1>Token</h1>";
 			$contents .= '<div>Connection Scope: ' . $tokenData->scope . '</div>';
 		}
@@ -62,7 +60,7 @@ class OverDrive_APIData extends Admin_Admin
 		$libraryInfo = $driver->getLibraryAccountInformation();
 		if ($libraryInfo == null) {
 			$contents .= "<strong>No Library Information Returned.  Please check the OverDrive settings.</strong>";
-		}else {
+		} else {
 			$contents .= "<h1>Main - {$libraryInfo->name}</h1>";
 			$contents .= $this->easy_printr('Library Account Information', 'libraryAccountInfo', $libraryInfo);
 
@@ -136,8 +134,7 @@ class OverDrive_APIData extends Admin_Admin
 		$this->display('overdriveApiData.tpl', 'OverDrive API Data');
 	}
 
-	function easy_printr($title, $section, &$var)
-	{
+	function easy_printr($title, $section, &$var) {
 		$contents = "<a onclick='$(\"#{$section}\").toggle();return false;' href='#'>{$title}</a>";
 		$contents .= "<pre style='display:none' id='{$section}'>";
 		$contents .= print_r($var, true);
@@ -145,8 +142,7 @@ class OverDrive_APIData extends Admin_Admin
 		return $contents;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
@@ -154,13 +150,11 @@ class OverDrive_APIData extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'overdrive';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View OverDrive Test Interface');
 	}
 }

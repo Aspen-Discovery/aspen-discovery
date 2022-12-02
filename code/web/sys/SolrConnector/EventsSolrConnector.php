@@ -2,24 +2,20 @@
 
 require_once 'Solr.php';
 
-class EventsSolrConnector extends Solr
-{
-	function __construct($host)
-	{
+class EventsSolrConnector extends Solr {
+	function __construct($host) {
 		parent::__construct($host, 'events');
 	}
 
 	/**
 	 * @return string
 	 */
-	function getSearchSpecsFile()
-	{
+	function getSearchSpecsFile() {
 		return ROOT_DIR . '/../../sites/default/conf/eventsSearchSpecs.yaml';
 	}
 
 	/** return string */
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'eventsSearches';
 	}
 
@@ -29,8 +25,7 @@ class EventsSolrConnector extends Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation)
-	{
+	public function getScopingFilters($searchLibrary, $searchLocation) {
 		global $library;
 		global $solrScope;
 		$filter = [];
@@ -45,9 +40,8 @@ class EventsSolrConnector extends Solr
 		return $filter;
 	}
 
-	public function getBoostFactors($searchLibrary)
-	{
-		$boostFactors = array();
+	public function getBoostFactors($searchLibrary) {
+		$boostFactors = [];
 
 		$boostFactors[] = "boost";
 

@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_08_00() : array
-{
+function getUpdates21_08_00(): array {
 	return [
 		'quipu_ecard_settings' => [
 			'title' => 'Quipu eCARD Settings',
@@ -13,8 +12,9 @@ function getUpdates21_08_00() : array
 					server VARCHAR(50) NOT NULL, 
 					clientId INT(11) NOT NULL
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
-			]
-		], //quipu_ecard_settings
+			],
+		],
+		//quipu_ecard_settings
 		'store_grouped_work_record_item_scope' => [
 			'title' => 'Grouped Work Records, Items, Scopes',
 			'description' => 'Store more information about grouped works within the database for easier access',
@@ -195,15 +195,17 @@ function getUpdates21_08_00() : array
 					AFTER DELETE ON scope
 					FOR EACH ROW
 					DELETE FROM grouped_work_record_scope where scopeId = old.id",
-			]
-		], //store_grouped_work_record_item_scope
+			],
+		],
+		//store_grouped_work_record_item_scope
 		'storeRecordDetailsInSolr' => [
 			'title' => 'Add Store Record Details In Solr to System Variables',
 			'description' => 'Provides backwards compatibility to 21.07',
 			'sql' => [
-				'ALTER TABLE system_variables ADD COLUMN storeRecordDetailsInSolr TINYINT(1) DEFAULT 0'
-			]
-		], //storeRecordDetailsInSolr
+				'ALTER TABLE system_variables ADD COLUMN storeRecordDetailsInSolr TINYINT(1) DEFAULT 0',
+			],
+		],
+		//storeRecordDetailsInSolr
 		'comprise_settings' => [
 			'title' => 'Add settings for Comprise',
 			'description' => 'Add settings for Comprise integration',
@@ -217,38 +219,43 @@ function getUpdates21_08_00() : array
 				) ENGINE INNODB',
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Comprise', '', 10, 'Controls if the user can change Comprise settings. <em>This has potential security and cost implications.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Comprise'))",
-			]
-		], //comprise_settings
+			],
+		],
+		//comprise_settings
 		'comprise_link_to_library' => [
 			'title' => 'Link Comprise to library',
 			'description' => 'Link comprise settings to the library',
 			'sql' => [
 				"DROP TABLE if exists library_comprise_setting",
-				"ALTER TABLE library ADD COLUMN compriseSettingId INT(11) DEFAULT -1"
-			]
-		], //comprise_link_to_library
+				"ALTER TABLE library ADD COLUMN compriseSettingId INT(11) DEFAULT -1",
+			],
+		],
+		//comprise_link_to_library
 		'force_reload_of_cloud_library_21_08' => [
 			'title' => 'Force reload of Cloud Library',
 			'description' => 'Force Cloud Library to be reloaded for 21.08',
 			'sql' => [
 				"UPDATE cloud_library_settings set runFullUpdate = 1",
-			]
-		], //force_reload_of_cloud_library_21_08
+			],
+		],
+		//force_reload_of_cloud_library_21_08
 		'indexed_information_length' => [
 			'title' => 'Indexed Information Lengths',
 			'description' => 'Increase the length of some indexed information',
 			'sql' => [
 				"ALTER TABLE indexed_edition CHANGE COLUMN edition edition VARCHAR(1000) collate utf8_bin UNIQUE ",
 				"ALTER TABLE indexed_physicalDescription CHANGE COLUMN physicalDescription physicalDescription VARCHAR(1000) collate utf8_bin UNIQUE ",
-			]
-		], //indexed_information_length
+			],
+		],
+		//indexed_information_length
 		'renew_error' => [
 			'title' => 'Add renew error on user checkouts',
 			'description' => 'Displays users without auto renew why their hold is not renewable',
 			'sql' => [
-				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)'
-			]
-		],//store_renew_error_for_checkouts
+				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)',
+			],
+		],
+		//store_renew_error_for_checkouts
 		'hold_request_confirmations' => [
 			'title' => 'Hold Request Confirmations',
 			'description' => 'Create a table to store confirmation info for hold requests',
@@ -258,16 +265,18 @@ function getUpdates21_08_00() : array
 					userId INT(11) NOT NULL,
 					requestId VARCHAR(36) NOT NULL,
 					additionalParams TEXT
-				) ENGINE INNODB'
-			]
-		], //hold_request_confirmations
+				) ENGINE INNODB',
+			],
+		],
+		//hold_request_confirmations
 		'plural_grouped_work_facet' => [
 			'title' => 'Add plural version of grouped work facet column',
 			'description' => 'Store the plural version of grouped work facet display names',
 			'sql' => [
-				'ALTER TABLE grouped_work_facet ADD COLUMN displayNamePlural VARCHAR(50)'
-			]
-		],//plural_grouped_work_facet
+				'ALTER TABLE grouped_work_facet ADD COLUMN displayNamePlural VARCHAR(50)',
+			],
+		],
+		//plural_grouped_work_facet
 		'create_plural_grouped_work_facets' => [
 			'title' => 'Create plural versions of grouped work facets',
 			'description' => 'Create the plural versions of existing grouped work facet display names',
@@ -297,36 +306,41 @@ function getUpdates21_08_00() : array
 				'UPDATE grouped_work_facet SET displayNamePlural="Genres" WHERE displayName="Genre"',
 				'UPDATE grouped_work_facet SET displayNamePlural="Shelf Locations" WHERE displayName="Shelf Location"',
 				'UPDATE grouped_work_facet SET displayNamePlural="Owning Libraries" WHERE displayName="Owning Library"',
-				'UPDATE grouped_work_facet SET displayNamePlural="Literary Forms" WHERE displayName="Literary Form"'
-			]
-		],//create_plural_grouped_work_facets
+				'UPDATE grouped_work_facet SET displayNamePlural="Literary Forms" WHERE displayName="Literary Form"',
+			],
+		],
+		//create_plural_grouped_work_facets
 		'update_plural_grouped_work_facet_label' => [
 			'title' => 'Fix plural versions label',
 			'description' => 'Fix typo',
 			'sql' => [
 				'UPDATE grouped_work_facet SET displayNamePlural="Reading Levels" WHERE displayName="Readling Levels"',
-			]
-		], //update_plural_grouped_work_facet_label
+			],
+		],
+		//update_plural_grouped_work_facet_label
 		'treat_unknown_audience_as' => [
 			'title' => 'Indexing Profile Treat Unknown Audience As',
 			'description' => 'Add the ability to modify how unknown audiences are handled',
 			'sql' => [
-				"ALTER TABLE indexing_profiles ADD COLUMN treatUnknownAudienceAs VARCHAR(10) DEFAULT 'Unknown'"
-			]
-		], //treat_unknown_audience_as
+				"ALTER TABLE indexing_profiles ADD COLUMN treatUnknownAudienceAs VARCHAR(10) DEFAULT 'Unknown'",
+			],
+		],
+		//treat_unknown_audience_as
 		'force_reload_of_overdrive_21_08' => [
 			'title' => 'Force reload of OverDrive',
 			'description' => 'Force OverDrive to be reloaded for 21.08',
 			'sql' => [
 				"UPDATE overdrive_settings set runFullUpdate = 1",
-			]
-		], //force_reload_of_overdrive_21_08
+			],
+		],
+		//force_reload_of_overdrive_21_08
 		'force_reload_of_hoopla_21_08' => [
 			'title' => 'Force reload of Hoopla',
 			'description' => 'Force Hoopla to be reloaded for 21.08',
 			'sql' => [
 				"UPDATE hoopla_settings set runFullUpdate = 1",
-			]
-		], //force_reload_of_hoopla_21_08
+			],
+		],
+		//force_reload_of_hoopla_21_08
 	];
 }

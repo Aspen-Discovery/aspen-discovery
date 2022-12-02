@@ -11,8 +11,7 @@ require_once ROOT_DIR . '/sys/CurlWrapper.php';
  * @author      Demian Katz <demian.katz@villanova.edu>
  * @access      public
  */
-class ExternalReviews
-{
+class ExternalReviews {
 	private $isbn;
 	private $results;
 
@@ -22,12 +21,11 @@ class ExternalReviews
 	 * Do the actual work of loading the reviews.
 	 *
 	 * @access  public
-	 * @param   string      $isbn           ISBN of book to find reviews for
+	 * @param string $isbn ISBN of book to find reviews for
 	 */
-	public function __construct($isbn)
-	{
+	public function __construct($isbn) {
 		$this->isbn = $isbn;
-		$this->results = array();
+		$this->results = [];
 
 		// We can't proceed without an ISBN:
 		if (empty($this->isbn)) {
@@ -37,15 +35,15 @@ class ExternalReviews
 		// Fetch from provider
 		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
 		$syndeticsSettings = new SyndeticsSetting();
-		if ($syndeticsSettings->find(true)){
+		if ($syndeticsSettings->find(true)) {
 			$result = $this->syndetics($syndeticsSettings);
-			if ($result != null){
+			if ($result != null) {
 				$this->results['syndetics'] = $result;
 			}
 		}
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 		$contentCafeSettings = new ContentCafeSetting();
-		if ($contentCafeSettings->find(true)){
+		if ($contentCafeSettings->find(true)) {
 			if ($contentCafeSettings->enabled) {
 				$result = $this->contentCafe($contentCafeSettings);
 				if ($result != null) {
@@ -54,8 +52,8 @@ class ExternalReviews
 			}
 		}
 
-		foreach ($this->results as $source => $reviews){
-			foreach ($this->results[$source] as $key => $reviewData){
+		foreach ($this->results as $source => $reviews) {
+			foreach ($this->results[$source] as $key => $reviewData) {
 				$this->results[$source][$key] = $this->cleanupReview($reviewData);
 			}
 		}
@@ -67,8 +65,7 @@ class ExternalReviews
 	 * @access  public
 	 * @return  array                       Associative array of excerpts.
 	 */
-	public function fetch()
-	{
+	public function fetch() {
 		return $this->results;
 	}
 
@@ -88,26 +85,25 @@ class ExternalReviews
 	 * If your library does not like a reviewer, remove it.  If there are more
 	 * syndetics reviewers add another entry.
 	 *
-	 * @param   $settings  $id Client access key
-	 * @return  array|null  Returns array with review data, otherwise null.
-	 * @access  private
 	 * @author  Joel Timothy Norman <joel.t.norman@wmich.edu>
 	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>
+	 * @param   $settings $id Client access key
+	 * @return  array|null  Returns array with review data, otherwise null.
+	 * @access  private
 	 */
-	private function syndetics(SyndeticsSetting $settings)
-	{
+	private function syndetics(SyndeticsSetting $settings) {
 		global $library;
 		global $locationSingleton;
 		global $timer;
 		global $logger;
 
-		$review = array();
+		$review = [];
 		$location = $locationSingleton->getActiveLocation();
-		if ($location != null){
-			if ($location->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
+		if ($location != null) {
+			if ($location->getGroupedWorkDisplaySettings()->showStandardReviews == 0) {
 				return $review;
 			}
-		}else if ($library->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
+		} elseif ($library->getGroupedWorkDisplaySettings()->showStandardReviews == 0) {
 			//return an empty review
 			return $review;
 		}
@@ -115,14 +111,38 @@ class ExternalReviews
 		//list of syndetics reviews
 		//TODO: Review this list to see if we can show all
 		$sourceList = [
-			'CHREVIEW' => ['title' => 'Choice Review', 'file' => 'CHREVIEW.XML'],
-			'BLREVIEW' => ['title' => 'Booklist Review', 'file' => 'BLREVIEW.XML'],
-			'PWREVIEW' => ['title' => "Publisher's Weekly Review", 'file' => 'PWREVIEW.XML'],
-			'SLJREVIEW' => ['title' => 'School Library Journal Review', 'file' => 'SLJREVIEW.XML'],
-			'LJREVIEW' => ['title' => 'Library Journal Review', 'file' => 'LJREVIEW.XML'],
-			'HBREVIEW' => ['title' => 'Horn Book Review', 'file' => 'HBREVIEW.XML'],
-			'KIREVIEW' => ['title' => 'Kirkus Book Review', 'file' => 'KIREVIEW.XML'],
-			'CRITICASEREVIEW' => ['title' => 'Criti Case Review', 'file' => 'CRITICASEREVIEW.XML']
+			'CHREVIEW' => [
+				'title' => 'Choice Review',
+				'file' => 'CHREVIEW.XML',
+			],
+			'BLREVIEW' => [
+				'title' => 'Booklist Review',
+				'file' => 'BLREVIEW.XML',
+			],
+			'PWREVIEW' => [
+				'title' => "Publisher's Weekly Review",
+				'file' => 'PWREVIEW.XML',
+			],
+			'SLJREVIEW' => [
+				'title' => 'School Library Journal Review',
+				'file' => 'SLJREVIEW.XML',
+			],
+			'LJREVIEW' => [
+				'title' => 'Library Journal Review',
+				'file' => 'LJREVIEW.XML',
+			],
+			'HBREVIEW' => [
+				'title' => 'Horn Book Review',
+				'file' => 'HBREVIEW.XML',
+			],
+			'KIREVIEW' => [
+				'title' => 'Kirkus Book Review',
+				'file' => 'KIREVIEW.XML',
+			],
+			'CRITICASEREVIEW' => [
+				'title' => 'Criti Case Review',
+				'file' => 'CRITICASEREVIEW.XML',
+			],
 		];
 
 		$timer->logTime("Got list of syndetics reviews to show");
@@ -144,14 +164,13 @@ class ExternalReviews
 			// @codeCoverageIgnoreEnd
 		}
 
-		$review = array();
+		$review = [];
 		$i = 0;
 		foreach ($sourceList as $source => $sourceInfo) {
 			$nodes = $xmlDoc->getElementsByTagName($source);
 			if ($nodes->length) {
 				// Load reviews
-				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
-				$sourceInfo['file'] . '&client=' . $settings->syndeticsKey . '&type=rw12,hw7';
+				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' . $sourceInfo['file'] . '&client=' . $settings->syndeticsKey . '&type=rw12,hw7';
 				$http = $client->curlGetPage($url);
 
 				$xmlDoc2 = new DomDocument();
@@ -171,8 +190,8 @@ class ExternalReviews
 					// @codeCoverageIgnoreEnd
 				}
 				$review[$i]['Content'] = html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
-				$review[$i]['Content'] = str_replace("<a>","<p>",$review[$i]['Content']);
-				$review[$i]['Content'] = str_replace("</a>","</p>",$review[$i]['Content']);
+				$review[$i]['Content'] = str_replace("<a>", "<p>", $review[$i]['Content']);
+				$review[$i]['Content'] = str_replace("</a>", "</p>", $review[$i]['Content']);
 
 				// Get the marc field for copyright (997)
 				$nodes = $xmlDoc2->GetElementsbyTagName("Fld997");
@@ -211,16 +230,16 @@ class ExternalReviews
 	 * @param ContentCafeSetting $settings Content Cafe Key
 	 * @return array|null
 	 */
-	private function contentCafe($settings){
+	private function contentCafe($settings) {
 		global $library;
 		global $locationSingleton;
 
 		$location = $locationSingleton->getActiveLocation();
-		if ($location != null){
-			if ($location->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
+		if ($location != null) {
+			if ($location->getGroupedWorkDisplaySettings()->showStandardReviews == 0) {
 				return null;
 			}
-		}elseif ($library->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
+		} elseif ($library->getGroupedWorkDisplaySettings()->showStandardReviews == 0) {
 			return null;
 		}
 
@@ -229,26 +248,27 @@ class ExternalReviews
 
 		$url = 'https://contentcafe2.btol.com/ContentCafe/ContentCafe.asmx?WSDL';
 
-		$SOAP_options = array(
+		$SOAP_options = [
 //				'trace' => 1, // turns on debugging features
-				'features' => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
-				'soap_version' => SOAP_1_2
-		);
+			'features' => SOAP_SINGLE_ELEMENT_ARRAYS,
+			// sets how the soap responses will be handled
+			'soap_version' => SOAP_1_2,
+		];
 		try {
 			$soapClient = new SoapClient($url, $SOAP_options);
 
-			$params = array(
-					'userID'   => $key,
-					'password' => $pw,
-					'key'      => $this->isbn,
-					'content'  => 'ReviewDetail',
-			);
+			$params = [
+				'userID' => $key,
+				'password' => $pw,
+				'key' => $this->isbn,
+				'content' => 'ReviewDetail',
+			];
 
-			try{
+			try {
 				/** @noinspection PhpUndefinedMethodInspection */
 				$response = $soapClient->Single($params);
 
-				$review = array();
+				$review = [];
 				if ($response) {
 					if (!isset($response->ContentCafe->Error)) {
 						$i = 0;
@@ -257,9 +277,9 @@ class ExternalReviews
 								if (isset($requestItem->ReviewItems->ReviewItem)) { // if there are reviews available.
 									foreach ($requestItem->ReviewItems->ReviewItem as $reviewItem) {
 										$review[$i]['Content'] = $reviewItem->Review;
-										$review[$i]['Source']  = $reviewItem->Publication->_;
+										$review[$i]['Source'] = $reviewItem->Publication->_;
 
-										$copyright               = stristr($reviewItem->Review, 'copyright');
+										$copyright = stristr($reviewItem->Review, 'copyright');
 										$review[$i]['Copyright'] = $copyright ? strip_tags($copyright) : '';
 
 										$review[$i]['ISBN'] = $this->isbn; // show more link
@@ -274,7 +294,7 @@ class ExternalReviews
 						}
 					} else {
 						global $logger;
-						$logger->log('Content Cafe Error Response'. $response->ContentCafe->Error, Logger::LOG_ERROR);
+						$logger->log('Content Cafe Error Response' . $response->ContentCafe->Error, Logger::LOG_ERROR);
 					}
 				}
 
@@ -291,7 +311,7 @@ class ExternalReviews
 		return $review;
 	}
 
-	function cleanupReview($reviewData){
+	function cleanupReview($reviewData) {
 		//Cleanup the review data
 		$fullReview = strip_tags($reviewData['Content'], '<p><a><b><em><ul><ol><em><li><strong><i><br><iframe><div>');
 		$reviewData['Content'] = $fullReview;
@@ -300,12 +320,12 @@ class ExternalReviews
 		//Make sure we get at least 140 characters
 		//Get rid of all tags for the teaser so we don't risk broken HTML
 		$fullReview = strip_tags($fullReview, '<p>');
-		if (strlen($fullReview) > 280){
-			$matches = array();
+		if (strlen($fullReview) > 280) {
+			$matches = [];
 			$numMatches = preg_match_all('/<\/p>|\\r|\\n|[.,:;]/', substr($fullReview, 180, 60), $matches, PREG_OFFSET_CAPTURE);
-			if ($numMatches > 0){
+			if ($numMatches > 0) {
 				$teaserBreakPoint = $matches[0][$numMatches - 1][1] + 181;
-			}else{
+			} else {
 				//Did not find a match at a paragraph or sentence boundary, just trim to the closest word.
 				$teaserBreakPoint = strrpos(substr($fullReview, 0, 240), ' ');
 			}

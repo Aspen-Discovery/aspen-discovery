@@ -26,10 +26,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @category  File_Formats
- * @package   File_MARC
  * @author    Demian Katz <demian.katz@villanova.edu>
  * @author    Dan Scott <dscott@laurentian.ca>
+ * @category  File_Formats
+ * @package   File_MARC
  * @copyright 2003-2013 Oy Realnode Ab, Dan Scott
  * @license   http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  * @version   CVS: $Id: Record.php 308146 2011-02-08 20:36:20Z dbs $
@@ -39,915 +39,843 @@ require_once ROOT_DIR . '/sys/File/MARC/Lint/CodeData.php';
 require_once 'Validate/ISPN.php';
 
 // {{{ class File_MARC_Lint
+
 /**
  * Class for testing validity of MARC records against MARC21 standard.
  *
- * @category File_Formats
- * @package  File_MARC
  * @author   Demian Katz <demian.katz@villanova.edu>
  * @author   Dan Scott <dscott@laurentian.ca>
+ * @category File_Formats
+ * @package  File_MARC
  * @license  http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  * @link     http://pear.php.net/package/File_MARC
  */
-class File_MARC_Lint
-{
+class File_MARC_Lint {
 
-    // {{{ properties
-    /**
-     * Rules used for testing records
-     * @var array
-     */
-    protected $rules;
+	// {{{ properties
+	/**
+	 * Rules used for testing records
+	 * @var array
+	 */
+	protected $rules;
 
-    /**
-     * A File_MARC_Lint_CodeData object for validating codes
-     * @var File_MARC_Lint_CodeData
-     */
-    protected $data;
+	/**
+	 * A File_MARC_Lint_CodeData object for validating codes
+	 * @var File_MARC_Lint_CodeData
+	 */
+	protected $data;
 
-    /**
-     * Warnings generated during analysis
-     * @var array
-     */
-    protected $warnings = array();
+	/**
+	 * Warnings generated during analysis
+	 * @var array
+	 */
+	protected $warnings = [];
 
-    // }}}
+	// }}}
 
-    // {{{ Constructor: function __construct()
-    /**
-     * Start function
-     *
-     * Set up rules for testing MARC records.
-     *
-     * @return true
-     */
-    public function __construct()
-    {
-        $this->parseRules();
-        $this->data = new File_MARC_Lint_CodeData();
-    }
-    // }}}
+	// {{{ Constructor: function __construct()
+	/**
+	 * Start function
+	 *
+	 * Set up rules for testing MARC records.
+	 *
+	 * @return true
+	 */
+	public function __construct() {
+		$this->parseRules();
+		$this->data = new File_MARC_Lint_CodeData();
+	}
+	// }}}
 
-    // {{{ getWarnings()
-    /**
-     * Check the provided MARC record and return an array of warning messages.
-     *
-     * @param File_MARC_Record $marc Record to check
-     *
-     * @return array
-     */
-    public function checkRecord($marc)
-    {
-        // Reset warnings:
-        $this->warnings = array();
+	// {{{ getWarnings()
+	/**
+	 * Check the provided MARC record and return an array of warning messages.
+	 *
+	 * @param File_MARC_Record $marc Record to check
+	 *
+	 * @return array
+	 */
+	public function checkRecord($marc) {
+		// Reset warnings:
+		$this->warnings = [];
 
-        // Fail if we didn't get a valid object:
-        if (!is_a($marc, 'File_MARC_Record')) {
-            $this->warn('Must pass a File_MARC_Record object to checkRecord');
-        } else {
-            $this->checkDuplicate1xx($marc);
-            $this->checkMissing245($marc);
-            $this->standardFieldChecks($marc);
-        }
+		// Fail if we didn't get a valid object:
+		if (!is_a($marc, 'File_MARC_Record')) {
+			$this->warn('Must pass a File_MARC_Record object to checkRecord');
+		} else {
+			$this->checkDuplicate1xx($marc);
+			$this->checkMissing245($marc);
+			$this->standardFieldChecks($marc);
+		}
 
-        return $this->warnings;
-    }
-    // }}}
+		return $this->warnings;
+	}
+	// }}}
 
-    // {{{ warn()
-    /**
-     * Add a warning.
-     *
-     * @param string $warning Warning to add
-     *
-     * @return void
-     */
-    protected function warn($warning)
-    {
-        $this->warnings[] = $warning;
-    }
-    // }}}
+	// {{{ warn()
+	/**
+	 * Add a warning.
+	 *
+	 * @param string $warning Warning to add
+	 *
+	 * @return void
+	 */
+	protected function warn($warning) {
+		$this->warnings[] = $warning;
+	}
+	// }}}
 
-    // {{{ checkDuplicate1xx()
-    /**
-     * Check for multiple 1xx fields.
-     *
-     * @param File_MARC_Record $marc Record to check
-     *
-     * @return void
-     */
-    protected function checkDuplicate1xx($marc)
-    {
-        $result = $marc->getFields('1[0-9][0-9]', true);
-        $count = count($result);
-        if ($count > 1) {
-            $this->warn(
-                "1XX: Only one 1XX tag is allowed, but I found $count of them."
-            );
-        }
-    }
-    // }}}
+	// {{{ checkDuplicate1xx()
+	/**
+	 * Check for multiple 1xx fields.
+	 *
+	 * @param File_MARC_Record $marc Record to check
+	 *
+	 * @return void
+	 */
+	protected function checkDuplicate1xx($marc) {
+		$result = $marc->getFields('1[0-9][0-9]', true);
+		$count = count($result);
+		if ($count > 1) {
+			$this->warn("1XX: Only one 1XX tag is allowed, but I found $count of them.");
+		}
+	}
+	// }}}
 
-    // {{{ checkMissing245()
-    /**
-     * Check for missing 245 field.
-     *
-     * @param File_MARC_Record $marc Record to check
-     *
-     * @return void
-     */
-    protected function checkMissing245($marc)
-    {
-        $result = $marc->getFields('245');
-        if (count($result) == 0) {
-            $this->warn('245: No 245 tag.');
-        }
-    }
-    // }}}
+	// {{{ checkMissing245()
+	/**
+	 * Check for missing 245 field.
+	 *
+	 * @param File_MARC_Record $marc Record to check
+	 *
+	 * @return void
+	 */
+	protected function checkMissing245($marc) {
+		$result = $marc->getFields('245');
+		if (count($result) == 0) {
+			$this->warn('245: No 245 tag.');
+		}
+	}
+	// }}}
 
-    // {{{ standardFieldChecks()
-    /**
-     * Check all fields against the standard rules encoded in the class.
-     *
-     * @param File_MARC_Record $marc Record to check
-     *
-     * @return void
-     */
-    protected function standardFieldChecks($marc)
-    {
-        $fieldsSeen = array();
-        foreach ($marc->getFields() as $current) {
-            $tagNo = $current->getTag();
-            // if 880 field, inherit rules from tagno in subfield _6
-            if ($tagNo == 880) {
-                if ($sub6 = $current->getSubfield(6)) {
-                    $tagNo = substr($sub6->getData(), 0, 3);
-                    $tagrules = isset($this->rules[$tagNo])
-                        ? $this->rules[$tagNo] : null;
-                    // 880 is repeatable, but its linked field may not be
-                    if (isset($tagrules['repeatable'])
-                        && $tagrules['repeatable'] == 'NR'
-                        && isset($fieldsSeen['880.'.$tagNo])
-                    ) {
-                        $this->warn("$tagNo: Field is not repeatable.");
-                    }
-                    $fieldsSeen['880.'.$tagNo] = isset($fieldsSeen['880.'.$tagNo])
-                        ? $fieldsSeen['880.'.$tagNo] + 1 : 1;
-                } else {
-                    $this->warn("880: No subfield 6.");
-                    $tagRules = null;
-                }
-            } else {
-                // Default case -- not an 880 field:
-                $tagrules = isset($this->rules[$tagNo])
-                    ? $this->rules[$tagNo] : null;
-                if (isset($tagrules['repeatable']) && $tagrules['repeatable'] == 'NR'
-                    && isset($fieldsSeen[$tagNo])
-                ) {
-                    $this->warn("$tagNo: Field is not repeatable.");
-                }
-                $fieldsSeen[$tagNo] = isset($fieldsSeen[$tagNo])
-                    ? $fieldsSeen[$tagNo] + 1 : 1;
-            }
+	// {{{ standardFieldChecks()
+	/**
+	 * Check all fields against the standard rules encoded in the class.
+	 *
+	 * @param File_MARC_Record $marc Record to check
+	 *
+	 * @return void
+	 */
+	protected function standardFieldChecks($marc) {
+		$fieldsSeen = [];
+		foreach ($marc->getFields() as $current) {
+			$tagNo = $current->getTag();
+			// if 880 field, inherit rules from tagno in subfield _6
+			if ($tagNo == 880) {
+				if ($sub6 = $current->getSubfield(6)) {
+					$tagNo = substr($sub6->getData(), 0, 3);
+					$tagrules = isset($this->rules[$tagNo]) ? $this->rules[$tagNo] : null;
+					// 880 is repeatable, but its linked field may not be
+					if (isset($tagrules['repeatable']) && $tagrules['repeatable'] == 'NR' && isset($fieldsSeen['880.' . $tagNo])) {
+						$this->warn("$tagNo: Field is not repeatable.");
+					}
+					$fieldsSeen['880.' . $tagNo] = isset($fieldsSeen['880.' . $tagNo]) ? $fieldsSeen['880.' . $tagNo] + 1 : 1;
+				} else {
+					$this->warn("880: No subfield 6.");
+					$tagRules = null;
+				}
+			} else {
+				// Default case -- not an 880 field:
+				$tagrules = isset($this->rules[$tagNo]) ? $this->rules[$tagNo] : null;
+				if (isset($tagrules['repeatable']) && $tagrules['repeatable'] == 'NR' && isset($fieldsSeen[$tagNo])) {
+					$this->warn("$tagNo: Field is not repeatable.");
+				}
+				$fieldsSeen[$tagNo] = isset($fieldsSeen[$tagNo]) ? $fieldsSeen[$tagNo] + 1 : 1;
+			}
 
-            // Treat data fields differently from control fields:
-            if (intval(ltrim($tagNo, '0')) >= 10) {
-                if (!empty($tagrules)) {
-                    $this->checkIndicators($tagNo, $current, $tagrules);
-                    $this->checkSubfields($tagNo, $current, $tagrules);
-                }
-            } else {
-                // Control field:
-                if (strstr($current->toRaw(), chr(hexdec('1F')))) {
-                    $this->warn(
-                        "$tagNo: Subfields are not allowed in fields lower than 010"
-                    );
-                }
-            }
+			// Treat data fields differently from control fields:
+			if (intval(ltrim($tagNo, '0')) >= 10) {
+				if (!empty($tagrules)) {
+					$this->checkIndicators($tagNo, $current, $tagrules);
+					$this->checkSubfields($tagNo, $current, $tagrules);
+				}
+			} else {
+				// Control field:
+				if (strstr($current->toRaw(), chr(hexdec('1F')))) {
+					$this->warn("$tagNo: Subfields are not allowed in fields lower than 010");
+				}
+			}
 
-            // Check to see if a checkxxx() function exists, and call it on the
-            // field if it does
-            $method = 'check' . $tagNo;
-            if (method_exists($this, $method)) {
-                $this->$method($current);
-            }
-        }
-    }
-    // }}}
+			// Check to see if a checkxxx() function exists, and call it on the
+			// field if it does
+			$method = 'check' . $tagNo;
+			if (method_exists($this, $method)) {
+				$this->$method($current);
+			}
+		}
+	}
+	// }}}
 
-    // {{{ checkIndicators()
-    /**
-     * Check the indicators for the provided field.
-     *
-     * @param string          $tagNo Tag number being checked
-     * @param File_MARC_Field $field Field to check
-     * @param array           $rules Rules to use for checking
-     *
-     * @return void
-     */
-    protected function checkIndicators($tagNo, $field, $rules)
-    {
-        for ($i = 1; $i <= 2; $i++) {
-            $ind = $field->getIndicator($i);
-            if ($ind === false || $ind == ' ') {
-                $ind = 'b';
-            }
-            if (!strstr($rules['ind' . $i]['values'], $ind)) {
-                // Make indicator blank value human-readable for message:
-                if ($ind == 'b') {
-                    $ind = 'blank';
-                }
-                $this->warn(
-                    "$tagNo: Indicator $i must be "
-                    . $rules['ind' . $i]['hr_values']
-                    . " but it's \"$ind\""
-                );
-            }
-        }
-    }
-    // }}}
+	// {{{ checkIndicators()
+	/**
+	 * Check the indicators for the provided field.
+	 *
+	 * @param string $tagNo Tag number being checked
+	 * @param File_MARC_Field $field Field to check
+	 * @param array $rules Rules to use for checking
+	 *
+	 * @return void
+	 */
+	protected function checkIndicators($tagNo, $field, $rules) {
+		for ($i = 1; $i <= 2; $i++) {
+			$ind = $field->getIndicator($i);
+			if ($ind === false || $ind == ' ') {
+				$ind = 'b';
+			}
+			if (!strstr($rules['ind' . $i]['values'], $ind)) {
+				// Make indicator blank value human-readable for message:
+				if ($ind == 'b') {
+					$ind = 'blank';
+				}
+				$this->warn("$tagNo: Indicator $i must be " . $rules['ind' . $i]['hr_values'] . " but it's \"$ind\"");
+			}
+		}
+	}
+	// }}}
 
-    // {{{ checkSubfields()
-    /**
-     * Check the subfields for the provided field.
-     *
-     * @param string          $tagNo Tag number being checked
-     * @param File_MARC_Field $field Field to check
-     * @param array           $rules Rules to use for checking
-     *
-     * @return void
-     */
-    protected function checkSubfields($tagNo, $field, $rules)
-    {
-        $subSeen = array();
+	// {{{ checkSubfields()
+	/**
+	 * Check the subfields for the provided field.
+	 *
+	 * @param string $tagNo Tag number being checked
+	 * @param File_MARC_Field $field Field to check
+	 * @param array $rules Rules to use for checking
+	 *
+	 * @return void
+	 */
+	protected function checkSubfields($tagNo, $field, $rules) {
+		$subSeen = [];
 
-        foreach ($field->getSubfields() as $current) {
-            $code = $current->getCode();
-            $data = $current->getData();
+		foreach ($field->getSubfields() as $current) {
+			$code = $current->getCode();
+			$data = $current->getData();
 
-            $subrules = isset($rules['sub' . $code])
-                ? $rules['sub' . $code] : null;
+			$subrules = isset($rules['sub' . $code]) ? $rules['sub' . $code] : null;
 
-            if (empty($subrules)) {
-                $this->warn("$tagNo: Subfield _$code is not allowed.");
-            } elseif ($subrules['repeatable'] == 'NR' && isset($subSeen[$code])) {
-                $this->warn("$tagNo: Subfield _$code is not repeatable.");
-            }
+			if (empty($subrules)) {
+				$this->warn("$tagNo: Subfield _$code is not allowed.");
+			} elseif ($subrules['repeatable'] == 'NR' && isset($subSeen[$code])) {
+				$this->warn("$tagNo: Subfield _$code is not repeatable.");
+			}
 
-            if (preg_match('/\r|\t|\n/', $data)) {
-                $this->warn(
-                    "$tagNo: Subfield _$code has an invalid control character"
-                );
-            }
+			if (preg_match('/\r|\t|\n/', $data)) {
+				$this->warn("$tagNo: Subfield _$code has an invalid control character");
+			}
 
-            $subSeen[$code] = isset($subSeen[$code]) ? $subSeen[$code]++ : 1;
-        }
-    }
-    // }}}
+			$subSeen[$code] = isset($subSeen[$code]) ? $subSeen[$code]++ : 1;
+		}
+	}
+	// }}}
 
-    // {{{ check020()
-    /**
-     * Looks at 020$a and reports errors if the check digit is wrong.
-     * Looks at 020$z and validates number if hyphens are present.
-     *
-     * @param File_MARC_Field $field Field to check
-     *
-     * @return void
-     */
-    protected function check020($field)
-    {
-        foreach ($field->getSubfields() as $current) {
-            $data = $current->getData();
-            // remove any hyphens
-            $isbn = str_replace('-', '', $data);
-            // remove nondigits
-            $isbn = preg_replace('/^\D*(\d{9,12}[X\d])\b.*$/', '$1', $isbn);
+	// {{{ check020()
+	/**
+	 * Looks at 020$a and reports errors if the check digit is wrong.
+	 * Looks at 020$z and validates number if hyphens are present.
+	 *
+	 * @param File_MARC_Field $field Field to check
+	 *
+	 * @return void
+	 */
+	protected function check020($field) {
+		foreach ($field->getSubfields() as $current) {
+			$data = $current->getData();
+			// remove any hyphens
+			$isbn = str_replace('-', '', $data);
+			// remove nondigits
+			$isbn = preg_replace('/^\D*(\d{9,12}[X\d])\b.*$/', '$1', $isbn);
 
-            if ($current->getCode() == 'a') {
-                if ((substr($data, 0, strlen($isbn)) != $isbn)) {
-                    $this->warn("020: Subfield a may have invalid characters.");
-                }
+			if ($current->getCode() == 'a') {
+				if ((substr($data, 0, strlen($isbn)) != $isbn)) {
+					$this->warn("020: Subfield a may have invalid characters.");
+				}
 
-                // report error if no space precedes a qualifier in subfield a
-                if (preg_match('/\(/', $data) && !preg_match('/[X0-9] \(/', $data)) {
-                    $this->warn(
-                        "020: Subfield a qualifier must be preceded by space, $data."
-                    );
-                }
+				// report error if no space precedes a qualifier in subfield a
+				if (preg_match('/\(/', $data) && !preg_match('/[X0-9] \(/', $data)) {
+					$this->warn("020: Subfield a qualifier must be preceded by space, $data.");
+				}
 
-                // report error if unable to find 10-13 digit string of digits in
-                // subfield 'a'
-                if (!preg_match('/(?:^\d{10}$)|(?:^\d{13}$)|(?:^\d{9}X$)/', $isbn)) {
-                    $this->warn(
-                        "020: Subfield a has the wrong number of digits, $data."
-                    );
-                } else {
-                    if (strlen($isbn) == 10) {
-                        if (!Validate_ISPN::isbn10($isbn)) {
-                            $this->warn("020: Subfield a has bad checksum, $data.");
-                        }
-                    } else if (strlen($isbn) == 13) {
-                        if (!Validate_ISPN::isbn13($isbn)) {
-                            $this->warn(
-                                "020: Subfield a has bad checksum (13 digit), $data."
-                            );
-                        }
-                    }
-                }
-            } else if ($current->getCode() == 'z') {
-                // look for valid isbn in 020$z
-                if (preg_match('/^ISBN/', $data)
-                    || preg_match('/^\d*\-\d+/', $data)
-                ) {
-                    // ##################################################
-                    // ## Turned on for now--Comment to unimplement  ####
-                    // ##################################################
-                    if ((strlen($isbn) == 10)
-                        && (Validate_ISPN::isbn10($isbn) == 1)
-                    ) {
-                        $this->warn("020:  Subfield z is numerically valid.");
-                    }
-                }
-            }
-        }
-    }
-    // }}}
+				// report error if unable to find 10-13 digit string of digits in
+				// subfield 'a'
+				if (!preg_match('/(?:^\d{10}$)|(?:^\d{13}$)|(?:^\d{9}X$)/', $isbn)) {
+					$this->warn("020: Subfield a has the wrong number of digits, $data.");
+				} else {
+					if (strlen($isbn) == 10) {
+						if (!Validate_ISPN::isbn10($isbn)) {
+							$this->warn("020: Subfield a has bad checksum, $data.");
+						}
+					} elseif (strlen($isbn) == 13) {
+						if (!Validate_ISPN::isbn13($isbn)) {
+							$this->warn("020: Subfield a has bad checksum (13 digit), $data.");
+						}
+					}
+				}
+			} elseif ($current->getCode() == 'z') {
+				// look for valid isbn in 020$z
+				if (preg_match('/^ISBN/', $data) || preg_match('/^\d*\-\d+/', $data)) {
+					// ##################################################
+					// ## Turned on for now--Comment to unimplement  ####
+					// ##################################################
+					if ((strlen($isbn) == 10) && (Validate_ISPN::isbn10($isbn) == 1)) {
+						$this->warn("020:  Subfield z is numerically valid.");
+					}
+				}
+			}
+		}
+	}
+	// }}}
 
-    // {{{ check041()
-    /**
-     * Warns if subfields are not evenly divisible by 3 unless second indicator is 7
-     * (future implementation would ensure that each subfield is exactly 3 characters
-     * unless ind2 is 7--since subfields are now repeatable. This is not implemented
-     * here due to the large number of records needing to be corrected.). Validates
-     * against the MARC Code List for Languages (<http://www.loc.gov/marc/>).
-     *
-     * @param File_MARC_Field $field Field to check
-     *
-     * @return void
-     */
-    protected function check041($field)
-    {
-        // warn if length of each subfield is not divisible by 3 unless ind2 is 7
-        if ($field->getIndicator(2) != '7') {
-            foreach ($field->getSubfields() as $sub) {
-                $code = $sub->getCode();
-                $data = $sub->getData();
-                if (strlen($data) % 3 != 0) {
-                    $this->warn(
-                        "041: Subfield _$code must be evenly divisible by 3 or "
-                        . "exactly three characters if ind2 is not 7, ($data)."
-                    );
-                } else {
-                    for ($i = 0; $i < strlen($data); $i += 3) {
-                        $chk = substr($data, $i, 3);
-                        if (!in_array($chk, $this->data->languageCodes)) {
-                            $obs = $this->data->obsoleteLanguageCodes;
-                            if (in_array($chk, $obs)) {
-                                $this->warn(
-                                    "041: Subfield _$code, $data, may be obsolete."
-                                );
-                            } else {
-                                $this->warn(
-                                    "041: Subfield _$code, $data ($chk),"
-                                    . " is not valid."
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // }}}
+	// {{{ check041()
+	/**
+	 * Warns if subfields are not evenly divisible by 3 unless second indicator is 7
+	 * (future implementation would ensure that each subfield is exactly 3 characters
+	 * unless ind2 is 7--since subfields are now repeatable. This is not implemented
+	 * here due to the large number of records needing to be corrected.). Validates
+	 * against the MARC Code List for Languages (<http://www.loc.gov/marc/>).
+	 *
+	 * @param File_MARC_Field $field Field to check
+	 *
+	 * @return void
+	 */
+	protected function check041($field) {
+		// warn if length of each subfield is not divisible by 3 unless ind2 is 7
+		if ($field->getIndicator(2) != '7') {
+			foreach ($field->getSubfields() as $sub) {
+				$code = $sub->getCode();
+				$data = $sub->getData();
+				if (strlen($data) % 3 != 0) {
+					$this->warn("041: Subfield _$code must be evenly divisible by 3 or " . "exactly three characters if ind2 is not 7, ($data).");
+				} else {
+					for ($i = 0; $i < strlen($data); $i += 3) {
+						$chk = substr($data, $i, 3);
+						if (!in_array($chk, $this->data->languageCodes)) {
+							$obs = $this->data->obsoleteLanguageCodes;
+							if (in_array($chk, $obs)) {
+								$this->warn("041: Subfield _$code, $data, may be obsolete.");
+							} else {
+								$this->warn("041: Subfield _$code, $data ($chk)," . " is not valid.");
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	// }}}
 
-    // {{{ check043()
-    /**
-     * Warns if each subfield a is not exactly 7 characters. Validates each code
-     * against the MARC code list for Geographic Areas (<http://www.loc.gov/marc/>).
-     *
-     * @param File_MARC_Field $field Field to check
-     *
-     * @return void
-     */
-    protected function check043($field)
-    {
-        foreach ($field->getSubfields('a') as $suba) {
-            // warn if length of subfield a is not exactly 7
-            $data = $suba->getData();
-            if (strlen($data) != 7) {
-                $this->warn("043: Subfield _a must be exactly 7 characters, $data");
-            } else if (!in_array($data, $this->data->geogAreaCodes)) {
-                if (in_array($data, $this->data->obsoleteGeogAreaCodes)) {
-                    $this->warn("043: Subfield _a, $data, may be obsolete.");
-                } else {
-                    $this->warn("043: Subfield _a, $data, is not valid.");
-                }
-            }
-        }
-    }
-    // }}}
+	// {{{ check043()
+	/**
+	 * Warns if each subfield a is not exactly 7 characters. Validates each code
+	 * against the MARC code list for Geographic Areas (<http://www.loc.gov/marc/>).
+	 *
+	 * @param File_MARC_Field $field Field to check
+	 *
+	 * @return void
+	 */
+	protected function check043($field) {
+		foreach ($field->getSubfields('a') as $suba) {
+			// warn if length of subfield a is not exactly 7
+			$data = $suba->getData();
+			if (strlen($data) != 7) {
+				$this->warn("043: Subfield _a must be exactly 7 characters, $data");
+			} elseif (!in_array($data, $this->data->geogAreaCodes)) {
+				if (in_array($data, $this->data->obsoleteGeogAreaCodes)) {
+					$this->warn("043: Subfield _a, $data, may be obsolete.");
+				} else {
+					$this->warn("043: Subfield _a, $data, is not valid.");
+				}
+			}
+		}
+	}
+	// }}}
 
-    // {{{ check245()
-    /**
-     * -Makes sure $a exists (and is first subfield).
-     * -Warns if last character of field is not a period
-     * --Follows LCRI 1.0C, Nov. 2003 rather than MARC21 rule
-     * -Verifies that $c is preceded by / (space-/)
-     * -Verifies that initials in $c are not spaced
-     * -Verifies that $b is preceded by :;= (space-colon, space-semicolon,
-     *  space-equals)
-     * -Verifies that $h is not preceded by space unless it is dash-space
-     * -Verifies that data of $h is enclosed in square brackets
-     * -Verifies that $n is preceded by . (period)
-     * --As part of that, looks for no-space period, or dash-space-period
-     *  (for replaced elipses)
-     * -Verifies that $p is preceded by , (no-space-comma) when following $n and
-     *  . (period) when following other subfields.
-     * -Performs rudimentary article check of 245 2nd indicator vs. 1st word of
-     *  245$a (for manual verification).
-     *
-     * Article checking is done by internal checkArticle method, which should work
-     * for 130, 240, 245, 440, 630, 730, and 830.
-     *
-     * @param File_MARC_Field $field Field to check
-     *
-     * @return void
-     */
-    protected function check245($field)
-    {
-        if (count($field->getSubfields('a')) == 0) {
-            $this->warn("245: Must have a subfield _a.");
-        }
+	// {{{ check245()
+	/**
+	 * -Makes sure $a exists (and is first subfield).
+	 * -Warns if last character of field is not a period
+	 * --Follows LCRI 1.0C, Nov. 2003 rather than MARC21 rule
+	 * -Verifies that $c is preceded by / (space-/)
+	 * -Verifies that initials in $c are not spaced
+	 * -Verifies that $b is preceded by :;= (space-colon, space-semicolon,
+	 *  space-equals)
+	 * -Verifies that $h is not preceded by space unless it is dash-space
+	 * -Verifies that data of $h is enclosed in square brackets
+	 * -Verifies that $n is preceded by . (period)
+	 * --As part of that, looks for no-space period, or dash-space-period
+	 *  (for replaced elipses)
+	 * -Verifies that $p is preceded by , (no-space-comma) when following $n and
+	 *  . (period) when following other subfields.
+	 * -Performs rudimentary article check of 245 2nd indicator vs. 1st word of
+	 *  245$a (for manual verification).
+	 *
+	 * Article checking is done by internal checkArticle method, which should work
+	 * for 130, 240, 245, 440, 630, 730, and 830.
+	 *
+	 * @param File_MARC_Field $field Field to check
+	 *
+	 * @return void
+	 */
+	protected function check245($field) {
+		if (count($field->getSubfields('a')) == 0) {
+			$this->warn("245: Must have a subfield _a.");
+		}
 
-        // Convert subfields to array and set flags indicating which subfields are
-        // present while we're at it.
-        $tmp = $field->getSubfields();
-        $hasSubfields = $subfields = array();
-        foreach ($tmp as $current) {
-            $subfields[] = $current;
-            $hasSubfields[$current->getCode()] = true;
-        }
+		// Convert subfields to array and set flags indicating which subfields are
+		// present while we're at it.
+		$tmp = $field->getSubfields();
+		$hasSubfields = $subfields = [];
+		foreach ($tmp as $current) {
+			$subfields[] = $current;
+			$hasSubfields[$current->getCode()] = true;
+		}
 
-        // 245 must end in period (may want to make this less restrictive by allowing
-        // trailing spaces)
-        // do 2 checks--for final punctuation (MARC21 rule), and for period
-        // (LCRI 1.0C, Nov. 2003)
-        $lastChar = substr($subfields[count($subfields)-1]->getData(), -1);
-        if (!in_array($lastChar, array('.', '?', '!'))) {
-            $this->warn("245: Must end with . (period).");
-        } else if ($lastChar != '.') {
-            $this->warn(
-                "245: MARC21 allows ? or ! as final punctuation but LCRI 1.0C, Nov."
-                . " 2003 (LCPS 1.7.1 for RDA records), requires period."
-            );
-        }
+		// 245 must end in period (may want to make this less restrictive by allowing
+		// trailing spaces)
+		// do 2 checks--for final punctuation (MARC21 rule), and for period
+		// (LCRI 1.0C, Nov. 2003)
+		$lastChar = substr($subfields[count($subfields) - 1]->getData(), -1);
+		if (!in_array($lastChar, [
+			'.',
+			'?',
+			'!',
+		])) {
+			$this->warn("245: Must end with . (period).");
+		} elseif ($lastChar != '.') {
+			$this->warn("245: MARC21 allows ? or ! as final punctuation but LCRI 1.0C, Nov." . " 2003 (LCPS 1.7.1 for RDA records), requires period.");
+		}
 
-        // Check for first subfield
-        // subfield a should be first subfield (or 2nd if subfield '6' is present)
-        if (isset($hasSubfields['6'])) {
-            // make sure there are at least 2 subfields
-            if (count($subfields) < 2) {
-                $this->warn("245: May have too few subfields.");
-            } else {
-                $first = $subfields[0]->getCode();
-                $second = $subfields[1]->getCode();
-                if ($first != '6') {
-                    $this->warn("245: First subfield must be _6, but it is $first");
-                }
-                if ($second != 'a') {
-                    $this->warn(
-                        "245: First subfield after subfield _6 must be _a, but it "
-                        . "is _$second"
-                    );
-                }
-            }
-        } else {
-            // 1st subfield must be 'a'
-            $first = $subfields[0]->getCode();
-            if ($first != 'a') {
-                $this->warn("245: First subfield must be _a, but it is _$first");
-            }
-        }
-        // End check for first subfield
+		// Check for first subfield
+		// subfield a should be first subfield (or 2nd if subfield '6' is present)
+		if (isset($hasSubfields['6'])) {
+			// make sure there are at least 2 subfields
+			if (count($subfields) < 2) {
+				$this->warn("245: May have too few subfields.");
+			} else {
+				$first = $subfields[0]->getCode();
+				$second = $subfields[1]->getCode();
+				if ($first != '6') {
+					$this->warn("245: First subfield must be _6, but it is $first");
+				}
+				if ($second != 'a') {
+					$this->warn("245: First subfield after subfield _6 must be _a, but it " . "is _$second");
+				}
+			}
+		} else {
+			// 1st subfield must be 'a'
+			$first = $subfields[0]->getCode();
+			if ($first != 'a') {
+				$this->warn("245: First subfield must be _a, but it is _$first");
+			}
+		}
+		// End check for first subfield
 
-        // subfield c, if present, must be preceded by /
-        // also look for space between initials
-        if (isset($hasSubfields['c'])) {
-            foreach ($subfields as $i => $current) {
-                // 245 subfield c must be preceded by / (space-/)
-                if ($current->getCode() == 'c') {
-                    if ($i > 0
-                        && !preg_match('/\s\/$/', $subfields[$i-1]->getData())
-                    ) {
-                        $this->warn("245: Subfield _c must be preceded by /");
-                    }
-                    // 245 subfield c initials should not have space
-                    if (preg_match('/\b\w\. \b\w\./', $current->getData())) {
-                        $this->warn(
-                            "245: Subfield _c initials should not have a space."
-                        );
-                    }
-                    break;
-                }
-            }
-        }
+		// subfield c, if present, must be preceded by /
+		// also look for space between initials
+		if (isset($hasSubfields['c'])) {
+			foreach ($subfields as $i => $current) {
+				// 245 subfield c must be preceded by / (space-/)
+				if ($current->getCode() == 'c') {
+					if ($i > 0 && !preg_match('/\s\/$/', $subfields[$i - 1]->getData())) {
+						$this->warn("245: Subfield _c must be preceded by /");
+					}
+					// 245 subfield c initials should not have space
+					if (preg_match('/\b\w\. \b\w\./', $current->getData())) {
+						$this->warn("245: Subfield _c initials should not have a space.");
+					}
+					break;
+				}
+			}
+		}
 
-        // each subfield b, if present, should be preceded by :;= (colon, semicolon,
-        // or equals sign)
-        if (isset($hasSubfields['b'])) {
-            // 245 subfield b should be preceded by space-:;= (colon, semicolon, or
-            // equals sign)
-            foreach ($subfields as $i => $current) {
-                if ($current->getCode() == 'b' && $i > 0
-                    && !preg_match('/ [:;=]$/', $subfields[$i-1]->getData())
-                ) {
-                    $this->warn(
-                        "245: Subfield _b should be preceded by space-colon, "
-                        . "space-semicolon, or space-equals sign."
-                    );
-                }
-            }
-        }
+		// each subfield b, if present, should be preceded by :;= (colon, semicolon,
+		// or equals sign)
+		if (isset($hasSubfields['b'])) {
+			// 245 subfield b should be preceded by space-:;= (colon, semicolon, or
+			// equals sign)
+			foreach ($subfields as $i => $current) {
+				if ($current->getCode() == 'b' && $i > 0 && !preg_match('/ [:;=]$/', $subfields[$i - 1]->getData())) {
+					$this->warn("245: Subfield _b should be preceded by space-colon, " . "space-semicolon, or space-equals sign.");
+				}
+			}
+		}
 
-        // each subfield h, if present, should be preceded by non-space
-        if (isset($hasSubfields['h'])) {
-            // 245 subfield h should not be preceded by space
-            foreach ($subfields as $i => $current) {
-                // report error if subfield 'h' is preceded by space (unless
-                // dash-space)
-                if ($current->getCode() == 'h') {
-                    $prev = $subfields[$i-1]->getData();
-                    if ($i > 0 && !preg_match('/(\S$)|(\-\- $)/', $prev)) {
-                        $this->warn(
-                            "245: Subfield _h should not be preceded by space."
-                        );
-                    }
-                    // report error if subfield 'h' does not start with open square
-                    // bracket with a matching close bracket; could have check
-                    // against list of valid values here
-                    $data = $current->getData();
-                    if (!preg_match('/^\[\w*\s*\w*\]/', $data)) {
-                        $this->warn(
-                            "245: Subfield _h must have matching square brackets,"
-                            . " $data."
-                        );
-                    }
-                }
-            }
-        }
+		// each subfield h, if present, should be preceded by non-space
+		if (isset($hasSubfields['h'])) {
+			// 245 subfield h should not be preceded by space
+			foreach ($subfields as $i => $current) {
+				// report error if subfield 'h' is preceded by space (unless
+				// dash-space)
+				if ($current->getCode() == 'h') {
+					$prev = $subfields[$i - 1]->getData();
+					if ($i > 0 && !preg_match('/(\S$)|(\-\- $)/', $prev)) {
+						$this->warn("245: Subfield _h should not be preceded by space.");
+					}
+					// report error if subfield 'h' does not start with open square
+					// bracket with a matching close bracket; could have check
+					// against list of valid values here
+					$data = $current->getData();
+					if (!preg_match('/^\[\w*\s*\w*\]/', $data)) {
+						$this->warn("245: Subfield _h must have matching square brackets," . " $data.");
+					}
+				}
+			}
+		}
 
-        // each subfield n, if present, must be preceded by . (period)
-        if (isset($hasSubfields['n'])) {
-            // 245 subfield n must be preceded by . (period)
-            foreach ($subfields as $i => $current) {
-                // report error if subfield 'n' is not preceded by non-space-period
-                // or dash-space-period
-                if ($current->getCode() == 'n' && $i > 0) {
-                    $prev = $subfields[$i-1]->getData();
-                    if (!preg_match('/(\S\.$)|(\-\- \.$)/', $prev)) {
-                        $this->warn(
-                            "245: Subfield _n must be preceded by . (period)."
-                        );
-                    }
-                }
-            }
-        }
+		// each subfield n, if present, must be preceded by . (period)
+		if (isset($hasSubfields['n'])) {
+			// 245 subfield n must be preceded by . (period)
+			foreach ($subfields as $i => $current) {
+				// report error if subfield 'n' is not preceded by non-space-period
+				// or dash-space-period
+				if ($current->getCode() == 'n' && $i > 0) {
+					$prev = $subfields[$i - 1]->getData();
+					if (!preg_match('/(\S\.$)|(\-\- \.$)/', $prev)) {
+						$this->warn("245: Subfield _n must be preceded by . (period).");
+					}
+				}
+			}
+		}
 
-        // each subfield p, if present, must be preceded by a , (no-space-comma)
-        // if it follows subfield n, or by . (no-space-period or
-        // dash-space-period) following other subfields
-        if (isset($hasSubfields['p'])) {
-            // 245 subfield p must be preceded by . (period) or , (comma)
-            foreach ($subfields as $i => $current) {
-                if ($current->getCode() == 'p' && $i > 0) {
-                    $prev = $subfields[$i-1];
-                    // case for subfield 'n' being field before this one (allows
-                    // dash-space-comma)
-                    if ($prev->getCode() == 'n'
-                        && !preg_match('/(\S,$)|(\-\- ,$)/', $prev->getData())
-                    ) {
-                        $this->warn(
-                            "245: Subfield _p must be preceded by , (comma) "
-                            . "when it follows subfield _n."
-                        );
-                    } else if ($prev->getCode() != 'n'
-                        && !preg_match('/(\S\.$)|(\-\- \.$)/', $prev->getData())
-                    ) {
-                        $this->warn(
-                            "245: Subfield _p must be preceded by . (period)"
-                            . " when it follows a subfield other than _n."
-                        );
-                    }
-                }
-            }
-        }
+		// each subfield p, if present, must be preceded by a , (no-space-comma)
+		// if it follows subfield n, or by . (no-space-period or
+		// dash-space-period) following other subfields
+		if (isset($hasSubfields['p'])) {
+			// 245 subfield p must be preceded by . (period) or , (comma)
+			foreach ($subfields as $i => $current) {
+				if ($current->getCode() == 'p' && $i > 0) {
+					$prev = $subfields[$i - 1];
+					// case for subfield 'n' being field before this one (allows
+					// dash-space-comma)
+					if ($prev->getCode() == 'n' && !preg_match('/(\S,$)|(\-\- ,$)/', $prev->getData())) {
+						$this->warn("245: Subfield _p must be preceded by , (comma) " . "when it follows subfield _n.");
+					} elseif ($prev->getCode() != 'n' && !preg_match('/(\S\.$)|(\-\- \.$)/', $prev->getData())) {
+						$this->warn("245: Subfield _p must be preceded by . (period)" . " when it follows a subfield other than _n.");
+					}
+				}
+			}
+		}
 
-        // check for invalid 2nd indicator
-        $this->checkArticle($field);
-    }
-    // }}}
+		// check for invalid 2nd indicator
+		$this->checkArticle($field);
+	}
+	// }}}
 
-    // {{{ checkArticle()
-    /**
-     * Check of articles is based on code from Ian Hamilton. This version is more
-     * limited in that it focuses on English, Spanish, French, Italian and German
-     * articles. Certain possible articles have been removed if they are valid
-     * English non-articles. This version also disregards 008_language/041 codes
-     * and just uses the list of articles to provide warnings/suggestions.
-     *
-     * source for articles = <http://www.loc.gov/marc/bibliographic/bdapp-e.html>
-     *
-     * Should work with fields 130, 240, 245, 440, 630, 730, and 830. Reports error
-     * if another field is passed in.
-     *
-     * @param File_MARC_Field $field Field to check
-     *
-     * @return void
-     */
-    protected function checkArticle($field)
-    {
-        // add articles here as needed
-        // Some omitted due to similarity with valid words (e.g. the German 'die').
-        static $article = array(
-            'a' => 'eng glg hun por',
-            'an' => 'eng',
-            'das' => 'ger',
-            'dem' => 'ger',
-            'der' => 'ger',
-            'ein' => 'ger',
-            'eine' => 'ger',
-            'einem' => 'ger',
-            'einen' => 'ger',
-            'einer' => 'ger',
-            'eines' => 'ger',
-            'el' => 'spa',
-            'en' => 'cat dan nor swe',
-            'gl' => 'ita',
-            'gli' => 'ita',
-            'il' => 'ita mlt',
-            'l' => 'cat fre ita mlt',
-            'la' => 'cat fre ita spa',
-            'las' => 'spa',
-            'le' => 'fre ita',
-            'les' => 'cat fre',
-            'lo' => 'ita spa',
-            'los' => 'spa',
-            'os' => 'por',
-            'the' => 'eng',
-            'um' => 'por',
-            'uma' => 'por',
-            'un' => 'cat spa fre ita',
-            'una' => 'cat spa ita',
-            'une' => 'fre',
-            'uno' => 'ita',
-        );
+	// {{{ checkArticle()
+	/**
+	 * Check of articles is based on code from Ian Hamilton. This version is more
+	 * limited in that it focuses on English, Spanish, French, Italian and German
+	 * articles. Certain possible articles have been removed if they are valid
+	 * English non-articles. This version also disregards 008_language/041 codes
+	 * and just uses the list of articles to provide warnings/suggestions.
+	 *
+	 * source for articles = <http://www.loc.gov/marc/bibliographic/bdapp-e.html>
+	 *
+	 * Should work with fields 130, 240, 245, 440, 630, 730, and 830. Reports error
+	 * if another field is passed in.
+	 *
+	 * @param File_MARC_Field $field Field to check
+	 *
+	 * @return void
+	 */
+	protected function checkArticle($field) {
+		// add articles here as needed
+		// Some omitted due to similarity with valid words (e.g. the German 'die').
+		static $article = [
+			'a' => 'eng glg hun por',
+			'an' => 'eng',
+			'das' => 'ger',
+			'dem' => 'ger',
+			'der' => 'ger',
+			'ein' => 'ger',
+			'eine' => 'ger',
+			'einem' => 'ger',
+			'einen' => 'ger',
+			'einer' => 'ger',
+			'eines' => 'ger',
+			'el' => 'spa',
+			'en' => 'cat dan nor swe',
+			'gl' => 'ita',
+			'gli' => 'ita',
+			'il' => 'ita mlt',
+			'l' => 'cat fre ita mlt',
+			'la' => 'cat fre ita spa',
+			'las' => 'spa',
+			'le' => 'fre ita',
+			'les' => 'cat fre',
+			'lo' => 'ita spa',
+			'los' => 'spa',
+			'os' => 'por',
+			'the' => 'eng',
+			'um' => 'por',
+			'uma' => 'por',
+			'un' => 'cat spa fre ita',
+			'una' => 'cat spa ita',
+			'une' => 'fre',
+			'uno' => 'ita',
+		];
 
-        // add exceptions here as needed
-        // may want to make keys lowercase
-        static $exceptions = array(
-            'A & E',
-            'A & ',
-            'A-',
-            'A+',
-            'A is ',
-            'A isn\'t ',
-            'A l\'',
-            'A la ',
-            'A posteriori',
-            'A priori',
-            'A to ',
-            'El Nino',
-            'El Salvador',
-            'L is ',
-            'L-',
-            'La Salle',
-            'Las Vegas',
-            'Lo mein',
-            'Los Alamos',
-            'Los Angeles',
-        );
+		// add exceptions here as needed
+		// may want to make keys lowercase
+		static $exceptions = [
+			'A & E',
+			'A & ',
+			'A-',
+			'A+',
+			'A is ',
+			'A isn\'t ',
+			'A l\'',
+			'A la ',
+			'A posteriori',
+			'A priori',
+			'A to ',
+			'El Nino',
+			'El Salvador',
+			'L is ',
+			'L-',
+			'La Salle',
+			'Las Vegas',
+			'Lo mein',
+			'Los Alamos',
+			'Los Angeles',
+		];
 
-        // get tagno to determine which indicator to check and for reporting
-        $tagNo = $field->getTag();
-        // retrieve tagno from subfield 6 if 880 field
-        if ($tagNo == '880' && ($sub6 = $field->getSubfield('6'))) {
-            $tagNo = substr($sub6->getData(), 0, 3);
-        }
+		// get tagno to determine which indicator to check and for reporting
+		$tagNo = $field->getTag();
+		// retrieve tagno from subfield 6 if 880 field
+		if ($tagNo == '880' && ($sub6 = $field->getSubfield('6'))) {
+			$tagNo = substr($sub6->getData(), 0, 3);
+		}
 
-        // $ind holds nonfiling character indicator value
-        $ind = '';
-        // $first_or_second holds which indicator is for nonfiling char value
-        $first_or_second = '';
-        if (in_array($tagNo, array(130, 630, 730))) {
-            $ind = $field->getIndicator(1);
-            $first_or_second = '1st';
-        } else if (in_array($tagNo, array(240, 245, 440, 830))) {
-            $ind = $field->getIndicator(2);
-            $first_or_second = '2nd';
-        } else {
-            $this->warn(
-                'Internal error: ' . $tagNo
-                . " is not a valid field for article checking\n"
-            );
-            return;
-        }
+		// $ind holds nonfiling character indicator value
+		$ind = '';
+		// $first_or_second holds which indicator is for nonfiling char value
+		$first_or_second = '';
+		if (in_array($tagNo, [
+			130,
+			630,
+			730,
+		])) {
+			$ind = $field->getIndicator(1);
+			$first_or_second = '1st';
+		} elseif (in_array($tagNo, [
+			240,
+			245,
+			440,
+			830,
+		])) {
+			$ind = $field->getIndicator(2);
+			$first_or_second = '2nd';
+		} else {
+			$this->warn('Internal error: ' . $tagNo . " is not a valid field for article checking\n");
+			return;
+		}
 
-        if (!is_numeric($ind)) {
-            $this->warn($tagNo . ": Non-filing indicator is non-numeric");
-            return;
-        }
+		if (!is_numeric($ind)) {
+			$this->warn($tagNo . ": Non-filing indicator is non-numeric");
+			return;
+		}
 
-        // get subfield 'a' of the title field
-        $titleField = $field->getSubfield('a');
-        $title = $titleField ? $titleField->getData() : '';
+		// get subfield 'a' of the title field
+		$titleField = $field->getSubfield('a');
+		$title = $titleField ? $titleField->getData() : '';
 
-        $char1_notalphanum = 0;
-        // check for apostrophe, quote, bracket,  or parenthesis, before first word
-        // remove if found and add to non-word counter
-        while (preg_match('/^["\'\[\(*]/', $title)) {
-            $char1_notalphanum++;
-            $title = preg_replace('/^["\'\[\(*]/', '', $title);
-        }
-        // split title into first word + rest on space, parens, bracket, apostrophe,
-        // quote, or hyphen
-        preg_match('/^([^ \(\)\[\]\'"\-]+)([ \(\)\[\]\'"\-])?(.*)/i', $title, $hits);
-        $firstword = isset($hits[1]) ? $hits[1] : '';
-        $separator = isset($hits[2]) ? $hits[2] : '';
-        $etc = isset($hits[3]) ? $hits[3] : '';
+		$char1_notalphanum = 0;
+		// check for apostrophe, quote, bracket,  or parenthesis, before first word
+		// remove if found and add to non-word counter
+		while (preg_match('/^["\'\[\(*]/', $title)) {
+			$char1_notalphanum++;
+			$title = preg_replace('/^["\'\[\(*]/', '', $title);
+		}
+		// split title into first word + rest on space, parens, bracket, apostrophe,
+		// quote, or hyphen
+		preg_match('/^([^ \(\)\[\]\'"\-]+)([ \(\)\[\]\'"\-])?(.*)/i', $title, $hits);
+		$firstword = isset($hits[1]) ? $hits[1] : '';
+		$separator = isset($hits[2]) ? $hits[2] : '';
+		$etc = isset($hits[3]) ? $hits[3] : '';
 
-        // get length of first word plus the number of chars removed above plus one
-        // for the separator
-        $nonfilingchars = strlen($firstword) + $char1_notalphanum + 1;
+		// get length of first word plus the number of chars removed above plus one
+		// for the separator
+		$nonfilingchars = strlen($firstword) + $char1_notalphanum + 1;
 
-        // check to see if first word is an exception
-        $isan_exception = false;
-        foreach ($exceptions as $current) {
-            if (substr($title, 0, strlen($current)) == $current) {
-                $isan_exception = true;
-                break;
-            }
-        }
+		// check to see if first word is an exception
+		$isan_exception = false;
+		foreach ($exceptions as $current) {
+			if (substr($title, 0, strlen($current)) == $current) {
+				$isan_exception = true;
+				break;
+			}
+		}
 
-        // lowercase chars of $firstword for comparison with article list
-        $firstword = strtolower($firstword);
+		// lowercase chars of $firstword for comparison with article list
+		$firstword = strtolower($firstword);
 
-        // see if first word is in the list of articles and not an exception
-        $isan_article = !$isan_exception && isset($article[$firstword]);
+		// see if first word is in the list of articles and not an exception
+		$isan_article = !$isan_exception && isset($article[$firstword]);
 
-        // if article then $nonfilingchars should match $ind
-        if ($isan_article) {
-            // account for quotes, apostrophes, parens, or brackets before 2nd word
-            if (strlen($separator) && preg_match('/^[ \(\)\[\]\'"\-]+/', $etc)) {
-                while (preg_match('/^[ "\'\[\]\(\)*]/', $etc)) {
-                    $nonfilingchars++;
-                    $etc = preg_replace('/^[ "\'\[\]\(\)*]/', '', $etc);
-                }
-            }
-            if ($nonfilingchars != $ind) {
-                $this->warn(
-                    $tagNo . ": First word, $firstword, may be an article, check "
-                    . "$first_or_second indicator ($ind)."
-                );
-            }
-        } else {
-            // not an article so warn if $ind is not 0
-            if ($ind != '0') {
-                $this->warn(
-                    $tagNo . ": First word, $firstword, does not appear to be an "
-                    . "article, check $first_or_second indicator ($ind)."
-                );
-            }
-        }
-    }
-    // }}}
+		// if article then $nonfilingchars should match $ind
+		if ($isan_article) {
+			// account for quotes, apostrophes, parens, or brackets before 2nd word
+			if (strlen($separator) && preg_match('/^[ \(\)\[\]\'"\-]+/', $etc)) {
+				while (preg_match('/^[ "\'\[\]\(\)*]/', $etc)) {
+					$nonfilingchars++;
+					$etc = preg_replace('/^[ "\'\[\]\(\)*]/', '', $etc);
+				}
+			}
+			if ($nonfilingchars != $ind) {
+				$this->warn($tagNo . ": First word, $firstword, may be an article, check " . "$first_or_second indicator ($ind).");
+			}
+		} else {
+			// not an article so warn if $ind is not 0
+			if ($ind != '0') {
+				$this->warn($tagNo . ": First word, $firstword, does not appear to be an " . "article, check $first_or_second indicator ($ind).");
+			}
+		}
+	}
+	// }}}
 
-    // {{{ parseRules()
-    /**
-     * Support method for constructor to load MARC rules.
-     *
-     * @return void
-     */
-    protected function parseRules()
-    {
-        // Break apart the rule data on line breaks:
-        $lines = explode("\n", $this->getRawRules());
+	// {{{ parseRules()
+	/**
+	 * Support method for constructor to load MARC rules.
+	 *
+	 * @return void
+	 */
+	protected function parseRules() {
+		// Break apart the rule data on line breaks:
+		$lines = explode("\n", $this->getRawRules());
 
-        // Each group of data is split by a blank line -- process one group
-        // at a time:
-        $currentGroup = array();
-        foreach ($lines as $currentLine) {
-            if (empty($currentLine) && !empty($currentGroup)) {
-                $this->processRuleGroup($currentGroup);
-                $currentGroup = array();
-            } else {
-                $currentGroup[] = preg_replace("/\s+/", " ", $currentLine);
-            }
-        }
+		// Each group of data is split by a blank line -- process one group
+		// at a time:
+		$currentGroup = [];
+		foreach ($lines as $currentLine) {
+			if (empty($currentLine) && !empty($currentGroup)) {
+				$this->processRuleGroup($currentGroup);
+				$currentGroup = [];
+			} else {
+				$currentGroup[] = preg_replace("/\s+/", " ", $currentLine);
+			}
+		}
 
-        // Still have unprocessed data after the loop?  Handle it now:
-        if (!empty($currentGroup)) {
-            $this->processRuleGroup($currentGroup);
-        }
-    }
-    // }}}
+		// Still have unprocessed data after the loop?  Handle it now:
+		if (!empty($currentGroup)) {
+			$this->processRuleGroup($currentGroup);
+		}
+	}
+	// }}}
 
-    // {{{ processRuleGroup()
-    /**
-     * Support method for parseRules() -- process one group of lines representing
-     * a single tag.
-     *
-     * @param array $rules Rule lines to process
-     *
-     * @return void
-     */
-    protected function processRuleGroup($rules)
-    {
-        // The first line is guaranteed to exist and gives us some basic info:
-        list($tag, $repeatable, $description) = explode(' ', $rules[0]);
-        $this->rules[$tag] = array(
-            'repeatable' => $repeatable,
-            'desc' => $description
-        );
+	// {{{ processRuleGroup()
+	/**
+	 * Support method for parseRules() -- process one group of lines representing
+	 * a single tag.
+	 *
+	 * @param array $rules Rule lines to process
+	 *
+	 * @return void
+	 */
+	protected function processRuleGroup($rules) {
+		// The first line is guaranteed to exist and gives us some basic info:
+		[
+			$tag,
+			$repeatable,
+			$description,
+		] = explode(' ', $rules[0]);
+		$this->rules[$tag] = [
+			'repeatable' => $repeatable,
+			'desc' => $description,
+		];
 
-        // We may or may not have additional details:
-        for ($i = 1; $i < count($rules); $i++) {
-            list($key, $value, $lineDesc) = explode(' ', $rules[$i]);
-            if (substr($key, 0, 3) == 'ind') {
-                // Expand ranges:
-                $value = str_replace('0-9', '0123456789', $value);
-                $this->rules[$tag][$key] = array(
-                    'values' => $value,
-                    'hr_values' => $this->getHumanReadableIndicatorValues($value),
-                    'desc'=> $lineDesc
-                );
-            } else {
-                if (strlen($key) <= 1) {
-                    $this->rules[$tag]['sub' . $key] = array(
-                        'repeatable' => $value,
-                        'desc' => $lineDesc
-                    );
-                } elseif (strstr($key, '-')) {
-                    list($startKey, $endKey) = explode('-', $key);
-                    for ($key = $startKey; $key <= $endKey; $key++) {
-                        $this->rules[$tag]['sub' . $key] = array(
-                            'repeatable' => $value,
-                            'desc' => $lineDesc
-                        );
-                    }
-                }
-            }
-        }
-    }
-    // }}}
+		// We may or may not have additional details:
+		for ($i = 1; $i < count($rules); $i++) {
+			[
+				$key,
+				$value,
+				$lineDesc,
+			] = explode(' ', $rules[$i]);
+			if (substr($key, 0, 3) == 'ind') {
+				// Expand ranges:
+				$value = str_replace('0-9', '0123456789', $value);
+				$this->rules[$tag][$key] = [
+					'values' => $value,
+					'hr_values' => $this->getHumanReadableIndicatorValues($value),
+					'desc' => $lineDesc,
+				];
+			} else {
+				if (strlen($key) <= 1) {
+					$this->rules[$tag]['sub' . $key] = [
+						'repeatable' => $value,
+						'desc' => $lineDesc,
+					];
+				} elseif (strstr($key, '-')) {
+					[
+						$startKey,
+						$endKey,
+					] = explode('-', $key);
+					for ($key = $startKey; $key <= $endKey; $key++) {
+						$this->rules[$tag]['sub' . $key] = [
+							'repeatable' => $value,
+							'desc' => $lineDesc,
+						];
+					}
+				}
+			}
+		}
+	}
+	// }}}
 
-    // {{{ getHumanReadableIndicatorValues()
-    /**
-     * Turn a set of indicator rules into a human-readable list.
-     *
-     * @param string $rules Indicator rules
-     *
-     * @return string
-     */
-    protected function getHumanReadableIndicatorValues($rules)
-    {
-        // No processing needed for blank rule:
-        if ($rules == 'blank') {
-            return $rules;
-        }
+	// {{{ getHumanReadableIndicatorValues()
+	/**
+	 * Turn a set of indicator rules into a human-readable list.
+	 *
+	 * @param string $rules Indicator rules
+	 *
+	 * @return string
+	 */
+	protected function getHumanReadableIndicatorValues($rules) {
+		// No processing needed for blank rule:
+		if ($rules == 'blank') {
+			return $rules;
+		}
 
-        // Create string:
-        $string = '';
-        $length = strlen($rules);
-        for ($i = 0; $i < $length; $i++) {
-            $current = substr($rules, $i, 1);
-            if ($current == 'b') {
-                $current = 'blank';
-            }
-            $string .= $current;
-            if ($length - $i == 2) {
-                $string .= ' or ';
-            } else if ($length - $i > 2) {
-                $string .= ', ';
-            }
-        }
+		// Create string:
+		$string = '';
+		$length = strlen($rules);
+		for ($i = 0; $i < $length; $i++) {
+			$current = substr($rules, $i, 1);
+			if ($current == 'b') {
+				$current = 'blank';
+			}
+			$string .= $current;
+			if ($length - $i == 2) {
+				$string .= ' or ';
+			} elseif ($length - $i > 2) {
+				$string .= ', ';
+			}
+		}
 
-        return $string;
-    }
-    // }}}
+		return $string;
+	}
+	// }}}
 
-    // {{{ getRawRules()
-    /**
-     * Support method for parseRules() -- get the raw rules from MARC::Lint.
-     *
-     * @return string
-     */
-    protected function getRawRules()
-    {
-        // When updating rules, don't forget to escape the dollar signs in the text!
-        // It would be simpler to change from HEREDOC to NOWDOC syntax, but that
-        // would raise the requirements to PHP 5.3.
-        // @codingStandardsIgnoreStart
-        return <<<RULES
+	// {{{ getRawRules()
+	/**
+	 * Support method for parseRules() -- get the raw rules from MARC::Lint.
+	 *
+	 * @return string
+	 */
+	protected function getRawRules() {
+		// When updating rules, don't forget to escape the dollar signs in the text!
+		// It would be simpler to change from HEREDOC to NOWDOC syntax, but that
+		// would raise the requirements to PHP 5.3.
+		// @codingStandardsIgnoreStart
+		return <<<RULES
 001     NR      CONTROL NUMBER
 ind1    blank   Undefined
 ind2    blank   Undefined
@@ -4001,9 +3929,9 @@ ind2    blank   Undefined
 a       NR      Content of non-MARC field
 2       NR      Source of data
 RULES;
-        // @codingStandardsIgnoreEnd
-    }
-    // }}}
+		// @codingStandardsIgnoreEnd
+	}
+	// }}}
 }
 // }}}
 

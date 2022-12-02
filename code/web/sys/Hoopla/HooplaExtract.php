@@ -1,7 +1,6 @@
 <?php
 
-class HooplaExtract extends DataObject
-{
+class HooplaExtract extends DataObject {
 	public $id;
 	public $hooplaId;
 	public $active;
@@ -19,8 +18,7 @@ class HooplaExtract extends DataObject
 
 	public $__table = 'hoopla_export';
 
-	public function getCompressedColumnNames(): array
-	{
+	public function getCompressedColumnNames(): array {
 		return ['rawResponse'];
 	}
 

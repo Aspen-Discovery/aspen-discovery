@@ -1,8 +1,7 @@
 <?php
 
 
-class CompriseSetting extends DataObject
-{
+class CompriseSetting extends DataObject {
 	public $__table = 'comprise_settings';
 	public $id;
 	public $customerName;
@@ -12,17 +11,42 @@ class CompriseSetting extends DataObject
 
 	private $_libraries;
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
-		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'customerName' => array('property' => 'customerName', 'type' => 'text', 'label' => 'Customer Name', 'description' => 'The Customer Name assigned by Comprise'),
-			'customerId' => array('property' => 'customerId', 'type' => 'integer', 'label' => 'Customer Id', 'description' => 'The Customer Id to use with the API'),
-			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'User Name', 'description' => 'The User Name assigned by Comprise'),
-			'password' => array('property' => 'password', 'type' => 'storedPassword', 'label' => 'Password', 'description' => 'The Password assigned by Comprise'),
+		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'customerName' => [
+				'property' => 'customerName',
+				'type' => 'text',
+				'label' => 'Customer Name',
+				'description' => 'The Customer Name assigned by Comprise',
+			],
+			'customerId' => [
+				'property' => 'customerId',
+				'type' => 'integer',
+				'label' => 'Customer Id',
+				'description' => 'The Customer Id to use with the API',
+			],
+			'username' => [
+				'property' => 'username',
+				'type' => 'text',
+				'label' => 'User Name',
+				'description' => 'The User Name assigned by Comprise',
+			],
+			'password' => [
+				'property' => 'password',
+				'type' => 'storedPassword',
+				'label' => 'Password',
+				'description' => 'The Password assigned by Comprise',
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
@@ -30,33 +54,32 @@ class CompriseSetting extends DataObject
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
 				'hideInLists' => true,
-				'forcesReindex' => true
-			),
-		);
+				'forcesReindex' => true,
+			],
+		];
 
-		if (!UserAccount::userHasPermission('Library eCommerce Options')){
+		if (!UserAccount::userHasPermission('Library eCommerce Options')) {
 			unset($structure['libraries']);
 		}
 		return $structure;
 	}
 
-	function getNumericColumnNames() : array
-	{
+	function getNumericColumnNames(): array {
 		return ['customerId'];
 	}
 
-	function getEncryptedFieldNames() : array {
+	function getEncryptedFieldNames(): array {
 		return ['password'];
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
+			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
 				$obj->compriseSettingId = $this->id;
 				$obj->find();
-				while($obj->fetch()){
+				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
 				}
 			}
@@ -66,16 +89,15 @@ class CompriseSetting extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
 
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -83,8 +105,7 @@ class CompriseSetting extends DataObject
 		return true;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -92,24 +113,26 @@ class CompriseSetting extends DataObject
 		return $ret;
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName){
+			foreach ($libraryList as $libraryId => $displayName) {
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
+				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the scope to this library
-					if ($library->compriseSettingId != $this->id){
+					if ($library->compriseSettingId != $this->id) {
 						$library->finePaymentType = 4;
 						$library->compriseSettingId = $this->id;
 						$library->update();
 					}
-				}else{
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->compriseSettingId == $this->id){
-						if ($library->finePaymentType == 4) {$library->finePaymentType = 0;}
+					if ($library->compriseSettingId == $this->id) {
+						if ($library->finePaymentType == 4) {
+							$library->finePaymentType = 0;
+						}
 						$library->compriseSettingId = -1;
 						$library->update();
 					}

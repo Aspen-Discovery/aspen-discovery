@@ -1,13 +1,11 @@
 <?php
 
-class WebBuilder_PortalPage extends Action
-{
+class WebBuilder_PortalPage extends Action {
 	/** @var PortalPage */
 	private $portalPage;
 	private $portalPageFound;
 
-	function __construct()
-	{
+	function __construct() {
 		parent::__construct();
 		http_response_code(200);
 
@@ -17,10 +15,10 @@ class WebBuilder_PortalPage extends Action
 		$this->portalPage->id = $id;
 		$this->portalPageFound = $this->portalPage->find(true);
 
-		if(!$this->portalPageFound){
+		if (!$this->portalPageFound) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -46,40 +44,40 @@ class WebBuilder_PortalPage extends Action
 		}
 	}
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		$interface->assign('inPageEditor', false);
 		$title = $this->portalPage->title;
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
-		$interface->assign('title',$title);
+		$interface->assign('title', $title);
 		$interface->assign('rows', $this->portalPage->getRows());
 
-		if (isset($_REQUEST['raw']) && $_REQUEST['raw'] == 'true'){
+		if (isset($_REQUEST['raw']) && $_REQUEST['raw'] == 'true') {
 			echo $interface->fetch('WebBuilder/portalPage.tpl');
 			exit();
-		}else{
+		} else {
 			$this->display('portalPage.tpl', $title, '', false);
 		}
 	}
 
-	function canView() : bool
-	{
-		if($this->portalPageFound){
+	function canView(): bool {
+		if ($this->portalPageFound) {
 			return $this->portalPage->canView();
-		} else{
+		} else {
 			return false;
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		if ($this->portalPageFound) {
 			$breadcrumbs[] = new Breadcrumb('', $this->portalPage->title, true);
-			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
+			if (UserAccount::userHasPermission([
+				'Administer All Custom Pages',
+				'Administer Library Custom Pages',
+			])) {
 				$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?id=' . $this->portalPage->id . '&objectAction=edit', 'Edit', true);
 			}
 		}

@@ -4,8 +4,7 @@ require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
 class SelfReg extends Action {
-	function launch($msg = null)
-	{
+	function launch($msg = null) {
 		global $interface;
 		global $library;
 
@@ -13,7 +12,7 @@ class SelfReg extends Action {
 		$selfRegFields = $catalog->getSelfRegistrationFields();
 		if ($library->enableSelfRegistration == 0) {
 			$this->display('selfRegistrationNotAllowed.tpl', 'Register for a Library Card', '');
-		}else{
+		} else {
 			if (isset($_REQUEST['submit'])) {
 
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
@@ -68,8 +67,7 @@ class SelfReg extends Action {
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Register for a Library Card');
 		return $breadcrumbs;

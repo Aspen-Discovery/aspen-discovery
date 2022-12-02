@@ -26,7 +26,7 @@ class Ticket extends DataObject {
 			'partnerPriority',
 			'partnerPriorityChangeDate',
 			'dateClosed',
-			'developmentTaskId'
+			'developmentTaskId',
 		];
 	}
 
@@ -54,7 +54,7 @@ class Ticket extends DataObject {
 			0 => 'None',
 			1 => 'Priority 1',
 			2 => 'Priority 2',
-			3 => 'Priority 3'
+			3 => 'Priority 3',
 		];
 
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
@@ -72,83 +72,83 @@ class Ticket extends DataObject {
 		unset($componentTicketLink['ticketId']);
 
 		return [
-			'id' => array(
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'ticketId' => array(
+				'description' => 'The unique id',
+			],
+			'ticketId' => [
 				'property' => 'ticketId',
 				'type' => 'text',
 				'label' => 'Ticket ID',
 				'description' => 'The name of the Severity',
 				'maxLength' => 20,
 				'required' => true,
-				'readOnly' => true
-			),
-			'displayUrl' => array(
+				'readOnly' => true,
+			],
+			'displayUrl' => [
 				'property' => 'displayUrl',
 				'type' => 'url',
 				'label' => 'Display URL',
 				'description' => 'The URL where the ticket can be found',
 				'hideInLists' => true,
 				'required' => true,
-				'readOnly' => true
-			),
-			'title' => array(
+				'readOnly' => true,
+			],
+			'title' => [
 				'property' => 'title',
 				'type' => 'text',
 				'label' => 'Title',
 				'description' => 'The title for the ticket',
 				'maxLength' => 512,
 				'required' => true,
-				'readOnly' => true
-			),
-			'description' => array(
+				'readOnly' => true,
+			],
+			'description' => [
 				'property' => 'description',
 				'type' => 'textarea',
 				'label' => 'Description',
 				'description' => 'The description for the ticket',
 				'hideInLists' => true,
 				'required' => true,
-				'readOnly' => true
-			),
-			'dateCreated' => array(
+				'readOnly' => true,
+			],
+			'dateCreated' => [
 				'property' => 'dateCreated',
 				'type' => 'timestamp',
 				'label' => 'Date Created',
 				'description' => 'When the ticket was created',
 				'required' => true,
-				'readOnly' => true
-			),
-			'status' => array(
+				'readOnly' => true,
+			],
+			'status' => [
 				'property' => 'status',
 				'type' => 'enum',
 				'values' => $ticketStatuses,
 				'label' => 'Status',
 				'description' => 'Status of the ticket',
 				'required' => true,
-				'readOnly' => true
-			),
-			'queue' => array(
+				'readOnly' => true,
+			],
+			'queue' => [
 				'property' => 'queue',
 				'type' => 'enum',
 				'values' => $ticketQueues,
 				'label' => 'Queue',
 				'description' => 'Queue of the ticket',
 				'required' => true,
-				'readOnly' => true
-			),
-			'severity' => array(
+				'readOnly' => true,
+			],
+			'severity' => [
 				'property' => 'severity',
 				'type' => 'enum',
 				'values' => $ticketSeverities,
 				'label' => 'Severity',
 				'description' => 'Severity of a bug',
 				'required' => true,
-				'readOnly' => true
-			),
+				'readOnly' => true,
+			],
 			'relatedComponents' => [
 				'property' => 'relatedComponents',
 				'type' => 'oneToMany',
@@ -163,41 +163,41 @@ class Ticket extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
-			'requestingPartner' => array(
+			'requestingPartner' => [
 				'property' => 'requestingPartner',
 				'type' => 'enum',
 				'values' => $aspenSites,
 				'label' => 'Requesting Partner',
 				'description' => 'The partner who entered the ticket',
 				'required' => true,
-				'readOnly' => true
-			),
-			'partnerPriority' => array(
+				'readOnly' => true,
+			],
+			'partnerPriority' => [
 				'property' => 'partnerPriority',
 				'type' => 'enum',
 				'values' => $partnerPriorities,
 				'label' => 'Partner Priority',
 				'description' => 'Priority for the partner',
 				'required' => true,
-				'readOnly' => true
-			),
-			'partnerPriorityChangeDate' => array(
+				'readOnly' => true,
+			],
+			'partnerPriorityChangeDate' => [
 				'property' => 'partnerPriorityChangeDate',
 				'type' => 'timestamp',
 				'label' => 'Partner Priority Last Changed',
 				'description' => 'When the partner last changed the priority',
-				'readOnly' => true
-			),
-			'dateClosed' => array(
+				'readOnly' => true,
+			],
+			'dateClosed' => [
 				'property' => 'dateClosed',
 				'type' => 'timestamp',
 				'label' => 'Date Closed',
 				'description' => 'When the ticket was closed',
 				'required' => false,
-				'readOnly' => true
-			),
+				'readOnly' => true,
+			],
 			'relatedTasks' => [
 				'property' => 'relatedTasks',
 				'type' => 'oneToMany',
@@ -212,41 +212,41 @@ class Ticket extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 		];
 	}
 
 	function getAdditionalObjectActions($existingObject): array {
-		$objectActions = array();
+		$objectActions = [];
 
 		if ($existingObject instanceof Ticket) {
 			require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 			$rtConnection = new RequestTrackerConnection();
 			if ($rtConnection->find(true)) {
 
-				$objectActions[] = array(
+				$objectActions[] = [
 					'text' => 'Open in RT',
 					'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $existingObject->ticketId,
-					'target' => '_blank'
-				);
+					'target' => '_blank',
+				];
 			}
 		}
 		return $objectActions;
 	}
 
 	function getAdditionalListActions(): array {
-		$objectActions = array();
+		$objectActions = [];
 
 		require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 		$rtConnection = new RequestTrackerConnection();
 		if ($rtConnection->find(true)) {
 
-			$objectActions[] = array(
+			$objectActions[] = [
 				'text' => 'Open in RT',
 				'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $this->ticketId,
-				'target' => '_blank'
-			);
+				'target' => '_blank',
+			];
 		}
 		return $objectActions;
 	}
@@ -344,7 +344,7 @@ class Ticket extends DataObject {
 	 * @param ComponentTicketLink[] $relatedComponents
 	 * @return void
 	 */
-	public function setRelatedComponents(array $relatedComponents){
+	public function setRelatedComponents(array $relatedComponents) {
 		$this->_relatedComponents = $relatedComponents;
 	}
 

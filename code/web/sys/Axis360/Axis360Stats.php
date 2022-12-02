@@ -1,8 +1,7 @@
 <?php
 
 
-class Axis360Stats extends DataObject
-{
+class Axis360Stats extends DataObject {
 	public $__table = 'axis360_stats';
 	public $id;
 	public $instance;

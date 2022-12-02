@@ -3,25 +3,24 @@
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCpuUsage.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-class SiteCpuUsage extends Admin_Admin
-{
-	function launch()
-	{
+
+class SiteCpuUsage extends Admin_Admin {
+	function launch() {
 		global $interface;
 		$aspenSite = new AspenSite();
 		$aspenSite->orderBy('name');
 		$allSites = [];
 		$aspenSite->find();
 		$selectedSite = '';
-		while ($aspenSite->fetch()){
+		while ($aspenSite->fetch()) {
 			$allSites[$aspenSite->id] = $aspenSite->name;
-			if ($selectedSite == ''){
+			if ($selectedSite == '') {
 				$selectedSite = $aspenSite->id;
 			}
 		}
 		$interface->assign('allSites', $allSites);
 
-		if (!empty($_REQUEST['site'])){
+		if (!empty($_REQUEST['site'])) {
 			$selectedSite = $_REQUEST['site'];
 		}
 		$interface->assign('selectedSite', $selectedSite);
@@ -34,7 +33,7 @@ class SiteCpuUsage extends Admin_Admin
 			$dataSeries['CPU Usage'] = [
 				'borderColor' => 'rgba(255, 99, 132, 1)',
 				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 
 			$aspenSiteCpuStats = new AspenSiteCpuUsage();
@@ -42,7 +41,7 @@ class SiteCpuUsage extends Admin_Admin
 			$aspenSiteCpuStats->orderBy('timestamp');
 
 			$aspenSiteCpuStats->find();
-			while ($aspenSiteCpuStats->fetch()){
+			while ($aspenSiteCpuStats->fetch()) {
 				$columnLabel = date('m/d/y h:i', $aspenSiteCpuStats->timestamp);
 				$columnLabels[] = $columnLabel;
 				$dataSeries['CPU Usage']['data'][$aspenSiteCpuStats->timestamp] = $aspenSiteCpuStats->loadPerCpu * 100;
@@ -56,8 +55,7 @@ class SiteCpuUsage extends Admin_Admin
 		$this->display('siteCpu.tpl', 'Aspen Site CPU Dashboard', '');
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
@@ -65,15 +63,13 @@ class SiteCpuUsage extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'greenhouse';
 	}
 
-	function canView() : bool
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}

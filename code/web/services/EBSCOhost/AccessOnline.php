@@ -1,23 +1,25 @@
 <?php
 
 require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
-class EBSCOhost_AccessOnline extends Action{
+
+class EBSCOhost_AccessOnline extends Action {
 
 	private $recordDriver;
+
 	function launch() {
 		global $interface;
 		$id = urldecode($_REQUEST['id']);
 
 		$this->recordDriver = new EbscohostRecordDriver($id);
 
-		if ($this->recordDriver->isValid()){
+		if ($this->recordDriver->isValid()) {
 			//Make sure the user has been validated to view the record based on IP or login
 			$activeIP = IPAddress::getActiveIp();
 			$subnet = IPAddress::getIPAddressForIP($activeIP);
 			$okToAccess = false;
-			if ($subnet != false && $subnet->authenticatedForEBSCOhost){
+			if ($subnet != false && $subnet->authenticatedForEBSCOhost) {
 				$okToAccess = true;
-			}else{
+			} else {
 				$okToAccess = UserAccount::isLoggedIn();
 			}
 
@@ -64,26 +66,28 @@ class EBSCOhost_AccessOnline extends Action{
 
 				header('Location:' . $this->recordDriver->getRecordUrl());
 				die();
-			}else{
+			} else {
 				require_once ROOT_DIR . '/services/MyAccount/Login.php';
 				$launchAction = new MyAccount_Login();
 				$_REQUEST['followupModule'] = 'EBSCOhost';
 				$_REQUEST['followupAction'] = 'AccessOnline';
 				$_REQUEST['recordId'] = $id;
 
-				$error_msg = translate(['text'=>'You must be logged in to access content from EBSCOhost','isPublicFacing'=>true]);
+				$error_msg = translate([
+					'text' => 'You must be logged in to access content from EBSCOhost',
+					'isPublicFacing' => true,
+				]);
 				$launchAction->launch($error_msg);
 			}
-		}else{
+		} else {
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		if (!empty($this->lastSearch)){
+		if (!empty($this->lastSearch)) {
 			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Article & Database Search Results');
 		}
 		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getTitle());

@@ -1,8 +1,7 @@
 <?php
 
 
-class RBdigitalMagazineUsage extends DataObject
-{
+class RBdigitalMagazineUsage extends DataObject {
 	public $__table = 'rbdigital_magazine_usage';
 	public $id;
 	public $instance;

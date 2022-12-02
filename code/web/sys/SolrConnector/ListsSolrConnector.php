@@ -2,24 +2,20 @@
 
 require_once 'Solr.php';
 
-class ListsSolrConnector extends Solr
-{
-	function __construct($host)
-	{
+class ListsSolrConnector extends Solr {
+	function __construct($host) {
 		parent::__construct($host, 'lists');
 	}
 
 	/**
 	 * @return string
 	 */
-	function getSearchSpecsFile()
-	{
+	function getSearchSpecsFile() {
 		return ROOT_DIR . '/../../sites/default/conf/listsSearchSpecs.yaml';
 	}
 
 	/** return string */
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'listsSearches';
 	}
 
@@ -29,8 +25,7 @@ class ListsSolrConnector extends Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation)
-	{
+	public function getScopingFilters($searchLibrary, $searchLocation) {
 		global $solrScope;
 		$filter = [];
 		if (!$solrScope) {

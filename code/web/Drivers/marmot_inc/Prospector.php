@@ -25,9 +25,9 @@ class Prospector {
 
 			//Parse the information to get the titles from the page
 			preg_match_all('/gridBrowseCol2(.*?)bibLocations/si', $prospectorInfo, $titleInfo, PREG_SET_ORDER);
-			$prospectorTitles = array();
+			$prospectorTitles = [];
 			for ($matchi = 0; $matchi < count($titleInfo); $matchi++) {
-				$curTitleInfo = array();
+				$curTitleInfo = [];
 				//Extract the title and bid from the titleTitleInfo
 				$titleTitleInfo = $titleInfo[$matchi][1];
 
@@ -90,19 +90,19 @@ class Prospector {
 			}
 
 			$prospectorTitles = array_slice($prospectorTitles, 0, $maxResults, true);
-			return array(
+			return [
 				'firstRecord' => $firstResult,
 				'lastRecord' => $lastResult,
 				'resultTotal' => $numberOfResults,
 				'records' => $prospectorTitles,
-			);
+			];
 		} else {
-			return array(
+			return [
 				'firstRecord' => 0,
 				'lastRecord' => 0,
 				'resultTotal' => 0,
-				'records' => array(),
-			);
+				'records' => [],
+			];
 		}
 
 	}

@@ -1,6 +1,6 @@
 <?php
 
-class NotInterested extends DataObject{
+class NotInterested extends DataObject {
 	public $id;
 	public $userId;
 	public $groupedRecordPermanentId;
@@ -8,13 +8,14 @@ class NotInterested extends DataObject{
 
 	public $__table = 'user_not_interested';
 
-	public function getUniquenessFields(): array
-	{
-		return ['userId', 'groupedRecordPermanentId'];
+	public function getUniquenessFields(): array {
+		return [
+			'userId',
+			'groupedRecordPermanentId',
+		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
 		$user = new User();
 		$user->id = $this->userId;
@@ -26,15 +27,13 @@ class NotInterested extends DataObject{
 		return $okToExport;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);
 		return $return;
 	}
 
-	public function getLinksForJSON(): array
-	{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		$user = new User();
 		$user->id = $this->userId;
@@ -44,14 +43,13 @@ class NotInterested extends DataObject{
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['user'])){
+		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->userId = $user->id;
 			}
 		}

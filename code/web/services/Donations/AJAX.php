@@ -2,15 +2,13 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-class Donations_AJAX extends JSON_Action
-{
-	function launch($method = null)
-	{
+class Donations_AJAX extends JSON_Action {
+	function launch($method = null) {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-				parent::launch($method);
+			parent::launch($method);
 		} else {
-			echo json_encode(array('error' => 'invalid_method'));
+			echo json_encode(['error' => 'invalid_method']);
 		}
 	}
 
@@ -18,11 +16,11 @@ class Donations_AJAX extends JSON_Action
 	function createGenericOrder($paymentType = '') {
 		$transactionDate = time();
 
-		if(UserAccount::isLoggedIn()) {
+		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
 			$patronId = $user->id;
 			$patron = $user->getUserReferredTo($patronId);
-			if($patron == false) {
+			if ($patron == false) {
 				$isLoggedIn = false;
 			} else {
 				$isLoggedIn = true;
@@ -32,7 +30,13 @@ class Donations_AJAX extends JSON_Action
 		}
 
 		if (empty($_REQUEST['donationAmount'])) {
-			return ['success' => false, 'message' => translate(['text' => 'Please provide a donation amount value', 'isPublicFacing'=> true])];
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Please provide a donation amount value',
+					'isPublicFacing' => true,
+				]),
+			];
 		}
 
 		$donationAmount = $_REQUEST['donationAmount'];
@@ -50,7 +54,7 @@ class Donations_AJAX extends JSON_Action
 				'currency_code' => $currencyCode,
 				'value' => round($donationAmount, 2),
 			],
-			'quantity' => 1
+			'quantity' => 1,
 		];
 
 		$purchaseUnits['amount'] = [
@@ -61,7 +65,7 @@ class Donations_AJAX extends JSON_Action
 					'currency_code' => $currencyCode,
 					'value' => round($donationAmount, 2),
 				],
-			]
+			],
 		];
 
 		$transactionType = $_REQUEST['transactionType'];
@@ -77,6 +81,9 @@ class Donations_AJAX extends JSON_Action
 		$paymentId = $payment->insert();
 		$purchaseUnits['custom_id'] = $paymentId;
 
-		return [$payment, $purchaseUnits];
+		return [
+			$payment,
+			$purchaseUnits,
+		];
 	}
 }

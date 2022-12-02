@@ -23,9 +23,8 @@
  * @param string
  * @return string
  */
-function smarty_modifier_cat($string, $cat)
-{
-    return $string . $cat;
+function smarty_modifier_cat($string, $cat) {
+	return $string . $cat;
 }
 
 /* vim: set expandtab: */

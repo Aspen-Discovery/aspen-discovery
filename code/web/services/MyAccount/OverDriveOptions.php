@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_OverDriveOptions extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_OverDriveOptions extends MyAccount {
+	function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -13,9 +11,9 @@ class MyAccount_OverDriveOptions extends MyAccount
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -30,7 +28,7 @@ class MyAccount_OverDriveOptions extends MyAccount
 				$patron->updateOverDriveOptions();
 
 				session_write_close();
-				$actionUrl = '/MyAccount/OverDriveOptions' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/OverDriveOptions' . ($patronId == $user->id ? '' : '?patronId=' . $patronId); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
@@ -47,8 +45,7 @@ class MyAccount_OverDriveOptions extends MyAccount
 		$this->display('overDriveOptions.tpl', 'Account Settings');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'OverDrive Options');

@@ -1,6 +1,6 @@
 <?php
 
-class Library_System extends Action{
+class Library_System extends Action {
 
 	function launch() {
 		global $interface;
@@ -8,35 +8,35 @@ class Library_System extends Action{
 
 		$librarySystem = new Library();
 		$librarySystem->libraryId = $_REQUEST['id'];
-		if ($librarySystem->find(true)){
+		if ($librarySystem->find(true)) {
 			$interface->assign('library', $librarySystem);
 		}
 
-		$semanticData = array(
-				'@context' => 'http://schema.org',
-				'@type' => 'Organization',
-				'name' => $librarySystem->displayName,
-		);
+		$semanticData = [
+			'@context' => 'http://schema.org',
+			'@type' => 'Organization',
+			'name' => $librarySystem->displayName,
+		];
 		//add branches
 		$locations = new Location();
 		$locations->libraryId = $librarySystem->libraryId;
 		$locations->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 		$locations->find();
-		$subLocations = array();
-		$branches = array();
-		while ($locations->fetch()){
-			$branches[] = array(
-					'name' => $locations->displayName,
-					'link' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
-			);
-			$subLocations[] = array(
+		$subLocations = [];
+		$branches = [];
+		while ($locations->fetch()) {
+			$branches[] = [
+				'name' => $locations->displayName,
+				'link' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch",
+			];
+			$subLocations[] = [
 				'@type' => 'Organization',
 				'name' => $locations->displayName,
-				'url' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
+				'url' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch",
 
-			);
+			];
 		}
-		if (count($subLocations)){
+		if (count($subLocations)) {
 			$semanticData['subOrganization'] = $subLocations;
 			$interface->assign('branches', $branches);
 		}
@@ -45,8 +45,7 @@ class Library_System extends Action{
 		$this->display('system.tpl', $librarySystem->displayName);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

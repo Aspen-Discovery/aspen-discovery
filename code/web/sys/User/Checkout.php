@@ -1,8 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/User/CircEntry.php';
 
-class Checkout extends CircEntry
-{
+class Checkout extends CircEntry {
 	public $__table = 'user_checkout';
 	public $shortId;
 	public $itemId;
@@ -56,16 +55,36 @@ class Checkout extends CircEntry
 	public $_overdue = null;
 	public $_daysUntilDue = null;
 
-	public function getNumericColumnNames() : array
-	{
-		return ['userId', 'canRenew', 'checkoutDate', 'dueDate', 'renewCount', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
+	public function getNumericColumnNames(): array {
+		return [
+			'userId',
+			'canRenew',
+			'checkoutDate',
+			'dueDate',
+			'renewCount',
+			'autoRenew',
+			'maxRenewals',
+			'fine',
+			'holdQueueLength',
+			'allowDownload',
+			'overdriveRead',
+			'overdriveListen',
+			'overdriveVideo',
+			'overdriveMagazine',
+			'formatSelected',
+			'canReturnEarly',
+			'isSupplemental',
+		];
 	}
 
-	public function getSerializedFieldNames() : array{
-		return ['supplementalMaterials', 'formats'];
+	public function getSerializedFieldNames(): array {
+		return [
+			'supplementalMaterials',
+			'formats',
+		];
 	}
 
-	public function getDaysUntilDue(){
+	public function getDaysUntilDue() {
 		if ($this->_daysUntilDue == null) {
 			if ($this->dueDate) {
 				// use the same time of day to calculate days until due, in order to avoid errors with rounding
@@ -84,36 +103,36 @@ class Checkout extends CircEntry
 	}
 
 	/** @noinspection PhpUnused */
-	public function isOverdue(){
-		if ($this->_overdue == null){
+	public function isOverdue() {
+		if ($this->_overdue == null) {
 			$this->getDaysUntilDue();
 		}
 		return $this->_overdue;
 	}
 
 	/** @noinspection PhpUnused */
-	public function getFormattedRenewalDate(){
-		if (!empty($this->renewalDate)){
+	public function getFormattedRenewalDate() {
+		if (!empty($this->renewalDate)) {
 			return date('D M jS', $this->renewalDate);
-		}else{
+		} else {
 			return '';
 		}
 	}
 
-	public function getArrayForAPIs(){
+	public function getArrayForAPIs() {
 		$checkout = $this->toArray();
 		if ($checkout['type'] == 'ils') {
 			$checkout['checkoutSource'] = 'ILS';
-		}elseif ($checkout['type'] == 'cloud_library') {
+		} elseif ($checkout['type'] == 'cloud_library') {
 			$checkout['checkoutSource'] = 'CloudLibrary';
-		}elseif ($checkout['type'] == 'axis360') {
+		} elseif ($checkout['type'] == 'axis360') {
 			$checkout['checkoutSource'] = 'Axis360';
-		}elseif ($checkout['type'] == 'hoopla') {
+		} elseif ($checkout['type'] == 'hoopla') {
 			$checkout['checkoutSource'] = 'Hoopla';
 			$checkout['hooplaId'] = $checkout['sourceId'];
 			$checkout['hooplaUrl'] = $checkout['accessOnlineUrl'];
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-		}elseif ($checkout['type'] == 'overdrive') {
+		} elseif ($checkout['type'] == 'overdrive') {
 			global $configArray;
 			$checkout['checkoutSource'] = 'OverDrive';
 			$checkout['overDriveId'] = $checkout['sourceId'];
@@ -132,14 +151,14 @@ class Checkout extends CircEntry
 		$checkout['link'] = $this->getLinkUrl();
 		$checkout['linkUrl'] = $this->getLinkUrl();
 		$checkout['title_sort'] = $this->getSortTitle();
-		$checkout['renewalDate'] = date('D M jS', $checkout['renewalDate'] );
+		$checkout['renewalDate'] = date('D M jS', $checkout['renewalDate']);
 		$checkout['overdue'] = $this->isOverdue();
 		$checkout['daysUntilDue'] = $this->getDaysUntilDue();
 		$checkout['checkoutDate'] = (int)$checkout['checkoutDate'];
 		$checkout['dueDate'] = (int)$checkout['dueDate'];
 		$checkout['user'] = $this->getUserName();
 		$checkout['fullId'] = $checkout['source'] . ':' . $checkout['recordId'];
-		if (isset($checkout['canRenew'])){
+		if (isset($checkout['canRenew'])) {
 			/** @noinspection SpellCheckingInspection */
 			$checkout['canrenew'] = $checkout['canRenew'] == 1;
 			$checkout['canRenew'] = $checkout['canRenew'] == 1;
@@ -152,29 +171,28 @@ class Checkout extends CircEntry
 		return $checkout;
 	}
 
-	private function performPreSaveChecks(){
+	private function performPreSaveChecks() {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-		if (strlen($this->title) > 500){
+		if (strlen($this->title) > 500) {
 			$this->title = StringUtils::trimStringToLengthAtWordBoundary($this->title, 500, true);
 		}
-		if (strlen($this->title2) > 500){
+		if (strlen($this->title2) > 500) {
 			$this->title2 = StringUtils::trimStringToLengthAtWordBoundary($this->title2, 500, true);
 		}
-		if (strlen($this->author) > 500){
+		if (strlen($this->author) > 500) {
 			$this->author = StringUtils::trimStringToLengthAtWordBoundary($this->author, 500, true);
 		}
-		if (strlen($this->callNumber) > 100){
+		if (strlen($this->callNumber) > 100) {
 			$this->callNumber = StringUtils::trimStringToLengthAtWordBoundary($this->callNumber, 100, true);
 		}
 	}
-	public function insert()
-	{
+
+	public function insert() {
 		$this->performPreSaveChecks();
 		return parent::insert();
 	}
 
-	public function update()
-	{
+	public function update() {
 		$this->performPreSaveChecks();
 		return parent::update();
 	}

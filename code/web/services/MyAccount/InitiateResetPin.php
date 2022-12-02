@@ -3,9 +3,8 @@
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class MyAccount_InitiateResetPin extends Action{
-	function launch($msg = null)
-	{
+class MyAccount_InitiateResetPin extends Action {
+	function launch($msg = null) {
 		global $interface;
 		global $library;
 
@@ -13,18 +12,17 @@ class MyAccount_InitiateResetPin extends Action{
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit'])) {
 			$emailResult = $catalog->processEmailResetPinForm();
 
 			$interface->assign('result', $emailResult);
 			$this->display($catalog->getEmailResetPinResultsTemplate(), 'Email to Reset Pin', '');
-		}else{
+		} else {
 			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'), '');
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

@@ -2,14 +2,12 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class FineAPI extends Action
-{
+class FineAPI extends Action {
 	private $catalog;
 
-	function launch()
-	{
+	function launch() {
 		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP()){
+		if (!IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
 		}
 
@@ -20,30 +18,27 @@ class FineAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$result = [
-				'result' => $this->$method()
+				'result' => $this->$method(),
 			];
 			$output = json_encode($result);
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			APIUsage::incrementStat('FineAPI', $method);
 		} else {
-			$output = json_encode(array('error' => 'invalid_method'));
+			$output = json_encode(['error' => 'invalid_method']);
 		}
 		echo $output;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 
-	function isValidJSON($str): bool
-	{
+	function isValidJSON($str): bool {
 		json_decode($str);
 		return json_last_error() == JSON_ERROR_NONE;
 	}
 
-	private function MSBConfirmation()
-	{
+	private function MSBConfirmation() {
 		global $logger;
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -99,7 +94,10 @@ class FineAPI extends Action
 		if (!empty($systemVariables->errorEmail)) {
 			$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 		}
-		return ['success' => $success, 'message' => $message];
+		return [
+			'success' => $success,
+			'message' => $message,
+		];
 	}
 
 }

@@ -1,7 +1,6 @@
 <?php
 
-class VdxRequest extends DataObject
-{
+class VdxRequest extends DataObject {
 	public $__table = 'user_vdx_request';
 	public $id;
 	public $userId;

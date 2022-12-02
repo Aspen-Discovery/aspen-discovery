@@ -1,7 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
-class OverDriveSetting extends DataObject
-{
+
+class OverDriveSetting extends DataObject {
 	public $__table = 'overdrive_settings';    // table name
 	public $id;
 	public $url;
@@ -24,35 +24,148 @@ class OverDriveSetting extends DataObject
 
 	public $_scopes;
 
-	public function getEncryptedFieldNames(): array
-	{
+	public function getEncryptedFieldNames(): array {
 		return ['clientSecret'];
 	}
 
-	public static function getObjectStructure() : array
-	{
+	public static function getObjectStructure(): array {
 		$overdriveScopeStructure = OverDriveScope::getObjectStructure();
 		unset($overdriveScopeStructure['settingId']);
 
-		$objectStructure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'url' => array('property' => 'url', 'type' => 'url', 'label' => 'url', 'description' => 'The publicly accessible URL', 'canBatchUpdate'=>false),
-			'patronApiUrl' => array('property' => 'patronApiUrl', 'type' => 'url', 'label' => 'Patron API URL', 'description' => 'The URL where the Patron API is located', 'canBatchUpdate'=>false),
-			'clientKey' => array('property' => 'clientKey', 'type' => 'text', 'label' => 'Client Key', 'description' => 'The client key provided by OverDrive when registering', 'canBatchUpdate'=>false),
-			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'The client secret provided by OverDrive when registering', 'canBatchUpdate'=>false, 'hideInLists'=>true),
-			'accountId' => array('property' => 'accountId', 'type' => 'integer', 'label' => 'Account Id', 'description' => 'The account id for the main collection provided by OverDrive and used to load information about collections', 'canBatchUpdate'=>false),
-			'websiteId' => array('property' => 'websiteId', 'type' => 'integer', 'label' => 'Website Id', 'description' => 'The website id provided by OverDrive and used to load circulation information', 'canBatchUpdate'=>false),
-			'productsKey' => array('property' => 'productsKey', 'type' => 'text', 'label' => 'Products Key', 'description' => 'The products key provided by OverDrive used to load information about collections', 'canBatchUpdate'=>false),
-			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
-			'allowLargeDeletes' => array('property' => 'allowLargeDeletes', 'type' => 'checkbox', 'label' => 'Allow Large Deletes', 'description' => 'Whether or not Aspen can delete more than 500 records or 5% of the collection', 'default' => 1),
-			'useFulfillmentInterface' => array('property' => 'useFulfillmentInterface', 'type' => 'checkbox', 'label' => 'Enable updated checkout fulfillment interface', 'description' => 'Whether or not to use the updated fulfillment interface', 'default' => 1),
-			'showLibbyPromo' => array('property' => 'showLibbyPromo', 'type' => 'checkbox', 'label' => 'Show Libby promo in checkout fulfillment interface', 'description' => 'Whether or not to show the Libby promo ad in the fulfillment interface', 'default' => 1),
-			'numExtractionThreads' => array('property' => 'numExtractionThreads', 'type' => 'integer', 'label' => 'Num Extraction Threads', 'description' => 'The number of threads to use when extracting from OverDrive', 'canBatchUpdate'=>false, 'default'=>10, 'min'=>1, 'max'=>10),
-			'numRetriesOnError' => array('property' => 'numRetriesOnError', 'type' => 'integer', 'label' => 'Num Retries', 'description' => 'The number of retries to attempt when errors are returned from OverDrive', 'canBatchUpdate'=>false, 'default'=>1, 'min'=>0, 'max'=>5),
-			'productsToUpdate' => array('property'=>'productsToUpdate', 'type'=>'textarea', 'label'=>'Products To Reindex', 'description'=>'A list of products to update on the next index', 'canBatchUpdate'=>false, 'hideInLists'=>true),
-			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
-			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
-			'enableRequestLogging' => array('property' => 'enableRequestLogging', 'type' => 'checkbox', 'label' => 'Enable Request Logging', 'description' => 'Whether or not request logging is done while extracting from Aspen.', 'default' => 0),
+		$objectStructure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'url' => [
+				'property' => 'url',
+				'type' => 'url',
+				'label' => 'url',
+				'description' => 'The publicly accessible URL',
+				'canBatchUpdate' => false,
+			],
+			'patronApiUrl' => [
+				'property' => 'patronApiUrl',
+				'type' => 'url',
+				'label' => 'Patron API URL',
+				'description' => 'The URL where the Patron API is located',
+				'canBatchUpdate' => false,
+			],
+			'clientKey' => [
+				'property' => 'clientKey',
+				'type' => 'text',
+				'label' => 'Client Key',
+				'description' => 'The client key provided by OverDrive when registering',
+				'canBatchUpdate' => false,
+			],
+			'clientSecret' => [
+				'property' => 'clientSecret',
+				'type' => 'storedPassword',
+				'label' => 'Client Secret',
+				'description' => 'The client secret provided by OverDrive when registering',
+				'canBatchUpdate' => false,
+				'hideInLists' => true,
+			],
+			'accountId' => [
+				'property' => 'accountId',
+				'type' => 'integer',
+				'label' => 'Account Id',
+				'description' => 'The account id for the main collection provided by OverDrive and used to load information about collections',
+				'canBatchUpdate' => false,
+			],
+			'websiteId' => [
+				'property' => 'websiteId',
+				'type' => 'integer',
+				'label' => 'Website Id',
+				'description' => 'The website id provided by OverDrive and used to load circulation information',
+				'canBatchUpdate' => false,
+			],
+			'productsKey' => [
+				'property' => 'productsKey',
+				'type' => 'text',
+				'label' => 'Products Key',
+				'description' => 'The products key provided by OverDrive used to load information about collections',
+				'canBatchUpdate' => false,
+			],
+			'runFullUpdate' => [
+				'property' => 'runFullUpdate',
+				'type' => 'checkbox',
+				'label' => 'Run Full Update',
+				'description' => 'Whether or not a full update of all records should be done on the next pass of indexing',
+				'default' => 0,
+			],
+			'allowLargeDeletes' => [
+				'property' => 'allowLargeDeletes',
+				'type' => 'checkbox',
+				'label' => 'Allow Large Deletes',
+				'description' => 'Whether or not Aspen can delete more than 500 records or 5% of the collection',
+				'default' => 1,
+			],
+			'useFulfillmentInterface' => [
+				'property' => 'useFulfillmentInterface',
+				'type' => 'checkbox',
+				'label' => 'Enable updated checkout fulfillment interface',
+				'description' => 'Whether or not to use the updated fulfillment interface',
+				'default' => 1,
+			],
+			'showLibbyPromo' => [
+				'property' => 'showLibbyPromo',
+				'type' => 'checkbox',
+				'label' => 'Show Libby promo in checkout fulfillment interface',
+				'description' => 'Whether or not to show the Libby promo ad in the fulfillment interface',
+				'default' => 1,
+			],
+			'numExtractionThreads' => [
+				'property' => 'numExtractionThreads',
+				'type' => 'integer',
+				'label' => 'Num Extraction Threads',
+				'description' => 'The number of threads to use when extracting from OverDrive',
+				'canBatchUpdate' => false,
+				'default' => 10,
+				'min' => 1,
+				'max' => 10,
+			],
+			'numRetriesOnError' => [
+				'property' => 'numRetriesOnError',
+				'type' => 'integer',
+				'label' => 'Num Retries',
+				'description' => 'The number of retries to attempt when errors are returned from OverDrive',
+				'canBatchUpdate' => false,
+				'default' => 1,
+				'min' => 0,
+				'max' => 5,
+			],
+			'productsToUpdate' => [
+				'property' => 'productsToUpdate',
+				'type' => 'textarea',
+				'label' => 'Products To Reindex',
+				'description' => 'A list of products to update on the next index',
+				'canBatchUpdate' => false,
+				'hideInLists' => true,
+			],
+			'lastUpdateOfChangedRecords' => [
+				'property' => 'lastUpdateOfChangedRecords',
+				'type' => 'timestamp',
+				'label' => 'Last Update of Changed Records',
+				'description' => 'The timestamp when just changes were loaded',
+				'default' => 0,
+			],
+			'lastUpdateOfAllRecords' => [
+				'property' => 'lastUpdateOfAllRecords',
+				'type' => 'timestamp',
+				'label' => 'Last Update of All Records',
+				'description' => 'The timestamp when just changes were loaded',
+				'default' => 0,
+			],
+			'enableRequestLogging' => [
+				'property' => 'enableRequestLogging',
+				'type' => 'checkbox',
+				'label' => 'Enable Request Logging',
+				'description' => 'Whether or not request logging is done while extracting from Aspen.',
+				'default' => 0,
+			],
 			'scopes' => [
 				'property' => 'scopes',
 				'type' => 'oneToMany',
@@ -66,22 +179,20 @@ class OverDriveSetting extends DataObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
-				'additionalOneToManyActions' => []
-			]
-		);
-		if (!(UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin')){
+				'additionalOneToManyActions' => [],
+			],
+		];
+		if (!(UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin')) {
 			unset($objectStructure['enableRequestLogging']);
 		}
 		return $objectStructure;
 	}
 
-	public function __toString()
-	{
+	public function __toString() {
 		return $this->url;
 	}
 
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
@@ -89,11 +200,10 @@ class OverDriveSetting extends DataObject
 		return true;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
-			if (empty($this->_scopes)){
+			if (empty($this->_scopes)) {
 				$this->_scopes = [];
 				$allScope = new OverDriveScope();
 				$allScope->settingId = $this->id;
@@ -108,21 +218,21 @@ class OverDriveSetting extends DataObject
 		return $ret;
 	}
 
-	public function saveScopes(){
-		if (isset ($this->_scopes) && is_array($this->_scopes)){
+	public function saveScopes() {
+		if (isset ($this->_scopes) && is_array($this->_scopes)) {
 			$this->saveOneToManyOptions($this->_scopes, 'settingId');
 			unset($this->_scopes);
 		}
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "scopes") {
-			if (!isset($this->_scopes) && $this->id){
+			if (!isset($this->_scopes) && $this->id) {
 				$this->_scopes = [];
 				$scope = new OverDriveScope();
 				$scope->settingId = $this->id;
 				$scope->find();
-				while($scope->fetch()){
+				while ($scope->fetch()) {
 					$this->_scopes[$scope->id] = clone($scope);
 				}
 			}
@@ -132,10 +242,10 @@ class OverDriveSetting extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "scopes") {
 			$this->_scopes = $value;
-		}else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}

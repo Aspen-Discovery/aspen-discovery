@@ -7,7 +7,7 @@ global $serverName;
 $numReattached = 0;
 
 $dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_pdfs/';
-if (file_exists($dataPath)){
+if (file_exists($dataPath)) {
 	$existingFiles = scandir($dataPath);
 	foreach ($existingFiles as $existingFile) {
 		if ($existingFile != "." && $existingFile != "..") {
@@ -17,7 +17,7 @@ if (file_exists($dataPath)){
 
 			require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 			$recordDriver = RecordDriverFactory::initRecordDriverById('ils:' . $fileIdentifier);
-			if ($recordDriver->isValid()){
+			if ($recordDriver->isValid()) {
 				$fullPath = $dataPath . '/' . $existingFile;
 				$fileUpload = new FileUpload();
 				$fileUpload->fullPath = $fullPath;
@@ -32,7 +32,7 @@ if (file_exists($dataPath)){
 				$recordFile->type = $recordDriver->getRecordType();
 				$recordFile->identifier = $recordDriver->getUniqueID();
 				$recordFile->fileId = $fileUpload->id;
-				if (!$recordFile->find(true)){
+				if (!$recordFile->find(true)) {
 					$recordFile->insert();
 					$numReattached++;
 				}

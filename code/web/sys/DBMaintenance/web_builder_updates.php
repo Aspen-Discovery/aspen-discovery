@@ -1,20 +1,20 @@
 <?php /** @noinspection SqlResolve */
-function getWebBuilderUpdates(){
+function getWebBuilderUpdates() {
 	return [
 		'web_builder_module' => [
 			'title' => 'Web Builder Module',
 			'description' => 'Create Web Builder Module',
 			'sql' => [
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Web Builder', 'web_builder', '')",
-			]
+			],
 		],
 
 		'web_builder_module_monitoring_and_indexing' => [
 			'title' => 'Web Builder Module - Monitoring, indexing',
 			'description' => 'Update Web Builder module to monitor logs and start indexer',
 			'sql' => [
-				"UPDATE modules set backgroundProcess='web_indexer', logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name = 'Web Builder'"
-			]
+				"UPDATE modules set backgroundProcess='web_indexer', logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name = 'Web Builder'",
+			],
 		],
 
 		'web_builder_basic_pages' => [
@@ -27,16 +27,16 @@ function getWebBuilderUpdates(){
 					urlAlias VARCHAR(100),
 					showSidebar TINYINT(1),
 					contents MEDIUMTEXT
-				) ENGINE=INNODB"
-			]
+				) ENGINE=INNODB",
+			],
 		],
 
 		'web_builder_basic_page_teaser' => [
 			'title' => 'Web Builder Basic Page Teaser',
 			'description' => 'Add Teaser to Basic Page',
 			'sql' => [
-				'ALTER TABLE web_builder_basic_page ADD COLUMN teaser VARCHAR(512)'
-			]
+				'ALTER TABLE web_builder_basic_page ADD COLUMN teaser VARCHAR(512)',
+			],
 		],
 
 		'web_builder_menu' => [
@@ -50,7 +50,7 @@ function getWebBuilderUpdates(){
 					url VARCHAR(255),
 					INDEX (parentMenuId)
 				) ENGINE=INNODB",
-			]
+			],
 		],
 
 		'web_builder_menu_sorting' => [
@@ -58,7 +58,7 @@ function getWebBuilderUpdates(){
 			'description' => 'Add a weight to the Web Builder Menu',
 			'sql' => [
 				"ALTER TABLE web_builder_menu ADD COLUMN weight INT DEFAULT 0",
-			]
+			],
 		],
 
 		'web_builder_menu_show_when' => [
@@ -66,7 +66,7 @@ function getWebBuilderUpdates(){
 			'description' => 'Add a showWhen to the Web Builder Menu',
 			'sql' => [
 				"ALTER TABLE web_builder_menu ADD COLUMN showWhen TINYINT DEFAULT 0",
-			]
+			],
 		],
 
 		'staff_members' => [
@@ -82,7 +82,7 @@ function getWebBuilderUpdates(){
 					libraryId INT(11),
 					photo VARCHAR(255),
 					description MEDIUMTEXT
-				) ENGINE INNODB"
+				) ENGINE INNODB",
 			],
 		],
 
@@ -115,24 +115,24 @@ function getWebBuilderUpdates(){
 					sourceType VARCHAR(30),
 					sourceId VARCHAR(30),
 					INDEX (portalRowId)
-				)'
-			]
+				)',
+			],
 		],
 		'web_builder_portal_weights' => [
 			'title' => 'Web Builder Portal Weights',
 			'description' => 'Add weights to Portal Rows and cells',
 			'sql' => [
 				'ALTER TABLE web_builder_portal_row ADD COLUMN weight INT DEFAULT 0',
-				'ALTER TABLE web_builder_portal_cell ADD COLUMN weight INT DEFAULT 0'
-			]
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN weight INT DEFAULT 0',
+			],
 		],
 
 		'web_builder_portal_cell_title' => [
 			'title' => 'Web Builder Portal Cell Title',
 			'description' => 'Add title to web builder portal cell',
 			'sql' => [
-				"ALTER TABLE web_builder_portal_cell ADD COLUMN title VARCHAR(255) DEFAULT ''"
-			]
+				"ALTER TABLE web_builder_portal_cell ADD COLUMN title VARCHAR(255) DEFAULT ''",
+			],
 		],
 
 		'web_builder_image_upload' => [
@@ -149,8 +149,8 @@ function getWebBuilderUpdates(){
 					smallSizePath VARCHAR(512),
 					type VARCHAR(25) NOT NULL,
 					INDEX (type, title)
-				) ENGINE INNODB'
-			]
+				) ENGINE INNODB',
+			],
 		],
 
 		'web_builder_image_upload_additional_sizes' => [
@@ -161,7 +161,7 @@ function getWebBuilderUpdates(){
 				"ALTER TABLE image_uploads  add COLUMN largeSizePath VARCHAR(512) DEFAULT ''",
 				"ALTER TABLE image_uploads  add COLUMN generateXLargeSize TINYINT(1) NOT NULL default 1",
 				"ALTER TABLE image_uploads  add COLUMN xLargeSizePath VARCHAR(512) DEFAULT ''",
-			]
+			],
 		],
 
 		'web_builder_resources' => [
@@ -179,16 +179,16 @@ function getWebBuilderUpdates(){
 					description MEDIUMTEXT,
 					INDEX (featured),
 					INDEX (category)
-				) ENGINE INNODB'
-			]
+				) ENGINE INNODB',
+			],
 		],
 
 		'web_builder_resource_teaser' => [
 			'title' => 'Add teaser to web builder resources',
 			'description' => 'Add teaser to web builder resources for display in search results',
 			'sql' => [
-				'ALTER TABLE web_builder_resource ADD COLUMN teaser VARCHAR(512)'
-			]
+				'ALTER TABLE web_builder_resource ADD COLUMN teaser VARCHAR(512)',
+			],
 		],
 
 		'web_builder_scope_by_library' => [
@@ -210,7 +210,7 @@ function getWebBuilderUpdates(){
 					INDEX basicPageId(basicPageId)
 				) ENGINE INNODB',
 				'ALTER TABLE web_builder_menu ADD COLUMN libraryId INT(11)',
-			]
+			],
 		],
 
 		'web_builder_last_update_timestamps' => [
@@ -219,7 +219,7 @@ function getWebBuilderUpdates(){
 			'sql' => [
 				'ALTER TABLE web_builder_resource ADD COLUMN lastUpdate INT(11) DEFAULT 0',
 				'ALTER TABLE web_builder_basic_page ADD COLUMN lastUpdate INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'web_builder_categories_and_audiences' => [
@@ -285,32 +285,32 @@ function getWebBuilderUpdates(){
 			'title' => 'Web Builder Portal Cell Markdown',
 			'description' => 'Allow Portal Cells to contain markdown',
 			'sql' => [
-				'ALTER TABLE web_builder_portal_cell ADD column markdown MEDIUMTEXT'
-			]
+				'ALTER TABLE web_builder_portal_cell ADD column markdown MEDIUMTEXT',
+			],
 		],
 
 		'web_builder_portal_cell_source_info' => [
 			'title' => 'Web Builder Portal Cell Source Info',
 			'description' => 'Add additional info for a portal cell to include things like YouTube Videos',
 			'sql' => [
-				'ALTER TABLE web_builder_portal_cell ADD column sourceInfo VARCHAR(512)'
-			]
+				'ALTER TABLE web_builder_portal_cell ADD column sourceInfo VARCHAR(512)',
+			],
 		],
 
 		'web_builder_resource_in_library' => [
 			'title' => 'Web Builder add inLibraryUseOnly to Resources',
 			'description' => 'Add in library use only flag to web resources',
 			'sql' => [
-				'ALTER TABLE web_builder_resource ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE web_builder_resource ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'web_builder_resource_open_in_new_tab' => [
 			'title' => 'Web Builder add openInNewTab to Resources',
 			'description' => 'Add open in new window flag to web resources',
 			'sql' => [
-				'ALTER TABLE web_builder_resource ADD COLUMN openInNewTab TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE web_builder_resource ADD COLUMN openInNewTab TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'web_builder_custom_forms' => [
@@ -354,8 +354,8 @@ function getWebBuilderUpdates(){
 					dateSubmitted INT(11) NOT NULL,
 					submission MEDIUMTEXT,
 					INDEX (formId, libraryId)
-				) ENGINE INNODB'
-			]
+				) ENGINE INNODB',
+			],
 		],
 
 		'web_builder_custom_page_categories' => [
@@ -383,7 +383,7 @@ function getWebBuilderUpdates(){
 					INDEX libraryId(libraryId),
 					INDEX portalPageId(portalPageId)
 				) ENGINE INNODB',
-			]
+			],
 		],
 
 		'web_builder_roles' => [
@@ -433,40 +433,40 @@ function getWebBuilderUpdates(){
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Web Resources'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Staff Members'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer All Web Content'))",
-			]
+			],
 		],
 
-		'web_builder_remove_show_sidebar'=>[
+		'web_builder_remove_show_sidebar' => [
 			'title' => 'Web Builder Remove Show Sidebar',
 			'description' => 'Remove Show Sidebar from Web Builder Pages',
 			'sql' => [
 				'ALTER TABLE web_builder_portal_page DROP COLUMN showSidebar',
 				'ALTER TABLE web_builder_basic_page DROP COLUMN showSidebar',
-			]
+			],
 		],
 
-		'web_builder_add_frameHeight'=>[
+		'web_builder_add_frameHeight' => [
 			'title' => 'Web Builder add frame height for iframe cell type',
 			'description' => 'Add frameHeight for iframes from Web Builder Pages',
 			'sql' => [
 				'ALTER TABLE web_builder_portal_cell ADD COLUMN frameHeight INT DEFAULT 0',
-			]
+			],
 		],
 
-		'web_builder_add_cell_makeCellAccordion'=>[
+		'web_builder_add_cell_makeCellAccordion' => [
 			'title' => 'Web Builder add makeCellAccordion for cell layout options',
 			'description' => 'Add makeCellAccordion for layout settings in a cell for Web Builder Pages',
 			'sql' => [
 				'ALTER TABLE web_builder_portal_cell ADD COLUMN makeCellAccordion TINYINT NOT NULL DEFAULT 0',
-			]
+			],
 		],
 
-		'web_builder_add_cell_imageURL'=>[
+		'web_builder_add_cell_imageURL' => [
 			'title' => 'Add Image URL to Web Builder custom page options',
 			'description' => 'Add Image URL field to add links to image Web Builder cell types',
 			'sql' => [
 				'ALTER TABLE web_builder_portal_cell ADD COLUMN imageURL VARCHAR(255)',
-			]
-		]
+			],
+		],
 	];
 }

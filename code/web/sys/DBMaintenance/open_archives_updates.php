@@ -1,12 +1,11 @@
 <?php
 
-function getOpenArchivesUpdates()
-{
+function getOpenArchivesUpdates() {
 	return [
-		'open_archives_collection' => array(
+		'open_archives_collection' => [
 			'title' => 'Open Archive Collections',
 			'description' => 'Add a table to track collections of Open Archives Materials.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE open_archives_collection (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					name VARCHAR(100) NOT NULL,
@@ -15,42 +14,42 @@ function getOpenArchivesUpdates()
 					fetchFrequency ENUM('hourly', 'daily', 'weekly', 'monthly', 'yearly', 'once'),
 					lastFetched INT(11)
 				) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'open_archives_collection_filtering' => array(
+		'open_archives_collection_filtering' => [
 			'title' => 'Open Archive Collection Filtering',
 			'description' => 'Add the ability to filter a collection by subject.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE open_archives_collection ADD COLUMN subjectFilters MEDIUMTEXT",
-			),
-		),
+			],
+		],
 
-		'open_archives_collection_subjects' => array(
+		'open_archives_collection_subjects' => [
 			'title' => 'Open Archive Collection Subjects',
 			'description' => 'Add a field to list all of the available subjects in a collection (to make filtering easier).',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE open_archives_collection ADD COLUMN subjects MEDIUMTEXT",
-			),
-		),
+			],
+		],
 
-		'open_archives_record' => array(
+		'open_archives_record' => [
 			'title' => 'Open Archive Record',
 			'description' => 'Add a table to track records within Open Archives',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE open_archives_record (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					sourceCollection INT(11) NOT NULL,
 					permanentUrl VARCHAR(512) NOT NULL
 				) ENGINE = InnoDB",
-				"ALTER TABLE open_archives_record ADD UNIQUE INDEX (sourceCollection, permanentUrl)"
-			),
-		),
+				"ALTER TABLE open_archives_record ADD UNIQUE INDEX (sourceCollection, permanentUrl)",
+			],
+		],
 
-		'track_open_archive_user_usage' => array(
+		'track_open_archive_user_usage' => [
 			'title' => 'Open Archive Usage by user',
 			'description' => 'Add a table to track how often a particular user uses the Open Archives.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_open_archives_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					userId INT(11) NOT NULL,
@@ -61,14 +60,14 @@ function getOpenArchivesUpdates()
 					usageCount INT(11)
 				) ENGINE = InnoDB",
 				"ALTER TABLE user_open_archives_usage ADD INDEX (openArchivesCollectionId, year, userId)",
-			),
-		),
+			],
+		],
 
-		'track_open_archive_record_usage' => array(
+		'track_open_archive_record_usage' => [
 			'title' => 'Open Archive Record Usage',
 			'description' => 'Add a table to track how records within open archives are viewed.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE open_archives_record_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					openArchivesRecordId INT(11),
@@ -77,28 +76,28 @@ function getOpenArchivesUpdates()
 					timesUsed INT(11) NOT NULL
 				) ENGINE = InnoDB",
 				"ALTER TABLE open_archives_record_usage ADD INDEX (openArchivesRecordId, year)",
-			),
-		),
+			],
+		],
 
-		'open_archive_tracking_adjustments' => array(
+		'open_archive_tracking_adjustments' => [
 			'title' => 'Open Archive Tracking Adjustments',
 			'description' => 'Track by month rather than just by year',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user_open_archives_usage ADD COLUMN month INT(2) NOT NULL default 4",
 				"ALTER TABLE open_archives_record_usage ADD COLUMN month INT(2) NOT NULL default 4",
 				"ALTER TABLE user_open_archives_usage DROP COLUMN firstUsed",
 				"ALTER TABLE user_open_archives_usage DROP COLUMN lastUsed",
-			),
-		),
+			],
+		],
 
 		'create_open_archives_module' => [
 			'title' => 'Create Open Archives Module',
 			'description' => 'Setup Open Archives module',
 			'sql' => [
 				//oai indexer runs daily so we don't check the background process
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Open Archives', 'open_archives', '')"
-			]
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Open Archives', 'open_archives', '')",
+			],
 		],
 
 		'open_archives_loadOneMonthAtATime' => [
@@ -106,14 +105,14 @@ function getOpenArchivesUpdates()
 			'description' => 'Update OAI settings to control if records are loaded one month at a time',
 			'sql' => [
 				//oai indexer runs daily so we don't check the background process
-				"ALTER TABLE open_archives_collection ADD COLUMN loadOneMonthAtATime TINYINT(1) DEFAULT 1"
-			]
+				"ALTER TABLE open_archives_collection ADD COLUMN loadOneMonthAtATime TINYINT(1) DEFAULT 1",
+			],
 		],
 
-		'open_archives_log' => array(
+		'open_archives_log' => [
 			'title' => 'Open Archives log',
 			'description' => 'Create log for Side Load Processing.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS open_archives_export_log(
 					`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
 					`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
@@ -129,23 +128,23 @@ function getOpenArchivesUpdates()
 					numSkipped INT(11) DEFAULT 0,
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
-			)
-		),
+			],
+		],
 
-		'open_archives_module_add_log' =>[
+		'open_archives_module_add_log' => [
 			'title' => 'Open Archives add log info to module',
 			'description' => 'Add logging information to open archives module',
 			'sql' => [
 				"UPDATE modules set logClassPath='/sys/OpenArchives/OpenArchivesExportLogEntry.php', logClassName='OpenArchivesExportLogEntry' WHERE name='Open Archives'",
-			]
+			],
 		],
 
 		'open_archives_module_add_settings' => [
 			'title' => 'Add Settings to Open Archives module',
 			'description' => 'Add Settings to Open Archives module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/OpenArchives/OpenArchivesCollection.php', settingsClassName = 'OpenArchivesCollection' WHERE name = 'Open Archives'"
-			]
+				"UPDATE modules set settingsClassPath = '/sys/OpenArchives/OpenArchivesCollection.php', settingsClassName = 'OpenArchivesCollection' WHERE name = 'Open Archives'",
+			],
 		],
 
 		'open_archives_scoping' => [
@@ -163,8 +162,8 @@ function getOpenArchivesUpdates()
 					collectionId INT(11) NOT NULL,
 					locationId INT(11) NOT NULL,
 					UNIQUE (collectionId, locationId)
-				) ENGINE = InnoDB'
-			]
+				) ENGINE = InnoDB',
+			],
 		],
 
 		'open_archives_usage_add_instance' => [
@@ -178,7 +177,7 @@ function getOpenArchivesUpdates()
 				'ALTER TABLE user_open_archives_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_open_archives_usage DROP INDEX openArchivesCollectionId',
 				'ALTER TABLE user_open_archives_usage ADD UNIQUE INDEX (instance, openArchivesCollectionId, userId, year, month)',
-			]
+			],
 		],
 	];
 }

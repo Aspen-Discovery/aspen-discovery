@@ -2,19 +2,17 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_MyPreferences extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_MyPreferences extends MyAccount {
+	function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
 		if ($user) {
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -26,13 +24,13 @@ class MyAccount_MyPreferences extends MyAccount
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
-			if ($patronHomeLibrary == null){
+			if ($patronHomeLibrary == null) {
 				$canUpdateContactInfo = false;
 				$showAlternateLibraryOptionsInProfile = true;
 				$allowPickupLocationUpdates = true;
 				$allowRememberPickupLocation = false;
 				$allowHomeLibraryUpdates = false;
-			}else{
+			} else {
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowPickupLocationUpdates = ($patronHomeLibrary->allowPickupLocationUpdates == 1);
@@ -52,16 +50,16 @@ class MyAccount_MyPreferences extends MyAccount
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
 			$interface->assign('pickupLocations', $pickupLocations);
 
-			if ($patron->hasEditableUsername()){
+			if ($patron->hasEditableUsername()) {
 				$interface->assign('showUsernameField', true);
 				$interface->assign('editableUsername', $patron->getEditableUsername());
-			}else{
+			} else {
 				$interface->assign('showUsernameField', false);
 			}
 
 			$showAutoRenewSwitch = $user->getShowAutoRenewSwitch();
 			$interface->assign('showAutoRenewSwitch', $showAutoRenewSwitch);
-			if ($showAutoRenewSwitch){
+			if ($showAutoRenewSwitch) {
 				$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
 			}
 
@@ -72,9 +70,9 @@ class MyAccount_MyPreferences extends MyAccount
 				$user->updateMessage = implode('<br/>', $result['messages']);
 				$user->updateMessageIsError = !$result['success'];
 
-				if ($canUpdateContactInfo && $allowHomeLibraryUpdates){
+				if ($canUpdateContactInfo && $allowHomeLibraryUpdates) {
 					$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
-					if (!empty($user->updateMessage)){
+					if (!empty($user->updateMessage)) {
 						$user->updateMessage .= '<br/>';
 					}
 					$user->updateMessage .= implode('<br/>', $result2['messages']);
@@ -83,7 +81,7 @@ class MyAccount_MyPreferences extends MyAccount
 				$user->update();
 
 				session_write_close();
-				$actionUrl = '/MyAccount/MyPreferences' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/MyPreferences' . ($patronId == $user->id ? '' : '?patronId=' . $patronId); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
@@ -95,7 +93,7 @@ class MyAccount_MyPreferences extends MyAccount
 			global $enabledModules;
 			global $library;
 			$showEdsPreferences = false;
-			if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)){
+			if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)) {
 				$showEdsPreferences = true;
 			}
 			$interface->assign('showEdsPreferences', $showEdsPreferences);
@@ -103,10 +101,13 @@ class MyAccount_MyPreferences extends MyAccount
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.
 
-				$locationList = array();
-				$locationList['0'] = translate(['text'=>"No Alternate Location Selected",'isPublicFacing'=>true]);
-				foreach ($pickupLocations as $pickupLocation){
-					if (!is_string($pickupLocation)){
+				$locationList = [];
+				$locationList['0'] = translate([
+					'text' => "No Alternate Location Selected",
+					'isPublicFacing' => true,
+				]);
+				foreach ($pickupLocations as $pickupLocation) {
+					if (!is_string($pickupLocation)) {
 						$locationList[$pickupLocation->locationId] = $pickupLocation->displayName;
 					}
 				}
@@ -116,9 +117,9 @@ class MyAccount_MyPreferences extends MyAccount
 			$interface->assign('profile', $patron);
 
 			if (!empty($user->updateMessage)) {
-				if ($user->updateMessageIsError){
+				if ($user->updateMessageIsError) {
 					$interface->assign('profileUpdateErrors', $user->updateMessage);
-				}else{
+				} else {
 					$interface->assign('profileUpdateMessage', $user->updateMessage);
 				}
 				$user->updateMessage = '';
@@ -129,8 +130,7 @@ class MyAccount_MyPreferences extends MyAccount
 		$this->display('myPreferences.tpl', 'My Preferences');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Your Preferences');

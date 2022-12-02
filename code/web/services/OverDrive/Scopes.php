@@ -4,73 +4,61 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
 
-class OverDrive_Scopes extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class OverDrive_Scopes extends ObjectEditor {
+	function getObjectType(): string {
 		return 'OverDriveScope';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'Scopes';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'OverDrive';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'OverDrive Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new OverDriveScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
+		$objectList = [];
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return OverDriveScope::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
@@ -78,13 +66,11 @@ class OverDrive_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'overdrive';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer OverDrive');
 	}
 }

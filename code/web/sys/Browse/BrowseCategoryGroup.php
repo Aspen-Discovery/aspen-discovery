@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
 require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 
-class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
-{
+class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 	public $__table = 'browse_category_group';
 	public $__displayNameColumn = 'name';
 	public $id;
@@ -18,35 +17,54 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	protected $_libraries;
 	protected $_locations;
 
-	public static function getObjectStructure() : array{
+	public static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
-		
+
 		$browseCategoryStructure = BrowseCategoryGroupEntry::getObjectStructure();
 		unset($browseCategoryStructure['weight']);
 		unset($browseCategoryStructure['browseCategoryGroupId']);
 
 		return [
-			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the group', 'maxLength' => 50, 'required' => true),
-			'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label'=>'Default Viewing Mode', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
-				'values'=> array('0' => 'Show Covers Only', '1' => 'Show as Grid'),
-				'default' => '0'
-			),
-			'browseCategoryRatingsMode' => array('property' => 'browseCategoryRatingsMode', 'type' => 'enum', 'label' => 'Ratings Mode', 'description' => 'Sets how ratings will be displayed and how user ratings will be enabled when a user is viewing a browse category in the &#34;covers&#34; browse mode. These settings only apply when User Ratings have been enabled. (These settings will also apply to search results viewed in covers mode.)',
-				'values' => array(
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'The name of the group',
+				'maxLength' => 50,
+				'required' => true,
+			],
+			'defaultBrowseMode' => [
+				'property' => 'defaultBrowseMode',
+				'type' => 'enum',
+				'label' => 'Default Viewing Mode',
+				'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.',
+				'hideInLists' => true,
+				'values' => [
+					'0' => 'Show Covers Only',
+					'1' => 'Show as Grid',
+				],
+				'default' => '0',
+			],
+			'browseCategoryRatingsMode' => [
+				'property' => 'browseCategoryRatingsMode',
+				'type' => 'enum',
+				'label' => 'Ratings Mode',
+				'description' => 'Sets how ratings will be displayed and how user ratings will be enabled when a user is viewing a browse category in the &#34;covers&#34; browse mode. These settings only apply when User Ratings have been enabled. (These settings will also apply to search results viewed in covers mode.)',
+				'values' => [
 					'1' => 'Show rating stars and enable user rating via pop-up form.',
 					'2' => 'Show rating stars and enable user ratings by clicking the stars.',
-					'0' => 'Do not show rating stars.'
-				),
-				'default' => '1'
-			),
+					'0' => 'Do not show rating stars.',
+				],
+				'default' => '1',
+			],
 
 			// The specific categories displayed in the carousel
-			'browseCategories' => array(
-				'property'=>'browseCategories',
-				'type'=>'oneToMany',
-				'label'=>'Browse Categories',
-				'description'=>'Browse Categories To Show on the Home Screen',
+			'browseCategories' => [
+				'property' => 'browseCategories',
+				'type' => 'oneToMany',
+				'label' => 'Browse Categories',
+				'description' => 'Browse Categories To Show on the Home Screen',
 				'keyThis' => 'id',
 				'keyOther' => 'browseCategoryGroupId',
 				'subObjectType' => 'BrowseCategoryGroupEntry',
@@ -55,38 +73,36 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
-			),
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this browse category group',
 				'values' => $libraryList,
-			),
+			],
 
-			'locations' => array(
+			'locations' => [
 				'property' => 'locations',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Locations',
 				'description' => 'Define locations that use this browse category group',
 				'values' => $locationList,
-			),
+			],
 		];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getUniquenessFields() : array
-	{
+	public function getUniquenessFields(): array {
 		return ['name'];
 	}
 
-	public function __get($name)
-	{
+	public function __get($name) {
 		if ($name == "libraries") {
 			return $this->getLibraries();
 		} elseif ($name == "locations") {
@@ -98,10 +114,9 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function getBrowseCategories()
-	{
+	public function getBrowseCategories() {
 		if (!isset($this->_browseCategories) && $this->id) {
-			$this->_browseCategories = array();
+			$this->_browseCategories = [];
 			$browseCategory = new BrowseCategoryGroupEntry();
 			$browseCategory->browseCategoryGroupId = $this->id;
 			$browseCategory->orderBy('weight');
@@ -113,23 +128,22 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		return $this->_browseCategories;
 	}
 
-	public function getBrowseCategoriesForLiDA($max = null, $appUser = null, $checkDismiss = true): array
-	{
+	public function getBrowseCategoriesForLiDA($max = null, $appUser = null, $checkDismiss = true): array {
 		if (!isset($this->_browseCategories) && $this->id) {
 			if ($max) {
 				$count = 0;
-				$this->_browseCategories = array();
+				$this->_browseCategories = [];
 				$browseCategory = new BrowseCategoryGroupEntry();
 				$browseCategory->browseCategoryGroupId = $this->id;
 				$browseCategory->orderBy('weight');
-				if($browseCategory->find()) {
-					while($browseCategory->fetch()) {
-						if ($count >= $max){
+				if ($browseCategory->find()) {
+					while ($browseCategory->fetch()) {
+						if ($count >= $max) {
 							break;
 						}
 						if ($browseCategory->isValidForDisplay($appUser, $checkDismiss)) {
 							$thisCategory = $browseCategory->getBrowseCategory();
-							if($thisCategory->textId != "system_saved_searches" && $thisCategory->textId != "system_user_lists") {
+							if ($thisCategory->textId != "system_saved_searches" && $thisCategory->textId != "system_user_lists") {
 								$count++;
 							}
 							$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
@@ -137,13 +151,13 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 					}
 				}
 			} else {
-				$this->_browseCategories = array();
+				$this->_browseCategories = [];
 				$browseCategory = new BrowseCategoryGroupEntry();
 				$browseCategory->browseCategoryGroupId = $this->id;
 				$browseCategory->orderBy('weight');
 				$browseCategory->find();
 				while ($browseCategory->fetch()) {
-					if($browseCategory->isValidForDisplay($appUser, $checkDismiss)) {
+					if ($browseCategory->isValidForDisplay($appUser, $checkDismiss)) {
 						$this->_browseCategories[$browseCategory->id] = clone($browseCategory);
 					}
 				}
@@ -152,15 +166,14 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		return $this->_browseCategories;
 	}
 
-	public function __set($name, $value)
-	{
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->setLibraries($value);
-		}elseif ($name == "locations") {
+		} elseif ($name == "locations") {
 			$this->setLocations($value);
-		}elseif ($name == 'browseCategories') {
+		} elseif ($name == 'browseCategories') {
 			$this->_browseCategories = $value;
-		}else{
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
@@ -170,10 +183,10 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update() {
 		//Updates to properly update settings based on the ILS
 		$ret = parent::update();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveBrowseCategories();
@@ -187,9 +200,9 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert() {
 		$ret = parent::insert();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveBrowseCategories();
@@ -197,18 +210,18 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		return $ret;
 	}
 
-	public function saveBrowseCategories(){
-		if (isset ($this->_browseCategories) && is_array($this->_browseCategories)){
+	public function saveBrowseCategories() {
+		if (isset ($this->_browseCategories) && is_array($this->_browseCategories)) {
 			$uniqueBrowseCategories = [];
 			/**
 			 * @var int $categoryId
 			 * @var BrowseCategory $browseCategory
 			 */
-			foreach ($this->_browseCategories as $categoryId => $browseCategory){
-				if (in_array($browseCategory->browseCategoryId, $uniqueBrowseCategories)){
+			foreach ($this->_browseCategories as $categoryId => $browseCategory) {
+				if (in_array($browseCategory->browseCategoryId, $uniqueBrowseCategories)) {
 					$browseCategory->delete();
 					unset($this->_browseCategories[$categoryId]);
-				}else{
+				} else {
 					$uniqueBrowseCategories[] = $browseCategory->browseCategoryId;
 				}
 			}
@@ -217,22 +230,22 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
-			foreach ($libraryList as $libraryId => $displayName){
+			foreach ($libraryList as $libraryId => $displayName) {
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
+				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the scope to this library
-					if ($library->browseCategoryGroupId != $this->id){
+					if ($library->browseCategoryGroupId != $this->id) {
 						$library->browseCategoryGroupId = $this->id;
 						$library->update();
 					}
-				}else{
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->browseCategoryGroupId == $this->id){
+					if ($library->browseCategoryGroupId == $this->id) {
 						$library->browseCategoryGroupId = -1;
 						$library->update();
 					}
@@ -242,32 +255,32 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function saveLocations(){
-		if (isset ($this->_locations) && is_array($this->_locations)){
+	public function saveLocations() {
+		if (isset ($this->_locations) && is_array($this->_locations)) {
 			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location
 			 */
-			foreach ($locationList as $locationId => $displayName){
+			foreach ($locationList as $locationId => $displayName) {
 				$location = new Location();
 				$location->locationId = $locationId;
 				$location->find(true);
-				if (in_array($locationId, $this->_locations)){
+				if (in_array($locationId, $this->_locations)) {
 					//We want to apply the scope to this library
-					if ($location->browseCategoryGroupId != $this->id){
+					if ($location->browseCategoryGroupId != $this->id) {
 						$location->browseCategoryGroupId = $this->id;
 						$location->update();
 					}
-				}else{
+				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->browseCategoryGroupId == $this->id){
+					if ($location->browseCategoryGroupId == $this->id) {
 						$library = new Library();
 						$library->libraryId = $location->libraryId;
 						$library->find(true);
-						if ($library->browseCategoryGroupId != -1){
+						if ($library->browseCategoryGroupId != -1) {
 							$location->browseCategoryGroupId = -1;
-						}else{
+						} else {
 							$location->browseCategoryGroupId = -2;
 						}
 						$location->update();
@@ -279,14 +292,13 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	}
 
 	/** @return Library[] */
-	public function getLibraries() : ?array
-	{
-		if (!isset($this->_libraries) && $this->id){
+	public function getLibraries(): ?array {
+		if (!isset($this->_libraries) && $this->id) {
 			$this->_libraries = [];
 			$obj = new Library();
 			$obj->browseCategoryGroupId = $this->id;
 			$obj->find();
-			while($obj->fetch()){
+			while ($obj->fetch()) {
 				$this->_libraries[$obj->libraryId] = $obj->libraryId;
 			}
 		}
@@ -294,37 +306,34 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 	}
 
 	/** @return Location[] */
-	public function getLocations() : ?array
-	{
-		if (!isset($this->_locations) && $this->id){
+	public function getLocations(): ?array {
+		if (!isset($this->_locations) && $this->id) {
 			$this->_locations = [];
 			$obj = new Location();
 			$obj->browseCategoryGroupId = $this->id;
 			$obj->find();
-			while($obj->fetch()){
+			while ($obj->fetch()) {
 				$this->_locations[$obj->locationId] = $obj->locationId;
 			}
 		}
 		return $this->_locations;
 	}
 
-	public function setLibraries($val)
-	{
+	public function setLibraries($val) {
 		$this->_libraries = $val;
 	}
 
-	public function setLocations($val)
-	{
+	public function setLocations($val) {
 		$this->_locations = $val;
 	}
 
-	public function getLinksForJSON() : array{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		//Browse Categories
 		$browseCategoriesGroupEntries = $this->getBrowseCategories();
 		$links['browseCategories'] = [];
 		//We need to be careful of recursion here, so we will preload 2 levels of categories and sub categories
-		foreach ($browseCategoriesGroupEntries as $browseCategoryGroupEntry){
+		foreach ($browseCategoriesGroupEntries as $browseCategoryGroupEntry) {
 			$browseCategoryArray = $browseCategoryGroupEntry->toArray(false, true);
 			$browseCategoryArray['links'] = $browseCategoryGroupEntry->getLinksForJSON();
 
@@ -334,13 +343,12 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		return $links;
 	}
 
-	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool
-	{
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
 
-		if (array_key_exists('browseCategories', $jsonLinks)){
+		if (array_key_exists('browseCategories', $jsonLinks)) {
 			$browseCategories = [];
-			foreach ($jsonLinks['browseCategories'] as $browseCategory){
+			foreach ($jsonLinks['browseCategories'] as $browseCategory) {
 				$browseCategoryObj = new BrowseCategoryGroupEntry();
 				$browseCategoryObj->browseCategoryGroupId = $this->id;
 				$browseCategoryObj->loadFromJSON($browseCategory, $mappings, $overrideExisting);

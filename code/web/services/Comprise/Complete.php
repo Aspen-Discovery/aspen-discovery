@@ -1,9 +1,8 @@
 <?php
 
 
-class Comprise_Complete extends Action
-{
-	public function launch(){
+class Comprise_Complete extends Action {
+	public function launch() {
 		global $logger;
 		$logger->log("Completing Comprise Payment", Logger::LOG_ERROR);
 
@@ -19,8 +18,7 @@ class Comprise_Complete extends Action
 		die();
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

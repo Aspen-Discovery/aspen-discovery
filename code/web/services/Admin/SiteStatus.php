@@ -3,10 +3,8 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Admin_SiteStatus extends Admin_Admin
-{
-	function launch()
-	{
+class Admin_SiteStatus extends Admin_Admin {
+	function launch() {
 		global $configArray;
 		global $interface;
 
@@ -27,8 +25,7 @@ class Admin_SiteStatus extends Admin_Admin
 		$this->display('siteStatus.tpl', 'Aspen Discovery Status');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -36,13 +33,11 @@ class Admin_SiteStatus extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View System Reports');
 	}
 }

@@ -2,8 +2,7 @@
 /** @noinspection SqlResolve */
 
 /** @noinspection PhpUnused */
-function getUpdates22_09_01() : array
-{
+function getUpdates22_09_01(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -12,12 +11,13 @@ function getUpdates22_09_01() : array
 				''
 			]
         ], //sample*/
-        'add_additional_library_sso_config_options' => [
+		'add_additional_library_sso_config_options' => [
 			'title' => 'SSO - Additional library config options',
 			'description' => 'Allow SSO configuration options to be specified',
 			'sql' => [
-				"ALTER TABLE library ADD column ssoEntityId VARCHAR(255)"
-            ]
-		] //add_additional_library_sso_config_options
+				"ALTER TABLE library ADD column ssoEntityId VARCHAR(255)",
+			],
+		]
+		//add_additional_library_sso_config_options
 	];
 }

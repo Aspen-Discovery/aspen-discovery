@@ -1,7 +1,6 @@
 <?php
 
-class SpringshareLibCalEvent extends DataObject
-{
+class SpringshareLibCalEvent extends DataObject {
 	public $__table = 'springshare_libcal_events';
 	public $id;
 	public $settingsId;
@@ -13,8 +12,8 @@ class SpringshareLibCalEvent extends DataObject
 
 	private $_rawDataDecoded = null;
 
-	function getDecodedData(){
-		if ($this->_rawDataDecoded == null){
+	function getDecodedData() {
+		if ($this->_rawDataDecoded == null) {
 			$this->_rawDataDecoded = json_decode($this->rawResponse);
 		}
 		return $this->_rawDataDecoded;

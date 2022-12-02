@@ -1,6 +1,6 @@
 <?php
 
-class OverDriveAPIProduct extends DataObject{
+class OverDriveAPIProduct extends DataObject {
 	public $__table = 'overdrive_api_products';   // table name
 
 	public $id;

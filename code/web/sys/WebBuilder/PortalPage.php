@@ -8,8 +8,7 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalPageCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAccess.php';
 require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
 
-class PortalPage extends DB_LibraryLinkedObject
-{
+class PortalPage extends DB_LibraryLinkedObject {
 	public $__table = 'web_builder_portal_page';
 	public $id;
 	public $title;
@@ -25,12 +24,14 @@ class PortalPage extends DB_LibraryLinkedObject
 	protected $_categories;
 	protected $_allowAccess;
 
-	public function getUniquenessFields(): array
-	{
-		return ['title', 'urlAlias'];
+	public function getUniquenessFields(): array {
+		return [
+			'title',
+			'urlAlias',
+		];
 	}
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
@@ -38,15 +39,34 @@ class PortalPage extends DB_LibraryLinkedObject
 
 		$portalRowStructure = PortalRow::getObjectStructure();
 		return [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the page', 'size' => '40', 'maxLength'=>100),
-			'urlAlias' => array('property' => 'urlAlias', 'type' => 'text', 'label' => 'URL Alias (no domain, should start with /)', 'description' => 'The url of the page (no domain name)', 'size' => '40', 'maxLength'=>100),
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id within the database',
+			],
+			'title' => [
+				'property' => 'title',
+				'type' => 'text',
+				'label' => 'Title',
+				'description' => 'The title of the page',
+				'size' => '40',
+				'maxLength' => 100,
+			],
+			'urlAlias' => [
+				'property' => 'urlAlias',
+				'type' => 'text',
+				'label' => 'URL Alias (no domain, should start with /)',
+				'description' => 'The url of the page (no domain name)',
+				'size' => '40',
+				'maxLength' => 100,
+			],
 
 			'rows' => [
-				'property'=>'rows',
-				'type'=>'portalRow',
-				'label'=>'Rows',
-				'description'=>'Rows to show on the page',
+				'property' => 'rows',
+				'type' => 'portalRow',
+				'label' => 'Rows',
+				'description' => 'Rows to show on the page',
 				'keyThis' => 'id',
 				'keyOther' => 'portalPageId',
 				'subObjectType' => 'PortalRow',
@@ -55,12 +75,25 @@ class PortalPage extends DB_LibraryLinkedObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 
-			'requireLogin' => ['property' => 'requireLogin', 'type' => 'checkbox', 'label' => 'Require login to access', 'description' => 'Require login to access page', 'onchange' => 'return AspenDiscovery.WebBuilder.updateWebBuilderFields();', 'default' => 0],
-			'requireLoginUnlessInLibrary' => ['property' => 'requireLoginUnlessInLibrary', 'type' => 'checkbox', 'label' => 'Allow access without logging in while in library', 'description' => 'Require login to access page unless in library', 'default' => 0],
-			'allowAccess' => array(
+			'requireLogin' => [
+				'property' => 'requireLogin',
+				'type' => 'checkbox',
+				'label' => 'Require login to access',
+				'description' => 'Require login to access page',
+				'onchange' => 'return AspenDiscovery.WebBuilder.updateWebBuilderFields();',
+				'default' => 0,
+			],
+			'requireLoginUnlessInLibrary' => [
+				'property' => 'requireLoginUnlessInLibrary',
+				'type' => 'checkbox',
+				'label' => 'Allow access without logging in while in library',
+				'description' => 'Require login to access page unless in library',
+				'default' => 0,
+			],
+			'allowAccess' => [
 				'property' => 'allowAccess',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
@@ -68,47 +101,52 @@ class PortalPage extends DB_LibraryLinkedObject
 				'description' => 'Define what patron types should have access to the page',
 				'values' => $patronTypeList,
 				'hideInLists' => false,
-			),
-			'audiences' => array(
+			],
+			'audiences' => [
 				'property' => 'audiences',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Audience',
 				'description' => 'Define audiences for the page',
 				'values' => $audiencesList,
-				'hideInLists' => false
-			),
-			'categories' => array(
+				'hideInLists' => false,
+			],
+			'categories' => [
 				'property' => 'categories',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Categories',
 				'description' => 'Define categories for the page',
 				'values' => $categoriesList,
-				'hideInLists' => false
-			),
-			'lastUpdate' => array('property' => 'lastUpdate', 'type' => 'timestamp', 'label' => 'Last Update', 'description' => 'When the resource was changed last', 'default' => 0),
-			'libraries' => array(
+				'hideInLists' => false,
+			],
+			'lastUpdate' => [
+				'property' => 'lastUpdate',
+				'type' => 'timestamp',
+				'label' => 'Last Update',
+				'description' => 'When the resource was changed last',
+				'default' => 0,
+			],
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
-				'hideInLists' => true
-			),
+				'hideInLists' => true,
+			],
 		];
 	}
 
-	public function __get($name)
-	{
+	public function __get($name) {
 		if ($name == "libraries") {
 			return $this->getLibraries();
-		}elseif ($name == "audiences") {
+		} elseif ($name == "audiences") {
 			return $this->getAudiences();
-		}elseif ($name == "categories") {
+		} elseif ($name == "categories") {
 			return $this->getCategories();
-		}elseif ($name == 'rows') {
+		} elseif ($name == 'rows') {
 			return $this->getRows();
 		} elseif ($name == 'allowAccess') {
 			return $this->getAccess();
@@ -117,19 +155,18 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 	}
 
-	public function __set($name, $value)
-	{
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}elseif ($name == "audiences") {
+		} elseif ($name == "audiences") {
 			$this->_audiences = $value;
-		}elseif ($name == "categories") {
+		} elseif ($name == "categories") {
 			$this->_categories = $value;
-		}elseif ($name == 'rows') {
+		} elseif ($name == 'rows') {
 			$this->_rows = $value;
-		}elseif ($name == 'allowAccess') {
+		} elseif ($name == 'allowAccess') {
 			$this->_allowAccess = $value;
-		}else{
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
@@ -139,11 +176,11 @@ class PortalPage extends DB_LibraryLinkedObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update() {
 		//Updates to properly update settings based on the ILS
 		$this->lastUpdate = time();
 		$ret = parent::update();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveRows();
 			$this->saveLibraries();
 			$this->saveAudiences();
@@ -159,10 +196,10 @@ class PortalPage extends DB_LibraryLinkedObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert() {
 		$this->lastUpdate = time();
 		$ret = parent::insert();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveRows();
 			$this->saveLibraries();
 			$this->saveAudiences();
@@ -172,31 +209,29 @@ class PortalPage extends DB_LibraryLinkedObject
 		return $ret;
 	}
 
-	public function saveRows(){
-		if (isset ($this->_rows) && is_array($this->_rows)){
+	public function saveRows() {
+		if (isset ($this->_rows) && is_array($this->_rows)) {
 			$this->saveOneToManyOptions($this->_rows, 'portalPageId');
 			unset($this->_rows);
 		}
 	}
 
 	/** @return PortalRow[] */
-	public function getRows()
-	{
-		if (!isset($this->_rows) && $this->id){
+	public function getRows() {
+		if (!isset($this->_rows) && $this->id) {
 			$this->_rows = [];
 			$obj = new PortalRow();
 			$obj->portalPageId = $this->id;
 			$obj->orderBy('weight ASC');
 			$obj->find();
-			while($obj->fetch()){
+			while ($obj->fetch()) {
 				$this->_rows[$obj->id] = clone $obj;
 			}
 		}
 		return $this->_rows;
 	}
 
-	public function delete($useWhere = false)
-	{
+	public function delete($useWhere = false) {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->id)) {
 			$this->clearLibraries();
@@ -207,13 +242,13 @@ class PortalPage extends DB_LibraryLinkedObject
 		return $ret;
 	}
 
-	public function getLibraries() : ?array {
-		if (!isset($this->_libraries) && $this->id){
-			$this->_libraries = array();
+	public function getLibraries(): ?array {
+		if (!isset($this->_libraries) && $this->id) {
+			$this->_libraries = [];
 			$libraryLink = new LibraryPortalPage();
 			$libraryLink->portalPageId = $this->id;
 			$libraryLink->find();
-			while($libraryLink->fetch()){
+			while ($libraryLink->fetch()) {
 				$this->_libraries[$libraryLink->libraryId] = $libraryLink->libraryId;
 			}
 		}
@@ -221,12 +256,12 @@ class PortalPage extends DB_LibraryLinkedObject
 	}
 
 	public function getAudiences() {
-		if (!isset($this->_audiences) && $this->id){
-			$this->_audiences = array();
+		if (!isset($this->_audiences) && $this->id) {
+			$this->_audiences = [];
 			$audienceLink = new PortalPageAudience();
 			$audienceLink->portalPageId = $this->id;
 			$audienceLink->find();
-			while($audienceLink->fetch()){
+			while ($audienceLink->fetch()) {
 				$this->_audiences[$audienceLink->audienceId] = $audienceLink->audienceId;
 			}
 		}
@@ -234,12 +269,12 @@ class PortalPage extends DB_LibraryLinkedObject
 	}
 
 	public function getCategories() {
-		if (!isset($this->_categories) && $this->id){
-			$this->_categories = array();
+		if (!isset($this->_categories) && $this->id) {
+			$this->_categories = [];
 			$categoryLink = new PortalPageCategory();
 			$categoryLink->portalPageId = $this->id;
 			$categoryLink->find();
-			while($categoryLink->fetch()){
+			while ($categoryLink->fetch()) {
 				$this->_categories[$categoryLink->categoryId] = $categoryLink->categoryId;
 			}
 		}
@@ -247,20 +282,20 @@ class PortalPage extends DB_LibraryLinkedObject
 	}
 
 	public function getAccess() {
-		if (!isset($this->_allowAccess) && $this->id){
-			$this->_allowAccess = array();
+		if (!isset($this->_allowAccess) && $this->id) {
+			$this->_allowAccess = [];
 			$patronTypeLink = new PortalPageAccess();
 			$patronTypeLink->portalPageId = $this->id;
 			$patronTypeLink->find();
-			while($patronTypeLink->fetch()){
+			while ($patronTypeLink->fetch()) {
 				$this->_allowAccess[$patronTypeLink->patronTypeId] = $patronTypeLink->patronTypeId;
 			}
 		}
 		return $this->_allowAccess;
 	}
 
-	public function saveLibraries(){
-		if (isset($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset($this->_libraries) && is_array($this->_libraries)) {
 			$this->clearLibraries();
 
 			foreach ($this->_libraries as $libraryId) {
@@ -274,8 +309,8 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 	}
 
-	public function saveAudiences(){
-		if (isset($this->_audiences) && is_array($this->_audiences)){
+	public function saveAudiences() {
+		if (isset($this->_audiences) && is_array($this->_audiences)) {
 			$this->clearAudiences();
 
 			foreach ($this->_audiences as $audienceId) {
@@ -289,8 +324,8 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 	}
 
-	public function saveCategories(){
-		if (isset($this->_categories) && is_array($this->_categories)){
+	public function saveCategories() {
+		if (isset($this->_categories) && is_array($this->_categories)) {
 			$this->clearCategories();
 
 			foreach ($this->_categories as $categoryId) {
@@ -304,8 +339,8 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 	}
 
-	public function saveAccess(){
-		if (isset($this->_allowAccess) && is_array($this->_allowAccess)){
+	public function saveAccess() {
+		if (isset($this->_allowAccess) && is_array($this->_allowAccess)) {
 			$this->clearAccess();
 
 			foreach ($this->_allowAccess as $patronTypeId) {
@@ -319,65 +354,61 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 	}
 
-	private function clearLibraries()
-	{
+	private function clearLibraries() {
 		//Delete links to the libraries
 		$libraryLink = new LibraryPortalPage();
 		$libraryLink->portalPageId = $this->id;
 		return $libraryLink->delete(true);
 	}
 
-	private function clearAudiences()
-	{
+	private function clearAudiences() {
 		//Delete links to the libraries
 		$link = new PortalPageAudience();
 		$link->portalPageId = $this->id;
 		return $link->delete(true);
 	}
 
-	private function clearCategories()
-	{
+	private function clearCategories() {
 		//Delete links to the libraries
 		$link = new PortalPageCategory();
 		$link->portalPageId = $this->id;
 		return $link->delete(true);
 	}
 
-	private function clearAccess()
-	{
+	private function clearAccess() {
 		//Delete links to the patron types
 		$link = new PortalPageAccess();
 		$link->portalPageId = $this->id;
 		return $link->delete(true);
 	}
 
-	public function getLinksForJSON() : array{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		//Audiences
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$audiences = $this->getAudiences();
 		$links['audiences'] = [];
-		foreach ($audiences as $audience){
+		foreach ($audiences as $audience) {
 			$links['audiences'][] = $audiencesList[$audience];
 		}
 		//Categories
 		$categoriesList = WebBuilderCategory::getCategories();
 		$categories = $this->getCategories();
 		$links['categories'] = [];
-		foreach ($categories as $category){
+		foreach ($categories as $category) {
 			$links['categories'][] = $categoriesList[$category];
 		}
 		//Allow Access
 		$patronTypeList = PType::getPatronTypeList();
 		$accessList = $this->getAccess();
 		$links['allowAccess'] = [];
-		foreach ($accessList as $accessInfo){
+		foreach ($accessList as $accessInfo) {
 			$links['allowAccess'] = $patronTypeList[$accessInfo];
 		}
 		//Rows
 		$rows = $this->getRows();
 		$links['rows'] = [];
-		foreach ($rows as $row){
+		foreach ($rows as $row) {
 			$rowArray = $row->toArray(false, true);
 			$rowArray['links'] = $row->getLinksForJSON();
 
@@ -387,49 +418,48 @@ class PortalPage extends DB_LibraryLinkedObject
 		return $links;
 	}
 
-	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool
-	{
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
 
-		if (array_key_exists('audiences', $jsonLinks)){
+		if (array_key_exists('audiences', $jsonLinks)) {
 			$audiences = [];
 			$audiencesList = WebBuilderAudience::getAudiences();
 			$audiencesList = array_flip($audiencesList);
-			foreach ($jsonLinks['audiences'] as $audience){
-				if (array_key_exists($audience, $audiencesList)){
+			foreach ($jsonLinks['audiences'] as $audience) {
+				if (array_key_exists($audience, $audiencesList)) {
 					$audiences[] = $audiencesList[$audience];
 				}
 			}
 			$this->_audiences = $audiences;
 			$result = true;
 		}
-		if (array_key_exists('categories', $jsonLinks)){
+		if (array_key_exists('categories', $jsonLinks)) {
 			$categories = [];
 			$categoriesList = WebBuilderCategory::getCategories();
 			$categoriesList = array_flip($categoriesList);
-			foreach ($jsonLinks['categories'] as $category){
-				if (array_key_exists($category, $categoriesList)){
+			foreach ($jsonLinks['categories'] as $category) {
+				if (array_key_exists($category, $categoriesList)) {
 					$categories[] = $categoriesList[$category];
 				}
 			}
 			$this->_categories = $categories;
 			$result = true;
 		}
-		if (array_key_exists('allowAccess', $jsonLinks)){
+		if (array_key_exists('allowAccess', $jsonLinks)) {
 			$allowAccess = [];
 			$allowAccessList = PType::getPatronTypeList();
 			$allowAccessList = array_flip($allowAccessList);
-			foreach ($jsonLinks['allowAccess'] as $pType){
-				if (array_key_exists($pType, $allowAccessList)){
+			foreach ($jsonLinks['allowAccess'] as $pType) {
+				if (array_key_exists($pType, $allowAccessList)) {
 					$allowAccess[] = $allowAccessList[$pType];
 				}
 			}
 			$this->_allowAccess = $allowAccess;
 			$result = true;
 		}
-		if (array_key_exists('rows', $jsonLinks)){
+		if (array_key_exists('rows', $jsonLinks)) {
 			$rows = [];
-			foreach ($jsonLinks['rows'] as $row){
+			foreach ($jsonLinks['rows'] as $row) {
 				$rowObj = new PortalRow();
 				$rowObj->portalPageId = $this->id;
 				unset($row['portalPageId']);
@@ -442,35 +472,33 @@ class PortalPage extends DB_LibraryLinkedObject
 		return $result;
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		global $locationSingleton;
 		$requireLogin = $this->requireLogin;
 		$allowInLibrary = $this->requireLoginUnlessInLibrary;
 
 		$activeLibrary = $locationSingleton->getActiveLocation();
 		$user = UserAccount::getLoggedInUser();
-		if($requireLogin){
-			if($allowInLibrary && $activeLibrary != null) {
+		if ($requireLogin) {
+			if ($allowInLibrary && $activeLibrary != null) {
 				return true;
 			}
-			if(!$user) {
+			if (!$user) {
 				return false;
-			}
-			else {
+			} else {
 				$userPatronType = $user->patronType;
 
 				if ($userPatronType == NULL) {
 					return true;
-				} elseif (empty($this->getAccess())){
+				} elseif (empty($this->getAccess())) {
 					//No patron types defined, everyone can access
 					return true;
 				} else {
 					$patronType = new pType();
 					$patronType->pType = $userPatronType;
-					if ($patronType->find(true)){
+					if ($patronType->find(true)) {
 						$patronTypeId = $patronType->id;
-					}else{
+					} else {
 						return false;
 					}
 
@@ -489,35 +517,40 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 	}
 
-	public function getHiddenReason() : string{
+	public function getHiddenReason(): string {
 		global $locationSingleton;
 		$requireLogin = $this->requireLogin;
 		$allowInLibrary = $this->requireLoginUnlessInLibrary;
 
 		$activeLibrary = $locationSingleton->getActiveLocation();
 		$user = UserAccount::getLoggedInUser();
-		if($requireLogin){
-			if($allowInLibrary && $activeLibrary != null) {
+		if ($requireLogin) {
+			if ($allowInLibrary && $activeLibrary != null) {
 				return '';
 			}
-			if(!$user) {
-				return translate(['text'=>'You must be logged in to view this page.', 'isPublicFacing'=>true]);
-			}
-			else {
+			if (!$user) {
+				return translate([
+					'text' => 'You must be logged in to view this page.',
+					'isPublicFacing' => true,
+				]);
+			} else {
 				$userPatronType = $user->patronType;
 
 				if ($userPatronType == NULL) {
 					return '';
-				} elseif (empty($this->getAccess())){
+				} elseif (empty($this->getAccess())) {
 					//No patron types defined, everyone can access
 					return '';
 				} else {
 					$patronType = new pType();
 					$patronType->pType = $userPatronType;
-					if ($patronType->find(true)){
+					if ($patronType->find(true)) {
 						$patronTypeId = $patronType->id;
-					}else{
-						return translate(['text'=>'Could not determine the type of user for you.', 'isPublicFacing'=>true]);
+					} else {
+						return translate([
+							'text' => 'Could not determine the type of user for you.',
+							'isPublicFacing' => true,
+						]);
 					}
 
 					$patronTypeLink = new PortalPageAccess();
@@ -526,7 +559,10 @@ class PortalPage extends DB_LibraryLinkedObject
 					if ($patronTypeLink->find(true)) {
 						return '';
 					} else {
-						return translate(['text'=>"We're sorry, but it looks like you don't have access to this page..", 'isPublicFacing'=>true]);
+						return translate([
+							'text' => "We're sorry, but it looks like you don't have access to this page..",
+							'isPublicFacing' => true,
+						]);
 					}
 				}
 			}

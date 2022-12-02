@@ -1,8 +1,7 @@
 <?php
 
 
-class PlacardLanguage extends DataObject
-{
+class PlacardLanguage extends DataObject {
 	public $__table = 'placard_language';
 	public $id;
 	public $placardId;

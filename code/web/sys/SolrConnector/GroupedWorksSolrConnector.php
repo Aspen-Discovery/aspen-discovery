@@ -3,28 +3,28 @@
 require_once 'Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher.php';
 
-class GroupedWorksSolrConnector extends Solr
-{
-	function __construct($host, $index = ''){
+class GroupedWorksSolrConnector extends Solr {
+	function __construct($host, $index = '') {
 		parent::__construct($host, 'grouped_works');
 	}
 
 	/**
 	 * @return string
 	 */
-	function getSearchSpecsFile()
-	{
+	function getSearchSpecsFile() {
 		return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs.yaml';
 	}
 
-	function getRecordByBarcode($barcode)
-	{
+	function getRecordByBarcode($barcode) {
 		if ($this->debug) {
 			echo "<pre>Get Record by Barcode: $barcode</pre>\n";
 		}
 
 		// Query String Parameters
-		$options = array('q' => "barcode:\"$barcode\"", 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
+		$options = [
+			'q' => "barcode:\"$barcode\"",
+			'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return,
+		];
 		$result = $this->_select('GET', $options);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
@@ -37,13 +37,15 @@ class GroupedWorksSolrConnector extends Solr
 		}
 	}
 
-	function getRecordByIsbn($isbns, $fieldsToReturn = null)
-	{
+	function getRecordByIsbn($isbns, $fieldsToReturn = null) {
 		// Query String Parameters
 		if ($fieldsToReturn == null) {
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
 		}
-		$options = array('q' => 'isbn:' . implode(' OR ', $isbns), 'fl' => $fieldsToReturn);
+		$options = [
+			'q' => 'isbn:' . implode(' OR ', $isbns),
+			'fl' => $fieldsToReturn,
+		];
 		$result = $this->_select('GET', $options);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
@@ -56,10 +58,9 @@ class GroupedWorksSolrConnector extends Solr
 		}
 	}
 
-	function searchForRecordIds($ids)
-	{
+	function searchForRecordIds($ids) {
 		if (count($ids) == 0) {
-			return array();
+			return [];
 		}
 		// Query String Parameters
 		$idString = '';
@@ -69,7 +70,11 @@ class GroupedWorksSolrConnector extends Solr
 			}
 			$idString .= "id:\"$id\"";
 		}
-		$options = array('q' => $idString, 'rows' => count($ids), 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
+		$options = [
+			'q' => $idString,
+			'rows' => count($ids),
+			'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return,
+		];
 		$result = $this->_select('GET', $options);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
@@ -92,16 +97,20 @@ class GroupedWorksSolrConnector extends Solr
 	 * @return    array                            An array of query results
 	 *
 	 */
-	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
-	{
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null) {
 		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
-		if ($fieldsToReturn == null){
+		if ($fieldsToReturn == null) {
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
 		}
-		$options = array('q' => "id:$id", 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => $fieldsToReturn);
+		$options = [
+			'q' => "id:$id",
+			'mlt.interestingTerms' => 'details',
+			'rows' => 25,
+			'fl' => $fieldsToReturn,
+		];
 		if ($originalResult) {
-			$options['fq'] = array();
+			$options['fq'] = [];
 			if (isset($originalResult['target_audience_full'])) {
 				if (is_array($originalResult['target_audience_full'])) {
 					$filter = '';
@@ -120,7 +129,7 @@ class GroupedWorksSolrConnector extends Solr
 					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
 				}
 			}
-			if (isset($originalResult['mpaa_rating'])){
+			if (isset($originalResult['mpaa_rating'])) {
 				if (is_array($originalResult['mpaa_rating'])) {
 					$filter = '';
 					foreach ($originalResult['mpaa_rating'] as $rating) {
@@ -175,7 +184,7 @@ class GroupedWorksSolrConnector extends Solr
 				$searchLocation = null;
 			}
 		}
-		if ($availableOnly){
+		if ($availableOnly) {
 			global $solrScope;
 			$options['fq'][] = "availability_toggle_{$solrScope}:available OR availability_toggle_{$solrScope}:available_online";
 		}
@@ -185,7 +194,7 @@ class GroupedWorksSolrConnector extends Solr
 			$options['fq'][] = $filter;
 		}
 
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
@@ -195,7 +204,7 @@ class GroupedWorksSolrConnector extends Solr
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
-		if ($limit != null && is_numeric($limit)){
+		if ($limit != null && is_numeric($limit)) {
 			$options['rows'] = $limit;
 		}
 
@@ -222,8 +231,7 @@ class GroupedWorksSolrConnector extends Solr
 	 * @param string[] $notInterestedIds - An array of ids the patron is not interested in.  Can just load the last hour or so since they are also indexed.
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25, $notInterestedIds = [])
-	{
+	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25, $notInterestedIds = []) {
 		// Query String Parameters
 		$idString = '';
 		foreach ($ids as $index => $ratingInfo) {
@@ -234,13 +242,20 @@ class GroupedWorksSolrConnector extends Solr
 			$idString .= "id:{$ratingInfo['workId']}^$ratingBoost";
 		}
 		//$idString = implode(' OR ', $ids);
-		$options = array('q' => $idString, 'mlt.interestingTerms' => 'details', 'mlt.boost' => 'true', 'start' => ($page - 1) * $limit, 'rows' => $limit, 'fl' => $fieldsToReturn);
+		$options = [
+			'q' => $idString,
+			'mlt.interestingTerms' => 'details',
+			'mlt.boost' => 'true',
+			'start' => ($page - 1) * $limit,
+			'rows' => $limit,
+			'fl' => $fieldsToReturn,
+		];
 
 		$searchLibrary = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
@@ -274,8 +289,7 @@ class GroupedWorksSolrConnector extends Solr
 	 * @return string            The normalized sort value.
 	 * @access private
 	 */
-	protected function _normalizeSort($sort)
-	{
+	protected function _normalizeSort($sort) {
 		// Break apart sort into field name and sort direction (note error
 		// suppression to prevent notice when direction is left blank):
 		$sort = trim($sort);
@@ -316,8 +330,7 @@ class GroupedWorksSolrConnector extends Solr
 	}
 
 	/** return string */
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'groupedWorksSearches';
 	}
 
@@ -327,11 +340,10 @@ class GroupedWorksSolrConnector extends Solr
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary)
-	{
+	public function getBoostFactors($searchLibrary) {
 		global $activeLanguage;
 
-		$boostFactors = array();
+		$boostFactors = [];
 
 		if (UserAccount::isLoggedIn()) {
 			$searchPreferenceLanguage = UserAccount::getActiveUserObj()->searchPreferenceLanguage;
@@ -374,11 +386,10 @@ class GroupedWorksSolrConnector extends Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation)
-	{
+	public function getScopingFilters($searchLibrary, $searchLocation) {
 		global $solrScope;
 
-		$filter = array();
+		$filter = [];
 
 		//Simplify detecting which works are relevant to our scope
 		if (!$solrScope) {
@@ -409,7 +420,7 @@ class GroupedWorksSolrConnector extends Solr
 		return $filter;
 	}
 
-	protected function getHighlightOptions($fields, &$options){
+	protected function getHighlightOptions($fields, &$options) {
 		global $solrScope;
 		$highlightFields = $fields . ",table_of_contents";
 		$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);

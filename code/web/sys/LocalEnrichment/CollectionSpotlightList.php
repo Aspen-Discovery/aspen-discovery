@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Browse/BaseBrowsable.php';
 
-class CollectionSpotlightList extends BaseBrowsable
-{
+class CollectionSpotlightList extends BaseBrowsable {
 	public $__table = 'collection_spotlight_lists';    // table name
 	public $id;                      //int(25)
 	public $collectionSpotlightId;                    //varchar(255)
@@ -13,8 +12,7 @@ class CollectionSpotlightList extends BaseBrowsable
 
 	public $weight;
 
-	static function getObjectStructure() : array
-	{
+	static function getObjectStructure(): array {
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
@@ -24,37 +22,41 @@ class CollectionSpotlightList extends BaseBrowsable
 
 		$spotlightSources = BaseBrowsable::getBrowseSources();
 
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id of the collection spotlight list.'
-			),
-			'collectionSpotlightId' => array(
+				'description' => 'The unique id of the collection spotlight list.',
+			],
+			'collectionSpotlightId' => [
 				'property' => 'collectionSpotlightId',
 				'type' => 'foreignKey',
 				'label' => 'Collection Spotlight',
 				'description' => 'The spotlight this list is associated with.',
-				'editLink' => '/Admin/CollectionSpotlights?id=propertyValue&objectAction=edit'
-			),
-			'name' => array(
+				'editLink' => '/Admin/CollectionSpotlights?id=propertyValue&objectAction=edit',
+			],
+			'name' => [
 				'property' => 'name',
 				'type' => 'text',
 				'label' => 'Name',
 				'description' => 'The name of the list to display in the tab.',
 				'required' => true,
-			),
-			'displayFor' => array(
+			],
+			'displayFor' => [
 				'property' => 'displayFor',
 				'type' => 'enum',
-				'values' => array('all' => 'Everyone', 'loggedIn' => 'Only when a user is logged in', 'notLoggedIn' => 'Only when no one is logged in'),
+				'values' => [
+					'all' => 'Everyone',
+					'loggedIn' => 'Only when a user is logged in',
+					'notLoggedIn' => 'Only when no one is logged in',
+				],
 				'label' => 'Display For',
 				'description' => 'Who this list should be displayed for.',
-				'translateValues'=>true,
+				'translateValues' => true,
 				'isAdminFacing' => true,
-			),
-			'source' => array(
+			],
+			'source' => [
 				'property' => 'source',
 				'type' => 'enum',
 				'values' => $spotlightSources,
@@ -62,38 +64,84 @@ class CollectionSpotlightList extends BaseBrowsable
 				'description' => 'The source of the list.',
 				'required' => true,
 				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();",
-				'translateValues'=>true,
+				'translateValues' => true,
 				'isAdminFacing' => true,
-			),
-			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
-			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
-			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from', 'translateValues'=>true, 'isAdminFacing' => true),
-			'sourceCourseReserveId' => array('property' => 'sourceCourseReserveId', 'type' => 'enum', 'values' => $sourceCourseReserves, 'label' => 'Source Course Reserve', 'description' => 'A course to display titles from'),
-			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true, 'translateValues'=>true, 'isAdminFacing' => true),
-		);
+			],
+			'searchTerm' => [
+				'property' => 'searchTerm',
+				'type' => 'text',
+				'label' => 'Search Term',
+				'description' => 'A default search term to apply to the category',
+				'default' => '',
+				'hideInLists' => true,
+				'maxLength' => 500,
+			],
+			'defaultFilter' => [
+				'property' => 'defaultFilter',
+				'type' => 'textarea',
+				'label' => 'Default Filter(s)',
+				'description' => 'Filters to apply to the search by default.',
+				'hideInLists' => true,
+				'rows' => 3,
+				'cols' => 80,
+			],
+			'sourceListId' => [
+				'property' => 'sourceListId',
+				'type' => 'enum',
+				'values' => $sourceLists,
+				'label' => 'Source List',
+				'description' => 'A public list to display titles from',
+				'translateValues' => true,
+				'isAdminFacing' => true,
+			],
+			'sourceCourseReserveId' => [
+				'property' => 'sourceCourseReserveId',
+				'type' => 'enum',
+				'values' => $sourceCourseReserves,
+				'label' => 'Source Course Reserve',
+				'description' => 'A course to display titles from',
+			],
+			'defaultSort' => [
+				'property' => 'defaultSort',
+				'type' => 'enum',
+				'label' => 'Default Sort',
+				'values' => [
+					'relevance' => 'Best Match',
+					'popularity' => 'Popularity',
+					'newest_to_oldest' => 'Date Added',
+					'author' => 'Author',
+					'title' => 'Title',
+					'user_rating' => 'Rating',
+				],
+				'description' => 'The default sort for the search if none is specified',
+				'default' => 'relevance',
+				'hideInLists' => true,
+				'translateValues' => true,
+				'isAdminFacing' => true,
+			],
+		];
 	}
 
-	public function insert()
-	{
-		if ($this->source == null){
+	public function insert() {
+		if ($this->source == null) {
 			$this->source = '';
 		}
 		return parent::insert(); // TODO: Change the autogenerated stub
 	}
 
 	/** @noinspection PhpUnused */
-	function getSourceListName(){
+	function getSourceListName() {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-		if ($this->sourceListId != null && $this->sourceListId > 0){
+		if ($this->sourceListId != null && $this->sourceListId > 0) {
 			$userList = new UserList();
 			$userList->id = $this->sourceListId;
-			if ($userList->find(true)){
+			if ($userList->find(true)) {
 				return $userList->title;
-			}else{
+			} else {
 				return "Invalid List ({$this->sourceListId})";
 			}
 
-		}elseif ($this->sourceCourseReserveId != null && $this->sourceCourseReserveId > 0) {
+		} elseif ($this->sourceCourseReserveId != null && $this->sourceCourseReserveId > 0) {
 			require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
 			$userList = new CourseReserve();
 			$userList->id = $this->sourceCourseReserveId;
@@ -103,20 +151,19 @@ class CollectionSpotlightList extends BaseBrowsable
 				return "Invalid Course Reserve ({$this->sourceCourseReserveId})";
 			}
 
-		}else{
+		} else {
 			return "";
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function fullListLink()
-	{
+	function fullListLink() {
 		global $configArray;
-		if ($this->sourceListId != null && $this->sourceListId > 0){
+		if ($this->sourceListId != null && $this->sourceListId > 0) {
 			return $configArray['Site']['url'] . '/MyAccount/MyList/' . $this->sourceListId;
-		}elseif ($this->sourceCourseReserveId != null && $this->sourceCourseReserveId > 0){
+		} elseif ($this->sourceCourseReserveId != null && $this->sourceCourseReserveId > 0) {
 			return $configArray['Site']['url'] . '/CourseReserves/' . $this->sourceCourseReserveId;
-		}else{
+		} else {
 			$searchObject = $this->getSearchObject();
 			$link = $configArray['Site']['url'] . $searchObject->renderSearchUrl();
 			$spotlight = $this->getCollectionSpotlight();
@@ -127,16 +174,14 @@ class CollectionSpotlightList extends BaseBrowsable
 		}
 	}
 
-	function __toString()
-	{
+	function __toString() {
 		return "{$this->name} ($this->source)";
 	}
 
 	/**
 	 * @return SearchObject_BaseSearcher
 	 */
-	public function getSearchObject()
-	{
+	public function getSearchObject() {
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($this->source);
 		if (!empty($this->defaultFilter)) {
@@ -163,8 +208,9 @@ class CollectionSpotlightList extends BaseBrowsable
 	}
 
 	private $_collectionSpotlight = null;
-	function getCollectionSpotlight(){
-		if ($this->_collectionSpotlight == null){
+
+	function getCollectionSpotlight() {
+		if ($this->_collectionSpotlight == null) {
 			$this->_collectionSpotlight = new CollectionSpotlight();
 			$this->_collectionSpotlight->id = $this->collectionSpotlightId;
 			$this->_collectionSpotlight->find(true);
@@ -172,7 +218,7 @@ class CollectionSpotlightList extends BaseBrowsable
 		return $this->_collectionSpotlight;
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Admin/CollectionSpotlightLists?objectAction=edit&id=' . $this->id;
 	}
 }

@@ -13,12 +13,16 @@ abstract class Admin_Dashboard extends Admin_Admin {
 	 * @param string $statsClassname The name of the class to load instance information for
 	 * @return string selected instance
 	 */
-	function loadInstanceInformation(string $statsClassname){
+	function loadInstanceInformation(string $statsClassname) {
 		global $interface;
 
 		//Get a list of instances that we have stats for.
 		$allInstances = [];
-		$allInstances[''] = translate(['text'=>'All', 'isAdminFacing'=>true, 'inAttribute'=>true]);
+		$allInstances[''] = translate([
+			'text' => 'All',
+			'isAdminFacing' => true,
+			'inAttribute' => true,
+		]);
 		/** @var DataObject $statsInstance */
 		$statsInstance = new $statsClassname();
 		$statsInstance->selectAdd(null);
@@ -34,9 +38,9 @@ abstract class Admin_Dashboard extends Admin_Admin {
 		}
 		$interface->assign('allInstances', $allInstances);
 
-		if (!empty($_REQUEST['instance'])){
+		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
-		}else{
+		} else {
 			$instanceName = '';
 		}
 		$interface->assign('selectedInstance', $instanceName);
@@ -44,7 +48,7 @@ abstract class Admin_Dashboard extends Admin_Admin {
 		return $instanceName;
 	}
 
-	function loadDates(){
+	function loadDates() {
 		$this->thisMonth = date('n');
 		$this->thisYear = date('Y');
 		$this->lastMonth = $this->thisMonth - 1;

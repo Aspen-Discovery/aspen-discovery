@@ -14,8 +14,7 @@
  */
 require_once ROOT_DIR . '/sys/mobileesp/mdetect.php';
 
-function mobile_device_detect()
-{
+function mobile_device_detect() {
 	// Do the most exhaustive device detection possible; other method calls
 	// may be used instead of DetectMobileLong if you want to target a narrower
 	// class of devices.
@@ -23,33 +22,32 @@ function mobile_device_detect()
 	return $mobile->DetectMobileLong();
 }
 
-function get_device_name()
-{
+function get_device_name() {
 	// Do the most exhaustive device detection possible; other method calls
 	// may be used instead of DetectMobileLong if you want to target a narrower
 	// class of devices.
 	$mobile = new uagent_info();
-	if ($mobile->DetectKindle()){
+	if ($mobile->DetectKindle()) {
 		return 'Kindle';
-	}elseif ($mobile->DetectKindleFire() || $mobile->DetectAmazonSilk()){
+	} elseif ($mobile->DetectKindleFire() || $mobile->DetectAmazonSilk()) {
 		return 'Kindle Fire';
-	}elseif ($mobile->DetectIpad()){
+	} elseif ($mobile->DetectIpad()) {
 		return 'iPad';
-	}elseif ($mobile->DetectIphone()){
+	} elseif ($mobile->DetectIphone()) {
 		return 'iPhone';
-	}elseif ($mobile->DetectMac()){
+	} elseif ($mobile->DetectMac()) {
 		return 'Mac';
-	}elseif ($mobile->DetectAndroidPhone()){
+	} elseif ($mobile->DetectAndroidPhone()) {
 		return 'Android Phone';
-	}elseif ($mobile->DetectAndroidTablet()){
+	} elseif ($mobile->DetectAndroidTablet()) {
 		return 'Android Tablet';
-	}elseif ($mobile->DetectBlackBerry()){
+	} elseif ($mobile->DetectBlackBerry()) {
 		return 'BlackBerry';
-	}elseif ($mobile->DetectGoogleTV()){
+	} elseif ($mobile->DetectGoogleTV()) {
 		return 'Google TV';
-	}elseif ($mobile->DetectIos()){
+	} elseif ($mobile->DetectIos()) {
 		return 'iOS';
-	}else{
+	} else {
 		return 'PC';
 	}
 

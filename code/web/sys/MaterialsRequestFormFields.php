@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class MaterialsRequestFormFields extends DataObject
-{
+
+class MaterialsRequestFormFields extends DataObject {
 	public $__table = 'materials_request_form_fields';
 	public $id;
 	public $libraryId;
@@ -11,59 +11,87 @@ class MaterialsRequestFormFields extends DataObject
 	public $fieldLabel; // unique
 	public $fieldType;
 
-	static $fieldTypeOptions = array(
+	static $fieldTypeOptions = [
 //		'text'    => 'text',
 //		'textbox' => 'textarea',
 //		'yes/no'  => 'yes/no',
-		'about'              => 'About',
-		'ageLevel'           => 'Age Level',
-		'author'             => 'Author',
-		'assignedTo'         => 'Assigned To (staff view only)',
-		'bookmobileStop'     => 'Bookmobile Stop',
-		'bookType'           => 'Book Type',
-		'comments'           => 'Comments',
-		'createdBy'          => 'Created By (staff view only)',
-		'dateCreated'        => 'Date Created',
-		'dateUpdated'        => 'Date Updated',
-		'email'              => 'Email',
-		'emailSent'          => 'Email Sent',
-		'format'             => 'Format',
+		'about' => 'About',
+		'ageLevel' => 'Age Level',
+		'author' => 'Author',
+		'assignedTo' => 'Assigned To (staff view only)',
+		'bookmobileStop' => 'Bookmobile Stop',
+		'bookType' => 'Book Type',
+		'comments' => 'Comments',
+		'createdBy' => 'Created By (staff view only)',
+		'dateCreated' => 'Date Created',
+		'dateUpdated' => 'Date Updated',
+		'email' => 'Email',
+		'emailSent' => 'Email Sent',
+		'format' => 'Format',
 		'holdPickupLocation' => 'Hold Pick-up Location',
-		'holdsCreated'       => 'Holds Created',
-		'illItem'            => 'Inter-library Loan Item',
-		'isbn'               => 'ISBN',
-		'issn'               => 'ISSN',
-		'libraryCardNumber'  => 'Library Card Number (staff view only)',
-		'oclcNumber'         => 'OCLC Number',
+		'holdsCreated' => 'Holds Created',
+		'illItem' => 'Inter-library Loan Item',
+		'isbn' => 'ISBN',
+		'issn' => 'ISSN',
+		'libraryCardNumber' => 'Library Card Number (staff view only)',
+		'oclcNumber' => 'OCLC Number',
 		'placeHoldWhenAvailable' => 'Place Hold when Available',
-		'phone'              => 'Phone',
-		'publisher'          => 'Publisher',
-		'publicationYear'    => 'Publication Year',
-		'id'                 => 'Request ID Number (staff view only)',
-		'staffComments'      => 'Staff Comments (staff view only)',
-		'status'             => 'Status (staff view only)',
-		'title'              => 'Title',
-		'upc'                => 'UPC',
-	);
+		'phone' => 'Phone',
+		'publisher' => 'Publisher',
+		'publicationYear' => 'Publication Year',
+		'id' => 'Request ID Number (staff view only)',
+		'staffComments' => 'Staff Comments (staff view only)',
+		'status' => 'Status (staff view only)',
+		'title' => 'Title',
+		'upc' => 'UPC',
+	];
 
 
-	static function getObjectStructure() : array {
-		$structure = array(
-			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
+	static function getObjectStructure(): array {
+		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
 //			'libraryId'     => array(), // hidden value or internally updated.
-			'formCategory'  => array('property' => 'formCategory', 'type' => 'text', 'label' => 'Form Category', 'description' => 'The name of the section this field will belong in.'),
-			'fieldLabel'    => array('property' => 'fieldLabel', 'type' => 'text', 'label' => 'Field Label', 'description' => 'Label for this field that will be displayed to users.'),
-			'fieldType'     => array('property' => 'fieldType', 'type' => 'enum', 'label' => 'Field Type', 'description' => 'Type of data this field will be', 'values' => self::$fieldTypeOptions, 'default' => 'text'),
+			'formCategory' => [
+				'property' => 'formCategory',
+				'type' => 'text',
+				'label' => 'Form Category',
+				'description' => 'The name of the section this field will belong in.',
+			],
+			'fieldLabel' => [
+				'property' => 'fieldLabel',
+				'type' => 'text',
+				'label' => 'Field Label',
+				'description' => 'Label for this field that will be displayed to users.',
+			],
+			'fieldType' => [
+				'property' => 'fieldType',
+				'type' => 'enum',
+				'label' => 'Field Type',
+				'description' => 'Type of data this field will be',
+				'values' => self::$fieldTypeOptions,
+				'default' => 'text',
+			],
 			//			'required'      => array(), // checkbox
-			'weight'        => array('property' => 'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
-		);
+			'weight' => [
+				'property' => 'weight',
+				'type' => 'integer',
+				'label' => 'Weight',
+				'description' => 'The sort order',
+				'default' => 0,
+			],
+		];
 		return $structure;
 	}
 
 
 	static function getDefaultFormFields($libraryId = -1) {
 		global $configArray;
-		$defaultFieldsToDisplay = array();
+		$defaultFieldsToDisplay = [];
 
 		//This Replicates MyRequest Form structure.
 
@@ -73,7 +101,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Material Information';
 		$defaultField->fieldLabel = 'Format';
 		$defaultField->fieldType = 'format';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new MaterialsRequestFormFields();
@@ -81,7 +109,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Title Information';
 		$defaultField->fieldLabel = 'Title';
 		$defaultField->fieldType = 'title';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new MaterialsRequestFormFields();
@@ -89,7 +117,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Title Information';
 		$defaultField->fieldLabel = 'Author';
 		$defaultField->fieldType = 'author';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		// Hold Options
@@ -139,7 +167,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Supplemental Details (optional)';
 		$defaultField->fieldLabel = 'Publisher';
 		$defaultField->fieldType = 'publisher';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new MaterialsRequestFormFields();
@@ -147,7 +175,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Supplemental Details (optional)';
 		$defaultField->fieldLabel = 'Publication Year';
 		$defaultField->fieldType = 'publicationYear';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new MaterialsRequestFormFields();
@@ -155,7 +183,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Supplemental Details (optional)';
 		$defaultField->fieldLabel = 'How and/or where did you hear about this title';
 		$defaultField->fieldType = 'about';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new MaterialsRequestFormFields();
@@ -163,7 +191,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Supplemental Details (optional)';
 		$defaultField->fieldLabel = 'Comments';
 		$defaultField->fieldType = 'comments';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 
@@ -173,7 +201,7 @@ class MaterialsRequestFormFields extends DataObject
 		$defaultField->formCategory = 'Contact Information';
 		$defaultField->fieldLabel = 'Email';
 		$defaultField->fieldType = 'email';
-		$defaultField->weight = count($defaultFieldsToDisplay)+1;
+		$defaultField->weight = count($defaultFieldsToDisplay) + 1;
 		$defaultFieldsToDisplay[] = $defaultField;
 
 		$defaultField = new MaterialsRequestFormFields();

@@ -1,15 +1,14 @@
 <?php
 
 require_once ROOT_DIR . '/sys/File/FileUpload.php';
-class Files_Contents extends Action
-{
-	function launch()
-	{
+
+class Files_Contents extends Action {
+	function launch() {
 		//Get the id of the file to display
 		$fileId = $_REQUEST['id'];
 		$fileUpload = new FileUpload();
 		$fileUpload->id = $fileId;
-		if ($fileUpload->find(true)){
+		if ($fileUpload->find(true)) {
 			if (file_exists($fileUpload->fullPath)) {
 				set_time_limit(300);
 
@@ -18,10 +17,10 @@ class Files_Contents extends Action
 				if ($fileUpload->type == 'RecordPDF' || $fileUpload->type == 'web_builder_pdf') {
 					header('Content-Type: application/pdf');
 					$allowChunkedTransfer = false;
-				}elseif ($fileUpload->type == 'web_builder_video'){
+				} elseif ($fileUpload->type == 'web_builder_video') {
 					header('Content-Type: video/mp4');
 					$allowChunkedTransfer = true;
-				}else{
+				} else {
 					header('Content-Type: image/png');
 					$allowChunkedTransfer = true;
 				}
@@ -49,15 +48,14 @@ class Files_Contents extends Action
 			}
 		}
 		global $interface;
-		$interface->assign('module','Error');
-		$interface->assign('action','Handle404');
+		$interface->assign('module', 'Error');
+		$interface->assign('action', 'Handle404');
 		require_once ROOT_DIR . "/services/Error/Handle404.php";
 		$actionClass = new Error_Handle404();
 		$actionClass->launch();
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

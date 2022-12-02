@@ -1,74 +1,73 @@
 <?php
 
-class MyAccount_SelectInterface extends Action{
-	function launch(){
+class MyAccount_SelectInterface extends Action {
+	function launch() {
 		global $interface;
 		global $logger;
 
-		$libraries = array();
+		$libraries = [];
 		$library = new Library();
 		$library->createSearchInterface = 1;
 		$library->showInSelectInterface = 1;
 		$library->orderBy('displayName');
 		$library->find();
-		while ($library->fetch()){
-			$libraries[$library->libraryId] = array(
+		while ($library->fetch()) {
+			$libraries[$library->libraryId] = [
 				'id' => $library->libraryId,
 				'displayName' => $library->displayName,
 				'library' => clone $library,
 				'isLibrary' => true,
-			);
+			];
 		}
 		$location = new Location();
 		$location->createSearchInterface = 1;
 		$location->showInSelectInterface = 1;
 		$location->orderBy('displayName');
 		$location->find();
-		while ($location->fetch()){
-			$libraries['location' . $location->locationId] = array(
+		while ($location->fetch()) {
+			$libraries['location' . $location->locationId] = [
 				'id' => $location->locationId,
 				'displayName' => $location->displayName,
 				'location' => clone $location,
 				'isLibrary' => false,
-			);
+			];
 		}
-		$sortLibraries = function ($library1, $library2){
+		$sortLibraries = function ($library1, $library2) {
 			return strcasecmp($library1['displayName'], $library2['displayName']);
 		};
 		usort($libraries, $sortLibraries);
 		$interface->assign('libraries', $libraries);
 
-		/** @var Location $locationSingleton*/
-		//global $locationSingleton;
+		/** @var Location $locationSingleton */ //global $locationSingleton;
 		//$physicalLocation = $locationSingleton->getIPLocation();
 
-		if (isset($_REQUEST['gotoModule'])){
+		if (isset($_REQUEST['gotoModule'])) {
 			$gotoModule = $_REQUEST['gotoModule'];
 			$interface->assign('gotoModule', $gotoModule);
 		}
-		if (isset($_REQUEST['gotoAction'])){
+		if (isset($_REQUEST['gotoAction'])) {
 			$gotoAction = $_REQUEST['gotoAction'];
 			$interface->assign('gotoAction', $gotoAction);
 		}
 
 		$redirectLibrary = null;
-		if (!array_key_exists('noRememberThis', $_REQUEST) || ($_REQUEST['noRememberThis'] === false)){
+		if (!array_key_exists('noRememberThis', $_REQUEST) || ($_REQUEST['noRememberThis'] === false)) {
 			$user = UserAccount::getLoggedInUser();
-			if (isset($_REQUEST['library'])){
+			if (isset($_REQUEST['library'])) {
 				$redirectLibrary = $_REQUEST['library'];
-			//}elseif (!is_null($physicalLocation)){
-			//	$redirectLibrary = $physicalLocation->libraryId;
-			}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
+				//}elseif (!is_null($physicalLocation)){
+				//	$redirectLibrary = $physicalLocation->libraryId;
+			} elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)) {
 				$redirectLibrary = $user->preferredLibraryInterface;
-			}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
+			} elseif (isset($_COOKIE['PreferredLibrarySystem'])) {
 				$redirectLibrary = $_COOKIE['PreferredLibrarySystem'];
 			}
 			$interface->assign('noRememberThis', false);
-		}else{
+		} else {
 			$interface->assign('noRememberThis', true);
 		}
 
-		if ($redirectLibrary != null){
+		if ($redirectLibrary != null) {
 			$logger->log("Selected library $redirectLibrary", Logger::LOG_DEBUG);
 
 			if ($libraries[$redirectLibrary]['isLibrary']) {
@@ -90,7 +89,7 @@ class MyAccount_SelectInterface extends Action{
 					$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
 				}
 				$baseUrl .= '?branch=';
-			}else{
+			} else {
 				/** @var Location $selectedLocation */
 				$selectedLocation = $libraries[$redirectLibrary]['location'];
 				global $configArray;
@@ -100,18 +99,18 @@ class MyAccount_SelectInterface extends Action{
 				//Get rid of extra portions of the url
 				$subdomain = $selectedLocation->subdomain;
 				$buildUrl = true;
-				if (empty($subdomain)){
+				if (empty($subdomain)) {
 					$library = $selectedLocation->getParentLibrary();
 					if (!empty($library->baseUrl)) {
 						$baseUrl = $library->baseUrl;
 						$branch = $selectedLocation->code;
 						$buildUrl = false;
-					}else {
+					} else {
 						$subdomain = $selectedLocation->getParentLibrary()->subdomain;
 						$branch = $selectedLocation->code;
 					}
 				}
-				if ($buildUrl){
+				if ($buildUrl) {
 					if (strpos($urlPortions[1], 'opac2') !== false) {
 						$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
 						$subdomain .= '2';
@@ -119,9 +118,9 @@ class MyAccount_SelectInterface extends Action{
 					$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
 					$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
 				}
-				if (!empty($branch)){
+				if (!empty($branch)) {
 					$baseUrl .= '?branch=' . $branch;
-				}else{
+				} else {
 					$baseUrl .= '?branch=';
 				}
 			}
@@ -150,8 +149,7 @@ class MyAccount_SelectInterface extends Action{
 		$this->display('selectInterface.tpl', 'Select Library Catalog', '');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

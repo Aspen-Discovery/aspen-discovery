@@ -8,20 +8,23 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 class Admin_CollectionSpotlights extends ObjectEditor {
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'CollectionSpotlight';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'CollectionSpotlights';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Collection Spotlights';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
-		$list = array();
+
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new CollectionSpotlight();
-		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$patronLibrary = Library::getPatronHomeLibrary();
 			$object->libraryId = $patronLibrary->libraryId;
 		}
@@ -29,33 +32,38 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array {
+	function getObjectStructure(): array {
 		return CollectionSpotlight::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function canAddNew(){
+
+	function canAddNew() {
 		//Collection spotlights should be added from search results.
 		return false;
 	}
-	function canDelete(){
+
+	function canDelete() {
 		return true;
 	}
+
 	function launch() {
 		global $interface;
 
@@ -65,71 +73,71 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
 		//Figure out what mode we are in
-		if (isset($_REQUEST['objectAction'])){
+		if (isset($_REQUEST['objectAction'])) {
 			$objectAction = $_REQUEST['objectAction'];
-		}else{
+		} else {
 			$objectAction = 'list';
 		}
 
-		if ($objectAction == 'delete' && isset($_REQUEST['id'])){
+		if ($objectAction == 'delete' && isset($_REQUEST['id'])) {
 			parent::launch();
 			exit();
 		}
 
 		//Get all available spotlights
-		$availableSpotlights = array();
+		$availableSpotlights = [];
 		$collectionSpotlight = new CollectionSpotlight();
-		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
 		}
 		$collectionSpotlight->orderBy('name ASC');
 		$collectionSpotlight->find();
-		while ($collectionSpotlight->fetch()){
+		while ($collectionSpotlight->fetch()) {
 			$availableSpotlights[$collectionSpotlight->id] = clone($collectionSpotlight);
 		}
 		$interface->assign('availableSpotlights', $availableSpotlights);
 
 		//Get the selected spotlight
-		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])){
+		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
 			$spotlight = $availableSpotlights[$_REQUEST['id']];
 			$interface->assign('object', $spotlight);
-		}else{
+		} else {
 			$spotlight = null;
 		}
 
 		//Do actions that require pre-processing
-		if ($objectAction == 'save'){
-			if (!isset($spotlight)){
+		if ($objectAction == 'save') {
+			if (!isset($spotlight)) {
 				$spotlight = new CollectionSpotlight();
 			}
 			DataObjectUtil::updateFromUI($spotlight, $collectionSpotlight->getObjectStructure());
 			$validationResults = DataObjectUtil::saveObject($collectionSpotlight->getObjectStructure(), "CollectionSpotlight");
-			if (!$validationResults['validatedOk']){
+			if (!$validationResults['validatedOk']) {
 				$interface->assign('object', $spotlight);
 				$interface->assign('errors', $validationResults['errors']);
 				$objectAction = 'edit';
-			}else{
+			} else {
 				$interface->assign('object', $validationResults['object']);
 				$objectAction = 'view';
 			}
 
 		}
 
-		if ($objectAction == 'list'){
+		if ($objectAction == 'list') {
 			$interface->setTemplate('collectionSpotlights.tpl');
-		}else{
-			if ($objectAction == 'edit' || $objectAction == 'add'){
-				if (isset($_REQUEST['id'])){
-					$interface->assign('spotlightId',$_REQUEST['id']);
-					$interface->assign('id',$_REQUEST['id']);
+		} else {
+			if ($objectAction == 'edit' || $objectAction == 'add') {
+				if (isset($_REQUEST['id'])) {
+					$interface->assign('spotlightId', $_REQUEST['id']);
+					$interface->assign('id', $_REQUEST['id']);
 				}
 				$editForm = DataObjectUtil::getEditForm($collectionSpotlight->getObjectStructure());
 				$interface->assign('editForm', $editForm);
 				$interface->setTemplate('collectionSpotlightEdit.tpl');
-			}else{
+			} else {
 				// Set some default sizes for the iframe we embed on the view page
-				switch ($spotlight->style){
+				switch ($spotlight->style) {
 					case 'horizontal':
 						$width = 650;
 						$height = ($spotlight->coverSize == 'medium') ? 325 : 275;
@@ -158,8 +166,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$this->display($interface->getTemplate(), 'Collection Spotlights');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
@@ -167,13 +174,14 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'local_enrichment';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Collection Spotlights',
+			'Administer Library Collection Spotlights',
+		]);
 	}
 }

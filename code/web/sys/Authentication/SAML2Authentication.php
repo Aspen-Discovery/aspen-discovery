@@ -4,28 +4,28 @@ require_once '/usr/share/simplesamlphp/lib/_autoload.php';
 
 class SAML2Authentication {
 
-    public $as;
+	public $as;
 	public $configProperties;
 	public $requestMap;
 	public $returnTo;
 
-    public function __construct($returnUrl = '/saml2auth.php') {
-        $this->as = new \SimpleSAML\Auth\Simple('default-sp');
+	public function __construct($returnUrl = '/saml2auth.php') {
+		$this->as = new \SimpleSAML\Auth\Simple('default-sp');
 		$this->configProperties = $this->SAMLConfigProperties();
 		$this->returnTo = $returnUrl;
-    }
+	}
 
-    public function authenticate($idp) {
+	public function authenticate($idp) {
 		if ($idp) {
-            $this->as->login(array(
-                'saml:idp' => $idp,
-                'KeepPost' => FALSE,
-                'ReturnTo' => $this->returnTo
-            ));
-        } else {
-            return false;
-        }
-    }
+			$this->as->login([
+				'saml:idp' => $idp,
+				'KeepPost' => FALSE,
+				'ReturnTo' => $this->returnTo,
+			]);
+		} else {
+			return false;
+		}
+	}
 
 	// Return an associative array of values supplied by the IdP
 	// keyed on our attribute schema
@@ -37,24 +37,20 @@ class SAML2Authentication {
 			// The attribute name in the config supplied by the admin
 			$attrName = $library->$prop;
 			// The value of this attribute from the IdP
-			$attrValArray = strlen($attrName) > 0 ?
-				$usersAttributes[$attrName] :
-				[];
+			$attrValArray = strlen($attrName) > 0 ? $usersAttributes[$attrName] : [];
 			// If we have a value for this attribute from the IdP,
 			// use it
 			if (isset($attrValArray) && count($attrValArray) == 1) {
 				if (strlen($attrValArray[0]) > 0) {
 					$out[$prop] = $attrValArray[0];
 				}
-			// If a fallback has been supplied, use that
-			} else if (array_key_exists('fallback', $content)) {
+				// If a fallback has been supplied, use that
+			} elseif (array_key_exists('fallback', $content)) {
 				$fallback = $content['fallback'];
 				$propertyName = $fallback['propertyName'];
 				// It might be an anonymous function, or a reference
 				// to a fallback value
-				$out[$propertyName] = (array_key_exists('func', $fallback)) ?
-					$fallback['func']($usersAttributes, $library) :
-					$library->$propertyName;
+				$out[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($usersAttributes, $library) : $library->$propertyName;
 			}
 		}
 		return $out;
@@ -70,50 +66,50 @@ class SAML2Authentication {
 		values. ssoPatronTypeAttr has a fallback value, that value also comes from
 		the config, but from the 'ssoPatronTypeFallback' property
 	*/
-    private function SAMLConfigProperties() {
-        $configProperties = [
+	private function SAMLConfigProperties() {
+		$configProperties = [
 			'ssoUniqueAttribute' => [],
-			'ssoIdAttr'          => [],
-			'ssoUsernameAttr'    => [
-				'aspenUser' => 'username'
+			'ssoIdAttr' => [],
+			'ssoUsernameAttr' => [
+				'aspenUser' => 'username',
 			],
-			'ssoFirstnameAttr'   => [],
-			'ssoLastnameAttr'    => [],
-			'ssoEmailAttr'       => [],
+			'ssoFirstnameAttr' => [],
+			'ssoLastnameAttr' => [],
+			'ssoEmailAttr' => [],
 			'ssoDisplayNameAttr' => [
 				'fallback' => [
 					'propertyName' => 'ssoDisplayNameFallback',
 					// Assemble a display name from first and last names
-					'func' => function($usersAttributes, $library) {
+					'func' => function ($usersAttributes, $library) {
 						$comp = [
 							$usersAttributes[$library->ssoFirstnameAttr][0],
-							$usersAttributes[$library->ssoLastnameAttr][0]
+							$usersAttributes[$library->ssoLastnameAttr][0],
 						];
 						return implode(' ', $comp);
-					}
-				]
+					},
+				],
 			],
-			'ssoPhoneAttr'       => [],
-			'ssoPatronTypeAttr'  => [
+			'ssoPhoneAttr' => [],
+			'ssoPatronTypeAttr' => [
 				'fallback' => [
-					'propertyName' => 'ssoPatronTypeFallback'
-				]
+					'propertyName' => 'ssoPatronTypeFallback',
+				],
 			],
-			'ssoAddressAttr'     => [],
-			'ssoCityAttr'        => [],
-			'ssoLibraryIdAttr'   => [
+			'ssoAddressAttr' => [],
+			'ssoCityAttr' => [],
+			'ssoLibraryIdAttr' => [
 				'fallback' => [
-					'propertyName' => 'ssoLibraryIdFallback'
-				]
+					'propertyName' => 'ssoLibraryIdFallback',
+				],
 			],
-			'ssoCategoryIdAttr'  => [
+			'ssoCategoryIdAttr' => [
 				'fallback' => [
-					'propertyName' => 'ssoCategoryIdFallback'
-				]
-			]
+					'propertyName' => 'ssoCategoryIdFallback',
+				],
+			],
 		];
 		return $configProperties;
-    }
+	}
 
 }
 

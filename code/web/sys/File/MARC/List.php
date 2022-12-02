@@ -26,10 +26,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * @category  File_Formats
- * @package   File_MARC
  * @author    Christoffer Landtman <landtman@realnode.com>
  * @author    Dan Scott <dscott@laurentian.ca>
+ * @category  File_Formats
+ * @package   File_MARC
  * @copyright 2003-2008 Oy Realnode Ab, Dan Scott
  * @license   http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  * @version   CVS: $Id$
@@ -37,6 +37,7 @@
  */
 
 // {{{ class File_MARC_List extends SplDoublyLinkedList
+
 /**
  * The File_MARC_List class extends the SplDoublyLinkedList class
  * to override the key() method in a meaningful way for foreach() iterators.
@@ -65,186 +66,177 @@
  * }
  * </code>
  *
- * @category File_Formats
- * @package  File_MARC
  * @author   Dan Scott <dscott@laurentian.ca>
+ * @package  File_MARC
+ * @category File_Formats
  * @license  http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  * @link     http://pear.php.net/package/File_MARC
  */
-class File_MARC_List extends SplDoublyLinkedList
-{
+class File_MARC_List extends SplDoublyLinkedList {
 
-    // {{{ properties
-    /**
-     * Position of the subfield
-     * @var int
-     */
-    protected $position;
+	// {{{ properties
+	/**
+	 * Position of the subfield
+	 * @var int
+	 */
+	protected $position;
 
-    // }}}
+	// }}}
 
-    // {{{ key()
-    /**
-     * Returns the tag for a {@link File_MARC_Field} object, or the code
-     * for a {@link File_MARC_Subfield} object.
-     *
-     * This method enables you to use a foreach iterator to retrieve
-     * the tag or code as the key for the iterator.
-     *
-     * @return string returns the tag or code
-     */
-    function key()
-    {
-        if ($this->current() instanceof File_MARC_Field) {
-            return $this->current()->getTag();
-        } elseif ($this->current() instanceof File_MARC_Subfield) {
-            return $this->current()->getCode();
-        }
-        return false;
-    }
-    // }}}
+	// {{{ key()
+	/**
+	 * Returns the tag for a {@link File_MARC_Field} object, or the code
+	 * for a {@link File_MARC_Subfield} object.
+	 *
+	 * This method enables you to use a foreach iterator to retrieve
+	 * the tag or code as the key for the iterator.
+	 *
+	 * @return string returns the tag or code
+	 */
+	function key() {
+		if ($this->current() instanceof File_MARC_Field) {
+			return $this->current()->getTag();
+		} elseif ($this->current() instanceof File_MARC_Subfield) {
+			return $this->current()->getCode();
+		}
+		return false;
+	}
+	// }}}
 
-    // {{{ function insertNode()
-    /**
-     * Inserts a node into the linked list, based on a reference node that
-     * already exists in the list.
-     *
-     * @param mixed $new_node      New node to add to the list
-     * @param mixed $existing_node Reference position node
-     * @param bool  $before        Insert new node before or after the existing node
-     *
-     * @return bool Success or failure
-     **/
-    public function insertNode($new_node, $existing_node, $before = false)
-    {
-        $pos = 0;
-        $exist_pos = $existing_node->getPosition();
-        $this->rewind();
+	// {{{ function insertNode()
+	/**
+	 * Inserts a node into the linked list, based on a reference node that
+	 * already exists in the list.
+	 *
+	 * @param mixed $new_node New node to add to the list
+	 * @param mixed $existing_node Reference position node
+	 * @param bool $before Insert new node before or after the existing node
+	 *
+	 * @return bool Success or failure
+	 **/
+	public function insertNode($new_node, $existing_node, $before = false) {
+		$pos = 0;
+		$exist_pos = $existing_node->getPosition();
+		$this->rewind();
 
-        // Now add the node according to the requested mode
-        switch ($before) {
+		// Now add the node according to the requested mode
+		switch ($before) {
 
-        case true:
-            $this->add($exist_pos, $new_node);
-            break;
+			case true:
+				$this->add($exist_pos, $new_node);
+				break;
 
-        // after
-        case false:
-            if ($this->offsetExists($exist_pos + 1)) {
-                $this->add($exist_pos + 1, $new_node);
-            } else {
-                $this->appendNode($new_node);
-                return true;
-            }
-            break;
-        }
+			// after
+			case false:
+				if ($this->offsetExists($exist_pos + 1)) {
+					$this->add($exist_pos + 1, $new_node);
+				} else {
+					$this->appendNode($new_node);
+					return true;
+				}
+				break;
+		}
 
-        // Fix positions
-        $this->rewind();
-        while ($n = $this->current()) {
-            $n->setPosition($pos);
-            $this->next();
-            $pos++;
-        }
+		// Fix positions
+		$this->rewind();
+		while ($n = $this->current()) {
+			$n->setPosition($pos);
+			$this->next();
+			$pos++;
+		}
 
-        return true;
-    }
-    // }}}
+		return true;
+	}
+	// }}}
 
-    // {{{ function appendNode()
-    /**
-     * Adds a node onto the linked list.
-     *
-     * @param mixed $new_node New node to add to the list
-     *
-     * @return void
-     **/
-    public function appendNode($new_node)
-    {
-        $pos = $this->count();
-        $new_node->setPosition($pos);
-        $this->push($new_node);
-    }
-    // }}}
+	// {{{ function appendNode()
+	/**
+	 * Adds a node onto the linked list.
+	 *
+	 * @param mixed $new_node New node to add to the list
+	 *
+	 * @return void
+	 **/
+	public function appendNode($new_node) {
+		$pos = $this->count();
+		$new_node->setPosition($pos);
+		$this->push($new_node);
+	}
+	// }}}
 
-    // {{{ function prependNode()
-    /**
-     * Adds a node to the start of the linked list.
-     *
-     * @param mixed $new_node New node to add to the list
-     *
-     * @return void
-     **/
-    public function prependNode($new_node)
-    {
-        $this->insertNode($new_node, $this->bottom(), true);
-    }
-    // }}}
+	// {{{ function prependNode()
+	/**
+	 * Adds a node to the start of the linked list.
+	 *
+	 * @param mixed $new_node New node to add to the list
+	 *
+	 * @return void
+	 **/
+	public function prependNode($new_node) {
+		$this->insertNode($new_node, $this->bottom(), true);
+	}
+	// }}}
 
-    // {{{ function deleteNode()
-    /**
-     * Deletes a node from the linked list.
-     *
-     * @param mixed $node Node to delete from the list
-     *
-     * @return void
-     **/
-    public function deleteNode($node)
-    {
-        $target_pos = $node->getPosition();
-        $this->rewind();
-        $pos = 0;
+	// {{{ function deleteNode()
+	/**
+	 * Deletes a node from the linked list.
+	 *
+	 * @param mixed $node Node to delete from the list
+	 *
+	 * @return void
+	 **/
+	public function deleteNode($node) {
+		$target_pos = $node->getPosition();
+		$this->rewind();
+		$pos = 0;
 
-        // Omit target node and adjust pos of remainder
-        $done = false;
-        try {
-            while ($n = $this->current()) {
-                if ($pos == $target_pos && !$done) {
-                    $done = true;
-                    $this->next();
-                    $this->offsetUnset($pos);
-                } elseif ($pos >= $target_pos) {
-                    $n->setPosition($pos);
-                    $pos++;
-                    $this->next();
-                } else {
-                    $pos++;
-                    $this->next();
-                }
-            }
-        }
-        catch (Exception $e) {
-            // no-op - shift() throws an exception, sigh
-        }
+		// Omit target node and adjust pos of remainder
+		$done = false;
+		try {
+			while ($n = $this->current()) {
+				if ($pos == $target_pos && !$done) {
+					$done = true;
+					$this->next();
+					$this->offsetUnset($pos);
+				} elseif ($pos >= $target_pos) {
+					$n->setPosition($pos);
+					$pos++;
+					$this->next();
+				} else {
+					$pos++;
+					$this->next();
+				}
+			}
+		} catch (Exception $e) {
+			// no-op - shift() throws an exception, sigh
+		}
 
-    }
-    // }}}
+	}
+	// }}}
 
-    // {{{ setPosition()
-    /**
-     * Sets position of the subfield
-     *
-     * @param string $pos new position of the subfield
-     *
-     * @return void
-     */
-    function setPosition($pos)
-    {
-        $this->position = $pos;
-    }
-    // }}}
+	// {{{ setPosition()
+	/**
+	 * Sets position of the subfield
+	 *
+	 * @param string $pos new position of the subfield
+	 *
+	 * @return void
+	 */
+	function setPosition($pos) {
+		$this->position = $pos;
+	}
+	// }}}
 
-    // {{{ getPosition()
-    /**
-     * Return position of the subfield
-     *
-     * @return int data
-     */
-    function getPosition()
-    {
-        return $this->position;
-    }
-    // }}}
+	// {{{ getPosition()
+	/**
+	 * Return position of the subfield
+	 *
+	 * @return int data
+	 */
+	function getPosition() {
+		return $this->position;
+	}
+	// }}}
 
 }
 // }}}

@@ -1,16 +1,16 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-class MyAccount_Holds extends MyAccount{
-	function launch()
-	{
+
+class MyAccount_Holds extends MyAccount {
+	function launch() {
 		global $interface;
 		global $library;
 		$user = UserAccount::getLoggedInUser();
 
-		if (isset($_REQUEST['tab'])){
+		if (isset($_REQUEST['tab'])) {
 			$tab = $_REQUEST['tab'];
-		}else{
+		} else {
 			$tab = 'all';
 		}
 		$interface->assign('tab', $tab);
@@ -24,8 +24,7 @@ class MyAccount_Holds extends MyAccount{
 		$this->display('holds.tpl', 'Titles On Hold');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Titles On Hold');

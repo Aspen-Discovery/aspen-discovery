@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
 
-abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
-{
+abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 	protected $index = null;
 	// Field List
 	protected $fields = '*,score';
@@ -22,7 +21,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	protected $spellcheckEnabled = true;
 	//protected $spellingWordSuggestions   = array();
 	protected $spellingLimit = 5;
-	protected $spellQuery = array();
+	protected $spellQuery = [];
 	protected $dictionary = 'default';
 
 	// Debugging flags
@@ -33,8 +32,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	protected $publicQuery = null;
 	protected $idFieldName = 'id';
 
-	public function __construct()
-	{
+	public function __construct() {
 		parent::__construct();
 		// Set appropriate debug mode:
 		// Debugging
@@ -45,12 +43,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		$this->spellcheckEnabled = true;
 	}
 
-	function ping()
-	{
+	function ping() {
 		return $this->indexEngine->pingServer(false);
 	}
 
-	function setTimeout($timeout){
+	function setTimeout($timeout) {
 		$this->indexEngine->setTimeout($timeout);
 	}
 
@@ -66,8 +63,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false)
-	{
+	public function activateAllFacets($preferredSection = false) {
 		foreach ($this->allFacetSettings as $section => $values) {
 			foreach ($values as $key => $value) {
 				$this->addFacet($key, $value);
@@ -88,11 +84,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML() {
 		global $interface;
 
-		$html = array();
+		$html = [];
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
 
@@ -122,10 +117,9 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param array $IDList optional list of IDs to re-order the records by (ie User List sorts)
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null)
-	{
+	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null) {
 		global $interface;
-		$html = array();
+		$html = [];
 		if ($IDList) {
 			//Reorder the documents based on the list of id's
 			foreach ($IDList as $listPosition => $currentId) {
@@ -177,10 +171,9 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getBrowseRecordHTML()
-	{
+	public function getBrowseRecordHTML() {
 		global $interface;
-		$html = array();
+		$html = [];
 		global $solrScope;
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
@@ -217,11 +210,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getCombinedResultsHTML()
-	{
+	public function getCombinedResultsHTML() {
 		global $interface;
 		global $memoryWatcher;
-		$html = array();
+		$html = [];
 		if (isset($this->indexResult['response'])) {
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$memoryWatcher->logMemory("Started loading record information for index $x");
@@ -263,8 +255,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 *                                             a well formatted query
 	 * @return  array solr result structure (for now)
 	 */
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
-	{
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		// Our search has already been processed in init()
 		$search = $this->searchTerms;
 
@@ -343,7 +334,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		}
 
 		// Build a list of facets we want from the index
-		$facetSet = array();
+		$facetSet = [];
 		$facetConfig = $this->getFacetConfig();
 		if (!empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
@@ -388,8 +379,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		// The first record to retrieve:
 		//  (page - 1) * limit = start
 		$recordStart = ($this->page - 1) * $this->limit;
-		$this->indexResult = $this->indexEngine->search(
-			$this->query,      // Query string
+		$this->indexResult = $this->indexEngine->search($this->query,      // Query string
 			$this->index,      // DisMax Handler
 			$filterQuery,      // Filter query
 			$recordStart,      // Starting record
@@ -445,10 +435,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  mixed       false if no error, error string otherwise.
 	 */
-	public function getIndexError()
-	{
-		return isset($this->indexResult['error']) ?
-			$this->indexResult['error'] : false;
+	public function getIndexError() {
+		return isset($this->indexResult['error']) ? $this->indexResult['error'] : false;
 	}
 
 	/**
@@ -458,12 +446,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  array     Spelling suggestion data arrays
 	 */
-	public function getSpellingSuggestions()
-	{
-		$returnArray = array();
+	public function getSpellingSuggestions() {
+		$returnArray = [];
 
 		$correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
-		$spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : array();
+		$spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : [];
 		if (count($spellingCollations) > 0) {
 			foreach ($spellingCollations as $collation) {
 				if ($collation[0] == 'collation') {
@@ -486,11 +473,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 						}
 					}
 					if ($okToUseSuggestion) {
-						$returnArray[sprintf('%08d', $freq) . $label] = array(
+						$returnArray[sprintf('%08d', $freq) . $label] = [
 							'freq' => $freq,
 							'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
-							'phrase' => $label
-						);
+							'phrase' => $label,
+						];
 					}
 				}
 			}
@@ -501,7 +488,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
 		return [
 			'correctlySpelled' => $correctlySpelled,
-			'suggestions' => $returnArray
+			'suggestions' => $returnArray,
 		];
 	}
 
@@ -511,9 +498,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  protected
 	 * @return  string    Spelling query
 	 */
-	protected function buildSpellingQuery()
-	{
-		$this->spellQuery = array();
+	protected function buildSpellingQuery() {
+		$this->spellQuery = [];
 		// Basic search
 		if ($this->searchType == $this->basicSearchType) {
 			// Just the search query is fine
@@ -532,8 +518,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		}
 	}
 
-	public function getUniqueField()
-	{
+	public function getUniqueField() {
 		return 'id';
 	}
 
@@ -548,15 +533,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null)
-	{
+	public function getFacetList($filter = null) {
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
 			$filter = $this->getFacetConfig();
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])) {
@@ -582,14 +566,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			}
 
 			// Initialize the settings for the current field
-			$list[$field] = array();
+			$list[$field] = [];
 			$list[$field]['field_name'] = $field;
 			$list[$field]['canLock'] = $facetConfig[$field]->canLock;
 			$list[$field]['locked'] = false;
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list'] = array();
+			$list[$field]['list'] = [];
 
 			// Should we translate values for the current facet?
 			$translate = $facetConfig[$field]->translate;
@@ -598,13 +582,17 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			// Loop through values:
 			foreach ($data as $facet) {
 				//Don't include empty settings since they don't work properly with Solr
-				if (strlen(trim($facet[0])) == 0){
+				if (strlen(trim($facet[0])) == 0) {
 					continue;
 				}
 				// Initialize the array of data about the current facet:
-				$currentSettings = array();
+				$currentSettings = [];
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true, 'isMetadata'=>true]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate([
+					'text' => $facet[0],
+					'isPublicFacing' => true,
+					'isMetadata' => true,
+				]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -640,13 +628,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		return $list;
 	}
 
-	public function disableSpelling()
-	{
+	public function disableSpelling() {
 		$this->spellcheckEnabled = false;
 	}
 
-	public function enableSpelling()
-	{
+	public function enableSpelling() {
 		$this->spellcheckEnabled = true;
 	}
 
@@ -656,8 +642,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  array   recordSet
 	 */
-	public function getResultRecordSet()
-	{
+	public function getResultRecordSet() {
 		//Marmot add shortIds without dot for use in display.
 		if (isset($this->indexResult['response'])) {
 			$recordSet = $this->indexResult['response']['docs'];
@@ -673,7 +658,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 				}
 			}
 		} else {
-			return array();
+			return [];
 		}
 
 		return $recordSet;
@@ -686,8 +671,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param array|null $result Existing result set (null to do new search)
 	 * @return  string                  XML document
 	 */
-	public function buildRSS($result = null)
-	{
+	public function buildRSS($result = null) {
 		global $configArray;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
@@ -722,7 +706,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate([
+					'text' => 'with filters',
+					'isPublicFacing' => true,
+				]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}
@@ -743,8 +730,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param bool $forceRebuild
 	 * @return  string   user friendly version of 'query'
 	 */
-	public function displayQuery($forceRebuild = false)
-	{
+	public function displayQuery($forceRebuild = false) {
 		// Maybe this is a restored object...
 		if ($this->query == null || $forceRebuild) {
 			$fullQuery = $this->indexEngine->buildQuery($this->searchTerms, false);
@@ -759,13 +745,13 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		if ($this->searchType == $this->advancedSearchType) {
 			$output = $this->buildAdvancedDisplayQuery();
 			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
+		} elseif ($this->publicQuery != null) {
 			$output = $this->publicQuery;
 			// If we don't already have a public query, and this is a basic search
 			// with case-insensitive booleans, we need to do some extra work to ensure
 			// that we display the user's query back to them unmodified (i.e. without
 			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
+		} elseif (!$this->indexEngine->hasCaseSensitiveBooleans()) {
 			$output = $this->publicQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
 			// Simple answer
 		} else {
@@ -786,8 +772,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 *
 	 * @access  private
 	 */
-	protected function purge()
-	{
+	protected function purge() {
 		// Call standard purge:
 		parent::purge();
 
@@ -796,13 +781,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		$this->publicQuery = null;
 	}
 
-	public function getIndexEngine()
-	{
+	public function getIndexEngine() {
 		return $this->indexEngine;
 	}
 
-	protected function processSearchSuggestions(string $searchTerm, string $suggestionHandler)
-	{
+	protected function processSearchSuggestions(string $searchTerm, string $suggestionHandler) {
 		$suggestions = $this->indexEngine->getSearchSuggestions($searchTerm, $suggestionHandler);
 		$allSuggestions = [];
 		if (isset($suggestions['suggest'])) {
@@ -821,7 +804,12 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 								break;
 							}
 						}
-						$allSuggestions[str_pad(($suggestion['weight'] + count($suggestionsForTerm['suggestions']) - $index), 10, '0', STR_PAD_LEFT) . $nonHighlightedTerm] = array('phrase' => $suggestion['term'], 'numSearches' => $suggestion['weight'], 'numResults' => $suggestion['weight'], 'nonHighlightedTerm' => $nonHighlightedTerm);
+						$allSuggestions[str_pad(($suggestion['weight'] + count($suggestionsForTerm['suggestions']) - $index), 10, '0', STR_PAD_LEFT) . $nonHighlightedTerm] = [
+							'phrase' => $suggestion['term'],
+							'numSearches' => $suggestion['weight'],
+							'numResults' => $suggestion['weight'],
+							'nonHighlightedTerm' => $nonHighlightedTerm,
+						];
 					}
 				}
 			}
@@ -834,15 +822,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		return $allSuggestions;
 	}
 
-	protected function getFieldsToReturn()
-	{
+	protected function getFieldsToReturn() {
 		return '*,score';
 	}
 
 	/**
 	 * @param String $fields - a list of comma separated fields to return
 	 */
-	function setFieldsToReturn($fields){
+	function setFieldsToReturn($fields) {
 		//Do nothing, the fields are not customizable at this level
 	}
 
@@ -854,8 +841,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @return  array              The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecord($id)
-	{
+	function getRecord($id) {
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 	}
 
@@ -867,8 +853,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @return  array              The requested resources
 	 * @throws  AspenError
 	 */
-	function getRecords($ids)
-	{
+	function getRecords($ids) {
 		$recordsRaw = $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
 		foreach ($recordsRaw as $index => $recordRaw) {
 			$recordsRaw[$index] = $this->getRecordDriverForResult($recordRaw);
@@ -876,8 +861,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		return $recordsRaw;
 	}
 
-	function getSearchName()
-	{
+	function getSearchName() {
 		return $this->indexEngine->getIndex() . '_' . $this->searchSource;
 	}
 
@@ -885,33 +869,28 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * Set whether or not this is a primary search.  If it is, we will show links to it in search result debugging
 	 * @param boolean $flag
 	 */
-	public function setPrimarySearch($flag)
-	{
+	public function setPrimarySearch($flag) {
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
-	public function loadValidFields()
-	{
+	public function loadValidFields() {
 		return $this->indexEngine->loadValidFields();
 	}
 
-	public function loadDynamicFields()
-	{
+	public function loadDynamicFields() {
 		return $this->indexEngine->loadDynamicFields();
 	}
 
-	public function setSearchTerm($searchTerm)
-	{
+	public function setSearchTerm($searchTerm) {
 		$this->initBasicSearch($searchTerm);
 	}
 
-	public function setSearchTermWithIndex($searchIndex, $searchTerm)
-	{
+	public function setSearchTermWithIndex($searchIndex, $searchTerm) {
 		$this->initBasicSearchWithIndex($searchIndex, $searchTerm);
 	}
 
-	public function getSpotlightResults(CollectionSpotlight $spotlight){
+	public function getSpotlightResults(CollectionSpotlight $spotlight) {
 		$spotlightResults = [];
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];

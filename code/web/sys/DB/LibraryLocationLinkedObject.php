@@ -1,14 +1,14 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
-abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
-{
+
+abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject {
 	/**
 	 * @return int[]
 	 */
-	public abstract function getLocations() : ?array;
+	public abstract function getLocations(): ?array;
 
-	public function okToExport(array $selectedFilters) : bool{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
 		$selectedLibraries = $selectedFilters['locations'];
 		foreach ($selectedLibraries as $locationId) {
@@ -20,14 +20,14 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 		return $okToExport;
 	}
 
-	public function getLinksForJSON() : array{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		$allLocations = Location::getLocationListAsObjects(false);
 
 		$locations = $this->getLocations();
 
 		$links['locations'] = [];
-		foreach ($locations as $locationId){
+		foreach ($locations as $locationId) {
 			if (array_key_exists($locationId, $allLocations)) {
 				$location = $allLocations[$locationId];
 				$links['locations'][$locationId] = $location->code;
@@ -36,13 +36,13 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 		return $links;
 	}
 
-	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool{
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings);
-		if (array_key_exists('locations', $jsonLinks)){
+		if (array_key_exists('locations', $jsonLinks)) {
 			$allLocations = Location::getLocationListAsObjects(false);
 			$locations = [];
-			foreach ($jsonLinks['locations'] as $ilsCode){
-				if (array_key_exists($ilsCode, $mappings['locations'])){
+			foreach ($jsonLinks['locations'] as $ilsCode) {
+				if (array_key_exists($ilsCode, $mappings['locations'])) {
 					$ilsCode = $mappings['locations'][$ilsCode];
 				}
 				foreach ($allLocations as $tmpLocation) {
@@ -58,8 +58,7 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 		return $result;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
-	{
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		//Unset locations since they will be added as links
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['locations']);

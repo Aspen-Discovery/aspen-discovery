@@ -2,13 +2,11 @@
 
 require_once ROOT_DIR . '/sys/MemoryCache/CachedValue.php';
 
-class Memcache
-{
+class Memcache {
 	private $enableDbCache = true;
-	private $vars = array();
+	private $vars = [];
 
-	public function __destruct()
-	{
+	public function __destruct() {
 		//Clear old expired memory cache entries.  This can be done VERY sporadically.
 		$random = rand(0, 1000);
 		if ($random == 1) {
@@ -24,8 +22,7 @@ class Memcache
 		}
 	}
 
-	public function get($name)
-	{
+	public function get($name) {
 		if (!array_key_exists($name, $this->vars)) {
 			if ($this->enableDbCache && !isset($_REQUEST['reload'])) {
 				try {
@@ -38,22 +35,21 @@ class Memcache
 							$unSerializedValue = unserialize($cachedValue->value);
 							$this->vars[$name] = $unSerializedValue;
 						}
-					}else{
+					} else {
 						$this->vars[$name] = false;
 					}
 				} catch (Exception $e) {
 					//Table has not been created ignore
 					$this->vars[$name] = false;
 				}
-			}else{
+			} else {
 				$this->vars[$name] = false;
 			}
 		}
 		return $this->vars[$name];
 	}
 
-	public function set($name, $value, $timeout)
-	{
+	public function set($name, $value, $timeout) {
 		$this->vars[$name] = $value;
 		if ($this->enableDbCache) {
 			$valueToCache = serialize($value);
@@ -95,11 +91,10 @@ class Memcache
 		return true;
 	}
 
-	/** @var CachedValue  */
+	/** @var CachedValue */
 	static $cachedValueCleaner = null;
 
-	public function delete($name)
-	{
+	public function delete($name) {
 		unset($this->vars[$name]);
 		if ($this->enableDbCache) {
 			try {
@@ -116,10 +111,9 @@ class Memcache
 		}
 	}
 
-	public function deleteStartingWith($name)
-	{
-		foreach ($this->vars as $key => $value){
-			if (strpos($key, $name) === 0){
+	public function deleteStartingWith($name) {
+		foreach ($this->vars as $key => $value) {
+			if (strpos($key, $name) === 0) {
 				unset($this->vars[$key]);
 			}
 		}

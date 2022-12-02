@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/sys/Browse/BaseBrowsable.php';
 require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 
-class BrowseCategory extends BaseBrowsable
-{
+class BrowseCategory extends BaseBrowsable {
 	public $__table = 'browse_category';
 	public $id;
 	public $textId;  //A textual id to make it easier to transfer browse categories between systems
@@ -25,13 +24,16 @@ class BrowseCategory extends BaseBrowsable
 
 	protected $_subBrowseCategories;
 
-	function getNumericColumnNames() : array
-	{
-		return ['id', 'sourceListId', 'sourceCourseReserveId', 'userId'];
+	function getNumericColumnNames(): array {
+		return [
+			'id',
+			'sourceListId',
+			'sourceCourseReserveId',
+			'userId',
+		];
 	}
 
-	function getUniquenessFields(): array
-	{
+	function getUniquenessFields(): array {
 		return ['textId'];
 	}
 
@@ -40,11 +42,10 @@ class BrowseCategory extends BaseBrowsable
 	 *
 	 * @return SubBrowseCategories[]
 	 */
-	public function getSubCategories()
-	{
+	public function getSubCategories() {
 		global $module;
 		if (!isset($this->_subBrowseCategories) && $this->id) {
-			$this->_subBrowseCategories = array();
+			$this->_subBrowseCategories = [];
 			if ($module != "Admin") {
 				if ($this->textId == "system_saved_searches") {
 					// fetch users saved searches
@@ -55,7 +56,7 @@ class BrowseCategory extends BaseBrowsable
 					$SearchEntry->find();
 					$count = 0;
 					do {
-						if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
+						if ($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 							$count++;
 							$searchId = $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
@@ -64,7 +65,7 @@ class BrowseCategory extends BaseBrowsable
 							$this->_subBrowseCategories[$searchId]->_source = "savedSearch";
 						}
 
-					} while($SearchEntry->fetch() && $count < 5);
+					} while ($SearchEntry->fetch() && $count < 5);
 				} elseif ($this->textId == "system_user_lists") {
 					// fetch users list
 					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -75,7 +76,7 @@ class BrowseCategory extends BaseBrowsable
 					$lists->find();
 					$count = 0;
 					do {
-						if($lists->isValidForDisplay()) {
+						if ($lists->isValidForDisplay()) {
 							$count++;
 							$id = $lists->id;
 							$this->_subBrowseCategories[$id] = clone($lists);
@@ -108,8 +109,7 @@ class BrowseCategory extends BaseBrowsable
 		return $this->_subBrowseCategories;
 	}
 
-	public function __get($name)
-	{
+	public function __get($name) {
 		if ($name == 'subBrowseCategories') {
 			$this->getSubCategories();
 			return $this->_subBrowseCategories;
@@ -118,8 +118,7 @@ class BrowseCategory extends BaseBrowsable
 		}
 	}
 
-	public function __set($name, $value)
-	{
+	public function __set($name, $value) {
 		if ($name == 'subBrowseCategories') {
 			$this->_subBrowseCategories = $value;
 		} else {
@@ -132,8 +131,7 @@ class BrowseCategory extends BaseBrowsable
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
@@ -147,8 +145,7 @@ class BrowseCategory extends BaseBrowsable
 	 *
 	 * @return int
 	 */
-	public function update_stats_only()
-	{
+	public function update_stats_only() {
 		return parent::update();
 	}
 
@@ -157,8 +154,7 @@ class BrowseCategory extends BaseBrowsable
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
@@ -166,8 +162,7 @@ class BrowseCategory extends BaseBrowsable
 		return $ret;
 	}
 
-	public function delete($useWhere = false)
-	{
+	public function delete($useWhere = false) {
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->textId)) {
 			//Remove from any libraries that use it.
@@ -192,8 +187,7 @@ class BrowseCategory extends BaseBrowsable
 	}
 
 
-	public function saveSubBrowseCategories()
-	{
+	public function saveSubBrowseCategories() {
 		if (isset ($this->_subBrowseCategories) && is_array($this->_subBrowseCategories)) {
 			/** @var SubBrowseCategories[] $subBrowseCategories */
 			/** @var SubBrowseCategories $subCategory */
@@ -213,8 +207,7 @@ class BrowseCategory extends BaseBrowsable
 		}
 	}
 
-	static function getObjectStructure() : array
-	{
+	static function getObjectStructure(): array {
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
@@ -231,19 +224,79 @@ class BrowseCategory extends BaseBrowsable
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$libraryList[-1] = 'No Library Selected';
 
-		return array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'label' => array('property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true),
-			'textId' => array('property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category', 'serverValidation' => 'validateTextId', 'maxLength' => 50),
-			'userId' => array('property' => 'userId', 'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()),
-			'sharing' => array('property'=>'sharing', 'type'=>'enum', 'values' => array('library' => 'Selected Library', 'everyone' => 'Everyone'), 'label'=>'Share With', 'description'=>'Who the category should be shared with', 'default' =>'library', 'onchange'=>'return AspenDiscovery.Admin.updateBrowseCategoryFields();'),
-			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'description' => array('property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true),
-			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the category should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
-			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the category should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'label' => [
+				'property' => 'label',
+				'type' => 'text',
+				'label' => 'Label',
+				'description' => 'The label to show to the user',
+				'maxLength' => 50,
+				'required' => true,
+			],
+			'textId' => [
+				'property' => 'textId',
+				'type' => 'text',
+				'label' => 'textId',
+				'description' => 'A textual id to identify the category',
+				'serverValidation' => 'validateTextId',
+				'maxLength' => 50,
+			],
+			'userId' => [
+				'property' => 'userId',
+				'type' => 'label',
+				'label' => 'userId',
+				'description' => 'The User Id who created this category',
+				'default' => UserAccount::getActiveUserId(),
+			],
+			'sharing' => [
+				'property' => 'sharing',
+				'type' => 'enum',
+				'values' => [
+					'library' => 'Selected Library',
+					'everyone' => 'Everyone',
+				],
+				'label' => 'Share With',
+				'description' => 'Who the category should be shared with',
+				'default' => 'library',
+				'onchange' => 'return AspenDiscovery.Admin.updateBrowseCategoryFields();',
+			],
+			'libraryId' => [
+				'property' => 'libraryId',
+				'type' => 'enum',
+				'values' => $libraryList,
+				'label' => 'Library',
+				'description' => 'A link to the library which the location belongs to',
+			],
+			'description' => [
+				'property' => 'description',
+				'type' => 'html',
+				'label' => 'Description',
+				'description' => 'A description of the category.',
+				'hideInLists' => true,
+			],
+			'startDate' => [
+				'property' => 'startDate',
+				'type' => 'timestamp',
+				'label' => 'Start Date to Show',
+				'description' => 'The first date the category should be shown, leave blank to always show',
+				'unsetLabel' => 'No start date',
+			],
+			'endDate' => [
+				'property' => 'endDate',
+				'type' => 'timestamp',
+				'label' => 'End Date to Show',
+				'description' => 'The end date the category should be shown, leave blank to always show',
+				'unsetLabel' => 'No end date',
+			],
 
 			// Define oneToMany interface for choosing and arranging sub-categories
-			'subBrowseCategories' => array(
+			'subBrowseCategories' => [
 				'property' => 'subBrowseCategories',
 				'type' => 'oneToMany',
 				'label' => 'Browse Sub-Categories',
@@ -256,39 +309,99 @@ class BrowseCategory extends BaseBrowsable
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
-			),
-			'source' => array(
+			],
+			'source' => [
 				'property' => 'source',
 				'type' => 'enum',
 				'values' => $browseCategorySources,
 				'label' => 'Source',
 				'description' => 'The source of the browse category.',
 				'required' => true,
-				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();"
-			),
-			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
-			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
-			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
-			'sourceCourseReserveId' => array('property' => 'sourceCourseReserveId', 'type' => 'enum', 'values' => $sourceCourseReserves, 'label' => 'Source Course Reserve', 'description' => 'A course to display titles from'),
-			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating', 'publication_year_desc' => 'Publication Year Desc', 'publication_year_asc' => 'Publication Year Asc', 'holds' => 'Number of Holds'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
-			'numTimesShown' => array('property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'),
-			'numTitlesClickedOn' => array('property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'),
-			'numTimesDismissed' => array('property' => 'numTimesDismissed', 'type' => 'label', 'label' => 'Dismissed', 'description' => 'The number of times users have dismissed this category'),
-		);
+				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();",
+			],
+			'searchTerm' => [
+				'property' => 'searchTerm',
+				'type' => 'text',
+				'label' => 'Search Term',
+				'description' => 'A default search term to apply to the category',
+				'default' => '',
+				'hideInLists' => true,
+				'maxLength' => 500,
+			],
+			'defaultFilter' => [
+				'property' => 'defaultFilter',
+				'type' => 'textarea',
+				'label' => 'Default Filter(s)',
+				'description' => 'Filters to apply to the search by default.',
+				'hideInLists' => true,
+				'rows' => 3,
+				'cols' => 80,
+			],
+			'sourceListId' => [
+				'property' => 'sourceListId',
+				'type' => 'enum',
+				'values' => $sourceLists,
+				'label' => 'Source List',
+				'description' => 'A public list to display titles from',
+			],
+			'sourceCourseReserveId' => [
+				'property' => 'sourceCourseReserveId',
+				'type' => 'enum',
+				'values' => $sourceCourseReserves,
+				'label' => 'Source Course Reserve',
+				'description' => 'A course to display titles from',
+			],
+			'defaultSort' => [
+				'property' => 'defaultSort',
+				'type' => 'enum',
+				'label' => 'Default Sort',
+				'values' => [
+					'relevance' => 'Best Match',
+					'popularity' => 'Popularity',
+					'newest_to_oldest' => 'Date Added',
+					'author' => 'Author',
+					'title' => 'Title',
+					'user_rating' => 'Rating',
+					'publication_year_desc' => 'Publication Year Desc',
+					'publication_year_asc' => 'Publication Year Asc',
+					'holds' => 'Number of Holds',
+				],
+				'description' => 'The default sort for the search if none is specified',
+				'default' => 'relevance',
+				'hideInLists' => true,
+			],
+			'numTimesShown' => [
+				'property' => 'numTimesShown',
+				'type' => 'label',
+				'label' => 'Times Shown',
+				'description' => 'The number of times this category has been shown to users',
+			],
+			'numTitlesClickedOn' => [
+				'property' => 'numTitlesClickedOn',
+				'type' => 'label',
+				'label' => 'Titles Clicked',
+				'description' => 'The number of times users have clicked on titles within this category',
+			],
+			'numTimesDismissed' => [
+				'property' => 'numTimesDismissed',
+				'type' => 'label',
+				'label' => 'Dismissed',
+				'description' => 'The number of times users have dismissed this category',
+			],
+		];
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->id;
 	}
 
 	/** @noinspection PhpUnused */
-	function validateTextId()
-	{
+	function validateTextId() {
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors' => array(),
-		);
+			'errors' => [],
+		];
 
 		if (!$this->textId || strlen($this->textId) == 0) {
 			$this->textId = $this->label . ' ' . $this->sharing;
@@ -316,43 +429,43 @@ class BrowseCategory extends BaseBrowsable
 		return $validationResults;
 	}
 
-	public function isValidForDisplay($appUser = null, $checkDismiss = true){
+	public function isValidForDisplay($appUser = null, $checkDismiss = true) {
 		$curTime = time();
-		if ($this->startDate != 0 && $this->startDate > $curTime){
+		if ($this->startDate != 0 && $this->startDate > $curTime) {
 			return false;
 		}
-		if ($this->endDate != 0 && $this->endDate < $curTime){
+		if ($this->endDate != 0 && $this->endDate < $curTime) {
 			return false;
 		}
-		if(!empty($appUser)) {
+		if (!empty($appUser)) {
 			$user = $appUser;
-		}else {
+		} else {
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
-			}else{
+			} else {
 				$user = null;
 			}
 		}
 		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you') {
 			if (UserAccount::isLoggedIn() || !empty($appUser)) {
-				if($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
-					if($checkDismiss) {
+				if ($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
+					if ($checkDismiss) {
 						if ($this->isDismissed($user)) {
 							return false;
 						}
 					}
 					return true;
 				}
-				if($this->textId == 'system_user_lists' && $user->hasLists()) {
-					if($checkDismiss) {
+				if ($this->textId == 'system_user_lists' && $user->hasLists()) {
+					if ($checkDismiss) {
 						if ($this->isDismissed($user)) {
 							return false;
 						}
 					}
 					return true;
 				}
-				if($this->textId == 'system_recommended_for_you' && $user->hasRatings()) {
-					if($checkDismiss) {
+				if ($this->textId == 'system_recommended_for_you' && $user->hasRatings()) {
+					if ($checkDismiss) {
 						if ($this->isDismissed($user)) {
 							return false;
 						}
@@ -364,7 +477,7 @@ class BrowseCategory extends BaseBrowsable
 			return false;
 		}
 
-		if($checkDismiss) {
+		if ($checkDismiss) {
 			if (!empty($user)) {
 				if ($this->isDismissed($user)) {
 					return false;
@@ -387,16 +500,15 @@ class BrowseCategory extends BaseBrowsable
 		return false;
 	}
 
-	public function canActiveUserEdit(){
-		if ($this->sharing == 'everyone'){
+	public function canActiveUserEdit() {
+		if ($this->sharing == 'everyone') {
 			return UserAccount::userHasPermission('Administer All Browse Categories') || ($this->userId == UserAccount::getActiveUserId());
 		}
 		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
 		return true;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset ($return['libraryId']);
 		unset ($return['userId']);
@@ -404,8 +516,7 @@ class BrowseCategory extends BaseBrowsable
 		return $return;
 	}
 
-	public function getLinksForJSON(): array
-	{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		//library
 		$allLibraries = Library::getLibraryListAsObjects(false);
@@ -416,14 +527,14 @@ class BrowseCategory extends BaseBrowsable
 		//user
 		$user = new User();
 		$user->id = $this->userId;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$links['user'] = $user->cat_username;
 		}
 		//sub browse categories
 		$subCategories = $this->getSubCategories();
-		if (count($subCategories) > 0){
+		if (count($subCategories) > 0) {
 			$links['subCategories'] = [];
-			foreach ($subCategories as $subCategory){
+			foreach ($subCategories as $subCategory) {
 				$subCategoryArray = $subCategory->toArray();
 				$subCategoryArray['links'] = $subCategory->getLinksForJSON();
 				$links['subCategories'][] = $subCategoryArray;
@@ -433,36 +544,35 @@ class BrowseCategory extends BaseBrowsable
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
 
-		if (isset($jsonData['library'])){
+		if (isset($jsonData['library'])) {
 			$allLibraries = Library::getLibraryListAsObjects(false);
 			$subdomain = $jsonData['library'];
-			if (array_key_exists($subdomain, $mappings['libraries'])){
+			if (array_key_exists($subdomain, $mappings['libraries'])) {
 				$subdomain = $mappings['libraries'][$subdomain];
 			}
-			foreach ($allLibraries as $tmpLibrary){
-				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
+			foreach ($allLibraries as $tmpLibrary) {
+				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain) {
 					$this->libraryId = $tmpLibrary->libraryId;
 					break;
 				}
 			}
 		}
-		if (isset($jsonData['user'])){
+		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->userId = $user->id;
 			}
 		}
 	}
 
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['subCategories'])){
+		if (isset($jsonData['subCategories'])) {
 			$subCategories = [];
 			foreach ($jsonData['subCategories'] as $subCategory) {
 				$subCategoryObj = new SubBrowseCategories();

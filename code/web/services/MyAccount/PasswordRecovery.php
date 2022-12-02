@@ -5,24 +5,21 @@
  *
  * Triggered by an emailed Password Reset action from the ILS, prompts the user
  */
-class PasswordRecovery extends Action
-{
-	function launch()
-	{
+class PasswordRecovery extends Action {
+	function launch() {
 		global $interface;
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		//Get the unique key
 		$error = null;
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit'])) {
 			$this->display($catalog->processPasswordRecovery(), 'Recover ' . $interface->getVariable('passwordLabel'), '');
-		}else {
+		} else {
 			$this->display($catalog->getPasswordRecoveryTemplate(), 'Recover ' . $interface->getVariable('passwordLabel'), '');
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		global $interface;
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Recover ' . $interface->getVariable('passwordLabel'));

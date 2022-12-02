@@ -3,35 +3,30 @@
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/Hoopla/HooplaExportLogEntry.php';
 
-class Hoopla_IndexingLog extends Admin_IndexingLog
-{
-	function getIndexLogEntryObject(): BaseLogEntry
-	{
+class Hoopla_IndexingLog extends Admin_IndexingLog {
+	function getIndexLogEntryObject(): BaseLogEntry {
 		return new HooplaExportLogEntry();
 	}
 
-	function getTemplateName() : string
-	{
+	function getTemplateName(): string {
 		return 'hooplaExportLog.tpl';
 	}
 
-	function getTitle() : string
-	{
+	function getTitle(): string {
 		return 'Hoopla Export Log';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'Hoopla';
 	}
 
-	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
-		if ($indexingObject instanceof HooplaExportLogEntry){
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
+		if ($indexingObject instanceof HooplaExportLogEntry) {
 			$indexingObject->whereAdd('numProducts >= ' . $minProcessed);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#hoopla', 'Hoopla');
@@ -39,8 +34,7 @@ class Hoopla_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'hoopla';
 	}
 }

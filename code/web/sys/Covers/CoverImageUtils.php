@@ -1,9 +1,12 @@
 <?php
 
-function wrapTextForDisplay($font, $text, $fontSize, $lineSpacing, $maxWidth, $maxHeight = 0)
-{
+function wrapTextForDisplay($font, $text, $fontSize, $lineSpacing, $maxWidth, $maxHeight = 0) {
 	if (empty($text)) {
-		return [0, [], $fontSize];
+		return [
+			0,
+			[],
+			$fontSize,
+		];
 	}
 	//Get the total string length
 	$textBox = imageftbbox($fontSize, 0, $font, $text);
@@ -32,11 +35,14 @@ function wrapTextForDisplay($font, $text, $fontSize, $lineSpacing, $maxWidth, $m
 		}
 	}
 
-	return [$totalHeight, $lines, $fontSize];
+	return [
+		$totalHeight,
+		$lines,
+		$fontSize,
+	];
 }
 
-function addWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpacing, $startX, $startY, $color)
-{
+function addWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpacing, $startX, $startY, $color) {
 	foreach ($lines as $line) {
 		//Get the width of this line
 		$lineBox = imageftbbox($fontSize, 0, $font, $line);
@@ -54,9 +60,8 @@ function addWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpac
 	return $startY;
 }
 
-function addCenteredWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpacing, $startX, $startY, $width, $color)
-{
-	if (!is_array($lines)){
+function addCenteredWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpacing, $startX, $startY, $width, $color) {
+	if (!is_array($lines)) {
 		$lines = [$lines];
 	}
 	foreach ($lines as $line) {
@@ -76,13 +81,11 @@ function addCenteredWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $
 	return $startY;
 }
 
-function _map($value, $iStart, $iStop, $oStart, $oStop)
-{
+function _map($value, $iStart, $iStop, $oStart, $oStop) {
 	return $oStart + ($oStop - $oStart) * (($value - $iStart) / ($iStop - $iStart));
 }
 
-function _clip($value, $lower, $upper)
-{
+function _clip($value, $lower, $upper) {
 	if ($value < $lower) {
 		return $lower;
 	} elseif ($value > $upper) {
@@ -92,53 +95,56 @@ function _clip($value, $lower, $upper)
 	}
 }
 
-function resizeImage($originalPath, $newPath, $maxWidth, $maxHeight)
-{
+function resizeImage($originalPath, $newPath, $maxWidth, $maxHeight) {
 	global $logger;
-	list($width, $height, $type) = @getimagesize($originalPath);
+	[
+		$width,
+		$height,
+		$type,
+	] = @getimagesize($originalPath);
 	if ($image = @file_get_contents($originalPath, false)) {
-		if(!$imageResource = @imagecreatefromstring($image)){
+		if (!$imageResource = @imagecreatefromstring($image)) {
 			return false;
-		}else{
-			if ($width > $maxWidth || $height > $maxHeight){
-				if ($width > $height){
+		} else {
+			if ($width > $maxWidth || $height > $maxHeight) {
+				if ($width > $height) {
 					$new_width = $maxWidth;
-					$new_height = floor( $height * ( $maxWidth / $width ) );
-				}else{
+					$new_height = floor($height * ($maxWidth / $width));
+				} else {
 					$new_height = $maxHeight;
-					$new_width = floor( $width * ( $maxHeight / $height ) );
+					$new_width = floor($width * ($maxHeight / $height));
 				}
 
-				$tmp_img = imagecreatetruecolor( $new_width, $new_height );
+				$tmp_img = imagecreatetruecolor($new_width, $new_height);
 				imagealphablending($tmp_img, false);
 				imagesavealpha($tmp_img, true);
 				$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
 				imagefilledrectangle($tmp_img, 0, 0, $new_width, $new_height, $transparent);
 
-				if (!imagecopyresampled( $tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height )){
+				if (!imagecopyresampled($tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height)) {
 					$logger->log("Could not resize image $originalPath to $newPath", Logger::LOG_ERROR);
 					return false;
 				}
 
 				// save thumbnail into a file
-				if (file_exists($newPath)){
+				if (file_exists($newPath)) {
 					$logger->log("File $newPath already exists, deleting", Logger::LOG_DEBUG);
 					unlink($newPath);
 				}
 
-				if (!@imagepng( $tmp_img, $newPath, 9)){
+				if (!@imagepng($tmp_img, $newPath, 9)) {
 					$logger->log("Could not save re-sized file $newPath", Logger::LOG_ERROR);
 					return false;
-				}else{
+				} else {
 					return true;
 				}
-			}else{
+			} else {
 				//Just copy the image over
 				copy($originalPath, $newPath);
 				return true;
 			}
 		}
-	}else{
+	} else {
 		return false;
 	}
 }

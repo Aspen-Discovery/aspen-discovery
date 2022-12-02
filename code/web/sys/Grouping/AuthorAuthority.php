@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/Grouping/AuthorAuthorityAlternative.php';
-class AuthorAuthority extends DataObject
-{
+
+class AuthorAuthority extends DataObject {
 	public $__table = 'author_authority';
 	public $id;
 	public $author;
@@ -10,13 +10,35 @@ class AuthorAuthority extends DataObject
 	public $dateAdded;
 	private $_alternatives;
 
-	public static function getObjectStructure() : array{
+	public static function getObjectStructure(): array {
 		$alternativesStructure = AuthorAuthorityAlternative::getObjectStructure();
 		return [
-			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
-			'author' => ['property' => 'author', 'type' => 'text', 'label' => 'Authoritative Author', 'description' => 'The author name to use instead of the alternatives'],
-			'normalized' => ['property' => 'normalized', 'type' => 'text', 'label' => 'Normalized Value', 'description' => 'The normalized value for grouping', 'readOnly' => true],
-			'dateAdded' => ['property' => 'dateAdded', 'type' => 'timestamp', 'label' => 'Date Added', 'description' => 'The date the record was added', 'readOnly'=> true],
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'author' => [
+				'property' => 'author',
+				'type' => 'text',
+				'label' => 'Authoritative Author',
+				'description' => 'The author name to use instead of the alternatives',
+			],
+			'normalized' => [
+				'property' => 'normalized',
+				'type' => 'text',
+				'label' => 'Normalized Value',
+				'description' => 'The normalized value for grouping',
+				'readOnly' => true,
+			],
+			'dateAdded' => [
+				'property' => 'dateAdded',
+				'type' => 'timestamp',
+				'label' => 'Date Added',
+				'description' => 'The date the record was added',
+				'readOnly' => true,
+			],
 			'alternatives' => [
 				'property' => 'alternatives',
 				'type' => 'oneToMany',
@@ -30,12 +52,12 @@ class AuthorAuthority extends DataObject
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
-				'forcesReindex' => true
+				'forcesReindex' => true,
 			],
 		];
 	}
 
-	function __get($name){
+	function __get($name) {
 		if ($name == 'alternatives') {
 			return $this->getAlternatives();
 		} else {
@@ -43,7 +65,7 @@ class AuthorAuthority extends DataObject
 		}
 	}
 
-	function __set($name, $value){
+	function __set($name, $value) {
 		if ($name == 'alternatives') {
 			$this->_alternatives = $value;
 		} else {
@@ -54,10 +76,9 @@ class AuthorAuthority extends DataObject
 	/**
 	 * @return array|null
 	 */
-	public function getAlternatives()
-	{
+	public function getAlternatives() {
 		if (!isset($this->_alternatives) && $this->id) {
-			$this->_alternatives = array();
+			$this->_alternatives = [];
 			$alternativeAuthor = new AuthorAuthorityAlternative();
 			$alternativeAuthor->authorId = $this->id;
 			$alternativeAuthor->orderBy('alternativeAuthor');
@@ -75,9 +96,9 @@ class AuthorAuthority extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update() {
 		$ret = parent::update();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveAlternates();
 		}
 		return $ret;
@@ -88,19 +109,18 @@ class AuthorAuthority extends DataObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert() {
 		$this->dateAdded = time();
 		$ret = parent::insert();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveAlternates();
 		}
 		return $ret;
 	}
 
-	public function delete($useWhere = false)
-	{
+	public function delete($useWhere = false) {
 		$ret = parent::delete($useWhere);
-		if ($ret && !$useWhere){
+		if ($ret && !$useWhere) {
 			//Delete alternatives
 			$alternatives = new AuthorAuthorityAlternative();
 			$alternatives->authorId = $this->id;
@@ -109,8 +129,8 @@ class AuthorAuthority extends DataObject
 		return $ret;
 	}
 
-	public function saveAlternates(){
-		if (isset ($this->_alternatives) && is_array($this->_alternatives)){
+	public function saveAlternates() {
+		if (isset ($this->_alternatives) && is_array($this->_alternatives)) {
 			$this->saveOneToManyOptions($this->_alternatives, 'authorId');
 			unset($this->_alternatives);
 		}

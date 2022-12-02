@@ -1,8 +1,7 @@
 <?php
 
 
-class AspenSiteStat extends DataObject
-{
+class AspenSiteStat extends DataObject {
 	public $__table = 'aspen_site_stats';
 	public $id;
 	public $aspenSiteId;

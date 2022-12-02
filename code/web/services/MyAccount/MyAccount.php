@@ -5,8 +5,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 
-abstract class MyAccount extends Action
-{
+abstract class MyAccount extends Action {
 	protected $requireLogin = true;
 
 	function __construct($isStandalonePage = false) {
@@ -50,7 +49,7 @@ abstract class MyAccount extends Action
 						$accountMessages[] = clone $customAccountMessages;
 					}
 				}
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				//This happens before the table is created, ignore it.
 			}
 
@@ -76,7 +75,7 @@ abstract class MyAccount extends Action
 	 * @param string|null $sidebar Sets the sidebar on the page to be displayed
 	 * @param bool $translateTitle
 	 */
-	function display($mainContentTemplate, $pageTitle='Your Account', $sidebar='Search/home-sidebar.tpl', $translateTitle = true) {
+	function display($mainContentTemplate, $pageTitle = 'Your Account', $sidebar = 'Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		$interface->setPageTitle($pageTitle);
 

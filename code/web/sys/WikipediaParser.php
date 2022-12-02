@@ -3,32 +3,32 @@
 class WikipediaParser {
 	private $lang;
 
-	public function __construct($lang){
+	public function __construct($lang) {
 		if ($lang) {
-			if ($lang == 'pi' || $lang == 'ub'){
+			if ($lang == 'pi' || $lang == 'ub') {
 				$lang = 'en';
 			}
 			$this->lang = $lang;
-		}else{
+		} else {
 			$this->lang = 'en';
 		}
 	}
 
-    /**
-     * parseWikipedia
-     *
-     * This method is responsible for parsing the output from the Wikipedia
-     * REST API.
-     *
-     * @param array $body JSON formatted data to be parsed
-     * @param string $lang
-     * @return  array|AspenError
-     * @access  private
-     * @author  Rushikesh Katikar <rushikesh.katikar@gmail.com>
-     */
+	/**
+	 * parseWikipedia
+	 *
+	 * This method is responsible for parsing the output from the Wikipedia
+	 * REST API.
+	 *
+	 * @author  Rushikesh Katikar <rushikesh.katikar@gmail.com>
+	 * @param string $lang
+	 * @param array $body JSON formatted data to be parsed
+	 * @return  array|AspenError
+	 * @access  private
+	 */
 	public function parseWikipedia($body, $lang = 'en') {
 		// Check if data exists or not
-		if(!isset($body['query']['pages']) || isset($body['query']['pages']['-1'])) {
+		if (!isset($body['query']['pages']) || isset($body['query']['pages']['-1'])) {
 			return new AspenError('No page found');
 		}
 
@@ -42,9 +42,7 @@ class WikipediaParser {
 		$as_lines = explode("\n", $body['*']);
 		if (stristr($as_lines[0], '#REDIRECT')) {
 			preg_match('/\[\[(.*)\]\]/', $as_lines[0], $matches);
-            $url = "http://{$lang}.wikipedia.org/w/api.php" .
-                '?action=query&prop=revisions&rvprop=content&format=json' .
-                '&titles=' . urlencode($matches[1]);
+			$url = "http://{$lang}.wikipedia.org/w/api.php" . '?action=query&prop=revisions&rvprop=content&format=json' . '&titles=' . urlencode($matches[1]);
 			return $this->getWikipediaPage($url, $lang);
 		}
 
@@ -53,8 +51,7 @@ class WikipediaParser {
 		 *
 		 *   Infobox
 		 *
-		 */
-		// We are looking for the infobox inside "{{...}}"
+		 */ // We are looking for the infobox inside "{{...}}"
 		//   It may contain nested blocks too, thus the recursion
 		preg_match_all('/\{([^{}]++|(?R))*\}/s', $body['*'], $matches);
 		$firstInfoBox = null;
@@ -62,16 +59,16 @@ class WikipediaParser {
 			// If this is the Infobox
 			if (substr($m, 0, 8) == "{Infobox" || substr($m, 0, 9) == "{ infobox") {
 				// Keep the string for later, we need the body block that follows it
-				$infoboxStr = "{".$m."}";
-				if ($firstInfoBox == null){
+				$infoboxStr = "{" . $m . "}";
+				if ($firstInfoBox == null) {
 					$firstInfoBox = $infoboxStr;
 				}
 				// Get rid of the last pair of braces and split
 				$infobox = explode("\n|", substr($m, 1, -1));
 				// Look through every row of the infobox
 				foreach ($infobox as $row) {
-					$data  = explode("=", $row);
-					$key   = trim(array_shift($data));
+					$data = explode("=", $row);
+					$key = trim(array_shift($data));
 					$value = trim(join("=", $data));
 
 					// At the moment we only want stuff related to the image.
@@ -98,8 +95,7 @@ class WikipediaParser {
 		 *
 		 *   Image
 		 *
-		 */
-		// If we didn't successfully extract an image from the infobox, let's see if we
+		 */ // If we didn't successfully extract an image from the infobox, let's see if we
 		// can find one in the body -- we'll just take the first match:
 		if (!isset($imageName)) {
 			$pattern = '/(\x5b\x5b)Image:([^\x5d]*)(\x5d\x5d)/U';
@@ -108,8 +104,7 @@ class WikipediaParser {
 				$parts = explode('|', $matches[2][0]);
 				$imageName = str_replace(' ', '_', $parts[0]);
 				if (count($parts) > 1) {
-					$image_caption = strip_tags(preg_replace('/({{).*(}})/U', '',
-						$parts[count($parts) - 1]));
+					$image_caption = strip_tags(preg_replace('/({{).*(}})/U', '', $parts[count($parts) - 1]));
 				}
 			}
 		}
@@ -127,30 +122,30 @@ class WikipediaParser {
 		 */
 		if (isset($firstInfoBox)) {
 			// Start of the infobox
-			$start  = strpos($body['*'], $firstInfoBox);
+			$start = strpos($body['*'], $firstInfoBox);
 			// + the length of the infobox
 			$offset = strlen($firstInfoBox);
 			// Every after the infobox
-			$body   = substr($body['*'], $start + $offset);
+			$body = substr($body['*'], $start + $offset);
 		} else {
 			// No infobox -- use whole thing:
 			$body = $body['*'];
 		}
 		// Find the first heading
-		$end    = strpos($body, "==");
+		$end = strpos($body, "==");
 		// Now cull our content back to everything before the first heading
-		$body   = trim(substr($body, 0, $end));
+		$body = trim(substr($body, 0, $end));
 
 		// Remove unwanted image/file links
 		// Nested brackets make this annoying: We can't add 'File' or 'Image' as mandatory
 		//    because the recursion fails, or as optional because then normal links get hit.
 		//    ... unless there's a better pattern? TODO
 		// eg. [[File:Johann Sebastian Bach.jpg|thumb|Bach in a 1748 portrait by [[Elias Gottlob Haussmann|Haussmann]]]]
-		$open    = "\\[";
-		$close   = "\\]";
+		$open = "\\[";
+		$close = "\\]";
 		$content = "(?>[^\\[\\]]+)";  // Anything but [ or ]
 		$recursive_match = "($content|(?R))*"; // We can either find content or recursive brackets
-		preg_match_all("/".$open.$recursive_match.$close."/Us", $body, $new_matches);
+		preg_match_all("/" . $open . $recursive_match . $close . "/Us", $body, $new_matches);
 		// Loop through every match (link) we found
 		if (is_array($new_matches)) {
 			foreach ($new_matches as $nm) {
@@ -158,17 +153,15 @@ class WikipediaParser {
 				if (is_array($nm)) {
 					foreach ($nm as $n) {
 						// If it's a file link get rid of it
-						if (strtolower(substr($n, 0, 7)) == "[[file:" ||
-							strtolower(substr($n, 0, 8)) == "[[image:") {
+						if (strtolower(substr($n, 0, 7)) == "[[file:" || strtolower(substr($n, 0, 8)) == "[[image:") {
 							$body = str_replace($n, "", $body);
 						}
 					}
 					// Or just a normal array
 				} else {
 					// If it's a file link get rid of it
-					if (isset($n)){
-						if (strtolower(substr($n, 0, 7)) == "[[file:" ||
-							strtolower(substr($n, 0, 8)) == "[[image:") {
+					if (isset($n)) {
+						if (strtolower(substr($n, 0, 7)) == "[[file:" || strtolower(substr($n, 0, 8)) == "[[image:") {
 							$body = str_replace($nm, "", $body);
 						}
 					}
@@ -177,8 +170,8 @@ class WikipediaParser {
 		}
 
 		// Initialize arrays of processing instructions
-		$pattern = array();
-		$replacement = array();
+		$pattern = [];
+		$replacement = [];
 
 		//Strip out taxobox
 		$pattern[] = '/{{Taxobox.*}}\n\n/Us';
@@ -200,7 +193,10 @@ class WikipediaParser {
 
 		// Fix pronunciation guides
 		$pattern[] = '/({{)pron-en\|([^}]*)(}})/Us';
-		$replacement[] = translate(['text' => "pronounced", 'isPublicFacing'=>true]) . " /$2/";
+		$replacement[] = translate([
+				'text' => "pronounced",
+				'isPublicFacing' => true,
+			]) . " /$2/";
 
 		// Removes citations
 		$pattern[] = '/({{)[^}]*(}})/Us';
@@ -233,7 +229,10 @@ class WikipediaParser {
 		$body = preg_replace($pattern, $replacement, $body);
 
 		//Clean up spaces within hrefs
-		$body = preg_replace_callback('/href="(.*?)"/si', array($this, 'fix_whitespace'), $body);
+		$body = preg_replace_callback('/href="(.*?)"/si', [
+			$this,
+			'fix_whitespace',
+		], $body);
 
 		$body = str_replace('<br>', '<br/>', $body);
 
@@ -260,15 +259,12 @@ class WikipediaParser {
 	 *
 	 * This method is responsible for obtaining an image URL based on a name.
 	 *
-	 * @param   string  $imageName  The image name to look up
+	 * @param string $imageName The image name to look up
 	 * @return  mixed               URL on success, false on failure
 	 * @access  private
 	 */
-	private function getWikipediaImageURL($imageName)
-	{
-		$url = "http://{$this->lang}.wikipedia.org/w/api.php" .
-			'?prop=imageinfo&action=query&iiprop=url&iiurlwidth=150&format=json' .
-			'&titles=Image:' . $imageName;
+	private function getWikipediaImageURL($imageName) {
+		$url = "http://{$this->lang}.wikipedia.org/w/api.php" . '?prop=imageinfo&action=query&iiprop=url&iiurlwidth=150&format=json' . '&titles=Image:' . $imageName;
 
 		$response = file_get_contents($url);
 
@@ -293,13 +289,13 @@ class WikipediaParser {
 		return isset($imageUrl) ? $imageUrl : false;
 	}
 
-    /**
-     * @param string $pageUrl
-     * @param string $lang
-     * @return array|AspenError|null
-     */
+	/**
+	 * @param string $pageUrl
+	 * @param string $lang
+	 * @return array|AspenError|null
+	 */
 	public function getWikipediaPage($pageUrl, $lang) {
-		if (filter_var($pageUrl, FILTER_VALIDATE_URL)){
+		if (filter_var($pageUrl, FILTER_VALIDATE_URL)) {
 			$result = file_get_contents($pageUrl);
 			$jsonResult = json_decode($result, true);
 			$info = $this->parseWikipedia($jsonResult, $lang);

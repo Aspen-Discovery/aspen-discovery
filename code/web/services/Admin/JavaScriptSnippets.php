@@ -4,46 +4,52 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
 
-class Admin_JavaScriptSnippets extends ObjectEditor
-{
+class Admin_JavaScriptSnippets extends ObjectEditor {
 
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'JavaScriptSnippet';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'JavaScriptSnippets';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'JavaScript Snippets';
 	}
-	function canDelete(){
-		return UserAccount::userHasPermission(['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
+
+	function canDelete() {
+		return UserAccount::userHasPermission([
+			'Administer All JavaScript Snippets',
+			'Administer Library JavaScript Snippets',
+		]);
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new JavaScriptSnippet();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingSnippets = true;
-		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')){
+		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')) {
 			$libraryJavaScriptSnippet = new JavaScriptSnippetLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			if ($library != null){
+			if ($library != null) {
 				$libraryJavaScriptSnippet->libraryId = $library->libraryId;
 				$snippetsForLibrary = [];
 				$libraryJavaScriptSnippet->find();
-				while ($libraryJavaScriptSnippet->fetch()){
+				while ($libraryJavaScriptSnippet->fetch()) {
 					$snippetsForLibrary[] = $libraryJavaScriptSnippet->javascriptSnippetId;
 				}
 				if (count($snippetsForLibrary) > 0) {
 					$object->whereAddIn('id', $snippetsForLibrary, false);
-				}else{
+				} else {
 					$userHasExistingSnippets = false;
 				}
 			}
 		}
 		$object->find();
-		$list = array();
+		$list = [];
 		if ($userHasExistingSnippets) {
 			while ($object->fetch()) {
 				$list[$object->id] = clone $object;
@@ -51,25 +57,28 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
-	function getObjectStructure() : array{
+
+	function getObjectStructure(): array {
 		return JavaScriptSnippet::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function getInstructions() : string
-	{
+
+	function getInstructions(): string {
 		return '';
 	}
-	function getBreadcrumbs() : array
-	{
+
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
@@ -77,13 +86,14 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'local_enrichment';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All JavaScript Snippets',
+			'Administer Library JavaScript Snippets',
+		]);
 	}
 }

@@ -1,21 +1,24 @@
 <?php
 
-class Record_AccessOnline extends Action
-{
+class Record_AccessOnline extends Action {
 	/** @var SideLoadedRecord $recordDriver */
 	private $recordDriver;
 	private $id;
-	function launch(){
+
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
 
-		if (strpos($id, ':')){
-			list($source, $id) = explode(":", $id);
+		if (strpos($id, ':')) {
+			[
+				$source,
+				$id,
+			] = explode(":", $id);
 			$this->id = $id;
 			$interface->assign('id', $this->id);
-		}else{
+		} else {
 			$source = 'ils';
 		}
 
@@ -44,17 +47,16 @@ class Record_AccessOnline extends Action
 				$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
 				$this->trackUserUsageOfSideLoad($sideLoadId);
 				header('Location: ' . $redirectUrl);
-			}else{
+			} else {
 				$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			}
-		}else{
+		} else {
 			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 		}
 		die();
 	}
 
-	function trackRecordUsage(int $sideLoadId, string $recordId): void
-	{
+	function trackRecordUsage(int $sideLoadId, string $recordId): void {
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
 		global $aspenUsage;
@@ -72,16 +74,15 @@ class Record_AccessOnline extends Action
 		}
 	}
 
-	public function trackUserUsageOfSideLoad(int $sideLoadId): void
-	{
+	public function trackUserUsageOfSideLoad(int $sideLoadId): void {
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
 		global $aspenUsage;
 		$userUsage->instance = $aspenUsage->instance;
-		if (UserAccount::getActiveUserId() == false){
+		if (UserAccount::getActiveUserId() == false) {
 			//User is not logged in
 			$userUsage->userId = -1;
-		}else{
+		} else {
 			$userUsage->userId = UserAccount::getActiveUserId();
 		}
 		$userUsage->sideLoadId = $sideLoadId;
@@ -97,8 +98,7 @@ class Record_AccessOnline extends Action
 		}
 	}
 
-	public function getBreadcrumbs() : array
-	{
+	public function getBreadcrumbs(): array {
 		return [];
 	}
 }

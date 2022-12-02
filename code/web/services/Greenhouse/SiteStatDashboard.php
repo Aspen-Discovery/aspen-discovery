@@ -3,8 +3,7 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteStat.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Greenhouse_SiteStatDashboard extends Admin_Admin
-{
+class Greenhouse_SiteStatDashboard extends Admin_Admin {
 	protected $todayDay;
 	protected $thisMonth;
 	protected $thisYear;
@@ -12,8 +11,7 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 	protected $lastMonthYear;
 	protected $lastYear;
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		$aspenSite = new AspenSite();
@@ -21,15 +19,15 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 		$allSites = [];
 		$aspenSite->find();
 		$selectedSite = '';
-		while ($aspenSite->fetch()){
+		while ($aspenSite->fetch()) {
 			$allSites[$aspenSite->id] = $aspenSite->name;
-			if ($selectedSite == ''){
+			if ($selectedSite == '') {
 				$selectedSite = $aspenSite->id;
 			}
 		}
 		$interface->assign('allSites', $allSites);
 
-		if (!empty($_REQUEST['site'])){
+		if (!empty($_REQUEST['site'])) {
 			$selectedSite = $_REQUEST['site'];
 		}
 		$interface->assign('selectedSite', $selectedSite);
@@ -46,7 +44,7 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 		$interface->assign('siteStatsThisYear', $aspenUsageThisYear);
 		$aspenUsageAllTime = $this->getStats($selectedSite, null, null, null);
 		$interface->assign('siteStatsAllTime', $aspenUsageAllTime);
-		
+
 		$this->display('siteStatsDashboard.tpl', 'Aspen Site Stats Dashboard', '');
 	}
 
@@ -57,17 +55,16 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 	 * @param string|null $year
 	 * @return int[]
 	 */
-	function getStats($selectedSite, $day, $month, $year): array
-	{
+	function getStats($selectedSite, $day, $month, $year): array {
 		$siteStat = new AspenSiteStat();
 		$siteStat->aspenSiteId = $selectedSite;
-		if ($day != null){
+		if ($day != null) {
 			$siteStat->day = $day;
 		}
-		if ($month != null){
+		if ($month != null) {
 			$siteStat->month = $month;
 		}
-		if ($year != null){
+		if ($year != null) {
 			$siteStat->year = $year;
 		}
 
@@ -93,7 +90,7 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 		];
 	}
 
-	function loadDates(){
+	function loadDates() {
 		$now = new DateTime();
 		$today = $now->setTime(0, 0);
 		$this->todayDay = date('j', $today->getTimestamp());
@@ -108,8 +105,7 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 		$this->lastYear = $this->thisYear - 1;
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
@@ -117,15 +113,13 @@ class Greenhouse_SiteStatDashboard extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'greenhouse';
 	}
 
-	function canView() : bool
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}

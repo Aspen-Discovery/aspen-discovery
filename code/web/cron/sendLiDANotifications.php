@@ -9,29 +9,29 @@ $allNotifications = new LiDANotification();
 $allNotifications->sent = 0;
 $notifications = $allNotifications->fetchAll('id');
 
-foreach($notifications as $notification) {
+foreach ($notifications as $notification) {
 	$tokens = [];
 	$notificationToSend = new LiDANotification();
 	$notificationToSend->id = $notification;
-	if($notificationToSend->find(true)) {
+	if ($notificationToSend->find(true)) {
 		$now = time();
-		if($now - $notificationToSend->sendOn > 0) {
+		if ($now - $notificationToSend->sendOn > 0) {
 			$expirationTime = $notificationToSend->sendOn + (7 * 24 * 60 * 60);
-			if(!empty($notificationToSend->expiresOn)) {
+			if (!empty($notificationToSend->expiresOn)) {
 				$expirationTime = $notificationToSend->expiresOn;
 			}
 			$tokens = $notificationToSend->getEligibleUsers();
-			foreach($tokens as $token => $user) {
-				$body = array(
+			foreach ($tokens as $token => $user) {
+				$body = [
 					'to' => $user['token'],
 					'title' => $notificationToSend->title,
 					'body' => strip_tags(html_entity_decode($notificationToSend->message)),
 					'categoryId' => 'libraryAlert',
 					'channelId' => 'libraryAlert',
 					'expiration' => $expirationTime,
-				);
+				];
 
-				if($notificationToSend->linkType == 1 || $notificationToSend->linkType == "1") {
+				if ($notificationToSend->linkType == 1 || $notificationToSend->linkType == "1") {
 					$body['data'] = [
 						'url' => urlencode($notificationToSend->ctaUrl),
 					];

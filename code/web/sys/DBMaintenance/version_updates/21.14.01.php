@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_14_01() : array
-{
+function getUpdates21_14_01(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -17,8 +16,9 @@ function getUpdates21_14_01() : array
 				'ALTER TABLE external_request_log ADD COLUMN requestType VARCHAR(50)',
 				'ALTER TABLE external_request_log ADD COLUMN requestMethod VARCHAR(5)',
 				'ALTER TABLE external_request_log ADD INDEX requestType(requestType)',
-			]
-		], //externalRequestsLogMethod
+			],
+		],
+		//externalRequestsLogMethod
 
 	];
 }

@@ -21,7 +21,7 @@ class NYTApi {
 	 * @param string $key
 	 */
 	public function __construct($key) {
-	    $this->api_key = $key;
+		$this->api_key = $key;
 	}
 
 	protected function build_url($list_name) {
@@ -31,9 +31,9 @@ class NYTApi {
 	}
 
 	public function get_list($list_name) {
-	    if ($list_name == 'names' && isset(NYTApi::$allListsInfo)) {
-	        return NYTApi::$allListsInfo;
-        }
+		if ($list_name == 'names' && isset(NYTApi::$allListsInfo)) {
+			return NYTApi::$allListsInfo;
+		}
 		$url = $this->build_url($list_name);
 		/*
 		// super fast and easy way, but not as many options
@@ -41,7 +41,7 @@ class NYTApi {
 		*/
 
 		// array of request options
-		$curl_opts = array(
+		$curl_opts = [
 			// set request url
 			CURLOPT_URL => $url,
 			// return data
@@ -49,8 +49,8 @@ class NYTApi {
 			// do not include header in result
 			CURLOPT_HEADER => 0,
 			// set user agent
-			CURLOPT_USERAGENT => 'Aspen Discovery app cURL Request'
-		);
+			CURLOPT_USERAGENT => 'Aspen Discovery app cURL Request',
+		];
 		// Get cURL resource
 		$curl = curl_init();
 		// Set curl options

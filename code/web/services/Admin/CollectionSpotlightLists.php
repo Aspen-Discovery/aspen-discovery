@@ -5,59 +5,62 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Theming/Theme.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 
-class Admin_CollectionSpotlightLists extends ObjectEditor
-{
+class Admin_CollectionSpotlightLists extends ObjectEditor {
 
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'CollectionSpotlightList';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'CollectionSpotlightLists';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Collection Spotlight Lists';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new CollectionSpotlightList();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$list = array();
-		while ($object->fetch()){
+		$list = [];
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'weight asc';
 	}
 
-	function getObjectStructure() : array{
+	function getObjectStructure(): array {
 		return CollectionSpotlightList::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
-		return 'id';
-	}
-	function getIdKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getInstructions() : string{
+	function getIdKeyColumn(): string {
+		return 'id';
+	}
+
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/promote/spotlights';
 	}
 
-	function getInitializationJs() : string {
+	function getInitializationJs(): string {
 		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
 	}
 
-	function showReturnToList(){
+	function showReturnToList() {
 		return false;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
@@ -65,13 +68,14 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'local_enrichment';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Collection Spotlights',
+			'Administer Library Collection Spotlights',
+		]);
 	}
 }

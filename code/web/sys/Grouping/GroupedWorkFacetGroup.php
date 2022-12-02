@@ -1,24 +1,35 @@
 <?php
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacet.php';
 
-class GroupedWorkFacetGroup extends DataObject
-{
+class GroupedWorkFacetGroup extends DataObject {
 	public $__table = 'grouped_work_facet_groups';
 	public $id;
 	public $name;
 
 	public $_facets;
 
-	static function getObjectStructure() : array{
+	static function getObjectStructure(): array {
 		$facetSettingStructure = GroupedWorkFacet::getObjectStructure();
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['facetGroupId']);
 		unset($facetSettingStructure['showAsDropDown']);
 
 		return [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The name of the settings', 'size' => '40', 'maxLength'=>255),
-			'facets' => array(
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id within the database',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Display Name',
+				'description' => 'The name of the settings',
+				'size' => '40',
+				'maxLength' => 255,
+			],
+			'facets' => [
 				'property' => 'facets',
 				'type' => 'oneToMany',
 				'label' => 'Facets',
@@ -31,12 +42,12 @@ class GroupedWorkFacetGroup extends DataObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => false,
-			),
+			],
 		];
 	}
 
-	function setupDefaultFacets($type){
-		$defaultFacets = array();
+	function setupDefaultFacets($type) {
+		$defaultFacets = [];
 
 		$facet = new GroupedWorkFacet();
 		$facet->setupTopFacet('format_category', 'Format Category');
@@ -51,14 +62,14 @@ class GroupedWorkFacetGroup extends DataObject
 		$defaultFacets[] = $facet;
 
 		/** @noinspection PhpIfWithCommonPartsInspection */
-		if ($type == 'academic'){
+		if ($type == 'academic') {
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('literary_form', 'Literary Form', true);
 			$facet->facetGroupId = $this->id;
 			$facet->weight = count($defaultFacets) + 1;
 			$facet->canLock = true;
 			$defaultFacets[] = $facet;
-		}else{
+		} else {
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('literary_form', 'Fiction / Non-Fiction', true);
 			$facet->facetGroupId = $this->id;
@@ -111,7 +122,7 @@ class GroupedWorkFacetGroup extends DataObject
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
-		if ($type != 'academic'){
+		if ($type != 'academic') {
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('accelerated_reader_interest_level', 'AR Interest Level', true);
 			$facet->facetGroupId = $this->id;
@@ -158,7 +169,7 @@ class GroupedWorkFacetGroup extends DataObject
 			$facet->multiSelect = true;
 			$facet->weight = count($defaultFacets) + 1;
 			$defaultFacets[] = $facet;
-		}else{
+		} else {
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('subject_facet', 'Subject', true);
 			$facet->facetGroupId = $this->id;
@@ -230,68 +241,66 @@ class GroupedWorkFacetGroup extends DataObject
 		$this->update();
 	}
 
-	public function update(){
+	public function update() {
 		$ret = parent::update();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveFacets();
 		}
 		return $ret;
 	}
 
-	public function insert(){
+	public function insert() {
 		$ret = parent::insert();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveFacets();
 		}
 		return $ret;
 	}
 
-	public function saveFacets(){
-		if (isset ($this->_facets) && is_array($this->_facets)){
+	public function saveFacets() {
+		if (isset ($this->_facets) && is_array($this->_facets)) {
 			$this->saveOneToManyOptions($this->_facets, 'facetGroupId');
 			unset($this->facets);
 		}
 	}
 
-	public function __get($name)
-	{
-		if ($name == 'facets'){
+	public function __get($name) {
+		if ($name == 'facets') {
 			return $this->getFacets();
-		}else{
+		} else {
 			return $this->_data[$name];
 		}
 	}
 
-	public function __set($name, $value)
-	{
-		if ($name == 'facets'){
+	public function __set($name, $value) {
+		if ($name == 'facets') {
 			$this->setFacets($value);
-		}else{
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
 
 	/** @return GroupedWorkFacet[] */
-	public function getFacets() : ?array{
-		if (!isset($this->_facets) && $this->id){
-			$this->_facets = array();
+	public function getFacets(): ?array {
+		if (!isset($this->_facets) && $this->id) {
+			$this->_facets = [];
 			$facet = new GroupedWorkFacet();
 			$facet->facetGroupId = $this->id;
 			$facet->orderBy('weight');
 			$facet->find();
-			while($facet->fetch()){
+			while ($facet->fetch()) {
 				$this->_facets[$facet->id] = clone($facet);
 			}
 		}
 		return $this->_facets;
 	}
 
-	public function getFacetByIndex($index) : ? GroupedWorkFacet{
+	public function getFacetByIndex($index): ?GroupedWorkFacet {
 		$facets = $this->getFacets();
 
-		$i=0;
+		$i = 0;
 		foreach ($facets as $value) {
-			if($i==$index) {
+			if ($i == $index) {
 				return $value;
 			}
 			$i++;
@@ -299,22 +308,22 @@ class GroupedWorkFacetGroup extends DataObject
 		return NULL;
 	}
 
-	public function setFacets($value){
+	public function setFacets($value) {
 		$this->_facets = $value;
 	}
 
-	public function clearFacets(){
+	public function clearFacets() {
 		$this->clearOneToManyOptions('GroupedWorkFacet', 'facetGroupId');
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->facets = array();
+		$this->facets = [];
 	}
 
-	function getAdditionalListJavascriptActions() : array{
-		$objectActions[] = array(
+	function getAdditionalListJavascriptActions(): array {
+		$objectActions[] = [
 			'text' => 'Copy',
 			'onClick' => "return AspenDiscovery.Admin.showCopyFacetGroupForm('$this->id')",
-			'icon' => 'fas fa-copy'
-		);
+			'icon' => 'fas fa-copy',
+		];
 
 		return $objectActions;
 	}

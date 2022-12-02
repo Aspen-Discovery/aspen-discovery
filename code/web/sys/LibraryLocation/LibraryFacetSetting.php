@@ -5,31 +5,36 @@ class LibraryFacetSetting extends FacetSetting {
 	public $__table = 'library_facet_setting';    // table name
 	public $libraryId;
 
-	static function getObjectStructure(array $availableFacets = null){
+	static function getObjectStructure(array $availableFacets = null) {
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
-		while ($library->fetch()){
+		while ($library->fetch()) {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
 		$structure = parent::getObjectStructure($availableFacets);
-		$structure['libraryId'] = array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library');
+		$structure['libraryId'] = [
+			'property' => 'libraryId',
+			'type' => 'enum',
+			'values' => $libraryList,
+			'label' => 'Library',
+			'description' => 'The id of a library',
+		];
 
 		return $structure;
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Admin/LibraryFacetSettings?objectAction=edit&id=' . $this->id;
 	}
 
 	/** @return string[] */
-	public static function getAvailableFacets()
-	{
+	public static function getAvailableFacets() {
 		return [];
 	}
 }

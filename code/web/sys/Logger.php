@@ -1,7 +1,6 @@
 <?php
 
-class Logger
-{
+class Logger {
 	private $logAlerts = false;
 	private $logErrors = false;
 	private $logWarnings = false;
@@ -16,8 +15,7 @@ class Logger
 	public const LOG_ERROR = 2;
 	public const LOG_ALERT = 1;
 
-	public function __construct()
-	{
+	public function __construct() {
 		global $configArray;
 		global $serverName;
 
@@ -27,8 +25,7 @@ class Logger
 		$this->logFilePath = '/var/log/' . $configArray['System']['applicationName'] . '/' . $serverName . '/messages.log';
 	}
 
-	public function log($msg, $level)
-	{
+	public function log($msg, $level) {
 		try {
 			if ($level == self::LOG_DEBUG && !IPAddress::showDebuggingInformation()) {
 				return;
@@ -39,7 +36,7 @@ class Logger
 			if ($level == self::LOG_WARNING && !IPAddress::showDebuggingInformation()) {
 				return;
 			}
-		}catch (PDOException $e){
+		} catch (PDOException $e) {
 			//Logging is too early, ignore at least for now.
 		}
 		if ($level == self::LOG_ERROR && !$this->logErrors) {

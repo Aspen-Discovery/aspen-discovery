@@ -2,27 +2,31 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-class Websites_JSON extends JSON_Action
-{
+class Websites_JSON extends JSON_Action {
 	/** @noinspection PhpUnused */
-	public function trackUsage()
-	{
+	public function trackUsage() {
 		if (!isset($_REQUEST['id'])) {
-			return ['success' => false, 'message' => 'ID was not provided'];
+			return [
+				'success' => false,
+				'message' => 'ID was not provided',
+			];
 		}
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsitePage.php';
 		$webPage = new WebsitePage();
 		$webPage->id = $id;
 		if (!$webPage->find(true)) {
-			return ['success' => false, 'message' => 'Record was not found in the database'];
+			return [
+				'success' => false,
+				'message' => 'Record was not found in the database',
+			];
 		}
 
 		//Track usage of the record
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
 		global $fullServerName;
-		$webPageUsage->instance =$fullServerName;
+		$webPageUsage->instance = $fullServerName;
 		$webPageUsage->webPageId = $id;
 		$webPageUsage->year = date('Y');
 		$webPageUsage->month = date('n');
@@ -57,6 +61,9 @@ class Websites_JSON extends JSON_Action
 			}
 		}
 
-		return ['success' => true, 'message' => 'Updated usage for webpage ' . $id];
+		return [
+			'success' => true,
+			'message' => 'Updated usage for webpage ' . $id,
+		];
 	}
 }

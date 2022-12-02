@@ -1,20 +1,20 @@
 <?php
 
 
-class BrowseCategoryDismissal extends DataObject
-{
+class BrowseCategoryDismissal extends DataObject {
 	public $__table = 'browse_category_dismissal';
 	public $id;
 	public $browseCategoryId;
 	public $userId;
 
-	public function getUniquenessFields(): array
-	{
-		return ['userId', 'browseCategoryId'];
+	public function getUniquenessFields(): array {
+		return [
+			'userId',
+			'browseCategoryId',
+		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
 		$user = new User();
 		$user->id = $this->userId;
@@ -26,16 +26,14 @@ class BrowseCategoryDismissal extends DataObject
 		return $okToExport;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
-		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['browseCategoryId']);
 		unset($return['userId']);
 		return $return;
 	}
 
-	public function getLinksForJSON(): array
-	{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		$user = new User();
 		$user->id = $this->userId;
@@ -45,28 +43,27 @@ class BrowseCategoryDismissal extends DataObject
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$browseCategory = new BrowseCategory();
 		$browseCategory->id = $this->browseCategoryId;
-		if ($browseCategory->find(true)){
+		if ($browseCategory->find(true)) {
 			$links['browseCategory'] = $browseCategory->textId;
 		}
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['user'])){
+		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->userId = $user->id;
 			}
 		}
-		if (isset($jsonData['browseCategory'])){
+		if (isset($jsonData['browseCategory'])) {
 			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 			$browseCategory = new BrowseCategory();
 			$browseCategory->textId = $jsonData['browseCategory'];
-			if ($browseCategory->find(true)){
+			if ($browseCategory->find(true)) {
 				$this->browseCategoryId = $browseCategory->id;
 			}
 		}

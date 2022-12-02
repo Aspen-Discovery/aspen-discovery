@@ -2,21 +2,19 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 
-class Admin_HelpManual extends Action
-{
-	function launch()
-	{
+class Admin_HelpManual extends Action {
+	function launch() {
 		global $interface;
 		global $activeLanguage;
 
 		//Get a list of all available release notes
 		$helpManualPath = ROOT_DIR . '/manual';
-		if (file_exists($helpManualPath . '_' . $activeLanguage->code)){
+		if (file_exists($helpManualPath . '_' . $activeLanguage->code)) {
 			$helpManualPath = $helpManualPath . '_' . $activeLanguage->code;
 		}
-		if (isset($_REQUEST['page'])){
+		if (isset($_REQUEST['page'])) {
 			$page = $_REQUEST['page'];
-		}else{
+		} else {
 			$page = 'table_of_contents';
 		}
 
@@ -26,21 +24,20 @@ class Admin_HelpManual extends Action
 			$interface->assign('activeAdminSection', $this->getActiveAdminSection());
 			$interface->assign('activeMenuOption', 'admin');
 			$sidebar = 'Admin/admin-sidebar.tpl';
-		}else{
+		} else {
 			$sidebar = '';
 		}
-		if (file_exists($helpManualPath . '/'. $page . '.MD')){
+		if (file_exists($helpManualPath . '/' . $page . '.MD')) {
 			$parsedown = AspenParsedown::instance();
-			$formattedPage = $parsedown->parse(file_get_contents($helpManualPath . '/'. $page . '.MD'));
+			$formattedPage = $parsedown->parse(file_get_contents($helpManualPath . '/' . $page . '.MD'));
 			$interface->assign('formattedPage', $formattedPage);
 			$this->display('https://help.aspendiscovery.org', 'Help Center', $sidebar);
-		}else{
+		} else {
 			$this->display('unknownPage.tpl', 'Help Manual', $sidebar);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
 			$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -50,13 +47,11 @@ class Admin_HelpManual extends Action
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'support';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return true;
 	}
 }

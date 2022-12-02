@@ -17,18 +17,18 @@ while ($aspenModule->fetch()) {
 	}
 }
 
-ini_set('memory_limit','4G');
+ini_set('memory_limit', '4G');
 $library = new Library();
 $library->find();
-while ($library->fetch()){
+while ($library->fetch()) {
 	if ($addGroupedWorks && $library->generateSitemap) {
 		$subdomain = $library->subdomain;
 		global $solrScope;
 		$solrScope = preg_replace('/[^a-zA-Z0-9_]/', '', $subdomain);
 
-		if (empty($library->baseUrl)){
+		if (empty($library->baseUrl)) {
 			$baseUrl = $configArray['Site']['url'];
-		}else{
+		} else {
 			$baseUrl = $library->baseUrl;
 		}
 		echo(date('H:i:s') . " Creating sitemaps for $library->displayName ($library->subdomain)\r\n");
@@ -84,11 +84,11 @@ while ($library->fetch()){
 				fclose($sitemapFhnd);
 				gc_collect_cycles();
 			}
-		}elseif ($result instanceof AspenError){
+		} elseif ($result instanceof AspenError) {
 			echo(date('H:i:s') . "   Result was an error $result\r\n");
-		}elseif (!$result['error']){
+		} elseif (!$result['error']) {
 			echo(date('H:i:s') . "   Result had error {$result['error']}\r\n");
-		}else{
+		} else {
 			echo(date('H:i:s') . "   No results found\r\n");
 		}
 		gc_collect_cycles();

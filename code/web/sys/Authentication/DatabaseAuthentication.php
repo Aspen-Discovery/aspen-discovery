@@ -2,12 +2,10 @@
 require_once 'Authentication.php';
 
 class DatabaseAuthentication implements Authentication {
-	public function __construct($additionalInfo) {
-
-	}
+	public function __construct($additionalInfo) {}
 
 	public function authenticate($validatedViaSSO) {
-		if (!isset($_POST['username']) || !isset($_POST['password'])){
+		if (!isset($_POST['username']) || !isset($_POST['password'])) {
 			return new AspenError('Login information cannot be blank.');
 		}
 		$username = $_POST['username'];
@@ -19,13 +17,13 @@ class DatabaseAuthentication implements Authentication {
 		return $this->login($username, $password);
 	}
 
-	private function login($username, $password){
+	private function login($username, $password) {
 		if (($username == '') || ($password == '')) {
 			$user = new AspenError('Login information cannot be blank.');
 		} else {
-			if ($username == 'nyt_user'){
+			if ($username == 'nyt_user') {
 				$user = new AspenError('Cannot login as the New York Times User');
-			}else {
+			} else {
 				$user = new User();
 				$user->username = $username;
 				if (!$user->find(true)) {

@@ -1,8 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class AspenError extends DataObject
-{
+class AspenError extends DataObject {
 	public $__table = 'errors';
 	public $id;
 	public $module;
@@ -21,8 +20,7 @@ class AspenError extends DataObject
 	 * @param null $message
 	 * @param null $backtrace
 	 */
-	public function __construct($message = null, $backtrace = null)
-	{
+	public function __construct($message = null, $backtrace = null) {
 		if ($message != null) {
 			if (isset($_SERVER['REQUEST_URI'])) {
 				$this->url = $_SERVER['REQUEST_URI'];
@@ -31,9 +29,9 @@ class AspenError extends DataObject
 			global $action;
 			$this->module = $module;
 			$this->action = $action;
-			if (isset($_SERVER['HTTP_USER_AGENT'])){
+			if (isset($_SERVER['HTTP_USER_AGENT'])) {
 				$this->userAgent = $_SERVER['HTTP_USER_AGENT'];
-			}else{
+			} else {
 				$this->userAgent = 'None, command line';
 			}
 
@@ -67,33 +65,69 @@ class AspenError extends DataObject
 		}
 	}
 
-	public static function getObjectStructure() : array
-	{
-		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'module' => array('property' => 'module', 'type' => 'label', 'label' => 'Module', 'description' => 'The Module that caused the error'),
-			'action' => array('property' => 'action', 'type' => 'label', 'label' => 'Action', 'description' => 'The Action that caused the error'),
-			'url' => array('property' => 'url', 'type' => 'label', 'label' => 'Url', 'description' => 'The URL that caused the error'),
-			'userAgent' => array('property' => 'userAgent', 'type' => 'label', 'label' => 'User Agent', 'description' => 'The User agent for the user'),
-			'message' => array('property' => 'message', 'type' => 'label', 'label' => 'Message', 'description' => 'A description of the error'),
-			'backtrace' => array('property' => 'backtrace', 'type' => 'label', 'label' => 'Backtrace', 'description' => 'The trace that led to the error'),
-			'timestamp' => array('property' => 'timestamp', 'type' => 'timestamp', 'label' => 'Timestamp', 'description' => 'When the error occurred'),
-		);
+	public static function getObjectStructure(): array {
+		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'module' => [
+				'property' => 'module',
+				'type' => 'label',
+				'label' => 'Module',
+				'description' => 'The Module that caused the error',
+			],
+			'action' => [
+				'property' => 'action',
+				'type' => 'label',
+				'label' => 'Action',
+				'description' => 'The Action that caused the error',
+			],
+			'url' => [
+				'property' => 'url',
+				'type' => 'label',
+				'label' => 'Url',
+				'description' => 'The URL that caused the error',
+			],
+			'userAgent' => [
+				'property' => 'userAgent',
+				'type' => 'label',
+				'label' => 'User Agent',
+				'description' => 'The User agent for the user',
+			],
+			'message' => [
+				'property' => 'message',
+				'type' => 'label',
+				'label' => 'Message',
+				'description' => 'A description of the error',
+			],
+			'backtrace' => [
+				'property' => 'backtrace',
+				'type' => 'label',
+				'label' => 'Backtrace',
+				'description' => 'The trace that led to the error',
+			],
+			'timestamp' => [
+				'property' => 'timestamp',
+				'type' => 'timestamp',
+				'label' => 'Timestamp',
+				'description' => 'When the error occurred',
+			],
+		];
 		return $structure;
 	}
 
-	public function getMessage()
-	{
+	public function getMessage() {
 		return $this->message;
 	}
 
-	public function getRawBacktrace()
-	{
+	public function getRawBacktrace() {
 		return $this->_rawBacktrace;
 	}
 
-	public function toString()
-	{
+	public function toString() {
 		return $this->message;
 	}
 
@@ -102,8 +136,7 @@ class AspenError extends DataObject
 	 *
 	 * @param string|AspenError $error
 	 */
-	static function raiseError($error)
-	{
+	static function raiseError($error) {
 		if (is_string($error)) {
 			$error = new AspenError($error);
 		}
@@ -117,8 +150,7 @@ class AspenError extends DataObject
 	 *
 	 * @return null
 	 */
-	function handleAspenError()
-	{
+	function handleAspenError() {
 		global $errorHandlingEnabled;
 		if (isset($errorHandlingEnabled) && ($errorHandlingEnabled < 0)) {
 			return;
@@ -182,22 +214,22 @@ class AspenError extends DataObject
 		$interface->assign('debug', $debug);
 
 		global $isAJAX;
-		if ($isAJAX){
+		if ($isAJAX) {
 			$result = [
 				'success' => false,
-				'message' => $this->getMessage()
+				'message' => $this->getMessage(),
 			];
-			if ($debug){
-				foreach ($this->getRawBacktrace() as $trace){
+			if ($debug) {
+				foreach ($this->getRawBacktrace() as $trace) {
 					$result['message'] .= "<br/>[{$trace['line']}] {$trace['file']}";
 				}
 			}
 			echo json_encode($result);
-		}else {
+		} else {
 			global $module;
 			if (!empty($module)) {
 				$interface->setTemplate('../error.tpl');
-			}else{
+			} else {
 				$interface->setTemplate('error.tpl');
 			}
 			$interface->setPageTitle('An Error has occurred');
@@ -208,10 +240,16 @@ class AspenError extends DataObject
 		$doLog = true;
 		// Microsoft Web Discussions Toolbar polls the server for these two files
 		//    it's not script kiddie hacking, just annoying in logs, ignore them.
-		if (strpos($_SERVER['REQUEST_URI'], "cltreq.asp") !== false) $doLog = false;
-		if (strpos($_SERVER['REQUEST_URI'], "owssvr.dll") !== false) $doLog = false;
+		if (strpos($_SERVER['REQUEST_URI'], "cltreq.asp") !== false) {
+			$doLog = false;
+		}
+		if (strpos($_SERVER['REQUEST_URI'], "owssvr.dll") !== false) {
+			$doLog = false;
+		}
 		// If we found any exceptions, finish here
-		if (!$doLog) exit();
+		if (!$doLog) {
+			exit();
+		}
 
 		// Log the error for administrative purposes -- we need to build a variety
 		// of pieces so we can supply information at five different verbosity levels:
@@ -225,10 +263,9 @@ class AspenError extends DataObject
 		if (!empty($this->backtrace)) {
 			if (is_array($this->backtrace)) {
 				foreach ($this->backtrace as $line) {
-					$basicBacktrace .= (isset($line['file']) ? $line['file'] : 'none') . "  line " . (isset($line['line']) ? $line['line'] : 'none') . " - " .
-						"class = " . (isset($line['class']) ? $line['class'] : 'none') . ", function = " . (isset($line['function']) ? $line['function'] : 'none') . "\n";
+					$basicBacktrace .= (isset($line['file']) ? $line['file'] : 'none') . "  line " . (isset($line['line']) ? $line['line'] : 'none') . " - " . "class = " . (isset($line['class']) ? $line['class'] : 'none') . ", function = " . (isset($line['function']) ? $line['function'] : 'none') . "\n";
 				}
-			}else{
+			} else {
 				$basicBacktrace .= $this->backtrace;
 			}
 		}
