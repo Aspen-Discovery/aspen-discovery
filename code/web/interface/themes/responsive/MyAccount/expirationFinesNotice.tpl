@@ -21,9 +21,9 @@
 				{else}
 					<div class="myAccountLink" title="{translate text="Please contact your local library to pay fines or charges." isPublicFacing=true}" style="color:#c62828; font-weight:bold;" onclick="alert('{translate text='Please contact your local library to pay fines or charges.' inAttribute=true isPublicFacing=true}')">
 						{if count($user->getLinkedUsers())>0}
-							{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency isPublicFacing=true}
+							{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency inAttribute=true isPublicFacing=true}
 						{else}
-							{translate text="Your account has %1% in fines." 1=$ilsSummary->totalFines|formatCurrency isPublicFacing=true}
+							{translate text="Your account has %1% in fines." 1=$ilsSummary->totalFines|formatCurrency inAttribute=true isPublicFacing=true}
 						{/if}
 					</div>
 				{/if}
