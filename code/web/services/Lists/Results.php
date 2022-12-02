@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Lists_Results extends ResultsAction
-{
-	function launch()
-	{
+class Lists_Results extends ResultsAction {
+	function launch() {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
@@ -30,7 +28,7 @@ class Lists_Results extends ResultsAction
 			echo $searchObject->buildRSS();
 			// And we're done
 			exit();
-		} else if ($searchObject->getView() == 'excel') {
+		} elseif ($searchObject->getView() == 'excel') {
 			// Throw the Excel spreadsheet to screen for download
 			$searchObject->buildExcel();
 			// And we're done
@@ -58,7 +56,7 @@ class Lists_Results extends ResultsAction
 			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
 			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
-		}elseif ($result instanceof AspenError || !empty($result['error'])) {
+		} elseif ($result instanceof AspenError || !empty($result['error'])) {
 			/** @var AspenError $result */
 			$this->getKeywordSearchResults($searchObject, $interface);
 
@@ -75,7 +73,7 @@ class Lists_Results extends ResultsAction
 
 					$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing lists search", $emailErrorDetails);
 				}
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				//This happens when the table has not been created
 			}
 
@@ -125,14 +123,12 @@ class Lists_Results extends ResultsAction
 				} else {
 					$errorMessage = $error;
 				}
-				if (stristr($errorMessage, 'org.apache.lucene.queryParser.ParseException') ||
-					preg_match('/^undefined field/', $errorMessage)) {
+				if (stristr($errorMessage, 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $errorMessage)) {
 					$interface->assign('parseError', true);
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
-					AspenError::raiseError(new AspenError('Unable to process query<br />' .
-						'Solr Returned: ' . $errorMessage));
+					AspenError::raiseError(new AspenError('Unable to process query<br />' . 'Solr Returned: ' . $errorMessage));
 				}
 			}
 
@@ -163,9 +159,11 @@ class Lists_Results extends ResultsAction
 				$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 				// Process Paging
 				$link = $searchObject->renderLinkPageTemplate();
-				$options = array('totalItems' => $summary['resultTotal'],
+				$options = [
+					'totalItems' => $summary['resultTotal'],
 					'fileName' => $link,
-					'perPage' => $summary['perPage']);
+					'perPage' => $summary['perPage'],
+				];
 				$pager = new Pager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
 			}
@@ -203,14 +201,16 @@ class Lists_Results extends ResultsAction
 	 * @param SearchObject_ListsSearcher $searchObject
 	 * @param UInterface $interface
 	 */
-	private function getKeywordSearchResults(SearchObject_ListsSearcher $searchObject, UInterface $interface): void
-	{
+	private function getKeywordSearchResults(SearchObject_ListsSearcher $searchObject, UInterface $interface): void {
 		//Check to see if we are not using a Keyword search and the Keyword search would provide results
 		if (!$searchObject->isAdvanced()) {
 			$searchTerms = $searchObject->getSearchTerms();
 			$keywordSearchObject = SearchObjectFactory::initSearchObject();
 			$keywordSearchObject->setPrimarySearch(false);
-			$keywordSearchObject->setSearchTerms(['index' => 'Keyword', 'lookfor' => $searchTerms[0]['lookfor']]);
+			$keywordSearchObject->setSearchTerms([
+				'index' => 'Keyword',
+				'lookfor' => $searchTerms[0]['lookfor'],
+			]);
 			$keywordSearchObject->disableSpelling();
 			$keywordSearchObject->clearFacets();
 			$keywordSearchObject->processSearch(false, false, false);
@@ -221,8 +221,7 @@ class Lists_Results extends ResultsAction
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return parent::getResultsBreadcrumbs('User Lists Search');
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 
-class AspenSiteCpuUsage extends DataObject
-{
+class AspenSiteCpuUsage extends DataObject {
 	public $__table = 'aspen_site_cpu_usage';
 	public $id;
 	public $aspenSiteId;

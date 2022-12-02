@@ -22,7 +22,7 @@ class DevelopmentSprint extends DataObject {
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
+				'description' => 'The unique id',
 			],
 			'name' => [
 				'property' => 'name',
@@ -31,19 +31,19 @@ class DevelopmentSprint extends DataObject {
 				'description' => 'The name of the release',
 				'maxLength' => 255,
 				'required' => true,
-				'canBatchUpdate' => false
+				'canBatchUpdate' => false,
 			],
 			'startDate' => [
 				'property' => 'startDate',
 				'type' => 'date',
 				'label' => 'Start Date',
-				'description' => 'The first day of the sprint'
+				'description' => 'The first day of the sprint',
 			],
 			'endDate' => [
 				'property' => 'endDate',
 				'type' => 'date',
 				'label' => 'End Date',
-				'description' => 'The last day of the sprint'
+				'description' => 'The last day of the sprint',
 			],
 			'active' => [
 				'property' => 'active',
@@ -56,7 +56,7 @@ class DevelopmentSprint extends DataObject {
 				'property' => 'totalStoryPoints',
 				'type' => 'label',
 				'label' => 'Total Story Points',
-				'description' => 'The total number of story points assigned to the release'
+				'description' => 'The total number of story points assigned to the release',
 			],
 			'relatedTasks' => [
 				'property' => 'relatedTasks',
@@ -72,7 +72,7 @@ class DevelopmentSprint extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 		];
 	}

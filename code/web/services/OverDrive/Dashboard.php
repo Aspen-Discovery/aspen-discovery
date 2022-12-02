@@ -6,10 +6,8 @@ require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 
-class OverDrive_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class OverDrive_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('UserOverDriveUsage');
@@ -39,23 +37,43 @@ class OverDrive_Dashboard extends Admin_Dashboard
 		$statsAllTime = $this->getStats($instanceName, null, null);
 		$interface->assign('statsAllTime', $statsAllTime);
 
-		list($activeRecordsThisMonth, $loansThisMonth, $holdsThisMonth) = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear);
+		[
+			$activeRecordsThisMonth,
+			$loansThisMonth,
+			$holdsThisMonth,
+		] = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('activeRecordsThisMonth', $activeRecordsThisMonth);
 		$interface->assign('loansThisMonth', $loansThisMonth);
 		$interface->assign('holdsThisMonth', $holdsThisMonth);
-		list($activeRecordsLastMonth, $loansLastMonth, $holdsLastMonth) = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear);
+		[
+			$activeRecordsLastMonth,
+			$loansLastMonth,
+			$holdsLastMonth,
+		] = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('activeRecordsLastMonth', $activeRecordsLastMonth);
 		$interface->assign('loansLastMonth', $loansLastMonth);
 		$interface->assign('holdsLastMonth', $holdsLastMonth);
-		list($activeRecordsThisYear, $loansThisYear, $holdsThisYear) = $this->getRecordStats($instanceName, null, $this->thisYear);
+		[
+			$activeRecordsThisYear,
+			$loansThisYear,
+			$holdsThisYear,
+		] = $this->getRecordStats($instanceName, null, $this->thisYear);
 		$interface->assign('activeRecordsThisYear', $activeRecordsThisYear);
 		$interface->assign('loansThisYear', $loansThisYear);
 		$interface->assign('holdsThisYear', $holdsThisYear);
-		list($activeRecordsLastYear, $loansLastYear, $holdsLastYear) = $this->getRecordStats($instanceName, null, $this->lastYear);
+		[
+			$activeRecordsLastYear,
+			$loansLastYear,
+			$holdsLastYear,
+		] = $this->getRecordStats($instanceName, null, $this->lastYear);
 		$interface->assign('activeRecordsLastYear', $activeRecordsLastYear);
 		$interface->assign('loansLastYear', $loansLastYear);
 		$interface->assign('holdsLastYear', $holdsLastYear);
-		list($activeRecordsAllTime, $loansAllTime, $holdsAllTime) = $this->getRecordStats($instanceName, null, null);
+		[
+			$activeRecordsAllTime,
+			$loansAllTime,
+			$holdsAllTime,
+		] = $this->getRecordStats($instanceName, null, null);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 		$interface->assign('loansAllTime', $loansAllTime);
 		$interface->assign('holdsAllTime', $holdsAllTime);
@@ -69,10 +87,9 @@ class OverDrive_Dashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return int
 	 */
-	public function getUserStats($instanceName, $month, $year): int
-	{
+	public function getUserStats($instanceName, $month, $year): int {
 		$userUsage = new UserOverDriveUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -91,10 +108,9 @@ class OverDrive_Dashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return array
 	 */
-	public function getRecordStats($instanceName, $month, $year): array
-	{
+	public function getRecordStats($instanceName, $month, $year): array {
 		$usage = new OverDriveRecordUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -110,11 +126,14 @@ class OverDrive_Dashboard extends Admin_Dashboard
 		$usage->find(true);
 
 		/** @noinspection PhpUndefinedFieldInspection */
-		return [$usage->recordsUsed, ($usage->totalCheckouts == null ? 0 : $usage->totalCheckouts), ($usage->totalHolds == null ? 0 : $usage->totalHolds)];
+		return [
+			$usage->recordsUsed,
+			($usage->totalCheckouts == null ? 0 : $usage->totalCheckouts),
+			($usage->totalHolds == null ? 0 : $usage->totalHolds),
+		];
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
@@ -122,14 +141,15 @@ class OverDrive_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'overdrive';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 
 	/**
@@ -138,10 +158,9 @@ class OverDrive_Dashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return OverDriveStats
 	 */
-	public function getStats($instanceName, $month, $year): OverDriveStats
-	{
+	public function getStats($instanceName, $month, $year): OverDriveStats {
 		$stats = new OverDriveStats();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$stats->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -166,9 +185,9 @@ class OverDrive_Dashboard extends Admin_Dashboard
 		$stats->selectAdd('SUM(numApiErrors) as numApiErrors');
 		$stats->selectAdd('SUM(numConnectionFailures) as numConnectionFailures');
 
-		if ($stats->find(true)){
+		if ($stats->find(true)) {
 			return $stats;
-		}else{
+		} else {
 			return new OverDriveStats();
 		}
 	}

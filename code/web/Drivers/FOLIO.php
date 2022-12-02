@@ -3,27 +3,23 @@
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
-class FOLIO extends AbstractIlsDriver
-{
+class FOLIO extends AbstractIlsDriver {
 	private $apiCurlWrapper;
 
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
-	public function __construct($accountProfile)
-	{
+	public function __construct($accountProfile) {
 		parent::__construct($accountProfile);
 		$this->apiCurlWrapper = new CurlWrapper();
 	}
 
-	function __destruct()
-	{
+	function __destruct() {
 		$this->apiCurlWrapper = null;
 	}
 
 	// 'Borrowed' from VuFind
-	public function patronLogin($username, $password, $validatedViaSSO)
-	{
+	public function patronLogin($username, $password, $validatedViaSSO) {
 		// Step 1 - authenticate credentials
 		// return error if bad credentials
 		// note username if good
@@ -46,10 +42,7 @@ class FOLIO extends AbstractIlsDriver
 			try {
 				// If we fetched the profile earlier, we want to use the username
 				// from there; otherwise, we'll use the passed-in version.
-				$query = $this->patronLoginWithOkapi(
-					$profile->username ?? $username,
-					$password
-				);
+				$query = $this->patronLoginWithOkapi($profile->username ?? $username, $password);
 			} catch (Exception $e) {
 				return null;
 			}
@@ -59,7 +52,7 @@ class FOLIO extends AbstractIlsDriver
 			// If we didn't load a profile earlier, we should do so now:
 			if (!isset($profile)) {
 				$query = $this->getUserWithCql($username);
-				$profile = $this->fetchUserWithCql(array('query' => $query));
+				$profile = $this->fetchUserWithCql(['query' => $query]);
 
 				if ($profile === null) {
 					return null;
@@ -103,16 +96,11 @@ class FOLIO extends AbstractIlsDriver
 	 *
 	 * @return string
 	 */
-	protected function patronLoginWithOkapi($username, $password)
-	{
+	protected function patronLoginWithOkapi($username, $password) {
 		global $logger;
 		$credentials = compact('username', 'password');
 		// Get token
-		$response = $this->makeRequest(
-			'POST',
-			'/authn/login',
-			json_encode($credentials)
-		);
+		$response = $this->makeRequest('POST', '/authn/login', json_encode($credentials));
 		if ($this->apiCurlWrapper->getResponseCode() == '201') {
 			$debugMsg = 'User ' . $username . ' successfully authenticated';
 		} else {
@@ -132,8 +120,7 @@ class FOLIO extends AbstractIlsDriver
 	 *
 	 * @return string
 	 */
-	protected function getUserWithCql($username)
-	{
+	protected function getUserWithCql($username) {
 		// Construct user query using barcode, username, etc.
 		$usernameField = 'username';
 		$cql = '%%username_field%% == "%%username%%"';
@@ -143,7 +130,7 @@ class FOLIO extends AbstractIlsDriver
 		];
 		$values = [
 			$usernameField,
-			$this->escapeCql($username)
+			$this->escapeCql($username),
 		];
 		return str_replace($placeholders, $values, $cql);
 	}
@@ -156,8 +143,7 @@ class FOLIO extends AbstractIlsDriver
 	 *
 	 * @return object
 	 */
-	protected function fetchUserWithCql($query)
-	{
+	protected function fetchUserWithCql($query) {
 		global $logger;
 		$logger->log("Query: " . json_encode($query), Logger::LOG_ERROR);
 		$response = $this->makeRequest('GET', '/users', $query);
@@ -166,8 +152,7 @@ class FOLIO extends AbstractIlsDriver
 	}
 
 
-	public function getCheckouts(User $user) : array
-	{
+	public function getCheckouts(User $user): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$query = ['query' => 'userId==' . $user->username . ' and status.name==Open'];
 		$transactions = [];
@@ -199,13 +184,11 @@ class FOLIO extends AbstractIlsDriver
 		return $transactions;
 	}
 
-	public function hasFastRenewAll() : bool
-	{
+	public function hasFastRenewAll(): bool {
 		return false;
 	}
 
-	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
-	{
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null) {
 		global $logger;
 		if ($itemId == null) {
 			require_once ROOT_DIR . '/sys/User/Checkout.php';
@@ -217,7 +200,7 @@ class FOLIO extends AbstractIlsDriver
 
 		$requestbody = [
 			'itemId' => $itemId,
-			'userId' => $patron->username
+			'userId' => $patron->username,
 		];
 		$response = $this->makeRequest('POST', '/circulation/renew-by-id', json_encode($requestbody));
 
@@ -232,15 +215,14 @@ class FOLIO extends AbstractIlsDriver
 		}
 
 		$logger->log($message, Logger::LOG_ERROR);
-		return array(
+		return [
 			'itemId' => $itemId,
 			'success' => $success,
-			'message' => $message
-		);
+			'message' => $message,
+		];
 	}
 
-	public function hasHolds()
-	{
+	public function hasHolds() {
 		return true;
 	}
 
@@ -254,19 +236,18 @@ class FOLIO extends AbstractIlsDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds(User $user) : array
-	{
+	public function getHolds(User $user): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
-		$query = array(
-			'query' => 'requesterId==' . $user->username . ' and status>Open'
-		);
+		$query = [
+			'query' => 'requesterId==' . $user->username . ' and status>Open',
+		];
 
-		$availableHolds = array();
-		$unavailableHolds = array();
-		$holds = array(
+		$availableHolds = [];
+		$unavailableHolds = [];
+		$holds = [
 			'available' => $availableHolds,
-			'unavailable' => $unavailableHolds
-		);
+			'unavailable' => $unavailableHolds,
+		];
 
 		foreach ($this->getPagedResults('requests', '/circulation/requests', $query) as $trans) {
 			$hold = new Hold();
@@ -318,8 +299,7 @@ class FOLIO extends AbstractIlsDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
-	{
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false): array {
 		global $logger;
 		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
 		$hold = json_decode($hold, true);
@@ -343,11 +323,11 @@ class FOLIO extends AbstractIlsDriver
 		}
 
 		$logger->log($message, Logger::LOG_ERROR);
-		return array(
+		return [
 			'itemId' => $itemId,
 			'success' => $success,
-			'message' => $message
-		);
+			'message' => $message,
+		];
 	}
 
 	/**
@@ -363,8 +343,7 @@ class FOLIO extends AbstractIlsDriver
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
-	{
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		// title-level holds are currently implemented through the same API
 		// as item-level holds, just without an item Id.
 		return placeItemHold($patron, $recordId, '', $pickupBranch, $cancelDate);
@@ -384,35 +363,31 @@ class FOLIO extends AbstractIlsDriver
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
-	{
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {}
 
-	}
-
-	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
-	{
-		return array(
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
+		return [
 			'success' => false,
-			'message' => 'Volume level holds have not been implemented for this ILS.');
+			'message' => 'Volume level holds have not been implemented for this ILS.',
+		];
 	}
 
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
-	{
-		return array(
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
+		return [
 			'success' => false,
-			'message' => 'Freezing holds not implemented for this ILS');
+			'message' => 'Freezing holds not implemented for this ILS',
+		];
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) : array
-	{
-		return array(
+	function thawHold($patron, $recordId, $itemToThawId): array {
+		return [
 			'success' => false,
-			'message' => 'Thawing holds not implemented for this ILS');
+			'message' => 'Thawing holds not implemented for this ILS',
+		];
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
-	{
+	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation): array {
 		global $logger;
 		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
 		$hold = json_decode($hold, true);
@@ -432,32 +407,29 @@ class FOLIO extends AbstractIlsDriver
 		}
 
 		$logger->log($message, Logger::LOG_ERROR);
-		return array(
+		return [
 			'itemId' => $itemToUpdateId,
 			'success' => $success,
-			'message' => $message
-		);
+			'message' => $message,
+		];
 
 	}
 
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
-	{
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade): array {
 		return [
 			'success' => false,
-			'messages' => ['Cannot update patron information with this ILS.']
+			'messages' => ['Cannot update patron information with this ILS.'],
 		];
 	}
 
-	function updateHomeLibrary(User $patron, string $homeLibraryCode)
-	{
+	function updateHomeLibrary(User $patron, string $homeLibraryCode) {
 		return [
 			'success' => false,
-			'messages' => ['Cannot update home library with this ILS.']
+			'messages' => ['Cannot update home library with this ILS.'],
 		];
 	}
 
-	public function getFines($patron, $includeMessages = false) : array
-	{
+	public function getFines($patron, $includeMessages = false): array {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$currencyCode = 'USD';
 		$variables = new SystemVariables();
@@ -481,15 +453,14 @@ class FOLIO extends AbstractIlsDriver
 				'type' => $fine->feeFineType,
 				'reason' => $fine->feeFineType,
 				'message' => $title,
-				'date' => date_format($date, "j M Y")
+				'date' => date_format($date, "j M Y"),
 			];
 		}
 		return $fines;
 	}
 
 
-	public function getWebServiceURL()
-	{
+	public function getWebServiceURL() {
 		if (empty($this->webServiceURL)) {
 			$webServiceURL = null;
 			if (!empty($this->accountProfile->patronApiUrl)) {
@@ -503,8 +474,7 @@ class FOLIO extends AbstractIlsDriver
 		return $this->webServiceURL;
 	}
 
-	public function getAccountSummary(User $user): AccountSummary
-	{
+	public function getAccountSummary(User $user): AccountSummary {
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
 		$summary->userId = $user->id;
@@ -542,54 +512,47 @@ class FOLIO extends AbstractIlsDriver
 		return $summary;
 	}
 
-	public function completeFinePayment(User $patron, UserPayment $payment)
-	{
+	public function completeFinePayment(User $patron, UserPayment $payment) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
-	public function patronEligibleForHolds(User $patron)
-	{
+	public function patronEligibleForHolds(User $patron) {
 		return [
 			'isEligible' => true,
 			'message' => '',
 			'fineLimitReached' => false,
 			'maxPhysicalCheckoutsReached' => false,
-			'expiredPatronWhoCannotPlaceHolds' => false
+			'expiredPatronWhoCannotPlaceHolds' => false,
 		];
 	}
 
 
-	public function logout(User $user)
-	{
-	}
+	public function logout(User $user) {}
 
 
-	public function hasNativeReadingHistory() : bool
-	{
+	public function hasNativeReadingHistory(): bool {
 		return false;
 	}
 
-	public function renewAll($patron)
-	{
+	public function renewAll($patron) {
 		return false;
 	}
 
-	function makeRequest($method, $endpoint, $request_body = null)
-	{
+	function makeRequest($method, $endpoint, $request_body = null) {
 		global $logger;
 		$apiUrl = $this->getWebServiceUrl() . $endpoint;
 		$this->apiCurlWrapper->addCustomHeaders([
 			'User-Agent: Aspen Discovery',
 			'Content-Type: application/json',
-			'x-okapi-tenant: ' . $this->accountProfile->oAuthClientId
+			'x-okapi-tenant: ' . $this->accountProfile->oAuthClientId,
 		], true);
 
 		if (isset($_SESSION['okapi_token'])) {
 			$this->apiCurlWrapper->addCustomHeaders([
-				'x-okapi-token: ' . $_SESSION['okapi_token']
+				'x-okapi-token: ' . $_SESSION['okapi_token'],
 			], false);
 		} else {
 			$headers = [];
@@ -597,18 +560,18 @@ class FOLIO extends AbstractIlsDriver
 			curl_setopt($this->apiCurlWrapper->curl_connection, CURLOPT_HEADER, 1);
 			curl_setopt($this->apiCurlWrapper->curl_connection, CURLOPT_RETURNTRANSFER, 1);
 			// this function is called by curl for each header received
-			curl_setopt($this->apiCurlWrapper->curl_connection, CURLOPT_HEADERFUNCTION,
-				function ($curl, $header) use (&$headers) {
-					$len = strlen($header);
-					$header = explode(':', $header, 2);
-					if (count($header) < 2) // ignore invalid headers
-						return $len;
-
-					$headers[strtolower(trim($header[0]))][] = trim($header[1]);
-
+			curl_setopt($this->apiCurlWrapper->curl_connection, CURLOPT_HEADERFUNCTION, function ($curl, $header) use (&$headers) {
+				$len = strlen($header);
+				$header = explode(':', $header, 2);
+				if (count($header) < 2) // ignore invalid headers
+				{
 					return $len;
 				}
-			);
+
+				$headers[strtolower(trim($header[0]))][] = trim($header[1]);
+
+				return $len;
+			});
 		}
 		if ($method == 'GET') {
 			$query_string = http_build_query($request_body);
@@ -634,8 +597,7 @@ class FOLIO extends AbstractIlsDriver
 		return $response;
 	}
 
-	protected function escapeCql($in)
-	{
+	protected function escapeCql($in) {
 		return str_replace('"', '\"', str_replace('&', '%26', $in));
 	}
 
@@ -648,8 +610,7 @@ class FOLIO extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	protected function getPagedResults($responseKey, $endpoint, $query = [])
-	{
+	protected function getPagedResults($responseKey, $endpoint, $query = []) {
 		global $logger;
 		$count = 0;
 		$limit = 1000;
@@ -657,11 +618,7 @@ class FOLIO extends AbstractIlsDriver
 
 		do {
 			$combinedQuery = array_merge($query, compact('offset', 'limit'));
-			$response = $this->makeRequest(
-				'GET',
-				$endpoint,
-				$combinedQuery
-			);
+			$response = $this->makeRequest('GET', $endpoint, $combinedQuery);
 			$logger->log("response: " . $response, Logger::LOG_ERROR);
 			if ($this->apiCurlWrapper->getResponseCode() == '200') {
 				$logger->log("got paged results", Logger::LOG_ERROR);

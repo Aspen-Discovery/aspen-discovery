@@ -1,8 +1,7 @@
 <?php
 
 
-class SystemUtils
-{
+class SystemUtils {
 	// Returns a file size limit in bytes based on the PHP upload_max_filesize
 	// and post_max_size
 	static function file_upload_max_size() {
@@ -32,26 +31,26 @@ class SystemUtils
 		if ($unit) {
 			// Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
 			return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
-		}
-		else {
+		} else {
 			return round($size);
 		}
 	}
 
-	static function recursive_rmdir($dir) : bool {
+	static function recursive_rmdir($dir): bool {
 		if (is_dir($dir)) {
 			$objects = scandir($dir);
 			foreach ($objects as $object) {
 				if ($object != "." && $object != "..") {
-					if (is_dir($dir."/".$object) && !is_link($dir."/".$object))
-						SystemUtils::recursive_rmdir($dir."/".$object);
-					else
-						unlink($dir."/".$object);
+					if (is_dir($dir . "/" . $object) && !is_link($dir . "/" . $object)) {
+						SystemUtils::recursive_rmdir($dir . "/" . $object);
+					} else {
+						unlink($dir . "/" . $object);
+					}
 				}
 			}
 			rmdir($dir);
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}

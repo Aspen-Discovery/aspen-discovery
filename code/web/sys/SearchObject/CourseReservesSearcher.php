@@ -1,10 +1,8 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 
-class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
-{
-	public function __construct()
-	{
+class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher {
+	public function __construct() {
 		parent::__construct();
 
 		global $configArray;
@@ -31,8 +29,7 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) &&
-			is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -43,10 +40,10 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'relevance' => 'Best Match',
-			'title' => 'Title'
-		);
+			'title' => 'Title',
+		];
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -63,8 +60,7 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = null) {
 		// Call the standard initialization routine in the parent:
 		parent::init('course_reserves');
 
@@ -75,7 +71,7 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if ($restored instanceof AspenError) {
+		} elseif ($restored instanceof AspenError) {
 			return false;
 		}
 
@@ -96,7 +92,7 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 
 		//Validate we got good search terms
 		foreach ($this->searchTerms as &$searchTerm) {
-			if (isset($searchTerm['index'])){
+			if (isset($searchTerm['index'])) {
 				if ($searchTerm['index'] == 'Keyword') {
 					$searchTerm['index'] = 'CourseReservesKeyword';
 				} elseif ($searchTerm['index'] == 'Title') {
@@ -104,8 +100,8 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 				} elseif ($searchTerm['index'] == 'Author') {
 					$searchTerm['index'] = 'CourseReservesInstructor';
 				}
-			}else{
-				foreach ($searchTerm['group'] as &$group){
+			} else {
+				foreach ($searchTerm['group'] as &$group) {
 					if ($group['field'] == 'Keyword') {
 						$group['field'] = 'CourseReservesKeyword';
 					} elseif ($group['field'] == 'Title') {
@@ -125,12 +121,23 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 		return true;
 	} // End init()
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			'CourseReservesKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'CourseReservesTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'CourseReservesInstructor' => translate(['text'=>'Instructor', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'CourseReservesKeyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'CourseReservesTitle' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'CourseReservesInstructor' => translate([
+				'text' => 'Instructor',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
@@ -138,29 +145,24 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 	 * Turn our results into an Excel document
 	 * @param array $result
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		// TODO: Implement buildExcel() method.
 	}
 
-	public function getUniqueField()
-	{
+	public function getUniqueField() {
 		return 'id';
 	}
 
-	public function getRecordDriverForResult($current)
-	{
+	public function getRecordDriverForResult($current) {
 		require_once ROOT_DIR . '/RecordDrivers/CourseReservesRecordDriver.php';
 		return new CourseReservesRecordDriver($current);
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'courseReservesSearches';
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -169,8 +171,7 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'CourseReservesTitle') {
 			$suggestionHandler = 'title_suggest';
@@ -182,8 +183,7 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 	}
 
 	//TODO: Convert this to use definitions so they can be customized in admin
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$libraryFacet = new LibraryFacetSetting();
@@ -235,12 +235,11 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'CourseReserves';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'CourseReservesKeyword';
 	}
 }

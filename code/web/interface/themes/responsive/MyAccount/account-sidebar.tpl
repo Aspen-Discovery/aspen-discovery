@@ -183,7 +183,7 @@
 					</div>
 				</div>
 
-				{if $action=='MyPreferences' || $action=='ContactInformation' || $action=='MessagingSettings' || $action=='LinkedAccounts' || $action=='Security' || $action=='ResetPinPage' || $action=='OverDriveOptions' || $action=='HooplaOptions' || $action=='Axis360Options' || $action=='StaffSettings' || $action=='HoldNotificationPreferences'}
+				{if $action=='MyPreferences' || $action=='ContactInformation' || $action=='MessagingSettings' || $action=='LinkedAccounts' || $action=='Security' || $action=='ResetPinPage' || $action=='OverDriveOptions' || $action=='HooplaOptions' || $action=='Axis360Options' || $action=='StaffSettings' || $action=='HoldNotificationPreferences' || $action=='ResetUsername'}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}

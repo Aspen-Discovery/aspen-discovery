@@ -1,10 +1,8 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
 
-class SystemAPI extends Action
-{
-	function launch()
-	{
+class SystemAPI extends Action {
+	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		//Set Headers
@@ -13,40 +11,55 @@ class SystemAPI extends Action
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		if($method === "getLogoFile") {
+		if ($method === "getLogoFile") {
 			return $this->$method();
 		};
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLocationAppSettings', 'getTranslation', 'getLanguages', 'getVdxForm'))) {
+			if ($this->grantTokenAccess()) {
+				if (in_array($method, [
+					'getLibraryInfo',
+					'getLocationInfo',
+					'getThemeInfo',
+					'getAppSettings',
+					'getLocationAppSettings',
+					'getTranslation',
+					'getLanguages',
+					'getVdxForm',
+				])) {
 					$result = [
-						'result' => $this->$method()
+						'result' => $this->$method(),
 					];
 					$output = json_encode($result);
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SystemAPI', $method);
 				} else {
-					$output = json_encode(array('error' => 'invalid_method'));
+					$output = json_encode(['error' => 'invalid_method']);
 				}
 			} else {
 				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(array('error' => 'unauthorized_access'));
+				$output = json_encode(['error' => 'unauthorized_access']);
 			}
 			ExternalRequestLogEntry::logRequest('SystemAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 			echo $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
-			if (!in_array($method, ['getCatalogConnection', 'getUserForApiCall', 'checkWhichUpdatesHaveRun', 'getPendingDatabaseUpdates', 'runSQLStatement', 'markUpdateAsRun'])
-				&& method_exists($this, $method)) {
+			if (!in_array($method, [
+					'getCatalogConnection',
+					'getUserForApiCall',
+					'checkWhichUpdatesHaveRun',
+					'getPendingDatabaseUpdates',
+					'runSQLStatement',
+					'markUpdateAsRun',
+				]) && method_exists($this, $method)) {
 				$result = [
-					'result' => $this->$method()
+					'result' => $this->$method(),
 				];
 				$output = json_encode($result);
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('SystemAPI', $method);
 			} else {
-				$output = json_encode(array('error' => 'invalid_method'));
+				$output = json_encode(['error' => 'invalid_method']);
 			}
 			echo $output;
 		} else {
@@ -55,89 +68,111 @@ class SystemAPI extends Action
 
 	}
 
-	public function getLibraries() : array
-	{
+	public function getLibraries(): array {
 		$return = [
 			'success' => true,
-			'libraries' => []
+			'libraries' => [],
 		];
 		$library = new Library();
 		$library->orderBy('isDefault desc');
 		$library->orderBy('displayName');
 		$library->find();
-		while ($library->fetch()){
+		while ($library->fetch()) {
 			$return['libraries'][$library->libraryId] = $library->getApiInfo();
 		}
 		return $return;
 	}
 
 	/** @noinspection PhpUnused */
-	public function getLibraryInfo() : array
-	{
+	public function getLibraryInfo(): array {
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
 			$library = new Library();
 			$library->libraryId = $_REQUEST['id'];
-			if ($library->find(true)){
-				return ['success' => true, 'library' => $library->getApiInfo()];
-			}else{
-				return ['success' => false, 'message' => 'Library not found'];
+			if ($library->find(true)) {
+				return [
+					'success' => true,
+					'library' => $library->getApiInfo(),
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Library not found',
+				];
 			}
-		}else{
-			return ['success' => false, 'message' => 'id not provided'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'id not provided',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function getLocationInfo() : array
-	{
+	public function getLocationInfo(): array {
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
 			$location = new Location();
 			$location->locationId = $_REQUEST['id'];
-			if ($location->find(true)){
-				return ['success' => true, 'location' => $location->getApiInfo()];
-			}else{
-				return ['success' => false, 'message' => 'Location not found'];
+			if ($location->find(true)) {
+				return [
+					'success' => true,
+					'location' => $location->getApiInfo(),
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Location not found',
+				];
 			}
-		}else{
-			return ['success' => false, 'message' => 'id not provided'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'id not provided',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function getThemeInfo() : array
-	{
+	public function getThemeInfo(): array {
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
 			$theme = new Theme();
 			$theme->id = $_REQUEST['id'];
-			if ($theme->find(true)){
-				return ['success' => true, 'theme' => $theme->getApiInfo()];
-			}else{
-				return ['success' => false, 'message' => 'Theme not found'];
+			if ($theme->find(true)) {
+				return [
+					'success' => true,
+					'theme' => $theme->getApiInfo(),
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Theme not found',
+				];
 			}
-		}else{
-			return ['success' => false, 'message' => 'Theme id not provided'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Theme id not provided',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function getAppSettings() : array
-	{
+	public function getAppSettings(): array {
 		global $configArray;
 		if (isset($_REQUEST['slug'])) {
 			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
 			$app = new BrandedAppSetting();
 			$app->slugName = $_REQUEST['slug'];
-			if ($app->find(true)){
+			if ($app->find(true)) {
 				$settings = [];
-				if($app->logoLogin) {
+				if ($app->logoLogin) {
 					$settings['logoLogin'] = $configArray['Site']['url'] . '/files/original/' . $app->logoLogin;
 				}
 
-				if($app->logoSplash) {
+				if ($app->logoSplash) {
 					$settings['logoSplash'] = $configArray['Site']['url'] . '/files/original/' . $app->logoSplash;
 				}
 
-				if($app->privacyPolicy) {
+				if ($app->privacyPolicy) {
 					$settings['privacyPolicy'] = $app->privacyPolicy;
 				}
 
@@ -145,74 +180,102 @@ class SystemAPI extends Action
 					'success' => true,
 					'settings' => $settings,
 				];
-			}else{
-				return ['success' => false, 'message' => 'App settings for slug name not found'];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'App settings for slug name not found',
+				];
 			}
-		}else{
-			return ['success' => false, 'message' => 'Slug name for app not provided'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Slug name for app not provided',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function getNotificationSettings() : array
-	{
+	public function getNotificationSettings(): array {
 		if (isset($_REQUEST['libraryId'])) {
 			$library = new Library();
 			$library->libraryId = $_REQUEST['libraryId'];
-			if($library->find(true)) {
+			if ($library->find(true)) {
 				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 				$notificationSettings = new NotificationSetting();
 				$notificationSettings->id = $library->lidaNotificationSettingId;
-				if($notificationSettings->find(true)) {
+				if ($notificationSettings->find(true)) {
 					$settings['sendTo'] = $notificationSettings->sendTo;
 					$settings['notifySavedSearch'] = $notificationSettings->notifySavedSearch;
-					return ['success' => true, 'settings' => $settings];
+					return [
+						'success' => true,
+						'settings' => $settings,
+					];
 				} else {
-					return ['success' => false, 'message' => 'No notification settings found for library'];
+					return [
+						'success' => false,
+						'message' => 'No notification settings found for library',
+					];
 				}
 			} else {
-				return ['success' => false, 'message' => 'No library found with provided id'];
+				return [
+					'success' => false,
+					'message' => 'No library found with provided id',
+				];
 			}
-		} else{
-			return ['success' => false, 'message' => 'Must provide a library id'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Must provide a library id',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function getLocationAppSettings() : array
-	{
+	public function getLocationAppSettings(): array {
 		if (isset($_REQUEST['locationId'])) {
 			$location = new Location();
 			$location->locationId = $_REQUEST['locationId'];
-			if($location->find(true)) {
+			if ($location->find(true)) {
 				require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 				$appSettings = new AppSetting();
 				$appSettings->id = $location->lidaGeneralSettingId;
-				if($appSettings->find(true)) {
+				if ($appSettings->find(true)) {
 					$settings['releaseChannel'] = $appSettings->releaseChannel;
 					$settings['enableAccess'] = $appSettings->enableAccess;
-					return ['success' => true, 'settings' => $settings];
+					return [
+						'success' => true,
+						'settings' => $settings,
+					];
 				} else {
-					return ['success' => false, 'message' => 'No app settings found for location'];
+					return [
+						'success' => false,
+						'message' => 'No app settings found for location',
+					];
 				}
 			} else {
-				return ['success' => false, 'message' => 'No location found with provided id'];
+				return [
+					'success' => false,
+					'message' => 'No location found with provided id',
+				];
 			}
-		} else{
-			return ['success' => false, 'message' => 'Must provide a location id'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Must provide a location id',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	public function getCurrentVersion() : array {
+	public function getCurrentVersion(): array {
 		global $interface;
 		$gitBranch = $interface->getVariable('gitBranchWithCommit');
 		return [
-			'version' => $gitBranch
+			'version' => $gitBranch,
 		];
 	}
 
-	public function getDatabaseUpdates() : array {
+	public function getDatabaseUpdates(): array {
 		require_once ROOT_DIR . '/sys/DBMaintenance/base_updates.php';
 		$initialUpdates = getInitialUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/library_location_updates.php';
@@ -262,39 +325,13 @@ class SystemAPI extends Action
 		$fileUploadUpdates = getFileUploadUpdates();
 		$finalBaseUpdates = getFinalBaseUpdates();
 
-		$baseUpdates = array_merge(
-			$initialUpdates,
-			$library_location_updates,
-			$postLibraryBaseUpdates,
-			$user_updates,
-			$grouped_work_updates,
-			$genealogy_updates,
-			$browse_updates,
-			$collection_spotlight_updates,
-			$indexing_updates,
-			$overdrive_updates,
-			$ebscoUpdates,
-			$axis360Updates,
-			$hoopla_updates,
-			$rbdigital_updates,
-			$sierra_api_updates,
-			$theming_updates,
-			$translation_updates,
-			$open_archives_updates,
-			$redwood_updates,
-			$cloudLibraryUpdates,
-			$websiteIndexingUpdates,
-			$webBuilderUpdates,
-			$eventsIntegrationUpdates,
-			$fileUploadUpdates,
-			$finalBaseUpdates
-		);
+		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates);
 
 		//Get version updates
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-		$versionUpdates = scandir(ROOT_DIR . '/sys/DBMaintenance/version_updates', SCANDIR_SORT_ASCENDING );
-		foreach ($versionUpdates as $updateFile){
-			if (is_file(ROOT_DIR . '/sys/DBMaintenance/version_updates/' . $updateFile)){
+		$versionUpdates = scandir(ROOT_DIR . '/sys/DBMaintenance/version_updates', SCANDIR_SORT_ASCENDING);
+		foreach ($versionUpdates as $updateFile) {
+			if (is_file(ROOT_DIR . '/sys/DBMaintenance/version_updates/' . $updateFile)) {
 				if (StringUtils::endsWith($updateFile, '.php')) {
 					include_once ROOT_DIR . "/sys/DBMaintenance/version_updates/$updateFile";
 					$version = substr($updateFile, 0, strrpos($updateFile, '.'));
@@ -308,28 +345,28 @@ class SystemAPI extends Action
 		return $baseUpdates;
 	}
 
-	public function hasPendingDatabaseUpdates(){
+	public function hasPendingDatabaseUpdates() {
 		$availableUpdates = $this->getPendingDatabaseUpdates();
 		return count($availableUpdates) > 0;
 	}
 
-	public function getPendingDatabaseUpdates(){
+	public function getPendingDatabaseUpdates() {
 		$availableUpdates = $this->getDatabaseUpdates();
 		$availableUpdates = $this->checkWhichUpdatesHaveRun($availableUpdates);
 		$pendingUpdates = [];
-		foreach ($availableUpdates as $key => $update){
-			if (!$update['alreadyRun']){
+		foreach ($availableUpdates as $key => $update) {
+			if (!$update['alreadyRun']) {
 				$pendingUpdates[$key] = $update;
 			}
 		}
 		return $pendingUpdates;
 	}
 
-	public function runDatabaseUpdate(&$availableUpdates, $updateName){
-		if ($availableUpdates == null){
+	public function runDatabaseUpdate(&$availableUpdates, $updateName) {
+		if ($availableUpdates == null) {
 			$availableUpdates = $this->getDatabaseUpdates();
 		}
-		if (isset($availableUpdates[$updateName])){
+		if (isset($availableUpdates[$updateName])) {
 			$updateToRun = $availableUpdates[$updateName];
 			$sqlStatements = $updateToRun['sql'];
 			$updateOk = true;
@@ -352,18 +389,17 @@ class SystemAPI extends Action
 			$availableUpdates[$updateName] = $updateToRun;
 			return [
 				'success' => $updateOk,
-				'message' => $updateToRun['status']
+				'message' => $updateToRun['status'],
 			];
-		}else{
+		} else {
 			return [
 				'success' => false,
-				'message' => 'Could not find update to run'
+				'message' => 'Could not find update to run',
 			];
 		}
 	}
 
-	private function runSQLStatement(&$update, $sql)
-	{
+	private function runSQLStatement(&$update, $sql) {
 		global $aspen_db;
 		set_time_limit(500);
 		$updateOk = true;
@@ -371,7 +407,10 @@ class SystemAPI extends Action
 			$aspen_db->query($sql);
 			if (!isset($update['status'])) {
 				$update['success'] = true;
-				$update['status'] = translate(['text' => 'Update succeeded', 'isAdminFacing'=>true]);
+				$update['status'] = translate([
+					'text' => 'Update succeeded',
+					'isAdminFacing' => true,
+				]);
 			}
 		} catch (PDOException $e) {
 			$update['success'] = false;
@@ -389,8 +428,7 @@ class SystemAPI extends Action
 		return $updateOk;
 	}
 
-	private function markUpdateAsRun($update_key)
-	{
+	private function markUpdateAsRun($update_key) {
 		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
 		if ($result->rowCount() != false) {
@@ -401,34 +439,33 @@ class SystemAPI extends Action
 		}
 	}
 
-	public function runPendingDatabaseUpdates(){
+	public function runPendingDatabaseUpdates() {
 		$pendingUpdates = $this->getPendingDatabaseUpdates();
 		$numRun = 0;
 		$numFailed = 0;
 		$errors = '';
-		foreach ($pendingUpdates as $key => $pendingUpdate){
+		foreach ($pendingUpdates as $key => $pendingUpdate) {
 			$numRun++;
 			$this->runDatabaseUpdate($pendingUpdates, $key);
-			if (!$pendingUpdates[$key]['success']){
+			if (!$pendingUpdates[$key]['success']) {
 				$numFailed++;
 				$errors .= $pendingUpdates[$key]['title'] . '<br/>' . $pendingUpdates[$key]['status'] . '<br/>';
 			}
 		}
-		if ($numFailed == 0){
+		if ($numFailed == 0) {
 			return [
 				'success' => true,
-				'message' => $numRun . " updates ran successfully"
+				'message' => $numRun . " updates ran successfully",
 			];
-		}else{
+		} else {
 			return [
 				'success' => false,
-				'message' => $numFailed . " of " . $numRun . " updates ran successfully<br/>" . $errors
+				'message' => $numFailed . " of " . $numRun . " updates ran successfully<br/>" . $errors,
 			];
 		}
 	}
 
-	public function checkWhichUpdatesHaveRun($availableUpdates)
-	{
+	public function checkWhichUpdatesHaveRun($availableUpdates) {
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
@@ -442,14 +479,14 @@ class SystemAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function createKeyFile(){
+	function createKeyFile() {
 		global $serverName;
 		$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
 		if (!file_exists($passkeyFile)) {
 			// Return the file path (note that all ini files are in the conf/ directory)
 			$methods = [
 				'aes-256-gcm',
-				'aes-128-gcm'
+				'aes-128-gcm',
 			];
 			foreach ($methods as $cipher) {
 				if (in_array($cipher, openssl_get_cipher_methods())) {
@@ -463,12 +500,12 @@ class SystemAPI extends Action
 			fclose($passkeyFhnd);
 
 			//Make sure the file is not readable by anyone except the aspen user
-			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
+			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 				$runningOnWindows = true;
-			}else{
+			} else {
 				$runningOnWindows = false;
 			}
-			if (!$runningOnWindows){
+			if (!$runningOnWindows) {
 				exec('chown aspen:aspen_apache ' . $passkeyFile);
 				exec('chmod 440 ' . $passkeyFile);
 			}
@@ -480,29 +517,28 @@ class SystemAPI extends Action
 		$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
 		if (!file_exists($passkeyFile)) {
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
 
-	public function displayAdminAlert() : bool {
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	public function displayAdminAlert(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public function getLogoFile()
-	{
+	public function getLogoFile() {
 		if (isset($_REQUEST['type'])) {
 			global $configArray;
 			$type = strip_tags($_REQUEST['type']);
 
 			require_once ROOT_DIR . '/sys/Theming/Theme.php';
 			$theme = new Theme();
-			if(isset($_REQUEST['themeId'])) {
+			if (isset($_REQUEST['themeId'])) {
 				$theme->id = $_REQUEST['themeId'];
 				if (!$theme->find(true)) {
 					die();
@@ -511,7 +547,7 @@ class SystemAPI extends Action
 
 			require_once ROOT_DIR . '/sys/AspenLiDA/BrandedAppSetting.php';
 			$app = new BrandedAppSetting();
-			if(isset($_REQUEST['slug'])) {
+			if (isset($_REQUEST['slug'])) {
 				$app->slugName = $_REQUEST['slug'];
 				if (!$app->find(true)) {
 					die();
@@ -549,7 +585,7 @@ class SystemAPI extends Action
 
 				$size = intval(sprintf("%u", filesize($fullPath)));
 
-				if($extension == 'svg'){
+				if ($extension == 'svg') {
 					header('Content-Type: image/svg+xml');
 				} else {
 					header('Content-Type: image/png');
@@ -579,47 +615,46 @@ class SystemAPI extends Action
 	}
 
 
-	function getTranslation(){
-		if (isset($_REQUEST['term'])){
+	function getTranslation() {
+		if (isset($_REQUEST['term'])) {
 			$terms[] = $_REQUEST['term'];
-		}elseif (isset($_REQUEST['terms'])){
+		} elseif (isset($_REQUEST['terms'])) {
 			if (is_array($_REQUEST['terms'])) {
 				$terms = $_REQUEST['terms'];
-			}else{
+			} else {
 				$terms[] = $_REQUEST['term'];
 			}
-		}else{
+		} else {
 			return [
 				'success' => false,
-				'message' => 'Please provide at least one term to translate.'
+				'message' => 'Please provide at least one term to translate.',
 			];
 		}
 
-		if (isset($_REQUEST['language'])){
+		if (isset($_REQUEST['language'])) {
 			$language = new Language();
 			$language->code = $_REQUEST['language'];
 			if ($language->find(true)) {
 				global $activeLanguage;
 				$activeLanguage = $language;
-			}else{
+			} else {
 				return [
 					'success' => false,
-					'message' => 'Invalid language provided.'
+					'message' => 'Invalid language provided.',
 				];
 			}
-		}else{
+		} else {
 			return [
 				'success' => false,
-				'message' => 'Please provide the term to translate into.'
+				'message' => 'Please provide the term to translate into.',
 			];
 		}
 
 		$response = [
 			'success' => true,
 		];
-		/** @var Translator $translator */
-		global $translator;
-		foreach ($terms as $term){
+		/** @var Translator $translator */ global $translator;
+		foreach ($terms as $term) {
 			$response['translations'][$term] = $translator->translate($term, $term, [], true, true);
 		}
 		return $response;
@@ -631,7 +666,7 @@ class SystemAPI extends Action
 		$validLanguage = new Language();
 		$validLanguage->orderBy("weight");
 		$validLanguage->find();
-		while($validLanguage->fetch()) {
+		while ($validLanguage->fetch()) {
 			if (!$validLanguage->displayToTranslatorsOnly) {
 				$validLanguages[$validLanguage->code]['id'] = $validLanguage->id;
 				$validLanguages[$validLanguage->code]['code'] = $validLanguage->code;
@@ -640,21 +675,33 @@ class SystemAPI extends Action
 			}
 		}
 
-		return array (
+		return [
 			'success' => true,
 			'languages' => $validLanguages,
-		);
+		];
 	}
 
-	function getDevelopmentPriorities() : array {
+	function getDevelopmentPriorities(): array {
 		require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 		$supportConnections = new RequestTrackerConnection();
 		$activeTickets = [];
 		$numActiveTickets = 0;
 		$priorities = [
-			'priority1' => ['id' => '-1', 'title' => 'none', 'link'=>''],
-			'priority2' => ['id' => '-1', 'title' => 'none', 'link'=>''],
-			'priority3' => ['id' => '-1', 'title' => 'none', 'link'=>''],
+			'priority1' => [
+				'id' => '-1',
+				'title' => 'none',
+				'link' => '',
+			],
+			'priority2' => [
+				'id' => '-1',
+				'title' => 'none',
+				'link' => '',
+			],
+			'priority3' => [
+				'id' => '-1',
+				'title' => 'none',
+				'link' => '',
+			],
 		];
 		if ($supportConnections->find(true)) {
 			$activeTickets = $supportConnections->getActiveTickets();
@@ -662,62 +709,115 @@ class SystemAPI extends Action
 
 			require_once ROOT_DIR . '/sys/Support/DevelopmentPriorities.php';
 			$developmentPriorities = new DevelopmentPriorities();
-			if ($developmentPriorities->find(true)){
-				$priorities['priority1'] = ($developmentPriorities->priority1 == -1 || !array_key_exists($developmentPriorities->priority1, $activeTickets)) ? ['id' => '-1', 'title' => 'none', 'link'=>''] : $activeTickets[$developmentPriorities->priority1];
-				$priorities['priority2'] = ($developmentPriorities->priority2 == -1 || !array_key_exists($developmentPriorities->priority2, $activeTickets)) ? ['id' => '-1', 'title' => 'none', 'link'=>''] : $activeTickets[$developmentPriorities->priority2];
-				$priorities['priority3'] = ($developmentPriorities->priority1 == -1 || !array_key_exists($developmentPriorities->priority3, $activeTickets)) ? ['id' => '-1', 'title' => 'none', 'link'=>''] : $activeTickets[$developmentPriorities->priority3];
+			if ($developmentPriorities->find(true)) {
+				$priorities['priority1'] = ($developmentPriorities->priority1 == -1 || !array_key_exists($developmentPriorities->priority1, $activeTickets)) ? [
+					'id' => '-1',
+					'title' => 'none',
+					'link' => '',
+				] : $activeTickets[$developmentPriorities->priority1];
+				$priorities['priority2'] = ($developmentPriorities->priority2 == -1 || !array_key_exists($developmentPriorities->priority2, $activeTickets)) ? [
+					'id' => '-1',
+					'title' => 'none',
+					'link' => '',
+				] : $activeTickets[$developmentPriorities->priority2];
+				$priorities['priority3'] = ($developmentPriorities->priority1 == -1 || !array_key_exists($developmentPriorities->priority3, $activeTickets)) ? [
+					'id' => '-1',
+					'title' => 'none',
+					'link' => '',
+				] : $activeTickets[$developmentPriorities->priority3];
 			}
 		}
 
-		return array(
+		return [
 			'success' => true,
 			'priorities' => $priorities,
 			'numActiveTickets' => $numActiveTickets,
-		);
+		];
 	}
 
 	function getVdxForm() {
-		$result = array(
+		$result = [
 			'success' => false,
 			'title' => 'Error',
 			'message' => 'Unable to load VDX form',
-		);
+		];
 
 		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 		require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 
-		if(isset($_REQUEST['formId'])) {
+		if (isset($_REQUEST['formId'])) {
 			$formId = $_REQUEST['formId'];
 		} else {
-			return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'A VDX form id was not given.', 'isPublicFacing'=> true]));
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Invalid Configuration',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'A VDX form id was not given.',
+					'isPublicFacing' => true,
+				]),
+			];
 		}
 
 		$vdxSettings = new VdxSetting();
-		if($vdxSettings->find(true)) {
+		if ($vdxSettings->find(true)) {
 			$vdxForm = new VdxForm();
 			$vdxForm->id = $formId;
-			if($vdxForm->find(true)) {
+			if ($vdxForm->find(true)) {
 				$vdxFormFields = $vdxForm->getFormFieldsForApi();
-				$result = array(
+				$result = [
 					'success' => true,
-					'title' => translate(['text' => 'Request Title', 'isPublicFacing'=> true]),
-					'message' => translate(['text' => 'If you cannot find a title in our catalog, you can request the title via this form. Please enter as much information as possible so we can find the exact title you are looking for. For example, if you are looking for a specific season of a TV show, please include that information.', 'isPublicFacing' => true]),
-					'buttonLabel' => translate(['text' => 'Place Request', 'isPublicFacing'=> true]),
-					'buttonLabelProcessing' => translate(['text' => 'Placing Request', 'isPublicFacing'=> true]),
+					'title' => translate([
+						'text' => 'Request Title',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'If you cannot find a title in our catalog, you can request the title via this form. Please enter as much information as possible so we can find the exact title you are looking for. For example, if you are looking for a specific season of a TV show, please include that information.',
+						'isPublicFacing' => true,
+					]),
+					'buttonLabel' => translate([
+						'text' => 'Place Request',
+						'isPublicFacing' => true,
+					]),
+					'buttonLabelProcessing' => translate([
+						'text' => 'Placing Request',
+						'isPublicFacing' => true,
+					]),
 					'fields' => $vdxFormFields,
-				);
+				];
 			} else {
-				return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'Unable to find the specified form.', 'isPublicFacing'=> true]));
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Invalid Configuration',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Unable to find the specified form.',
+						'isPublicFacing' => true,
+					]),
+				];
 			}
 		} else {
-			return array('success' => false, 'title' => translate(['text' => 'Invalid Configuration', 'isPublicFacing'=> true]), 'message' => translate(['text' => 'VDX Settings do not exist, please contact the library to make a request.', 'isPublicFacing'=> true]));
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Invalid Configuration',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'VDX Settings do not exist, please contact the library to make a request.',
+					'isPublicFacing' => true,
+				]),
+			];
 		}
 
 		return $result;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

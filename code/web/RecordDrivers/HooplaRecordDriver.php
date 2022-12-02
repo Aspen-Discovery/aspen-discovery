@@ -3,18 +3,20 @@
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
+
 class HooplaRecordDriver extends GroupedWorkSubDriver {
 	private $id;
 	/** @var HooplaExtract */
 	private $hooplaExtract;
 	private $hooplaRawMetadata;
 	private $valid;
+
 	/**
 	 * Constructor.  We build the object using data from the Hoopla records stored on disk.
 	 * Will be similar to a MarcRecord with slightly different functionality
 	 *
 	 * @param string $recordId
-	 * @param  GroupedWork $groupedWork;
+	 * @param GroupedWork $groupedWork ;
 	 * @access  public
 	 */
 	public function __construct($recordId, $groupedWork = null) {
@@ -29,12 +31,12 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$this->valid = false;
 			$this->hooplaExtract = null;
 		}
-		if ($this->valid){
+		if ($this->valid) {
 			parent::__construct($groupedWork);
 		}
 	}
 
-	public function getIdWithSource(){
+	public function getIdWithSource() {
 		return 'hoopla:' . $this->id;
 	}
 
@@ -42,22 +44,21 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * Load the grouped work that this record is connected to.
 	 */
 	public function loadGroupedWork() {
-		if ($this->groupedWork == null){
+		if ($this->groupedWork == null) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='hoopla' AND identifier = '" . $this->getUniqueID() . "'";
 			$groupedWork->query($query);
 
-			if ($groupedWork->getNumResults() == 1){
+			if ($groupedWork->getNumResults() == 1) {
 				$groupedWork->fetch();
 				$this->groupedWork = clone $groupedWork;
 			}
 		}
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'Hoopla';
 	}
 
@@ -69,8 +70,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		global $interface;
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null) {
@@ -93,15 +93,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 *
 	 * @return  string
 	 */
-	public function getTitle()
-	{
-        //if episode or subtitle data, match what is displayed in search results
-        if (!empty($this->hooplaRawMetadata->episode)) {
-            return $this->hooplaRawMetadata->titleTitle.': '.$this->hooplaExtract->title;
-        }else if (!empty($this->hooplaRawMetadata->subtitle)) {
-            return $this->hooplaExtract->title.': '.$this->hooplaRawMetadata->subtitle;
-        }else
-		return $this->hooplaExtract->title;
+	public function getTitle() {
+		//if episode or subtitle data, match what is displayed in search results
+		if (!empty($this->hooplaRawMetadata->episode)) {
+			return $this->hooplaRawMetadata->titleTitle . ': ' . $this->hooplaExtract->title;
+		} elseif (!empty($this->hooplaRawMetadata->subtitle)) {
+			return $this->hooplaExtract->title . ': ' . $this->hooplaRawMetadata->subtitle;
+		} else {
+			return $this->hooplaExtract->title;
+		}
 	}
 
 	/**
@@ -111,21 +111,20 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * @access  public
 	 * @return  array              Array of elements in the table of contents
 	 */
-	public function getTableOfContents()
-	{
-		$tableOfContents = array();
+	public function getTableOfContents() {
+		$tableOfContents = [];
 		$segments = $this->hooplaRawMetadata->segments;
-		if (!empty($segments)){
-			foreach ($segments as $segment){
+		if (!empty($segments)) {
+			foreach ($segments as $segment) {
 				$label = $segment->name;
-				if ($segment->seconds){
+				if ($segment->seconds) {
 					$hours = floor($segment->seconds / 3600);
 					$mins = floor($segment->seconds / 60 % 60);
 					$secs = floor($segment->seconds % 60);
 
-					if ($hours > 0){
+					if ($hours > 0) {
 						$label .= sprintf(' (%01d:%02d:%02d)', $hours, $mins, $secs);
-					}else{
+					} else {
 						$label .= sprintf(' (%01d:%02d)', $mins, $secs);
 					}
 
@@ -144,21 +143,19 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->id;
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		if (!empty($this->hooplaRawMetadata->synopsis)) {
 			return $this->hooplaRawMetadata->synopsis;
-		}else{
+		} else {
 			return "";
 		}
 	}
 
-	public function getMoreDetailsOptions(){
+	public function getMoreDetailsOptions() {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();
@@ -171,41 +168,40 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 		//Other editions if applicable (only if we aren't the only record!)
 		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
-		if (count($relatedRecords) > 1){
+		if (count($relatedRecords) > 1) {
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
-			$interface->assign('workId',$this->getGroupedWorkDriver()->getPermanentId());
-			$moreDetailsOptions['otherEditions'] = array(
+			$interface->assign('workId', $this->getGroupedWorkDriver()->getPermanentId());
+			$moreDetailsOptions['otherEditions'] = [
 				'label' => 'Other Editions and Formats',
 				'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-				'hideByDefault' => false
-			);
+				'hideByDefault' => false,
+			];
 		}
 
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body' => $interface->fetch('Hoopla/view-more-details.tpl'),
-		);
+		];
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects'] = array(
+		$moreDetailsOptions['subjects'] = [
 			'label' => 'Subjects',
 			'body' => $interface->fetch('RecordDrivers/Hoopla/view-subjects.tpl'),
-		);
-		$moreDetailsOptions['citations'] = array(
+		];
+		$moreDetailsOptions['citations'] = [
 			'label' => 'Citations',
 			'body' => $interface->fetch('Record/cite.tpl'),
-		);
-		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
+		];
+		if ($interface->getVariable('showStaffView')) {
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body' => $interface->fetch($this->getStaffView()),
-			);
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getISBNs()
-	{
+	public function getISBNs() {
 		$isbns = [];
 		if (!empty($this->hooplaRawMetadata->isbn)) {
 			$isbns[] = $this->hooplaRawMetadata->isbn;
@@ -213,15 +209,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return $isbns;
 	}
 
-	public function getISSNs()
-	{
-		return array();
+	public function getISSNs() {
+		return [];
 	}
 
 	protected $_actions = null;
-	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $volumeData = null){
+
+	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $volumeData = null) {
 		if ($this->_actions === null) {
-			$this->_actions = array();
+			$this->_actions = [];
 			//Check to see if the title is on hold or checked out to the patron.
 			$loadDefaultActions = true;
 			if (UserAccount::isLoggedIn()) {
@@ -235,12 +231,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				$searchLibrary = Library::getSearchLibrary();
 				if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
 					$id = $this->id;
-					$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
-					$this->_actions[] = array(
+					$title = translate([
+						'text' => 'Check Out Hoopla',
+						'isPublicFacing' => true,
+					]);
+					$this->_actions[] = [
 						'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
 						'title' => $title,
-						'type' => 'hoopla_checkout'
-					);
+						'type' => 'hoopla_checkout',
+					];
 				}
 			}
 		}
@@ -252,10 +251,9 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * Returns an array of contributors to the title, ideally with the role appended after a pipe symbol
 	 * @return array
 	 */
-	function getContributors()
-	{
-		$contributors = array();
-		if (isset($this->hooplaRawMetadata->artists)){
+	function getContributors() {
+		$contributors = [];
+		if (isset($this->hooplaRawMetadata->artists)) {
 			$authors = $this->hooplaRawMetadata->artists;
 			foreach ($authors as $author) {
 				//TODO: Reverse name?
@@ -271,26 +269,24 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * @access  protected
 	 * @return  array
 	 */
-	function getEditions()
-	{
+	function getEditions() {
 		// No specific information provided by Hoopla
-		return array();
+		return [];
 	}
 
 	/**
 	 * @return array
 	 */
-	function getFormats()
-	{
+	function getFormats() {
 		if ($this->hooplaExtract->kind == "MOVIE" || $this->hooplaExtract->kind == "TELEVISION") {
 			return ['eVideo'];
-		} elseif ($this->hooplaExtract->kind == "AUDIOBOOK"){
+		} elseif ($this->hooplaExtract->kind == "AUDIOBOOK") {
 			return ['eAudiobook'];
-		} elseif ($this->hooplaExtract->kind == "EBOOK"){
+		} elseif ($this->hooplaExtract->kind == "EBOOK") {
 			return ['eBook'];
-		} elseif ($this->hooplaExtract->kind == "ECOMIC"){
+		} elseif ($this->hooplaExtract->kind == "ECOMIC") {
 			return ['eComic'];
-		} elseif ($this->hooplaExtract->kind == "MUSIC"){
+		} elseif ($this->hooplaExtract->kind == "MUSIC") {
 			return ['eMusic'];
 		} else {
 			return ['eBook'];
@@ -302,50 +298,49 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 *
 	 * @return  array
 	 */
-	function getFormatCategory()
-	{
+	function getFormatCategory() {
 		if ($this->hooplaExtract->kind == "AUDIOBOOK") {
-			return ['eBook', 'Audio Books'];
-		}else if ($this->hooplaExtract->kind == "MOVIE" || $this->hooplaExtract->kind == "TELEVISION") {
+			return [
+				'eBook',
+				'Audio Books',
+			];
+		} elseif ($this->hooplaExtract->kind == "MOVIE" || $this->hooplaExtract->kind == "TELEVISION") {
 			return ['Movies'];
-		}else if ($this->hooplaExtract->kind == "MUSIC") {
+		} elseif ($this->hooplaExtract->kind == "MUSIC") {
 			return ['Music'];
 		} else {
 			return ['eBook'];
 		}
 	}
 
-	public function getLanguage()
-	{
+	public function getLanguage() {
 		return ucfirst(strtolower($this->hooplaRawMetadata->language));
 	}
 
-	public function getNumHolds() : int{
+	public function getNumHolds(): int {
 		return 0;
 	}
 
 	/**
 	 * @return array
 	 */
-	function getPlacesOfPublication()
-	{
+	function getPlacesOfPublication() {
 		//Not provided within the metadata
-		return array();
+		return [];
 	}
 
 	/**
 	 * Returns the primary author of the work
 	 * @return String
 	 */
-	function getPrimaryAuthor()
-	{
+	function getPrimaryAuthor() {
 		return $this->getAuthor();
 	}
 
-	public function getAuthor(){
-		if (!empty($this->hooplaRawMetadata->artist)){
+	public function getAuthor() {
+		if (!empty($this->hooplaRawMetadata->artist)) {
 			return $this->hooplaRawMetadata->artist;
-		}else{
+		} else {
 			return '';
 		}
 	}
@@ -353,21 +348,18 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	/**
 	 * @return array
 	 */
-	function getPublishers()
-	{
+	function getPublishers() {
 		return [$this->hooplaRawMetadata->publisher];
 	}
 
 	/**
 	 * @return array
 	 */
-	function getPublicationDates()
-	{
+	function getPublicationDates() {
 		return [$this->hooplaRawMetadata->year];
 	}
 
-	public function getRecordType()
-	{
+	public function getRecordType() {
 		return 'hoopla';
 	}
 
@@ -383,7 +375,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 		if ($relatedRecord != null) {
 			$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-			$semanticData [] = array(
+			$semanticData [] = [
 				'@context' => 'http://schema.org',
 				'@type' => $linkedDataRecord->getWorkType(),
 				'name' => $this->getTitle(),
@@ -391,8 +383,8 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				'bookEdition' => $this->getEditions(),
 				'isAccessibleForFree' => true,
 				'image' => $this->getBookcoverUrl('medium', true),
-				"offers" => $linkedDataRecord->getOffers()
-			);
+				"offers" => $linkedDataRecord->getOffers(),
+			];
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
@@ -401,7 +393,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
 			return $semanticData;
-		}else{
+		} else {
 			return null;
 		}
 	}
@@ -411,8 +403,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 *
 	 * @return string
 	 */
-	function getShortTitle()
-	{
+	function getShortTitle() {
 		return $this->getTitle();
 	}
 
@@ -421,17 +412,15 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 *
 	 * @return string
 	 */
-	function getSubtitle()
-	{
+	function getSubtitle() {
 		return "";
 	}
 
-	function isValid(){
+	function isValid() {
 		return $this->valid;
 	}
 
-	function loadSubjects()
-	{
+	function loadSubjects() {
 		$subjects = [];
 		if ($this->hooplaRawMetadata->genres) {
 			$subjects = $this->hooplaRawMetadata->genres;
@@ -442,16 +431,19 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 	function getActions() {
 		//TODO: If this is added to the related record, pass in the value
-		$actions = array();
+		$actions = [];
 
 		/** @var Library $searchLibrary */
 		$searchLibrary = Library::getSearchLibrary();
 		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
-			$actions[] = array(
+			$title = translate([
+				'text' => 'Check Out Hoopla',
+				'isPublicFacing' => true,
+			]);
+			$actions[] = [
 				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('{$this->id}')",
-				'title'   => $title
-			);
+				'title' => $title,
+			];
 
 		} else {
 			$actions[] = $this->getAccessLink();
@@ -460,14 +452,16 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return $actions;
 	}
 
-	public function getAccessLink()
-	{
-		$title = translate(['text' => 'hoopla_url_action', 'isPublicFacing'=>true]);
-		$accessLink = array(
+	public function getAccessLink() {
+		$title = translate([
+			'text' => 'hoopla_url_action',
+			'isPublicFacing' => true,
+		]);
+		$accessLink = [
 			'url' => $this->hooplaRawMetadata->url,
 			'title' => $title,
 			'requireLogin' => false,
-		);
+		];
 		return $accessLink;
 	}
 
@@ -477,30 +471,28 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getPhysicalDescriptions()
-	{
+	public function getPhysicalDescriptions() {
 		$physicalDescriptions = [];
-		if (!empty($this->hooplaRawMetadata->duration)){
+		if (!empty($this->hooplaRawMetadata->duration)) {
 			$physicalDescriptions[] = $this->hooplaRawMetadata->duration;
 		}
 		return $physicalDescriptions;
 	}
 
-	function getHooplaCoverUrl(){
+	function getHooplaCoverUrl() {
 		return $this->hooplaRawMetadata->coverImageUrl;
 	}
 
-	function getStatusSummary()
-	{
+	function getStatusSummary() {
 		$relatedRecord = $this->getRelatedRecord();
-		$statusSummary = array();
-		if ($relatedRecord == null){
+		$statusSummary = [];
+		if ($relatedRecord == null) {
 			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
 			$statusSummary['class'] = 'unavailable';
 			$statusSummary['showPlaceHold'] = false;
 			$statusSummary['showCheckout'] = false;
-		}else{
+		} else {
 			$statusSummary['status'] = "Available from Hoopla";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';

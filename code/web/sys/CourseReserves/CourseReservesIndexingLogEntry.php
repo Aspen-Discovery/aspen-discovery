@@ -1,8 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
-class CourseReservesIndexingLogEntry extends BaseLogEntry
-{
+class CourseReservesIndexingLogEntry extends BaseLogEntry {
 	public $__table = 'course_reserves_indexing_log';   // table name
 	public $id;
 	public $lastUpdate;

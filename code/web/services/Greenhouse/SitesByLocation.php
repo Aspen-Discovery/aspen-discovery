@@ -4,10 +4,8 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 
-class Greenhouse_SitesByLocation extends Admin_Admin
-{
-	function launch()
-	{
+class Greenhouse_SitesByLocation extends Admin_Admin {
+	function launch() {
 		global $interface;
 
 		$siteMarkers = [];
@@ -15,7 +13,7 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 		$aspenSite = new AspenSite();
 		$allSites = [];
 		$aspenSite->find();
-		while ($aspenSite->fetch()){
+		while ($aspenSite->fetch()) {
 			$allSites[$aspenSite->id] = clone($aspenSite);
 		}
 		$siteCache = new AspenSiteCache();
@@ -25,7 +23,7 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 		$sumLongitude = 0;
 		while ($siteCache->fetch()) {
 			/** @var AspenSite $curSite */
-			if (array_key_exists($siteCache->siteId, $allSites)){
+			if (array_key_exists($siteCache->siteId, $allSites)) {
 				$curSite = $allSites[$siteCache->siteId];
 				if ($curSite->siteType == 0) {
 					if (!empty($siteCache->latitude) && !empty($siteCache->longitude) && is_numeric($siteCache->latitude) && is_numeric($siteCache->longitude)) {
@@ -42,18 +40,18 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 		}
 		$center = [
 			'latitude' => $sumLatitude / $numMarkers,
-			'longitude' => $sumLongitude / $numMarkers
+			'longitude' => $sumLongitude / $numMarkers,
 		];
-		$interface->assign('siteMarkers' ,$siteMarkers);
+		$interface->assign('siteMarkers', $siteMarkers);
 		asort($unlocatedSites);
-		$interface->assign('unlocatedSites' ,$unlocatedSites);
-		$interface->assign('center' ,$center);
+		$interface->assign('unlocatedSites', $unlocatedSites);
+		$interface->assign('center', $center);
 
 		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 		$googleSettings = new GoogleApiSetting();
-		if ($googleSettings->find(true)){
+		if ($googleSettings->find(true)) {
 			$mapsKey = $googleSettings->googleMapsKey;
-		}else{
+		} else {
 			$mapsKey = null;
 		}
 		$interface->assign('mapsKey', $mapsKey);
@@ -61,8 +59,7 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 		$this->display('sitesByLocation.tpl', 'Sites By Location');
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
@@ -70,15 +67,13 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'greenhouse-stats-reports';
 	}
 
-	function canView() : bool
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}

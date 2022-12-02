@@ -6,8 +6,7 @@
  * Some code initially based on:
  * https://github.com/daniel-zahariev/php-aws-ses
  */
-class AmazonSesMessage
-{
+class AmazonSesMessage {
 // these are public for convenience only
 	// these are not to be used outside of the SimpleEmailService class!
 	public $to;
@@ -31,10 +30,10 @@ class AmazonSesMessage
 	public $raw_message;
 
 	public function __construct() {
-		$this->to = array();
-		$this->cc = array();
-		$this->bcc = array();
-		$this->replyto = array();
+		$this->to = [];
+		$this->cc = [];
+		$this->bcc = [];
+		$this->replyto = [];
 		$this->recipientsCharset = 'UTF-8';
 
 		$this->from = null;
@@ -48,10 +47,10 @@ class AmazonSesMessage
 		$this->messageTextCharset = 'UTF-8';
 		$this->messageHtmlCharset = 'UTF-8';
 
-		$this->attachments = array();
-		$this->customHeaders = array();
+		$this->attachments = [];
+		$this->customHeaders = [];
 		$this->configuration_set = null;
-		$this->message_tags = array();
+		$this->message_tags = [];
 
 		$this->is_clean = true;
 		$this->raw_message = null;
@@ -65,7 +64,7 @@ class AmazonSesMessage
 	 * @return AmazonSesMessage $this
 	 * @link http://docs.aws.amazon.com/ses/latest/APIReference/API_Destination.html
 	 */
-	public function addTo($to) : AmazonSesMessage {
+	public function addTo($to): AmazonSesMessage {
 		if (!is_array($to)) {
 			$this->to[] = $to;
 		} else {
@@ -80,8 +79,8 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setTo($to) : AmazonSesMessage {
-		$this->to = (array) $to;
+	public function setTo($to): AmazonSesMessage {
+		$this->to = (array)$to;
 
 		$this->is_clean = false;
 
@@ -93,8 +92,8 @@ class AmazonSesMessage
 	 *
 	 * @return AmazonSesMessage $this
 	 */
-	public function clearTo() : AmazonSesMessage {
-		$this->to = array();
+	public function clearTo(): AmazonSesMessage {
+		$this->to = [];
 
 		$this->is_clean = false;
 
@@ -105,7 +104,7 @@ class AmazonSesMessage
 	 * @return AmazonSesMessage $this
 	 * @see addTo()
 	 */
-	public function addCC($cc) : AmazonSesMessage {
+	public function addCC($cc): AmazonSesMessage {
 		if (!is_array($cc)) {
 			$this->cc[] = $cc;
 		} else {
@@ -122,8 +121,8 @@ class AmazonSesMessage
 	 *
 	 * @return AmazonSesMessage $this
 	 */
-	public function clearCC() : AmazonSesMessage {
-		$this->cc = array();
+	public function clearCC(): AmazonSesMessage {
+		$this->cc = [];
 
 		$this->is_clean = false;
 
@@ -134,7 +133,7 @@ class AmazonSesMessage
 	 * @return AmazonSesMessage $this
 	 * @see addTo()
 	 */
-	public function addBCC($bcc) : AmazonSesMessage {
+	public function addBCC($bcc): AmazonSesMessage {
 		if (!is_array($bcc)) {
 			$this->bcc[] = $bcc;
 		} else {
@@ -151,8 +150,8 @@ class AmazonSesMessage
 	 *
 	 * @return AmazonSesMessage $this
 	 */
-	public function clearBCC() : AmazonSesMessage {
-		$this->bcc = array();
+	public function clearBCC(): AmazonSesMessage {
+		$this->bcc = [];
 
 		$this->is_clean = false;
 
@@ -163,7 +162,7 @@ class AmazonSesMessage
 	 * @return AmazonSesMessage $this
 	 * @see addTo()
 	 */
-	public function addReplyTo($replyto) : AmazonSesMessage {
+	public function addReplyTo($replyto): AmazonSesMessage {
 		if (!is_array($replyto)) {
 			$this->replyto[] = $replyto;
 		} else {
@@ -180,8 +179,8 @@ class AmazonSesMessage
 	 *
 	 * @return AmazonSesMessage $this
 	 */
-	public function clearReplyTo() : AmazonSesMessage {
-		$this->replyto = array();
+	public function clearReplyTo(): AmazonSesMessage {
+		$this->replyto = [];
 
 		$this->is_clean = false;
 
@@ -197,7 +196,7 @@ class AmazonSesMessage
 	 * @uses clearBCC()
 	 * @uses clearReplyTo()
 	 */
-	public function clearRecipients() : AmazonSesMessage {
+	public function clearRecipients(): AmazonSesMessage {
 		$this->clearTo();
 		$this->clearCC();
 		$this->clearBCC();
@@ -211,7 +210,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setFrom($from) : AmazonSesMessage {
+	public function setFrom($from): AmazonSesMessage {
 		$this->from = $from;
 
 		$this->is_clean = false;
@@ -222,7 +221,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setReturnPath($returnpath) : AmazonSesMessage {
+	public function setReturnPath($returnpath): AmazonSesMessage {
 		$this->returnpath = $returnpath;
 
 		$this->is_clean = false;
@@ -233,7 +232,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setRecipientsCharset($charset) : AmazonSesMessage {
+	public function setRecipientsCharset($charset): AmazonSesMessage {
 		$this->recipientsCharset = $charset;
 
 		$this->is_clean = false;
@@ -244,7 +243,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setSubject($subject) : AmazonSesMessage {
+	public function setSubject($subject): AmazonSesMessage {
 		$this->subject = $subject;
 
 		$this->is_clean = false;
@@ -255,7 +254,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setSubjectCharset($charset) : AmazonSesMessage {
+	public function setSubjectCharset($charset): AmazonSesMessage {
 		$this->subjectCharset = $charset;
 
 		$this->is_clean = false;
@@ -267,7 +266,7 @@ class AmazonSesMessage
 	 * @return AmazonSesMessage $this
 	 * @link http://docs.aws.amazon.com/ses/latest/APIReference/API_Message.html
 	 */
-	public function setMessageFromString($text, $html = null) : AmazonSesMessage {
+	public function setMessageFromString($text, $html = null): AmazonSesMessage {
 		$this->messagetext = $text;
 		$this->messagehtml = $html;
 
@@ -279,7 +278,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setMessageFromFile($textfile, $htmlfile = null) : AmazonSesMessage {
+	public function setMessageFromFile($textfile, $htmlfile = null): AmazonSesMessage {
 		if (file_exists($textfile) && is_file($textfile) && is_readable($textfile)) {
 			$this->messagetext = file_get_contents($textfile);
 		} else {
@@ -299,7 +298,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setMessageFromURL($texturl, $htmlurl = null) : AmazonSesMessage {
+	public function setMessageFromURL($texturl, $htmlurl = null): AmazonSesMessage {
 		if ($texturl !== null) {
 			$this->messagetext = file_get_contents($texturl);
 		} else {
@@ -319,7 +318,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setMessageCharset($textCharset, $htmlCharset = null) : AmazonSesMessage {
+	public function setMessageCharset($textCharset, $htmlCharset = null): AmazonSesMessage {
 		$this->messageTextCharset = $textCharset;
 		$this->messageHtmlCharset = $htmlCharset;
 
@@ -331,7 +330,7 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function setConfigurationSet($configuration_set = null) : AmazonSesMessage {
+	public function setConfigurationSet($configuration_set = null): AmazonSesMessage {
 		$this->configuration_set = $configuration_set;
 
 		$this->is_clean = false;
@@ -342,8 +341,7 @@ class AmazonSesMessage
 	/**
 	 * @return array $message_tags
 	 */
-	public function getMessageTags(): array
-	{
+	public function getMessageTags(): array {
 		return $this->message_tags;
 	}
 
@@ -365,7 +363,7 @@ class AmazonSesMessage
 	 * @link https://docs.aws.amazon.com/ses/latest/DeveloperGuide/event-publishing-send-email.html
 	 * @link https://docs.aws.amazon.com/ses/latest/APIReference/API_MessageTag.html
 	 */
-	public function setMessageTag(string $key, $value) : AmazonSesMessage {
+	public function setMessageTag(string $key, $value): AmazonSesMessage {
 		$this->message_tags[$key] = $value;
 
 		$this->is_clean = false;
@@ -377,7 +375,7 @@ class AmazonSesMessage
 	 * @param string $key The key of the tag to be removed
 	 * @return AmazonSesMessage $this
 	 */
-	public function removeMessageTag(string $key) : AmazonSesMessage {
+	public function removeMessageTag(string $key): AmazonSesMessage {
 		unset($this->message_tags[$key]);
 
 		$this->is_clean = false;
@@ -389,7 +387,7 @@ class AmazonSesMessage
 	 * @param array $message_tags
 	 * @return AmazonSesMessage $this
 	 */
-	public function setMessageTags(array $message_tags = array()) : AmazonSesMessage {
+	public function setMessageTags(array $message_tags = []): AmazonSesMessage {
 		$this->message_tags = array_merge($this->message_tags, $message_tags);
 
 		$this->is_clean = false;
@@ -400,8 +398,8 @@ class AmazonSesMessage
 	/**
 	 * @return AmazonSesMessage $this
 	 */
-	public function removeMessageTags() : AmazonSesMessage {
-		$this->message_tags = array();
+	public function removeMessageTags(): AmazonSesMessage {
+		$this->message_tags = [];
 
 		$this->is_clean = false;
 
@@ -415,7 +413,7 @@ class AmazonSesMessage
 	 * @return AmazonSesMessage $this
 	 * @link( Restrictions on headers, http://docs.aws.amazon.com/ses/latest/DeveloperGuide/header-fields.html)
 	 */
-	public function addCustomHeader(string $header) : AmazonSesMessage {
+	public function addCustomHeader(string $header): AmazonSesMessage {
 		$this->customHeaders[] = $header;
 
 		$this->is_clean = false;
@@ -433,14 +431,14 @@ class AmazonSesMessage
 	 * @param string $attachmentType Attachment type: attachment or inline
 	 * @return AmazonSesMessage $this
 	 */
-	public function addAttachmentFromData(string $name, string $data, string $mimeType = 'application/octet-stream', string $contentId = null, string $attachmentType = 'attachment') : AmazonSesMessage {
-		$this->attachments[$name] = array(
+	public function addAttachmentFromData(string $name, string $data, string $mimeType = 'application/octet-stream', string $contentId = null, string $attachmentType = 'attachment'): AmazonSesMessage {
+		$this->attachments[$name] = [
 			'name' => $name,
 			'mimeType' => $mimeType,
 			'data' => $data,
 			'contentId' => $contentId,
 			'attachmentType' => ($attachmentType == 'inline' ? 'inline; filename="' . $name . '"' : $attachmentType),
-		);
+		];
 
 		$this->is_clean = false;
 
@@ -450,14 +448,14 @@ class AmazonSesMessage
 	/**
 	 * Add email attachment by passing file path
 	 *
-	 * @param string $name      The name of the file attachment as it will appear in the email
-	 * @param string $path      Path to the attachment file
-	 * @param string $mimeType  Specify custom MIME type
+	 * @param string $name The name of the file attachment as it will appear in the email
+	 * @param string $path Path to the attachment file
+	 * @param string $mimeType Specify custom MIME type
 	 * @param string $contentId Content ID of the attachment for inclusion in the mail message
-	 * @param string $attachmentType    Attachment type: attachment or inline
+	 * @param string $attachmentType Attachment type: attachment or inline
 	 * @return boolean Status of the operation
 	 */
-	public function addAttachmentFromFile(string $name, $path, $mimeType = 'application/octet-stream', $contentId = null, $attachmentType = 'attachment') : bool {
+	public function addAttachmentFromFile(string $name, $path, $mimeType = 'application/octet-stream', $contentId = null, $attachmentType = 'attachment'): bool {
 		if (file_exists($path) && is_file($path) && is_readable($path)) {
 			$this->addAttachmentFromData($name, file_get_contents($path), $mimeType, $contentId, $attachmentType);
 			return true;
@@ -471,14 +469,14 @@ class AmazonSesMessage
 	/**
 	 * Add email attachment by passing file path
 	 *
-	 * @param string $name      The name of the file attachment as it will appear in the email
-	 * @param string $url      URL to the attachment file
-	 * @param string $mimeType  Specify custom MIME type
+	 * @param string $name The name of the file attachment as it will appear in the email
+	 * @param string $url URL to the attachment file
+	 * @param string $mimeType Specify custom MIME type
 	 * @param string $contentId Content ID of the attachment for inclusion in the mail message
-	 * @param string $attachmentType    Attachment type: attachment or inline
+	 * @param string $attachmentType Attachment type: attachment or inline
 	 * @return boolean Status of the operation
 	 */
-	public function addAttachmentFromUrl(string $name, string $url, string $mimeType = 'application/octet-stream', string $contentId = null, string $attachmentType = 'attachment') : bool {
+	public function addAttachmentFromUrl(string $name, string $url, string $mimeType = 'application/octet-stream', string $contentId = null, string $attachmentType = 'attachment'): bool {
 		$data = file_get_contents($url);
 		if ($data !== false) {
 			$this->addAttachmentFromData($name, $data, $mimeType, $contentId, $attachmentType);
@@ -495,8 +493,7 @@ class AmazonSesMessage
 	 *
 	 * @return boolean
 	 */
-	public function hasInlineAttachments(): bool
-	{
+	public function hasInlineAttachments(): bool {
 		foreach ($this->attachments as $attachment) {
 			if ($attachment['attachmentType'] != 'attachment') {
 				return true;
@@ -511,8 +508,7 @@ class AmazonSesMessage
 	 *
 	 * @return string
 	 */
-	public function getRawMessage($encode = true): ?string
-	{
+	public function getRawMessage($encode = true): ?string {
 		if ($this->is_clean && !is_null($this->raw_message) && $encode) {
 			return $this->raw_message;
 		}
@@ -523,7 +519,7 @@ class AmazonSesMessage
 		$raw_message = count($this->customHeaders) > 0 ? join("\n", $this->customHeaders) . "\n" : '';
 
 		if (!empty($this->message_tags)) {
-			$message_tags = array();
+			$message_tags = [];
 			foreach ($this->message_tags as $key => $value) {
 				$message_tags[] = "{$key}={$value}";
 			}
@@ -599,10 +595,12 @@ class AmazonSesMessage
 	 *
 	 * @return string Encoded recipients joined with comma
 	 */
-	public function encodeRecipients($recipient): string
-	{
+	public function encodeRecipients($recipient): string {
 		if (is_array($recipient)) {
-			return join(', ', array_map(array($this, 'encodeRecipients'), $recipient));
+			return join(', ', array_map([
+				$this,
+				'encodeRecipients',
+			], $recipient));
 		}
 
 		if (preg_match("/(.*)<(.*)>/", $recipient, $regs)) {
@@ -625,7 +623,7 @@ class AmazonSesMessage
 	 *
 	 * @return boolean
 	 */
-	public function validate() : bool {
+	public function validate(): bool {
 		// at least one destination is required
 		if (count($this->to) == 0 && count($this->cc) == 0 && count($this->bcc) == 0) {
 			return false;
@@ -642,8 +640,7 @@ class AmazonSesMessage
 		}
 
 		// message is required
-		if ((empty($this->messagetext) || strlen((string) $this->messagetext) == 0)
-			&& (empty($this->messagehtml) || strlen((string) $this->messagehtml) == 0)) {
+		if ((empty($this->messagetext) || strlen((string)$this->messagetext) == 0) && (empty($this->messagehtml) || strlen((string)$this->messagehtml) == 0)) {
 			return false;
 		}
 

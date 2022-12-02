@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_14_00() : array
-{
+function getUpdates21_14_00(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -18,15 +17,17 @@ function getUpdates21_14_00() : array
 				'ALTER TABLE user_list ADD COLUMN courseInstructor VARCHAR(100)',
 				'ALTER TABLE user_list ADD COLUMN courseNumber VARCHAR(50)',
 				'ALTER TABLE user_list ADD COLUMN courseTitle VARCHAR(200)',
-			]
-		], //user_list_course_reserves
+			],
+		],
+		//user_list_course_reserves
 		'addLastSeenToOverDriveProducts' => [
 			'title' => 'Add Last Seen to OverDrive Products',
 			'description' => 'Add Last Seen to OverDrive Availability so we can detect deletions',
 			'sql' => [
-				'ALTER TABLE overdrive_api_products ADD COLUMN lastSeen INT(11) DEFAULT 0'
-			]
-		], //addLastSeenToOverDriveProducts
+				'ALTER TABLE overdrive_api_products ADD COLUMN lastSeen INT(11) DEFAULT 0',
+			],
+		],
+		//addLastSeenToOverDriveProducts
 		'loadBadWords' => [
 			'title' => 'Load Bad Words',
 			'description' => 'Load the Bad Words List',
@@ -34,8 +35,9 @@ function getUpdates21_14_00() : array
 			'sql' => [
 				'ALTER TABLE bad_words DROP COLUMN replacement',
 				'importBadWords',
-			]
-		], //loadBadWords
+			],
+		],
+		//loadBadWords
 		'greenhouseMonitoring' => [
 			'title' => 'Greenhouse Monitoring',
 			'description' => 'Store Additional information within the Greenhouse for monitoring',
@@ -69,9 +71,10 @@ function getUpdates21_14_00() : array
 					maxLoadPerCPU FLOAT,
 					maxWaitTime FLOAT,
 					UNIQUE (siteId, year, month, day)
-				) ENGINE INNODB'
-			]
-		], //greenhouseMonitoring
+				) ENGINE INNODB',
+			],
+		],
+		//greenhouseMonitoring
 		'greenhouseSlackIntegration' => [
 			'title' => 'Greenhouse Slack Integration',
 			'description' => 'Greenhouse Slack Integration',
@@ -80,8 +83,9 @@ function getUpdates21_14_00() : array
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					greenhouseAlertSlackHook VARCHAR(255)
 				) ENGINE INNODB',
-			]
-		], //greenhouseSlackIntegration
+			],
+		],
+		//greenhouseSlackIntegration
 		'greenhouseMonitoring2' => [
 			'title' => 'Greenhouse Monitoring 2',
 			'description' => 'Store Additional information within the Greenhouse for monitoring',
@@ -89,15 +93,17 @@ function getUpdates21_14_00() : array
 			'sql' => [
 				'ALTER TABLE aspen_sites DROP COLUMN slackNotificationChannel',
 				'ALTER TABLE aspen_sites ADD COLUMN lastNotificationTime INT(11)',
-			]
-		], //greenhouseMonitoring2
+			],
+		],
+		//greenhouseMonitoring2
 		'displayMaterialsRequestToPublic' => [
 			'title' => 'Add displayMaterialsRequestToPublic',
 			'description' => 'Add option to have Materials Request enabled but hidden to patrons',
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN displayMaterialsRequestToPublic TINYINT(1) DEFAULT 1',
-			]
-		], //displayMaterialsRequestToPublic
+			],
+		],
+		//displayMaterialsRequestToPublic
 		'externalRequestsLog' => [
 			'title' => 'External Requests Log',
 			'description' => 'Add External Requests Log',
@@ -113,35 +119,39 @@ function getUpdates21_14_00() : array
 					INDEX requestUrl(requestUrl),
 					INDEX requestTime(requestTime),
 					INDEX responseCode(responseCode)
-				) ENGINE INNODB'
-			]
-		], //externalRequestsLog
+				) ENGINE INNODB',
+			],
+		],
+		//externalRequestsLog
 		'showTopOfPageButton' => [
 			'title' => 'Add showTopOfPageButton',
 			'description' => 'Add option to have button that goes to top of page in Layout Settings',
 			'sql' => [
 				'ALTER TABLE layout_settings ADD COLUMN showTopOfPageButton TINYINT(1) DEFAULT 1',
 				'updateAllThemes',
-			]
-		], //showTopOfPageButton
+			],
+		],
+		//showTopOfPageButton
 		'dismissPlacardButtonLocation' => [
 			'title' => 'Add dismissPlacardButtonLocation',
 			'description' => 'Add option to move button to dismiss placard in top right corner in Layout Settings',
 			'sql' => [
 				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonLocation TINYINT(1) DEFAULT 0',
-			]
-		], //dismissPlacardButtonLocation
+			],
+		],
+		//dismissPlacardButtonLocation
 		'dismissPlacardButtonIcon' => [
 			'title' => 'Add dismissPlacardButtonIcon',
 			'description' => 'Add option to change dismiss placard button to X icon instead of text in Layout Settings',
 			'sql' => [
 				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonIcon TINYINT(1) DEFAULT 0',
-			]
-		], //dismissPlacardButtonIcon
+			],
+		],
+		//dismissPlacardButtonIcon
 	];
 }
 
-function importBadWords(){
+function importBadWords() {
 	$fhnd = fopen(ROOT_DIR . "/sys/DBMaintenance/badwords.txt", 'r');
 	while ($word = fgets($fhnd)) {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
@@ -152,7 +162,6 @@ function importBadWords(){
 		}
 	}
 	fclose($fhnd);
-	/** @var $memCache Memcache */
-	global $memCache;
+	/** @var $memCache Memcache */ global $memCache;
 	$memCache->delete('bad_words_list');
 }

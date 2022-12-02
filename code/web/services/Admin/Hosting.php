@@ -4,48 +4,53 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
 
-class Admin_Hosting extends ObjectEditor
-{
-	function getObjectType() : string{
+class Admin_Hosting extends ObjectEditor {
+	function getObjectType(): string {
 		return 'HostInformation';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Hosting';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Host Information';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new HostInformation();
 		$object->orderBy($this->getDefaultSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
+		$objectList = [];
+		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'host asc';
 	}
-	function getObjectStructure() : array {
+
+	function getObjectStructure(): array {
 		return HostInformation::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function getInstructions() : string
-	{
+
+	function getInstructions(): string {
 		return '';
 	}
-	function getBreadcrumbs() : array
-	{
+
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
@@ -53,13 +58,11 @@ class Admin_Hosting extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Host Information');
 	}
 }

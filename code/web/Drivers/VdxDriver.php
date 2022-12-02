@@ -1,73 +1,72 @@
 <?php
 require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
-class VdxDriver
-{
+
+class VdxDriver {
 	private $settings;
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
-	public function __construct(){
+	public function __construct() {
 		$vdxSettings = new VdxSetting();
-		if ($vdxSettings->find(true)){
+		if ($vdxSettings->find(true)) {
 			$this->settings = $vdxSettings;
 			$this->curlWrapper = new CurlWrapper();
-		}else{
+		} else {
 			$this->settings = false;
 		}
 	}
 
-	public function getRequests(User $patron) : array
-	{
+	public function getRequests(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
-		$openRequests = array();
-		$closedRequests = array();
-		if ($this->settings != false){
+		$openRequests = [];
+		$closedRequests = [];
+		if ($this->settings != false) {
 			//Fetch requests for the user
-			if ($this->loginToVdx($patron)){
+			if ($this->loginToVdx($patron)) {
 				//Get the "My Requests" page
 				$myRequestsUrl = "{$this->settings->baseUrl}/zportal/zengine?VDXaction=IllSearchAdvanced";
 				$myRequestsResponse = $this->curlWrapper->curlGetPage($myRequestsUrl);
-				if ($this->curlWrapper->getResponseCode() == 200){
+				if ($this->curlWrapper->getResponseCode() == 200) {
 					//Now we need to post to get just open requests:
 					$postParams = [
-						'VDXaction'=>'IllRefreshResults',
-						'search1'=>'ILLNO',
-						'entry'=>'',
-						'pagesize'=>'20',
-						'sort_key1'=>'iIllNo',
-						'sort_order1'=>'DESC',
-						'sort_key2'=>'',
+						'VDXaction' => 'IllRefreshResults',
+						'search1' => 'ILLNO',
+						'entry' => '',
+						'pagesize' => '20',
+						'sort_key1' => 'iIllNo',
+						'sort_order1' => 'DESC',
+						'sort_key2' => '',
 					];
 					$cancelUrl = "{$this->settings->baseUrl}/zportal/zengine";
 
-					$headers  = array(
+					$headers = [
 						'Content-Type: application/x-www-form-urlencoded',
-					);
+					];
 					$this->curlWrapper->addCustomHeaders($headers, false);
 					$myRequestsResponse = $this->curlWrapper->curlPostPage($cancelUrl, $postParams);
 
 					//Get the number of requests
 					$matches = [];
-					if (preg_match('%<td class="reqnavlinks-wrap hits">.*?<p><span class="availbodybold">(\d*)&nbsp;</span>requests? found&nbsp;.*?</p>.*?</td>%s', $myRequestsResponse, $matches)){
+					if (preg_match('%<td class="reqnavlinks-wrap hits">.*?<p><span class="availbodybold">(\d*)&nbsp;</span>requests? found&nbsp;.*?</p>.*?</td>%s', $myRequestsResponse, $matches)) {
 						$numRequests = $matches[1];
-					}else{
+					} else {
 						$numRequests = 0;
 					}
 
 					//Get all the requests
-					if (preg_match('%<table cellspacing="0" class="results" border="0">(.*?)</table>%s', $myRequestsResponse, $matches)){
+					if (preg_match('%<table cellspacing="0" class="results" border="0">(.*?)</table>%s', $myRequestsResponse, $matches)) {
 						$resultsTable = $matches[1];
-						if (preg_match_all('%<tr>.*?</tr>%s', $resultsTable, $tableRows, PREG_SET_ORDER)){
+						if (preg_match_all('%<tr>.*?</tr>%s', $resultsTable, $tableRows, PREG_SET_ORDER)) {
 							$curRequest = null;
-							foreach ($tableRows as $tableRow){
+							foreach ($tableRows as $tableRow) {
 								if (preg_match_all('%<td.*?>(.*?)</td>%s', $tableRow[0], $tableCells, PREG_SET_ORDER)) {
 									$label = trim(strip_tags($tableCells[0][1]));
 									$label = str_replace(':', '', $label);
 									$originalLabel = $tableCells[0][1];
-									if (array_key_exists(1, $tableCells)){
+									if (array_key_exists(1, $tableCells)) {
 										$value = $tableCells[1][0];
 										$trimmedValue = trim(strip_tags(trim($tableCells[1][0])));
-									}else{
+									} else {
 										$value = '';
 										$trimmedValue = '';
 									}
@@ -99,8 +98,8 @@ class VdxDriver
 									} elseif ($label == 'Cancel') {
 										$curRequest->cancelable = true;
 										//<a href="zengine?VDXaction=IllTerminateRequest&amp;command=117&amp;hit=0" onclick="disableRefresh(); return true; return false;" style="background-image: url(&quot;images/sr_cancelrequest.gif&quot;);" title="Cancel" class="icon" onmousemove="window.status='Cancel';" onmouseover="this.style.backgroundImage='url(images/sr_cancelrequest_on.gif)'" onmouseout="this.style.backgroundImage='url(images/sr_cancelrequest.gif)'"><span>Cancel</span></a>
-										if (preg_match('/zengine\?VDXaction=IllTerminateRequest&amp;command=117&amp;hit=(\d+)/s', $originalLabel, $hitMatches)){
-											$curRequest->cancelId  = $hitMatches[1];
+										if (preg_match('/zengine\?VDXaction=IllTerminateRequest&amp;command=117&amp;hit=(\d+)/s', $originalLabel, $hitMatches)) {
+											$curRequest->cancelId = $hitMatches[1];
 										}
 									} elseif ($label == 'Date Completed') {
 										//Ignore this one
@@ -111,12 +110,12 @@ class VdxDriver
 									} else {
 										//Unknown label
 										if (IPAddress::showDebuggingInformation()) {
-											echo("Unknown label $label" );
+											echo("Unknown label $label");
 										}
 									}
 								}
 							}
-							if ($curRequest != null){
+							if ($curRequest != null) {
 								//Since we filter to only show open requests above, treat them all as open
 								$openRequests[] = $curRequest;
 							}
@@ -133,15 +132,15 @@ class VdxDriver
 		$vdxRequest->userId = $patron->id;
 		$vdxRequest->find();
 		while ($vdxRequest->fetch()) {
-			if (empty($vdxRequest->vdxId) && ($vdxRequest->status != 'Not found in VDX' && $vdxRequest->status != 'Cancelled')){
+			if (empty($vdxRequest->vdxId) && ($vdxRequest->status != 'Not found in VDX' && $vdxRequest->status != 'Cancelled')) {
 				$vdxRequestsToProcess[] = clone $vdxRequest;
 			}
 		}
-		foreach ($vdxRequestsToProcess as $vdxRequestFromAspen){
+		foreach ($vdxRequestsToProcess as $vdxRequestFromAspen) {
 			if (empty($vdxRequestFromAspen->vdxId)) {
 				//Try to sync with a hold we have read from VDX.
-				foreach ($openRequests as $key => &$request){
-					if (($request->title == $vdxRequest->title) && ($request->author == $vdxRequest->author)){
+				foreach ($openRequests as $key => &$request) {
+					if (($request->title == $vdxRequest->title) && ($request->author == $vdxRequest->author)) {
 						$vdxRequestFromAspen->vdxId = $request->sourceId;
 						$vdxRequestFromAspen->status = $request->status;
 						$request->recordId = $vdxRequestFromAspen->catalogKey;
@@ -168,10 +167,10 @@ class VdxDriver
 				}
 				//If we still don't have a VDX ID, it might have either not arrived within VDX yet, or it might be closed.
 				//We'll give it 24 hours to show up and if it hasn't, we can assume that it's been closed.
-				if ((time() - $vdxRequestFromAspen->datePlaced) > (24 * 60 * 60)){
+				if ((time() - $vdxRequestFromAspen->datePlaced) > (24 * 60 * 60)) {
 					$vdxRequestFromAspen->status = 'Not found in VDX';
 					$vdxRequestFromAspen->update();
-				}else{
+				} else {
 					//Create a temporary open request for it
 					$curRequest = new Hold();
 					$curRequest->userId = $patron->id;
@@ -190,7 +189,7 @@ class VdxDriver
 		}
 
 		unset($request);
-		foreach ($openRequests as $key => $request){
+		foreach ($openRequests as $key => $request) {
 			$recordDriver = null;
 			if (!empty($request->recordId)) {
 				$recordDriver = RecordDriverFactory::initRecordDriverById('ils:' . $request->recordId);
@@ -202,12 +201,15 @@ class VdxDriver
 		}
 
 		return [
-			'unavailable' => $openRequests
+			'unavailable' => $openRequests,
 		];
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary {
-		list($existingId, $summary) = $user->getCachedAccountSummary('vdx');
+	public function getAccountSummary(User $user): AccountSummary {
+		[
+			$existingId,
+			$summary,
+		] = $user->getCachedAccountSummary('vdx');
 
 		if ($summary === null || isset($_REQUEST['reload'])) {
 			//Get account information from api
@@ -224,53 +226,58 @@ class VdxDriver
 		return $summary;
 	}
 
-	private function loginToVdx(User $user)
-	{
+	private function loginToVdx(User $user) {
 		$loginUrl = "{$this->settings->baseUrl}/zportal/zengine";
 
 		$loginPageResponse = $this->curlWrapper->curlGetPage($loginUrl);
-		if ($this->curlWrapper->getResponseCode() == 200){
-			if (preg_match('/INPUT type="hidden" name="login_service_id" value="(.*?)"/', $loginPageResponse, $matches)){
+		if ($this->curlWrapper->getResponseCode() == 200) {
+			if (preg_match('/INPUT type="hidden" name="login_service_id" value="(.*?)"/', $loginPageResponse, $matches)) {
 				$loginServiceId = $matches[1];
-			}else{
+			} else {
 				return false;
 			}
-		}else{
+		} else {
 			return false;
 		}
 
-		$postParams = array(
+		$postParams = [
 			'login_user' => $user->cat_username,
 			'login_password' => $user->cat_password,
 			'login_service_id' => $loginServiceId,
 			'.x' => 'Login',
-			'VDXaction' => 'Login'
-		);
+			'VDXaction' => 'Login',
+		];
 
 		$loginResponse = $this->curlWrapper->curlPostPage($loginUrl, $postParams);
-		if ($this->curlWrapper->getResponseCode() == 200){
-			if (strpos($loginResponse, 'Sign Out') !== false){
+		if ($this->curlWrapper->getResponseCode() == 200) {
+			if (strpos($loginResponse, 'Sign Out') !== false) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	public function submitRequest(VdxSetting $settings, User $patron, array $requestFields, $isFromEmptyRequest = false) : array{
+	public function submitRequest(VdxSetting $settings, User $patron, array $requestFields, $isFromEmptyRequest = false): array {
 		$catalogKeyRequested = strip_tags($requestFields['catalogKey']);
 		if (!empty($catalogKeyRequested)) {
 			//Check to see if we already have a request with this catalog key
 			$existingRequests = $this->getRequests($patron);
 			foreach ($existingRequests['unavailable'] as $existingRequest) {
-				if ($catalogKeyRequested == $existingRequest->recordId){
-					return array(
-						'title' => translate(['text' => 'Request Failed', 'isPublicFacing' => true]),
-						'message' => translate(['text' => "This title has already been requested for you.  You may only have one active request for a title.", 'isPublicFacing' => true]),
-						'success' => false
-					);
+				if ($catalogKeyRequested == $existingRequest->recordId) {
+					return [
+						'title' => translate([
+							'text' => 'Request Failed',
+							'isPublicFacing' => true,
+						]),
+						'message' => translate([
+							'text' => "This title has already been requested for you.  You may only have one active request for a title.",
+							'isPublicFacing' => true,
+						]),
+						'success' => false,
+					];
 				}
 			}
 		}
@@ -330,46 +337,61 @@ class VdxDriver
 		$body .= "PickupLocation=" . $vdxLocation . "\r\n";
 		$body .= "ReqVerifySource=$settings->reqVerifySource\r\n";
 
-		if ($isFromEmptyRequest){
+		if ($isFromEmptyRequest) {
 			$newRequest->note .= ' - Submitted from Aspen Materials Request';
 		}
 		if (!empty($newRequest->note)) {
 			$body .= "NOTE=" . $newRequest->note . "\r\n";
 			$body .= "AuthorisationStatus=MAUTH\r\n";
-		}else{
+		} else {
 			$body .= "AuthorisationStatus=TAUTH\r\n";
 		}
 
-		if ($mailer->send($settings->submissionEmailAddress, 'Document_Request', $body, null, null)){
-			if (!$newRequest->insert()){
+		if ($mailer->send($settings->submissionEmailAddress, 'Document_Request', $body, null, null)) {
+			if (!$newRequest->insert()) {
 				global $logger;
 				$logger->log("Could not insert new request " . $newRequest->getLastError(), Logger::LOG_ERROR);
 			}
 
-			$results = array(
-				'title' => translate(['text' => 'Request Sent', 'isPublicFacing' => true]),
-				'message' => translate(['text' => "Your request has been submitted. You can check the status of your request within your account.", 'isPublicFacing' => true]),
-				'success' => true
-			);
+			$results = [
+				'title' => translate([
+					'text' => 'Request Sent',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "Your request has been submitted. You can check the status of your request within your account.",
+					'isPublicFacing' => true,
+				]),
+				'success' => true,
+			];
 			$patron->clearCachedAccountSummaryForSource('vdx');
 			$patron->forceReloadOfHolds();
-		}else{
-			$results = array(
-				'title' => translate(['text' => 'Request Failed', 'isPublicFacing' => true]),
-				'message' => translate(['text' => "Could not send email to VDX system.", 'isPublicFacing' => true]),
-				'success' => false
-			);
+		} else {
+			$results = [
+				'title' => translate([
+					'text' => 'Request Failed',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "Could not send email to VDX system.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
 		}
 		return $results;
 	}
 
-	public function cancelRequest(User $patron, string $requestId, $cancelId){
+	public function cancelRequest(User $patron, string $requestId, $cancelId) {
 		$result = [
 			'success' => 'false',
-			'message' => translate(['text'=>'Unknown error cancelling request', 'isPublicFacing' => true])
+			'message' => translate([
+				'text' => 'Unknown error cancelling request',
+				'isPublicFacing' => true,
+			]),
 		];
 
-		if ($this->loginToVdx($patron)){
+		if ($this->loginToVdx($patron)) {
 			$myRequestsUrl = "{$this->settings->baseUrl}/zportal/zengine?VDXaction=IllSearchAdvanced";
 			$myRequestsResponse = $this->curlWrapper->curlGetPage($myRequestsUrl);
 
@@ -378,41 +400,54 @@ class VdxDriver
 
 			//Submit a post
 			$postParams = [
-				'command'=>'117',
-				'page'=>'main',
-				'form_submitted'=>'false',
-				'illno'=> $requestId,
-				'request_terminated'=>'Y',
-				'termination_date'=>'_sysdate_',
-				'FormName'=>'request_terminate_form',
-				'auth_status'=>'AUTH',
-				'IllSubmit.x'=>'Cancel Request',
-				'VDXaction'=>'IllSubmit'
+				'command' => '117',
+				'page' => 'main',
+				'form_submitted' => 'false',
+				'illno' => $requestId,
+				'request_terminated' => 'Y',
+				'termination_date' => '_sysdate_',
+				'FormName' => 'request_terminate_form',
+				'auth_status' => 'AUTH',
+				'IllSubmit.x' => 'Cancel Request',
+				'VDXaction' => 'IllSubmit',
 			];
 			$cancelUrl = "{$this->settings->baseUrl}/zportal/zengine";
 
-			$headers  = array(
+			$headers = [
 				'Content-Type: application/x-www-form-urlencoded',
-			);
+			];
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$cancelResponse = $this->curlWrapper->curlPostPage($cancelUrl, $postParams);
-			if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '302'){
-				if (preg_match('~Request # <span class="resultsbright">&nbsp;.*?' . $requestId .'</span>&nbsp; has been cancelled~', $cancelResponse)){
+			if ($this->curlWrapper->getResponseCode() == '200' || $this->curlWrapper->getResponseCode() == '302') {
+				if (preg_match('~Request # <span class="resultsbright">&nbsp;.*?' . $requestId . '</span>&nbsp; has been cancelled~', $cancelResponse)) {
 					$result = [
 						'success' => 'true',
-						'message' => translate(['text'=>'Your request was cancelled successfully', 'isPublicFacing' => true])
+						'message' => translate([
+							'text' => 'Your request was cancelled successfully',
+							'isPublicFacing' => true,
+						]),
 					];
 					$patron->clearCachedAccountSummaryForSource('vdx');
 					$patron->forceReloadOfHolds();
-				}else{
-					$result['message'] = translate(['text'=>'Failed to cancel the request, please try again in a few minutes. If this problem persists, please contact the library.', 'isPublicFacing' => true]);
+				} else {
+					$result['message'] = translate([
+						'text' => 'Failed to cancel the request, please try again in a few minutes. If this problem persists, please contact the library.',
+						'isPublicFacing' => true,
+					]);
 				}
-			}else{
-				$result['message'] = translate(['text'=>'Received error code %1% trying to cancel request', 1=>$this->curlWrapper->getResponseCode(), 'isPublicFacing' => true]);
+			} else {
+				$result['message'] = translate([
+					'text' => 'Received error code %1% trying to cancel request',
+					1 => $this->curlWrapper->getResponseCode(),
+					'isPublicFacing' => true,
+				]);
 			}
 
-		}else{
-			$result['message'] = translate(['text'=>'Could not login to the interlibrary loan system', 'isPublicFacing' => true]);
+		} else {
+			$result['message'] = translate([
+				'text' => 'Could not login to the interlibrary loan system',
+				'isPublicFacing' => true,
+			]);
 		}
 
 		return $result;

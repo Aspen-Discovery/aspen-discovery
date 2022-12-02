@@ -3,8 +3,7 @@ require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 
-class ListCoverBuilder
-{
+class ListCoverBuilder {
 	private $imageWidth = 280; //Pixels
 	private $imageHeight = 400; // Pixels
 
@@ -13,8 +12,7 @@ class ListCoverBuilder
 
 	private $backgroundColor;
 
-	public function __construct()
-	{
+	public function __construct() {
 		global $interface;
 		if ($interface == null) {
 			//Need to initialize the interface to get access to the themes
@@ -47,7 +45,7 @@ class ListCoverBuilder
 					$this->backgroundColor = [
 						'r' => $colors[0],
 						'g' => $colors[1],
-						'b' => $colors[2]
+						'b' => $colors[2],
 					];
 				}
 			}
@@ -64,8 +62,7 @@ class ListCoverBuilder
 	 * @param array|null $listTitles
 	 * @param string $filename
 	 */
-	public function getCover($title, $listTitles, $filename)
-	{
+	public function getCover($title, $listTitles, $filename) {
 		//Create the background image
 		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 
@@ -88,11 +85,11 @@ class ListCoverBuilder
 				$validListEntries[] = $recordDriver;
 			}
 
-			if (count($validListEntries) >= 4){
+			if (count($validListEntries) >= 4) {
 				break;
 			}
 		}
-		for ($i = min(count($validListEntries) - 1, 3); $i >= 0 ; $i--){
+		for ($i = min(count($validListEntries) - 1, 3); $i >= 0; $i--) {
 			$recordDriver = $validListEntries[$i];
 			$bookcoverUrl = $recordDriver->getBookcoverUrl('medium', true);
 			//Load the cover
@@ -130,8 +127,7 @@ class ListCoverBuilder
 		imagedestroy($imageCanvas);
 	}
 
-	private function setBackgroundColors($title)
-	{
+	private function setBackgroundColors($title) {
 		if (isset($this->backgroundColor)) {
 			return;
 		}
@@ -144,15 +140,10 @@ class ListCoverBuilder
 		//We want a number from 10 to 360
 		$color_seed = (int)_map(_clip($counts, 2, 80), 2, 80, 10, 360);
 
-		$this->backgroundColor = ColorUtils::colorHSLToRGB(
-			($color_seed + $color_distance) % 360,
-			$base_saturation,
-			$base_brightness
-		);
+		$this->backgroundColor = ColorUtils::colorHSLToRGB(($color_seed + $color_distance) % 360, $base_saturation, $base_brightness);
 	}
 
-	private function drawText($imageCanvas, $title, $textColor)
-	{
+	private function drawText($imageCanvas, $title, $textColor) {
 		$title_font_size = $this->imageWidth * 0.09;
 
 		$x = 15;
@@ -162,7 +153,11 @@ class ListCoverBuilder
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, 60, true);
 		/** @noinspection PhpUnusedLocalVariableInspection */
-		list($totalHeight, $lines, $font_size) = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $this->imageHeight - $this->imageWidth - 20);
+		[
+			$totalHeight,
+			$lines,
+			$font_size,
+		] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $this->imageHeight - $this->imageWidth - 20);
 		addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $lines, $font_size, $font_size * .15, $x, $y, $this->imageWidth - 30, $textColor);
 	}
 }

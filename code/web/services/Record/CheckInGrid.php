@@ -5,8 +5,7 @@ require_once ROOT_DIR . '/Action.php';
 global $configArray;
 
 class CheckInGrid extends Action {
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		require_once(ROOT_DIR . '/Drivers/Millennium.php');
@@ -14,16 +13,15 @@ class CheckInGrid extends Action {
 		$checkInGrid = $driver->getCheckInGrid(strip_tags($_REQUEST['id']), strip_tags($_REQUEST['lookfor']));
 		$interface->assign('checkInGrid', $checkInGrid);
 
-		$results = array(
-				'title' => 'Check-In Grid',
-				'modalBody' => $interface->fetch('Record/checkInGrid.tpl'),
-				'modalButtons' => ""
-		);
+		$results = [
+			'title' => 'Check-In Grid',
+			'modalBody' => $interface->fetch('Record/checkInGrid.tpl'),
+			'modalButtons' => "",
+		];
 		echo json_encode($results);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

@@ -22,22 +22,20 @@ require_once ROOT_DIR . '/services/API/ListAPI.php';
 require_once ROOT_DIR . '/services/API/SearchAPI.php';
 require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
-class AnodeAPI extends Action
-{
+class AnodeAPI extends Action {
 
-	function launch()
-	{
+	function launch() {
 		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$result = $this->$method();
-			$output = json_encode(array('result' => $result));
+			$output = json_encode(['result' => $result]);
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			APIUsage::incrementStat('AnodeAPI', $method);
 		} else {
-			$output = json_encode(array('error' => 'invalid_method'));
+			$output = json_encode(['error' => 'invalid_method']);
 		}
 		echo $output;
 	}
@@ -53,12 +51,17 @@ class AnodeAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	function getAnodeListGroupedWorks($listId = NULL, $numGroupedWorksToShow = NULL)
-	{
+	function getAnodeListGroupedWorks($listId = NULL, $numGroupedWorksToShow = NULL) {
 		if (!$listId) {
 			$listId = $_REQUEST['listId'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) { // Nashville hardcoded
+		if (isset($_GET['branch']) && in_array($_GET['branch'], [
+				"bl",
+				"bx",
+				"ep",
+				"ma",
+				"se",
+			])) { // Nashville hardcoded
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
@@ -76,13 +79,18 @@ class AnodeAPI extends Action
 	 * @return    array
 	 * @noinspection PhpUnused
 	 */
-	function getAnodeRelatedGroupedWorks($id = NULL)
-	{
+	function getAnodeRelatedGroupedWorks($id = NULL) {
 		global $configArray;
 		if (!isset($id)) {
 			$id = $_REQUEST['id'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) { // Nashville hardcoded
+		if (isset($_GET['branch']) && in_array($_GET['branch'], [
+				"bl",
+				"bx",
+				"ep",
+				"ma",
+				"se",
+			])) { // Nashville hardcoded
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
@@ -90,16 +98,16 @@ class AnodeAPI extends Action
 		//Load Similar titles (from Solr)
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$db = new GroupedWorksSolrConnector2($url);
 		}
 		$similar = $db->getMoreLikeThis($id);
 		if (isset($similar) && count($similar['response']['docs']) > 0) {
-			$similarTitles = array();
+			$similarTitles = [];
 
 			foreach ($similar['response']['docs'] as $key => $similarTitle) {
 				$similarTitles['titles'][] = $similarTitle;
@@ -113,10 +121,9 @@ class AnodeAPI extends Action
 		return $result;
 	}
 
-	function getAnodeGroupedWorks($result, $branch)
-	{
+	function getAnodeGroupedWorks($result, $branch) {
 		if (!isset($result['titles'])) {
-			$result['titles'] = array();
+			$result['titles'] = [];
 		} else {
 			//Rebuild the titles array since we don't want indexes to have gaps in them (so we don't convert the array to an object in json)
 			$titles = $result['titles'];
@@ -178,9 +185,9 @@ class AnodeAPI extends Action
 				$groupedWorkDriver = new GroupedWorkDriver($groupedWork['id']);
 
 				$relatedRecords = $groupedWorkDriver->getRelatedRecords();
-				foreach ($relatedRecords as $relatedRecord){
-					foreach ($relatedRecord->getItems() as $item){
-						$groupedWork['items'][] = array(
+				foreach ($relatedRecords as $relatedRecord) {
+					foreach ($relatedRecord->getItems() as $item) {
+						$groupedWork['items'][] = [
 							'01_bibIdentifier' => $relatedRecord->id,
 							'02_itemIdentifier' => $item->itemId,
 							'03_bibFormat' => $relatedRecord->format,
@@ -191,9 +198,9 @@ class AnodeAPI extends Action
 							'08_itemShelfLocation' => $item->shelfLocation,
 							'09_itemLocationCode' => $item->locationCode,
 							'10_itemCallNumber' => $item->callNumber,
-							'11_available' => $item->available
-						);
-						if ($item->locallyOwned && $item->available){
+							'11_available' => $item->available,
+						];
+						if ($item->locallyOwned && $item->available) {
 							$groupedWork['availableHere'] = true;
 						}
 					}
@@ -231,8 +238,7 @@ class AnodeAPI extends Action
 		return $result;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

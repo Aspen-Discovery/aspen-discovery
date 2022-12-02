@@ -111,7 +111,7 @@ class OAuthAuthentication extends Action {
 		return [
 			'success' => $success,
 			'message' => $success ? $message : $error,
-			'returnTo' => $returnTo
+			'returnTo' => $returnTo,
 		];
 	}
 
@@ -155,7 +155,7 @@ class OAuthAuthentication extends Action {
 		$this->curlWrapper->addCustomHeaders([
 			"Authorization: Basic $this->basicAuth",
 			"Cache-Control: no-cache",
-			"Content-Type: application/x-www-form-urlencoded"
+			"Content-Type: application/x-www-form-urlencoded",
 		], true);
 	}
 
@@ -280,7 +280,7 @@ class OAuthAuthentication extends Action {
 			'response_type' => 'code',
 			'redirect_uri' => $this->redirectUri,
 			'state' => $this->state,
-			'scope' => $settings->getScope()
+			'scope' => $settings->getScope(),
 		];
 
 		$queryString = $this->buildQueryString($requestOptions);
@@ -344,7 +344,7 @@ class OAuthAuthentication extends Action {
 				'grant_type' => 'password',
 				'username' => $username,
 				'password' => $password,
-				'access_type' => 'offline'
+				'access_type' => 'offline',
 			];
 			$queryString = $this->buildQueryString($requestOptions);
 			$url = $this->appendQuery($ssoSettings->getAccessTokenUrl(), $queryString);
@@ -379,7 +379,7 @@ class OAuthAuthentication extends Action {
 			$response = $this->curlWrapper->curlPostPage($ssoSettings->getAccessTokenUrl(), [
 				'query' => $params,
 				'timeout' => 10,
-				'debug' => true
+				'debug' => true,
 			]);
 			if ($this->curlWrapper->getResponseCode() == 200) {
 				$options = json_decode($response, true);

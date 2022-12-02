@@ -1,7 +1,6 @@
 <?php
 
-class EBSCOhostRecord extends DataObject
-{
+class EBSCOhostRecord extends DataObject {
 	public $__table = 'ebscohost_record';
 	public $id;
 	public $settingId;

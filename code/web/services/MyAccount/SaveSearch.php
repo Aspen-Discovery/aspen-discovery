@@ -3,10 +3,8 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
 
-class SaveSearch extends MyAccount
-{
-	function launch()
-	{
+class SaveSearch extends MyAccount {
+	function launch() {
 		$searchId = null;
 		$todo = 'addSearch';
 		if (isset($_REQUEST['delete']) && $_REQUEST['delete']) {
@@ -48,8 +46,7 @@ class SaveSearch extends MyAccount
 	 * @param SearchEntry $search
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function addSearch($search)
-	{
+	private function addSearch($search) {
 		if ($search->saved != 1) {
 			$search->user_id = UserAccount::getActiveUserId();
 			$search->saved = 1;
@@ -63,16 +60,14 @@ class SaveSearch extends MyAccount
 	 * @param SearchEntry $search
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function deleteSearch($search)
-	{
+	private function deleteSearch($search) {
 		if ($search->saved != 0) {
 			$search->saved = 0;
 			$search->update();
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Saved Searches');

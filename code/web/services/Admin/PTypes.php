@@ -4,48 +4,52 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Account/PType.php';
 
-class Admin_PTypes extends ObjectEditor
-{
+class Admin_PTypes extends ObjectEditor {
 
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'PType';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'PTypes';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Patron Types';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
-		$libraryList = array();
+
+	function getAllObjects($page, $recordsPerPage): array {
+		$libraryList = [];
 
 		$object = new PType();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$libraryList[$object->id] = clone $object;
 		}
 
 		return $libraryList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'pType asc';
 	}
-	function getObjectStructure() : array {
+
+	function getObjectStructure(): array {
 		return PType::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'pType';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
@@ -53,13 +57,11 @@ class Admin_PTypes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Patron Types');
 	}
 }

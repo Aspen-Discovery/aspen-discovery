@@ -1,26 +1,28 @@
 <?php
 require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
-class CloudLibraryScope extends DataObject
-{
+
+class CloudLibraryScope extends DataObject {
 	public $__table = 'cloud_library_scopes';
 	public $id;
 	public $name;
 	public $settingId;
-	public /** @noinspection PhpUnused */ $includeEAudiobook;
-	public /** @noinspection PhpUnused */ $includeEBooks;
-	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
+	public /** @noinspection PhpUnused */
+		$includeEAudiobook;
+	public /** @noinspection PhpUnused */
+		$includeEBooks;
+	public /** @noinspection PhpUnused */
+		$restrictToChildrensMaterial;
 
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure() : array
-	{
+	public static function getObjectStructure(): array {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$cloudLibrarySettings = [];
 		$cloudLibrarySetting = new CloudLibrarySetting();
 		$cloudLibrarySetting->find();
-		while ($cloudLibrarySetting->fetch()){
+		while ($cloudLibrarySetting->fetch()) {
 			$cloudLibrarySettings[$cloudLibrarySetting->id] = (string)$cloudLibrarySetting;
 		}
 
@@ -30,15 +32,52 @@ class CloudLibraryScope extends DataObject
 		$locationCloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure();
 		unset($locationCloudLibraryScopeStructure['scopeId']);
 
-		return array(
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
-			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $cloudLibrarySettings, 'label' => 'Setting Id'],
-			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
-			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1, 'forcesReindex' => true),
-			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1, 'forcesReindex' => true),
-			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by cloudLibrary', 'default'=>0, 'forcesReindex' => true),
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'settingId' => [
+				'property' => 'settingId',
+				'type' => 'enum',
+				'values' => $cloudLibrarySettings,
+				'label' => 'Setting Id',
+			],
+			'name' => [
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'The Name of the scope',
+				'maxLength' => 50,
+			],
+			'includeEAudiobook' => [
+				'property' => 'includeEAudiobook',
+				'type' => 'checkbox',
+				'label' => 'Include eAudio books',
+				'description' => 'Whether or not EAudiobook are included',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'includeEBooks' => [
+				'property' => 'includeEBooks',
+				'type' => 'checkbox',
+				'label' => 'Include eBooks',
+				'description' => 'Whether or not EBooks are included',
+				'default' => 1,
+				'forcesReindex' => true,
+			],
+			'restrictToChildrensMaterial' => [
+				'property' => 'restrictToChildrensMaterial',
+				'type' => 'checkbox',
+				'label' => 'Include Children\'s Materials Only',
+				'description' => 'If checked only includes titles identified as children by cloudLibrary',
+				'default' => 0,
+				'forcesReindex' => true,
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'oneToMany',
 				'label' => 'Libraries',
@@ -51,20 +90,20 @@ class CloudLibraryScope extends DataObject
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
-				'additionalOneToManyActions' => array(
-					array(
+				'additionalOneToManyActions' => [
+					[
 						'text' => 'Apply To All Libraries',
 						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=addToAllLibraries',
-					),
-					array(
+					],
+					[
 						'text' => 'Clear Libraries',
 						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=clearLibraries',
 						'class' => 'btn-warning',
-					),
-				)
-			),
+					],
+				],
+			],
 
-			'locations' => array(
+			'locations' => [
 				'property' => 'locations',
 				'type' => 'oneToMany',
 				'label' => 'Locations',
@@ -77,51 +116,50 @@ class CloudLibraryScope extends DataObject
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
-				'additionalOneToManyActions' => array(
-					array(
+				'additionalOneToManyActions' => [
+					[
 						'text' => 'Apply To All Locations',
 						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=addToAllLocations',
-					),
-					array(
+					],
+					[
 						'text' => 'Clear Locations',
 						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=clearLocations',
 						'class' => 'btn-warning',
-					),
-				),
-				'forcesReindex' => true
-			),
-		);
+					],
+				],
+				'forcesReindex' => true,
+			],
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEditLink($context) : string{
+	public function getEditLink($context): string {
 		return '/CloudLibrary/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
-	public function __toString()
-	{
+	public function __toString() {
 		return $this->getSetting() . " - " . $this->name;
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
+			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new LibraryCloudLibraryScope();
 				$obj->scopeId = $this->id;
 				$obj->find();
-				while($obj->fetch()){
+				while ($obj->fetch()) {
 					$this->_libraries[$obj->id] = clone($obj);
 				}
 			}
 			return $this->_libraries;
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
+			if (!isset($this->_locations) && $this->id) {
 				$this->_locations = [];
 				$obj = new LocationCloudLibraryScope();
 				$obj->scopeId = $this->id;
 				$obj->find();
-				while($obj->fetch()){
+				while ($obj->fetch()) {
 					$this->_locations[$obj->id] = clone($obj);
 				}
 			}
@@ -131,12 +169,12 @@ class CloudLibraryScope extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
-		}elseif ($name == "locations") {
+		} elseif ($name == "locations") {
 			$this->_locations = $value;
-		}else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
@@ -144,8 +182,7 @@ class CloudLibraryScope extends DataObject
 	/**
 	 * @return int|bool
 	 */
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -154,8 +191,7 @@ class CloudLibraryScope extends DataObject
 		return $ret;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -164,15 +200,15 @@ class CloudLibraryScope extends DataObject
 		return $ret;
 	}
 
-	public function saveLibraries(){
-		if (isset ($this->_libraries) && is_array($this->_libraries)){
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
 			$this->saveOneToManyOptions($this->_libraries, 'scopeId');
 			unset($this->_libraries);
 		}
 	}
 
-	public function saveLocations(){
-		if (isset ($this->_locations) && is_array($this->_locations)){
+	public function saveLocations() {
+		if (isset ($this->_locations) && is_array($this->_locations)) {
 			$this->saveOneToManyOptions($this->_locations, 'scopeId');
 			unset($this->_locations);
 		}
@@ -181,51 +217,46 @@ class CloudLibraryScope extends DataObject
 	/** @return Library[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLibraries()
-	{
+	public function getLibraries() {
 		return $this->__get('libraries');
 	}
 
 	/** @return Location[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLocations()
-	{
+	public function getLocations() {
 		return $this->__get('locations');
 	}
 
 	/** @noinspection PhpUnused */
-	public function setLibraries($val)
-	{
+	public function setLibraries($val) {
 		$this->_libraries = $val;
 	}
 
 	/** @noinspection PhpUnused */
-	public function setLocations($val)
-	{
+	public function setLocations($val) {
 		$this->_libraries = $val;
 	}
 
 	/** @noinspection PhpUnused */
-	public function clearLibraries(){
+	public function clearLibraries() {
 		$this->clearOneToManyOptions('LibraryCloudLibraryScope', 'scopeId');
 		unset($this->_libraries);
 	}
 
 	/** @noinspection PhpUnused */
-	public function clearLocations(){
+	public function clearLocations() {
 		$this->clearOneToManyOptions('LocationCloudLibraryScope', 'scopeId');
 		unset($this->_locations);
 	}
 
-	public function getSetting()
-	{
+	public function getSetting() {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$setting = new CloudLibrarySetting();
 		$setting->id = $this->settingId;
-		if ($setting->find(true)){
+		if ($setting->find(true)) {
 			return $setting;
-		}else{
+		} else {
 			return null;
 		}
 	}

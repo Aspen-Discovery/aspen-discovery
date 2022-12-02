@@ -5,13 +5,11 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once(ROOT_DIR . "/PHPExcel.php");
 
-class Admin_CronLog extends Admin_Admin
-{
-	function launch()
-	{
+class Admin_CronLog extends Admin_Admin {
+	function launch() {
 		global $interface;
 
-		$logEntries = array();
+		$logEntries = [];
 		$cronLogEntry = new CronLogEntry();
 		$total = $cronLogEntry->count();
 		$cronLogEntry = new CronLogEntry();
@@ -20,15 +18,15 @@ class Admin_CronLog extends Admin_Admin
 		$interface->assign('page', $page);
 		$cronLogEntry->limit(($page - 1) * 30, 30);
 		$cronLogEntry->find();
-		while ($cronLogEntry->fetch()){
+		while ($cronLogEntry->fetch()) {
 			$logEntries[] = clone($cronLogEntry);
 		}
 		$interface->assign('logEntries', $logEntries);
 
 		$options = [
 			'totalItems' => $total,
-			'fileName'   => '/Admin/CronLog?page=%d',
-			'perPage'    => 30,
+			'fileName' => '/Admin/CronLog?page=%d',
+			'perPage' => 30,
 		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
@@ -36,8 +34,7 @@ class Admin_CronLog extends Admin_Admin
 		$this->display('cronLog.tpl', 'Cron Log');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -45,13 +42,11 @@ class Admin_CronLog extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View System Reports');
 	}
 }

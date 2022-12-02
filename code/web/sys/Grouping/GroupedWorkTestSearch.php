@@ -1,7 +1,6 @@
 <?php
 
-class GroupedWorkTestSearch extends DataObject
-{
+class GroupedWorkTestSearch extends DataObject {
 	public $__table = 'grouped_work_test_search';
 
 	public $id;
@@ -13,29 +12,81 @@ class GroupedWorkTestSearch extends DataObject
 	public $status;
 	public $notes;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchIndexes = $searchObject->getSearchIndexes();
 		return [
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the in the system'),
-			'description' => array('property'=>'description', 'type'=>'textarea', 'label'=>'Description', 'description'=>'A brief description of the test.'),
-			'searchIndex' => array('property'=>'searchIndex', 'type'=>'enum', 'values' => $searchIndexes, 'label'=>'Search Index', 'description'=>'The index to search in.', 'default'=>$searchObject->getDefaultIndex(), 'required'=>true),
-			'searchTerm' => array('property'=>'searchTerm', 'type'=>'textarea', 'label'=>'Search Term', 'description'=>'The term to search for.', 'required'=>true),
-			'expectedGroupedWorks' => array('property'=>'expectedGroupedWorks', 'type'=>'textarea', 'label'=>'Expected Grouped Works', 'description'=>'Grouped Works that should be shown on the first page.'),
-			'unexpectedGroupedWorks' => array('property'=>'unexpectedGroupedWorks', 'type'=>'textarea', 'label'=>'Unexpected Grouped Works', 'description'=>'Grouped Works that should not be shown on the first page.'),
-			'status'  => array('property' => 'status', 'type' => 'enum', 'label' => 'Status', 'values' => ['0' => 'Not tested', '1' => 'Running', '2' => 'Passed', '3' => 'Failed'], 'description' => 'The status of the test', 'default' => '0', 'readOnly'=>true),
-			'notes' => array('property'=>'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes related to the last run.', 'readOnly'=>true),
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id of the in the system',
+			],
+			'description' => [
+				'property' => 'description',
+				'type' => 'textarea',
+				'label' => 'Description',
+				'description' => 'A brief description of the test.',
+			],
+			'searchIndex' => [
+				'property' => 'searchIndex',
+				'type' => 'enum',
+				'values' => $searchIndexes,
+				'label' => 'Search Index',
+				'description' => 'The index to search in.',
+				'default' => $searchObject->getDefaultIndex(),
+				'required' => true,
+			],
+			'searchTerm' => [
+				'property' => 'searchTerm',
+				'type' => 'textarea',
+				'label' => 'Search Term',
+				'description' => 'The term to search for.',
+				'required' => true,
+			],
+			'expectedGroupedWorks' => [
+				'property' => 'expectedGroupedWorks',
+				'type' => 'textarea',
+				'label' => 'Expected Grouped Works',
+				'description' => 'Grouped Works that should be shown on the first page.',
+			],
+			'unexpectedGroupedWorks' => [
+				'property' => 'unexpectedGroupedWorks',
+				'type' => 'textarea',
+				'label' => 'Unexpected Grouped Works',
+				'description' => 'Grouped Works that should not be shown on the first page.',
+			],
+			'status' => [
+				'property' => 'status',
+				'type' => 'enum',
+				'label' => 'Status',
+				'values' => [
+					'0' => 'Not tested',
+					'1' => 'Running',
+					'2' => 'Passed',
+					'3' => 'Failed',
+				],
+				'description' => 'The status of the test',
+				'default' => '0',
+				'readOnly' => true,
+			],
+			'notes' => [
+				'property' => 'notes',
+				'type' => 'textarea',
+				'label' => 'Notes',
+				'description' => 'Notes related to the last run.',
+				'readOnly' => true,
+			],
 		];
 	}
 
-	public function runTest()
-	{
+	public function runTest() {
 		$this->status = 1;
 		$this->notes = '';
 		$this->update();
 		$terms = preg_split("/\\r\\n|\\r|\\n/", $this->searchTerm);
 		$allPass = true;
-		foreach ($terms as $searchTerm){
+		foreach ($terms as $searchTerm) {
 			/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local');
@@ -49,37 +100,37 @@ class GroupedWorkTestSearch extends DataObject
 				$this->status = '3';
 				$this->notes .= 'Search Timed Out';
 				$allPass = false;
-			}else{
+			} else {
 				$expectedWorks = preg_split("/\\r\\n|\\r|\\n/", $this->expectedGroupedWorks);
 				$unexpectedWorks = preg_split("/\\r\\n|\\r|\\n/", $this->unexpectedGroupedWorks);
 				$unexpectedWorksFound = [];
-				foreach ($result['response']['docs'] as $doc){
+				foreach ($result['response']['docs'] as $doc) {
 					if (($key = array_search($doc['id'], $expectedWorks)) !== false) {
 						unset($expectedWorks[$key]);
 					}
-					if (in_array($doc['id'], $unexpectedWorks)){
+					if (in_array($doc['id'], $unexpectedWorks)) {
 						$unexpectedWorksFound[] = $doc['id'];
 					}
 				}
-				if (count($unexpectedWorksFound) > 0 || count($expectedWorks) > 0){
+				if (count($unexpectedWorksFound) > 0 || count($expectedWorks) > 0) {
 					$allPass = false;
-					if (count($expectedWorks) > 0){
+					if (count($expectedWorks) > 0) {
 						$this->notes .= 'Expected works were not found: ';
 						$this->notes .= implode(',', $expectedWorks);
 					}
-					if (count($unexpectedWorksFound) > 0){
+					if (count($unexpectedWorksFound) > 0) {
 						$this->notes .= 'Unexpected works were found: ';
 						$this->notes .= implode(',', $unexpectedWorksFound);
 					}
-				}else{
+				} else {
 					$this->notes .= 'Passed';
 				}
 				$this->notes .= "\r\n";
 			}
 		}
-		if ($allPass){
+		if ($allPass) {
 			$this->status = 2;
-		}else{
+		} else {
 			$this->status = 3;
 		}
 
@@ -87,12 +138,8 @@ class GroupedWorkTestSearch extends DataObject
 		$this->update();
 	}
 
-	public function update()
-	{
-		if (!empty($this->_changedFields) && (in_array('searchIndex', $this->_changedFields) ||
-			in_array('searchTerm', $this->_changedFields) ||
-			in_array('expectedGroupedWorks', $this->_changedFields) ||
-			in_array('unexpectedGroupedWorks', $this->_changedFields))){
+	public function update() {
+		if (!empty($this->_changedFields) && (in_array('searchIndex', $this->_changedFields) || in_array('searchTerm', $this->_changedFields) || in_array('expectedGroupedWorks', $this->_changedFields) || in_array('unexpectedGroupedWorks', $this->_changedFields))) {
 			$this->status = 0;
 			$this->notes = '';
 		}

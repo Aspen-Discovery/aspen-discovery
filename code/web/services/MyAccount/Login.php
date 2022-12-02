@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . "/Action.php";
 
-class MyAccount_Login extends Action
-{
-	function launch($msg = null)
-	{
+class MyAccount_Login extends Action {
+	function launch($msg = null) {
 		global $interface;
 		global $module;
 		global $action;
@@ -88,7 +86,7 @@ class MyAccount_Login extends Action
 						}
 					}
 				}
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				//This happens if the tables are not installed, just ignore
 			}
 		}
@@ -135,8 +133,7 @@ class MyAccount_Login extends Action
 
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Login');
 		return $breadcrumbs;

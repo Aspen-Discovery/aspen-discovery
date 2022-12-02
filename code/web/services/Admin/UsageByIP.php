@@ -2,10 +2,8 @@
 require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 
-class Admin_UsageByIP extends Admin_Dashboard
-{
-	function launch()
-	{
+class Admin_UsageByIP extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 		$instanceName = $this->loadInstanceInformation('UsageByIPAddress');
 
@@ -17,7 +15,7 @@ class Admin_UsageByIP extends Admin_Dashboard
 		$usageByIP->month = $thisMonth;
 		$usageByIP->year = $thisYear;
 
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usageByIP->instance = $instanceName;
 		}
 
@@ -37,11 +35,11 @@ class Admin_UsageByIP extends Admin_Dashboard
 
 		$allIpStats = [];
 		$usageByIP->find();
-		while ($usageByIP->fetch()){
+		while ($usageByIP->fetch()) {
 			$ipAddress = ip2long($usageByIP->ipAddress);
-			if ($ipAddress !== false){
+			if ($ipAddress !== false) {
 				$allIpStats[$ipAddress] = clone $usageByIP;
-			}else{
+			} else {
 				$allIpStats[] = clone $usageByIP;
 			}
 		}
@@ -51,8 +49,7 @@ class Admin_UsageByIP extends Admin_Dashboard
 		$this->display('usage_by_ip.tpl', 'Aspen Usage By IP');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -60,13 +57,11 @@ class Admin_UsageByIP extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View System Reports');
 	}
 }

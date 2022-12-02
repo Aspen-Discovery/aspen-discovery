@@ -1,12 +1,11 @@
 <?php
 
-function getHooplaUpdates()
-{
-	return array(
-		'hoopla_exportTables' => array(
+function getHooplaUpdates() {
+	return [
+		'hoopla_exportTables' => [
 			'title' => 'Hoopla export tables',
 			'description' => 'Create tables to store data exported from hoopla.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE hoopla_export ( 
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					hooplaId INT NOT NULL,
@@ -22,13 +21,13 @@ function getHooplaUpdates()
 					price DOUBLE NOT NULL DEFAULT 0,
 					UNIQUE(hooplaId)
 				) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'hoopla_exportLog' => array(
+		'hoopla_exportLog' => [
 			'title' => 'Hoopla export log',
 			'description' => 'Create log for hoopla export.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS hoopla_export_log(
 					`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
 					`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
@@ -37,43 +36,43 @@ function getHooplaUpdates()
 					`notes` TEXT COMMENT 'Additional information about the run', 
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
-			)
-		),
+			],
+		],
 
-		'hoopla_exportLog_update' => array(
+		'hoopla_exportLog_update' => [
 			'title' => 'Better Hoopla export log',
 			'description' => 'Add additional info to Hoopla export log.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE hoopla_export_log ADD COLUMN numProducts INT(11) DEFAULT 0",
 				"ALTER TABLE hoopla_export_log ADD COLUMN numErrors INT(11) DEFAULT 0",
 				"ALTER TABLE hoopla_export_log ADD COLUMN numAdded INT(11) DEFAULT 0",
 				"ALTER TABLE hoopla_export_log ADD COLUMN numDeleted INT(11) DEFAULT 0",
 				"ALTER TABLE hoopla_export_log ADD COLUMN numUpdated INT(11) DEFAULT 0",
-			)
-		),
+			],
+		],
 
-		'hoopla_exportLog_skips' => array(
+		'hoopla_exportLog_skips' => [
 			'title' => 'Add skips for hoopla export log',
 			'description' => 'Add additional info to Hoopla export log.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE hoopla_export_log ADD COLUMN numSkipped INT(11) DEFAULT 0",
-			)
-		),
+			],
+		],
 
-		'hoopla_export_include_raw_data' => array(
+		'hoopla_export_include_raw_data' => [
 			'title' => 'Update Hoopla export raw data',
 			'description' => 'Update Hoopla export table to add raw data from API calls',
-			'sql' =>array  (
+			'sql' => [
 				"ALTER TABLE hoopla_export ADD COLUMN rawChecksum BIGINT",
 				"ALTER TABLE hoopla_export ADD COLUMN rawResponse MEDIUMTEXT",
-				"ALTER TABLE hoopla_export ADD COLUMN dateFirstDetected bigint(20) DEFAULT NULL"
-			)
-		),
+				"ALTER TABLE hoopla_export ADD COLUMN dateFirstDetected bigint(20) DEFAULT NULL",
+			],
+		],
 
-		'hoopla_add_settings' => array(
+		'hoopla_add_settings' => [
 			'title' => 'Add Hoopla Settings',
 			'description' => 'Add Settings for Hoopla to move configuration out of ini',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS hoopla_settings(
 						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						apiUrl VARCHAR(255),
@@ -84,13 +83,13 @@ function getHooplaUpdates()
 						lastUpdateOfChangedRecords INT(11) DEFAULT 0,
 						lastUpdateOfAllRecords INT(11) DEFAULT 0
 					)",
-			),
-		),
+			],
+		],
 
-		'track_hoopla_user_usage' => array(
+		'track_hoopla_user_usage' => [
 			'title' => 'Hoopla Usage by user',
 			'description' => 'Add a table to track how often a particular user uses Hoopla.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_hoopla_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     userId INT(11) NOT NULL,
@@ -100,14 +99,14 @@ function getHooplaUpdates()
                 ) ENGINE = InnoDB",
 				"ALTER TABLE user_hoopla_usage ADD INDEX (userId, year, month)",
 				"ALTER TABLE user_hoopla_usage ADD INDEX (year, month)",
-			),
-		),
+			],
+		],
 
-		'track_hoopla_record_usage' => array(
+		'track_hoopla_record_usage' => [
 			'title' => 'Hoopla Record Usage',
 			'description' => 'Add a table to track how records within Hoopla are used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE hoopla_record_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     hooplaId INT(11),
@@ -117,8 +116,8 @@ function getHooplaUpdates()
                 ) ENGINE = InnoDB",
 				"ALTER TABLE hoopla_record_usage ADD INDEX (hooplaId, year, month)",
 				"ALTER TABLE hoopla_record_usage ADD INDEX (year, month)",
-			),
-		),
+			],
+		],
 
 		'hoopla_scoping' => [
 			'title' => 'Hoopla Scoping',
@@ -144,24 +143,24 @@ function getHooplaUpdates()
     				excludeAbridged TINYINT DEFAULT 0,
     				excludeParentalAdvisory TINYINT DEFAULT 0,
     				excludeProfanity TINYINT DEFAULT 0
-				) ENGINE = InnoDB'
-			]
+				) ENGINE = InnoDB',
+			],
 		],
 
-		'hoopla_filter_records_from_other_vendors' =>[
-			'title'=> 'Hoopla Filter Records Purchased from other vendors',
-			'description' =>'Add an option to exclude hoopla titles purchased from other vendors',
+		'hoopla_filter_records_from_other_vendors' => [
+			'title' => 'Hoopla Filter Records Purchased from other vendors',
+			'description' => 'Add an option to exclude hoopla titles purchased from other vendors',
 			'sql' => [
-				'ALTER TABLE hoopla_settings ADD COLUMN excludeTitlesWithCopiesFromOtherVendors TINYINT DEFAULT 0'
-			]
+				'ALTER TABLE hoopla_settings ADD COLUMN excludeTitlesWithCopiesFromOtherVendors TINYINT DEFAULT 0',
+			],
 		],
 
 		'create_hoopla_module' => [
 			'title' => 'Create Hoopla Module',
 			'description' => 'Setup Hoopla module',
 			'sql' => [
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Hoopla', 'grouped_works', 'hoopla_export')"
-			]
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Hoopla', 'grouped_works', 'hoopla_export')",
+			],
 		],
 
 		'disable_hoopla_module_auto_restart' => [
@@ -169,7 +168,7 @@ function getHooplaUpdates()
 			'description' => 'Disable Hoopla Auto Restart',
 			'sql' => [
 				"UPDATE modules SET backgroundProcess = '' WHERE name = 'Hoopla'",
-			]
+			],
 		],
 
 		're_enable_hoopla_module_auto_restart' => [
@@ -177,23 +176,23 @@ function getHooplaUpdates()
 			'description' => 'Re-enable Hoopla Auto Restart',
 			'sql' => [
 				"UPDATE modules SET backgroundProcess = 'hoopla_export' WHERE name = 'Hoopla'",
-			]
+			],
 		],
 
-		'hoopla_module_add_log' =>[
+		'hoopla_module_add_log' => [
 			'title' => 'Hoopla add log info to module',
 			'description' => 'Add logging information to Hoopla module',
 			'sql' => [
 				"UPDATE modules set logClassPath='/sys/Hoopla/HooplaExportLogEntry.php', logClassName='HooplaExportLogEntry' WHERE name='Hoopla'",
-			]
+			],
 		],
 
 		'hoopla_add_settings_2' => [
 			'title' => 'Add Settings to Hoopla module',
 			'description' => 'Add Settings to Hoopla module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/Hoopla/HooplaSetting.php', settingsClassName = 'HooplaSetting' WHERE name = 'Hoopla'"
-			]
+				"UPDATE modules set settingsClassPath = '/sys/Hoopla/HooplaSetting.php', settingsClassName = 'HooplaSetting' WHERE name = 'Hoopla'",
+			],
 		],
 
 		'hoopla_add_setting_to_scope' => [
@@ -202,8 +201,8 @@ function getHooplaUpdates()
 			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE hoopla_scopes ADD column settingId INT(11)',
-				'updateHooplaScopes'
-			]
+				'updateHooplaScopes',
+			],
 		],
 
 		'hoopla_usage_add_instance' => [
@@ -217,20 +216,20 @@ function getHooplaUpdates()
 				'ALTER TABLE user_hoopla_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_hoopla_usage DROP INDEX userId',
 				'ALTER TABLE user_hoopla_usage ADD UNIQUE INDEX (instance, userId, year, month)',
-			]
+			],
 		],
-	);
+	];
 }
 
 /** @noinspection PhpUnused */
-function updateHooplaScopes(){
+function updateHooplaScopes() {
 	require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
 	require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 	$hooplaSettings = new HooplaSetting();
-	if ($hooplaSettings->find(true)){
+	if ($hooplaSettings->find(true)) {
 		$hooplaScopes = new HooplaScope();
 		$hooplaScopes->find();
-		while ($hooplaScopes->fetch()){
+		while ($hooplaScopes->fetch()) {
 			$hooplaScopes->settingId = $hooplaSettings->id;
 			$hooplaScopes->update();
 		}

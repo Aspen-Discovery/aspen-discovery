@@ -2,17 +2,15 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-class CourseReserves_AJAX extends JSON_Action
-{
+class CourseReserves_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
-	function getAddBrowseCategoryFromCourseReservesForm()
-	{
+	function getAddBrowseCategoryFromCourseReservesForm() {
 		global $interface;
 
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 		$temp = SubBrowseCategories::getObjectStructure();
-		$temp['subCategoryId']['values'] = array(0 => 'Select One') + $temp['subCategoryId']['values'];
+		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
 		// btw addition of arrays is kinda a cool trick.
@@ -21,16 +19,21 @@ class CourseReserves_AJAX extends JSON_Action
 
 		// Display Page
 		$interface->assign('reserveId', strip_tags($_REQUEST['reserveId']));
-		return array(
-			'title' => translate(['text'=>'Add as Browse Category to Home Page', 'isAdminFacing'=>'true']),
+		return [
+			'title' => translate([
+				'text' => 'Add as Browse Category to Home Page',
+				'isAdminFacing' => 'true',
+			]),
 			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>" . translate(['text'=>'Create Category', 'isAdminFacing'=>'true']) . "</button>"
-		);
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>" . translate([
+					'text' => 'Create Category',
+					'isAdminFacing' => 'true',
+				]) . "</button>",
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	function sendEmail()
-	{
+	function sendEmail() {
 		global $interface;
 
 		// Get data from AJAX request
@@ -65,57 +68,65 @@ class CourseReserves_AJAX extends JSON_Action
 					$emailResult = $mail->send($to, $subject, $body);
 
 					if ($emailResult === true) {
-						$result = array(
+						$result = [
 							'result' => true,
-							'message' => 'Your email was sent successfully.'
-						);
+							'message' => 'Your email was sent successfully.',
+						];
 					} elseif (($emailResult instanceof AspenError)) {
-						$result = array(
+						$result = [
 							'result' => false,
-							'message' => "Your email message could not be sent: {$emailResult->getMessage()}."
-						);
+							'message' => "Your email message could not be sent: {$emailResult->getMessage()}.",
+						];
 					} else {
-						$result = array(
+						$result = [
 							'result' => false,
-							'message' => 'Your email message could not be sent due to an unknown error.'
-						);
+							'message' => 'Your email message could not be sent due to an unknown error.',
+						];
 						global $logger;
 						$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", Logger::LOG_ERROR);
 					}
 				} else {
-					$result = array(
+					$result = [
 						'result' => false,
-						'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
-					);
+						'message' => 'Sorry, we can&apos;t send emails with html or other data in it.',
+					];
 				}
 			}
 		} else { // Invalid listId
-			$result = array(
+			$result = [
 				'result' => false,
-				'message' => "Invalid Course Reserve Id. Your email message could not be sent."
-			);
+				'message' => "Invalid Course Reserve Id. Your email message could not be sent.",
+			];
 		}
 
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function getEmailCourseReserveForm()
-	{
+	function getEmailCourseReserveForm() {
 		global $interface;
 		if (isset($_REQUEST['reserveId']) && ctype_digit($_REQUEST['reserveId'])) {
 			$reserveId = $_REQUEST['reserveId'];
 
 			$interface->assign('reserveId', $reserveId);
-			return array(
-				'title' => translate(['text' => 'Email Course Reserve', 'isPublicFacing'=>true]),
+			return [
+				'title' => translate([
+					'text' => 'Email Course Reserve',
+					'isPublicFacing' => true,
+				]),
 				'modalBody' => $interface->fetch('CourseReserves/emailCourseReservePopup.tpl'),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailCourseReserveForm\').submit();">' . translate(['text' => 'Send Email', 'isPublicFacing'=>true]) . '</span>'
-			);
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailCourseReserveForm\').submit();">' . translate([
+						'text' => 'Send Email',
+						'isPublicFacing' => true,
+					]) . '</span>',
+			];
 		} else {
 			return [
 				'success' => false,
-				'message' => translate(['text' => 'You must provide the id of the course reserve to email', 'isPublicFacing'=>true]),
+				'message' => translate([
+					'text' => 'You must provide the id of the course reserve to email',
+					'isPublicFacing' => true,
+				]),
 			];
 		}
 	}

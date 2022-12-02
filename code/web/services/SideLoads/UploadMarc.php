@@ -2,10 +2,8 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 
-class SideLoads_UploadMarc extends Admin_Admin
-{
-	function launch()
-	{
+class SideLoads_UploadMarc extends Admin_Admin {
+	function launch() {
 		global $interface;
 
 		//Figure out the maximum upload size
@@ -22,9 +20,9 @@ class SideLoads_UploadMarc extends Admin_Admin
 				$uploadedFile = $_FILES['marcFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
 					$interface->assign('error', "No MARC file was uploaded");
-				} else if (isset($uploadedFile["error"]) && ($uploadedFile["error"] == UPLOAD_ERR_FORM_SIZE || $uploadedFile["error"] == UPLOAD_ERR_INI_SIZE)) {
+				} elseif (isset($uploadedFile["error"]) && ($uploadedFile["error"] == UPLOAD_ERR_FORM_SIZE || $uploadedFile["error"] == UPLOAD_ERR_INI_SIZE)) {
 					$interface->assign('error', "The MARC File was too large, compress the file or break it into multiple files");
-				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+				} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
 					$interface->assign('error', "Error in file upload for MARC File");
 				} else {
 					//File was uploaded, need to verify it was the correct type
@@ -48,9 +46,9 @@ class SideLoads_UploadMarc extends Admin_Admin
 							$zip->extractTo($uploadPath);
 							$zip->close();
 							$filesInSideLoadDir = scandir($uploadPath);
-							foreach ($filesInSideLoadDir as $file){
+							foreach ($filesInSideLoadDir as $file) {
 								$fullFileName = $uploadPath . '/' . $file;
-								if (is_file($fullFileName)){
+								if (is_file($fullFileName)) {
 									chgrp($fullFileName, 'aspen_apache');
 									chmod($fullFileName, 0664);
 								}
@@ -74,9 +72,9 @@ class SideLoads_UploadMarc extends Admin_Admin
 						fclose($out_file);
 						gzclose($file);
 						$filesInSideLoadDir = scandir($uploadPath);
-						foreach ($filesInSideLoadDir as $file){
+						foreach ($filesInSideLoadDir as $file) {
 							$fullFileName = $uploadPath . '/' . $file;
-							if (is_file($fullFileName)){
+							if (is_file($fullFileName)) {
 								chgrp($fullFileName, 'aspen_apache');
 								chmod($fullFileName, 0664);
 							}
@@ -94,7 +92,7 @@ class SideLoads_UploadMarc extends Admin_Admin
 					}
 				}
 			}
-		}else{
+		} else {
 			$interface->assign('error', "Could not find the specified Side Load configuration.");
 		}
 
@@ -102,26 +100,23 @@ class SideLoads_UploadMarc extends Admin_Admin
 		$this->display('uploadMarc.tpl', 'Upload MARC File');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Loads');
 		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Load Settings');
-		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoad){
-			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->id , $this->activeObject->name);
+		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoad) {
+			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->id, $this->activeObject->name);
 		}
 		$breadcrumbs[] = new Breadcrumb('', 'Upload MARC Record');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'side_loads';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates22_01_00() : array
-{
+function getUpdates22_01_00(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -16,16 +15,18 @@ function getUpdates22_01_00() : array
 			'sql' => [
 				'ALTER TABLE ip_lookup ADD COLUMN showLogMeOut tinyint(1) DEFAULT 1',
 				'UPDATE ip_lookup SET showLogMeOut = isOpac',
-			]
-		], //ip_lookup_showlogmeout
+			],
+		],
+		//ip_lookup_showlogmeout
 		'logout_after_hold_options' => [
 			'title' => 'Alter settings for log me out after placing a hold',
 			'description' => 'Adds a boolean for whether the autologout checkbox on the place hold screen should appear or not for a given IP',
 			'sql' => [
 				'ALTER TABLE ip_lookup CHANGE COLUMN showLogMeOut defaultLogMeOutAfterPlacingHoldOn tinyint(1) DEFAULT 1',
 				'ALTER TABLE library ADD COLUMN showLogMeOutAfterPlacingHolds TINYINT(1) DEFAULT 1',
-			]
-		], //logout_after_hold_options
+			],
+		],
+		//logout_after_hold_options
 		'curbside_pickup_settings' => [
 			'title' => 'Add settings for Curbside Pickup',
 			'description' => 'Add settings for Curbside Pickup',
@@ -44,59 +45,67 @@ function getUpdates22_01_00() : array
 					contentCheckedIn LONGTEXT DEFAULT NULL
 				) ENGINE INNODB',
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Curbside Pickup', 'Administer Curbside Pickup', '', 10, 'Controls if the user can change Curbside Pickup settings.')",
-				"ALTER TABLE library ADD COLUMN curbsidePickupSettingId INT(11) DEFAULT -1"
-			]
-		], //curbside_pickup_settings
+				"ALTER TABLE library ADD COLUMN curbsidePickupSettingId INT(11) DEFAULT -1",
+			],
+		],
+		//curbside_pickup_settings
 		'curbside_pickup_settings_pt2' => [
 			'title' => 'Additional settings for Curbside Pickup',
 			'description' => 'Add additional settings for curbside pickup to curbside_pickup_settings and location',
 			'sql' => [
 				"ALTER TABLE curbside_pickup_settings ADD COLUMN timeAllowedBeforeCheckIn INT(5) default 30",
 				"ALTER TABLE location ADD COLUMN curbsidePickupInstructions VARCHAR(255)",
-			]
-		], //curbside_pickup_settings_pt2
+			],
+		],
+		//curbside_pickup_settings_pt2
 		'curbside_pickup_settings_pt3' => [
 			'title' => 'Additional settings for Curbside Pickup',
 			'description' => 'Add pickup instructions for curbside to curbside_pickup_settings',
 			'sql' => [
 				"ALTER TABLE curbside_pickup_settings ADD COLUMN curbsidePickupInstructions VARCHAR(255)",
-			]
-		], //curbside_pickup_settings_pt3
+			],
+		],
+		//curbside_pickup_settings_pt3
 		'curbside_pickup_settings_pt4' => [
 			'title' => 'Curbside Pickups Pt 4 - default permissions',
 			'description' => 'Give opac admin permissions for curbside pickup',
 			'sql' => [
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Curbside Pickup'))",
-			]
-		], //curbside_pickup_settings_pt3
+			],
+		],
+		//curbside_pickup_settings_pt3
 		'sierra_public_note_export' => [
 			'title' => 'Add export of public note from Sierra',
 			'description' => 'Add export of public note from Sierra',
 			'sql' => [
 				"ALTER TABLE sierra_export_field_mapping ADD COLUMN itemPublicNoteExportSubfield VARCHAR(1) DEFAULT ''",
-			]
-		], //sierra_public_note_export
-		'greenhouse_add_ils'=> [
+			],
+		],
+		//sierra_public_note_export
+		'greenhouse_add_ils' => [
 			'title' => 'Greenhouse - Add ILS',
 			'description' => 'Track the active ILS for a site within the greenouse',
 			'sql' => [
-				'ALTER TABLE aspen_sites ADD COLUMN ils INT'
-			]
-		], //greenhouse_add_ils
+				'ALTER TABLE aspen_sites ADD COLUMN ils INT',
+			],
+		],
+		//greenhouse_add_ils
 		'website_pages_deletionReason' => [
 			'title' => 'Add deletion reason to website pages',
 			'description' => 'Website Pages - Deletion Reason',
 			'sql' => [
-				"ALTER TABLE website_pages ADD COLUMN deleteReason VARCHAR(255) DEFAULT ''"
-			]
-		], //website_pages_deletionReason
+				"ALTER TABLE website_pages ADD COLUMN deleteReason VARCHAR(255) DEFAULT ''",
+			],
+		],
+		//website_pages_deletionReason
 		'layout_settings_contrast' => [
 			'title' => 'Add custom minimum contrast rule',
 			'description' => 'Allow libraries to set higher minimum contrasts for their themes',
 			'sql' => [
-				"ALTER TABLE layout_settings ADD COLUMN contrastRatio VARCHAR(5) DEFAULT 4.50"
-			]
-		], //layout_settings_contrast
+				"ALTER TABLE layout_settings ADD COLUMN contrastRatio VARCHAR(5) DEFAULT 4.50",
+			],
+		],
+		//layout_settings_contrast
 		'two_factor_auth' => [
 			'title' => 'Add tables for 2FA',
 			'description' => 'Add tables to store data related to 2FA',
@@ -117,28 +126,32 @@ function getUpdates22_01_00() : array
 					deniedMessage LONGTEXT,
 					defaultRememberMe TINYINT(1) DEFAULT 0
 				) ENGINE INNODB',
-				"ALTER TABLE user ADD COLUMN twoFactorStatus int(1) DEFAULT 0", // 0 = not set, 1 = opted out, 2 = opted in
+				"ALTER TABLE user ADD COLUMN twoFactorStatus int(1) DEFAULT 0",
+				// 0 = not set, 1 = opted out, 2 = opted in
 				"ALTER TABLE user ADD COLUMN primaryTwoFactor varchar(25) DEFAULT null",
 				"ALTER TABLE user ADD COLUMN authLocked TINYINT(1) DEFAULT 0",
 				"ALTER TABLE ptype ADD COLUMN twoFactorAuthSettingId int(11) DEFAULT -1",
 				"ALTER TABLE library ADD COLUMN twoFactorAuthSettingId int(11) DEFAULT -1",
-			]
-		], //two_factor_auth
+			],
+		],
+		//two_factor_auth
 		'two_factor_auth_permission' => [
 			'title' => 'Add permission setting for 2FA',
 			'description' => 'Add permission setting for managing two-factor authentication',
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration', 'Administer Two-Factor Authentication', '', 90, 'Controls if the user can change Two-Factor Authentication settings. <em>This has potential security and cost implications.</em>')",
-			]
-		], //two_factor_auth_permission
+			],
+		],
+		//two_factor_auth_permission
 		'login_unless_in_library' => [
 			'title' => 'Add option for web builder page access',
 			'description' => 'Add option to require login to access a page unless being viewed within the library',
 			'sql' => [
 				"ALTER TABLE web_builder_basic_page ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
 				"ALTER TABLE web_builder_portal_page ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
-			]
-		], //login_unless_in_library
+			],
+		],
+		//login_unless_in_library
 		'course_reserves_library_mappings' => [
 			'title' => 'Course Reserves Library Mappings',
 			'description' => 'Add library mappings for course reservers',
@@ -149,15 +162,17 @@ function getUpdates22_01_00() : array
 					value VARCHAR(50) NOT NULL,
 					translation VARCHAR(255) NOT NULL 
 				) ENGINE INNODB",
-			]
-		], //course_reserves_library_mappings
+			],
+		],
+		//course_reserves_library_mappings
 		'amazon_ses_secret_length' => [
 			'title' => 'Alter Amazon SES secret length',
 			'description' => 'Increase the max length for Amazon SES secret',
 			'sql' => [
-				'ALTER TABLE amazon_ses_settings CHANGE COLUMN accessKeySecret accessKeySecret VARCHAR(600)'
-			]
-		], //amazon_ses_secret_length
+				'ALTER TABLE amazon_ses_settings CHANGE COLUMN accessKeySecret accessKeySecret VARCHAR(600)',
+			],
+		],
+		//amazon_ses_secret_length
 		'pin_reset_token' => [
 			'title' => 'PIN Reset Token',
 			'description' => 'Create a table to store PIN reset tokens',
@@ -167,16 +182,18 @@ function getUpdates22_01_00() : array
 					userId INT(11) NOT NULL,
 					token VARCHAR(12) NOT NULL, 
 					dateIssued INT(11) NOT NULL
-				) ENGINE INNODB'
-			]
-		], //pin_reset_token
+				) ENGINE INNODB',
+			],
+		],
+		//pin_reset_token
 		'requireLogin_webResource' => [
 			'title' => 'Add option for requiring login when accessing web resource',
 			'description' => 'Add option for requiring login when accessing web resource outside of library',
 			'sql' => [
 				"ALTER TABLE web_builder_resource ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
-			]
-		], //requireLogin_webResource
+			],
+		],
+		//requireLogin_webResource
 		'web_resource_usage' => [
 			'title' => 'Add web resource usage table',
 			'description' => 'Add a table to track usage of web resources',
@@ -192,8 +209,9 @@ function getUpdates22_01_00() : array
 							instance VARCHAR(100)
 						) ENGINE = InnoDB',
 				'ALTER TABLE web_builder_resource_usage ADD INDEX (instance, year, month)',
-			]
-		], //web_resource_usage
+			],
+		],
+		//web_resource_usage
 		'remove2FADefaultRememberMe' => [
 			'title' => 'Remove Default Remember Me from 2FA, Add to Library',
 			'description' => 'Remove "Default Remember Me" option from two-factor authentication settings, add it to library settings',
@@ -201,28 +219,32 @@ function getUpdates22_01_00() : array
 			'sql' => [
 				"ALTER TABLE two_factor_auth_settings DROP COLUMN defaultRememberMe",
 				"ALTER TABLE library ADD COLUMN defaultRememberMe TINYINT(1) DEFAULT 0",
-			]
-		], //remove2FADefaultRememberMe
+			],
+		],
+		//remove2FADefaultRememberMe
 		'2fa_permissions' => [
 			'title' => 'Two-Factor Authentication Permissions',
 			'description' => 'Add new permissions for Two-Factor Authentication',
 			'sql' => [
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Two-Factor Authentication'))",
-			]
-		], //course_reserves_permissions
+			],
+		],
+		//course_reserves_permissions
 		'indexing_profile_fallbackFormatField' => [
 			'title' => 'Indexing Profiles - fallbackFormatField',
 			'description' => 'Add a fallback field for determining format',
 			'sql' => [
-				'ALTER TABLE indexing_profiles ADD COLUMN fallbackFormatField VARCHAR(5)'
-			]
-		], //indexing_profile_fallbackFormatField
+				'ALTER TABLE indexing_profiles ADD COLUMN fallbackFormatField VARCHAR(5)',
+			],
+		],
+		//indexing_profile_fallbackFormatField
 		'update_overdrive_fulfillment' => [
 			'title' => 'Update OverDrive settings to use new fulfillment method',
 			'description' => 'Update OverDrive settings to use new fulfillment method',
 			'sql' => [
-				'UPDATE overdrive_settings SET useFulfillmentInterface=1 WHERE useFulfillmentInterface=0'
-			]
-		], //update_overdrive_fulfillment
+				'UPDATE overdrive_settings SET useFulfillmentInterface=1 WHERE useFulfillmentInterface=0',
+			],
+		],
+		//update_overdrive_fulfillment
 	];
 }

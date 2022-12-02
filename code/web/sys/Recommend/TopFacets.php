@@ -2,11 +2,10 @@
 
 require_once ROOT_DIR . '/sys/Recommend/Interface.php';
 
-class TopFacets implements RecommendationInterface
-{
+class TopFacets implements RecommendationInterface {
 	/** @var SearchObject_SolrSearcher searchObject */
 	private $searchObject;
-	private $facets = array();
+	private $facets = [];
 
 	/* Constructor
 	 *
@@ -16,8 +15,7 @@ class TopFacets implements RecommendationInterface
 	 * @param   SearchObject_BaseSearcher  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
-	public function __construct(SearchObject_BaseSearcher $searchObject, $params)
-	{
+	public function __construct(SearchObject_BaseSearcher $searchObject, $params) {
 		// Save the basic parameters:
 		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
@@ -40,9 +38,9 @@ class TopFacets implements RecommendationInterface
 					if ($solrScope) {
 						if ($facet->facetName == 'availability_toggle' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'availability_toggle_' . $solrScope;
-						} else if ($facet->facetName == 'format_category' && $systemVariables->searchVersion == 1) {
+						} elseif ($facet->facetName == 'format_category' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'format_category_' . $solrScope;
-						} else if ($facet->facetName == 'format' && $systemVariables->searchVersion == 1) {
+						} elseif ($facet->facetName == 'format' && $systemVariables->searchVersion == 1) {
 							$facet->facetName = 'format_' . $solrScope;
 						}
 					}
@@ -50,7 +48,7 @@ class TopFacets implements RecommendationInterface
 				}
 			}
 		} else {
-			$this->facets = array();
+			$this->facets = [];
 		}
 	}
 
@@ -62,10 +60,7 @@ class TopFacets implements RecommendationInterface
 	 *
 	 * @access  public
 	 */
-	public function init()
-	{
-
-	}
+	public function init() {}
 
 	/* process
 	 *
@@ -75,8 +70,7 @@ class TopFacets implements RecommendationInterface
 	 *
 	 * @access  public
 	 */
-	public function process()
-	{
+	public function process() {
 		global $interface;
 		global $library;
 
@@ -86,15 +80,15 @@ class TopFacets implements RecommendationInterface
 
 		// Grab the facet set
 		$facetList = $this->searchObject->getFacetList($this->facets);
-		foreach ($facetList as $facetSetkey => $facetSet){
-			if (strpos($facetSetkey, 'format_category') === 0){
+		foreach ($facetList as $facetSetkey => $facetSet) {
+			if (strpos($facetSetkey, 'format_category') === 0) {
 				//add an image name for display in the template
-				foreach ($facetSet['list'] as $facetKey => $facet){
-					if (!empty($facetKey) && array_key_exists($facetKey,TopFacets::$formatCategorySortOrder)){
+				foreach ($facetSet['list'] as $facetKey => $facet) {
+					if (!empty($facetKey) && array_key_exists($facetKey, TopFacets::$formatCategorySortOrder)) {
 						$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
 						$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 						$facetSet['list'][$facetKey] = $facet;
-					}else{
+					} else {
 						unset($facetSet['list'][$facetKey]);
 					}
 				}
@@ -104,21 +98,21 @@ class TopFacets implements RecommendationInterface
 				$facetSet['isFormatCategory'] = true;
 				$facetSet['isAvailabilityToggle'] = false;
 				$facetList[$facetSetkey] = $facetSet;
-			}elseif (strpos($facetSetkey, 'availability_toggle') === 0){
+			} elseif (strpos($facetSetkey, 'availability_toggle') === 0) {
 
 				$numSelected = 0;
-				foreach ($facetSet['list'] as $facetKey => $facet){
-					if ($facet['isApplied']){
+				foreach ($facetSet['list'] as $facetKey => $facet) {
+					if ($facet['isApplied']) {
 						$numSelected++;
 					}
 				}
 
 				//If nothing is selected, select entire collection by default
-				$sortedFacetList = array();
+				$sortedFacetList = [];
 				$searchLibrary = Library::getSearchLibrary(null);
 				$searchLocation = Location::getSearchLocation(null);
 
-				if ($searchLocation){
+				if ($searchLocation) {
 					$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 					$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
 					$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
@@ -127,7 +121,7 @@ class TopFacets implements RecommendationInterface
 					$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
 					$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
-				}else{
+				} else {
 					$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 					$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
 					$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
@@ -138,34 +132,34 @@ class TopFacets implements RecommendationInterface
 					$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
 				}
 
-				if ($numSelected == 0){
-					foreach ($facetSet['list'] as $facetKey => $facet){
-						if ($availabilityToggleValue == $facetKey){
+				if ($numSelected == 0) {
+					foreach ($facetSet['list'] as $facetKey => $facet) {
+						if ($availabilityToggleValue == $facetKey) {
 							$facetSet['list'][$facetKey]['isApplied'] = true;
 						}
 					}
 				}
 
 				$numButtons = 4;
-				foreach ($facetSet['list'] as $facetKey => $facet){
-					if ($facetKey == 'local'){
+				foreach ($facetSet['list'] as $facetKey => $facet) {
+					if ($facetKey == 'local') {
 						$includeButton = true;
 						$facet['display'] = $localLabel;
-						if (trim($localLabel) == ''){
+						if (trim($localLabel) == '') {
 							$includeButton = false;
 						}
 
-						if ($includeButton){
+						if ($includeButton) {
 							$sortedFacetList[1] = $facet;
 						}
-					}elseif ($facetKey == 'global' || $facetKey == ''){
+					} elseif ($facetKey == 'global' || $facetKey == '') {
 						$facet['display'] = $superScopeLabel;
 						$sortedFacetList[0] = $facet;
-					}elseif ($facetKey == 'available'){
+					} elseif ($facetKey == 'available') {
 						$facet['display'] = $availableLabel;
 						$sortedFacetList[2] = $facet;
-					}elseif ($facet['value'] == 'available_online'){
-						if (strlen($availableOnlineLabel) > 0){
+					} elseif ($facet['value'] == 'available_online') {
+						if (strlen($availableOnlineLabel) > 0) {
 							$facet['display'] = $availableOnlineLabel;
 							$sortedFacetList[3] = $facet;
 						}
@@ -193,8 +187,7 @@ class TopFacets implements RecommendationInterface
 	 * @access  public
 	 * @return  string      The template to use to display the recommendations.
 	 */
-	public function getTemplate()
-	{
+	public function getTemplate() {
 		return 'Search/Recommend/TopFacets.tpl';
 	}
 
@@ -208,8 +201,14 @@ class TopFacets implements RecommendationInterface
 	];
 }
 
-function format_category_comparator($a, $b){
+function format_category_comparator($a, $b) {
 	$a = TopFacets::$formatCategorySortOrder[$a];
 	$b = TopFacets::$formatCategorySortOrder[$b];
-	if ($a==$b){return 0;}else{return ($a > $b ? 1 : -1);}
-};
+	if ($a == $b) {
+		return 0;
+	} else {
+		return ($a > $b ? 1 : -1);
+	}
+}
+
+;

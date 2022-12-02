@@ -4,55 +4,61 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 
-class Hoopla_Scopes extends ObjectEditor
-{
-	function getObjectType() : string{
+class Hoopla_Scopes extends ObjectEditor {
+	function getObjectType(): string {
 		return 'HooplaScope';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Scopes';
 	}
-	function getModule() : string{
+
+	function getModule(): string {
 		return 'Hoopla';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Hoopla Scopes';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new HooplaScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
+		$objectList = [];
+		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
-	function getObjectStructure() : array{
+
+	function getObjectStructure(): array {
 		return HooplaScope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject) : array{
+
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#hoopla', 'Hoopla');
@@ -60,13 +66,11 @@ class Hoopla_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'hoopla';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Hoopla');
 	}
 }

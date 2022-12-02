@@ -1,57 +1,78 @@
 <?php
 
-class ColorUtils
-{
-	static function colorRgbToHsl( $r, $g, $b ) {
+class ColorUtils {
+	static function colorRgbToHsl($r, $g, $b) {
 		$r /= 255;
 		$g /= 255;
 		$b /= 255;
-		$max = max( $r, $g, $b );
-		$min = min( $r, $g, $b );
+		$max = max($r, $g, $b);
+		$min = min($r, $g, $b);
 		$h = 0;
 		$s = 0;
-		$l = ( $max + $min ) / 2;
+		$l = ($max + $min) / 2;
 		$d = $max - $min;
-		if( $d == 0 ){
+		if ($d == 0) {
 			$h = $s = 0; // achromatic
 		} else {
-			$s = $d / ( 1 - abs( 2 * $l - 1 ) );
-			switch( $max ){
+			$s = $d / (1 - abs(2 * $l - 1));
+			switch ($max) {
 				case $r:
-					$h = 60 * fmod( ( ( $g - $b ) / $d ), 6 );
+					$h = 60 * fmod((($g - $b) / $d), 6);
 					if ($b > $g) {
 						$h += 360;
 					}
 					break;
 				case $g:
-					$h = 60 * ( ( $b - $r ) / $d + 2 );
+					$h = 60 * (($b - $r) / $d + 2);
 					break;
 				case $b:
-					$h = 60 * ( ( $r - $g ) / $d + 4 );
+					$h = 60 * (($r - $g) / $d + 4);
 					break;
 			}
 		}
-		return array( round( $h, 2 ), round( $s, 2 ), round( $l, 2 ) );
+		return [
+			round($h, 2),
+			round($s, 2),
+			round($l, 2),
+		];
 	}
 
-	static function colorHSLToRGB($h, $s, $l){
-		if ($h < 0) $h = 0;
-		if ($h > 360) $h = 360;
-		if ($s < 0) $s = 0;
-		if ($s > 100) $s = 100;
-		if ($l < 0) $l = 0;
-		if ($l > 360) $l = 360;
+	static function colorHSLToRGB($h, $s, $l) {
+		if ($h < 0) {
+			$h = 0;
+		}
+		if ($h > 360) {
+			$h = 360;
+		}
+		if ($s < 0) {
+			$s = 0;
+		}
+		if ($s > 100) {
+			$s = 100;
+		}
+		if ($l < 0) {
+			$l = 0;
+		}
+		if ($l > 360) {
+			$l = 360;
+		}
 
-		if ($h > 1) $h /= 360;
-		if ($s > 1) $s /= 100;
-		if ($l > 1) $l /= 100;
+		if ($h > 1) {
+			$h /= 360;
+		}
+		if ($s > 1) {
+			$s /= 100;
+		}
+		if ($l > 1) {
+			$l /= 100;
+		}
 		$r = $l;
 		$g = $l;
 		$b = $l;
 		$v = ($l <= 0.5) ? ($l * (1.0 + $s)) : ($l + $s - $l * $s);
-		if ($v > 0){
+		if ($v > 0) {
 			$m = $l + $l - $v;
-			$sv = ($v - $m ) / $v;
+			$sv = ($v - $m) / $v;
 			$h *= 6.0;
 			$sextant = floor($h);
 			$fract = $h - $sextant;
@@ -59,8 +80,7 @@ class ColorUtils
 			$mid1 = $m + $vsf;
 			$mid2 = $v - $vsf;
 
-			switch ($sextant)
-			{
+			switch ($sextant) {
 				case 0:
 					$r = $v;
 					$g = $mid1;
@@ -93,18 +113,21 @@ class ColorUtils
 					break;
 			}
 		}
-		return array('r' => round($r * 255.0), 'g' => round($g * 255.0), 'b' => round($b * 255.0));
+		return [
+			'r' => round($r * 255.0),
+			'g' => round($g * 255.0),
+			'b' => round($b * 255.0),
+		];
 	}
 
 
 	/**
 	 * @param string $color - The original color in #rrggbb format
-	 * @param float  $percentLightening - The amount to lighten > 1 will lighten, < 1 will darken
+	 * @param float $percentLightening - The amount to lighten > 1 will lighten, < 1 will darken
 	 *
 	 * @return string
 	 */
-	public static function lightenColor($color, float $percentLightening)
-	{
+	public static function lightenColor($color, float $percentLightening) {
 		$r = hexdec(substr($color, 1, 2));
 		$g = hexdec(substr($color, 3, 2));
 		$b = hexdec(substr($color, 5, 2));
@@ -122,8 +145,7 @@ class ColorUtils
 	 *
 	 * @return float
 	 */
-	public static function calculateColorContrast($color1, $color2)
-	{
+	public static function calculateColorContrast($color1, $color2) {
 		$luminance1 = ColorUtils::getLuminanceForColor($color1);
 		$luminance2 = ColorUtils::getLuminanceForColor($color2);
 
@@ -140,7 +162,7 @@ class ColorUtils
 	 * @param $color
 	 * @return float
 	 */
-	public static function getLuminanceForColor($color){
+	public static function getLuminanceForColor($color) {
 		$r = self::getLuminanceComponent($color, 1, 2);
 		$g = self::getLuminanceComponent($color, 3, 2);
 		$b = self::getLuminanceComponent($color, 5, 2);
@@ -151,8 +173,7 @@ class ColorUtils
 	 * @param $color
 	 * @return float
 	 */
-	private static function getLuminanceComponent($color, $start, $length)
-	{
+	private static function getLuminanceComponent($color, $start, $length) {
 		$component = (float)hexdec(substr($color, $start, $length)) / (float)255;
 		if ($component <= 0.03928) {
 			$luminanceVal = $component / 12.92;

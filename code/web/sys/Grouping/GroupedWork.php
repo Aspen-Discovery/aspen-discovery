@@ -14,8 +14,7 @@ class GroupedWork extends DataObject {
 	/**
 	 * @param bool $updatePrimaryIdentifiers Updating primrary identifiers will force regrouping and is a bit slower
 	 */
-	public function forceReindex($updatePrimaryIdentifiers = false)
-	{
+	public function forceReindex($updatePrimaryIdentifiers = false) {
 		require_once ROOT_DIR . '/sys/Indexing/GroupedWorkScheduledWorkIndex.php';
 		$scheduledWork = new GroupedWorkScheduledWorkIndex();
 		$scheduledWork->permanent_id = $this->permanent_id;

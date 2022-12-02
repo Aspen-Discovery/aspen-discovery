@@ -3,15 +3,13 @@ require_once ROOT_DIR . '/sys/Covers/AbstractCoverBuilder.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
-class WebPageCoverBuilder extends AbstractCoverBuilder
-{
+class WebPageCoverBuilder extends AbstractCoverBuilder {
 	/**
 	 * @param string $title
 	 * @param string $filename
 	 * @param array|null $props
 	 */
-	public function getCover($title, $filename, $props = null)
-	{
+	public function getCover($title, $filename, $props = null) {
 		//Create the background image
 		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 

@@ -15,11 +15,10 @@ class RecordDriverFactory {
 	 * This constructs a search object for the specified engine.
 	 *
 	 * @access  public
-	 * @param   array|AbstractFedoraObject   $record     The fields retrieved from the Solr index.
+	 * @param array|AbstractFedoraObject $record The fields retrieved from the Solr index.
 	 * @return  RecordInterface     The record driver for handling the record.
 	 */
-	static function initRecordDriver($record)
-	{
+	static function initRecordDriver($record) {
 		global $configArray;
 		global $timer;
 
@@ -36,11 +35,11 @@ class RecordDriverFactory {
 			$recordType = $record['recordtype'];
 			$driverNameParts = explode('_', $recordType);
 			$recordType = '';
-			foreach ($driverNameParts as $driverPart){
+			foreach ($driverNameParts as $driverPart) {
 				$recordType .= (ucfirst($driverPart));
 			}
 
-			$driver = $recordType . 'Driver' ;
+			$driver = $recordType . 'Driver';
 			$path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 
 			// If we can't load the driver, fall back to the default, index-based one:
@@ -54,54 +53,55 @@ class RecordDriverFactory {
 		return self::initAndReturnDriver($record, $driver, $path);
 	}
 
-	static $recordDrivers = array();
+	static $recordDrivers = [];
+
 	/**
 	 * @param $id
-	 * @param  GroupedWork $groupedWork;
+	 * @param GroupedWork $groupedWork ;
 	 * @return ExternalEContentDriver|MarcRecordDriver|null|OverDriveRecordDriver
 	 */
-	static function initRecordDriverById($id, $groupedWork = null){
+	static function initRecordDriverById($id, $groupedWork = null) {
 		global $configArray;
-		if (isset(RecordDriverFactory::$recordDrivers[$id])){
+		if (isset(RecordDriverFactory::$recordDrivers[$id])) {
 			return RecordDriverFactory::$recordDrivers[$id];
 		}
-		if (strpos($id, ':') !== false){
+		if (strpos($id, ':') !== false) {
 			$recordInfo = explode(':', $id, 2);
 			$recordType = $recordInfo[0];
 			$recordId = $recordInfo[1];
-		}else{
+		} else {
 			$recordType = 'ils';
 			$recordId = $id;
 		}
 
 		disableErrorHandler();
-		if ($recordType == 'overdrive'){
+		if ($recordType == 'overdrive') {
 			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 			$recordDriver = new OverDriveRecordDriver($recordId, $groupedWork);
 		} elseif ($recordType == 'axis360') {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$recordDriver = new Axis360RecordDriver($recordId, $groupedWork);
-		}elseif ($recordType == 'cloud_library'){
+		} elseif ($recordType == 'cloud_library') {
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 			$recordDriver = new CloudLibraryRecordDriver($recordId, $groupedWork);
-		}elseif ($recordType == 'external_econtent'){
+		} elseif ($recordType == 'external_econtent') {
 			require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 			$recordDriver = new ExternalEContentDriver($recordId, $groupedWork);
-		}elseif ($recordType == 'hoopla'){
+		} elseif ($recordType == 'hoopla') {
 			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 			$recordDriver = new HooplaRecordDriver($recordId, $groupedWork);
-			if (!$recordDriver->isValid()){
+			if (!$recordDriver->isValid()) {
 				global $logger;
 				$logger->log("Unable to load record driver for hoopla record $recordId", Logger::LOG_WARNING);
 				$recordDriver = null;
 			}
-		}elseif ($recordType == 'open_archives'){
+		} elseif ($recordType == 'open_archives') {
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 			$recordDriver = new OpenArchivesRecordDriver($recordId);
-		}elseif ($recordType == 'course_reserves'){
+		} elseif ($recordType == 'course_reserves') {
 			require_once ROOT_DIR . '/RecordDrivers/CourseReservesRecordDriver.php';
 			$recordDriver = new CourseReservesRecordDriver($recordId);
-		}else{
+		} else {
 			global $indexingProfiles;
 			global $sideLoadSettings;
 
@@ -111,20 +111,20 @@ class RecordDriverFactory {
 				$driverPath = ROOT_DIR . "/RecordDrivers/{$driverName}.php";
 				require_once $driverPath;
 				$recordDriver = new $driverName($id, $groupedWork);
-			}else if (array_key_exists(strtolower($recordType), $sideLoadSettings)){
+			} elseif (array_key_exists(strtolower($recordType), $sideLoadSettings)) {
 				$indexingProfile = $sideLoadSettings[strtolower($recordType)];
 				$driverName = $indexingProfile->recordDriver;
 				$driverPath = ROOT_DIR . "/RecordDrivers/{$driverName}.php";
 				require_once $driverPath;
 				$recordDriver = new $driverName($id, $groupedWork);
-			}else{
+			} else {
 				//Check to see if this is an object from the archive
 				$driverNameParts = explode('_', $recordType);
 				$normalizedRecordType = '';
-				foreach ($driverNameParts as $driverPart){
+				foreach ($driverNameParts as $driverPart) {
 					$normalizedRecordType .= (ucfirst($driverPart));
 				}
-				$driver = $normalizedRecordType . 'Driver' ;
+				$driver = $normalizedRecordType . 'Driver';
 				$path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 
 				// If we can't load the driver, fall back to the default, index-based one:
@@ -132,12 +132,12 @@ class RecordDriverFactory {
 					global $logger;
 					$logger->log("Unknown record type " . $recordType, Logger::LOG_ERROR);
 					$recordDriver = null;
-				}else{
+				} else {
 					require_once $path;
 					if (class_exists($driver)) {
 						disableErrorHandler();
 						$obj = new $driver($id);
-						if (($obj instanceof AspenError)){
+						if (($obj instanceof AspenError)) {
 							global $logger;
 							$logger->log("Error loading record driver", Logger::LOG_DEBUG);
 						}
@@ -160,8 +160,7 @@ class RecordDriverFactory {
 	 * @param $driver
 	 * @return AspenError|RecordInterface
 	 */
-	public static function initAndReturnDriver($record, $driver, $path)
-	{
+	public static function initAndReturnDriver($record, $driver, $path) {
 		global $timer;
 		global $logger;
 		global $memoryWatcher;

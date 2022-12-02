@@ -10,8 +10,7 @@
  * Each property that starts with _ is runtime data that is reset for each object
  * Each property that starts with [a-zA-Z] is a property that is saved to the database
  */
-abstract class DataObject
-{
+abstract class DataObject {
 	public $__table;
 	public $__primaryKey = 'id';
 	public $__displayNameColumn = null;
@@ -40,58 +39,51 @@ abstract class DataObject
 	/**
 	 * @return string[]
 	 */
-	function getNumericColumnNames() : array
-	{
+	function getNumericColumnNames(): array {
 		return [];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	function getEncryptedFieldNames() : array
-	{
+	function getEncryptedFieldNames(): array {
 		return [];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	function getSerializedFieldNames() : array
-	{
+	function getSerializedFieldNames(): array {
 		return [];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getCompressedColumnNames() : array
-	{
+	public function getCompressedColumnNames(): array {
 		return [];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getUniquenessFields() : array
-	{
+	public function getUniquenessFields(): array {
 		return [];
 	}
 
-	function __toString()
-	{
+	function __toString() {
 		$stringProperty = $this->__primaryKey;
-		if ($this->__displayNameColumn != null){
+		if ($this->__displayNameColumn != null) {
 			$stringProperty = $this->__displayNameColumn;
 		}
-		if ($this->$stringProperty == null){
+		if ($this->$stringProperty == null) {
 			return 'new ' . get_class($this);
-		}else{
+		} else {
 			return $this->$stringProperty;
 		}
 	}
 
-	function getPrimaryKeyValue()
-	{
+	function getPrimaryKeyValue() {
 		$primaryKeyProperty = $this->__primaryKey;
 		return $this->$primaryKeyProperty;
 	}
@@ -100,18 +92,18 @@ abstract class DataObject
 	 * @return string
 	 * @noinspection PhpUnused
 	 */
-	function getPrimaryKey() : string{
+	function getPrimaryKey(): string {
 		return $this->__primaryKey;
 	}
 
-	public function find($fetchFirst = false) : bool {
+	public function find($fetchFirst = false): bool {
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
 		}
 
 		$this->__N = 0;
-		if ($this->__queryStmt != null){
+		if ($this->__queryStmt != null) {
 			$this->__queryStmt->closeCursor();
 			$this->__queryStmt = null;
 		}
@@ -120,9 +112,9 @@ abstract class DataObject
 		global $timer;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
-		$this->__queryStmt = $aspen_db->prepare($query, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+		$this->__queryStmt = $aspen_db->prepare($query, [PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY]);
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
-		if ($this->__queryStmt->execute()){
+		if ($this->__queryStmt->execute()) {
 			$this->__N = $this->__queryStmt->rowCount();
 			if ($this->__N != 0 && $fetchFirst) {
 				$this->fetch();
@@ -133,7 +125,7 @@ abstract class DataObject
 		} else {
 			echo("Failed to execute " . $query);
 		}
-		if (IPAddress::logAllQueries()){
+		if (IPAddress::logAllQueries()) {
 			global $logger;
 			$logger->log($query, Logger::LOG_ERROR);
 		}
@@ -144,13 +136,12 @@ abstract class DataObject
 	/**
 	 * @return DataObject|false|null
 	 */
-	public function fetch()
-	{
+	public function fetch() {
 		$this->__fetchingFromDB = true;
 		$this->clearRuntimeDataVariables();
-		if ($this->__queryStmt == null){
+		if ($this->__queryStmt == null) {
 			return null;
-		}else{
+		} else {
 			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
 		}
 		$this->decryptFields();
@@ -158,7 +149,7 @@ abstract class DataObject
 		return $return;
 	}
 
-	public function fetchAssoc(){
+	public function fetchAssoc() {
 		$this->__fetchingFromDB = true;
 		$return = $this->__queryStmt->fetch(PDO::FETCH_ASSOC);
 		$this->__fetchingFromDB = false;
@@ -174,17 +165,16 @@ abstract class DataObject
 	 * @param bool $lowerCaseKey - Forces the key to be lower cased
 	 * @return DataObject[]
 	 */
-	public function fetchAll($fieldName = null, $fieldValue = null, $lowerCaseKey = false) : array
-	{
+	public function fetchAll($fieldName = null, $fieldValue = null, $lowerCaseKey = false): array {
 		$this->__fetchingFromDB = true;
-		$results = array();
+		$results = [];
 		if ($this->find() > 0) {
 			$result = $this->fetch();
 			while ($result != null) {
 				if ($fieldName != null && $fieldValue != null) {
 					$key = $lowerCaseKey ? strtolower($result->$fieldName) : $result->$fieldName;
 					$results[$key] = $result->$fieldValue;
-				}elseif ($fieldName != null) {
+				} elseif ($fieldName != null) {
 					$key = $lowerCaseKey ? strtolower($result->$fieldName) : $result->$fieldName;
 					$results[$key] = $result->$fieldName;
 				} else {
@@ -202,17 +192,16 @@ abstract class DataObject
 	/**
 	 * @param string[]|string $fieldsToOrder
 	 */
-	public function orderBy($fieldsToOrder)
-	{
+	public function orderBy($fieldsToOrder) {
 		if ($fieldsToOrder == null) {
 			$this->__orderBy = null;
-		}else {
-			if (is_array($fieldsToOrder)){
+		} else {
+			if (is_array($fieldsToOrder)) {
 				$fieldsToOrder = implode(',', $fieldsToOrder);
 			}
 			if (strlen($this->__orderBy) > 0) {
 				$this->__orderBy .= ', ' . $fieldsToOrder;
-			}else {
+			} else {
 				$this->__orderBy .= ' ORDER BY ' . $fieldsToOrder;
 			}
 		}
@@ -221,17 +210,16 @@ abstract class DataObject
 	/**
 	 * @param string[]|string $fieldsToGroup
 	 */
-	public function groupBy($fieldsToGroup)
-	{
+	public function groupBy($fieldsToGroup) {
 		if ($fieldsToGroup == null) {
 			$this->__groupBy = null;
-		}else {
-			if (is_array($fieldsToGroup)){
+		} else {
+			if (is_array($fieldsToGroup)) {
 				$fieldsToGroup = implode(',', $fieldsToGroup);
 			}
 			if (strlen($this->__groupBy) > 0) {
 				$this->__groupBy .= ', ' . $fieldsToGroup;
-			}else {
+			} else {
 				$this->__groupBy .= ' GROUP BY ' . $fieldsToGroup;
 			}
 		}
@@ -241,13 +229,13 @@ abstract class DataObject
 	 * @param string|bool $cond
 	 * @param string $logic
 	 */
-	public function whereAdd($cond = false, string $logic = 'AND'){
+	public function whereAdd($cond = false, string $logic = 'AND') {
 		if ($cond == false) {
 			$this->__where = null;
-		}else {
+		} else {
 			if (strlen($this->__where) > 0) {
-				$this->__where .= ' ' . $logic. ' (' . $cond . ')';
-			}else {
+				$this->__where .= ' ' . $logic . ' (' . $cond . ')';
+			} else {
 				$this->__where .= '(' . $cond . ')';
 			}
 		}
@@ -263,7 +251,7 @@ abstract class DataObject
 		$whereClause = "$field IN ($valuesString)";
 		if (strlen($this->__where) > 0) {
 			$this->__where .= ' ' . $logic . ' ' . $whereClause;
-		}else {
+		} else {
 			$this->__where .= $whereClause;
 		}
 	}
@@ -271,9 +259,9 @@ abstract class DataObject
 	/**
 	 * @return int|bool
 	 */
-	public function insert(){
+	public function insert() {
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 		$insertQuery = 'INSERT INTO ' . $this->__table;
@@ -296,31 +284,31 @@ abstract class DataObject
 				if (in_array($name, $numericColumns)) {
 					if ($value === true) {
 						$propertyValues .= 1;
-					} else if ($value == false) {
+					} elseif ($value == false) {
 						$propertyValues .= 0;
 					} elseif (is_numeric($value)) {
 						$propertyValues .= $value;
 					} else {
 						$propertyValues .= 'NULL';
 					}
-				}elseif (in_array($name, $encryptedFields)) {
+				} elseif (in_array($name, $encryptedFields)) {
 					$propertyValues .= $aspen_db->quote(EncryptionUtils::encryptField($value));
-				}elseif (in_array($name, $serializedFields)) {
+				} elseif (in_array($name, $serializedFields)) {
 					if (!empty($value)) {
 						$propertyValues .= $aspen_db->quote(serialize($value));
-					}else{
+					} else {
 						$propertyValues .= "''";
 					}
-				}elseif (in_array($name, $compressedFields)) {
+				} elseif (in_array($name, $compressedFields)) {
 					if (!empty($value)) {
 						$propertyValues .= 'COMPRESS(' . $aspen_db->quote($value) . ')';
-					}else{
+					} else {
 						$propertyValues .= "''";
 					}
 				} else {
 					$propertyValues .= $aspen_db->quote($value);
 				}
-			}elseif (is_array($value) && in_array($name, $serializedFields)){
+			} elseif (is_array($value) && in_array($name, $serializedFields)) {
 				if (strlen($propertyNames) != 0) {
 					$propertyNames .= ', ';
 					$propertyValues .= ', ';
@@ -328,10 +316,10 @@ abstract class DataObject
 				$propertyNames .= $name;
 				if (!empty($value)) {
 					$propertyValues .= $aspen_db->quote(serialize($value));
-				}else{
+				} else {
 					$propertyValues .= "''";
 				}
-			}elseif (is_array($value) && in_array($name, $compressedFields)){
+			} elseif (is_array($value) && in_array($name, $compressedFields)) {
 				if (strlen($propertyNames) != 0) {
 					$propertyNames .= ', ';
 					$propertyValues .= ', ';
@@ -339,7 +327,7 @@ abstract class DataObject
 				$propertyNames .= $name;
 				if (!empty($value)) {
 					$propertyValues .= 'COMPRESS(' . $aspen_db->quote($value) . ')';
-				}else{
+				} else {
 					$propertyValues .= "''";
 				}
 			}
@@ -347,12 +335,12 @@ abstract class DataObject
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
 		try {
 			$response = $aspen_db->exec($insertQuery);
-		}catch (PDOException $e){
+		} catch (PDOException $e) {
 			$this->setLastError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
 			$response = false;
 		}
 		global $timer;
-		if (IPAddress::logAllQueries()){
+		if (IPAddress::logAllQueries()) {
 			global $logger;
 			$logger->log($insertQuery, Logger::LOG_ERROR);
 		}
@@ -364,14 +352,14 @@ abstract class DataObject
 	/**
 	 * @return int|bool
 	 */
-	public function update(){
+	public function update() {
 		$primaryKey = $this->__primaryKey;
-		if (empty($this->$primaryKey) && $this->$primaryKey !== "0"){
+		if (empty($this->$primaryKey) && $this->$primaryKey !== "0") {
 			$result = $this->insert();
 			return $result;
 		}
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 		$updateQuery = 'UPDATE ' . $this->__table;
@@ -389,43 +377,43 @@ abstract class DataObject
 					$updates .= ', ';
 				}
 				if (in_array($name, $numericColumns)) {
-					if ($value === true){
+					if ($value === true) {
 						$updates .= $name . ' = 1';
-					}else if ($value == false) {
+					} elseif ($value == false) {
 						$updates .= $name . ' = 0';
-					} else if (is_numeric($value)) {
+					} elseif (is_numeric($value)) {
 						$updates .= $name . ' = ' . $value;
 					} else {
 						$updates .= $name . ' = NULL';
 					}
-				}elseif (in_array($name, $encryptedFields)){
+				} elseif (in_array($name, $encryptedFields)) {
 					$updates .= $name . ' = ' . $aspen_db->quote(EncryptionUtils::encryptField($value));
-				}elseif (in_array($name, $serializedFields)) {
+				} elseif (in_array($name, $serializedFields)) {
 					if (!empty($value)) {
 						$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
-					}else{
-						$updates .= $name . ' = ' .  $aspen_db->quote('');
+					} else {
+						$updates .= $name . ' = ' . $aspen_db->quote('');
 					}
-				}elseif (in_array($name, $compressedFields)) {
+				} elseif (in_array($name, $compressedFields)) {
 					if (!empty($value)) {
 						$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
-					}else{
-						$updates .= $name . ' = ' .  $aspen_db->quote('');
+					} else {
+						$updates .= $name . ' = ' . $aspen_db->quote('');
 					}
 				} else {
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
 				}
-			}elseif (is_array($value) && in_array($name, $serializedFields)){
+			} elseif (is_array($value) && in_array($name, $serializedFields)) {
 				if (!empty($value)) {
 					$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
-				}else{
-					$updates .= $name . ' = ' .  $aspen_db->quote('');
+				} else {
+					$updates .= $name . ' = ' . $aspen_db->quote('');
 				}
-			}elseif (is_array($value) && in_array($name, $compressedFields)){
+			} elseif (is_array($value) && in_array($name, $compressedFields)) {
 				if (!empty($value)) {
 					$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
-				}else{
-					$updates .= $name . ' = ' .  $aspen_db->quote('');
+				} else {
+					$updates .= $name . ' = ' . $aspen_db->quote('');
 				}
 			}
 		}
@@ -433,16 +421,16 @@ abstract class DataObject
 		$this->__lastQuery = $updateQuery;
 		try {
 			$response = $aspen_db->exec($updateQuery);
-		}catch (PDOException $e) {
+		} catch (PDOException $e) {
 			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
 			$response = false;
 		}
-		if ($response === false){
+		if ($response === false) {
 			$errorInfo = $aspen_db->errorInfo();
 			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . implode('<br/>', $errorInfo) . "<br/>");
 		}
 		global $timer;
-		if (IPAddress::logAllQueries()){
+		if (IPAddress::logAllQueries()) {
 			global $logger;
 			$logger->log($updateQuery, Logger::LOG_ERROR);
 		}
@@ -450,8 +438,7 @@ abstract class DataObject
 		return $response;
 	}
 
-	public function get($columnName, $value = null) : bool
-	{
+	public function get($columnName, $value = null): bool {
 		if ($value == null) {
 			$value = $columnName;
 			$columnName = $this->__primaryKey;
@@ -460,24 +447,24 @@ abstract class DataObject
 		return $this->find(true);
 	}
 
-	public function delete($useWhere = false){
+	public function delete($useWhere = false) {
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 		$primaryKey = $this->__primaryKey;
 
-		if ($useWhere){
+		if ($useWhere) {
 			/** @noinspection SqlWithoutWhere */
 			$deleteQuery = 'DELETE from ' . $this->__table . $this->getWhereClause($aspen_db);
-		}else{
+		} else {
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
 		$this->__lastQuery = $deleteQuery;
 
 		$result = $aspen_db->exec($deleteQuery);
 		global $timer;
-		if (IPAddress::logAllQueries()){
+		if (IPAddress::logAllQueries()) {
 			global $logger;
 			$logger->log($deleteQuery, Logger::LOG_ERROR);
 		}
@@ -485,16 +472,16 @@ abstract class DataObject
 		return $result;
 	}
 
-	public function deleteAll(){
+	public function deleteAll() {
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 		$deleteQuery = 'TRUNCATE TABLE ' . $this->__table;
 		$this->__lastQuery = $deleteQuery;
 		$result = $aspen_db->exec($deleteQuery);
 		global $timer;
-		if (IPAddress::logAllQueries()){
+		if (IPAddress::logAllQueries()) {
 			global $logger;
 			$logger->log($deleteQuery, Logger::LOG_ERROR);
 		}
@@ -502,19 +489,19 @@ abstract class DataObject
 		return $result;
 	}
 
-	public function limit($start, $count){
+	public function limit($start, $count) {
 		$this->__limitStart = $start;
 		$this->__limitCount = $count;
 	}
 
-	public function count(){
+	public function count() {
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
 		}
 
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 		$query = 'SELECT COUNT(*) from ' . $this->__table;
@@ -540,7 +527,7 @@ abstract class DataObject
 			}
 		} finally {
 			global $timer;
-			if (IPAddress::logAllQueries()){
+			if (IPAddress::logAllQueries()) {
 				global $logger;
 				$logger->log($query, Logger::LOG_ERROR);
 			}
@@ -550,29 +537,28 @@ abstract class DataObject
 		return 0;
 	}
 
-	public function query($query) : bool
-	{
+	public function query($query): bool {
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
 		}
 
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 
 		$this->__lastQuery = $query;
 		$this->__queryStmt = $aspen_db->prepare($query);
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
-		if ($this->__queryStmt->execute()){
+		if ($this->__queryStmt->execute()) {
 			$this->__N = $this->__queryStmt->rowCount();
 		} else {
 			echo("Failed to execute " . $query);
 			$this->__lastError = $this->__queryStmt->errorInfo();
 		}
 		global $timer;
-		if (IPAddress::logAllQueries()){
+		if (IPAddress::logAllQueries()) {
 			global $logger;
 			$logger->log($query, Logger::LOG_ERROR);
 		}
@@ -581,29 +567,29 @@ abstract class DataObject
 		return $this->__N > 0;
 	}
 
-	public function escape($variable){
+	public function escape($variable) {
 		global $aspen_db;
 		return $aspen_db->quote($variable);
 	}
 
-	public function selectAdd($condition = null){
+	public function selectAdd($condition = null) {
 		if ($condition == null) {
 			$this->__selectAllColumns = false;
-			$this->__additionalSelects = array();
+			$this->__additionalSelects = [];
 		} else {
 			$this->__additionalSelects[] = $condition;
 		}
 	}
 
-	public function table(){
+	public function table() {
 		global $aspen_db;
-		if (!isset($aspen_db)){
+		if (!isset($aspen_db)) {
 			return false;
 		}
 		//Get the columns defined in this table
 		$query = 'SHOW COLUMNS FROM ' . $this->__table;
 		$results = $aspen_db->query($query, PDO::FETCH_ASSOC);
-		$columns = array();
+		$columns = [];
 		$row = $results->fetchObject();
 		while ($row != null) {
 			$columns[$row->Field] = $row;
@@ -616,23 +602,21 @@ abstract class DataObject
 		$this->__lastError = $errorMessage;
 	}
 
-	public function getLastError(){
+	public function getLastError() {
 		return $this->__lastError;
 	}
 
-	public function joinAdd(DataObject $objectToJoin, string $joinType, string $alias, string $mainTableField, string $joinedTableField) : void
-	{
+	public function joinAdd(DataObject $objectToJoin, string $joinType, string $alias, string $mainTableField, string $joinedTableField): void {
 		$this->__joins[] = [
 			'object' => $objectToJoin,
 			'joinType' => $joinType,
 			'alias' => $alias,
 			'mainTableField' => $mainTableField,
-			'joinedTableField' => $joinedTableField
+			'joinedTableField' => $joinedTableField,
 		];
 	}
 
-	private function getJoinQuery($join) : string
-	{
+	private function getJoinQuery($join): string {
 		global $aspen_db;
 		/** @var DataObject $joinObject */
 		$joinObject = $join['object'];
@@ -645,13 +629,12 @@ abstract class DataObject
 	 * @param PDO $aspen_db
 	 * @return string
 	 */
-	public function getSelectQuery(PDO $aspen_db): string
-	{
+	public function getSelectQuery(PDO $aspen_db): string {
 		$properties = get_object_vars($this);
 		$compressedFields = $this->getCompressedColumnNames();
-		if (count($compressedFields) == 0){
+		if (count($compressedFields) == 0) {
 			$selectClause = $this->__table . '.*';
-		}else{
+		} else {
 			$selectClause = '';
 			foreach ($properties as $name => $value) {
 				if ($name[0] != '_') {
@@ -686,12 +669,12 @@ abstract class DataObject
 				if (strlen($where) != 0) {
 					$where .= ' AND ';
 				}
-				if (count($this->__joins) > 0){
+				if (count($this->__joins) > 0) {
 					$where .= $this->__table . '.' . $name . ' = ' . $aspen_db->quote($value);
-				}else{
-					if (in_array($name, $this->getNumericColumnNames()) && is_numeric($value)){
+				} else {
+					if (in_array($name, $this->getNumericColumnNames()) && is_numeric($value)) {
 						$where .= $name . ' = ' . $value;
-					}else{
+					} else {
 						$where .= $name . ' = ' . $aspen_db->quote($value);
 					}
 				}
@@ -701,9 +684,9 @@ abstract class DataObject
 
 		if (strlen($this->__where) > 0 && strlen($where) > 0) {
 			$query .= ' WHERE ' . $this->__where . ' AND ' . $where;
-		} else if (strlen($this->__where) > 0) {
+		} elseif (strlen($this->__where) > 0) {
 			$query .= ' WHERE ' . $this->__where;
-		} else if (strlen($where) > 0) {
+		} elseif (strlen($where) > 0) {
 			$query .= ' WHERE ' . $where;
 		}
 		if ($this->__groupBy != null) {
@@ -714,9 +697,9 @@ abstract class DataObject
 		}
 		if (isset($this->__limitCount) && isset($this->__limitStart)) {
 			$query .= ' LIMIT ' . $this->__limitStart . ', ' . $this->__limitCount;
-		} else if (isset($this->__limitCount)) {
+		} elseif (isset($this->__limitCount)) {
 			$query .= ' LIMIT ' . $this->__limitCount;
-		} else if (isset($this->__limitStart)) {
+		} elseif (isset($this->__limitStart)) {
 			//This really shouldn't happen
 			$query .= ' OFFSET ' . $this->__limitCount;
 		}
@@ -727,8 +710,7 @@ abstract class DataObject
 	 * @param PDO $aspen_db
 	 * @return string
 	 */
-	private function getWhereClause(PDO $aspen_db): string
-	{
+	private function getWhereClause(PDO $aspen_db): string {
 		$properties = get_object_vars($this);
 		$where = '';
 		foreach ($properties as $name => $value) {
@@ -741,16 +723,15 @@ abstract class DataObject
 		}
 		if (strlen($this->__where) > 0 && strlen($where) > 0) {
 			$where = ' WHERE ' . $this->__where . ' AND ' . $where;
-		} else if (strlen($this->__where) > 0) {
+		} elseif (strlen($this->__where) > 0) {
 			$where = ' WHERE ' . $this->__where;
-		} else if (strlen($where) > 0) {
+		} elseif (strlen($where) > 0) {
 			$where = ' WHERE ' . $where;
 		}
 		return $where;
 	}
 
-	public function __sleep()
-	{
+	public function __sleep() {
 		$propertiesToSerialize = [];
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {
@@ -761,9 +742,8 @@ abstract class DataObject
 		return $propertiesToSerialize;
 	}
 
-	public function __destruct()
-	{
-		if ($this->__queryStmt){
+	public function __destruct() {
+		if ($this->__queryStmt) {
 			$this->__queryStmt->closeCursor();
 			$this->__queryStmt = null;
 		}
@@ -777,16 +757,15 @@ abstract class DataObject
 		$this->_data = null;
 	}
 
-	protected function saveOneToManyOptions($oneToManySettings, $keyOther)
-	{
+	protected function saveOneToManyOptions($oneToManySettings, $keyOther) {
 		/** @var DataObject $oneToManyDBObject */
 		foreach ($oneToManySettings as $oneToManyDBObject) {
-			if ( $oneToManyDBObject->_deleteOnSave == true){
+			if ($oneToManyDBObject->_deleteOnSave == true) {
 				$oneToManyDBObject->delete();
-			}else{
-				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})){ // (negative ids need processed with insert)
+			} else {
+				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})) { // (negative ids need processed with insert)
 					$oneToManyDBObject->update();
-				}else{
+				} else {
 					$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
 					$oneToManyDBObject->insert();
 				}
@@ -801,13 +780,12 @@ abstract class DataObject
 		$oneToManyDBObject->delete(true);
 	}
 
-	public function __clone()
-	{
+	public function __clone() {
 		$className = get_class($this);
 		$clone = new $className;
 		$properties = get_object_vars($this);
-		foreach ($properties as $name => $value){
-			if (!is_null($value) && $name[0] == '_' && $name != '__queryStmt'){
+		foreach ($properties as $name => $value) {
+			if (!is_null($value) && $name[0] == '_' && $name != '__queryStmt') {
 				$clone->$name = $value;
 			}
 		}
@@ -815,13 +793,13 @@ abstract class DataObject
 		return $clone;
 	}
 
-	protected function clearRuntimeDataVariables(){
+	protected function clearRuntimeDataVariables() {
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {
 			if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-				if ($name == '_data'){
+				if ($name == '_data') {
 					$this->_data = [];
-				}else {
+				} else {
 					$this->$name = null;
 				}
 			}
@@ -831,31 +809,28 @@ abstract class DataObject
 	/**
 	 * @return integer
 	 */
-	public function getNumResults() : int
-	{
+	public function getNumResults(): int {
 		return $this->__N;
 	}
 
-	public function copy(array $propertiesToChange, $saveCopy) : DataObject
-	{
+	public function copy(array $propertiesToChange, $saveCopy): DataObject {
 		$newObject = clone $this;
 		$newObject->__primaryKey = null;
-		foreach ($propertiesToChange as $name => $value){
+		foreach ($propertiesToChange as $name => $value) {
 			$propertiesToChange->$name = $value;
 		}
-		if ($saveCopy){
+		if ($saveCopy) {
 			$newObject->insert();
 		}
 		return $newObject;
 	}
 
-	public function isEqualTo(DataObject $other) : bool
-	{
+	public function isEqualTo(DataObject $other): bool {
 		$properties = get_object_vars($this);
 		$equal = true;
-		foreach ($properties as $name => $value){
-			if ($name[0] != '_'){
-				if ($other->$name != $value){
+		foreach ($properties as $name => $value) {
+			if ($name[0] != '_') {
+				if ($other->$name != $value) {
 					$equal = false;
 					break;
 				}
@@ -872,21 +847,20 @@ abstract class DataObject
 	 * @return boolean true if the property changed, or false if it did not
 	 * @noinspection PhpUnused
 	 */
-	public function setProperty(string $propertyName, $newValue, ?array $propertyStructure) : bool
-	{
+	public function setProperty(string $propertyName, $newValue, ?array $propertyStructure): bool {
 		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
 		if ($propertyChanged) {
 			$this->_changedFields[] = $propertyName;
 			$oldValue = $this->$propertyName;
-			if ($propertyStructure['type'] == 'checkbox'){
-				if ($newValue == 'off' || $newValue == false){
+			if ($propertyStructure['type'] == 'checkbox') {
+				if ($newValue == 'off' || $newValue == false) {
 					$newValue = 0;
-				}elseif ($newValue == 'on' || $newValue == true){
+				} elseif ($newValue == 'on' || $newValue == true) {
 					$newValue = 1;
 				}
 			}
 			$this->$propertyName = $newValue;
-			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])){
+			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])) {
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
 				global $logger;
 				SystemVariables::forceNightlyIndex();
@@ -916,14 +890,14 @@ abstract class DataObject
 			}
 
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	protected function decryptFields(){
+	protected function decryptFields() {
 		$encryptedFields = $this->getEncryptedFieldNames();
-		foreach ($encryptedFields as $fieldName){
+		foreach ($encryptedFields as $fieldName) {
 			$this->$fieldName = EncryptionUtils::decryptField($this->$fieldName);
 		}
 		//compressed fields also get serialized automatically
@@ -935,20 +909,19 @@ abstract class DataObject
 		}
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
-	{
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = [];
 		$encryptedFields = $this->getEncryptedFieldNames();
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {
-			if ($name[0] != '_'){
+			if ($name[0] != '_') {
 				if ($encryptFields && in_array($name, $encryptedFields)) {
 					$return[$name] = EncryptionUtils::encryptField($value);
-				}else{
+				} else {
 					$return[$name] = $value;
 				}
-			}else if ($includeRuntimeProperties && $name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave' && !is_object($value)){
+			} elseif ($includeRuntimeProperties && $name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave' && !is_object($value)) {
 					$return[substr($name, 1)] = $value;
 				}
 			}
@@ -956,40 +929,40 @@ abstract class DataObject
 		return $return;
 	}
 
-	public function getLinksForJSON() : array{
+	public function getLinksForJSON(): array {
 		return [];
 	}
 
-	public function canActiveUserEdit(){
+	public function canActiveUserEdit() {
 		return true;
 	}
 
-	public function canActiveUserCopy(){
+	public function canActiveUserCopy() {
 		return true;
 	}
 
-	public function getJSONString($includeLinks, $prettyPrint = false){
+	public function getJSONString($includeLinks, $prettyPrint = false) {
 		$flags = 0;
-		if ($prettyPrint){
+		if ($prettyPrint) {
 			$flags = JSON_PRETTY_PRINT;
 		}
 
 		$baseObject = $this->toArray(false, true);
-		if ($includeLinks){
+		if ($includeLinks) {
 			$links = $this->getLinksForJSON();
-			if (!empty($links)){
+			if (!empty($links)) {
 				$baseObject['links'] = $links;
 			}
 		}
 		return json_encode($baseObject, $flags);
 	}
 
-	public function loadObjectPropertiesFromJSON($jsonData, $mappings){
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings) {
 		$encryptedFields = $this->getEncryptedFieldNames();
 		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
-		foreach ($jsonData as $property => $value){
-			if ($property != $this->getPrimaryKey() && $property != 'links'){
-				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)){
+		foreach ($jsonData as $property => $value) {
+			if ($property != $this->getPrimaryKey() && $property != 'links') {
+				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)) {
 					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
 				}
 				$this->$property = $value;
@@ -1003,7 +976,7 @@ abstract class DataObject
 	 * @param $overrideExisting
 	 * @return bool
 	 */
-	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool{
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
 
 		if (array_key_exists('links', $jsonData)) {
@@ -1011,21 +984,21 @@ abstract class DataObject
 		}
 
 		//Check to see if there is an existing ID for the object
-		if (!$this->findExistingObjectId()){
+		if (!$this->findExistingObjectId()) {
 			$this->setLastError('Could not insert object ' . $this . ' could not find existing object id');
 		}
 
-		if ($overrideExisting == 'keepExisting'){
+		if ($overrideExisting == 'keepExisting') {
 			//Only update if we don't have an existing value
-			if (empty($this->getPrimaryKeyValue())){
+			if (empty($this->getPrimaryKeyValue())) {
 				$result = $this->update();
-				if ($result === false){
+				if ($result === false) {
 					return false;
 				}
 			}
-		}else{
+		} else {
 			$result = $this->update();
-			if ($result === false){
+			if ($result === false) {
 				return false;
 			}
 		}
@@ -1034,7 +1007,7 @@ abstract class DataObject
 		if (array_key_exists('links', $jsonData)) {
 			if ($this->loadRelatedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting)) {
 				$result = $this->update();
-				if ($result === false){
+				if ($result === false) {
 					return false;
 				}
 			}
@@ -1049,9 +1022,7 @@ abstract class DataObject
 	 * @param $overrideExisting keepExisting / updateExisting
 	 * @return void
 	 */
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
-
-	}
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {}
 
 	/**
 	 * Load related links from json (objects where we there is an intermediary table storing our id and infromation about the other object)
@@ -1060,7 +1031,7 @@ abstract class DataObject
 	 * @param $overrideExisting - keepExisting / updateExisting
 	 * @return boolean True/False if links were loaded
 	 */
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool{
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool {
 		return false;
 	}
 
@@ -1069,8 +1040,7 @@ abstract class DataObject
 	 *  to avoid errors in future processing.  Returns false if the insert fails.
 	 * @return bool
 	 */
-	public function findExistingObjectId() : bool
-	{
+	public function findExistingObjectId(): bool {
 		$thisClass = get_class($this);
 		$tmpObject = new $thisClass();
 		$uniquenessFields = $this->getUniquenessFields();
@@ -1081,11 +1051,11 @@ abstract class DataObject
 			if ($tmpObject->find(true)) {
 				$primaryField = $this->getPrimaryKey();
 				$this->$primaryField = $tmpObject->getPrimaryKeyValue();
-			}else{
+			} else {
 				$primaryField = $this->getPrimaryKey();
-				if (count($uniquenessFields) == 1 && $uniquenessFields[0] == $primaryField){
+				if (count($uniquenessFields) == 1 && $uniquenessFields[0] == $primaryField) {
 					//We tricked Aspen, we are filling out the primary key, but it doesn't actually exist.
-					if (!$this->insert()){
+					if (!$this->insert()) {
 						return false;
 					}
 				}
@@ -1094,15 +1064,15 @@ abstract class DataObject
 		return true;
 	}
 
-	public function okToExport(array $selectedFilters) : bool{
+	public function okToExport(array $selectedFilters): bool {
 		return false;
 	}
 
-	public function getAdditionalListActions() : array {
+	public function getAdditionalListActions(): array {
 		return [];
 	}
 
-	public function getAdditionalListJavascriptActions() : array {
+	public function getAdditionalListJavascriptActions(): array {
 		return [];
 	}
 }

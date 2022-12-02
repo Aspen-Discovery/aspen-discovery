@@ -2,10 +2,8 @@
 
 require_once 'Solr.php';
 
-class WebsiteSolrConnector extends Solr
-{
-	function __construct($host)
-	{
+class WebsiteSolrConnector extends Solr {
+	function __construct($host) {
 		parent::__construct($host, 'website_pages');
 		//$this->_highlight = true;
 	}
@@ -13,18 +11,16 @@ class WebsiteSolrConnector extends Solr
 	/**
 	 * @return string
 	 */
-	function getSearchSpecsFile()
-	{
+	function getSearchSpecsFile() {
 		return ROOT_DIR . '/../../sites/default/conf/websiteSearchSpecs.yaml';
 	}
 
 	/** return string */
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'websiteSearches';
 	}
 
-	protected function getHighlightOptions($fields, &$options){
+	protected function getHighlightOptions($fields, &$options) {
 		$options['hl'] = 'true';
 		$options['hl.fl'] = 'description';
 		$options['hl.simple.pre'] = '<strong>';
@@ -37,8 +33,7 @@ class WebsiteSolrConnector extends Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation)
-	{
+	public function getScopingFilters($searchLibrary, $searchLocation) {
 		global $solrScope;
 		//For websites we only scope based on library, not location
 

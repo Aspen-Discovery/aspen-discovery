@@ -6,16 +6,13 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-class Admin_CreateCollectionSpotlight extends Action
-{
+class Admin_CreateCollectionSpotlight extends Action {
 	/** @noinspection PhpUnused */
-	function getInitializationJs() : string
-	{
+	function getInitializationJs(): string {
 		return 'return AspenDiscovery.CollectionSpotlights.updateSpotlightFields();';
 	}
-	
-	function launch()
-	{
+
+	function launch() {
 		$user = UserAccount::getLoggedInUser();
 
 		$source = $_REQUEST['source'];
@@ -57,7 +54,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				$collectionSpotlight->find(true);
 			}
 
-			if(!isset($_REQUEST['replaceExisting'])) {
+			if (!isset($_REQUEST['replaceExisting'])) {
 				//Add the list to the spotlight
 				$spotlightList = new CollectionSpotlightList();
 				$spotlightList->collectionSpotlightId = $collectionSpotlight->id;
@@ -70,10 +67,10 @@ class Admin_CreateCollectionSpotlight extends Action
 					$searchObj->init();
 					$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
 					if (!$spotlightList->updateFromSearch($searchObj)) {
-						return array(
+						return [
 							'success' => false,
-							'message' => "Sorry, this search is too complex to create a spotlight from."
-						);
+							'message' => "Sorry, this search is too complex to create a spotlight from.",
+						];
 					}
 				} elseif ($source == 'list') {
 					$spotlightList->sourceListId = $sourceId;
@@ -103,10 +100,10 @@ class Admin_CreateCollectionSpotlight extends Action
 					$searchObj->init();
 					$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
 					if (!$spotlightList->updateFromSearch($searchObj)) {
-						return array(
+						return [
 							'success' => false,
-							'message' => "Sorry, this search is too complex to create a spotlight from."
-						);
+							'message' => "Sorry, this search is too complex to create a spotlight from.",
+						];
 					}
 				} elseif ($source == 'list') {
 					$spotlightList->sourceListId = $sourceId;
@@ -124,16 +121,15 @@ class Admin_CreateCollectionSpotlight extends Action
 			//Redirect to the collection spotlight
 			header("Location: /Admin/CollectionSpotlights?objectAction=view&id={$collectionSpotlight->id}");
 			return false;
-		}else{
-			return array(
+		} else {
+			return [
 				'success' => false,
-				'message' => "You must be logged in and provide information about the search to create the spotlight."
-			);
+				'message' => "You must be logged in and provide information about the search to create the spotlight.",
+			];
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');

@@ -9,8 +9,7 @@ require_once ROOT_DIR . '/Action.php';
  */
 class Suggest extends Action {
 
-	function launch()
-	{
+	function launch() {
 		global $configArray;
 
 		//header('Content-type: application/x-suggestions+json');
@@ -20,10 +19,10 @@ class Suggest extends Action {
 
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$db = new GroupedWorksSolrConnector2($url);
 		}
@@ -32,8 +31,7 @@ class Suggest extends Action {
 		echo json_encode($results);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

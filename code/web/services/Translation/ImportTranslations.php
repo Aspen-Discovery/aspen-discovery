@@ -2,19 +2,18 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Translation_ImportTranslations extends Admin_Admin
-{
-	function launch(){
+class Translation_ImportTranslations extends Admin_Admin {
+	function launch() {
 		global $interface;
 
 		//Figure out the maximum upload size
 		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
 		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
 
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit'])) {
 			//Make sure we don't time out while loading translations
 			set_time_limit(-1);
-			ini_set('memory_limit','1G');
+			ini_set('memory_limit', '1G');
 
 			$overrideExistingTranslations = isset($_REQUEST['overwriteExisting']);
 
@@ -23,16 +22,16 @@ class Translation_ImportTranslations extends Admin_Admin
 			$validLanguage->orderBy("weight");
 			$validLanguage->find();
 			$codeToLanguageId = [];
-			while ($validLanguage->fetch()){
-				if (isset($_REQUEST['import_' . $validLanguage->code])){
+			while ($validLanguage->fetch()) {
+				if (isset($_REQUEST['import_' . $validLanguage->code])) {
 					$languagesToImport[$validLanguage->code] = $validLanguage->code;
 				}
 				$codeToLanguageId[$validLanguage->code] = $validLanguage->id;
 			}
 
-			if (empty($languagesToImport)){
+			if (empty($languagesToImport)) {
 				$interface->assign('error', 'Please select at least one language to import');
-			}else {
+			} else {
 				//Import the translations and redirect back to the main translations page
 				if (isset ($_FILES['importFile'])) {
 					if (isset($_FILES['importFile']["error"]) && $_FILES['importFile']["error"] != 0) {
@@ -69,22 +68,21 @@ class Translation_ImportTranslations extends Admin_Admin
 						$fHnd = fopen($fileToLoad, 'r');
 						$headerRow = fgetcsv($fHnd);
 						//Map columns form export to what we want to import
-						for ($i = 1; $i < count($headerRow); $i++){
-							foreach ($languagesToImport as $code => $index){
-								if ($code == $headerRow[$i]){
+						for ($i = 1; $i < count($headerRow); $i++) {
+							foreach ($languagesToImport as $code => $index) {
+								if ($code == $headerRow[$i]) {
 									$languagesToImport[$code] = $i;
 								}
 							}
 						}
-						/** @var Memcache $memCache */
-						global $memCache;
+						/** @var Memcache $memCache */ global $memCache;
 						while ($curRow = fgetcsv($fHnd)) {
 							$term = $curRow[0];
 							//Make sure there is at least one translation for the term before importing it.
 							$hasTranslations = false;
-							foreach ($languagesToImport as $code => $columnIndex){
+							foreach ($languagesToImport as $code => $columnIndex) {
 								$newValue = $curRow[$columnIndex];
-								if (!empty($newValue)){
+								if (!empty($newValue)) {
 									$hasTranslations = true;
 								}
 							}
@@ -123,7 +121,10 @@ class Translation_ImportTranslations extends Admin_Admin
 						die();
 					}
 				} else {
-					$interface->assign('error', translate(['text' => 'Please select a file to import', 'isAdminFacing'=>true]));
+					$interface->assign('error', translate([
+						'text' => 'Please select a file to import',
+						'isAdminFacing' => true,
+					]));
 				}
 			}
 
@@ -131,8 +132,7 @@ class Translation_ImportTranslations extends Admin_Admin
 		$this->display('importTranslationsForm.tpl', 'Import Translations');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
@@ -141,13 +141,11 @@ class Translation_ImportTranslations extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'translations';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Translate Aspen');
 	}
 }

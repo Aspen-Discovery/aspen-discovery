@@ -7,12 +7,11 @@ require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 /**
  * MaterialsRequest AJAX Page, handles returing asynchronous information about Materials Requests.
  */
-class MaterialsRequest_AJAX extends Action{
+class MaterialsRequest_AJAX extends Action {
 
-	function AJAX() {
-	}
+	function AJAX() {}
 
-	function launch(){
+	function launch() {
 		$method = $_GET['method'];
 		if (method_exists($this, $method)) {
 			header('Content-type: application/json');
@@ -20,26 +19,32 @@ class MaterialsRequest_AJAX extends Action{
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			$result = $this->$method();
 			echo json_encode($result);
-		}else{
-			echo json_encode(array('error'=>'invalid_method'));
+		} else {
+			echo json_encode(['error' => 'invalid_method']);
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function cancelRequest(){
-		if (!UserAccount::isLoggedIn()){
-			return array('success' => false, 'error' => 'Could not cancel the request, you must be logged in to cancel the request.');
-		}elseif (!isset($_REQUEST['id'])){
-			return array('success' => false, 'error' => 'Could not cancel the request, no id provided.');
-		}else{
+	function cancelRequest() {
+		if (!UserAccount::isLoggedIn()) {
+			return [
+				'success' => false,
+				'error' => 'Could not cancel the request, you must be logged in to cancel the request.',
+			];
+		} elseif (!isset($_REQUEST['id'])) {
+			return [
+				'success' => false,
+				'error' => 'Could not cancel the request, no id provided.',
+			];
+		} else {
 			$id = $_REQUEST['id'];
 			$materialsRequest = new MaterialsRequest();
 			$materialsRequest->id = $id;
 			$materialsRequest->createdBy = UserAccount::getActiveUserId();
-			if ($materialsRequest->find(true)){
+			if ($materialsRequest->find(true)) {
 				//get the correct status to set based on the user's home library
 				$homeLibrary = Library::getPatronHomeLibrary();
-				if (is_null($homeLibrary)){
+				if (is_null($homeLibrary)) {
 					global $library;
 					$homeLibrary = $library;
 				}
@@ -50,33 +55,42 @@ class MaterialsRequest_AJAX extends Action{
 
 				$materialsRequest->dateUpdated = time();
 				$materialsRequest->status = $cancelledStatus->id;
-				if ($materialsRequest->update()){
+				if ($materialsRequest->update()) {
 					require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
 					MaterialsRequestUsage::incrementStat($materialsRequest->status, $materialsRequest->libraryId);
 
-					return array('success' => true);
-				}else{
-					return array('success' => false, 'error' => 'Could not cancel the request, error during update.');
+					return ['success' => true];
+				} else {
+					return [
+						'success' => false,
+						'error' => 'Could not cancel the request, error during update.',
+					];
 				}
-			}else{
-				return array('success' => false, 'error' => 'Could not cancel the request, could not find a request for the provided id.');
+			} else {
+				return [
+					'success' => false,
+					'error' => 'Could not cancel the request, could not find a request for the provided id.',
+				];
 			}
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function updateMaterialsRequest(){
+	function updateMaterialsRequest() {
 		global $interface;
 
-		if (!isset($_REQUEST['id'])){
-			$interface->assign('error', translate(['text' => 'Please provide an id of the materials request to view.', 'isPublicFacing'=>true]));
-		}else {
+		if (!isset($_REQUEST['id'])) {
+			$interface->assign('error', translate([
+				'text' => 'Please provide an id of the materials request to view.',
+				'isPublicFacing' => true,
+			]));
+		} else {
 			$id = $_REQUEST['id'];
 			if (ctype_digit($id)) {
 				if (UserAccount::isLoggedIn()) {
 					$user = UserAccount::getLoggedInUser();
 					$staffLibrary = $user->getHomeLibrary(); // staff member's home library
-					if (is_null($staffLibrary)){
+					if (is_null($staffLibrary)) {
 						global $library;
 						$staffLibrary = $library;
 					}
@@ -100,20 +114,18 @@ class MaterialsRequest_AJAX extends Action{
 						$usingDefaultFormats = $formats->count() == 0;
 
 						$materialsRequest->selectAdd();
-						$materialsRequest->selectAdd(
-							'materials_request.*, status.description as statusLabel, location.displayName as location'
-						);
+						$materialsRequest->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
 						if (!$usingDefaultFormats) {
 							$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
 							$materialsRequest->selectAdd('materials_request_formats.formatLabel,materials_request_formats.authorLabel, materials_request_formats.specialFields');
 						}
 
 						if ($materialsRequest->find(true)) {
-							$canUpdate   = false;
+							$canUpdate = false;
 							$isAdminUser = false;
 
 							//Load user information
-							$requestUser     = new User();
+							$requestUser = new User();
 							$requestUser->id = $materialsRequest->createdBy;
 							if ($requestUser->find(true)) {
 								$interface->assign('requestUser', $requestUser);
@@ -129,12 +141,12 @@ class MaterialsRequest_AJAX extends Action{
 									//User can update if the home library of the requester is their library
 
 									$requestUserLibrary = $requestUser->getHomeLibrary();
-									if (is_null($requestUserLibrary)){
+									if (is_null($requestUserLibrary)) {
 										global $library;
 										$requestUserLibrary = $library;
 									}
-									$canUpdate          = $requestUserLibrary->libraryId == $staffLibrary->libraryId;
-									$isAdminUser        = true;
+									$canUpdate = $requestUserLibrary->libraryId == $staffLibrary->libraryId;
+									$isAdminUser = true;
 								}
 								if ($canUpdate) {
 									$interface->assign('isAdminUser', $isAdminUser);
@@ -143,13 +155,16 @@ class MaterialsRequest_AJAX extends Action{
 									$interface->assign('availableFormats', $availableFormats);
 
 									// Get Author Labels for all Formats
-									list($formatAuthorLabels, $specialFieldFormats) = $materialsRequest->getAuthorLabelsAndSpecialFields($staffLibrary->libraryId);
+									[
+										$formatAuthorLabels,
+										$specialFieldFormats,
+									] = $materialsRequest->getAuthorLabelsAndSpecialFields($staffLibrary->libraryId);
 									if ($usingDefaultFormats) {
 										$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats();
 										/** @var MaterialsRequestFormats $format */
 										foreach ($defaultFormats as $format) {
 											// Get the default values for this request
-											if ($materialsRequest->format == $format->format ){
+											if ($materialsRequest->format == $format->format) {
 												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->formatLabel = $format->formatLabel;
 												/** @noinspection PhpUndefinedFieldInspection */
@@ -170,14 +185,14 @@ class MaterialsRequest_AJAX extends Action{
 									// Hold Pick-up Locations
 									$location = new Location();
 									$locationList = $location->getPickupBranches($requestUser);
-									$pickupLocations = array();
+									$pickupLocations = [];
 									foreach ($locationList as $curLocation) {
 										if (is_object($curLocation)) {
-											$pickupLocations[] = array(
+											$pickupLocations[] = [
 												'id' => $curLocation->locationId,
 												'displayName' => $curLocation->displayName,
 												'selected' => is_object($curLocation) ? ($curLocation->locationId == $materialsRequest->holdPickupLocation ? 'selected' : '') : '',
-											);
+											];
 										}
 									}
 
@@ -186,11 +201,11 @@ class MaterialsRequest_AJAX extends Action{
 										/** @var MaterialsRequestFormFields $formField */
 										foreach ($catagory as $formField) {
 											if ($formField->fieldType == 'bookmobileStop') {
-												$pickupLocations[] = array(
+												$pickupLocations[] = [
 													'id' => 'bookmobile',
 													'displayName' => $formField->fieldLabel,
 													'selected' => $materialsRequest->holdPickupLocation == 'bookmobile',
-												);
+												];
 												break 2;
 											}
 										}
@@ -204,7 +219,7 @@ class MaterialsRequest_AJAX extends Action{
 									$materialsRequestStatus->libraryId = $staffLibrary->libraryId;
 									$materialsRequestStatus->find();
 									$availableStatuses = [];
-									while ($materialsRequestStatus->fetch()){
+									while ($materialsRequestStatus->fetch()) {
 										$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
 									}
 									$interface->assign('availableStatuses', $availableStatuses);
@@ -217,50 +232,77 @@ class MaterialsRequest_AJAX extends Action{
 									$interface->assign('barCodeColumn', $barCodeColumn);
 
 								} else {
-									$interface->assign('error', translate(['text' => 'Sorry, you don\'t have permission to update this materials request.', 'isPublicFacing'=>true]));
+									$interface->assign('error', translate([
+										'text' => 'Sorry, you don\'t have permission to update this materials request.',
+										'isPublicFacing' => true,
+									]));
 								}
 							} else {
-								$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find the user that made this materials request.', 'isPublicFacing'=>true]));
+								$interface->assign('error', translate([
+									'text' => 'Sorry, we couldn\'t find the user that made this materials request.',
+									'isPublicFacing' => true,
+								]));
 							}
 						} else {
-							$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find a materials request for that id.', 'isPublicFacing'=>true]));
+							$interface->assign('error', translate([
+								'text' => 'Sorry, we couldn\'t find a materials request for that id.',
+								'isPublicFacing' => true,
+							]));
 						}
 					} else {
-						$interface->assign('error', translate(['text' => 'We could not determine your home library.', 'isPublicFacing'=>true]));
+						$interface->assign('error', translate([
+							'text' => 'We could not determine your home library.',
+							'isPublicFacing' => true,
+						]));
 					}
 				} else {
-					$interface->assign('error', translate(['text' => 'Please log in to view & edit the materials request.', 'isPublicFacing'=>true]));
+					$interface->assign('error', translate([
+						'text' => 'Please log in to view & edit the materials request.',
+						'isPublicFacing' => true,
+					]));
 				}
 			} else {
-				$interface->assign('error', translate(['text' => 'Sorry, invalid id for a materials request.', 'isPublicFacing'=>true]));
+				$interface->assign('error', translate([
+					'text' => 'Sorry, invalid id for a materials request.',
+					'isPublicFacing' => true,
+				]));
 			}
 		}
-		return array(
+		return [
 			'title' => 'Update Materials Request',
 			'modalBody' => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
-			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>" . translate(['text' => "Update Request", 'isPublicFacing'=>true]) . "</button>" : ''
-		);
+			'modalButtons' => $interface->get_template_vars('error') == null ? "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>" . translate([
+					'text' => "Update Request",
+					'isPublicFacing' => true,
+				]) . "</button>" : '',
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	function MaterialsRequestDetails(){
+	function MaterialsRequestDetails() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if (!isset($_REQUEST['id'])) {
-			$interface->assign('error', translate(['text' => 'Please provide an id of the materials request to view.', 'isPublicFacing'=>true]));
-		}elseif (empty($user)) {
-			$interface->assign('error', translate(['text' => 'Please log in to view details.', 'isPublicFacing'=>true]));
-		}else {
+			$interface->assign('error', translate([
+				'text' => 'Please provide an id of the materials request to view.',
+				'isPublicFacing' => true,
+			]));
+		} elseif (empty($user)) {
+			$interface->assign('error', translate([
+				'text' => 'Please log in to view details.',
+				'isPublicFacing' => true,
+			]));
+		} else {
 			$id = $_REQUEST['id'];
 			if (!empty($id) && ctype_digit($id)) {
 				$requestLibrary = $user->getHomeLibrary(); // staff member's or patron's home library
-				if (is_null($requestLibrary)){
+				if (is_null($requestLibrary)) {
 					global $library;
 					$requestLibrary = $library;
 				}
 				if (!empty($requestLibrary)) {
 					$materialsRequest = new MaterialsRequest();
-					$materialsRequest->id  = $id;
+					$materialsRequest->id = $id;
 
 					$staffView = isset($_REQUEST['staffView']) ? $_REQUEST['staffView'] : true;
 					$requestFormFields = $materialsRequest->getRequestFormFields($requestLibrary->libraryId, $staffView);
@@ -268,7 +310,7 @@ class MaterialsRequest_AJAX extends Action{
 
 
 					// Statuses
-					$statusQuery           = new MaterialsRequestStatus();
+					$statusQuery = new MaterialsRequestStatus();
 					$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 
 					// Pick-up Locations
@@ -281,9 +323,7 @@ class MaterialsRequest_AJAX extends Action{
 					$usingDefaultFormats = $formats->count() == 0;
 
 					$materialsRequest->selectAdd();
-					$materialsRequest->selectAdd(
-						'materials_request.*, status.description as statusLabel, location.displayName as location'
-					);
+					$materialsRequest->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
 					if (!$usingDefaultFormats) {
 						$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
 						$materialsRequest->selectAdd('materials_request_formats.formatLabel,materials_request_formats.authorLabel, materials_request_formats.specialFields');
@@ -294,7 +334,7 @@ class MaterialsRequest_AJAX extends Action{
 							$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats();
 							/** @var MaterialsRequestFormats $format */
 							foreach ($defaultFormats as $format) {
-								if ($materialsRequest->format == $format->format ){
+								if ($materialsRequest->format == $format->format) {
 									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->formatLabel = $format->formatLabel;
 									/** @noinspection PhpUndefinedFieldInspection */
@@ -311,7 +351,7 @@ class MaterialsRequest_AJAX extends Action{
 						if ($user && UserAccount::userHasPermission('Manage Library Materials Requests')) {
 							$interface->assign('showUserInformation', true);
 							//Load user information
-							$requestUser     = new User();
+							$requestUser = new User();
 							$requestUser->id = $materialsRequest->createdBy;
 							if ($requestUser->find(true)) {
 								$interface->assign('requestUser', $requestUser);
@@ -328,41 +368,62 @@ class MaterialsRequest_AJAX extends Action{
 							$interface->assign('showUserInformation', false);
 						}
 					} else {
-						$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find a materials request for that id.', 'isPublicFacing'=>true]));
+						$interface->assign('error', translate([
+							'text' => 'Sorry, we couldn\'t find a materials request for that id.',
+							'isPublicFacing' => true,
+						]));
 					}
 				} else {
-					$interface->assign('error', translate(['text' => 'Could not determine your home library.', 'isPublicFacing'=>true]));
+					$interface->assign('error', translate([
+						'text' => 'Could not determine your home library.',
+						'isPublicFacing' => true,
+					]));
 				}
 			} else {
-				$interface->assign('error', translate(['text' => 'Invalid Request ID.', 'isPublicFacing'=>true]));
+				$interface->assign('error', translate([
+					'text' => 'Invalid Request ID.',
+					'isPublicFacing' => true,
+				]));
 			}
 		}
-		return array(
-				'title'        => translate(['text' => 'Materials Request Details', 'isPublicFacing'=>true]),
-				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
-				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
-		);
+		return [
+			'title' => translate([
+				'text' => 'Materials Request Details',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
+			'modalButtons' => ''
+			//TODO idea: add Update Request button (for staff only?)
+		];
 	}
 
-	function GetWorldCatTitles(){
+	function GetWorldCatTitles() {
 		global $configArray;
-		if (!isset($_REQUEST['title']) && !isset($_REQUEST['author'])){
-			return array(
+		if (!isset($_REQUEST['title']) && !isset($_REQUEST['author'])) {
+			return [
 				'success' => false,
-				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.'
-			);
-		}else if (isset($configArray['WorldCat']['apiKey']) & strlen($configArray['WorldCat']['apiKey']) > 0){
+				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.',
+			];
+		} elseif (isset($configArray['WorldCat']['apiKey']) & strlen($configArray['WorldCat']['apiKey']) > 0) {
 			$worldCatUrl = "http://www.worldcat.org/webservices/catalog/search/opensearch?q=";
-			if (isset($_REQUEST['title'])){
+			if (isset($_REQUEST['title'])) {
 				$worldCatUrl .= urlencode($_REQUEST['title']);
 			}
-			if (isset($_REQUEST['author'])){
+			if (isset($_REQUEST['author'])) {
 				$worldCatUrl .= '+' . urlencode($_REQUEST['author']);
 			}
-			if (isset($_REQUEST['format'])){
-				if (in_array($_REQUEST['format'],array('dvd', 'cassette', 'vhs', 'playaway'))){
+			if (isset($_REQUEST['format'])) {
+				if (in_array($_REQUEST['format'], [
+					'dvd',
+					'cassette',
+					'vhs',
+					'playaway',
+				])) {
 					$worldCatUrl .= '+' . urlencode($_REQUEST['format']);
-				}elseif (in_array($_REQUEST['format'],array('cdAudio', 'cdMusic'))){
+				} elseif (in_array($_REQUEST['format'], [
+					'cdAudio',
+					'cdMusic',
+				])) {
 					$worldCatUrl .= '+' . urlencode('cd');
 				}
 			}
@@ -372,87 +433,91 @@ class MaterialsRequest_AJAX extends Action{
 			/** @var stdClass $worldCatData */
 			$worldCatData = simplexml_load_file($worldCatUrl);
 			//print_r($worldCatData);
-			$worldCatResults = array();
-			foreach($worldCatData->channel->item as $item){
+			$worldCatResults = [];
+			foreach ($worldCatData->channel->item as $item) {
 				/** @var SimpleXMLElement $item */
 				/** @noinspection PhpUndefinedFieldInspection */
-				$curTitle= array(
+				$curTitle = [
 					'title' => (string)$item->title,
 					'author' => (string)$item->author->name,
 					'description' => (string)$item->description,
-					'link' => (string)$item->link
-				);
+					'link' => (string)$item->link,
+				];
 
 				$oclcChildren = $item->children('oclcterms', TRUE);
-				foreach ($oclcChildren as $child){
+				foreach ($oclcChildren as $child) {
 					/** @var SimpleXMLElement $child */
-					if ($child->getName() == 'recordIdentifier'){
+					if ($child->getName() == 'recordIdentifier') {
 						$curTitle['oclcNumber'] = (string)$child;
 					}
 
 				}
 				$dcChildren = $item->children('dc', TRUE);
-				foreach ($dcChildren as $child){
-					if ($child->getName() == 'identifier'){
+				foreach ($dcChildren as $child) {
+					if ($child->getName() == 'identifier') {
 						$identifierFields = explode(":", (string)$child);
 						$curTitle[$identifierFields[1]][] = $identifierFields[2];
 					}
 				}
 
 				$contentChildren = $item->children('content', TRUE);
-				foreach ($contentChildren as $child){
-					if ($child->getName() == 'encoded'){
+				foreach ($contentChildren as $child) {
+					if ($child->getName() == 'encoded') {
 						$curTitle['citation'] = (string)$child;
 					}
 				}
 
-				if (strlen($curTitle['description']) == 0 && isset($curTitle["ISBN"]) && is_array($curTitle["ISBN"]) && count($curTitle["ISBN"]) > 0){
+				if (strlen($curTitle['description']) == 0 && isset($curTitle["ISBN"]) && is_array($curTitle["ISBN"]) && count($curTitle["ISBN"]) > 0) {
 					//Get the description from syndetics
 					require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
 					$summaryInfo = GoDeeperData::getSummary(null, $curTitle["ISBN"][0], null);
-					if (isset($summaryInfo['summary'])){
+					if (isset($summaryInfo['summary'])) {
 						$curTitle['description'] = $summaryInfo['summary'];
 					}
 				}
 				$worldCatResults[] = $curTitle;
 			}
-			return array(
+			return [
 				'success' => true,
-				'titles' => $worldCatResults
-			);
-		}else{
-			return array(
+				'titles' => $worldCatResults,
+			];
+		} else {
+			return [
 				'success' => false,
-				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.'
-			);
+				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.',
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getImportRequestForm(){
+	function getImportRequestForm() {
 		global $interface;
 
-		return array(
+		return [
 			'title' => 'Import Materials Requests',
 			'modalBody' => $interface->fetch("MaterialsRequest/import-requests.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>" . translate(['text'=>'Import Requests','isAdminFacing'=>true, 'inAttribute'=>true]) . "</button>"
-		);
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>" . translate([
+					'text' => 'Import Requests',
+					'isAdminFacing' => true,
+					'inAttribute' => true,
+				]) . "</button>",
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	function importRequests(){
+	function importRequests() {
 		$result = [
 			'success' => false,
 			'title' => 'Importing Requests',
-			'message' => 'Sorry your requests could not be imported'
+			'message' => 'Sorry your requests could not be imported',
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Import Materials Requests'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Import Materials Requests'))) {
 			if (isset($_FILES['exportFile'])) {
 				$uploadedFile = $_FILES['exportFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
 					$result['message'] = "No file was uploaded";
-				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$result['message'] =  "Error in file upload " . $uploadedFile["error"];
+				} elseif (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+					$result['message'] = "Error in file upload " . $uploadedFile["error"];
 				} else {
 					try {
 						$inputFileType = PHPExcel_IOFactory::identify($uploadedFile['tmp_name']);
@@ -468,19 +533,16 @@ class MaterialsRequest_AJAX extends Action{
 						$materialRequestStatus = new MaterialsRequestStatus();
 						$materialRequestStatus->libraryId = $libraryId;
 						$materialRequestStatus->find();
-						while ($materialRequestStatus->fetch()){
+						while ($materialRequestStatus->fetch()) {
 							$allStatuses[$materialRequestStatus->id] = $materialRequestStatus->description;
 						}
 
 						/** @var  $sheet */
 						$sheet = $objPHPExcel->getSheet(0);
-						if ($sheet->getCellByColumnAndRow(0, 1)->getValue() == 'Materials Requests'){
+						if ($sheet->getCellByColumnAndRow(0, 1)->getValue() == 'Materials Requests') {
 							//Get the request data
 							$highestRow = $sheet->getHighestRow();
-							$headers = $rowData = $sheet->rangeToArray('A3:' . $sheet->getHighestColumn() . '3',
-								NULL,
-								TRUE,
-								FALSE)[2];
+							$headers = $rowData = $sheet->rangeToArray('A3:' . $sheet->getHighestColumn() . '3', NULL, TRUE, FALSE)[2];
 							$showEBookFormatField = in_array('Sub Format', $headers);
 							$showBookTypeField = in_array('Type', $headers);
 							$showAgeField = in_array('Age Level', $headers);
@@ -490,7 +552,7 @@ class MaterialsRequest_AJAX extends Action{
 							$numSkippedCouldNotFindUser = 0;
 							$numSkippedCouldNotFindStatus = 0;
 							$numSkippedFailedInsert = 0;
-							for ($rowNum = 4; $rowNum <= $highestRow; $rowNum++){
+							for ($rowNum = 4; $rowNum <= $highestRow; $rowNum++) {
 								$materialRequest = new MaterialsRequest();
 								$curCol = 1;
 								$materialRequest->libraryId = $libraryId;
@@ -502,13 +564,13 @@ class MaterialsRequest_AJAX extends Action{
 								$materialRequest->magazineTitle = $magazineTitle; //This isn't quite right, date will append to title
 								$materialRequest->author = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$materialRequest->format = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								if ($showEBookFormatField){
+								if ($showEBookFormatField) {
 									$materialRequest->subFormat = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								}
-								if ($showBookTypeField){
+								if ($showBookTypeField) {
 									$materialRequest->bookType = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								}
-								if ($showAgeField){
+								if ($showAgeField) {
 									$materialRequest->ageLevel = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								}
 								$materialRequest->isbn = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
@@ -523,7 +585,7 @@ class MaterialsRequest_AJAX extends Action{
 								$username = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$barcode = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
 								$email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
-								if (is_numeric($barcode)){
+								if (is_numeric($barcode)) {
 									$barcode = (int)$barcode;
 								}
 								$requestUser = new User();
@@ -531,7 +593,7 @@ class MaterialsRequest_AJAX extends Action{
 
 								$requestUser->$barcodeProperty = $barcode;
 								$requestUser->find();
-								if ($requestUser->getNumResults() == 0){
+								if ($requestUser->getNumResults() == 0) {
 									//Try looking by last name, first
 									$requestUser = new User();
 									$requestUser->cat_username = $username;
@@ -548,33 +610,33 @@ class MaterialsRequest_AJAX extends Action{
 												$numSkippedCouldNotFindUser++;
 												continue;
 											}
-										}else{
-											$requestUser->fetch();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+										} else {
+											$requestUser->fetch();
 										}
-									}else{
+									} else {
 										$requestUser->fetch();
 									}
-								}else{
+								} else {
 									$requestUser->fetch();
 								}
 								$materialRequest->createdBy = $requestUser->id;
 								$materialRequest->email = $email;
-								if ($showPlaceHoldField){
+								if ($showPlaceHoldField) {
 									$placeHold = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-									if ($placeHold == 'No'){
+									if ($placeHold == 'No') {
 										$materialRequest->placeHoldWhenAvailable = 0;
-									}else{
+									} else {
 										$materialRequest->placeHoldWhenAvailable = 1;
 									}
 								}
-								if ($showIllField){
+								if ($showIllField) {
 									$materialRequest->illItem = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Yes' ? 1 : 0;
 								}
 								$materialRequest->status = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								if (is_numeric($materialRequest->status)){
+								if (is_numeric($materialRequest->status)) {
 									$materialRequest->status = (int)$materialRequest->status;
 								}
-								if (!array_key_exists($materialRequest->status, $allStatuses)){
+								if (!array_key_exists($materialRequest->status, $allStatuses)) {
 									$numSkippedCouldNotFindStatus++;
 									continue;
 								}
@@ -585,9 +647,9 @@ class MaterialsRequest_AJAX extends Action{
 								/** @noinspection PhpUnusedLocalVariableInspection */
 								$assignedTo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 
-								if ($materialRequest->insert() == 1){
+								if ($materialRequest->insert() == 1) {
 									$numImported++;
-								}else{
+								} else {
 									$numSkippedFailedInsert++;
 								}
 							}
@@ -605,23 +667,22 @@ class MaterialsRequest_AJAX extends Action{
 								$result['message'] .= "<br/>$numSkippedCouldNotFindUser could not find a user.";
 								$result['success'] = false;
 							}
-						}else{
-							$result['message'] =  "This does not look like a valid export of Material Request data";
+						} else {
+							$result['message'] = "This does not look like a valid export of Material Request data";
 						}
-					} catch(Exception $e) {
-						$result['message'] =  "Error reading file : " . $e->getMessage();
+					} catch (Exception $e) {
+						$result['message'] = "Error reading file : " . $e->getMessage();
 					}
 
 				}
-			}else{
+			} else {
 				$result['message'] = 'No file was selected, please try again.';
 			}
 		}
 		return $result;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

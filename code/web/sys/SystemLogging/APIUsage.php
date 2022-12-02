@@ -1,8 +1,7 @@
 <?php
 
 
-class APIUsage extends DataObject
-{
+class APIUsage extends DataObject {
 	public $__table = 'api_usage';
 	public $id;
 	public $instance;
@@ -11,12 +10,18 @@ class APIUsage extends DataObject
 	public $module;
 	public $method;
 	public $numCalls;
-	public function getUniquenessFields(): array
-	{
-		return ['instance','year', 'month', 'module', 'method'];
+
+	public function getUniquenessFields(): array {
+		return [
+			'instance',
+			'year',
+			'month',
+			'module',
+			'method',
+		];
 	}
 
-	static function incrementStat($module, $method){
+	static function incrementStat($module, $method) {
 		try {
 			$apiUsage = new APIUsage();
 			$apiUsage->year = date('Y');
@@ -32,15 +37,14 @@ class APIUsage extends DataObject
 				$apiUsage->numCalls = 1;
 				$apiUsage->insert();
 			}
-		}catch (PDOException $e){
+		} catch (PDOException $e) {
 			//This happens if the table has not been created, ignore it
 		}
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
+		if (in_array($this->instance, $selectedFilters['instances'])) {
 			$okToExport = true;
 		}
 		return $okToExport;

@@ -2,10 +2,8 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 
-class SideLoads_DownloadMarc extends Admin_Admin
-{
-	function launch()
-	{
+class SideLoads_DownloadMarc extends Admin_Admin {
+	function launch() {
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
@@ -16,7 +14,7 @@ class SideLoads_DownloadMarc extends Admin_Admin
 			$marcPath = $sideLoadConfiguration->marcPath;
 			$file = $_REQUEST['file'];
 			$fullName = $marcPath . DIR_SEP . $file;
-			if (file_exists($fullName)){
+			if (file_exists($fullName)) {
 				header('Content-Description: File Transfer');
 				header('Content-Type: application/octet-stream');
 				header("Content-Disposition: attachment; filename=$file");
@@ -30,35 +28,32 @@ class SideLoads_DownloadMarc extends Admin_Admin
 				flush();
 				readfile($fullName);
 				die();
-			}else{
+			} else {
 				$interface->assign('error', 'Could not find the file to download.');
 			}
-		}else{
+		} else {
 			$interface->assign('error', 'Could not find the Side Load for this file.');
 		}
 		$this->display('sideloadError.tpl', 'Error Downloading File');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Load');
 		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Loads');
-		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoad){
-			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->id , $this->activeObject->name);
+		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoad) {
+			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->id, $this->activeObject->name);
 		}
 		$breadcrumbs[] = new Breadcrumb('', 'Download MARC Record');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'side_loads';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

@@ -24,33 +24,33 @@ class ComponentTaskLink extends DataObject {
 			$taskList[$task->id] = "$task->name ($task->storyPoints)";
 		}
 
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'taskId' => array(
+				'description' => 'The unique id',
+			],
+			'taskId' => [
 				'property' => 'taskId',
 				'type' => 'enum',
 				'values' => $taskList,
 				'label' => 'Task',
 				'description' => 'The task related to the component',
-				'required' => true
-			),
-			'componentId' => array(
+				'required' => true,
+			],
+			'componentId' => [
 				'property' => 'componentId',
 				'type' => 'enum',
 				'values' => $componentList,
 				'label' => 'Task',
 				'description' => 'The component related to the ticket',
-				'required' => true
-			),
-		);
+				'required' => true,
+			],
+		];
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		if ($context == 'relatedTasks') {
 			return '/Development/Tasks?objectAction=edit&id=' . $this->ticketId;
 		} else {

@@ -1,11 +1,10 @@
-<?php /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+<?php
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 
-abstract class Horizon extends AbstractIlsDriver
-{
+abstract class Horizon extends AbstractIlsDriver {
 
 	protected $db;
 	protected $useDb = true;
@@ -14,8 +13,7 @@ abstract class Horizon extends AbstractIlsDriver
 	protected $selfRegProfile;
 	protected $curlWrapper;
 
-	function __construct($accountProfile)
-	{
+	function __construct($accountProfile) {
 		parent::__construct($accountProfile);
 		// Load Configuration for this Module
 		global $configArray;
@@ -28,7 +26,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 		if (isset($configArray['Catalog']['hipUrl'])) {
 			$this->hipUrl = $configArray['Catalog']['hipUrl'];
-		}else{
+		} else {
 			$this->hipUrl = $this->accountProfile->vendorOpacUrl;
 		}
 		if (isset($configArray['Catalog']['hipProfile'])) {
@@ -43,13 +41,9 @@ abstract class Horizon extends AbstractIlsDriver
 			try {
 				if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 					sybase_min_client_severity(11);
-					$this->db = @sybase_connect($this->accountProfile->databaseName,
-						$this->accountProfile->databaseUser,
-						$this->accountProfile->databasePassword);
+					$this->db = @sybase_connect($this->accountProfile->databaseName, $this->accountProfile->databaseUser, $this->accountProfile->databasePassword);
 				} else {
-					$this->db = mssql_connect($this->accountProfile->databaseHost . ':' . $this->accountProfile->databasePort,
-						$this->accountProfile->databaseUser,
-						$this->accountProfile->databasePassword);
+					$this->db = mssql_connect($this->accountProfile->databaseHost . ':' . $this->accountProfile->databasePort, $this->accountProfile->databaseUser, $this->accountProfile->databasePassword);
 
 					// Select the database
 					mssql_select_db($this->accountProfile->databaseName);
@@ -63,8 +57,7 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	public function getFines($patron, $includeMessages = false) : array
-	{
+	public function getFines($patron, $includeMessages = false): array {
 		if ($this->useDb) {
 			return $this->getFinesViaDB($patron, $includeMessages);
 		} else {
@@ -72,13 +65,12 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	public function getFinesViaHIP($patron) : array
-	{
+	public function getFinesViaHIP($patron): array {
 		global $configArray;
 		global $logger;
 
 		//Setup Curl
-		$header = array();
+		$header = [];
 		$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
 		$header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
 		$header[] = "Cache-Control: max-age=0";
@@ -116,7 +108,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 		//Login by posting username and password
 		curl_setopt($curl_connection, CURLOPT_POST, true);
-		$post_data = array(
+		$post_data = [
 			'aspect' => 'overview',
 			'button' => 'Login to Your Account',
 			'login_prompt' => 'true',
@@ -126,7 +118,7 @@ abstract class Horizon extends AbstractIlsDriver
 			'sec1' => $patron->cat_username,
 			'sec2' => $patron->cat_password,
 			'session' => $sessionId,
-		);
+		];
 		$post_string = http_build_query($post_data);
 
 		$curl_url = $this->hipUrl . "/ipac20/ipac.jsp";
@@ -135,29 +127,21 @@ abstract class Horizon extends AbstractIlsDriver
 		$sresult = curl_exec($curl_connection);
 
 		preg_match_all('/<!--suppress HtmlDeprecatedAttribute --><tr>.*?<td bgcolor="#FFFFFF"><a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<\/tr>/s', $sresult, $messageInfo, PREG_SET_ORDER);
-		$messages = array();
+		$messages = [];
 		for ($matchi = 0; $matchi < count($messageInfo); $matchi++) {
-			$messages[] = array(
+			$messages[] = [
 				'reason' => $messageInfo[$matchi][1],
 				'amount' => $messageInfo[$matchi][3],
 				'message' => ($messageInfo[$matchi][2] != '&nbsp;') ? $messageInfo[$matchi][2] : '',
-				'date' => $messageInfo[$matchi][4]
-			);
+				'date' => $messageInfo[$matchi][4],
+			];
 		}
 		unlink($cookie);
 		return $messages;
 	}
 
-	public function getFinesViaDB($patron, $includeMessages = false) : array
-	{
-		$sql = "select title_inverted.title as TITLE, item.bib# as BIB_NUM, item.item# as ITEM_NUM, " .
-			"burb.borrower# as BORROWER_NUM, burb.amount as AMOUNT, burb.comment, " .
-			"burb.date as DUEDATE, " .
-			"burb.block as FINE, burb.amount as BALANCE from burb " .
-			"left join item on item.item#=burb.item# " .
-			"left join title_inverted on title_inverted.bib# = item.bib# " .
-			"join borrower on borrower.borrower#=burb.borrower# " .
-			"join borrower_barcode on borrower_barcode.borrower#=burb.borrower# " .
+	public function getFinesViaDB($patron, $includeMessages = false): array {
+		$sql = "select title_inverted.title as TITLE, item.bib# as BIB_NUM, item.item# as ITEM_NUM, " . "burb.borrower# as BORROWER_NUM, burb.amount as AMOUNT, burb.comment, " . "burb.date as DUEDATE, " . "burb.block as FINE, burb.amount as BALANCE from burb " . "left join item on item.item#=burb.item# " . "left join title_inverted on title_inverted.bib# = item.bib# " . "join borrower on borrower.borrower#=burb.borrower# " . "join borrower_barcode on borrower_barcode.borrower#=burb.borrower# " .
 			"where borrower_barcode.bbarcode='" . $patron->cat_username . "'";
 
 		if ($includeMessages == false) {
@@ -187,18 +171,14 @@ abstract class Horizon extends AbstractIlsDriver
 				$comment = is_null($row['comment']) ? $row['TITLE'] : $row['comment'];
 
 				if (isset($bib_num) && isset($item_num)) {
-					$cko = "select date as CHECKOUT " .
-						"from burb where borrower#=" . $borrower_num . " " .
-						"and item#=" . $item_num . " and block='infocko'";
+					$cko = "select date as CHECKOUT " . "from burb where borrower#=" . $borrower_num . " " . "and item#=" . $item_num . " and block='infocko'";
 					$sqlStmt_cko = $this->_query($cko);
 
 					if ($row_cko = $this->_fetch_assoc($sqlStmt_cko)) {
 						$checkout = DateUtils::addDays('1970-01-01', $row_cko['CHECKOUT']);
 					}
 
-					$due = "select convert(varchar(12),dateadd(dd, date, '01 jan 1970')) as DUEDATE " .
-						"from burb where borrower#=" . $borrower_num . " " .
-						"and item#=" . $item_num . " and block='infodue'";
+					$due = "select convert(varchar(12),dateadd(dd, date, '01 jan 1970')) as DUEDATE " . "from burb where borrower#=" . $borrower_num . " " . "and item#=" . $item_num . " and block='infodue'";
 					$sqlStmt_due = $this->_query($due);
 
 					if ($row_due = $this->_fetch_assoc($sqlStmt_due)) {
@@ -206,13 +186,17 @@ abstract class Horizon extends AbstractIlsDriver
 					}
 				}
 
-				$fineList[] = array('id' => $bib_num,
+				$fineList[] = [
+					'id' => $bib_num,
 					'message' => $comment,
 					'amount' => $amount > 0 ? '$' . sprintf('%0.2f', $amount / 100) : '',
 					'reason' => $this->translateFineMessageType($row['FINE']),
-					'balance' => $balance,  // TODO: not in my fines template
-					'checkout' => $checkout, // TODO: not in my fines template
-					'date' => date('M j, Y', strtotime($duedate)));
+					'balance' => $balance,
+					// TODO: not in my fines template
+					'checkout' => $checkout,
+					// TODO: not in my fines template
+					'date' => date('M j, Y', strtotime($duedate)),
+				];
 			}
 			return $fineList;
 		} catch (PDOException $e) {
@@ -229,11 +213,10 @@ abstract class Horizon extends AbstractIlsDriver
 	 * @param boolean $fromMasquerade
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
-	{
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade): array {
 		$result = [
 			'success' => false,
-			'messages' => []
+			'messages' => [],
 		];
 		if ($canUpdateContactInfo) {
 			global $configArray;
@@ -278,7 +261,7 @@ abstract class Horizon extends AbstractIlsDriver
 			//Login by posting username and password
 			global $logger;
 			$logger->log("Logging into user account from updatePatronInfo $curl_url", Logger::LOG_NOTICE);
-			$post_data = array(
+			$post_data = [
 				'aspect' => 'overview',
 				'button' => 'Login to Your Account',
 				'login_prompt' => 'true',
@@ -288,13 +271,13 @@ abstract class Horizon extends AbstractIlsDriver
 				'sec1' => $patron->cat_username,
 				'sec2' => $patron->cat_password,
 				'session' => $sessionId,
-			);
+			];
 			$curl_url = $this->hipUrl . "/ipac20/ipac.jsp";
 			$this->curlWrapper->curlPostPage($curl_url, $post_data);
 
 			//Update patron information.  Use HIP to update the email to make sure that all business rules are followed.
 			if (isset($_REQUEST['email'])) {
-				$post_data = array(
+				$post_data = [
 					'menu' => 'account',
 					'newemailtext' => $_REQUEST['email'],
 					'newpin' => '',
@@ -304,7 +287,7 @@ abstract class Horizon extends AbstractIlsDriver
 					'session' => $sessionId,
 					'submenu' => 'info',
 					'updateemail' => 'Update',
-				);
+				];
 				$sResult = $this->curlWrapper->curlPostPage($curl_url, $post_data);
 
 				//check for errors in boldRedFont1
@@ -317,7 +300,7 @@ abstract class Horizon extends AbstractIlsDriver
 			}
 
 			if (isset($_REQUEST['oldPin']) && strlen($_REQUEST['oldPin']) > 0 && isset($_REQUEST['newPin']) && strlen($_REQUEST['newPin']) > 0) {
-				$post_data = array(
+				$post_data = [
 					'menu' => 'account',
 					'newemailtext' => $_REQUEST['email'],
 					'newpin' => $_REQUEST['newPin'],
@@ -327,7 +310,7 @@ abstract class Horizon extends AbstractIlsDriver
 					'session' => $sessionId,
 					'submenu' => 'info',
 					'updatepin' => 'Update',
-				);
+				];
 				$sResult = $this->curlWrapper->curlPostPage($curl_url, $post_data);
 
 				//check for errors in boldRedFont1
@@ -356,11 +339,7 @@ abstract class Horizon extends AbstractIlsDriver
 			}
 
 			//check to see if the user has provided an alias
-			if ((isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $patron->displayName) ||
-				(isset($_REQUEST['disableRecommendations']) && $_REQUEST['disableRecommendations'] != $patron->disableRecommendations) ||
-				(isset($_REQUEST['disableCoverArt']) && $_REQUEST['disableCoverArt'] != $patron->disableCoverArt) ||
-				(isset($_REQUEST['bypassAutoLogout']) && $_REQUEST['bypassAutoLogout'] != $patron->bypassAutoLogout)
-			) {
+			if ((isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $patron->displayName) || (isset($_REQUEST['disableRecommendations']) && $_REQUEST['disableRecommendations'] != $patron->disableRecommendations) || (isset($_REQUEST['disableCoverArt']) && $_REQUEST['disableCoverArt'] != $patron->disableCoverArt) || (isset($_REQUEST['bypassAutoLogout']) && $_REQUEST['bypassAutoLogout'] != $patron->bypassAutoLogout)) {
 				$patron->displayName = $_REQUEST['displayName'];
 				$patron->disableRecommendations = $_REQUEST['disableRecommendations'];
 				$patron->disableCoverArt = $_REQUEST['disableCoverArt'];
@@ -371,7 +350,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 			// update Aspen Discovery user data & clear cache of patron profile
 			$patron->update();
-			if (empty($result['messages'])){
+			if (empty($result['messages'])) {
 				$result['success'] = true;
 				$result['messages'][] = 'Your account was updated successfully.';
 			}
@@ -382,8 +361,7 @@ abstract class Horizon extends AbstractIlsDriver
 		return $result;
 	}
 
-	public function getRecordTitle($recordId)
-	{
+	public function getRecordTitle($recordId) {
 		//Get the title of the book.
 		$searchObject = SearchObjectFactory::initSearchObject();
 
@@ -400,8 +378,7 @@ abstract class Horizon extends AbstractIlsDriver
 		return $title;
 	}
 
-	protected function _query($query)
-	{
+	protected function _query($query) {
 		global $configArray;
 		if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 			return sybase_query($query);
@@ -410,8 +387,7 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	protected function _fetch_assoc($result_id)
-	{
+	protected function _fetch_assoc($result_id) {
 		global $configArray;
 		if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 			return sybase_fetch_assoc($result_id);
@@ -420,8 +396,7 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	protected function _fetch_array($result_id)
-	{
+	protected function _fetch_array($result_id) {
 		global $configArray;
 		if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 			return sybase_fetch_array($result_id);
@@ -430,8 +405,7 @@ abstract class Horizon extends AbstractIlsDriver
 		}
 	}
 
-	protected function _num_rows($result_id)
-	{
+	protected function _num_rows($result_id) {
 		global $configArray;
 		if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 			return sybase_num_rows($result_id);
@@ -445,8 +419,7 @@ abstract class Horizon extends AbstractIlsDriver
 	 * @param string $barcode
 	 * @return array
 	 */
-	function emailPin($barcode)
-	{
+	function emailPin($barcode) {
 		if ($this->useDb) {
 			/** @noinspection SqlResolve */
 			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . mysql_escape_string($barcode) . "'";
@@ -463,7 +436,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 				if ($foundPatron) {
 					if (strlen($email) == 0) {
-						return array('error' => 'Your account does not have an email address on record. Please visit your local library to retrieve your PIN number.');
+						return ['error' => 'Your account does not have an email address on record. Please visit your local library to retrieve your PIN number.'];
 					}
 					require_once ROOT_DIR . '/sys/Email/Mailer.php';
 
@@ -471,23 +444,23 @@ abstract class Horizon extends AbstractIlsDriver
 					$subject = "PIN number for your Library Card";
 					$body = "The PIN number for your Library Card is $pin.  You may use this PIN number to login to your account.";
 					$mailer->send($email, $subject, $body);
-					return array(
+					return [
 						'success' => true,
 						'pin' => $pin,
 						'email' => $email,
-					);
+					];
 				} else {
-					return array('error' => 'Sorry, we could not find an account with that barcode.');
+					return ['error' => 'Sorry, we could not find an account with that barcode.'];
 				}
 			} catch (PDOException $e) {
-				return array(
-					'error' => 'Unable to read your PIN from the database.  Please try again later.'
-				);
+				return [
+					'error' => 'Unable to read your PIN from the database.  Please try again later.',
+				];
 			}
 		} else {
-			$result = array(
+			$result = [
 				'error' => 'This functionality requires a connection to the database.',
-			);
+			];
 		}
 		return $result;
 	}
@@ -498,12 +471,11 @@ abstract class Horizon extends AbstractIlsDriver
 
 	abstract function translateStatus($status);
 
-	public function hasNativeReadingHistory() : bool
-	{
+	public function hasNativeReadingHistory(): bool {
 		return false;
 	}
 
-	public function showHoldPosition() : bool {
+	public function showHoldPosition(): bool {
 		return true;
 	}
 }

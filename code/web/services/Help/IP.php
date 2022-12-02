@@ -1,10 +1,9 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-class Help_IP extends Action
-{
-	function launch()
-	{
+
+class Help_IP extends Action {
+	function launch() {
 		global $interface;
 
 		$ip_address = IPAddress::getActiveIp();
@@ -19,8 +18,7 @@ class Help_IP extends Action
 		$this->display('ip.tpl', 'IP Address', '');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'IP Address');
 		return $breadcrumbs;

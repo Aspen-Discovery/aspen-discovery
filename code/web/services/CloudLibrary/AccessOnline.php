@@ -1,12 +1,11 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
 
-class CloudLibrary_AccessOnline extends Action
-{
+class CloudLibrary_AccessOnline extends Action {
 	/** @var CloudLibraryRecordDriver $recordDriver */
 	private $recordDriver;
-	function launch()
-	{
+
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
@@ -39,8 +38,7 @@ class CloudLibrary_AccessOnline extends Action
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);

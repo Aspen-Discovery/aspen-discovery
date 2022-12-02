@@ -8,15 +8,14 @@
  * -------------------------------------------------------------
  */
 function smarty_modifier_getvalue($marcField, $subfield) {
-    if ($marcField) {
-        $subfield = $marcField->getSubfield($subfield);
-        if ($subfield) {
-            return $subfield->getData();
-        } else {
-            return null;
-        }
-    } else {
-        return null;
-    }
+	if ($marcField) {
+		$subfield = $marcField->getSubfield($subfield);
+		if ($subfield) {
+			return $subfield->getData();
+		} else {
+			return null;
+		}
+	} else {
+		return null;
+	}
 }
-?>

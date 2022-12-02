@@ -1,10 +1,8 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 
-class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
-{
-	public function __construct()
-	{
+class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher {
+	public function __construct() {
 		parent::__construct();
 
 		global $configArray;
@@ -30,8 +28,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) &&
-			is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -42,10 +39,10 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'relevance' => 'Best Match',
-			'title' => 'Title'
-		);
+			'title' => 'Title',
+		];
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -61,8 +58,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = null) {
 		// Call the standard initialization routine in the parent:
 		parent::init('open_archives');
 
@@ -73,7 +69,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if ($restored instanceof AspenError) {
+		} elseif ($restored instanceof AspenError) {
 			return false;
 		}
 
@@ -100,12 +96,26 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		return true;
 	} // End init()
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			'OpenArchivesKeyword' => translate(['text' => 'Keyword', 'Keyword', 'isPublicFacing' => true, 'inAttribute' => true]),
-			'OpenArchivesTitle' => translate(['text' => 'Title', 'Title', 'isPublicFacing' => true, 'inAttribute' => true]),
-			'OpenArchivesSubject' => translate(['text' => 'Subject', 'Subject', 'isPublicFacing' => true, 'inAttribute' => true]),
+			'OpenArchivesKeyword' => translate([
+				'text' => 'Keyword',
+				'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'OpenArchivesTitle' => translate([
+				'text' => 'Title',
+				'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'OpenArchivesSubject' => translate([
+				'text' => 'Subject',
+				'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
@@ -113,29 +123,24 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 	 * Turn our results into an Excel document
 	 * @param null|array $result
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		// TODO: Implement buildExcel() method.
 	}
 
-	public function getUniqueField()
-	{
+	public function getUniqueField() {
 		return 'identifier';
 	}
 
-	public function getRecordDriverForResult($current)
-	{
+	public function getRecordDriverForResult($current) {
 		require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 		return new OpenArchivesRecordDriver($current);
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'openArchivesSearches';
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -144,8 +149,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'OpenArchivesTitle') {
 			$suggestionHandler = 'title_suggest';
@@ -157,8 +161,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 	}
 
 	//TODO: Convert this to use definitions
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$collection = new LibraryFacetSetting();
@@ -239,12 +242,11 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'OpenArchives';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'OpenArchivesKeyword';
 	}
 }

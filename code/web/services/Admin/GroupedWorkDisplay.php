@@ -3,77 +3,73 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
 
-class Admin_GroupedWorkDisplay extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class Admin_GroupedWorkDisplay extends ObjectEditor {
+	function getObjectType(): string {
 		return 'GroupedWorkDisplaySetting';
 	}
-	function getToolName() : string
-	{
+
+	function getToolName(): string {
 		return 'GroupedWorkDisplay';
 	}
-	function getPageTitle() : string
-	{
+
+	function getPageTitle(): string {
 		return 'Grouped Work Display Settings';
 	}
-	function canDelete() : bool
-	{
+
+	function canDelete(): bool {
 		return UserAccount::userHasPermission('Administer All Grouped Work Display Settings');
 	}
-	function getAllObjects($page, $recordsPerPage): array
-	{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new GroupedWorkDisplaySetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')){
+		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')) {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$object->id = $library->groupedWorkDisplaySettingId;
 		}
 		$object->find();
-		$list = array();
-		while ($object->fetch()){
+		$list = [];
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return GroupedWorkDisplaySetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string
-	{
-		return 'id';
-	}
-	function getIdKeyColumn() : string
-	{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getInstructions() : string
-	{
+	function getIdKeyColumn(): string {
+		return 'id';
+	}
+
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
 	}
 
 	/** @noinspection PhpUnused */
-	function resetMoreDetailsToDefault(){
+	function resetMoreDetailsToDefault() {
 		$groupedWorkSetting = new GroupedWorkDisplaySetting();
 		$groupedWorkSettingId = $_REQUEST['id'];
 		$groupedWorkSetting->id = $groupedWorkSettingId;
-		if ($groupedWorkSetting->find(true)){
+		if ($groupedWorkSetting->find(true)) {
 			$groupedWorkSetting->clearMoreDetailsOptions();
 
-			$defaultOptions = array();
+			$defaultOptions = [];
 			require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
 			$i = 0;
-			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
+			foreach ($defaultMoreDetailsOptions as $source => $defaultState) {
 				$optionObj = new GroupedWorkMoreDetails();
 				$optionObj->groupedWorkSettingsId = $groupedWorkSettingId;
 				$optionObj->collapseByDefault = $defaultState == 'closed';
@@ -90,8 +86,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		header("Location: /Admin/GroupedWorkDisplay?objectAction=edit&id=" . $groupedWorkSettingId);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
@@ -99,13 +94,14 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'cataloging';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Grouped Work Display Settings','Administer Library Grouped Work Display Settings']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Grouped Work Display Settings',
+			'Administer Library Grouped Work Display Settings',
+		]);
 	}
 }

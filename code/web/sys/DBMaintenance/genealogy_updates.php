@@ -1,6 +1,6 @@
 <?php
 
-function getGenealogyUpdates(){
+function getGenealogyUpdates() {
 	return [
 		'genealogy' => [
 			'title' => 'Genealogy Setup',
@@ -106,8 +106,8 @@ function getGenealogyUpdates(){
 			'sql' => [
 				"ALTER TABLE obituary ADD COLUMN dateDay INT NULL",
 				"ALTER TABLE obituary ADD COLUMN dateMonth INT NULL",
-				"ALTER TABLE obituary ADD COLUMN dateYear INT NULL"
-			]
+				"ALTER TABLE obituary ADD COLUMN dateYear INT NULL",
+			],
 		],
 
 		'genealogy_person_date_update' => [
@@ -120,8 +120,8 @@ function getGenealogyUpdates(){
 				"ALTER TABLE person ADD COLUMN birthDateYear INT NULL",
 				"ALTER TABLE person ADD COLUMN deathDateDay INT NULL",
 				"ALTER TABLE person ADD COLUMN deathDateMonth INT NULL",
-				"ALTER TABLE person ADD COLUMN deathDateYear INT NULL"
-			]
+				"ALTER TABLE person ADD COLUMN deathDateYear INT NULL",
+			],
 		],
 
 		'genealogy_marriage_date_update' => [
@@ -131,25 +131,25 @@ function getGenealogyUpdates(){
 			'sql' => [
 				"ALTER TABLE marriage ADD COLUMN marriageDateDay INT NULL",
 				"ALTER TABLE marriage ADD COLUMN marriageDateMonth INT NULL",
-				"ALTER TABLE marriage ADD COLUMN marriageDateYear INT NULL"
-			]
+				"ALTER TABLE marriage ADD COLUMN marriageDateYear INT NULL",
+			],
 		],
 
 		'genealogy_module' => [
 			'title' => 'Create Genealogy Module',
 			'description' => 'Create Genealogy Module',
 			'sql' => [
-				"INSERT INTO modules (name, indexName) VALUES ('Genealogy', 'genealogy')"
-			]
+				"INSERT INTO modules (name, indexName) VALUES ('Genealogy', 'genealogy')",
+			],
 		],
 
 		'genealogy_lot_length' => [
 			'title' => 'Genealogy Lot Length',
 			'description' => 'Increase the length of the lot field within person table',
 			'sql' => [
-				"ALTER TABLE person CHANGE COLUMN lot lot VARCHAR(50) NULL DEFAULT ''"
-			]
-		]
+				"ALTER TABLE person CHANGE COLUMN lot lot VARCHAR(50) NULL DEFAULT ''",
+			],
+		],
 	];
 }
 

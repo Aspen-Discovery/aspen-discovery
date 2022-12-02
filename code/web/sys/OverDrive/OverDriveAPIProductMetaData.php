@@ -20,15 +20,15 @@ class OverDriveAPIProductMetaData extends DataObject {
 	public $cover;
 
 	private $decodedRawData = null;
-	public function getDecodedRawData(){
-		if ($this->decodedRawData == null){
+
+	public function getDecodedRawData() {
+		if ($this->decodedRawData == null) {
 			$this->decodedRawData = json_decode($this->rawData);
 		}
 		return $this->decodedRawData;
 	}
 
-	public function getCompressedColumnNames(): array
-	{
+	public function getCompressedColumnNames(): array {
 		return ['rawData'];
 	}
 }

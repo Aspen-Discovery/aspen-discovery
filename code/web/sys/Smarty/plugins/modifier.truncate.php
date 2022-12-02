@@ -24,8 +24,7 @@
  * @param boolean
  * @return string
  */
-function smarty_modifier_truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false)
-{
-    require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-    return StringUtils::truncate($string, $length, $etc, $break_words, $middle);
+function smarty_modifier_truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false) {
+	require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+	return StringUtils::truncate($string, $length, $etc, $break_words, $middle);
 }

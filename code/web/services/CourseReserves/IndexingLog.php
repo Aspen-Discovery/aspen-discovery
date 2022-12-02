@@ -3,35 +3,30 @@
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/CourseReserves/CourseReservesIndexingLogEntry.php';
 
-class CourseReserves_IndexingLog extends Admin_IndexingLog
-{
-	function getIndexLogEntryObject(): BaseLogEntry
-	{
+class CourseReserves_IndexingLog extends Admin_IndexingLog {
+	function getIndexLogEntryObject(): BaseLogEntry {
 		return new CourseReservesIndexingLogEntry();
 	}
 
-	function getTemplateName() : string
-	{
+	function getTemplateName(): string {
 		return 'courseReservesIndexingLog.tpl';
 	}
 
-	function getTitle() : string
-	{
+	function getTitle(): string {
 		return 'Course Reserves Indexing Log';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'CourseReserves';
 	}
 
-	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
-		if ($indexingObject instanceof ListIndexingLogEntry){
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
+		if ($indexingObject instanceof ListIndexingLogEntry) {
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#course_reserves', 'Course Reserves');
@@ -39,8 +34,7 @@ class CourseReserves_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'course_reserves';
 	}
 }

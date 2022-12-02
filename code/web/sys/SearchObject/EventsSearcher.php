@@ -1,10 +1,8 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 
-class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
-{
-	public function __construct()
-	{
+class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
+	public function __construct() {
 		parent::__construct();
 
 		global $configArray;
@@ -31,8 +29,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) &&
-			is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -43,11 +40,11 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'start_date_sort asc' => 'Event Date',
 			'relevance' => 'Best Match',
-			'title' => 'Title'
-		);
+			'title' => 'Title',
+		];
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -67,8 +64,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = null) {
 		// Call the standard initialization routine in the parent:
 		parent::init('events');
 
@@ -79,7 +75,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if ($restored instanceof AspenError) {
+		} elseif ($restored instanceof AspenError) {
 			return false;
 		}
 
@@ -103,14 +99,14 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 
 		//Validate we got good search terms
 		foreach ($this->searchTerms as &$searchTerm) {
-			if (isset($searchTerm['index'])){
+			if (isset($searchTerm['index'])) {
 				if ($searchTerm['index'] == 'Keyword') {
 					$searchTerm['index'] = 'EventsKeyword';
 				} elseif ($searchTerm['index'] == 'Title') {
 					$searchTerm['index'] = 'EventsTitle';
 				}
-			}else{
-				foreach ($searchTerm['group'] as &$group){
+			} else {
+				foreach ($searchTerm['group'] as &$group) {
 					if ($group['field'] == 'Keyword') {
 						$group['field'] = 'EventsKeyword';
 					} elseif ($group['field'] == 'Title') {
@@ -128,11 +124,18 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		return true;
 	} // End init()
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			'EventsKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'EventsTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'EventsKeyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'EventsTitle' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
@@ -140,35 +143,30 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	 * Turn our results into an Excel document
 	 * @param array $result
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		// TODO: Implement buildExcel() method.
 	}
 
-	public function getUniqueField()
-	{
+	public function getUniqueField() {
 		return 'id';
 	}
 
-	public function getRecordDriverForResult($current)
-	{
-        if (substr($current['type'],0,12) == 'event_libcal') {
-            require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
-            return new SpringshareLibCalEventRecordDriver($current);
-        } else {
+	public function getRecordDriverForResult($current) {
+		if (substr($current['type'], 0, 12) == 'event_libcal') {
+			require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+			return new SpringshareLibCalEventRecordDriver($current);
+		} else {
 // TODO: rewrite Library Market Library Calendar type as event_lm or something similar. 2022 03 20 James.
-            require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
-            return new LibraryCalendarEventRecordDriver($current);
-        }
+			require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+			return new LibraryCalendarEventRecordDriver($current);
+		}
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'eventsSearches';
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -177,8 +175,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'EventsTitle') {
 			$suggestionHandler = 'title_suggest';
@@ -187,8 +184,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	}
 
 	//TODO: Convert this to use definitions so they can be customized in admin
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 //
@@ -204,7 +200,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 //            $facetConfig["start_date"] = $eventDate;
 
 			$ageGroup = new LibraryFacetSetting();
-			$ageGroup->id = count($facetConfig) +1;
+			$ageGroup->id = count($facetConfig) + 1;
 			$ageGroup->multiSelect = true;
 			$ageGroup->facetName = "age_group_facet";
 			$ageGroup->displayName = "Age Group/Audience";
@@ -215,7 +211,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["age_group_facet"] = $ageGroup;
 
 			$programType = new LibraryFacetSetting();
-			$programType->id = count($facetConfig) +1;
+			$programType->id = count($facetConfig) + 1;
 			$programType->multiSelect = true;
 			$programType->facetName = "program_type_facet";
 			$programType->displayName = "Program Type";
@@ -226,7 +222,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["program_type_facet"] = $programType;
 
 			$branch = new LibraryFacetSetting();
-			$branch->id = count($facetConfig) +1;
+			$branch->id = count($facetConfig) + 1;
 			$branch->multiSelect = true;
 			$branch->facetName = "branch";
 			$branch->displayName = "Branch";
@@ -237,7 +233,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["branch"] = $branch;
 
 			$room = new LibraryFacetSetting();
-			$room->id = count($facetConfig) +1;
+			$room->id = count($facetConfig) + 1;
 			$room->multiSelect = true;
 			$room->facetName = "room";
 			$room->displayName = "Room";
@@ -249,7 +245,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 
 
 			$internalCategory = new LibraryFacetSetting();
-			$internalCategory->id = count($facetConfig) +1;
+			$internalCategory->id = count($facetConfig) + 1;
 			$internalCategory->multiSelect = true;
 			$internalCategory->facetName = "internal_category";
 			$internalCategory->displayName = "Category";
@@ -260,7 +256,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["internal_category"] = $internalCategory;
 
 			$eventState = new LibraryFacetSetting();
-			$eventState->id = count($facetConfig) +1;
+			$eventState->id = count($facetConfig) + 1;
 			$eventState->multiSelect = true;
 			$eventState->facetName = "event_state";
 			$eventState->displayName = "State";
@@ -271,7 +267,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["event_state"] = $eventState;
 
 			$reservationState = new LibraryFacetSetting();
-			$reservationState->id = count($facetConfig) +1;
+			$reservationState->id = count($facetConfig) + 1;
 			$reservationState->multiSelect = true;
 			$reservationState->facetName = "reservation_state";
 			$reservationState->displayName = "Reservation State";
@@ -282,7 +278,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["reservation_state"] = $reservationState;
 
 			$registrationRequired = new LibraryFacetSetting();
-			$registrationRequired->id = count($facetConfig) +1;
+			$registrationRequired->id = count($facetConfig) + 1;
 			$registrationRequired->multiSelect = true;
 			$registrationRequired->facetName = "registration_required";
 			$registrationRequired->displayName = "Registration Required?";
@@ -293,7 +289,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$facetConfig["registration_required"] = $registrationRequired;
 
 			$eventType = new LibraryFacetSetting();
-			$eventType->id = count($facetConfig) +1;
+			$eventType->id = count($facetConfig) + 1;
 			$eventType->multiSelect = true;
 			$eventType->facetName = "event_type";
 			$eventType->displayName = "Event Type";
@@ -308,12 +304,11 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'Events';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'EventsKeyword';
 	}
 }

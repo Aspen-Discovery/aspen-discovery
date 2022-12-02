@@ -3,15 +3,12 @@ require_once ROOT_DIR . '/sys/Covers/AbstractCoverBuilder.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
-class CourseReservesCoverBuilder extends AbstractCoverBuilder
-{
-	public function __construct($invertColors = false)
-	{
+class CourseReservesCoverBuilder extends AbstractCoverBuilder {
+	public function __construct($invertColors = false) {
 		parent::__construct(true);
 	}
 
-	public function getCover($title, $filename, $props = null)
-	{
+	public function getCover($title, $filename, $props = null) {
 		//Create the background image
 		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 

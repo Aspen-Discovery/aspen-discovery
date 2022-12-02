@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
-class UserAccount
-{
+class UserAccount {
 	public static $isLoggedIn = null;
 	public static $isAuthenticated = false;
 	public static $primaryUserData = null;
@@ -19,14 +18,14 @@ class UserAccount
 	 *
 	 * @return bool
 	 */
-	public static function needsToComplete2FA() : bool{
+	public static function needsToComplete2FA(): bool {
 		try {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 			$twoFactorSetting = new TwoFactorAuthSetting();
 			$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
 			if ($twoFactorSetting->find()) {
 
-				if(!UserAccount::isUserMasquerading()) {
+				if (!UserAccount::isUserMasquerading()) {
 					//Two factor might be required
 					if (UserAccount::has2FAEnabled()) {
 						//Two factor is required, check to see if it's complete.
@@ -51,12 +50,13 @@ class UserAccount
 			} else {
 				$needsToComplete2FA = false;
 			}
-		}catch (PDOException $e){
+		} catch (PDOException $e) {
 			//This happens if the table has not been created.
 			$needsToComplete2FA = false;
 		}
 		return $needsToComplete2FA;
 	}
+
 	/**
 	 *
 	 * Checks whether the user is logged in.
@@ -66,8 +66,7 @@ class UserAccount
 	 *
 	 * @return bool
 	 */
-	public static function isLoggedIn()
-	{
+	public static function isLoggedIn() {
 		if (UserAccount::$isLoggedIn == null) {
 			if (isset($_SESSION['activeUserId'])) {
 				UserAccount::$isLoggedIn = !UserAccount::needsToComplete2FA();
@@ -122,8 +121,7 @@ class UserAccount
 	/**
 	 * @return bool|integer
 	 */
-	public static function getActiveUserId()
-	{
+	public static function getActiveUserId() {
 		if (isset($_SESSION['activeUserId'])) {
 			return $_SESSION['activeUserId'];
 		} else {
@@ -135,56 +133,53 @@ class UserAccount
 	 * @param string[]|string $permission
 	 * @return bool
 	 */
-	public static function userHasPermission($permission)
-	{
+	public static function userHasPermission($permission) {
 		$userPermissions = UserAccount::getActivePermissions();
-		if (is_array($permission)){
-			foreach ($permission as $tmpPermission){
-				if (in_array($tmpPermission, $userPermissions)){
+		if (is_array($permission)) {
+			foreach ($permission as $tmpPermission) {
+				if (in_array($tmpPermission, $userPermissions)) {
 					return true;
 				}
 			}
 			return false;
-		}else{
+		} else {
 			return in_array($permission, $userPermissions);
 		}
 	}
 
-	public static function getActiveRoles()
-	{
+	public static function getActiveRoles() {
 		if (UserAccount::$userRoles == null) {
 			if (UserAccount::isLoggedIn()) {
 				UserAccount::$userRoles = UserAccount::getActiveUserObj()->getRoles();
 			} else {
-				UserAccount::$userRoles = array();
+				UserAccount::$userRoles = [];
 			}
 		}
 		return UserAccount::$userRoles;
 	}
 
-	public static function getActivePermissions()
-	{
+	public static function getActivePermissions() {
 		if (UserAccount::$userPermissions == null) {
 			if (UserAccount::isLoggedIn()) {
-				UserAccount::$userPermissions = array();
+				UserAccount::$userPermissions = [];
 
 				$loadDefaultPermissions = false;
-				try{
+				try {
 					$activeUser = UserAccount::getActiveUserObj();
 					UserAccount::$userPermissions = $activeUser->getPermissions();
-				}catch (Exception $e){
+				} catch (Exception $e) {
 					$loadDefaultPermissions = true;
 				}
-				if ($loadDefaultPermissions){
+				if ($loadDefaultPermissions) {
 					//Permission system has not been setup, load default permissions
 					$roles = UserAccount::getActiveRoles();
-					foreach ($roles as $roleId => $roleName){
+					foreach ($roles as $roleId => $roleName) {
 						$role = new Role();
 						$role->roleId = $roleId;
-						if ($role->find(true)){
+						if ($role->find(true)) {
 							$defaultPermissions = $role->getDefaultPermissions();
-							foreach ($defaultPermissions as $permissionName){
-								if (!in_array($permissionName, UserAccount::$userPermissions)){
+							foreach ($defaultPermissions as $permissionName) {
+								if (!in_array($permissionName, UserAccount::$userPermissions)) {
 									UserAccount::$userPermissions[] = $permissionName;
 								}
 							}
@@ -192,14 +187,13 @@ class UserAccount
 					}
 				}
 			} else {
-				UserAccount::$userPermissions = array();
+				UserAccount::$userPermissions = [];
 			}
 		}
 		return UserAccount::$userPermissions;
 	}
 
-	private static function loadUserObjectFromDatabase()
-	{
+	private static function loadUserObjectFromDatabase() {
 		if (UserAccount::$primaryUserObjectFromDB == null) {
 			$activeUserId = UserAccount::getActiveUserId();
 			if ($activeUserId) {
@@ -219,14 +213,12 @@ class UserAccount
 	/**
 	 * @return User|bool
 	 */
-	public static function getActiveUserObj()
-	{
+	public static function getActiveUserObj() {
 		UserAccount::loadUserObjectFromDatabase();
 		return UserAccount::$primaryUserObjectFromDB;
 	}
 
-	public static function getUserDisplayName()
-	{
+	public static function getUserDisplayName() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->getDisplayName();
@@ -234,8 +226,7 @@ class UserAccount
 		return '';
 	}
 
-	public static function getUserInterfaceLanguage()
-	{
+	public static function getUserInterfaceLanguage() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->interfaceLanguage;
@@ -243,8 +234,7 @@ class UserAccount
 		return '';
 	}
 
-	public static function getUserHasInterLibraryLoan()
-	{
+	public static function getUserHasInterLibraryLoan() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->hasInterlibraryLoan();
@@ -252,8 +242,7 @@ class UserAccount
 		return false;
 	}
 
-	public static function getUserHasCatalogConnection()
-	{
+	public static function getUserHasCatalogConnection() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::getActiveUserObj()->hasIlsConnection();
@@ -261,8 +250,7 @@ class UserAccount
 		return false;
 	}
 
-	public static function getUserPType()
-	{
+	public static function getUserPType() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->patronType;
@@ -270,8 +258,7 @@ class UserAccount
 		return 'logged out';
 	}
 
-	public static function getDisableCoverArt()
-	{
+	public static function getDisableCoverArt() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->disableCoverArt;
@@ -279,8 +266,7 @@ class UserAccount
 		return 'logged out';
 	}
 
-	public static function hasLinkedUsers()
-	{
+	public static function hasLinkedUsers() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return count(UserAccount::$primaryUserObjectFromDB->getLinkedUserObjects()) > 0;
@@ -288,8 +274,7 @@ class UserAccount
 		return 'false';
 	}
 
-	public static function getUserHomeLocationId()
-	{
+	public static function getUserHomeLocationId() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->homeLocationId;
@@ -297,21 +282,19 @@ class UserAccount
 		return -1;
 	}
 
-	public static function isUserMasquerading()
-	{
+	public static function isUserMasquerading() {
 		return !empty($_SESSION['guidingUserId']);
 	}
 
-	public static function getGuidingUserId(){
-		if (empty($_SESSION['guidingUserId'])){
+	public static function getGuidingUserId() {
+		if (empty($_SESSION['guidingUserId'])) {
 			return false;
-		}else{
+		} else {
 			return $_SESSION['guidingUserId'];
 		}
 	}
 
-	public static function getGuidingUserObject(): ?User
-	{
+	public static function getGuidingUserObject(): ?User {
 		if (UserAccount::$guidingUserObjectFromDB == null) {
 			if (UserAccount::isUserMasquerading()) {
 				$activeUserId = $_SESSION['guidingUserId'];
@@ -336,8 +319,7 @@ class UserAccount
 	/**
 	 * @return User|false
 	 */
-	public static function getLoggedInUser()
-	{
+	public static function getLoggedInUser() {
 		if (UserAccount::$isLoggedIn != null) {
 			if (UserAccount::$isLoggedIn) {
 				if (!is_null(UserAccount::$primaryUserData)) {
@@ -367,9 +349,9 @@ class UserAccount
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
 					$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
-					if (UserAccount::isUserMasquerading() || !empty($_SESSION['loggedInViaSSO'])){
+					if (UserAccount::isUserMasquerading() || !empty($_SESSION['loggedInViaSSO'])) {
 						return $userData;
-					}else {
+					} else {
 						$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
 						if ($userData == false) {
@@ -387,7 +369,7 @@ class UserAccount
 						}
 						self::updateSession($userData);
 					}
-				}else{
+				} else {
 					AspenError::raiseError("Error validating saved session for user $activeUserId, the user was not found in the database.");
 				}
 			} else {
@@ -453,8 +435,7 @@ class UserAccount
 	 *
 	 * @param User $user
 	 */
-	public static function updateSession($user)
-	{
+	public static function updateSession($user) {
 		if ($user != false) {
 			$_SESSION['activeUserId'] = $user->id;
 		} else {
@@ -482,13 +463,12 @@ class UserAccount
 	 * @return AspenError|User
 	 * @throws UnknownAuthenticationMethodException
 	 */
-	public static function login($validatedViaSSO = false)
-	{
+	public static function login($validatedViaSSO = false) {
 		global $logger;
 		global $usageByIPAddress;
 		$usageByIPAddress->numLoginAttempts++;
 
-		$validUsers = array();
+		$validUsers = [];
 
 		if (isset($_REQUEST['casLogin'])) {
 			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
@@ -538,10 +518,10 @@ class UserAccount
 					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
 					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
-				}elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))){
+				} elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))) {
 					$disallowedMessage = empty($library->messageForPatronsOfOtherLibraries) ? 'Sorry, this catalog can only be accessed by patrons of ' . $library->displayName : $library->messageForPatronsOfOtherLibraries;
 					return new AspenError($disallowedMessage);
-				}elseif ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->preventLogin)) {
+				} elseif ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->preventLogin)) {
 					$disallowedMessage = empty($tempUser->getHomeLibrary()->preventLoginMessage) ? 'Sorry, patrons of ' . $library->displayName . ' cannot login at this time.' : $tempUser->getHomeLibrary()->preventLoginMessage;
 					return new AspenError($disallowedMessage);
 				}
@@ -560,7 +540,7 @@ class UserAccount
 					//We have more than one account with these credentials, automatically link them
 					$primaryUser->addLinkedUser($tempUser);
 				}
-			} else if ($tempUser != null) {
+			} elseif ($tempUser != null) {
 				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
 				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", Logger::LOG_ERROR);
 				$lastError = $tempUser;
@@ -570,14 +550,14 @@ class UserAccount
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			if(UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			if (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
-				$logger->log("User needs to enroll in two-factor authentication",Logger::LOG_DEBUG);
+				$logger->log("User needs to enroll in two-factor authentication", Logger::LOG_DEBUG);
 				$needsToAuthenticate = new AspenError('You must enroll into two-factor authentication before logging in.');
 				return $needsToAuthenticate;
-			} else if(UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			} elseif (UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
-				$logger->log("User needs to two-factor authenticate",Logger::LOG_DEBUG);
+				$logger->log("User needs to two-factor authenticate", Logger::LOG_DEBUG);
 				$needsToAuthenticate = new AspenError('You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.');
 				return $needsToAuthenticate;
 			} else {
@@ -595,7 +575,7 @@ class UserAccount
 		}
 	}
 
-	private static $validatedAccounts = array();
+	private static $validatedAccounts = [];
 
 	/**
 	 * Validate the account information (username and password are correct).
@@ -608,8 +588,7 @@ class UserAccount
 	 *
 	 * @return User|false
 	 */
-	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null)
-	{
+	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null) {
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)) {
 			return UserAccount::$validatedAccounts[$username . $password];
 		}
@@ -652,8 +631,7 @@ class UserAccount
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					/** @var Memcache $memCache */
-					global $memCache;
+					/** @var Memcache $memCache */ global $memCache;
 					global $serverName;
 					global $configArray;
 					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
@@ -671,7 +649,7 @@ class UserAccount
 		return false;
 	}
 
-	public static function getUserByBarcode($username){
+	public static function getUserByBarcode($username) {
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		// Perform authentication:
 		//Test all valid authentication methods and see which (if any) result in a valid login.
@@ -698,8 +676,7 @@ class UserAccount
 	/**
 	 * Completely logout the user annihilating their entire session.
 	 */
-	public static function logout()
-	{
+	public static function logout() {
 		//global $logger;
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
@@ -718,11 +695,10 @@ class UserAccount
 	 * Remove user info from the session so the user is not logged in, but
 	 * preserve hold message and search information
 	 */
-	public static function softLogout()
-	{
+	public static function softLogout() {
 		if (isset($_SESSION['activeUserId'])) {
 			$user = UserAccount::getActiveUserObj();
-			if ($user != false){
+			if ($user != false) {
 				$user->logout();
 			}
 			//global $logger;
@@ -759,22 +735,24 @@ class UserAccount
 	/**
 	 * @return AccountProfile[]
 	 */
-	static function getAccountProfiles()
-	{
+	static function getAccountProfiles() {
 		if (UserAccount::$_accountProfiles == null) {
-			UserAccount::$_accountProfiles = array();
+			UserAccount::$_accountProfiles = [];
 
 			//Load a list of authentication methods to test and see which (if any) result in a valid login.
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 			$accountProfile = new AccountProfile();
-			$accountProfile->orderBy(['weight', 'name']);
+			$accountProfile->orderBy([
+				'weight',
+				'name',
+			]);
 			$accountProfile->find();
 			while ($accountProfile->fetch()) {
-				$additionalInfo = array(
+				$additionalInfo = [
 					'driver' => $accountProfile->driver,
 					'authenticationMethod' => $accountProfile->authenticationMethod,
-					'accountProfile' => clone($accountProfile)
-				);
+					'accountProfile' => clone($accountProfile),
+				];
 				UserAccount::$_accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 			if (count(UserAccount::$_accountProfiles) == 0) {
@@ -819,8 +797,7 @@ class UserAccount
 	 *
 	 * @return false|User
 	 */
-	public static function findNewUser($patronBarcode)
-	{
+	public static function findNewUser($patronBarcode) {
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = self::getAccountProfiles();
 		foreach ($driversToTest as $driverData) {
@@ -839,7 +816,7 @@ class UserAccount
 	 * Used to determine if the active user is a staff member (has Aspen privileges or is marked as staff in the PType).
 	 * @return bool
 	 */
-	public static function isStaff(){
+	public static function isStaff() {
 		if (UserAccount::isLoggedIn()) {
 			if (count(UserAccount::getActiveRoles()) > 0) {
 				return true;

@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class AspenUsage extends DataObject
-{
+
+class AspenUsage extends DataObject {
 	public $__table = 'aspen_usage';
 	public $id;
 	public $instance;
@@ -29,13 +29,15 @@ class AspenUsage extends DataObject
 	public $timedOutSearchesWithHighLoad;
 	public $searchesWithErrors;
 
-	public function getUniquenessFields(): array
-	{
-		return ['instance', 'year', 'month'];
+	public function getUniquenessFields(): array {
+		return [
+			'instance',
+			'year',
+			'month',
+		];
 	}
 
-	public function getNumericColumnNames() : array
-	{
+	public function getNumericColumnNames(): array {
 		return [
 			'pageViews',
 			'pageViewsByBots',
@@ -58,10 +60,9 @@ class AspenUsage extends DataObject
 		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
+		if (in_array($this->instance, $selectedFilters['instances'])) {
 			$okToExport = true;
 		}
 		return $okToExport;

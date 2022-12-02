@@ -25,9 +25,8 @@
  * @param string
  * @return string
  */
-function smarty_modifier_nl2br($string)
-{
-    return nl2br($string);
+function smarty_modifier_nl2br($string) {
+	return nl2br($string);
 }
 
 /* vim: set expandtab: */

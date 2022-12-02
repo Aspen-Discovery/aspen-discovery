@@ -1,9 +1,8 @@
 <?php
 
 
-class WebBuilder_DownloadPDF extends Action{
-	function launch()
-	{
+class WebBuilder_DownloadPDF extends Action {
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
@@ -12,10 +11,10 @@ class WebBuilder_DownloadPDF extends Action{
 		require_once ROOT_DIR . '/sys/File/FileUpload.php';
 		$uploadedFile = new FileUpload();
 		$uploadedFile->id = $id;
-		if (!$uploadedFile->find(true)){
+		if (!$uploadedFile->find(true)) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -24,9 +23,9 @@ class WebBuilder_DownloadPDF extends Action{
 
 		global $serverName;
 		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
-		if (file_exists($uploadedFile->fullPath)){
+		if (file_exists($uploadedFile->fullPath)) {
 			$fullPath = $uploadedFile->fullPath;
-		}else{
+		} else {
 			$fullPath = $dataPath . $uploadedFile->fullPath;
 		}
 
@@ -65,8 +64,7 @@ class WebBuilder_DownloadPDF extends Action{
 
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

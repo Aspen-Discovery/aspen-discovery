@@ -2,30 +2,24 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 
-class WebBuilder_CustomForms extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class WebBuilder_CustomForms extends ObjectEditor {
+	function getObjectType(): string {
 		return 'CustomForm';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'CustomForms';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'WebBuilder';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'Custom WebBuilder Forms';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new CustomForm();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -34,7 +28,7 @@ class WebBuilder_CustomForms extends ObjectEditor
 		if (!UserAccount::userHasPermission('Administer All Custom Forms')) {
 			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryCustomForm', 'formId');
 		}
-		$objectList = array();
+		$objectList = [];
 		if ($userHasExistingObjects) {
 			$object->find();
 			while ($object->fetch()) {
@@ -43,49 +37,43 @@ class WebBuilder_CustomForms extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'title asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return CustomForm::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		$objectActions = [];
-		if (!empty($existingObject) && $existingObject instanceof CustomForm && !empty($existingObject->id)){
+		if (!empty($existingObject) && $existingObject instanceof CustomForm && !empty($existingObject->id)) {
 			$objectActions[] = [
 				'text' => 'View',
-				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/Form?id='.$existingObject->id: $existingObject->urlAlias,
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/Form?id=' . $existingObject->id : $existingObject->urlAlias,
 			];
 			$objectActions[] = [
 				'text' => 'View Submissions',
-				'url' => '/WebBuilder/CustomFormSubmissions?formId='.$existingObject->id,
+				'url' => '/WebBuilder/CustomFormSubmissions?formId=' . $existingObject->id,
 			];
 		}
 		return $objectActions;
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/webbuilder/customforms';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
@@ -93,13 +81,14 @@ class WebBuilder_CustomForms extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Custom Forms', 'Administer Library Custom Forms']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Custom Forms',
+			'Administer Library Custom Forms',
+		]);
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
 }

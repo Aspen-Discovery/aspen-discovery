@@ -3,13 +3,16 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
-class GreenhouseAPI extends Action
-{
-	function launch()
-	{
+class GreenhouseAPI extends Action {
+	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getLibraries', 'getLibrary', 'authenticateTokens', 'getNotificationAccessToken')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, [
+				'getLibraries',
+				'getLibrary',
+				'authenticateTokens',
+				'getNotificationAccessToken',
+			]) && !IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
 		}
 
@@ -25,12 +28,12 @@ class GreenhouseAPI extends Action
 			APIUsage::incrementStat('GreenhouseAPI', $method);
 			ExternalRequestLogEntry::logRequest('GreenhouseAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 		} else {
-			$output = json_encode(array('error' => 'invalid_method'));
+			$output = json_encode(['error' => 'invalid_method']);
 		}
 		echo $output;
 	}
 
-	public function authenticateTokens() : array {
+	public function authenticateTokens(): array {
 		if (isset($_POST['key1']) && isset($_POST['key2'])) {
 
 			$key1 = $_POST['key1'];
@@ -58,14 +61,14 @@ class GreenhouseAPI extends Action
 			}
 		}
 
-		return [ 'success' => false ];
+		return ['success' => false];
 	}
 
 	public function getNotificationAccessToken() {
 		$accessToken = null;
 		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 		$greenhouseSettings = new GreenhouseSettings();
-		if($greenhouseSettings->find(true)){
+		if ($greenhouseSettings->find(true)) {
 			$accessToken = $greenhouseSettings->notificationAccessToken;
 		}
 		return ['token' => $accessToken];
@@ -82,14 +85,14 @@ class GreenhouseAPI extends Action
 		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 		$greenhouseSettings = new GreenhouseSettings();
 		$greenhouseAlertSlackHook = null;
-		if ($greenhouseSettings->find(true)){
+		if ($greenhouseSettings->find(true)) {
 			$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
 		}
 		$start = time();
-		while ($sites->fetch()){
+		while ($sites->fetch()) {
 			$statusTime = time();
 			$siteStatus = $sites->updateStatus();
-			if ($sites->version != $siteStatus['version']){
+			if ($sites->version != $siteStatus['version']) {
 				$sites->version = $siteStatus['version'];
 				$sites->update();
 			}
@@ -107,30 +110,30 @@ class GreenhouseAPI extends Action
 				}
 			}
 
-			if($siteStatus['wasOffline']) {
+			if ($siteStatus['wasOffline']) {
 				// send offline recovery message
 				$sendAlert = true;
 				$alertText .= "- ~Greenhouse connectivity recovered!~\n";
 			}
 
-			foreach ($siteStatus['checks'] as $key => $check){
+			foreach ($siteStatus['checks'] as $key => $check) {
 				$aspenSiteCheck = new AspenSiteCheck();
 				$aspenSiteCheck->siteId = $sites->id;
 				$aspenSiteCheck->checkName = $check['name'];
 				$checkExists = false;
-				if ($aspenSiteCheck->find(true)){
+				if ($aspenSiteCheck->find(true)) {
 					$checkExists = true;
 				}
 				$status = $check['status'];
-				if ($status == 'okay'){
+				if ($status == 'okay') {
 					if ($aspenSiteCheck->currentStatus !== "0" && $aspenSiteCheck->currentStatus !== 0) {
 						$alertText .= '- ~' . $check['name'] . " recovered!~\n";
 						$wasCritical = false;
 						$wasWarning = false;
-						if ($aspenSiteCheck->currentStatus == 2){
+						if ($aspenSiteCheck->currentStatus == 2) {
 							$wasCritical = true;
 						}
-						if ($aspenSiteCheck->currentStatus == 1){
+						if ($aspenSiteCheck->currentStatus == 1) {
 							$wasWarning = true;
 						}
 						$aspenSiteCheck->currentStatus = 0;
@@ -142,12 +145,12 @@ class GreenhouseAPI extends Action
 								$sendAlert = true;
 							}
 						}
-						if ($wasCritical){
+						if ($wasCritical) {
 							$sendAlert = true;
 						}
 
 					}
-				}elseif ($status == 'warning'){
+				} elseif ($status == 'warning') {
 					if ($aspenSiteCheck->currentStatus != 1) {
 						$aspenSiteCheck->currentStatus = 1;
 						$aspenSiteCheck->currentNote = $check['note'];
@@ -155,10 +158,10 @@ class GreenhouseAPI extends Action
 					}
 					$alertText .= "- <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is warning : {$aspenSiteCheck->currentNote} \n";
 					//We will add this to the alert if we have been warning for more than 4 hours and the warning started after the last alert was sent.
-					if ((($start - $aspenSiteCheck->lastWarningTime) > 4 * 60 * 60) && ($aspenSiteCheck->lastWarningTime > $sites->lastNotificationTime)){
+					if ((($start - $aspenSiteCheck->lastWarningTime) > 4 * 60 * 60) && ($aspenSiteCheck->lastWarningTime > $sites->lastNotificationTime)) {
 						$sendAlert = true;
 					}
-				}else{
+				} else {
 					if ($aspenSiteCheck->currentStatus != 2) {
 						$aspenSiteCheck->currentStatus = 2;
 						$aspenSiteCheck->currentNote = $check['note'];
@@ -167,15 +170,15 @@ class GreenhouseAPI extends Action
 						$sendAlert = true;
 					}
 					//Send an alert if we have never sent an alert
-					if ($sites->lastNotificationTime == 0){
+					if ($sites->lastNotificationTime == 0) {
 						$sendAlert = true;
 					}
 					$alertText .= "- :fire: <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is critical : {$aspenSiteCheck->currentNote}\n";
 					$notification = "<!here>";
 				}
-				if ($checkExists){
+				if ($checkExists) {
 					$aspenSiteCheck->update();
-				}else{
+				} else {
 					$aspenSiteCheck->insert();
 				}
 			}
@@ -184,14 +187,14 @@ class GreenhouseAPI extends Action
 
 
 			//Check to see if we need to send an alert
-			if (strlen($alertText) > 0 && $sendAlert){
+			if (strlen($alertText) > 0 && $sendAlert) {
 				$alertText = '*' . $sites->name . "* $notification\n" . $alertText;
 				if (!empty($greenhouseAlertSlackHook)) {
 					$curlWrapper = new CurlWrapper();
-					$headers = array(
+					$headers = [
 						'Accept: application/json',
 						'Content-Type: application/json',
-					);
+					];
 					$curlWrapper->addCustomHeaders($headers, false);
 					$body = new stdClass();
 					$body->text = $alertText;
@@ -212,72 +215,72 @@ class GreenhouseAPI extends Action
 		return $return;
 	}
 
-	public function getLibraries($returnAll = false, $reload = true) : array
-	{
+	public function getLibraries($returnAll = false, $reload = true): array {
 		$return = [
 			'success' => true,
 			'libraries' => [],
 		];
 
 		// prep user location
-		if (isset($_GET['latitude'])) { $userLatitude = $_GET['latitude']; } else { $userLatitude = 0; }
-		if (isset($_GET['longitude'])) { $userLongitude = $_GET['longitude']; } else { $userLongitude = 0; }
+		if (isset($_GET['latitude'])) {
+			$userLatitude = $_GET['latitude'];
+		} else {
+			$userLatitude = 0;
+		}
+		if (isset($_GET['longitude'])) {
+			$userLongitude = $_GET['longitude'];
+		} else {
+			$userLongitude = 0;
+		}
 
 		// get release channel
 		$releaseChannel = "any";
-		if (isset($_GET['release_channel'])) { $releaseChannel = $_GET['release_channel']; }
+		if (isset($_GET['release_channel'])) {
+			$releaseChannel = $_GET['release_channel'];
+		}
 
 		$aspenSite = new AspenSite();
 		$aspenSite->find();
-		while($aspenSite->fetch()) {
+		while ($aspenSite->fetch()) {
 			//Now see if we should return this for use in LiDA
-			if($aspenSite->implementationStatus == 1 || $aspenSite->implementationStatus == 2|| $aspenSite->implementationStatus == 3) {
+			if ($aspenSite->implementationStatus == 1 || $aspenSite->implementationStatus == 2 || $aspenSite->implementationStatus == 3) {
 				// Check the implementation status to make sure it's eligible for LiDA
 
 				$version = $aspenSite->version;
 
-				if($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3) {
-				//See if we need to reload the cache
-				$reloadCache = false;
+				if ($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3) {
+					//See if we need to reload the cache
+					$reloadCache = false;
 
-				$existingCachedValues = new AspenSiteCache();
-				$existingCachedValues->siteId = $aspenSite->id;
-				$numRows = $existingCachedValues->count();
-				$existingCachedValues->find();
-				if($numRows >= 1) {
-					// check for forced reload of cache
-					if (isset($_REQUEST['reload']) && $reload) {
-						$reloadCache = true;
-					} else {
-						//Check to see when the cache was last set
-						$existingCachedValues->fetch();
-						if ((time() - $existingCachedValues->lastUpdated) > (24.5 * 60 * 60)) {
+					$existingCachedValues = new AspenSiteCache();
+					$existingCachedValues->siteId = $aspenSite->id;
+					$numRows = $existingCachedValues->count();
+					$existingCachedValues->find();
+					if ($numRows >= 1) {
+						// check for forced reload of cache
+						if (isset($_REQUEST['reload']) && $reload) {
 							$reloadCache = true;
-						}
-					}
-				}else {
-					$reloadCache = true;
-				}
-				if ($reloadCache) {
-					$this->setLibraryCache($aspenSite);
-				}
-
-				$libraryLocation = new AspenSiteCache();
-				$libraryLocation->siteId = $aspenSite->id;
-				$libraryLocation->find();
-				while ($libraryLocation->fetch()) {
-					$distance = $this->findDistance($userLongitude, $userLatitude, $libraryLocation->longitude, $libraryLocation->latitude, $libraryLocation->unit);
-
-					if (($userLatitude == 0 && $userLongitude == 0) || $returnAll == true) {
-						if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
-							$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
-						} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
-							$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 						} else {
-							$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+							//Check to see when the cache was last set
+							$existingCachedValues->fetch();
+							if ((time() - $existingCachedValues->lastUpdated) > (24.5 * 60 * 60)) {
+								$reloadCache = true;
+							}
 						}
 					} else {
-						if ($distance <= 60) {
+						$reloadCache = true;
+					}
+					if ($reloadCache) {
+						$this->setLibraryCache($aspenSite);
+					}
+
+					$libraryLocation = new AspenSiteCache();
+					$libraryLocation->siteId = $aspenSite->id;
+					$libraryLocation->find();
+					while ($libraryLocation->fetch()) {
+						$distance = $this->findDistance($userLongitude, $userLatitude, $libraryLocation->longitude, $libraryLocation->latitude, $libraryLocation->unit);
+
+						if (($userLatitude == 0 && $userLongitude == 0) || $returnAll == true) {
 							if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
 								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 							} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
@@ -285,17 +288,26 @@ class GreenhouseAPI extends Action
 							} else {
 								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 							}
-						} elseif($aspenSite->name == "Test (ByWater)") {
-							$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+						} else {
+							if ($distance <= 60) {
+								if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+								} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+								} else {
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+								}
+							} elseif ($aspenSite->name == "Test (ByWater)") {
+								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+							}
 						}
 					}
 				}
 			}
-			}
 		}
-		if(!empty($return['libraries'])) {
+		if (!empty($return['libraries'])) {
 			return $return;
-		} else if(empty($return['libraries'])) {
+		} elseif (empty($return['libraries'])) {
 			return $this->getLibraries(true, false);
 		} else {
 			$return['success'] = false;
@@ -307,7 +319,7 @@ class GreenhouseAPI extends Action
 	/** @noinspection PhpUnused */
 	public function findDistance($userLongitude, $userLatitude, $libraryLongitude, $libraryLatitude, $unit) {
 		$distance = 99999;
-		if(is_numeric($libraryLatitude) && is_numeric($libraryLongitude)) {
+		if (is_numeric($libraryLatitude) && is_numeric($libraryLongitude)) {
 			$theta = ($userLongitude - $libraryLongitude);
 			$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
 
@@ -323,7 +335,7 @@ class GreenhouseAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	public function getLibrary() : array {
+	public function getLibrary(): array {
 		$return = [
 			'success' => true,
 			'library' => [],
@@ -340,10 +352,10 @@ class GreenhouseAPI extends Action
 		$releaseChannel = 0;
 		$location = new Location();
 		$location->find();
-		while($location->fetch()) {
+		while ($location->fetch()) {
 			$library = new Library();
 			$library->libraryId = $location->libraryId;
-			if($library->find(true)) {
+			if ($library->find(true)) {
 				$version = $interface->getVariable('gitBranch');
 				if ($version >= "22.09.00") {
 					require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
@@ -352,7 +364,7 @@ class GreenhouseAPI extends Action
 					if ($appSettings->find(true)) {
 						$releaseChannel = $appSettings->releaseChannel;
 						$enabledAccess = $appSettings->enableAccess;
-					}else{
+					} else {
 						//There should be settings available, but if not disable access
 						$releaseChannel = 0;
 						$enabledAccess = 0;
@@ -362,7 +374,7 @@ class GreenhouseAPI extends Action
 					$enabledAccess = $location->enableAppAccess;
 				}
 
-				if($enabledAccess == 1 || $enabledAccess == "1") {
+				if ($enabledAccess == 1 || $enabledAccess == "1") {
 					$baseUrl = $library->baseUrl;
 					if (empty($baseUrl)) {
 						$baseUrl = $configArray['Site']['url'];
@@ -473,8 +485,7 @@ class GreenhouseAPI extends Action
 		return $thisLibrary;
 	}
 
-	public function setLibraryCache($aspenSite)
-	{
+	public function setLibraryCache($aspenSite) {
 		$fetchLibraryUrl = $aspenSite->baseUrl . '/API/GreenhouseAPI?method=getLibrary';
 		if ($data = file_get_contents($fetchLibraryUrl)) {
 			$searchData = json_decode($data);
@@ -526,7 +537,7 @@ class GreenhouseAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	public function addTranslationTerm() : array {
+	public function addTranslationTerm(): array {
 		$translationTerm = new TranslationTerm();
 		$translationTerm->term = $_REQUEST['term'];
 		if (!$translationTerm->find(true)) {
@@ -539,15 +550,22 @@ class GreenhouseAPI extends Action
 				$translationTerm->insert();
 				$result = [
 					'success' => true,
-					'message' => translate(['text' => 'The term was added.', 'isAdminFacing' => true])
+					'message' => translate([
+						'text' => 'The term was added.',
+						'isAdminFacing' => true,
+					]),
 				];
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				$result = [
 					'success' => false,
-					'message' => translate(['text' => 'Could not update term. %1%', 'isAdminFacing'=> true, 1=>(string)$e])
+					'message' => translate([
+						'text' => 'Could not update term. %1%',
+						'isAdminFacing' => true,
+						1 => (string)$e,
+					]),
 				];
 			}
-		}else{
+		} else {
 			$termChanged = false;
 			if ($_REQUEST['isPublicFacing'] && !$translationTerm->isPublicFacing) {
 				$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
@@ -570,12 +588,18 @@ class GreenhouseAPI extends Action
 				$translationTerm->update();
 				$result = [
 					'success' => true,
-					'message' => translate(['text' => 'The term was updated.', 'isAdminFacing'=> true])
+					'message' => translate([
+						'text' => 'The term was updated.',
+						'isAdminFacing' => true,
+					]),
 				];
-			}else{
+			} else {
 				$result = [
 					'success' => true,
-					'message' => translate(['text' => 'The term already existed.', 'isAdminFacing'=> true])
+					'message' => translate([
+						'text' => 'The term already existed.',
+						'isAdminFacing' => true,
+					]),
 				];
 			}
 		}
@@ -585,7 +609,7 @@ class GreenhouseAPI extends Action
 	/** @noinspection PhpUnused */
 	public function getDefaultTranslation() {
 		$result = [
-			'success' => false
+			'success' => false,
 		];
 		if (!empty($_REQUEST['term']) && !empty($_REQUEST['languageCode'])) {
 			$translationTerm = new TranslationTerm();
@@ -600,16 +624,16 @@ class GreenhouseAPI extends Action
 					if ($translation->find(true)) {
 						$result['success'] = true;
 						$result['translation'] = $translation->translation;
-					}else{
+					} else {
 						$result['message'] = 'No translation found';
 					}
-				}else{
+				} else {
 					$result['message'] = 'Could not find language';
 				}
-			}else{
+			} else {
 				$result['message'] = 'Could not find term';
 			}
-		}else{
+		} else {
 			$result['message'] = 'Term and/or languageCode not provided';
 		}
 		return $result;
@@ -618,7 +642,7 @@ class GreenhouseAPI extends Action
 	/** @noinspection PhpUnused */
 	public function setTranslation() {
 		$result = [
-			'success' => false
+			'success' => false,
 		];
 		if (!empty($_REQUEST['term']) && !empty($_REQUEST['languageCode']) && !empty($_REQUEST['translation'])) {
 			$translationTerm = new TranslationTerm();
@@ -636,26 +660,25 @@ class GreenhouseAPI extends Action
 							$translation->translated = 1;
 							$translation->update();
 							$result['success'] = true;
-						}else{
+						} else {
 							$result['message'] = 'Term already translated';
 						}
-					}else{
+					} else {
 						$result['message'] = 'No translation found';
 					}
-				}else{
+				} else {
 					$result['message'] = 'Could not find language';
 				}
-			}else{
+			} else {
 				$result['message'] = 'Could not find term';
 			}
-		}else{
+		} else {
 			$result['message'] = 'Term, languageCode, and/or translation  not provided';
 		}
 		return $result;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

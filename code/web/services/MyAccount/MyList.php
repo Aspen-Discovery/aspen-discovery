@@ -3,13 +3,13 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyAccount_MyList extends MyAccount {
-	function __construct(){
+	function __construct() {
 		$this->requireLogin = false;
 		parent::__construct();
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadCover(){
+	function reloadCover() {
 		$listId = $_REQUEST['id'];
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $listId;
@@ -18,7 +18,7 @@ class MyAccount_MyList extends MyAccount {
 		$bookCoverInfo = new BookCoverInfo();
 		$bookCoverInfo->recordType = 'list';
 		$bookCoverInfo->recordId = $listEntry->listId;
-		if ($bookCoverInfo->find(true)){
+		if ($bookCoverInfo->find(true)) {
 			$bookCoverInfo->imageSource = '';
 			$bookCoverInfo->thumbnailLoaded = 0;
 			$bookCoverInfo->mediumLoaded = 0;
@@ -26,7 +26,10 @@ class MyAccount_MyList extends MyAccount {
 			$bookCoverInfo->update();
 		}
 
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+		return [
+			'success' => true,
+			'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.',
+		];
 	}
 
 	function launch() {
@@ -40,10 +43,10 @@ class MyAccount_MyList extends MyAccount {
 		$list->id = $listId;
 
 		//If the list does not exist, create a new My Favorites List
-		if (!$list->find(true)){
+		if (!$list->find(true)) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -66,7 +69,7 @@ class MyAccount_MyList extends MyAccount {
 		}
 
 		//List Notes are created as part of bulk add to list
-		if (isset($_SESSION['listNotes'])){
+		if (isset($_SESSION['listNotes'])) {
 			$interface->assign('notes', $_SESSION['listNotes']);
 			unset($_SESSION['listNotes']);
 		}
@@ -74,30 +77,30 @@ class MyAccount_MyList extends MyAccount {
 		//Perform an action on the list, but verify that the user has permission to do so.
 		$userCanEdit = false;
 		$userObj = UserAccount::getActiveUserObj();
-		if ($userObj != false){
+		if ($userObj != false) {
 			$userCanEdit = $userObj->canEditList($list);
 		}
 
-		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))){
-			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0){
+		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))) {
+			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0) {
 				$actionToPerform = $_REQUEST['myListActionHead'];
-				if ($actionToPerform == 'saveList'){
+				if ($actionToPerform == 'saveList') {
 					$list->title = $_REQUEST['newTitle'];
 					$list->description = strip_tags($_REQUEST['newDescription']);
 					$list->public = isset($_REQUEST['public']) && ($_REQUEST['public'] == 'true' || $_REQUEST['public'] == 'on');
-					if (!$list->public){
+					if (!$list->public) {
 						$list->searchable = false;
-					}else {
+					} else {
 						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
 					}
 					$this->reloadCover();
 					$list->update();
-				}elseif ($actionToPerform == 'deleteList'){
+				} elseif ($actionToPerform == 'deleteList') {
 					$list->delete();
 
 					header("Location: /MyAccount/Lists");
 					die();
-				}elseif ($actionToPerform == 'bulkAddTitles'){
+				} elseif ($actionToPerform == 'bulkAddTitles') {
 					$notes = $this->bulkAddTitles($list);
 					$this->reloadCover();
 					$_SESSION['listNotes'] = $notes;
@@ -127,10 +130,10 @@ class MyAccount_MyList extends MyAccount {
 				$validListNames[$index] = translate([
 					'text' => $listName,
 					'isPublicFacing' => true,
-					'isAdminEnteredData' => true
+					'isAdminEnteredData' => true,
 				]);
 			}
-		}else{
+		} else {
 			$validListNames = [];
 		}
 		$interface->assign('validListNames', $validListNames);
@@ -149,14 +152,14 @@ class MyAccount_MyList extends MyAccount {
 
 		//Determine the sort options
 		$activeSort = $list->defaultSort;
-		if (isset($_REQUEST['sort']) && array_key_exists($_REQUEST['sort'], UserList::getSortOptions())){
+		if (isset($_REQUEST['sort']) && array_key_exists($_REQUEST['sort'], UserList::getSortOptions())) {
 			$activeSort = $_REQUEST['sort'];
 		}
 		if (empty($activeSort)) {
 			$activeSort = 'dateAdded';
 		}
 		//Set the default sort (for people other than the list editor to match what the editor does)
-		if ($userCanEdit && $activeSort != $list->defaultSort){
+		if ($userCanEdit && $activeSort != $list->defaultSort) {
 			$list->defaultSort = $activeSort;
 			$list->fixWeights();
 			$list->update();
@@ -164,12 +167,15 @@ class MyAccount_MyList extends MyAccount {
 
 		$this->buildListForDisplay($list, $userCanEdit, $activeSort);
 
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$sidebar = 'Search/home-sidebar.tpl';
-		}else{
+		} else {
 			$sidebar = '';
 		}
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate(['text' => 'My List', 'isPublicFacing'=>true]), $sidebar, false);
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate([
+			'text' => 'My List',
+			'isPublicFacing' => true,
+		]), $sidebar, false);
 	}
 
 	/**
@@ -180,45 +186,47 @@ class MyAccount_MyList extends MyAccount {
 	 * @param bool $allowEdit
 	 * @param string $sortName
 	 */
-	public function buildListForDisplay(UserList $list, $allowEdit = false, $sortName = 'dateAdded')
-	{
+	public function buildListForDisplay(UserList $list, $allowEdit = false, $sortName = 'dateAdded') {
 		global $interface;
 
 		$queryParams = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
-		if ($queryParams == null){
+		if ($queryParams == null) {
 			$queryParams = [];
-		}else{
+		} else {
 			$queryParamsTmp = explode("&", $queryParams);
 			$queryParams = [];
 			foreach ($queryParamsTmp as $param) {
-				list($name, $value) = explode("=", $param);
-				if ($name != 'sort'){
+				[
+					$name,
+					$value,
+				] = explode("=", $param);
+				if ($name != 'sort') {
 					$queryParams[$name] = $value;
 				}
 			}
 		}
-		$sortOptions = array(
+		$sortOptions = [
 			'title' => [
 				'desc' => 'Title',
 				'selected' => $sortName == 'title',
-				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'title']))
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'title'])),
 			],
 			'dateAdded' => [
 				'desc' => 'Date Added',
 				'selected' => $sortName == 'dateAdded',
-				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'dateAdded']))
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'dateAdded'])),
 			],
 			'recentlyAdded' => [
 				'desc' => 'Recently Added',
 				'selected' => $sortName == 'recentlyAdded',
-				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'recentlyAdded']))
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'recentlyAdded'])),
 			],
 			'custom' => [
 				'desc' => 'User Defined',
 				'selected' => $sortName == 'custom',
-				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'custom']))
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'custom'])),
 			],
-		);
+		];
 
 		$interface->assign('sortList', $sortOptions);
 		$interface->assign('userSort', ($sortName == 'custom')); // switch for when users can sort their list
@@ -227,59 +235,61 @@ class MyAccount_MyList extends MyAccount {
 		$totalRecords = $list->numValidListItems();
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$startRecord = ($page - 1) * $recordsPerPage;
-		if ($startRecord < 0){
+		if ($startRecord < 0) {
 			$startRecord = 0;
 		}
 		$endRecord = $page * $recordsPerPage;
-		if ($endRecord > $totalRecords){
+		if ($endRecord > $totalRecords) {
 			$endRecord = $totalRecords;
 		}
-		$pageInfo = array(
+		$pageInfo = [
 			'resultTotal' => $totalRecords,
 			'startRecord' => $startRecord,
-			'endRecord'   => $endRecord,
-			'perPage'     => $recordsPerPage
-		);
-		$resourceList = $list->getListRecords($startRecord , $recordsPerPage, $allowEdit, 'html', null, $sortName);
+			'endRecord' => $endRecord,
+			'perPage' => $recordsPerPage,
+		];
+		$resourceList = $list->getListRecords($startRecord, $recordsPerPage, $allowEdit, 'html', null, $sortName);
 		$interface->assign('resourceList', $resourceList);
 
 		// Set up paging of list contents:
 		$interface->assign('recordCount', $pageInfo['resultTotal']);
 		$interface->assign('recordStart', $pageInfo['startRecord']);
-		$interface->assign('recordEnd',   $pageInfo['endRecord']);
+		$interface->assign('recordEnd', $pageInfo['endRecord']);
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $_SERVER['REQUEST_URI'];
-		if (preg_match('/[&?]page=/', $link)){
+		if (preg_match('/[&?]page=/', $link)) {
 			$link = preg_replace("/page=\\d+/", "page=%d", $link);
-		}else if (strpos($link, "?") > 0){
+		} elseif (strpos($link, "?") > 0) {
 			$link .= "&page=%d";
-		}else{
+		} else {
 			$link .= "?page=%d";
 		}
-		$options = array('totalItems' => $pageInfo['resultTotal'],
+		$options = [
+			'totalItems' => $pageInfo['resultTotal'],
 			'perPage' => $pageInfo['perPage'],
 			'fileName' => $link,
-			'append'    => false);
+			'append' => false,
+		];
 		require_once ROOT_DIR . '/sys/Pager.php';
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 	}
 
-	function bulkAddTitles(UserList $list){
+	function bulkAddTitles(UserList $list) {
 		$totalRecords = $list->numValidListItems();
 		$numAdded = 0;
-		$notes = array();
+		$notes = [];
 		$titlesToAdd = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
 
-		foreach ($titleSearches[0] as $titleSearch){
+		foreach ($titleSearches[0] as $titleSearch) {
 			$titleSearch = trim($titleSearch);
 			if (!empty($titleSearch)) {
 				$_REQUEST['lookfor'] = $titleSearch;
-				$_REQUEST['searchIndex']    = 'Keyword';
-				$searchObject        = SearchObjectFactory::initSearchObject();
+				$_REQUEST['searchIndex'] = 'Keyword';
+				$searchObject = SearchObjectFactory::initSearchObject();
 				$searchObject->setLimit(1);
 				$searchObject->init();
 				$searchObject->clearFacets();
@@ -301,7 +311,7 @@ class MyAccount_MyList extends MyAccount {
 					if ($groupedWork->find(true)) {
 						$userListEntry->title = substr($groupedWork->full_title, 0, 50);
 					}
-					
+
 					$existingEntry = false;
 					if ($userListEntry->find(true)) {
 						$existingEntry = true;
@@ -322,7 +332,7 @@ class MyAccount_MyList extends MyAccount {
 		//Update solr
 		$list->update();
 
-		if ($numAdded > 0){
+		if ($numAdded > 0) {
 			$notes[] = "Added $numAdded titles to the list";
 		} elseif ($numAdded === 0) {
 			$notes[] = 'No titles were added to the list';
@@ -331,11 +341,10 @@ class MyAccount_MyList extends MyAccount {
 		return $notes;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$breadcrumbs[] = new Breadcrumb('/MyAccount/Lists', 'Lists');
 		}
 		$breadcrumbs[] = new Breadcrumb('', 'List');

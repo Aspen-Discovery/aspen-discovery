@@ -5,15 +5,13 @@ require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 
-class OverDrive_Graphs extends Admin_Admin
-{
-	function launch()
-	{
+class OverDrive_Graphs extends Admin_Admin {
+	function launch() {
 		global $interface;
 		$title = 'OverDrive Usage Graph';
-		if (!empty($_REQUEST['instance'])){
+		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
-		}else{
+		} else {
 			$instanceName = '';
 		}
 
@@ -23,91 +21,91 @@ class OverDrive_Graphs extends Admin_Admin
 		$dataSeries['Total Usage'] = [
 			'borderColor' => 'rgba(255, 99, 132, 1)',
 			'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Unique Users'] = [
 			'borderColor' => 'rgba(54, 162, 235, 1)',
 			'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Records Used'] = [
 			'borderColor' => 'rgba(255, 159, 64, 1)',
 			'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Holds'] = [
 			'borderColor' => 'rgba(0, 255, 55, 1)',
 			'backgroundColor' => 'rgba(0, 255, 55, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Failed Holds'] = [
 			'borderColor' => 'rgba(255, 55, 0, 1)',
 			'backgroundColor' => 'rgba(255, 55, 0, 0.4)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Checkouts'] = [
 			'borderColor' => 'rgba(154, 75, 244, 1)',
 			'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Failed Checkouts'] = [
 			'borderColor' => 'rgba(75, 154, 244, 1)',
 			'backgroundColor' => 'rgba(75, 154, 244, 0.4)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Renewals'] = [
 			'borderColor' => 'rgba(255, 206, 86, 1)',
 			'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Early Returns'] = [
 			'borderColor' => 'rgba(75, 192, 192, 1)',
 			'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Holds Cancelled'] = [
 			'borderColor' => 'rgba(153, 102, 255, 1)',
 			'backgroundColor' => 'rgba(153, 102, 255, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Holds Frozen'] = [
 			'borderColor' => 'rgba(165, 42, 42, 1)',
 			'backgroundColor' => 'rgba(165, 42, 42, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Holds Thawed'] = [
 			'borderColor' => 'rgba(50, 205, 50, 1)',
 			'backgroundColor' => 'rgba(50, 205, 50, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Downloads'] = [
 			'borderColor' => 'rgba(205, 205, 50, 1)',
 			'backgroundColor' => 'rgba(205, 205, 50, 0.4)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Previews'] = [
 			'borderColor' => 'rgba(50, 205, 205, 1)',
 			'backgroundColor' => 'rgba(50, 205, 205, 0.4)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Options Updates'] = [
 			'borderColor' => 'rgba(220, 20, 60, 1)',
 			'backgroundColor' => 'rgba(220, 20, 60, 0.4)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total API Errors'] = [
 			'borderColor' => 'rgba(220, 60, 20, 1)',
 			'backgroundColor' => 'rgba(220, 60, 20, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$dataSeries['Total Connection Failures'] = [
 			'borderColor' => 'rgba(255, 165, 0, 1)',
 			'backgroundColor' => 'rgba(255, 165, 0, 0.2)',
-			'data' => []
+			'data' => [],
 		];
 		$userUsage = new UserOverDriveUsage();
 		$userUsage->groupBy('year, month');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		$userUsage->selectAdd();
@@ -117,7 +115,7 @@ class OverDrive_Graphs extends Admin_Admin
 		$userUsage->selectAdd('SUM(usageCount) as sumUsage');
 		$userUsage->orderBy('year, month');
 		$userUsage->find();
-		while ($userUsage->fetch()){
+		while ($userUsage->fetch()) {
 			$curPeriod = "{$userUsage->month}-{$userUsage->year}";
 			$columnLabels[] = $curPeriod;
 			/** @noinspection PhpUndefinedFieldInspection */
@@ -146,7 +144,7 @@ class OverDrive_Graphs extends Admin_Admin
 		//Load Record Stats
 		$stats = new OverDriveStats();
 		$stats->groupBy('year, month');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$stats->instance = $instanceName;
 		}
 		$stats->selectAdd();
@@ -168,7 +166,7 @@ class OverDrive_Graphs extends Admin_Admin
 		$stats->selectAdd('SUM(numConnectionFailures) as numConnectionFailures');
 		$stats->orderBy('year, month');
 		$stats->find();
-		while ($stats->fetch()){
+		while ($stats->fetch()) {
 			$curPeriod = "{$stats->month}-{$stats->year}";
 			$dataSeries['Total Holds']['data'][$curPeriod] = $stats->numHoldsPlaced;
 			$dataSeries['Total Failed Holds']['data'][$curPeriod] = $stats->numFailedHolds;
@@ -188,7 +186,7 @@ class OverDrive_Graphs extends Admin_Admin
 
 		$recordUsage = new OverDriveRecordUsage();
 		$recordUsage->groupBy('year, month');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$recordUsage->instance = $instanceName;
 		}
 		$recordUsage->selectAdd();
@@ -199,7 +197,7 @@ class OverDrive_Graphs extends Admin_Admin
 		$recordUsage->selectAdd('SUM(timesCheckedOut) as numCheckouts');
 		$recordUsage->orderBy('year, month');
 		$recordUsage->find();
-		while ($recordUsage->fetch()){
+		while ($recordUsage->fetch()) {
 			$curPeriod = "{$stats->month}-{$stats->year}";
 			$dataSeries['Records Used']['data'][$curPeriod] = $recordUsage->numRecordsUsed;
 			$dataSeries['Total Holds']['data'][$curPeriod] = $recordUsage->numHoldsPlaced;
@@ -213,8 +211,7 @@ class OverDrive_Graphs extends Admin_Admin
 		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
@@ -223,13 +220,14 @@ class OverDrive_Graphs extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'overdrive';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

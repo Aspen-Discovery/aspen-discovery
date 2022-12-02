@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_14_02() : array
-{
+function getUpdates21_14_02(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -15,8 +14,9 @@ function getUpdates21_14_02() : array
 			'description' => 'Allow disabling external request logging during OverDrive export',
 			'sql' => [
 				'ALTER TABLE overdrive_settings ADD COLUMN enableRequestLogging TINYINT(1) DEFAULT 0',
-			]
-		], //overDriveDisableRequestLogging
+			],
+		],
+		//overDriveDisableRequestLogging
 
 	];
 }

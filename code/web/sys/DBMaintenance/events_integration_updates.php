@@ -1,28 +1,28 @@
 <?php
-function getEventsIntegrationUpdates(){
+function getEventsIntegrationUpdates() {
 	return [
 		'create_events_module' => [
 			'title' => 'Create Events Module',
 			'description' => 'Setup the events module',
 			'sql' => [
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Events', 'events', 'events_indexer')"
-			]
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Events', 'events', 'events_indexer')",
+			],
 		],
 
 		'events_module_log_checks' => [
 			'title' => 'Events Module Log Checks',
 			'description' => 'Automatically monitor logs for the Events module',
 			'sql' => [
-				"UPDATE modules set logClassPath='/sys/Events/EventsIndexingLogEntry.php', logClassName='EventsIndexingLogEntry' WHERE name = 'Events'"
-			]
+				"UPDATE modules set logClassPath='/sys/Events/EventsIndexingLogEntry.php', logClassName='EventsIndexingLogEntry' WHERE name = 'Events'",
+			],
 		],
 
 		'events_add_settings' => [
 			'title' => 'Add Settings to Events module',
 			'description' => 'Add Settings to Events module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/Events/LMLibraryCalendarSetting.php', settingsClassName = 'LMLibraryCalendarSetting' WHERE name = 'Events'"
-			]
+				"UPDATE modules set settingsClassPath = '/sys/Events/LMLibraryCalendarSetting.php', settingsClassName = 'LMLibraryCalendarSetting' WHERE name = 'Events'",
+			],
 		],
 
 		'lm_library_calendar_settings' => [
@@ -34,7 +34,7 @@ function getEventsIntegrationUpdates(){
 					name VARCHAR(100) NOT NULL UNIQUE,
 					baseUrl VARCHAR(255) NOT NULL
 				) ENGINE INNODB',
-			]
+			],
 		],
 
 		'lm_library_calendar_private_feed_settings' => [
@@ -45,7 +45,7 @@ function getEventsIntegrationUpdates(){
 				'ALTER TABLE lm_library_calendar_settings ADD COLUMN clientSecret VARCHAR(36)',
 				"ALTER TABLE lm_library_calendar_settings ADD COLUMN username VARCHAR(36) default 'lc_feeds_staffadmin'",
 				"ALTER TABLE lm_library_calendar_settings ADD COLUMN password VARCHAR(36)",
-			]
+			],
 		],
 
 		'library_events_setting' => [
@@ -59,11 +59,11 @@ function getEventsIntegrationUpdates(){
 					libraryId INT(11) NOT NULL,
 					UNIQUE(settingSource, settingId, libraryId)
 				) ENGINE INNODB',
-			]
+			],
 		],
 
 		'lm_library_calendar_events_data' => [
-			'title' => 'Library Calendar Events Data' ,
+			'title' => 'Library Calendar Events Data',
 			'description' => 'Setup tables to store events data for Library Calendar',
 			'sql' => [
 				'CREATE TABLE lm_library_calendar_events (
@@ -75,14 +75,14 @@ function getEventsIntegrationUpdates(){
 					rawResponse MEDIUMTEXT,
 					deleted TINYINT default 0,
 					UNIQUE (settingsId, externalId)
-				)'
-			]
+				)',
+			],
 		],
 
 		'events_indexing_log' => [
 			'title' => 'Events indexing log',
 			'description' => 'Create log for Event indexing.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS events_indexing_log(
 					`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log entry', 
 					name VARCHAR(150) NOT NULL,
@@ -97,16 +97,16 @@ function getEventsIntegrationUpdates(){
 					numUpdated INT(11) DEFAULT 0,
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
-			)
+			],
 		],
 
 		'aspen_usage_events' => [
 			'title' => 'Aspen Usage for Event Searches',
 			'description' => 'Add a column to track usage of event searches within Aspen',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE aspen_usage ADD COLUMN eventsSearches INT(11) DEFAULT 0',
-			)
+			],
 		],
 
 		'track_event_user_usage' => [
@@ -160,8 +160,8 @@ function getEventsIntegrationUpdates(){
 					searchTerm VARCHAR(500) NOT NULL DEFAULT '',
 					defaultFilter TEXT,
 					defaultSort ENUM('relevance', 'start_date_sort', 'title_sort')
-				) ENGINE = InnoDB"
-			]
-		]
+				) ENGINE = InnoDB",
+			],
+		],
 	];
 }

@@ -2,20 +2,24 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-class OpenArchives_JSON extends JSON_Action
-{
+class OpenArchives_JSON extends JSON_Action {
 	/** @noinspection PhpUnused */
-	public function trackUsage()
-	{
+	public function trackUsage() {
 		if (!isset($_REQUEST['id'])) {
-			return ['success' => false, 'message' => 'ID was not provided'];
+			return [
+				'success' => false,
+				'message' => 'ID was not provided',
+			];
 		}
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
 		$openArchivesRecord = new OpenArchivesRecord();
 		$openArchivesRecord->id = $id;
 		if (!$openArchivesRecord->find(true)) {
-			return ['success' => false, 'message' => 'Record was not found in the database'];
+			return [
+				'success' => false,
+				'message' => 'Record was not found in the database',
+			];
 		}
 
 		//Track usage of the record
@@ -59,6 +63,9 @@ class OpenArchives_JSON extends JSON_Action
 			}
 		}
 
-		return ['success' => true, 'message' => 'Updated usage for archive record ' . $id];
+		return [
+			'success' => true,
+			'message' => 'Updated usage for archive record ' . $id,
+		];
 	}
 }

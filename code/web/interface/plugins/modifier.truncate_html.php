@@ -22,9 +22,12 @@ function smarty_modifier_truncate_html($text, $len, $suffix = '') {
 
 		// close unclosed html tags
 		if (preg_match_all("|<([a-zA-Z]+)[^>]*>|", $text, $aBuffer)) {
-			$openers = array();
+			$openers = [];
 			if (!empty($aBuffer[1])) {
-				$selfClosing = array('br', 'img');
+				$selfClosing = [
+					'br',
+					'img',
+				];
 				foreach ($aBuffer[1] as $current) {
 					if (!in_array(strtolower($current), $selfClosing)) {
 						$openers[] = $current;
@@ -34,10 +37,9 @@ function smarty_modifier_truncate_html($text, $len, $suffix = '') {
 			if (!empty($openers)) {
 				preg_match_all("|</([a-zA-Z]+)>|", $text, $aBuffer2);
 				if (count($openers) != count($aBuffer2[1])) {
-					foreach($openers as $index => $tag) {
-						if (empty($aBuffer2[1][$index]) ||
-						$aBuffer2[1][$index] != $tag) {
-							$text .= '</'.$tag.'>';
+					foreach ($openers as $index => $tag) {
+						if (empty($aBuffer2[1][$index]) || $aBuffer2[1][$index] != $tag) {
+							$text .= '</' . $tag . '>';
 						}
 					}
 				}
@@ -48,4 +50,3 @@ function smarty_modifier_truncate_html($text, $len, $suffix = '') {
 
 	return $text;
 }
-?>

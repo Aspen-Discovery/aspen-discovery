@@ -16,9 +16,10 @@ function getUpdates22_12_00(): array {
 			'title' => 'Custom Form - includeIntroductoryTextInEmail',
 			'description' => 'Allow introductory text to be included in the response email',
 			'sql' => [
-				'ALTER TABLE web_builder_custom_form ADD COLUMN includeIntroductoryTextInEmail TINYINT(1) default 0'
-			]
-		], //custom_form_includeIntroductoryTextInEmail
+				'ALTER TABLE web_builder_custom_form ADD COLUMN includeIntroductoryTextInEmail TINYINT(1) default 0',
+			],
+		],
+		//custom_form_includeIntroductoryTextInEmail
 		'aspen_release_test_release_date' => [
 			'title' => 'Aspen Release - add release date to test',
 			'description' => 'Aspen Release - add release date to test',
@@ -26,8 +27,9 @@ function getUpdates22_12_00(): array {
 			'sql' => [
 				'ALTER TABLE aspen_release ADD COLUMN releaseDateTest DATE',
 				'ALTER TABLE aspen_release CHANGE COLUMN releaseDate releaseDate DATE',
-			]
-		], //aspen_release_test_release_date
+			],
+		],
+		//aspen_release_test_release_date
 		'development_sprints' => [
 			'title' => 'Development - Create Sprints',
 			'description' => 'Development - Create Sprints',
@@ -39,8 +41,9 @@ function getUpdates22_12_00(): array {
 					endDate DATE,
 					active TINYINT(1) DEFAULT 1
 				) ENGINE INNODB',
-			]
-		], //development_sprints
+			],
+		],
+		//development_sprints
 		'development_tasks_take_2' => [
 			'title' => 'Development - Create Development Tasks',
 			'description' => 'Development - Create Development Tasks',
@@ -62,8 +65,9 @@ function getUpdates22_12_00(): array {
 					newSettingsAdded TEXT,
 					suggestedForCommunityDev TINYINT(1) DEFAULT 0
 				) ENGINE INNODB',
-			]
-		], //development_tasks_take_2
+			],
+		],
+		//development_tasks_take_2
 		'development_tickets_to_tasks' => [
 			'title' => 'Development - Link Tickets To Tasks',
 			'description' => 'Development - Link Tickets To Tasks',
@@ -74,8 +78,9 @@ function getUpdates22_12_00(): array {
 					taskId INT(11), 
 					UNIQUE INDEX (ticketId, taskId)
 				) ENGINE INNODB',
-			]
-		], //development_tickets_to_tasks
+			],
+		],
+		//development_tickets_to_tasks
 		'development_epics' => [
 			'title' => 'Development - Create Epics',
 			'description' => 'Development - Create Epics',
@@ -91,8 +96,9 @@ function getUpdates22_12_00(): array {
 					dueDateComment VARCHAR(255),
 					privateStatus INT(11) DEFAULT 0
 				) ENGINE INNODB',
-			]
-		], //development_epics
+			],
+		],
+		//development_epics
 		'development_sprints_to_tasks' => [
 			'title' => 'Development - Link Sprints To Tasks',
 			'description' => 'Development - Link Sprints To Tasks',
@@ -105,8 +111,9 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (sprintId, taskId),
 					INDEX (sprintId, weight)
 				) ENGINE INNODB',
-			]
-		], //development_sprints_to_tasks
+			],
+		],
+		//development_sprints_to_tasks
 		'development_partners_to_tasks' => [
 			'title' => 'Development - Link Partners To Tasks',
 			'description' => 'Development - Link Partners To Tasks',
@@ -117,8 +124,9 @@ function getUpdates22_12_00(): array {
 					taskId INT(11), 
 					UNIQUE INDEX (partnerId, taskId)
 				) ENGINE INNODB',
-			]
-		], //development_partners_to_tasks
+			],
+		],
+		//development_partners_to_tasks
 		'development_partners_to_epics' => [
 			'title' => 'Development - Link Partners To Epics',
 			'description' => 'Development - Link Partners To Epics',
@@ -129,8 +137,9 @@ function getUpdates22_12_00(): array {
 					epicId INT(11), 
 					UNIQUE INDEX (partnerId, epicId)
 				) ENGINE INNODB',
-			]
-		], //development_partners_to_epics
+			],
+		],
+		//development_partners_to_epics
 		'development_epics_to_tasks' => [
 			'title' => 'Development - Link Epics To Tasks',
 			'description' => 'Development - Link Epics To Tasks',
@@ -143,8 +152,9 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (epicId, taskId),
 					INDEX (epicId, weight)
 				) ENGINE INNODB',
-			]
-		], //development_epics_to_tasks
+			],
+		],
+		//development_epics_to_tasks
 		'development_tickets_to_components' => [
 			'title' => 'Development - Link Tickets to Components',
 			'description' => 'Development - Link Tickets to Components',
@@ -155,8 +165,9 @@ function getUpdates22_12_00(): array {
 					componentId INT(11), 
 					UNIQUE INDEX (ticketId, componentId)
 				) ENGINE INNODB',
-			]
-		], //development_tickets_to_components
+			],
+		],
+		//development_tickets_to_components
 		'development_components_to_tasks' => [
 			'title' => 'Development - Link Components To Tasks',
 			'description' => 'Development - Link Components To Tasks',
@@ -169,8 +180,9 @@ function getUpdates22_12_00(): array {
 					UNIQUE INDEX (componentId, taskId),
 					INDEX (componentId, weight)
 				) ENGINE INNODB',
-			]
-		], //development_components_to_tasks
+			],
+		],
+		//development_components_to_tasks
 		'development_components_to_epics' => [
 			'title' => 'Development - Link Components To Epics',
 			'description' => 'Development - Link Components To To Epics',
@@ -181,61 +193,69 @@ function getUpdates22_12_00(): array {
 					epicId INT(11), 
 					UNIQUE INDEX (componentId, epicId)
 				) ENGINE INNODB',
-			]
-		], //development_components_to_epics
+			],
+		],
+		//development_components_to_epics
 		'library_lists_without_editable_text' => [
 			'title' => 'Library - Allow Lists to not have editable text',
 			'description' => 'Library - Allow Lists to not have editable text',
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN enableListDescriptions TINYINT(1) default 1',
 				"ALTER TABLE library ADD COLUMN allowableListNames VARCHAR(500) default ''",
-			]
-		], //library_lists_without_editable_text
+			],
+		],
+		//library_lists_without_editable_text
 		'greenhouse_rt_auth_token' => [
 			'title' => 'Greenhouse Token - Add RT Auth Token',
 			'description' => 'Add an RT Auth Token for better querying of Request Tracker',
 			'sql' => [
 				'ALTER TABLE greenhouse_settings ADD COLUMN requestTrackerAuthToken VARCHAR(50)',
-			]
-		], //greenhouse_rt_auth_token
+			],
+		],
+		//greenhouse_rt_auth_token
 		'greenhouse_rt_base_url' => [
 			'title' => 'Greenhouse Token - Add RT Base URL',
 			'description' => 'Add the Base URL to connect to RT',
 			'sql' => [
 				'ALTER TABLE greenhouse_settings ADD COLUMN requestTrackerBaseUrl VARCHAR(100)',
-			]
-		], //greenhouse_rt_base_url
+			],
+		],
+		//greenhouse_rt_base_url
 
 		//kirstien
 		'add_oauth_logout' => [
 			'title' => 'Add custom OAuth gateway logout URL',
 			'description' => 'Add custom OAuth gateway logout URL',
 			'sql' => [
-				'ALTER TABLE sso_setting ADD COLUMN oAuthLogoutUrl VARCHAR(255)'
-			]
-		], //add_oauth_logout
+				'ALTER TABLE sso_setting ADD COLUMN oAuthLogoutUrl VARCHAR(255)',
+			],
+		],
+		//add_oauth_logout
 		'add_oauth_to_user' => [
 			'title' => 'Add OAuth tokens to user table',
 			'description' => 'Add columns to store OAuth access and refresh tokens in the user table',
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN oAuthAccessToken VARCHAR(255)',
-				'ALTER TABLE user ADD COLUMN oAuthRefreshToken VARCHAR(255)'
-			]
-		], //add_oauth_to_user
+				'ALTER TABLE user ADD COLUMN oAuthRefreshToken VARCHAR(255)',
+			],
+		],
+		//add_oauth_to_user
 		'add_oauth_grant_type' => [
 			'title' => 'Add custom OAuth grant type',
 			'description' => 'Add custom OAuth grant type',
 			'sql' => [
-				'ALTER TABLE sso_setting ADD COLUMN oAuthGrantType TINYINT(1) DEFAULT 0'
-			]
-		], //add_oauth_grant_type
+				'ALTER TABLE sso_setting ADD COLUMN oAuthGrantType TINYINT(1) DEFAULT 0',
+			],
+		],
+		//add_oauth_grant_type
 		'add_oauth_private_keys' => [
 			'title' => 'Add custom OAuth private keys',
 			'description' => 'Add custom OAuth private keys for authentication by client credentials',
 			'sql' => [
-				'ALTER TABLE sso_setting ADD COLUMN oAuthPrivateKeys VARCHAR(255)'
-			]
-		], //add_oauth_private_keys
+				'ALTER TABLE sso_setting ADD COLUMN oAuthPrivateKeys VARCHAR(255)',
+			],
+		],
+		//add_oauth_private_keys
 
 		//kodi
 		'user_disableAccountLinking' => [
@@ -243,22 +263,25 @@ function getUpdates22_12_00(): array {
 			'description' => 'Adds switch for the user to disable account linking',
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN disableAccountLinking TINYINT(1) DEFAULT '0'",
-			]
-		],//user_disableAccountLinking
+			],
+		],
+		//user_disableAccountLinking
 		'disable_linking_changes' => [
-		'title' => 'Remove Old Account Linking Functionality',
-		'description' => 'Remove linkingDisabled column',
-		'sql' => [
-			"ALTER TABLE user_link DROP COLUMN linkingDisabled",
-			]
-		],//disable_linking_changes
+			'title' => 'Remove Old Account Linking Functionality',
+			'description' => 'Remove linkingDisabled column',
+			'sql' => [
+				"ALTER TABLE user_link DROP COLUMN linkingDisabled",
+			],
+		],
+		//disable_linking_changes
 		'user_message_addendum' => [
 			'title' => 'Add actions to user messaging',
 			'description' => 'Adds addendum for certain messages',
 			'sql' => [
 				'ALTER TABLE user_messages ADD COLUMN addendum VARCHAR(255)',
-			]
-		],//user_message_addendum
+			],
+		],
+		//user_message_addendum
 
 		//other
 	];

@@ -12,7 +12,7 @@ class ListAPI extends Action {
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
-				if (in_array($method, array(
+				if (in_array($method, [
 					'getUserLists',
 					'getListTitles',
 					'createList',
@@ -23,8 +23,8 @@ class ListAPI extends Action {
 					'clearListTitles',
 					'getSavedSearchesForLiDA',
 					'getSavedSearchTitles',
-					'getListDetails'
-				))) {
+					'getListDetails',
+				])) {
 					$result = ['result' => $this->$method()];
 					$output = json_encode($result);
 					header('Content-type: application/json');
@@ -32,11 +32,11 @@ class ListAPI extends Action {
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('ListAPI', $method);
 				} else {
-					$output = json_encode(array('error' => 'invalid_method'));
+					$output = json_encode(['error' => 'invalid_method']);
 				}
 			} else {
 				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(array('error' => 'unauthorized_access'));
+				$output = json_encode(['error' => 'unauthorized_access']);
 			}
 			ExternalRequestLogEntry::logRequest('ListAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 			echo $output;
@@ -48,7 +48,7 @@ class ListAPI extends Action {
 			if (!in_array($method, [
 					'getSavedSearchTitles',
 					'getCacheInfoForListId',
-					'getSystemListTitles'
+					'getSystemListTitles',
 				]) && method_exists($this, $method)) {
 				if ($method == 'getRSSFeed') {
 					header('Content-type: text/xml');
@@ -63,20 +63,20 @@ class ListAPI extends Action {
 					header('Content-type: application/json');
 					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-					$output = json_encode(array('result' => $this->$method()));
+					$output = json_encode(['result' => $this->$method()]);
 
 					echo $output;
 				}
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('ListAPI', $method);
 			} else {
-				echo json_encode(array('error' => 'invalid_method'));
+				echo json_encode(['error' => 'invalid_method']);
 			}
 		}
 	}
 
 	function getAllListIds() {
-		$allListNames = array();
+		$allListNames = [];
 		$publicLists = $this->getPublicLists();
 		if ($publicLists['success'] = true) {
 			foreach ($publicLists['lists'] as $listInfo) {
@@ -103,7 +103,7 @@ class ListAPI extends Action {
 		$list->public = 1;
 		$list->deleted = 0;
 		$list->find();
-		$results = array();
+		$results = [];
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
 				$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
@@ -117,19 +117,19 @@ class ListAPI extends Action {
 					$numTitles = -1;
 				}
 
-				$results[] = array(
+				$results[] = [
 					'id' => $list->id,
 					'title' => $list->title,
 					'description' => $list->description,
 					'numTitles' => $numTitles,
 					'dateUpdated' => $list->dateUpdated,
-				);
+				];
 			}
 		}
-		return array(
+		return [
 			'success' => true,
-			'lists' => $results
-		);
+			'lists' => $results,
+		];
 	}
 
 	/**
@@ -139,34 +139,34 @@ class ListAPI extends Action {
 	function getSystemLists() {
 		//System lists are not stored in tables, but are generated based on
 		//a variety of factors.
-		$systemLists[] = array(
+		$systemLists[] = [
 			'id' => 'recentlyReviewed',
 			'title' => 'Recently Reviewed',
 			'description' => 'Titles that have had new reviews added to them.',
 			'numTitles' => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id' => 'highestRated',
 			'title' => 'Highly Rated',
 			'description' => 'Titles that have the highest ratings within the catalog.',
 			'numTitles' => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id' => 'mostPopular',
 			'title' => 'Most Popular Titles',
 			'description' => 'Most Popular titles based on checkout history.',
 			'numTitles' => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id' => 'recommendations',
 			'title' => 'Recommended For You',
 			'description' => 'Titles Recommended for you based off your ratings.',
 			'numTitles' => 30,
-		);
-		return array(
+		];
+		return [
 			'success' => true,
-			'lists' => $systemLists
-		);
+			'lists' => $systemLists,
+		];
 	}
 
 	/**
@@ -180,7 +180,7 @@ class ListAPI extends Action {
 		$list->searchable = 1;
 		$list->deleted = 0;
 		$list->find();
-		$results = array();
+		$results = [];
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
 				$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
@@ -194,19 +194,19 @@ class ListAPI extends Action {
 					$numTitles = -1;
 				}
 
-				$results[] = array(
+				$results[] = [
 					'id' => $list->id,
 					'title' => $list->title,
 					'description' => $list->description,
 					'numTitles' => $numTitles,
 					'dateUpdated' => $list->dateUpdated,
-				);
+				];
 			}
 		}
-		return array(
+		return [
 			'success' => true,
-			'lists' => $results
-		);
+			'lists' => $results,
+		];
 	}
 
 	/**
@@ -215,14 +215,17 @@ class ListAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function getUserLists() {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user == false) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Sorry, we could not find a user with those credentials.'
-			);
+				'message' => 'Sorry, we could not find a user with those credentials.',
+			];
 		}
 
 		$checkIfValid = "true";
@@ -238,13 +241,13 @@ class ListAPI extends Action {
 		$list->user_id = $userId;
 		$list->deleted = 0;
 		$list->find();
-		$results = array();
+		$results = [];
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
 				if ($checkIfValid == "true") {
 					if ($list->isValidForDisplay()) {
 						$count = $count + 1;
-						$results[] = array(
+						$results[] = [
 							'id' => $list->id,
 							'title' => $list->title,
 							'description' => $list->description,
@@ -252,12 +255,12 @@ class ListAPI extends Action {
 							'public' => $list->public == 1,
 							'created' => $list->created,
 							'dateUpdated' => $list->dateUpdated,
-							'cover' => $configArray['Site']['url'] . "/bookcover.php?type=list&id={$list->id}&size=medium"
-						);
+							'cover' => $configArray['Site']['url'] . "/bookcover.php?type=list&id={$list->id}&size=medium",
+						];
 					}
 				} else {
 					$count = $count + 1;
-					$results[] = array(
+					$results[] = [
 						'id' => $list->id,
 						'title' => $list->title,
 						'description' => $list->description,
@@ -265,8 +268,8 @@ class ListAPI extends Action {
 						'public' => $list->public == 1,
 						'created' => $list->created,
 						'dateUpdated' => $list->dateUpdated,
-						'cover' => $configArray['Site']['url'] . "/bookcover.php?type=list&id={$list->id}&size=medium"
-					);
+						'cover' => $configArray['Site']['url'] . "/bookcover.php?type=list&id={$list->id}&size=medium",
+					];
 				}
 			}
 		}
@@ -276,20 +279,20 @@ class ListAPI extends Action {
 			require_once(ROOT_DIR . '/sys/Suggestions.php');
 			$suggestions = Suggestions::getSuggestions($userId);
 			if (count($suggestions) > 0) {
-				$results[] = array(
+				$results[] = [
 					'id' => 'recommendations',
 					'title' => 'User Recommendations',
 					'description' => 'Personalized Recommendations based on ratings.',
 					'numTitles' => count($suggestions),
 					'public' => false,
-				);
+				];
 			}
 		}
-		return array(
+		return [
 			'success' => true,
 			'lists' => $results,
-			'count' => $count
-		);
+			'count' => $count,
+		];
 	}
 
 	/**
@@ -312,10 +315,10 @@ class ListAPI extends Action {
 		if (is_array($password)) {
 			$password = reset($password);
 		}
-		return array(
+		return [
 			$username,
-			$password
-		);
+			$password,
+		];
 	}
 
 	/**
@@ -410,15 +413,18 @@ class ListAPI extends Action {
 		global $configArray;
 		if (!$listId) {
 			if (!isset($_REQUEST['id'])) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'The id of the list to load must be provided as the id parameter.'
-				);
+					'message' => 'The id of the list to load must be provided as the id parameter.',
+				];
 			}
 			$listId = $_REQUEST['id'];
 		}
 
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!empty($username)) {
 			$user = UserAccount::validateAccount($username, $password);
 		} else {
@@ -442,33 +448,33 @@ class ListAPI extends Action {
 			if (is_numeric($searchInfo[1])) {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
 				if ($titles === false) { // Didn't find saved search
-					return array(
+					return [
 						'success' => false,
-						'message' => 'The specified search could not be found.'
-					);
+						'message' => 'The specified search could not be found.',
+					];
 				} else { // successful search with or without any results. (javascript can handle no results returned.)
-					return array(
+					return [
 						'success' => true,
 						'listTitle' => $listId,
 						'listDescription' => "Search Results",
-						'titles' => $titles
-					);
+						'titles' => $titles,
+					];
 				}
 			} else {
 				//Do a default search
 				$titles = $this->getSystemListTitles($listId, $numTitlesToShow);
 				if (count($titles) > 0) {
-					return array(
+					return [
 						'success' => true,
 						'listTitle' => $listId,
 						'listDescription' => "System Generated List",
-						'titles' => $titles
-					);
+						'titles' => $titles,
+					];
 				} else {
-					return array(
+					return [
 						'success' => false,
-						'message' => 'The specified list could not be found.'
-					);
+						'message' => 'The specified list could not be found.',
+					];
 				}
 			}
 
@@ -484,15 +490,15 @@ class ListAPI extends Action {
 			//The list is a system generated list
 			if ($listId == 'recommendations') {
 				if (!$user) {
-					return array(
+					return [
 						'success' => false,
-						'message' => 'A valid user must be provided to load recommendations.'
-					);
+						'message' => 'A valid user must be provided to load recommendations.',
+					];
 				} else {
 					$userId = $user->id;
 					require_once(ROOT_DIR . '/sys/Suggestions.php');
 					$suggestions = Suggestions::getSuggestions($userId);
-					$titles = array();
+					$titles = [];
 					foreach ($suggestions as $id => $suggestion) {
 						$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $id;
 						if (isset($suggestion['titleInfo']['issn'])) {
@@ -509,26 +515,26 @@ class ListAPI extends Action {
 						}
 						$smallImageUrl = $imageUrl . "&size=small";
 						$imageUrl .= "&size=medium";
-						$titles[] = array(
+						$titles[] = [
 							'id' => $id,
 							'image' => $imageUrl,
 							'small_image' => $smallImageUrl,
 							'title' => $suggestion['titleInfo']['title_display'],
-							'author' => $suggestion['titleInfo']['author_display']
-						);
+							'author' => $suggestion['titleInfo']['author_display'],
+						];
 					}
-					return array(
+					return [
 						'success' => true,
 						'listTitle' => $systemList['title'],
 						'listDescription' => $systemList['description'],
-						'titles' => $titles
-					);
+						'titles' => $titles,
+					];
 				}
 			} else {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'The specified list could not be found.'
-				);
+					'message' => 'The specified list could not be found.',
+				];
 			}
 		}
 	}
@@ -543,15 +549,15 @@ class ListAPI extends Action {
 			//Make sure the user has access to the list
 			if ($list->public == 0) {
 				if (!isset($user)) {
-					return array(
+					return [
 						'success' => false,
-						'message' => 'The user was invalid.  A valid user must be provided for private lists.'
-					);
+						'message' => 'The user was invalid.  A valid user must be provided for private lists.',
+					];
 				} elseif ($list->user_id != $user->id) {
-					return array(
+					return [
 						'success' => false,
-						'message' => 'The user does not have access to this list.'
-					);
+						'message' => 'The user does not have access to this list.',
+					];
 				}
 			}
 
@@ -570,7 +576,7 @@ class ListAPI extends Action {
 					$imageUrl .= "&size=medium";
 				}
 
-				$listTitles[] = array(
+				$listTitles[] = [
 					'id' => $title['id'],
 					'image' => $imageUrl,
 					'small_image' => $smallImageUrl,
@@ -584,20 +590,20 @@ class ListAPI extends Action {
 					'publisher' => $title['publisher'],
 					'ratingData' => $title['ratingData'],
 					'format' => $title['format'],
-					'language' => $title['language']
-				);
+					'language' => $title['language'],
+				];
 			}
-			return array(
+			return [
 				'success' => true,
 				'listTitle' => $list->title,
 				'listDescription' => $list->description,
-				'titles' => $listTitles
-			);
+				'titles' => $listTitles,
+			];
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'The specified list could not be found.'
-			);
+				'message' => 'The specified list could not be found.',
+			];
 		}
 	}
 
@@ -615,10 +621,10 @@ class ListAPI extends Action {
 	function getSavedSearchTitles($searchId = null, $numTitlesToShow = null) {
 		if (!$searchId) {
 			if (!isset($_REQUEST['searchId'])) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'The id of the list to load must be provided as the id parameter.'
-				);
+					'message' => 'The id of the list to load must be provided as the id parameter.',
+				];
 			} else {
 				$searchId = $_REQUEST['searchId'];
 			}
@@ -676,12 +682,15 @@ class ListAPI extends Action {
 
 	function getListDetails(): array {
 		global $configArray;
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'The id of the list to load must be provided as the id parameter.'
-			);
+				'message' => 'The id of the list to load must be provided as the id parameter.',
+			];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -698,21 +707,21 @@ class ListAPI extends Action {
 					'public' => $list->public,
 					'created' => $list->created,
 					'dateUpdated' => $list->dateUpdated,
-					'cover' => $configArray['Site']['url'] . "/bookcover.php?type=list&id={$list->id}&size=medium"
+					'cover' => $configArray['Site']['url'] . "/bookcover.php?type=list&id={$list->id}&size=medium",
 				];
 			} else {
-				return array(
+				return [
 					'success' => false,
 					'id' => $list->id,
 					'title' => 'Error',
-					'message' => "List {$list->title} not found"
-				);
+					'message' => "List {$list->title} not found",
+				];
 			}
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 
 	}
@@ -725,10 +734,10 @@ class ListAPI extends Action {
 	 */
 	function getCacheInfoForList() {
 		if (!isset($_REQUEST['id'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'The id of the list to load must be provided as the id parameter.'
-			);
+				'message' => 'The id of the list to load must be provided as the id parameter.',
+			];
 		}
 
 		$listId = $_REQUEST['id'];
@@ -740,54 +749,54 @@ class ListAPI extends Action {
 			if (isset($listInfo)) {
 				$listId = $listInfo[1];
 			}
-			return array(
+			return [
 				'cacheType' => 'general',
 				'fullListLink' => '/MyAccount/MyList/' . $listId,
-			);
+			];
 
 		} elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)) {
-			return array(
+			return [
 				'cacheType' => 'general',
-				'fullListLink' => ''
-			);
+				'fullListLink' => '',
+			];
 		} elseif ($listId == 'highestRated') {
-			return array(
+			return [
 				'cacheType' => 'general',
-				'fullListLink' => ''
-			);
+				'fullListLink' => '',
+			];
 		} elseif ($listId == 'recentlyReviewed') {
-			return array(
+			return [
 				'cacheType' => 'general',
-				'fullListLink' => ''
-			);
+				'fullListLink' => '',
+			];
 		} elseif ($listId == 'mostPopular') {
-			return array(
+			return [
 				'cacheType' => 'general',
-				'fullListLink' => ''
-			);
+				'fullListLink' => '',
+			];
 		} elseif ($listId == 'recommendations') {
-			return array(
+			return [
 				'cacheType' => 'user',
-				'fullListLink' => ''
-			);
+				'fullListLink' => '',
+			];
 		} elseif (preg_match('/^search:(.*)/', $listId, $searchInfo)) {
 			if (is_numeric($searchInfo[1])) {
 				$searchId = $searchInfo[1];
-				return array(
+				return [
 					'cacheType' => 'general',
 					'fullListLink' => '/Search/Results?saved=' . $searchId,
-				);
+				];
 			} else {
-				return array(
+				return [
 					'cacheType' => 'general',
-					'fullListLink' => ''
-				);
+					'fullListLink' => '',
+				];
 			}
 		} else {
-			return array(
+			return [
 				'cacheType' => 'general',
-				'fullListLink' => ''
-			);
+				'fullListLink' => '',
+			];
 		}
 	}
 
@@ -795,10 +804,10 @@ class ListAPI extends Action {
 
 		if (!UserAccount::isLoggedIn()) {
 			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'The username and password must be provided to load saved searches.'
-				);
+					'message' => 'The username and password must be provided to load saved searches.',
+				];
 			}
 
 			$username = $_REQUEST['username'];
@@ -806,10 +815,10 @@ class ListAPI extends Action {
 			$user = UserAccount::validateAccount($username, $password);
 
 			if ($user == false) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'Sorry, we could not find a user with those credentials.'
-				);
+					'message' => 'Sorry, we could not find a user with those credentials.',
+				];
 			}
 
 			$id = $user->id;
@@ -839,13 +848,13 @@ class ListAPI extends Action {
 			if ($checkIfValid == "true") {
 				if ($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 					$count = $count + 1;
-					$savedSearch = array(
+					$savedSearch = [
 						'id' => $SearchEntry->id,
 						'title' => $SearchEntry->title,
 						'created' => $SearchEntry->created,
 						'searchUrl' => $SearchEntry->searchUrl,
 						'hasNewResults' => $SearchEntry->hasNewResults,
-					);
+					];
 
 					if ($SearchEntry->hasNewResults == 1) {
 						$countNewResults = $countNewResults + 1;
@@ -856,13 +865,13 @@ class ListAPI extends Action {
 			} else {
 				if ($SearchEntry->title) {
 					$count = $count + 1;
-					$savedSearch = array(
+					$savedSearch = [
 						'id' => $SearchEntry->id,
 						'title' => $SearchEntry->title,
 						'created' => $SearchEntry->created,
 						'searchUrl' => $SearchEntry->searchUrl,
 						'hasNewResults' => $SearchEntry->hasNewResults,
-					);
+					];
 
 					if ($SearchEntry->hasNewResults == 1) {
 						$countNewResults = $countNewResults + 1;
@@ -873,17 +882,20 @@ class ListAPI extends Action {
 			}
 		}
 
-		return array(
+		return [
 			'success' => true,
 			'searches' => $result,
 			'count' => $count,
-			'countNewResults' => $countNewResults
-		);
+			'countNewResults' => $countNewResults,
+		];
 	}
 
 	function getSavedSearchesForLiDA(): array {
 
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!empty($username)) {
 			$user = UserAccount::validateAccount($username, $password);
 		} else {
@@ -909,13 +921,13 @@ class ListAPI extends Action {
 				if ($checkIfValid == "true") {
 					if ($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 						$count = $count + 1;
-						$savedSearch = array(
+						$savedSearch = [
 							'id' => $SearchEntry->id,
 							'title' => $SearchEntry->title,
 							'created' => $SearchEntry->created,
 							'searchUrl' => $SearchEntry->searchUrl,
 							'hasNewResults' => $SearchEntry->hasNewResults,
-						);
+						];
 
 						if ($SearchEntry->hasNewResults == 1) {
 							$countNewResults = $countNewResults + 1;
@@ -926,13 +938,13 @@ class ListAPI extends Action {
 				} else {
 					if ($SearchEntry->title) {
 						$count = $count + 1;
-						$savedSearch = array(
+						$savedSearch = [
 							'id' => $SearchEntry->id,
 							'title' => $SearchEntry->title,
 							'created' => $SearchEntry->created,
 							'searchUrl' => $SearchEntry->searchUrl,
 							'hasNewResults' => $SearchEntry->hasNewResults,
-						);
+						];
 
 						if ($SearchEntry->hasNewResults == 1) {
 							$countNewResults = $countNewResults + 1;
@@ -942,17 +954,17 @@ class ListAPI extends Action {
 					}
 				}
 			}
-			return array(
+			return [
 				'success' => true,
 				'searches' => $result,
 				'count' => $count,
-				'countNewResults' => $countNewResults
-			);
+				'countNewResults' => $countNewResults,
+			];
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 
 	}
@@ -990,12 +1002,15 @@ class ListAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function createList() {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['title'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide the title of the list to be created.'
-			);
+				'message' => 'You must provide the title of the list to be created.',
+			];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1036,18 +1051,18 @@ class ListAPI extends Action {
 				return $this->addTitlesToList($existingList);
 			} else {
 				//There wasn't anything to add so it worked
-				return array(
+				return [
 					'success' => $success,
 					'title' => $title,
 					'message' => $message,
-					'listId' => $list->id
-				);
+					'listId' => $list->id,
+				];
 			}
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 	}
 
@@ -1084,19 +1099,22 @@ class ListAPI extends Action {
 	 * </code>
 	 */
 	function addTitlesToList($existingList = false) {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide the listId to add titles to.'
-			);
+				'message' => 'You must provide the listId to add titles to.',
+			];
 		}
-		$recordIds = array();
+		$recordIds = [];
 		if (!isset($_REQUEST['recordIds'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide one or more records to add to the list.'
-			);
+				'message' => 'You must provide one or more records to add to the list.',
+			];
 		} else {
 			if (!is_array($_REQUEST['recordIds'])) {
 				$recordIds[] = $_REQUEST['recordIds'];
@@ -1110,10 +1128,10 @@ class ListAPI extends Action {
 			$list->id = $_REQUEST['listId'];
 			$list->user_id = $user->id;
 			if (!$list->find(true)) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'Unable to find the list to add titles to.'
-				);
+					'message' => 'Unable to find the list to add titles to.',
+				];
 			} else {
 				$numAdded = 0;
 				foreach ($recordIds as $id) {
@@ -1155,21 +1173,21 @@ class ListAPI extends Action {
 					$message = $numAdded . " added to " . $list->title;
 				}
 
-				return array(
+				return [
 					'success' => true,
 					'listId' => $list->id,
 					'numAdded' => $numAdded,
 					'existingList' => $existingList,
-					'message' => $message
-				);
+					'message' => $message,
+				];
 			}
 
 
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 	}
 
@@ -1200,12 +1218,15 @@ class ListAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function deleteList() {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide the id of the list to be deleted.'
-			);
+				'message' => 'You must provide the id of the list to be deleted.',
+			];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1217,32 +1238,32 @@ class ListAPI extends Action {
 				$userCanEdit = $user->canEditList($list);
 				if ($userCanEdit) {
 					$list->delete();
-					return array(
+					return [
 						'success' => true,
 						'title' => 'Success',
-						'message' => 'List deleted successfully'
-					);
+						'message' => 'List deleted successfully',
+					];
 				} else {
-					return array(
+					return [
 						'success' => true,
 						'title' => 'Success',
-						'message' => "Sorry you don't have permissions to delete this list."
-					);
+						'message' => "Sorry you don't have permissions to delete this list.",
+					];
 				}
 			} else {
-				return array(
+				return [
 					'success' => false,
 					'title' => 'Error',
 					'message' => 'List not found',
 					'listId' => $list->id,
-					'listTitle' => $list->title
-				);
+					'listTitle' => $list->title,
+				];
 			}
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 	}
 
@@ -1276,12 +1297,15 @@ class ListAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function editList() {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide the id of the list to be modified.'
-			);
+				'message' => 'You must provide the id of the list to be modified.',
+			];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1307,25 +1331,25 @@ class ListAPI extends Action {
 					$user->lastListUsed = $list->id;
 					$user->update();
 				}
-				return array(
+				return [
 					'success' => true,
 					'title' => 'Success',
-					'message' => "Edited list {$list->title} successfully"
-				);
+					'message' => "Edited list {$list->title} successfully",
+				];
 			} else {
-				return array(
+				return [
 					'success' => false,
 					'listId' => $list->id,
 					'listTitle' => $list->title,
 					'title' => 'Error',
-					'message' => "List {$list->title} not found"
-				);
+					'message' => "List {$list->title} not found",
+				];
 			}
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 	}
 
@@ -1358,19 +1382,22 @@ class ListAPI extends Action {
 	 * </code>
 	 */
 	function removeTitlesFromList() {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide the listId to remove titles from.'
-			);
+				'message' => 'You must provide the listId to remove titles from.',
+			];
 		}
-		$recordIds = array();
+		$recordIds = [];
 		if (!isset($_REQUEST['recordIds'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide one or more records to remove from the list.'
-			);
+				'message' => 'You must provide one or more records to remove from the list.',
+			];
 		} else {
 			if (!is_array($_REQUEST['recordIds'])) {
 				$recordIds[] = $_REQUEST['recordIds'];
@@ -1384,10 +1411,10 @@ class ListAPI extends Action {
 			$list->id = $_REQUEST['listId'];
 			$list->user_id = $user->id;
 			if (!$list->find(true)) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'Unable to find the list to remove titles from.'
-				);
+					'message' => 'Unable to find the list to remove titles from.',
+				];
 			} else {
 				$numRemoved = 0;
 				foreach ($recordIds as $id) {
@@ -1402,10 +1429,10 @@ class ListAPI extends Action {
 						if ($userListEntry->find(true)) {
 							$userListEntry->delete();
 						} else {
-							return array(
+							return [
 								'success' => false,
-								'message' => 'Unable to find record to remove from the list.'
-							);
+								'message' => 'Unable to find record to remove from the list.',
+							];
 						}
 
 						$numRemoved++;
@@ -1415,19 +1442,19 @@ class ListAPI extends Action {
 					$user->lastListUsed = $list->id;
 					$user->update();
 				}
-				return array(
+				return [
 					'success' => true,
 					'listId' => $list->id,
-					'numRemoved' => $numRemoved
-				);
+					'numRemoved' => $numRemoved,
+				];
 			}
 
 
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 	}
 
@@ -1458,12 +1485,15 @@ class ListAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function clearListTitles() {
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'You must provide the listId to clear titles from.'
-			);
+				'message' => 'You must provide the listId to clear titles from.',
+			];
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1471,19 +1501,19 @@ class ListAPI extends Action {
 			$list->id = $_REQUEST['listId'];
 			$list->user_id = $user->id;
 			if (!$list->find(true)) {
-				return array(
+				return [
 					'success' => false,
-					'message' => 'Unable to find the list to clear titles from.'
-				);
+					'message' => 'Unable to find the list to clear titles from.',
+				];
 			} else {
 				$list->removeAllListEntries();
-				return array('success' => true);
+				return ['success' => true];
 			}
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Login unsuccessful'
-			);
+				'message' => 'Login unsuccessful',
+			];
 		}
 	}
 
@@ -1506,10 +1536,10 @@ class ListAPI extends Action {
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->addError("API Key missing");
 			}
-			return array(
+			return [
 				'success' => false,
-				'message' => 'API Key missing'
-			);
+				'message' => 'API Key missing',
+			];
 		}
 		$api_key = $nytSettings->booksApiKey;
 
@@ -1520,10 +1550,10 @@ class ListAPI extends Action {
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->addError("NY Times user has not been created");
 			}
-			return array(
+			return [
 				'success' => false,
-				'message' => 'NY Times user has not been created'
-			);
+				'message' => 'NY Times user has not been created',
+			];
 		}
 
 		//Get the raw response from the API with a list of all the names
@@ -1549,10 +1579,10 @@ class ListAPI extends Action {
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
 			}
-			return array(
+			return [
 				'success' => false,
-				'message' => "We did not find list '{$selectedList}' in The New York Times API"
-			);
+				'message' => "We did not find list '{$selectedList}' in The New York Times API",
+			];
 		}
 
 		//Get a list of titles from NYT API
@@ -1590,10 +1620,10 @@ class ListAPI extends Action {
 		}
 
 		if ($listTitles == null) {
-			return array(
+			return [
 				'success' => false,
-				'message' => "Could not get a response from the API"
-			);
+				'message' => "Could not get a response from the API",
+			];
 		}
 
 		$lastModified = date_timestamp_get(new DateTime($listTitles->last_modified));
@@ -1627,10 +1657,10 @@ class ListAPI extends Action {
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->numAdded++;
 				}
-				$results = array(
+				$results = [
 					'success' => true,
-					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
-				);
+					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
+				];
 			} else {
 				//Update log that this failed
 				global $logger;
@@ -1638,10 +1668,10 @@ class ListAPI extends Action {
 				if ($nytUpdateLog != null) {
 					$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
 				}
-				return array(
+				return [
 					'success' => false,
-					'message' => 'Could not create list'
-				);
+					'message' => 'Could not create list',
+				];
 			}
 
 		} else {
@@ -1655,10 +1685,10 @@ class ListAPI extends Action {
 					$nytList->update();
 				}
 				//Nothing has changed, no need to update
-				return array(
+				return [
 					'success' => true,
-					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded."
-				);
+					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded.",
+				];
 			}
 			if ($nytUpdateLog != null) {
 				$nytUpdateLog->numUpdated++;
@@ -1669,10 +1699,10 @@ class ListAPI extends Action {
 				$nytList->deleted = 0;
 			}
 			$nytList->update();
-			$results = array(
+			$results = [
 				'success' => true,
-				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
-			);
+				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
+			];
 			$nytList->searchable = 1;
 			//We already have a list, clear the contents so we don't have titles from last time
 			$nytList->removeAllListEntries();

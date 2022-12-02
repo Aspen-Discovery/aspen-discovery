@@ -1,104 +1,103 @@
 <?php /** @noinspection SqlResolve */
 
-function getUserUpdates()
-{
-	return array(
-		'roles_2' => array(
+function getUserUpdates() {
+	return [
+		'roles_2' => [
 			'title' => 'Roles 2',
 			'description' => 'Add new role for locationReports',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO roles (name, description) VALUES ('locationReports', 'Allows the user to view reports for their location.')",
-			),
-		),
+			],
+		],
 
-		'user_display_name' => array(
+		'user_display_name' => [
 			'title' => 'User display name',
 			'description' => 'Add displayName field to User table to allow users to have aliases',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD displayName VARCHAR( 30 ) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
-		'user_phone' => array(
+		'user_phone' => [
 			'title' => 'User phone',
 			'description' => 'Add phone field to User table to allow phone numbers to be displayed for Materials Requests',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD phone VARCHAR( 30 ) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
-		'user_phone_length' => array(
+		'user_phone_length' => [
 			'title' => 'Increase User phone length',
 			'description' => 'Increase length of the user phone',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(190) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
-		'user_ilsType' => array(
+		'user_ilsType' => [
 			'title' => 'User Type',
 			'description' => 'Add patronType field to User table to allow for functionality to be controlled based on the type of patron within the ils',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD patronType VARCHAR( 30 ) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
-		'user_overdrive_email' => array(
+		'user_overdrive_email' => [
 			'title' => 'User OverDrive Email',
 			'description' => 'Add overdriveEmail field to User table to allow for patrons to use a different email fo notifications when their books are ready',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD overdriveEmail VARCHAR( 250 ) NOT NULL DEFAULT ''",
 				"ALTER TABLE user ADD promptForOverdriveEmail TINYINT DEFAULT 1",
-				"UPDATE user SET overdriveEmail = email WHERE overdriveEmail = ''"
-			),
-		),
+				"UPDATE user SET overdriveEmail = email WHERE overdriveEmail = ''",
+			],
+		],
 
-		'user_preferred_library_interface' => array(
+		'user_preferred_library_interface' => [
 			'title' => 'User Preferred Library Interface',
 			'description' => 'Add preferred library interface to ',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD preferredLibraryInterface INT(11) DEFAULT NULL",
-			),
-		),
+			],
+		],
 
-		'user_track_reading_history' => array(
+		'user_track_reading_history' => [
 			'title' => 'User Track Reading History',
 			'description' => 'Add Track Reading History ',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD trackReadingHistory TINYINT DEFAULT 0",
 				"ALTER TABLE user ADD initialReadingHistoryLoaded TINYINT DEFAULT 0",
-			),
-		),
+			],
+		],
 
-		'user_preference_review_prompt' => array(
+		'user_preference_review_prompt' => [
 			'title' => 'User Preference Prompt for Reviews',
 			'description' => 'Users may opt out of doing a review after giving a rating permanently',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user` ADD `noPromptForUserReviews` TINYINT(1) DEFAULT 0",
-			),
-		),
+			],
+		],
 
-		'user_account' => array(
+		'user_account' => [
 			'title' => 'User Account Source',
 			'description' => 'Store the source of a user account so we can accommodate multiple ILSs',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user` ADD `source` VARCHAR(50) DEFAULT 'ils'",
 				"ALTER TABLE `user` DROP INDEX `username`",
 				"ALTER TABLE `user` ADD UNIQUE username(`source`, `username`)",
-			),
-		),
+			],
+		],
 
-		'user_linking' => array(
+		'user_linking' => [
 			'title' => 'Setup linking of user accounts',
 			'description' => 'Setup linking of user accounts.  This is a one way link.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS `user_link` (
 					`id` int(11) NOT NULL AUTO_INCREMENT,
 					`primaryAccountId` int(11),
@@ -106,31 +105,31 @@ function getUserUpdates()
 					PRIMARY KEY (`id`),
 					UNIQUE KEY `user_link` (`primaryAccountId`, `linkedAccountId`)
 				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			),
-		),
+			],
+		],
 
-		'user_linking_1' => array(
+		'user_linking_1' => [
 			'title' => 'Fix User Linking Table Settings',
 			'description' => 'Set Id columns to require a value (can not be null).',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user_link` 
 					CHANGE COLUMN `primaryAccountId` `primaryAccountId` INT(11) NOT NULL,
 					CHANGE COLUMN `linkedAccountId` `linkedAccountId` INT(11) NOT NULL;",
-			),
-		),
+			],
+		],
 
-		'user_linking_disable_link' => array(
+		'user_linking_disable_link' => [
 			'title' => 'Allow user links to be temporarily disabled',
 			'description' => 'Allow user links to be temporarily disabled.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user_link` ADD COLUMN `linkingDisabled` TINYINT(1) DEFAULT 0",
-			),
-		),
+			],
+		],
 
-		'user_link_blocking' => array(
+		'user_link_blocking' => [
 			'title' => 'Setup blocking controls for the linking of user accounts',
 			'description' => 'Setup for the blocking of linking user accounts. Either an account can not link to any account, or a specific account can link to a specific account.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `user_link_blocks` (
 					`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 					`primaryAccountId` INT UNSIGNED NOT NULL,
@@ -138,67 +137,67 @@ function getUserUpdates()
 					`blockLinking` TINYINT UNSIGNED NULL COMMENT 'Indicates primaryAccountId will not be linked to any other accounts.',
 					PRIMARY KEY (`id`))
 					ENGINE = InnoDB
-					DEFAULT CHARACTER SET = utf8;"
-			),
-		),
+					DEFAULT CHARACTER SET = utf8;",
+			],
+		],
 
-		'user_reading_history_index_source_id' => array(
+		'user_reading_history_index_source_id' => [
 			'title' => 'Index source Id in user reading history',
 			'description' => 'Index source Id in user reading history',
-			'sql' => array(
-				"ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
-			),
-		),
+			'sql' => [
+				"ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)",
+			],
+		],
 
 		'user_reading_history_index' => [
 			'title' => 'Add Reading History Index',
 			'description' => 'Add index for userid and grouped work',
 			'sql' => [
-				'ALTER TABLE user_reading_history_work ADD INDEX user_work(userId, groupedWorkPermanentId)'
-			]
+				'ALTER TABLE user_reading_history_work ADD INDEX user_work(userId, groupedWorkPermanentId)',
+			],
 		],
 
 		'user_reading_history_work_index' => [
 			'title' => 'Add Reading History Index',
 			'description' => 'Add index for userid and grouped work',
 			'sql' => [
-				'ALTER TABLE user_reading_history_work ADD INDEX groupedWorkPermanentId(groupedWorkPermanentId)'
-			]
+				'ALTER TABLE user_reading_history_work ADD INDEX groupedWorkPermanentId(groupedWorkPermanentId)',
+			],
 		],
 
-		'user_hoopla_confirmation_checkout_prompt' => array(
+		'user_hoopla_confirmation_checkout_prompt' => [
 			'title' => 'Hoopla Checkout Confirmation Prompt',
 			'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
-			'sql' => array(
-				"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
-			),
-		),
+			'sql' => [
+				"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;",
+			],
+		],
 
-		'user_remove_default_created' => array(
+		'user_remove_default_created' => [
 			'title' => 'Remove default for user created field',
 			'description' => 'Remove default for user created field (not correct for later versions of MySQL',
-			'sql' => array(
-				"ALTER TABLE `user` CHANGE COLUMN created created DATETIME not null;"
-			),
-		),
+			'sql' => [
+				"ALTER TABLE `user` CHANGE COLUMN created created DATETIME not null;",
+			],
+		],
 
-		'user_add_rbdigital_id' => array(
+		'user_add_rbdigital_id' => [
 			'title' => 'User RBdigital Id',
 			'description' => 'Stores user rbdigital id for a user',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD COLUMN rbdigitalId INT(11) DEFAULT -1;",
 				"ALTER TABLE user ADD COLUMN rbdigitalLastAccountCheck INT(11)",
-			),
-		),
+			],
+		],
 
-		'user_add_rbdigital_username_password' => array(
+		'user_add_rbdigital_username_password' => [
 			'title' => 'User RBdigital Username and Password',
 			'description' => 'Stores rbdigital username and password for a user for automatic login',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user ADD COLUMN rbdigitalUsername VARCHAR(50);",
 				"ALTER TABLE user ADD COLUMN rbdigitalPassword VARCHAR(50)",
-			),
-		),
+			],
+		],
 
 		'user_languages' => [
 			'title' => 'User Language Preferences',
@@ -230,8 +229,8 @@ function getUserUpdates()
 					message MEDIUMTEXT,
 					isDismissed TINYINT(1) DEFAULT 0,
 					INDEX (userId, isDismissed)
-				)'
-			]
+				)',
+			],
 		],
 
 		'user_message_actions' => [
@@ -242,7 +241,7 @@ function getUserUpdates()
 				'ALTER TABLE user_messages ADD COLUMN action1Title VARCHAR(50)',
 				'ALTER TABLE user_messages ADD COLUMN action2 VARCHAR(255)',
 				'ALTER TABLE user_messages ADD COLUMN action2Title VARCHAR(50)',
-			]
+			],
 		],
 
 		'user_overdrive_auto_checkout' => [
@@ -250,7 +249,7 @@ function getUserUpdates()
 			'description' => 'Remove OverDrive auto checkout now that it has been deprecated',
 			'sql' => [
 				'ALTER TABLE user DROP COLUMN overdriveAutoCheckout',
-			]
+			],
 		],
 
 		'user_locked_filters' => [
@@ -258,7 +257,7 @@ function getUserUpdates()
 			'description' => 'Add a column to store locked filters/facets to the interface',
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN lockedFacets TEXT',
-			]
+			],
 		],
 
 		'user_payments' => [
@@ -275,8 +274,8 @@ function getUserUpdates()
 					totalPaid FLOAT,
 					INDEX (userId, paymentType, completed),
 					INDEX (paymentType, orderId)
-				)'
-			]
+				)',
+			],
 		],
 
 		'user_payments_carlx' => [
@@ -284,7 +283,7 @@ function getUserUpdates()
 			'description' => 'Add columns to user_payments to support CarlX credit card processing',
 			'sql' => [
 				'ALTER TABLE user_payments ADD COLUMN transactionDate INT(11)',
-			]
+			],
 		],
 
 		'user_payments_finesPaid' => [
@@ -292,31 +291,31 @@ function getUserUpdates()
 			'description' => 'Increase finesPaid column space to 8K',
 			'sql' => [
 				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(8192) NOT NULL DEFAULT ''",
-			]
+			],
 		],
 
-		'user_display_name_length' => array(
+		'user_display_name_length' => [
 			'title' => 'User display name length',
 			'description' => 'Increase displayName field in the User table',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user CHANGE displayName displayName VARCHAR( 60 ) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
-		'user_last_name_length' => array(
+		'user_last_name_length' => [
 			'title' => 'User last name length',
 			'description' => 'Increase lastName field in the User table',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user CHANGE lastname lastname VARCHAR( 100 ) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
 		'make_nyt_user_list_publisher' => [
 			'title' => 'Make NYT User a list publisher',
 			'description' => 'Make NYT User a list publisher so results show in search',
-			'sql' => array(
+			'sql' => [
 				'makeNytUserListPublisher',
-			),
+			],
 		],
 
 		'user_list_entry_add_additional_types' => [
@@ -325,8 +324,8 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user_list_entry CHANGE COLUMN groupedWorkPermanentId sourceId VARCHAR(36)',
 				"ALTER TABLE user_list_entry ADD COLUMN source VARCHAR(20) NOT NULL default 'GroupedWork'",
-				"ALTER TABLE user_list_entry ADD INDEX source(source, sourceId)"
-			]
+				"ALTER TABLE user_list_entry ADD INDEX source(source, sourceId)",
+			],
 		],
 
 		'user_list_import_information' => [
@@ -335,7 +334,7 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user_list ADD COLUMN importedFrom VARCHAR(20)',
 				'ALTER TABLE user_list_entry ADD COLUMN importedFrom VARCHAR(20)',
-			]
+			],
 		],
 
 		'user_last_list_used' => [
@@ -343,7 +342,7 @@ function getUserUpdates()
 			'description' => 'Store the last list the user edited',
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN lastListUsed INT(11) DEFAULT -1",
-			]
+			],
 		],
 
 		'user_last_login_validation' => [
@@ -351,7 +350,7 @@ function getUserUpdates()
 			'description' => 'Store when the user was last validated so we don\'t need to constantly revalidate in the app',
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN lastLoginValidation INT(11) DEFAULT -1',
-			]
+			],
 		],
 
 		'user_secondary_library_card' => [
@@ -361,7 +360,7 @@ function getUserUpdates()
 				"ALTER TABLE user ADD COLUMN alternateLibraryCard VARCHAR(50) DEFAULT ''",
 				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(256) DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
-			]
+			],
 		],
 
 		'user_password_length' => [
@@ -369,7 +368,7 @@ function getUserUpdates()
 			'description' => 'Increase maximum password length to match cat_password',
 			'sql' => [
 				"ALTER TABLE user CHANGE COLUMN password password VARCHAR(60) DEFAULT ''",
-			]
+			],
 		],
 
 		'user_update_messages' => [
@@ -377,8 +376,8 @@ function getUserUpdates()
 			'description' => 'Add a field to store user update messages to avoid storing them within a session',
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN updateMessage TEXT',
-				'ALTER TABLE user ADD COLUMN updateMessageIsError TINYINT(0)'
-			]
+				'ALTER TABLE user ADD COLUMN updateMessageIsError TINYINT(0)',
+			],
 		],
 
 		'user_permissions' => [
@@ -474,16 +473,16 @@ function getUserUpdates()
 					,('Genealogy', 'Administer Genealogy', 'Genealogy', 0, 'Allows the user to add people, marriages, and obituaries to the genealogy interface.')
 					,('User Lists', 'Include Lists In Search Results', '', 0, 'Allows the user to add public lists to search results.')
 					,('User Lists', 'Edit All Lists', '', 10, 'Allows the user to edit public lists created by any user.')
-				"
-			]
+				",
+			],
 		],
 
 		'user_permission_defaults' => [
 			'title' => 'Set Default Permissions for Roles',
 			'description' => 'Update database tables with defaults from old roles',
 			'sql' => [
-				'updateDefaultPermissions'
-			]
+				'updateDefaultPermissions',
+			],
 		],
 
 		'user_assign_role_by_ptype' => [
@@ -491,8 +490,8 @@ function getUserUpdates()
 			'description' => 'Allow roles to be assigned automatically based on patron type',
 			'sql' => [
 				'ALTER TABLE ptype ADD COLUMN assignedRoleId INT(11) DEFAULT -1',
-				"ALTER TABLE ptype ADD COLUMN restrictMasquerade TINYINT(1) DEFAULT 0"
-			]
+				"ALTER TABLE ptype ADD COLUMN restrictMasquerade TINYINT(1) DEFAULT 0",
+			],
 		],
 
 		'allow_anyone_to_view_documentation' => [
@@ -502,8 +501,8 @@ function getUserUpdates()
 				"DELETE FROM role_permissions where permissionId = (SELECT id from permissions where name='View Help Manual')",
 				"DELETE from permissions where name = 'View Help Manual'",
 				"DELETE FROM role_permissions where permissionId = (SELECT id from permissions where name='View Release Notes')",
-				"DELETE from permissions where name = 'View Release Notes'"
-			]
+				"DELETE from permissions where name = 'View Release Notes'",
+			],
 		],
 
 		'masquerade_permissions' => [
@@ -527,8 +526,8 @@ function getUserUpdates()
 				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Masquerader') WHERE masquerade = 'any'",
 				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Library Masquerader') WHERE masquerade = 'library'",
 				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Location Masquerader') WHERE masquerade = 'location'",
-				"ALTER TABLE ptype drop column masquerade"
-			]
+				"ALTER TABLE ptype drop column masquerade",
+			],
 		],
 
 		'test_roles_permission' => [
@@ -538,7 +537,7 @@ function getUserUpdates()
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
 					('System Administration', 'Test Roles', '', 17, 'Allows the user to use the test_role parameter to act as different role.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='userAdmin'), (SELECT id from permissions where name='Test Roles'))",
-			]
+			],
 		],
 
 		'staff_ptypes' => [
@@ -546,15 +545,15 @@ function getUserUpdates()
 			'description' => 'Add the ability to treat specific patron types as staff',
 			'sql' => [
 				'ALTER TABLE ptype add column isStaff TINYINT(1) DEFAULT 0',
-			]
+			],
 		],
 
 		'ptype_descriptions' => [
 			'title' => 'PType descriptions',
 			'description' => 'Add the ability to define descriptions for patron types',
 			'sql' => [
-				"ALTER TABLE ptype ADD COLUMN description VARCHAR(100) DEFAULT ''"
-			]
+				"ALTER TABLE ptype ADD COLUMN description VARCHAR(100) DEFAULT ''",
+			],
 		],
 
 		'oai_website_permissions' => [
@@ -565,7 +564,7 @@ function getUserUpdates()
 				"UPDATE permissions set requiredModule = 'Web Indexer' where requiredModule = 'Website Indexing'",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Website Indexing Settings'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Open Archives'))",
-			]
+			],
 		],
 
 		'list_indexing_permission' => [
@@ -576,7 +575,7 @@ function getUserUpdates()
 					('User Lists', 'Administer List Indexing Settings', '', 0, 'Allows the user to administer list indexing settings.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
 
-			]
+			],
 		],
 
 		'reporting_permissions' => [
@@ -594,7 +593,7 @@ function getUserUpdates()
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Holds Reports'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View Location Student Reports'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Student Reports'))",
-			]
+			],
 		],
 
 		'view_unpublished_content_permissions' => [
@@ -606,7 +605,7 @@ function getUserUpdates()
 					('Web Builder', 'View Unpublished Content', '', 0, 'Allows the user to view unpublished menu items and content.')
 				",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Unpublished Content'))",
-			]
+			],
 		],
 
 		'administer_host_permissions' => [
@@ -618,7 +617,7 @@ function getUserUpdates()
 					('System Administration', 'Administer Host Information', '', 50, 'Allows the user to change information about the hosts used for Aspen Discovery.')
 				",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Host Information'))",
-			]
+			],
 		],
 
 //		'barcode_printing_permissions' => [
@@ -644,14 +643,14 @@ function getUserUpdates()
 				",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All System Messages'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='libraryAdmin'), (SELECT id from permissions where name='Administer Library System Messages'))",
-			]
+			],
 		],
 
 		'new_york_times_user_updates' => [
 			'title' => 'New York Times permission updates',
 			'description' => 'Update permissions for New York Times user and make the id non zero, make sure that all their lists are searchable too',
 			'sql' => [
-				'fixNytUserPermissions'
+				'fixNytUserPermissions',
 			],
 		],
 
@@ -659,8 +658,8 @@ function getUserUpdates()
 			'title' => 'Cleanup Invalid Reading History Entries',
 			'description' => 'Remove old reading history entries that will display as Title Not Available',
 			'sql' => [
-				'DELETE FROM user_reading_history_work where (groupedWorkPermanentId is null or groupedWorkPermanentId = \'\') and (title is null or title = \'\') and (author is null OR author = \'\')'
-			]
+				'DELETE FROM user_reading_history_work where (groupedWorkPermanentId is null or groupedWorkPermanentId = \'\') and (title is null or title = \'\') and (author is null OR author = \'\')',
+			],
 		],
 
 		'store_pickup_location' => [
@@ -669,16 +668,16 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN pickupLocationId INT(11) DEFAULT 0',
 				'UPDATE user SET rememberHoldPickupLocation = 0',
-				'UPDATE user SET pickupLocationId = homeLocationId'
-			]
+				'UPDATE user SET pickupLocationId = homeLocationId',
+			],
 		],
 
 		'user_add_last_reading_history_update_time' => [
 			'title' => 'Store when the reading history was last updated',
-			'description' =>  'Store when the reading history was last updated to optimize loading reading history',
+			'description' => 'Store when the reading history was last updated to optimize loading reading history',
 			'sql' => [
-				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0',
+			],
 		],
 
 		'user_remove_college_major' => [
@@ -687,7 +686,7 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user DROP COLUMN college',
 				'ALTER TABLE user DROP COLUMN major',
-			]
+			],
 		],
 		'encrypt_user_table' => [
 			'title' => 'Encrypt User Table (Slow)',
@@ -706,8 +705,8 @@ function getUserUpdates()
 				//'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
 				"ALTER TABLE user CHANGE COLUMN alternateLibraryCardPassword alternateLibraryCardPassword VARCHAR(256) NOT NULL DEFAULT ''",
 				//Now do the actual encryption
-				'encryptUserFields'
-			]
+				'encryptUserFields',
+			],
 		],
 
 		'user_cache_holds' => [
@@ -745,8 +744,8 @@ function getUserUpdates()
 					frozen TINYINT(1),
 					canFreeze TINYINT(1),
 					reactivateDate INT(11)
-				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
-			]
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+			],
 		],
 
 		'user_cache_checkouts' => [
@@ -781,11 +780,11 @@ function getUserUpdates()
 					fine FLOAT,
 					returnClaim VARCHAR(500),
 					holdQueueLength INT(11)
-				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
-			]
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+			],
 		],
 
-		'user_checkout_cache_additional_fields' =>[
+		'user_checkout_cache_additional_fields' => [
 			'title' => 'User Checkout Cache Add Additional Fields',
 			'description' => 'Add additional fields to for eContent',
 			'sql' => [
@@ -807,10 +806,10 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout ADD column transactionId VARCHAR(40)',
 				'ALTER TABLE user_checkout ADD column coverUrl VARCHAR(255)',
 				'ALTER TABLE user_checkout ADD column format VARCHAR(50)',
-			]
+			],
 		],
 
-		'user_checkout_cache_renewal_information' =>[
+		'user_checkout_cache_renewal_information' => [
 			'title' => 'User Checkout Cache renewal date',
 			'description' => 'Add renewal date to checkout cache',
 			'continueOnError' => true,
@@ -826,7 +825,7 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user_checkout ADD COLUMN groupedWorkId CHAR(36)',
 				'ALTER TABLE user_hold ADD COLUMN groupedWorkId CHAR(36)',
-			]
+			],
 		],
 
 		'user_circulation_cache_overdrive_magazines' => [
@@ -834,7 +833,7 @@ function getUserUpdates()
 			'description' => 'Add overdrive magazine to checkout caching information',
 			'sql' => [
 				'ALTER TABLE user_checkout ADD COLUMN overdriveMagazine TINYINT(1)',
-			]
+			],
 		],
 
 		'user_circulation_cache_overdrive_supplemental_materials' => [
@@ -842,7 +841,7 @@ function getUserUpdates()
 			'description' => 'Add overdrive supplemental materials to checkout caching information',
 			'sql' => [
 				'ALTER TABLE user_checkout ADD COLUMN isSupplemental TINYINT(1) DEFAULT 0',
-			]
+			],
 		],
 
 		'user_account_summary_cache' => [
@@ -862,16 +861,16 @@ function getUserUpdates()
 					numBookings INT(11) DEFAULT 0,
 					lastLoaded INT(11)
 				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-				'ALTER TABLE user_account_summary ADD UNIQUE (source, userId)'
-			]
+				'ALTER TABLE user_account_summary ADD UNIQUE (source, userId)',
+			],
 		],
 
 		'user_account_summary_remaining_checkouts' => [
 			'title' => 'User Account Summary - remaining checkouts',
 			'description' => 'Add remaining checkouts to account summary for Hoopla',
 			'sql' => [
-				'ALTER TABLE user_account_summary ADD COLUMN numCheckoutsRemaining INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE user_account_summary ADD COLUMN numCheckoutsRemaining INT(11) DEFAULT 0',
+			],
 		],
 
 		'user_circulation_cache_indexes' => [
@@ -881,24 +880,24 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout ADD INDEX (userId, source, recordId)',
 				'ALTER TABLE user_hold ADD INDEX (userId, source, recordId)',
 				'ALTER TABLE user_checkout ADD INDEX (userId, groupedWorkId)',
-				'ALTER TABLE user_hold ADD INDEX (userId, groupedWorkId)'
-			]
+				'ALTER TABLE user_hold ADD INDEX (userId, groupedWorkId)',
+			],
 		],
 
 		'user_hold_format' => [
 			'title' => 'Add format to cached information for user holds',
 			'description' => 'Add format to cached information for user holds',
 			'sql' => [
-				'ALTER TABLE user_hold ADD COLUMN format VARCHAR(50)'
-			]
+				'ALTER TABLE user_hold ADD COLUMN format VARCHAR(50)',
+			],
 		],
 
 		'user_username_increase_length' => [
 			'title' => 'Increase length of username field to accommodate FOLIO',
 			'description' => 'Increase length of username field to accommodate FOLIO',
 			'sql' => [
-				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(36) NOT NULL'
-			]
+				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(36) NOT NULL',
+			],
 		],
 
 		'user_circulation_cache_cover_link' => [
@@ -908,7 +907,7 @@ function getUserUpdates()
 				'ALTER TABLE user_hold ADD column coverUrl VARCHAR(255)',
 				'ALTER TABLE user_hold ADD column linkUrl VARCHAR(255)',
 				'ALTER TABLE user_checkout ADD column linkUrl VARCHAR(255)',
-			]
+			],
 		],
 
 		'user_account_summary_expiration_date_extension' => [
@@ -916,7 +915,7 @@ function getUserUpdates()
 			'description' => 'Update Account Summary to allow expiration dates that are far in the future',
 			'sql' => [
 				'ALTER TABLE user_account_summary CHANGE COLUMN expirationDate expirationDate BIGINT DEFAULT 0',
-			]
+			],
 		],
 
 		'user_account_cache_volume_length' => [
@@ -924,16 +923,16 @@ function getUserUpdates()
 			'description' => 'Increase length of volume in holds and checkouts',
 			'sql' => [
 				'ALTER TABLE user_checkout CHANGE COLUMN volume volume VARCHAR(255)',
-				'ALTER TABLE user_hold CHANGE COLUMN volume volume VARCHAR(255)'
-			]
+				'ALTER TABLE user_hold CHANGE COLUMN volume volume VARCHAR(255)',
+			],
 		],
 
 		'user_reading_history_dates_in_past' => [
 			'title' => 'Expand Reading History Check In Date',
 			'description' => 'Update Reading History to allow check in dates prior to 1970',
 			'sql' => [
-				'ALTER table user_reading_history_work change column checkInDate checkInDate BIGINT NULL;'
-			]
+				'ALTER table user_reading_history_work change column checkInDate checkInDate BIGINT NULL;',
+			],
 		],
 
 		'user_circulation_cache_callnumber_length' => [
@@ -942,32 +941,32 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user_checkout change column callNumber callNumber VARCHAR(100)',
 				'ALTER TABLE user_hold change column callNumber callNumber VARCHAR(100)',
-			]
-		]
-	);
+			],
+		],
+	];
 }
 
 /** @noinspection PhpUnused */
-function updateDefaultPermissions(){
+function updateDefaultPermissions() {
 	require_once ROOT_DIR . '/sys/Administration/Role.php';
 	require_once ROOT_DIR . '/sys/Administration/Permission.php';
-	require_once  ROOT_DIR . '/sys/Administration/RolePermissions.php';
+	require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
 	$permissions = [];
 	$permission = new Permission();
 	$permission->find();
-	while ($permission->fetch()){
+	while ($permission->fetch()) {
 		$permissions[$permission->name] = $permission->id;
 	}
 
 	$role = new Role();
 	$role->orderBy('name');
 	$role->find();
-	while ($role->fetch()){
+	while ($role->fetch()) {
 		$defaultPermissions = $role->getDefaultPermissions();
-		foreach ($defaultPermissions as $permissionName){
+		foreach ($defaultPermissions as $permissionName) {
 			$rolePermission = new RolePermissions();
 			$rolePermission->roleId = $role->roleId;
-			if (array_key_exists($permissionName, $permissions)){
+			if (array_key_exists($permissionName, $permissions)) {
 				$rolePermission->permissionId = $permissions[$permissionName];
 				$rolePermission->insert();
 			}
@@ -976,8 +975,7 @@ function updateDefaultPermissions(){
 }
 
 /** @noinspection PhpUnused */
-function makeNytUserListPublisher()
-{
+function makeNytUserListPublisher() {
 	$user = new User();
 	$user->username = 'nyt_user';
 	if ($user->find(true)) {
@@ -994,22 +992,21 @@ function makeNytUserListPublisher()
 }
 
 /** @noinspection PhpUnused */
-function fixNytUserPermissions()
-{
+function fixNytUserPermissions() {
 	//Get the New York Times User
 	$user = new User();
 	$user->username = 'nyt_user';
 	if ($user->find(true)) {
-		if ($user->id == 0){
+		if ($user->id == 0) {
 			$idToMoveTo = -2;
 			$foundIdToMoveTo = false;
-			while (!$foundIdToMoveTo){
+			while (!$foundIdToMoveTo) {
 				//We will move the user to a negative id.
 				$tmpUser = new User();
 				$tmpUser->id = $idToMoveTo;
-				if ($tmpUser->find(true)){
+				if ($tmpUser->find(true)) {
 					$idToMoveTo--;
-				}else{
+				} else {
 					$foundIdToMoveTo = true;
 				}
 			}
@@ -1024,8 +1021,8 @@ function fixNytUserPermissions()
 	$nytLists = new UserList();
 	$nytLists->user_id = $user->id;
 	$nytLists->find();
-	while ($nytLists->fetch()){
-		if ($nytLists->searchable == 0){
+	while ($nytLists->fetch()) {
+		if ($nytLists->searchable == 0) {
 			$nytLists->searchable = 1;
 			$nytLists->update();
 		}
@@ -1033,16 +1030,16 @@ function fixNytUserPermissions()
 }
 
 /** @noinspection PhpUnused */
-function encryptUserFields(){
+function encryptUserFields() {
 	set_time_limit(0);
 	$user = new User();
 	$numUsers = $user->count();
 	$numBatches = (int)ceil($numUsers / 1000);
-	for ($i = 0; $i < $numBatches; $i++){
+	for ($i = 0; $i < $numBatches; $i++) {
 		$user = new User();
 		$user->limit($i * 1000, 1000);
 		$user->find();
-		while ($user->fetch()){
+		while ($user->fetch()) {
 			//Just need to re-save to make the encryption work
 			$user->update();
 		}

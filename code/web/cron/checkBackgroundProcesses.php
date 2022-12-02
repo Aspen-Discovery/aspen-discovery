@@ -4,14 +4,14 @@ require_once __DIR__ . '/../bootstrap.php';
 global $configArray;
 global $serverName;
 $runningProcesses = [];
-if ($configArray['System']['operatingSystem'] == 'windows'){
+if ($configArray['System']['operatingSystem'] == 'windows') {
 	exec("WMIC PROCESS get Processid,Commandline", $processes);
 	$processRegEx = '/.*?java\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
 	$processNameIndex = 1;
 	$solrRegex = "/$serverName\\\\solr7/ix";
 	$nightlyReindexRegex = "/.*?java\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
-}else{
+} else {
 	exec("ps -ef | grep java", $processes);
 	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
 	$processIdIndex = 1;
@@ -24,35 +24,35 @@ $results = "";
 
 $solrRunning = false;
 $nightlyReindexRunning = false;
-foreach ($processes as $processInfo){
+foreach ($processes as $processInfo) {
 	if (preg_match($nightlyReindexRegex, $processInfo, $matches)) {
 		$nightlyReindexRunning = true;
-	}else if (preg_match($processRegEx, $processInfo, $matches)) {
+	} elseif (preg_match($processRegEx, $processInfo, $matches)) {
 		$processId = $matches[$processIdIndex];
 		$process = $matches[$processNameIndex];
-		if (array_key_exists($process, $runningProcesses)){
+		if (array_key_exists($process, $runningProcesses)) {
 			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]['pid']} and $processId\r\n";
-		}else{
+		} else {
 			$runningProcesses[$process] = [
 				'name' => $process,
-				'pid' => $processId
+				'pid' => $processId,
 			];
 		}
 
 		//echo("Process: $process ($processId)\r\n");
-	}else if (preg_match($solrRegex, $processInfo)) {
+	} elseif (preg_match($solrRegex, $processInfo)) {
 		$solrRunning = true;
 	}
 }
 
-if (!$solrRunning){
+if (!$solrRunning) {
 	$results .= "Solr is not running for $serverName\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
 		$solrCmd = "/web/aspen-discovery/sites/$serverName/$serverName.bat start";
-	}else{
-		if (!file_exists("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")){
+	} else {
+		if (!file_exists("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")) {
 			$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh does not exist";
-		}elseif (!is_executable("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")){
+		} elseif (!is_executable("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")) {
 			$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh is not executable";
 		}
 		$solrCmd = "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh start";
@@ -74,7 +74,7 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			$backgroundProcessesToRun[$aspenModule->backgroundProcess] = $aspenModule->backgroundProcess;
 		}
 	}
-	foreach ($backgroundProcessesToRun as $backgroundProcess){
+	foreach ($backgroundProcessesToRun as $backgroundProcess) {
 		if (isset($runningProcesses[$backgroundProcess])) {
 			unset($runningProcesses[$backgroundProcess]);
 		} else {
@@ -106,7 +106,7 @@ if (!$nightlyReindexRunning && $solrRunning) {
 	}
 }
 
-if (strlen($results) > 0){
+if (strlen($results) > 0) {
 	//For debugging
 	try {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
@@ -116,14 +116,14 @@ if (strlen($results) > 0){
 			$mailer = new Mailer();
 			$mailer->send($systemVariables->errorEmail, "$serverName Error with Background processes", $results);
 		}
-	}catch (Exception $e) {
+	} catch (Exception $e) {
 		//This happens if the table has not been created
 	}
 }
 
 function execInBackground($cmd) {
-	if (substr(php_uname(), 0, 7) == "Windows"){
-		pclose(popen("start /B ". $cmd, "r"));
+	if (substr(php_uname(), 0, 7) == "Windows") {
+		pclose(popen("start /B " . $cmd, "r"));
 	} else {
 		exec($cmd . " > /dev/null &");
 	}

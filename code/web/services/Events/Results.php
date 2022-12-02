@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Events_Results extends ResultsAction
-{
-	function launch()
-	{
+class Events_Results extends ResultsAction {
+	function launch() {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
@@ -49,7 +47,7 @@ class Events_Results extends ResultsAction
 			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
 			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
-		}elseif ($result instanceof AspenError) {
+		} elseif ($result instanceof AspenError) {
 			/** @var AspenError $result */
 			AspenError::raiseError($result->getMessage());
 		}
@@ -110,8 +108,7 @@ class Events_Results extends ResultsAction
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
-					AspenError::raiseError(new AspenError('Unable to process query<br>' .
-						'Solr Returned: ' . print_r($error, true)));
+					AspenError::raiseError(new AspenError('Unable to process query<br>' . 'Solr Returned: ' . print_r($error, true)));
 				}
 			}
 
@@ -142,9 +139,11 @@ class Events_Results extends ResultsAction
 				$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 				// Process Paging
 				$link = $searchObject->renderLinkPageTemplate();
-				$options = array('totalItems' => $summary['resultTotal'],
+				$options = [
+					'totalItems' => $summary['resultTotal'],
 					'fileName' => $link,
-					'perPage' => $summary['perPage']);
+					'perPage' => $summary['perPage'],
+				];
 				$pager = new Pager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
 			}
@@ -178,26 +177,38 @@ class Events_Results extends ResultsAction
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Library Event Search Results', $sidebar);
 	}
 
-	function getBreadcrumbs() : array
-	{
-        global $interface;
-        $breadcrumbs = [];
-        $breadcrumbs[] = new Breadcrumb('/Events/Calendar', 'Calendar');
-        $breadcrumbs[] = new Breadcrumb(null, 'Events Search');
-        $recordCount = $interface->getVariable('recordCount');
-        if (empty($recordCount)) {
-            $resultCountText = translate(['text'=>"No Results Found", "isPublicFacing" => true]);
-        }else{
-            if ($interface->getVariable('displayMode') == 'covers') {
-                $resultCountText = translate(['text' => "There are %1% total results.", 1=>number_format($recordCount), "isPublicFacing" => true]);
-            }else{
-                $recordStart = number_format($interface->getVariable('recordStart'));
-                $recordEnd = number_format($interface->getVariable('recordEnd'));
-                $recordCount = number_format($interface->getVariable('recordCount'));
-                $resultCountText = translate(['text'=>"Showing %1% - %2% of %3%", 1=>$recordStart, 2=>$recordEnd, 3=>$recordCount, "isPublicFacing" => true]);
-            }
-        }
-        $breadcrumbs[] = new Breadcrumb(null, $resultCountText, false);
-        return $breadcrumbs;
-    }
+	function getBreadcrumbs(): array {
+		global $interface;
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Events/Calendar', 'Calendar');
+		$breadcrumbs[] = new Breadcrumb(null, 'Events Search');
+		$recordCount = $interface->getVariable('recordCount');
+		if (empty($recordCount)) {
+			$resultCountText = translate([
+				'text' => "No Results Found",
+				"isPublicFacing" => true,
+			]);
+		} else {
+			if ($interface->getVariable('displayMode') == 'covers') {
+				$resultCountText = translate([
+					'text' => "There are %1% total results.",
+					1 => number_format($recordCount),
+					"isPublicFacing" => true,
+				]);
+			} else {
+				$recordStart = number_format($interface->getVariable('recordStart'));
+				$recordEnd = number_format($interface->getVariable('recordEnd'));
+				$recordCount = number_format($interface->getVariable('recordCount'));
+				$resultCountText = translate([
+					'text' => "Showing %1% - %2% of %3%",
+					1 => $recordStart,
+					2 => $recordEnd,
+					3 => $recordCount,
+					"isPublicFacing" => true,
+				]);
+			}
+		}
+		$breadcrumbs[] = new Breadcrumb(null, $resultCountText, false);
+		return $breadcrumbs;
+	}
 }

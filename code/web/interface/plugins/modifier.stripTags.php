@@ -19,23 +19,23 @@
  *
  * @version 2.0
  *
- * @param   string
- * @param   boolean optional
- * @param   string optional
+ * @param string
+ * @param boolean optional
+ * @param string optional
  * @return  string
  */
 function smarty_modifier_stripTags($string) {
-	switch(func_num_args()) {
+	switch (func_num_args()) {
 		case 1:
 			$replace_with_space = true;
 			break;
 		case 2:
 			$arg = func_get_arg(1);
-			if($arg === 1 || $arg === true || $arg === '1' || $arg === 'true') {
+			if ($arg === 1 || $arg === true || $arg === '1' || $arg === 'true') {
 				// for full legacy support || $arg === 'false' should be included
 				$replace_with_space = true;
 				$allowable_tags = '';
-			} elseif($arg === 0 || $arg === false || $arg === '0' || $arg === 'false') {
+			} elseif ($arg === 0 || $arg === false || $arg === '0' || $arg === 'false') {
 				// for full legacy support || $arg === 'false' should be removed
 				$replace_with_space = false;
 				$allowable_tags = '';
@@ -50,13 +50,13 @@ function smarty_modifier_stripTags($string) {
 			break;
 	}
 
-	if($replace_with_space) {
+	if ($replace_with_space) {
 		$string = preg_replace('!(<[^>]*?>)!', '$1 ', $string);
 	}
 
 	$string = strip_tags($string, $allowable_tags);
 
-	if($replace_with_space) {
+	if ($replace_with_space) {
 		$string = preg_replace('!(<[^>]*?>) !', '$1', $string);
 	}
 

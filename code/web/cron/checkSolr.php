@@ -4,10 +4,10 @@ require_once __DIR__ . '/../bootstrap.php';
 global $configArray;
 global $serverName;
 $runningProcesses = [];
-if ($configArray['System']['operatingSystem'] == 'windows'){
+if ($configArray['System']['operatingSystem'] == 'windows') {
 	exec("WMIC PROCESS get Processid,Commandline", $processes);
 	$solrRegex = "/{$serverName}\\\\solr7/ix";
-}else{
+} else {
 	exec("ps -ef | grep java", $processes);
 	$solrRegex = "/{$serverName}\/solr7/ix";
 }
@@ -15,20 +15,20 @@ if ($configArray['System']['operatingSystem'] == 'windows'){
 $results = "";
 
 $solrRunning = false;
-foreach ($processes as $processInfo){
+foreach ($processes as $processInfo) {
 	if (preg_match($solrRegex, $processInfo)) {
 		$solrRunning = true;
 	}
 }
 
-if (!$solrRunning){
+if (!$solrRunning) {
 	$results .= "Solr is not running for {$serverName}\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
 		$solrCmd = "/web/aspen-discovery/sites/{$serverName}/{$serverName}.bat start";
-	}else{
-		if (!file_exists("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
+	} else {
+		if (!file_exists("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")) {
 			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh does not exist";
-		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
+		} elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")) {
 			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
 		}
 		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
@@ -37,7 +37,7 @@ if (!$solrRunning){
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 }
 
-if (strlen($results) > 0){
+if (strlen($results) > 0) {
 	//For debugging
 	echo($results);
 	try {
@@ -48,14 +48,14 @@ if (strlen($results) > 0){
 			$mailer = new Mailer();
 			$mailer->send($systemVariables->errorEmail, "$serverName Error with Background processes", $results);
 		}
-	}catch (Exception $e) {
+	} catch (Exception $e) {
 		//This happens if the table has not been created
 	}
 }
 
 function execInBackground($cmd) {
-	if (substr(php_uname(), 0, 7) == "Windows"){
-		pclose(popen("start /B ". $cmd, "r"));
+	if (substr(php_uname(), 0, 7) == "Windows") {
+		pclose(popen("start /B " . $cmd, "r"));
 	} else {
 		exec($cmd . " > /dev/null &");
 	}

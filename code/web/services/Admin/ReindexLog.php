@@ -4,18 +4,16 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Admin_ReindexLog extends Admin_Admin
-{
-	function launch()
-	{
+class Admin_ReindexLog extends Admin_Admin {
+	function launch() {
 		global $interface;
 
-		$logEntries = array();
+		$logEntries = [];
 		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$logEntry = new ReindexLogEntry();
 		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])) {
 			// limits total count correctly
-			$logEntry->whereAdd('numWorksProcessed >= '.$_REQUEST['worksLimit']);
+			$logEntry->whereAdd('numWorksProcessed >= ' . $_REQUEST['worksLimit']);
 		}
 		$total = $logEntry->count();
 		$logEntry = new ReindexLogEntry();
@@ -25,27 +23,27 @@ class Admin_ReindexLog extends Admin_Admin
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])) {
-			$logEntry->whereAdd('numWorksProcessed > '.$_REQUEST['worksLimit']);
+			$logEntry->whereAdd('numWorksProcessed > ' . $_REQUEST['worksLimit']);
 		}
 		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
 		$logEntry->find();
-		while ($logEntry->fetch()){
+		while ($logEntry->fetch()) {
 			$logEntries[] = clone($logEntry);
 		}
 		$interface->assign('logEntries', $logEntries);
 
-		$options = array('totalItems' => $total,
-		                 'fileName'   => '/Admin/ReindexLog?page=%d'. (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']). (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
-		                 'perPage'    => $pageSize,
-		);
+		$options = [
+			'totalItems' => $total,
+			'fileName' => '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			'perPage' => $pageSize,
+		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('reindexLog.tpl', 'Nightly Index Log');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -53,13 +51,14 @@ class Admin_ReindexLog extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports','View Indexing Logs']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Indexing Logs',
+		]);
 	}
 }

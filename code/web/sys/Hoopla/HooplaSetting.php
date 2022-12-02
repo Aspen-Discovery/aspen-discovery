@@ -1,15 +1,15 @@
 <?php
 require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 
-class HooplaSetting extends DataObject
-{
+class HooplaSetting extends DataObject {
 	public $__table = 'hoopla_settings';    // table name
 	public $id;
 	public $apiUrl;
 	public $libraryId;
 	public $apiUsername;
 	public $apiPassword;
-	public /** @noinspection PhpUnused */ $apiToken;
+	public /** @noinspection PhpUnused */
+		$apiToken;
 	public $regroupAllRecords;
 	public $runFullUpdate;
 	public $indexByDay;
@@ -18,22 +18,77 @@ class HooplaSetting extends DataObject
 
 	private $_scopes;
 
-	public static function getObjectStructure() : array
-	{
+	public static function getObjectStructure(): array {
 		$hooplaScopeStructure = HooplaScope::getObjectStructure();
 		unset($hooplaScopeStructure['settingId']);
 
-		return array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL to the API'),
-			'libraryId' => array('property' => 'libraryId', 'type' => 'integer', 'label' => 'Library Id', 'description' => 'The Library Id to use with the API'),
-			'apiUsername' => array('property' => 'apiUsername', 'type' => 'text', 'label' => 'API Username', 'description' => 'The API Username provided by Hoopla when registering'),
-			'apiPassword' => array('property' => 'apiPassword', 'type' => 'storedPassword', 'label' => 'API Password', 'description' => 'The API Password provided by Hoopla when registering', 'hideInLists' => true),
-			'regroupAllRecords' => array('property' => 'regroupAllRecords', 'type' => 'checkbox', 'label' => 'Regroup all Records', 'description' => 'Whether or not all existing records should be regrouped', 'default' => 0),
-			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
-			'indexByDay' => array('property' => 'indexByDay', 'type' => 'checkbox', 'label' => 'Index By Day', 'description' => 'Whether or hoopla indexing should only occur once a day', 'default' => 0),
-			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
-			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'apiUrl' => [
+				'property' => 'apiUrl',
+				'type' => 'url',
+				'label' => 'url',
+				'description' => 'The URL to the API',
+			],
+			'libraryId' => [
+				'property' => 'libraryId',
+				'type' => 'integer',
+				'label' => 'Library Id',
+				'description' => 'The Library Id to use with the API',
+			],
+			'apiUsername' => [
+				'property' => 'apiUsername',
+				'type' => 'text',
+				'label' => 'API Username',
+				'description' => 'The API Username provided by Hoopla when registering',
+			],
+			'apiPassword' => [
+				'property' => 'apiPassword',
+				'type' => 'storedPassword',
+				'label' => 'API Password',
+				'description' => 'The API Password provided by Hoopla when registering',
+				'hideInLists' => true,
+			],
+			'regroupAllRecords' => [
+				'property' => 'regroupAllRecords',
+				'type' => 'checkbox',
+				'label' => 'Regroup all Records',
+				'description' => 'Whether or not all existing records should be regrouped',
+				'default' => 0,
+			],
+			'runFullUpdate' => [
+				'property' => 'runFullUpdate',
+				'type' => 'checkbox',
+				'label' => 'Run Full Update',
+				'description' => 'Whether or not a full update of all records should be done on the next pass of indexing',
+				'default' => 0,
+			],
+			'indexByDay' => [
+				'property' => 'indexByDay',
+				'type' => 'checkbox',
+				'label' => 'Index By Day',
+				'description' => 'Whether or hoopla indexing should only occur once a day',
+				'default' => 0,
+			],
+			'lastUpdateOfChangedRecords' => [
+				'property' => 'lastUpdateOfChangedRecords',
+				'type' => 'timestamp',
+				'label' => 'Last Update of Changed Records',
+				'description' => 'The timestamp when just changes were loaded',
+				'default' => 0,
+			],
+			'lastUpdateOfAllRecords' => [
+				'property' => 'lastUpdateOfAllRecords',
+				'type' => 'timestamp',
+				'label' => 'Last Update of All Records',
+				'description' => 'The timestamp when just changes were loaded',
+				'default' => 0,
+			],
 
 			'scopes' => [
 				'property' => 'scopes',
@@ -48,18 +103,16 @@ class HooplaSetting extends DataObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
-				'additionalOneToManyActions' => []
-			]
-		);
+				'additionalOneToManyActions' => [],
+			],
+		];
 	}
 
-	public function __toString()
-	{
+	public function __toString() {
 		return 'Library ' . $this->libraryId . ' (' . $this->apiUsername . ')';
 	}
 
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
@@ -67,11 +120,10 @@ class HooplaSetting extends DataObject
 		return true;
 	}
 
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
-			if (empty($this->_scopes)){
+			if (empty($this->_scopes)) {
 				$this->_scopes = [];
 				$allScope = new HooplaScope();
 				$allScope->settingId = $this->id;
@@ -94,21 +146,21 @@ class HooplaSetting extends DataObject
 		return $ret;
 	}
 
-	public function saveScopes(){
-		if (isset ($this->_scopes) && is_array($this->_scopes)){
+	public function saveScopes() {
+		if (isset ($this->_scopes) && is_array($this->_scopes)) {
 			$this->saveOneToManyOptions($this->_scopes, 'settingId');
 			unset($this->_scopes);
 		}
 	}
 
-	public function __get($name){
+	public function __get($name) {
 		if ($name == "scopes") {
-			if (!isset($this->_scopes) && $this->id){
+			if (!isset($this->_scopes) && $this->id) {
 				$this->_scopes = [];
 				$scope = new HooplaScope();
 				$scope->settingId = $this->id;
 				$scope->find();
-				while($scope->fetch()){
+				while ($scope->fetch()) {
 					$this->_scopes[$scope->id] = clone($scope);
 				}
 			}
@@ -118,10 +170,10 @@ class HooplaSetting extends DataObject
 		}
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value) {
 		if ($name == "scopes") {
 			$this->_scopes = $value;
-		}else {
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}

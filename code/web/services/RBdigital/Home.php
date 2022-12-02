@@ -1,8 +1,8 @@
 <?php
 
-class RBdigital_Home extends Action{
+class RBdigital_Home extends Action {
 
-	function launch(){
+	function launch() {
 		global $interface;
 
 		$interface->assign('showBreadcrumbs', false);
@@ -11,8 +11,7 @@ class RBdigital_Home extends Action{
 		$this->display('../Error/410.tpl', 'Page Not Found');
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

@@ -1,9 +1,8 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates22_09_00() : array
-{
-    $curTime = time();
-    return [
+function getUpdates22_09_00(): array {
+	$curTime = time();
+	return [
 		/*'name' => [
 			'title' => '',
 			'description' => '',
@@ -11,7 +10,7 @@ function getUpdates22_09_00() : array
 				''
 			]
         ], //sample*/
-        'add_library_sso_config_options' => [
+		'add_library_sso_config_options' => [
 			'title' => 'SSO - Library config options',
 			'description' => 'Allow SSO configuration options to be specified',
 			'sql' => [
@@ -33,9 +32,10 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE library ADD column ssoLibraryIdAttr VARCHAR(255)",
 				"ALTER TABLE library ADD column ssoLibraryIdFallback VARCHAR(255)",
 				"ALTER TABLE library ADD column ssoCategoryIdAttr VARCHAR(255)",
-				"ALTER TABLE library ADD column ssoCategoryIdFallback VARCHAR(255)"
-            ]
-		], //add_library_sso_config_options
+				"ALTER TABLE library ADD column ssoCategoryIdFallback VARCHAR(255)",
+			],
+		],
+		//add_library_sso_config_options
 		'vdx_hold_groups' => [
 			'title' => 'VDX Hold Group setup',
 			'description' => 'Add the ability to add VDX Hold Groups to the site',
@@ -54,8 +54,9 @@ function getUpdates22_09_00() : array
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
 							('ILL Integration', 'Administer VDX Hold Groups', '', 15, 'Allows the user to define Hold Groups for Interlibrary Loans with VDX.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer VDX Hold Groups'))",
-			]
-		], //vdx_hold_groups
+			],
+		],
+		//vdx_hold_groups
 		'vdx_settings' => [
 			'title' => 'VDX Settings setup',
 			'description' => 'Add the ability to add VDX Settings to the site',
@@ -70,8 +71,9 @@ function getUpdates22_09_00() : array
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
 							('ILL Integration', 'Administer VDX Settings', '', 10, 'Allows the user to define settings for Interlibrary Loans with VDX.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer VDX Settings'))",
-			]
-		], //vdx_settings
+			],
+		],
+		//vdx_settings
 		'vdx_forms' => [
 			'title' => 'VDX From setup',
 			'description' => 'Add the ability to configure VDX forms for locations',
@@ -99,8 +101,9 @@ function getUpdates22_09_00() : array
 							('ILL Integration', 'Administer All VDX Forms', '', 20, 'Allows the user to define administer all VDX Forms.'), 
 							('ILL Integration', 'Administer Library VDX Forms', '', 22, 'Allows the user to define administer VDX Forms for their library.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All VDX Forms'))",
-			]
-		], //vdx_forms
+			],
+		],
+		//vdx_forms
 		'vdx_requests' => [
 			'title' => 'VDX Requests',
 			'description' => 'Add the ability to track VDX Requests for a user',
@@ -119,8 +122,9 @@ function getUpdates22_09_00() : array
 							catalogKey VARCHAR(20),
 							status VARCHAR(20)
 						) ENGINE = INNODB;',
-			]
-		], //vdx_requests
+			],
+		],
+		//vdx_requests
 		'vdx_requests_2' => [
 			'title' => 'VDX Requests 2',
 			'description' => 'Add additional fields for vdx requests',
@@ -128,16 +132,18 @@ function getUpdates22_09_00() : array
 			'sql' => [
 				'ALTER TABLE user_vdx_request ADD COLUMN note text',
 				'ALTER TABLE user_vdx_request ADD COLUMN pickupLocation VARCHAR(75)',
-			]
-		], //vdx_requests_2
+			],
+		],
+		//vdx_requests_2
 		'vdx_request_id' => [
 			'title' => 'VDX Request IDs',
 			'description' => 'Add vdxid to requests',
 			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE user_vdx_request ADD COLUMN vdxId INT',
-			]
-		], //vdx_request_id
+			],
+		],
+		//vdx_request_id
 		'vdx_setting_updates' => [
 			'title' => 'VDX Setting Updates',
 			'description' => 'Add additional information to be sent with the email',
@@ -146,8 +152,9 @@ function getUpdates22_09_00() : array
 				'ALTER TABLE vdx_settings ADD COLUMN patronKey VARCHAR(50)',
 				'ALTER TABLE vdx_settings ADD COLUMN reqVerifySource VARCHAR(50)',
 				'ALTER TABLE location ADD COLUMN vdxLocation VARCHAR(50)',
-			]
-		], //vdx_setting_updates
+			],
+		],
+		//vdx_setting_updates
 		'vdx_form_updates_locations' => [
 			'title' => 'VDX Form Location Updates',
 			'description' => 'Update linking forms with locations',
@@ -155,8 +162,9 @@ function getUpdates22_09_00() : array
 			'sql' => [
 				'DROP TABLE vdx_form_location',
 				'ALTER TABLE location ADD COLUMN vdxFormId INT(11)',
-			]
-		], //vdx_form_updates_locations
+			],
+		],
+		//vdx_form_updates_locations
 		'move_aspen_lida_settings' => [
 			'title' => 'Move Aspen LiDA settings to own section',
 			'description' => 'Moves quick searches, general app config, branded app config, and adds notification settings',
@@ -183,24 +191,27 @@ function getUpdates22_09_00() : array
 				"ALTER TABLE location ADD COLUMN lidaGeneralSettingId INT(11) DEFAULT -1",
 				"ALTER TABLE aspen_lida_quick_searches ADD COLUMN quickSearchSettingId INT(11) DEFAULT -1",
 				"ALTER TABLE aspen_lida_settings RENAME TO aspen_lida_branded_settings",
-			]
-		], //move_aspen_lida_settings
+			],
+		],
+		//move_aspen_lida_settings
 		'move_library_quick_searches' => [
 			'title' => 'Move library quick searches',
 			'description' => 'Preserve previously setup quick searches to new admin area',
 			'continueOnError' => true,
 			'sql' => [
-				'moveLibraryQuickSearchesToSettings'
-			]
-		], //move_library_quick_searches
+				'moveLibraryQuickSearchesToSettings',
+			],
+		],
+		//move_library_quick_searches
 		'move_location_app_settings' => [
 			'title' => 'Move location app settings',
 			'description' => 'Preserve previous settings for the app to new admin area',
 			'continueOnError' => true,
 			'sql' => [
-				'moveLocationAppSettings'
-			]
-		], //move_location_app_settings
+				'moveLocationAppSettings',
+			],
+		],
+		//move_location_app_settings
 		'create_user_notification_tokens' => [
 			'title' => 'Add user notification push tokens',
 			'description' => 'Setup table to store user notification push tokens from Expo',
@@ -211,8 +222,9 @@ function getUpdates22_09_00() : array
 					userId INT(11),
 					pushToken VARCHAR(500)
 				) ENGINE INNODB',
-			]
-		], //create_user_notification_tokens
+			],
+		],
+		//create_user_notification_tokens
 		'create_user_notifications' => [
 			'title' => 'Add user notification receipts',
 			'description' => 'Setup table to store user notification receipts from Expo',
@@ -228,59 +240,67 @@ function getUpdates22_09_00() : array
 					error TINYINT(1),
 					message VARCHAR(500)
 				) ENGINE INNODB',
-			]
-		], //create_user_notifications
+			],
+		],
+		//create_user_notifications
 		'greenhouse_add_accessToken' => [
 			'title' => 'Add notificationAccessToken for Greenhouse',
 			'description' => 'Add access token for notification api access',
 			'sql' => [
 				"ALTER TABLE greenhouse_settings ADD COLUMN notificationAccessToken VARCHAR(256) default NULL",
-			]
-		], //greenhouse_add_accessToken
+			],
+		],
+		//greenhouse_add_accessToken
 		'add_pushToken_user_notifications' => [
 			'title' => 'Add pushToken column to user_notifications table',
 			'description' => 'Add pushToken column to user_notifications table',
 			'sql' => [
 				"ALTER TABLE user_notifications ADD COLUMN pushToken VARCHAR(500) default NULL",
-			]
-		], //add_pushToken_user_notifications
+			],
+		],
+		//add_pushToken_user_notifications
 		'notifications_report_permissions' => [
 			'title' => 'Add permissions for Notifications report',
 			'description' => 'Add permissions for Notifications report',
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'View Notifications Reports', '', 6, 'Controls if the user can view the Notifications Report.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Notifications Reports'))",
-				"UPDATE permissions set sectionName = 'Aspen LiDA' where name = 'Administer Aspen LiDA Settings'"
-			]
-		], //notifications_report_permissions
+				"UPDATE permissions set sectionName = 'Aspen LiDA' where name = 'Administer Aspen LiDA Settings'",
+			],
+		],
+		//notifications_report_permissions
 		'add_device_notification_tokens' => [
 			'title' => 'Add deviceModel to user_notification_tokens',
 			'description' => 'Add deviceModel to user_notification_tokens',
 			'sql' => [
 				"ALTER TABLE user_notification_tokens ADD COLUMN deviceModel VARCHAR(75) default NULL",
-			]
-		], //add_device_notification_tokens
-        'change_default_formatSource_KohaOnly' => [
-            'title' => 'Change default format source to "Item Record" for Koha libraries',
-            'description' => 'Changes the default format source to "Item Record" for Koha libraries',
-            'sql' => [
-                "UPDATE indexing_profiles SET formatSource = 'item' WHERE catalogDriver = 'Koha'",
-            ]
-        ], //change_default_formatSource_KohaOnly
+			],
+		],
+		//add_device_notification_tokens
+		'change_default_formatSource_KohaOnly' => [
+			'title' => 'Change default format source to "Item Record" for Koha libraries',
+			'description' => 'Changes the default format source to "Item Record" for Koha libraries',
+			'sql' => [
+				"UPDATE indexing_profiles SET formatSource = 'item' WHERE catalogDriver = 'Koha'",
+			],
+		],
+		//change_default_formatSource_KohaOnly
 		'add_user_not_interested_index' => [
 			'title' => 'Add index for user not interested',
 			'description' => 'Add index for user not interested',
 			'sql' => [
 				"alter table user_not_interested add index groupedRecordPermanentId(groupedRecordPermanentId, userId)",
-			]
-		], //add_user_not_interested_index
+			],
+		],
+		//add_user_not_interested_index
 		'add_additional_format_pickup_options' => [
 			'title' => 'Add additional format pickup options',
 			'description' => 'Add index for user not interested',
 			'sql' => [
 				"alter table format_map_values CHANGE COLUMN mustPickupAtHoldingBranch pickupAt TINYINT(1) DEFAULT 0",
-			]
-		], //add_additional_format_pickup_options
+			],
+		],
+		//add_additional_format_pickup_options
 
 		//mark
 		'symphony_self_registration_profile' => [
@@ -288,29 +308,32 @@ function getUpdates22_09_00() : array
 			'description' => 'Add Self Registration Profile for Symphony',
 			'sql' => [
 				"alter table library ADD COLUMN selfRegistrationUserProfile VARCHAR(20) DEFAULT 'SELFREG'",
-			]
-		], //symphony_self_registration_profile
+			],
+		],
+		//symphony_self_registration_profile
 		'sort_owned_editions_first' => [
 			'title' => 'Sort Owned Editions First in Grouped Works',
 			'description' => 'Add the option to Sort Owned Editions First in Grouped Works',
 			'sql' => [
 				"alter table grouped_work_display_settings ADD COLUMN sortOwnedEditionsFirst TINYINT(1) DEFAULT 0",
-			]
-		], //symphony_self_registration_profile
+			],
+		],
+		//symphony_self_registration_profile
 		'clean_up_invalid_instances' => [
 			'title' => 'Clean Up Invalid Instances',
 			'description' => 'Remove instances that are not valid for a given server',
 			'sql' => [
 				"cleanUpInvalidInstances",
-			]
-		], //clean_up_invalid_instances
+			],
+		],
+		//clean_up_invalid_instances
 
 		//kirstien
 		'aci_speedpay_settings' => [
 			'title' => 'Add settings for ACI Speedpay',
 			'description' => 'Add settings for ACI Speedpay integration',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS aci_speedpay_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					name VARCHAR(50) UNIQUE,
@@ -323,46 +346,52 @@ function getUpdates22_09_00() : array
 				) ENGINE INNODB",
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer ACI Speedpay', '', 10, 'Controls if the user can change ACI Speedpay settings. <em>This has potential security and cost implications.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer ACI Speedpay'))",
-				"ALTER TABLE library ADD COLUMN aciSpeedpaySettingId INT(11) DEFAULT -1"
-			),
-		], //aci_speedpay_settings
+				"ALTER TABLE library ADD COLUMN aciSpeedpaySettingId INT(11) DEFAULT -1",
+			],
+		],
+		//aci_speedpay_settings
 		'add_aci_token_payment' => [
 			'title' => 'Add aciToken to user_payments',
 			'description' => 'Add aciToken to user_payments',
 			'sql' => [
 				"ALTER TABLE user_payments ADD COLUMN aciToken VARCHAR(255) default NULL",
-			]
-		], //add_aci_token_payment
+			],
+		],
+		//add_aci_token_payment
 		'add_lastUpdated_search' => [
 			'title' => 'Add lastUpdated to search',
 			'description' => 'Add lastUpdated to search',
 			'sql' => [
 				"ALTER TABLE search ADD COLUMN lastUpdated date",
-			]
-		], //add_lastUpdated_search
+			],
+		],
+		//add_lastUpdated_search
 		'add_logoNotification' => [
 			'title' => 'Add notification logo for branded apps',
 			'description' => 'Add option to upload notification logo for branded apps - Android only',
 			'sql' => [
 				"ALTER TABLE aspen_lida_branded_settings ADD COLUMN logoNotification VARCHAR(100)",
-			]
-		], //add_logoNotification
+			],
+		],
+		//add_logoNotification
 
 		//kodi
-        'force_reindex_of_records_with_spaces' => [
-            'title' => 'Force records to reindex if there are spaces in the grouped work ID',
-            'description' => 'Force records to reindex if there are spaces in the grouped work ID',
-            'sql' => [
-                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '% %'",
-            ]
-        ], //force_reindex_of_records_with_spaces
-        'force_reindex_of_records_with_no_language' => [
-            'title' => 'Force records to reindex if there is no language and record ends with -',
-            'description' => 'Force records to reindex if there is no language and record ends with -',
-            'sql' => [
-                "INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '%-'",
-            ]
-        ], //force_reindex_of_records_with_no_language
+		'force_reindex_of_records_with_spaces' => [
+			'title' => 'Force records to reindex if there are spaces in the grouped work ID',
+			'description' => 'Force records to reindex if there are spaces in the grouped work ID',
+			'sql' => [
+				"INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '% %'",
+			],
+		],
+		//force_reindex_of_records_with_spaces
+		'force_reindex_of_records_with_no_language' => [
+			'title' => 'Force records to reindex if there is no language and record ends with -',
+			'description' => 'Force records to reindex if there is no language and record ends with -',
+			'sql' => [
+				"INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id LIKE '%-'",
+			],
+		],
+		//force_reindex_of_records_with_no_language
 
 		//other
 		'hide_subject_facet_permission' => [
@@ -371,9 +400,10 @@ function getUpdates22_09_00() : array
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Hide Subject Facets', '', 85, 'Controls if the user can hide subject facets.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Hide Subject Facets'))",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='cataloging'), (SELECT id from permissions where name='Hide Subject Facets'))"
-			]
-		], // hide_subject_facets_permission
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='cataloging'), (SELECT id from permissions where name='Hide Subject Facets'))",
+			],
+		],
+		// hide_subject_facets_permission
 		'hide_subject_facets' => [
 			'title' => 'Add subjects to exclude from subject facet',
 			'description' => 'Add subjects to exclude from subject, era, genre, region, and topic facets',
@@ -385,7 +415,8 @@ function getUpdates22_09_00() : array
                             dateAdded INT(11)
                         ) ENGINE INNODB',
 			],
-		], // hide_subject_facets
+		],
+		// hide_subject_facets
 	];
 }
 
@@ -399,14 +430,14 @@ function moveLibraryQuickSearchesToSettings(/** @noinspection PhpUnusedParameter
 
 	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
 	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearch.php';
-	while($oldQuickSearchRow != null) {
+	while ($oldQuickSearchRow != null) {
 		$library = new Library();
 		$library->libraryId = $oldQuickSearchRow['libraryId'];
-		if($library->find(true)) {
+		if ($library->find(true)) {
 			$quickSearchSettingId = "-1";
 			$quickSearchSetting = new QuickSearchSetting();
 			$quickSearchSetting->name = $library->displayName . " - Quick Searches";
-			if($quickSearchSetting->insert()) {
+			if ($quickSearchSetting->insert()) {
 				$quickSearchSettingId = $quickSearchSetting->id;
 			}
 
@@ -414,7 +445,7 @@ function moveLibraryQuickSearchesToSettings(/** @noinspection PhpUnusedParameter
 			$quickSearch->quickSearchSettingId = "-1";
 			$quickSearch->libraryId = $library->libraryId;
 			$quickSearch->find();
-			while($quickSearch->fetch()) {
+			while ($quickSearch->fetch()) {
 				$quickSearch->quickSearchSettingId = $quickSearchSettingId;
 				$quickSearch->update();
 			}
@@ -436,23 +467,23 @@ function moveLocationAppSettings(/** @noinspection PhpUnusedParameterInspection 
 	$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
 
 	require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-	while($oldLocationSettingsRow != null) {
+	while ($oldLocationSettingsRow != null) {
 		$appSettingId = "-1";
 		$appSetting = new AppSetting();
 		$appSetting->enableAccess = $oldLocationSettingsRow['enableAppAccess'];
 		$appSetting->releaseChannel = $oldLocationSettingsRow['appReleaseChannel'];
-		if($appSetting->find(true)) {
+		if ($appSetting->find(true)) {
 			$appSettingId = $appSetting->id;
 		} else {
 			$appSetting->name = $oldLocationSettingsRow['displayName'] . " - App Settings";
-			if($appSetting->insert()) {
+			if ($appSetting->insert()) {
 				$appSettingId = $appSetting->id;
 			}
 		}
 
 		$location = new Location();
 		$location->locationId = $oldLocationSettingsRow['locationId'];
-		if($location->find(true)) {
+		if ($location->find(true)) {
 			$location->lidaGeneralSettingId = $appSettingId;
 			$location->update();
 		}
@@ -461,11 +492,11 @@ function moveLocationAppSettings(/** @noinspection PhpUnusedParameterInspection 
 	}
 }
 
-function cleanUpInvalidInstances(/** @noinspection PhpUnusedParameterInspection */ &$update){
+function cleanUpInvalidInstances(/** @noinspection PhpUnusedParameterInspection */ &$update) {
 	$validServerNames = getValidServerNames();
 	$serverNamesToPreserve = '';
-	foreach ($validServerNames as $validServerName){
-		if (strlen($serverNamesToPreserve) != 0){
+	foreach ($validServerNames as $validServerName) {
+		if (strlen($serverNamesToPreserve) != 0) {
 			$serverNamesToPreserve .= ', ';
 		}
 		$serverNamesToPreserve .= "'" . $validServerName . "'";

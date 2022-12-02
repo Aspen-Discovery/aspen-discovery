@@ -11,8 +11,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
  *  - Lists
  *  - Events
  */
-abstract class IndexRecordDriver extends RecordInterface
-{
+abstract class IndexRecordDriver extends RecordInterface {
 	protected $fields;
 	protected $index = false;
 
@@ -25,13 +24,25 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @var    array
 	 * @access protected
 	 */
-	protected $forbiddenSnippetFields = array(
-		'author', 'author-letter', 'auth_author2', 'title', 'title_short', 'title_full',
-		'title_auth', 'subtitle_display', 'title_display', 'spelling', 'id',
-		'fulltext_unstemmed', 'econtentText_unstemmed',
-		'spellingShingle', 'collection', 'title_proper',
-		'display_description'
-	);
+	protected $forbiddenSnippetFields = [
+		'author',
+		'author-letter',
+		'auth_author2',
+		'title',
+		'title_short',
+		'title_full',
+		'title_auth',
+		'subtitle_display',
+		'title_display',
+		'spelling',
+		'id',
+		'fulltext_unstemmed',
+		'econtentText_unstemmed',
+		'spellingShingle',
+		'collection',
+		'title_proper',
+		'display_description',
+	];
 
 	/**
 	 * These are captions corresponding with Solr fields for use when displaying
@@ -40,9 +51,9 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @var    array
 	 * @access protected
 	 */
-	protected $snippetCaptions = array(
-		'display_description' => 'Description'
-	);
+	protected $snippetCaptions = [
+		'display_description' => 'Description',
+	];
 
 	/**
 	 * Should we highlight fields in search results?
@@ -70,8 +81,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @param array|string $recordData Data to construct the driver from
 	 * @access  public
 	 */
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		$this->fields = $recordData;
 
 		global $configArray;
@@ -79,11 +89,10 @@ abstract class IndexRecordDriver extends RecordInterface
 		$searchSettings = getExtraConfigArray('groupedWorksSearches');
 		$this->highlight = $configArray['Index']['enableHighlighting'];
 		$this->snippet = $configArray['Index']['enableSnippets'];
-		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : [];
 	}
 
-	public function getExplain()
-	{
+	public function getExplain() {
 		if (isset($this->fields['explain'])) {
 			return nl2br(str_replace(' ', '&nbsp;', $this->fields['explain']));
 		}
@@ -93,16 +102,15 @@ abstract class IndexRecordDriver extends RecordInterface
 	/**
 	 * @return string[]
 	 */
-	public function getFormat()
-	{
+	public function getFormat() {
 		if (isset($this->fields['format'])) {
 			if (is_array($this->fields['format'])) {
 				return $this->fields['format'];
 			} else {
-				return array($this->fields['format']);
+				return [$this->fields['format']];
 			}
 		} else {
-			return array("Unknown");
+			return ["Unknown"];
 		}
 	}
 
@@ -112,9 +120,8 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  array
 	 */
-	public function getFormats()
-	{
-		return isset($this->fields['format']) ? $this->fields['format'] : array();
+	public function getFormats() {
+		return isset($this->fields['format']) ? $this->fields['format'] : [];
 	}
 
 	/**
@@ -122,9 +129,8 @@ abstract class IndexRecordDriver extends RecordInterface
 	 *
 	 * @return  array
 	 */
-	public function getFormatCategory()
-	{
-		return isset($this->fields['format_category']) ? $this->fields['format_category'] : array();
+	public function getFormatCategory() {
+		return isset($this->fields['format_category']) ? $this->fields['format_category'] : [];
 	}
 
 	/**
@@ -134,18 +140,17 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * with 'snippet' and 'caption' keys.
 	 * @access protected
 	 */
-	protected function getHighlightedSnippets()
-	{
-		$snippets = array();
+	protected function getHighlightedSnippets() {
+		$snippets = [];
 		// Only process snippets if the setting is enabled:
 		if ($this->snippet && isset($this->fields['_highlighting'])) {
 			if (is_array($this->fields['_highlighting'])) {
 				foreach ($this->fields['_highlighting'] as $key => $value) {
 					if (!in_array($key, $this->forbiddenSnippetFields)) {
-						$snippets[] = array(
+						$snippets[] = [
 							'snippet' => $value[0],
-							'caption' => $this->getSnippetCaption($key)
-						);
+							'caption' => $this->getSnippetCaption($key),
+						];
 					}
 				}
 			}
@@ -156,16 +161,14 @@ abstract class IndexRecordDriver extends RecordInterface
 		return false;
 	}
 
-	public function getId()
-	{
+	public function getId() {
 		if (isset($this->fields['id'])) {
 			return $this->fields['id'];
 		}
 		return null;
 	}
 
-	public function getLanguage()
-	{
+	public function getLanguage() {
 		if (isset($this->fields['language'])) {
 			return $this->fields['language'];
 		} else {
@@ -186,8 +189,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 */
 	public abstract function getListEntry($listId = null, $allowEdit = true);
 
-	public function getMoreDetailsOptions()
-	{
+	public function getMoreDetailsOptions() {
 		return $this->getBaseMoreDetailsOptions(false);
 	}
 
@@ -197,13 +199,11 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	public function getPrimaryAuthor()
-	{
+	public function getPrimaryAuthor() {
 		return isset($this->fields['author_display']) ? $this->fields['author_display'] : '';
 	}
 
-	public function getPrimaryFormat()
-	{
+	public function getPrimaryFormat() {
 		$formats = $this->getFormats();
 		return reset($formats);
 	}
@@ -214,13 +214,11 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getPublishers()
-	{
-		return $this->fields['publisherStr'] ?? array();
+	public function getPublishers() {
+		return $this->fields['publisherStr'] ?? [];
 	}
 
-	public function getScore()
-	{
+	public function getScore() {
 		if (isset($this->fields['score'])) {
 			return $this->fields['score'];
 		}
@@ -237,8 +235,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @return mixed        Caption if found, false if none available.
 	 * @access protected
 	 */
-	protected function getSnippetCaption($field)
-	{
+	protected function getSnippetCaption($field) {
 		if (isset($this->snippetCaptions[$field])) {
 			return $this->snippetCaptions[$field];
 		} else {
@@ -256,8 +253,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 *
 	 * @return  string
 	 */
-	public function getTitle()
-	{
+	public function getTitle() {
 		$title = isset($this->fields['title']) ? $this->fields['title'] : (isset($this->fields['title_display']) ? $this->fields['title_display'] : '');
 		if (strpos($title, '|') > 0) {
 			$title = substr($title, 0, strpos($title, '|'));
@@ -265,7 +261,7 @@ abstract class IndexRecordDriver extends RecordInterface
 		return trim($title);
 	}
 
-	public function getSortableTitle(){
+	public function getSortableTitle() {
 		$title = $this->getTitle();
 		$title = preg_replace('/^(?:(an|a|the|el|la)\s)/i', '', $title);
 		return $title;
@@ -279,8 +275,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
@@ -294,12 +289,11 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCitation($format)
-	{
+	public function getCitation($format) {
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
 
 		// Build author list:
-		$authors = array();
+		$authors = [];
 		$primary = $this->getPrimaryAuthor();
 		if (!empty($primary)) {
 			$authors[] = $primary;
@@ -308,7 +302,7 @@ abstract class IndexRecordDriver extends RecordInterface
 		// Collect all details for citation builder:
 		$publishers = $this->getPublishers();
 		//$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
+		$details = [
 			'authors' => $authors,
 			'title' => $this->getTitle(),
 			'subtitle' => '',
@@ -316,8 +310,8 @@ abstract class IndexRecordDriver extends RecordInterface
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => null,
 			'edition' => null,
-			'format' => $this->getFormats()
-		);
+			'format' => $this->getFormats(),
+		];
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
@@ -336,8 +330,7 @@ abstract class IndexRecordDriver extends RecordInterface
 		return '';
 	}
 
-	public function getBrowseResult()
-	{
+	public function getBrowseResult() {
 		global $interface;
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
@@ -348,18 +341,17 @@ abstract class IndexRecordDriver extends RecordInterface
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
-        //Get cover image size
-        global $interface;
-        $appliedTheme = $interface->getAppliedTheme();
+		//Get cover image size
+		global $interface;
+		$appliedTheme = $interface->getAppliedTheme();
 
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 
-        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-        }
-        else {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-        }
+		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		} else {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		}
 
 		return 'RecordDrivers/Index/browse_result.tpl';
 	}
@@ -374,8 +366,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCombinedResult($view = 'list')
-	{
+	public function getCombinedResult($view = 'list') {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -408,7 +399,7 @@ abstract class IndexRecordDriver extends RecordInterface
 		return 'RecordDrivers/Index/combinedResult.tpl';
 	}
 
-	public function getFields(){
+	public function getFields() {
 		return $this->fields;
 	}
 }

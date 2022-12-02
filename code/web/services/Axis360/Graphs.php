@@ -5,15 +5,13 @@ require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 
-class Axis360_Graphs extends Admin_Admin
-{
-	function launch()
-	{
+class Axis360_Graphs extends Admin_Admin {
+	function launch() {
 		global $interface;
 		$title = 'Axis 360 Usage Graph';
-		if (!empty($_REQUEST['instance'])){
+		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
-		}else{
+		} else {
 			$instanceName = '';
 		}
 
@@ -35,7 +33,7 @@ class Axis360_Graphs extends Admin_Admin
 		$dataSeries['Total Connection Failures'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		$userUsage = new UserAxis360Usage();
 		$userUsage->groupBy('year, month');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		$userUsage->selectAdd();
@@ -45,7 +43,7 @@ class Axis360_Graphs extends Admin_Admin
 		$userUsage->selectAdd('SUM(usageCount) as sumUsage');
 		$userUsage->orderBy('year, month');
 		$userUsage->find();
-		while ($userUsage->fetch()){
+		while ($userUsage->fetch()) {
 			$curPeriod = "{$userUsage->month}-{$userUsage->year}";
 			$columnLabels[] = $curPeriod;
 			/** @noinspection PhpUndefinedFieldInspection */
@@ -69,7 +67,7 @@ class Axis360_Graphs extends Admin_Admin
 		//Load Record Stats
 		$stats = new Axis360Stats();
 		$stats->groupBy('year, month');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$stats->instance = $instanceName;
 		}
 		$stats->selectAdd();
@@ -87,7 +85,7 @@ class Axis360_Graphs extends Admin_Admin
 		$stats->selectAdd('SUM(numConnectionFailures) as numConnectionFailures');
 		$stats->orderBy('year, month');
 		$stats->find();
-		while ($stats->fetch()){
+		while ($stats->fetch()) {
 			$curPeriod = "{$stats->month}-{$stats->year}";
 			/** @noinspection PhpUndefinedFieldInspection */
 			$dataSeries['Records Used']['data'][$curPeriod] = $stats->recordsUsed;
@@ -111,8 +109,7 @@ class Axis360_Graphs extends Admin_Admin
 		$this->display('../Admin/usage-graph.tpl', $title);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
@@ -121,13 +118,14 @@ class Axis360_Graphs extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'axis360';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

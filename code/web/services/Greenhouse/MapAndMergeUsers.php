@@ -1,9 +1,8 @@
 <?php
 require_once ROOT_DIR . '/services/Greenhouse/UserMerger.php';
-class MapAndMergeUsers extends UserMerger
-{
-	function launch()
-	{
+
+class MapAndMergeUsers extends UserMerger {
+	function launch() {
 		parent::launch();
 		global $interface;
 
@@ -20,11 +19,10 @@ class MapAndMergeUsers extends UserMerger
 
 		$interface->assign('setupErrors', $this->setupErrors);
 
-		$this->display('mapAndMergeUsers.tpl', 'Map and Merge Users',false);
+		$this->display('mapAndMergeUsers.tpl', 'Map and Merge Users', false);
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('', 'Map and Merge Users');
@@ -32,8 +30,7 @@ class MapAndMergeUsers extends UserMerger
 		return $breadcrumbs;
 	}
 
-	function remapAndMergeUsers(string $importPath) : array
-	{
+	function remapAndMergeUsers(string $importPath): array {
 		$result = $this->getBlankResult();
 		set_time_limit(0);
 		ini_set('memory_limit', '4G');
@@ -46,9 +43,9 @@ class MapAndMergeUsers extends UserMerger
 		while ($mappingLine) {
 			if (!empty($mappingLine) && count($mappingLine) >= 2) {
 				$sourceId = $mappingLine[1];
-				if (substr($sourceId, 0, 1) == 'p'){
+				if (substr($sourceId, 0, 1) == 'p') {
 					//This is a Sierra/Millennium user, remove the p and the check digit
-					$sourceId = substr($sourceId, 1, strlen($sourceId) -2);
+					$sourceId = substr($sourceId, 1, strlen($sourceId) - 2);
 				}
 				$destId = $mappingLine[0];
 				$userMappings[trim($sourceId)] = trim($destId);
@@ -61,14 +58,14 @@ class MapAndMergeUsers extends UserMerger
 		foreach ($userMappings as $originalUsername => $newUsername) {
 			$originalUser = new User();
 			$originalUser->username = $originalUsername;
-			if ($originalUser->find(true)){
+			if ($originalUser->find(true)) {
 				$result['numUnmappedUsers']++;
 
 				$newUser = new User();
 				$newUser->username = $newUsername;
-				if ($newUser->find(true)){
+				if ($newUser->find(true)) {
 					$this->mergeUsers($originalUser, $newUser, $result);
-				}else{
+				} else {
 					//We just have the old record in the database, we can just update the username and reset
 					$originalUser->username = $newUsername;
 					$originalUser->update();
@@ -77,7 +74,7 @@ class MapAndMergeUsers extends UserMerger
 
 				$newUser->__destruct();
 				$newUser = null;
-			}else{
+			} else {
 				//Skip this user since they never used Aspen
 			}
 			$originalUser->__destruct();
@@ -85,7 +82,7 @@ class MapAndMergeUsers extends UserMerger
 		}
 
 		//Now that the updates have been made, clear sessions
-		if ($result['numUsersUpdated'] > 0 || $result['numUsersMerged'] > 0){
+		if ($result['numUsersUpdated'] > 0 || $result['numUsersMerged'] > 0) {
 			$session = new Session();
 			$session->deleteAll();
 		}

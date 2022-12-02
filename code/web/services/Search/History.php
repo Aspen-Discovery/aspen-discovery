@@ -4,13 +4,12 @@ require_once ROOT_DIR . '/Action.php';
 
 class History extends Action {
 	var $catalog;
-	private  static $searchSourceLabels = array(
+	private static $searchSourceLabels = [
 		'local' => 'Catalog',
-		'genealogy' => 'Genealogy'
-	);
+		'genealogy' => 'Genealogy',
+	];
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		// In some contexts, we want to require a login before showing search
@@ -23,12 +22,12 @@ class History extends Action {
 		}
 
 		global $library;
-		if (!$library->enableSavedSearches){
+		if (!$library->enableSavedSearches) {
 			//User shouldn't get here
 			$module = 'Error';
 			$action = 'Handle404';
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -41,11 +40,11 @@ class History extends Action {
 
 		if (count($searchHistory) > 0) {
 			// Build an array of history entries
-			$links = array();
-			$saved = array();
+			$links = [];
+			$saved = [];
 
 			// Loop through the history
-			foreach($searchHistory as $search) {
+			foreach ($searchHistory as $search) {
 				$size = strlen($search->search_object);
 				$minSO = unserialize($search->search_object);
 				$searchObject = SearchObjectFactory::deminify($minSO);
@@ -59,25 +58,25 @@ class History extends Action {
 					$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
 				}
 
-				$newItem = array(
-					'id'          => $search->id,
-					'time'        => date("g:ia, jS M y", $searchObject->getStartTime()),
-					'title'       => $search->title,
-					'url'         => $searchObject->renderSearchUrl(),
-					'searchId'    => $searchObject->getSearchId(),
+				$newItem = [
+					'id' => $search->id,
+					'time' => date("g:ia, jS M y", $searchObject->getStartTime()),
+					'title' => $search->title,
+					'url' => $searchObject->renderSearchUrl(),
+					'searchId' => $searchObject->getSearchId(),
 					'description' => $searchObject->displayQuery(),
-					'filters'     => $searchObject->getFilterList(),
-					'hits'        => number_format($searchObject->getResultTotal()),
-					'source'      => $searchSourceLabel,
-					'speed'       => round($searchObject->getQuerySpeed(), 2)."s",
+					'filters' => $searchObject->getFilterList(),
+					'hits' => number_format($searchObject->getResultTotal()),
+					'source' => $searchSourceLabel,
+					'speed' => round($searchObject->getQuerySpeed(), 2) . "s",
 					// Size is purely for debugging. Not currently displayed in the template.
 					// It's the size of the serialized, minified search in the database.
-					'size'        => round($size/1024, 3)."kb",
+					'size' => round($size / 1024, 3) . "kb",
 					'hasNewResults' => $search->hasNewResults == 1,
 
-				);
+				];
 
-				if ($search->hasNewResults){
+				if ($search->hasNewResults) {
 					$searchObject->addFilter('time_since_added:Week');
 					$newItem['newTitlesUrl'] = $searchObject->renderSearchUrl();
 				}
@@ -115,11 +114,11 @@ class History extends Action {
 			$interface->assign('noHistory', true);
 		}
 
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$this->loadAccountSidebarVariables();
 
 			$this->display('history.tpl', 'Search History');
-		}else{
+		} else {
 			$this->display('history.tpl', 'Search History', '');
 		}
 	}
@@ -134,8 +133,8 @@ class History extends Action {
 		$thisSearch = [];
 		if (count($searchHistory) > 0) {
 			// Loop through the history to find the one we want
-			foreach($searchHistory as $search) {
-				if($search->id == $searchId) {
+			foreach ($searchHistory as $search) {
+				if ($search->id == $searchId) {
 					$searchObject = SearchObjectFactory::initSearchObject();
 					$size = strlen($search->search_object);
 					$minSO = unserialize($search->search_object);
@@ -148,17 +147,17 @@ class History extends Action {
 						$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
 					}
 
-					$thisSearch = array(
-						'id'          => $search->id,
-						'title'       => $search->title,
-						'url'         => $searchObject->renderSearchUrl(),
+					$thisSearch = [
+						'id' => $search->id,
+						'title' => $search->title,
+						'url' => $searchObject->renderSearchUrl(),
 						'description' => $searchObject->displayQuery(),
-						'filters'     => $searchObject->getFilterList(),
-						'hits'        => number_format($searchObject->getResultTotal()),
-						'source'      => $searchSourceLabel,
-					);
+						'filters' => $searchObject->getFilterList(),
+						'hits' => number_format($searchObject->getResultTotal()),
+						'source' => $searchSourceLabel,
+					];
 
-					if (empty($thisSearch['description'])){
+					if (empty($thisSearch['description'])) {
 						$thisSearch['description'] = "Anything (Empty search)";
 					}
 
@@ -189,21 +188,20 @@ class History extends Action {
 				$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
 			}
 
-			$thisSearch = array(
+			$thisSearch = [
 				'id' => $s->id,
 				'url' => $s->searchUrl,
 				'search_object' => $s->search_object,
 				'source' => $searchSourceLabel,
 				'hasNewResults' => $s->hasNewResults,
-			);
+			];
 		}
 		return $thisSearch;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		}
 		$breadcrumbs[] = new Breadcrumb('', 'Search History');

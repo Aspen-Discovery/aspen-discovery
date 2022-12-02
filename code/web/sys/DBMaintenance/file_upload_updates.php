@@ -1,6 +1,6 @@
 <?php
 
-function getFileUploadUpdates(){
+function getFileUploadUpdates() {
 	return [
 		'file_uploads_table' => [
 			'title' => 'Create File Uploads Table',
@@ -12,8 +12,8 @@ function getFileUploadUpdates(){
 					fullPath VARCHAR(512) NOT NULL,
 					type VARCHAR(25) NOT NULL,
 					INDEX (type)
-				) ENGINE INNODB'
-			]
+				) ENGINE INNODB',
+			],
 		],
 
 		'record_files_table' => [
@@ -27,8 +27,8 @@ function getFileUploadUpdates(){
 					fileId INT(11),
 					INDEX (fileId),
 					INDEX (type, identifier)
-				) ENGINE INNODB'
-			]
-		]
+				) ENGINE INNODB',
+			],
+		],
 	];
 }

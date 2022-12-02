@@ -1,8 +1,7 @@
 <?php
 
 
-class EventsIndexingLogEntry extends DataObject
-{
+class EventsIndexingLogEntry extends DataObject {
 	public $__table = 'events_indexing_log';
 	public $id;
 	public $startTime;
@@ -16,8 +15,7 @@ class EventsIndexingLogEntry extends DataObject
 	public $numDeleted;
 	public $numUpdated;
 
-	function getElapsedTime()
-	{
+	function getElapsedTime() {
 		if (!isset($this->endTime) || is_null($this->endTime)) {
 			return "";
 		} else {

@@ -1,7 +1,6 @@
 <?php
 
-class OverDriveStats extends DataObject
-{
+class OverDriveStats extends DataObject {
 	public $__table = 'overdrive_stats';
 	public $id;
 	public $instance;

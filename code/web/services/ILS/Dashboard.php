@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 
-class ILS_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class ILS_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('UserILSUsage');
@@ -55,10 +53,9 @@ class ILS_Dashboard extends Admin_Dashboard
 	 * @param int[] $profilesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($instanceName, $month, $year, $profilesToGetStatsFor): array
-	{
+	public function getUserStats($instanceName, $month, $year, $profilesToGetStatsFor): array {
 		$userUsage = new UserILSUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -86,7 +83,7 @@ class ILS_Dashboard extends Admin_Dashboard
 				'usersWithPdfDownloads' => 0,
 				'usersWithPdfViews' => 0,
 				'numSelfRegistrations' => 0,
-				'usersWithSupplementalFileDownloads' => 0
+				'usersWithSupplementalFileDownloads' => 0,
 			];
 		}
 		while ($userUsage->fetch()) {
@@ -113,10 +110,9 @@ class ILS_Dashboard extends Admin_Dashboard
 	 * @param int[] $profilesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getRecordStats($instanceName, $month, $year, $profilesToGetStatsFor): array
-	{
+	public function getRecordStats($instanceName, $month, $year, $profilesToGetStatsFor): array {
 		$usage = new ILSRecordUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -144,7 +140,7 @@ class ILS_Dashboard extends Admin_Dashboard
 				'numRecordsUsed' => 0,
 				'numPDFsDownloaded' => 0,
 				'numPDFsViewed' => 0,
-				'numSupplementalFileDownloadCount' => 0
+				'numSupplementalFileDownloadCount' => 0,
 			];
 		}
 		while ($usage->fetch()) {
@@ -160,8 +156,7 @@ class ILS_Dashboard extends Admin_Dashboard
 		return $usageStats;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
@@ -169,13 +164,14 @@ class ILS_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ils_integration';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

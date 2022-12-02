@@ -3,20 +3,22 @@ require_once ROOT_DIR . '/sys/Covers/AbstractCoverBuilder.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
-class EbscoCoverBuilder extends AbstractCoverBuilder
-{
-	public function __construct($invertColors = false)
-	{
+class EbscoCoverBuilder extends AbstractCoverBuilder {
+	public function __construct($invertColors = false) {
 		parent::__construct(true);
 	}
 
-	public function getCover($title, $filename, $props = null)
-	{
-		if (!in_array($props['format'], array('Magazine', 'New', 'Academic Journal', 'Primary Source Document'))) {
+	public function getCover($title, $filename, $props = null) {
+		if (!in_array($props['format'], [
+			'Magazine',
+			'New',
+			'Academic Journal',
+			'Primary Source Document',
+		])) {
 			require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
 			$defaultCover = new DefaultCoverImageBuilder(true);
 			$defaultCover->getCover($title, $props['format'], $filename);
-		}else {
+		} else {
 			//Create the background image
 			$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 

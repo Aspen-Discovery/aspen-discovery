@@ -4,73 +4,61 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
 
-class EBSCO_EDSSettings extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class EBSCO_EDSSettings extends ObjectEditor {
+	function getObjectType(): string {
 		return 'EDSSettings';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'EDSSettings';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'EBSCO';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'EBSCO EDS Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new EDSSettings();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
-		$objectList = array();
+		$objectList = [];
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return EDSSettings::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/ebsco';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebsco', 'EBSCO');
@@ -78,13 +66,11 @@ class EBSCO_EDSSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ebsco';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer EBSCO EDS');
 	}
 }

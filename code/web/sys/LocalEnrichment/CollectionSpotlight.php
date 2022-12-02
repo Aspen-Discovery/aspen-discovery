@@ -3,15 +3,16 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 
-class CollectionSpotlight extends DataObject
-{
+class CollectionSpotlight extends DataObject {
 	public $__table = 'collection_spotlights';    // table name
 	public $id;                      //int(25)
 	public $name;                    //varchar(255)
 	public $description;                    //varchar(255)
 	public $showTitleDescriptions;
-	public /** @noinspection PhpUnused */ $showTitle;
-	public /** @noinspection PhpUnused */ $showAuthor;
+	public /** @noinspection PhpUnused */
+		$showTitle;
+	public /** @noinspection PhpUnused */
+		$showAuthor;
 	public $onSelectCallback;
 	public $customCss;
 	public $listDisplayType;
@@ -19,45 +20,52 @@ class CollectionSpotlight extends DataObject
 	public $style; //'vertical', 'horizontal', 'single', 'single-with-next', 'text-list', 'horizontal-carousel'
 	public $autoRotate;
 	public $libraryId;
-	public /** @noinspection PhpUnused */ $showRatings;
+	public /** @noinspection PhpUnused */
+		$showRatings;
 	public $coverSize; //'small', 'medium'
-	public /** @noinspection PhpUnused */ $showViewMoreLink;
+	public /** @noinspection PhpUnused */
+		$showViewMoreLink;
 	public $viewMoreLinkMode;
-	public /** @noinspection PhpUnused */ $showSpotlightTitle; // whether or not the title bar is shown
-	public /** @noinspection PhpUnused */ $numTitlesToShow;
+	public /** @noinspection PhpUnused */
+		$showSpotlightTitle; // whether or not the title bar is shown
+	public /** @noinspection PhpUnused */
+		$numTitlesToShow;
 
 	// Spotlight Styles and their labels
-	private static $_styles = array('horizontal' => 'Horizontal', 'horizontal-carousel' => 'Horizontal Carousel', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
+	private static $_styles = [
+		'horizontal' => 'Horizontal',
+		'horizontal-carousel' => 'Horizontal Carousel',
+		'vertical' => 'Vertical',
+		'single' => 'Single Title',
+		'single-with-next' => 'Single Title with a Next Button',
+		'text-list' => 'Text Only List',
+	];
 
 	// Spotlight Display Types and their labels
-	private static $_displayTypes = array(
+	private static $_displayTypes = [
 		'tabs' => 'Tabbed Display',
-		'dropdown' => 'Drop Down List'
-	);
+		'dropdown' => 'Drop Down List',
+	];
 
 	/** @var  CollectionSpotlightList[] */
 	private $_lists = null;
 
-	public function getNumericColumnNames() : array
-	{
+	public function getNumericColumnNames(): array {
 		return ['id'];
 	}
 
-	public function getStyle($styleName)
-	{
+	public function getStyle($styleName) {
 		return CollectionSpotlight::$_styles[$styleName];
 	}
 
 	/** @noinspection PhpUnused */
-	public function getDisplayType($typeName)
-	{
+	public function getDisplayType($typeName) {
 		return CollectionSpotlight::$_displayTypes[$typeName];
 	}
 
-	static function getObjectStructure() : array
-	{
+	static function getObjectStructure(): array {
 		//Load Libraries for lookup values
-		$libraryList = array();
+		$libraryList = [];
 		if (UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$library = new Library();
 			$library->orderBy('displayName');
@@ -66,7 +74,7 @@ class CollectionSpotlight extends DataObject
 			while ($library->fetch()) {
 				$libraryList[$library->libraryId] = $library->displayName;
 			}
-		} else{
+		} else {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
@@ -77,16 +85,22 @@ class CollectionSpotlight extends DataObject
 		unset($spotlightListStructure['sourceListId']);
 		unset($spotlightListStructure['sourceCourseReserveId']);
 		unset($spotlightListStructure['defaultSort']);
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'hidden',
 				'label' => 'Id',
 				'description' => 'The unique id of the collection spotlight.',
 				'storeDb' => true,
-			),
-			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'name' => array(
+			],
+			'libraryId' => [
+				'property' => 'libraryId',
+				'type' => 'enum',
+				'values' => $libraryList,
+				'label' => 'Library',
+				'description' => 'A link to the library which the location belongs to',
+			],
+			'name' => [
 				'property' => 'name',
 				'type' => 'text',
 				'label' => 'Name',
@@ -95,8 +109,8 @@ class CollectionSpotlight extends DataObject
 				'size' => 100,
 				'serverValidation' => 'validateName',
 				'storeDb' => true,
-			),
-			'description' => array(
+			],
+			'description' => [
 				'property' => 'description',
 				'type' => 'textarea',
 				'rows' => 3,
@@ -105,40 +119,40 @@ class CollectionSpotlight extends DataObject
 				'description' => 'A description for the spotlight (shown internally only)',
 				'storeDb' => true,
 				'hideInLists' => true,
-			),
-			'numTitlesToShow' => array(
+			],
+			'numTitlesToShow' => [
 				'property' => 'numTitlesToShow',
 				'type' => 'integer',
 				'label' => 'The number of titles that should be shown',
 				'storeDb' => true,
 				'default' => 25,
 				'hideInLists' => true,
-			),
-			'showTitle' => array(
+			],
+			'showTitle' => [
 				'property' => 'showTitle',
 				'type' => 'checkbox',
 				'label' => 'Should the title for the currently selected item be shown?',
 				'storeDb' => true,
 				'default' => true,
 				'hideInLists' => true,
-			),
-			'showAuthor' => array(
+			],
+			'showAuthor' => [
 				'property' => 'showAuthor',
 				'type' => 'checkbox',
 				'label' => 'Should the author (catalog items) /format (archive items) for the currently selected item be shown?',
 				'storeDb' => true,
 				'default' => false,
 				'hideInLists' => true,
-			),
-			'showRatings' => array(
+			],
+			'showRatings' => [
 				'property' => 'showRatings',
 				'type' => 'checkbox',
 				'label' => 'Should ratings be shown under each cover?',
 				'storeDb' => true,
 				'default' => false,
 				'hideInLists' => true,
-			),
-			'style' => array(
+			],
+			'style' => [
 				'property' => 'style',
 				'type' => 'enum',
 				'label' => 'The style to use when displaying the featured titles',
@@ -146,28 +160,31 @@ class CollectionSpotlight extends DataObject
 				'storeDb' => true,
 				'default' => 'horizontal',
 				'hideInLists' => true,
-				'translateValues'=>true,
+				'translateValues' => true,
 				'isAdminFacing' => true,
-			),
-			'autoRotate' => array(
+			],
+			'autoRotate' => [
 				'property' => 'autoRotate',
 				'type' => 'checkbox',
 				'label' => 'Should the display automatically rotate between titles?',
 				'storeDb' => true,
 				'hideInLists' => true,
-			),
-			'coverSize' => array(
+			],
+			'coverSize' => [
 				'property' => 'coverSize',
 				'type' => 'enum',
 				'label' => 'The cover size to use when showing the display',
-				'values' => array('small' => 'Small', 'medium' => 'Medium'),
+				'values' => [
+					'small' => 'Small',
+					'medium' => 'Medium',
+				],
 				'storeDb' => true,
 				'default' => 'medium',
 				'hideInLists' => true,
-				'translateValues'=>true,
+				'translateValues' => true,
 				'isAdminFacing' => true,
-			),
-			'customCss' => array(
+			],
+			'customCss' => [
 				'property' => 'customCss',
 				'type' => 'url',
 				'label' => 'Custom CSS File',
@@ -177,8 +194,8 @@ class CollectionSpotlight extends DataObject
 				'storeDb' => true,
 				'required' => false,
 				'hideInLists' => true,
-			),
-			'listDisplayType' => array(
+			],
+			'listDisplayType' => [
 				'property' => 'listDisplayType',
 				'type' => 'enum',
 				'values' => CollectionSpotlight::$_displayTypes,
@@ -186,10 +203,10 @@ class CollectionSpotlight extends DataObject
 				'description' => 'The method used to show the user the multiple lists associated with the display.',
 				'storeDb' => true,
 				'hideInLists' => true,
-				'translateValues'=>true,
+				'translateValues' => true,
 				'isAdminFacing' => true,
-			),
-			'showSpotlightTitle' => array(
+			],
+			'showSpotlightTitle' => [
 				'property' => 'showSpotlightTitle',
 				'type' => 'checkbox',
 				'label' => 'Show the display\'s title bar',
@@ -197,30 +214,30 @@ class CollectionSpotlight extends DataObject
 				'storeDb' => true,
 				'hideInLists' => true,
 				'default' => true,
-			),
-			'showViewMoreLink' => array(
+			],
+			'showViewMoreLink' => [
 				'property' => 'showViewMoreLink',
 				'type' => 'checkbox',
 				'label' => 'Show the View More link',
 				'storeDb' => true,
 				'hideInLists' => true,
 				'default' => false,
-			),
-			'viewMoreLinkMode' => array(
+			],
+			'viewMoreLinkMode' => [
 				'property' => 'viewMoreLinkMode',
 				'type' => 'enum',
-				'values' => array(
+				'values' => [
 					'list' => 'List',
-					'covers' => 'Covers'
-				),
+					'covers' => 'Covers',
+				],
 				'label' => 'Display mode for view more link',
 				'description' => 'The mode to show full results in when the View More link is clicked.',
 				'storeDb' => true,
 				'hideInLists' => true,
-				'translateValues'=>true,
+				'translateValues' => true,
 				'isAdminFacing' => true,
-			),
-			'lists' => array(
+			],
+			'lists' => [
 				'property' => 'lists',
 				'type' => 'oneToMany',
 				'keyThis' => 'id',
@@ -235,18 +252,17 @@ class CollectionSpotlight extends DataObject
 				'hideInLists' => false,
 				'allowEdit' => true,
 				'canEdit' => true,
-			),
-		);
+			],
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	function validateName()
-	{
+	function validateName() {
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors' => array(),
-		);
+			'errors' => [],
+		];
 
 		//Check to see if the name is unique
 		$spotlight = new CollectionSpotlight();
@@ -267,8 +283,7 @@ class CollectionSpotlight extends DataObject
 		return $validationResults;
 	}
 
-	public function __get($name)
-	{
+	public function __get($name) {
 		if ($name == "lists") {
 			if ($this->_lists == null) {
 				//Get the list of lists that are being displayed for the spotlight
@@ -286,13 +301,13 @@ class CollectionSpotlight extends DataObject
 		return null;
 	}
 
-	public function getNumLists(){
+	public function getNumLists() {
 		$collectionSpotlightList = new CollectionSpotlightList();
 		$collectionSpotlightList->collectionSpotlightId = $this->id;
 		return $collectionSpotlightList->count();
 	}
 
-	public function getListNames(){
+	public function getListNames() {
 		$listNames = [];
 		$collectionSpotlightList = new CollectionSpotlightList();
 		$collectionSpotlightList->collectionSpotlightId = $this->id;
@@ -304,16 +319,14 @@ class CollectionSpotlight extends DataObject
 		return implode(", ", $listNames);
 	}
 
-	public function __set($name, $value)
-	{
+	public function __set($name, $value) {
 		if ($name == "lists") {
 			$this->_lists = $value;
 		}
 	}
 
 
-	public function getLibraryName()
-	{
+	public function getLibraryName() {
 		if ($this->libraryId == -1) {
 			return 'All libraries';
 		} else {
@@ -329,8 +342,7 @@ class CollectionSpotlight extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update()
-	{
+	public function update() {
 		$ret = parent::update();
 		if ($ret === FALSE) {
 			return $ret;
@@ -345,8 +357,7 @@ class CollectionSpotlight extends DataObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert()
-	{
+	public function insert() {
 		$ret = parent::insert();
 		if ($ret === FALSE) {
 			return $ret;
@@ -356,8 +367,7 @@ class CollectionSpotlight extends DataObject
 		return true;
 	}
 
-	public function saveLists()
-	{
+	public function saveLists() {
 		if ($this->_lists != null) {
 			foreach ($this->_lists as $list) {
 				if ($list->_deleteOnSave == true) {
@@ -376,20 +386,19 @@ class CollectionSpotlight extends DataObject
 		}
 	}
 
-	public function validateLists()
-	{
+	public function validateLists() {
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors' => array(),
-		);
+			'errors' => [],
+		];
 
-		$listNames = array();
+		$listNames = [];
 		require_once ROOT_DIR . '/services/API/ListAPI.php';
 		$listAPI = new ListAPI();
 		$allListIds = $listAPI->getAllListIds();
 
-		if ($this->_lists != null){
+		if ($this->_lists != null) {
 			foreach ($this->_lists as $list) {
 				if ($list->_deleteOnSave == true) {
 					//Don't validate

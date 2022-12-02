@@ -2,13 +2,13 @@
 
 require_once ROOT_DIR . '/sys/Translation/TranslationTerm.php';
 require_once ROOT_DIR . '/sys/Translation/Translation.php';
-class Translator
-{
+
+class Translator {
 	/** @var string path to the translation file */
 	var $path;
-	/** @var string the ISO code for the language  */
+	/** @var string the ISO code for the language */
 	var $langCode;
-	var $words = array();
+	var $words = [];
 	var $debug = false;
 
 	/**
@@ -18,8 +18,7 @@ class Translator
 	 * @param string $langCode The ISO 639-1 Language Code
 	 * @access  public
 	 */
-	function __construct($path, $langCode)
-	{
+	function __construct($path, $langCode) {
 		global $timer;
 
 		$this->path = $path;
@@ -31,21 +30,20 @@ class Translator
 	/**
 	 * Parse a language file.
 	 *
-	 * @param   string $file        Filename to load
+	 * @param string $file Filename to load
 	 * @access  private
 	 * @return  array
 	 */
-	function parseLanguageFile($file)
-	{
+	function parseLanguageFile($file) {
 		// Manually parse the language file:
-		$words = array();
+		$words = [];
 		$contents = file($file);
 		if (is_array($contents)) {
-			foreach($contents as $current) {
-				if (strlen($current) > 0 && substr($current, 0, 1) != ';'){
+			foreach ($contents as $current) {
+				if (strlen($current) > 0 && substr($current, 0, 1) != ';') {
 					$lineContents = str_getcsv($current, '=', '"');
-					if (count($lineContents) == 2){
-						$key =trim($lineContents[0]);
+					if (count($lineContents) == 2) {
+						$key = trim($lineContents[0]);
 						$words[$key] = trim($lineContents[1]);
 					}
 				}
@@ -63,26 +61,25 @@ class Translator
 	/**
 	 * Translate the phrase
 	 *
-	 * @param string $phrase                - The phrase to translate
-	 * @param string $defaultText           - The default text for a phrase that is just a key for a longer phrase
-	 * @param string[] $replacementValues   - Values to replace within the string
-	 * @param bool $inAttribute             - Whether or not we are in an attribute. If we are, we can't show the span
-	 * @param bool $isPublicFacing          - Whether or not the public will see this
-	 * @param bool $isAdminFacing           - Whether or not this is in the admin interface
-	 * @param bool $isMetadata              - Whether or not this is a translation of metadata in a MARC record, OverDrive, Axis360, etc
-	 * @param bool $isAdminEnteredData      - Whether or not this is data an administrator entered (System message, etc)
-	 * @param bool $translateParameters     - Whether or not parameters should be translated
+	 * @param string $phrase - The phrase to translate
+	 * @param string $defaultText - The default text for a phrase that is just a key for a longer phrase
+	 * @param string[] $replacementValues - Values to replace within the string
+	 * @param bool $inAttribute - Whether or not we are in an attribute. If we are, we can't show the span
+	 * @param bool $isPublicFacing - Whether or not the public will see this
+	 * @param bool $isAdminFacing - Whether or not this is in the admin interface
+	 * @param bool $isMetadata - Whether or not this is a translation of metadata in a MARC record, OverDrive, Axis360, etc
+	 * @param bool $isAdminEnteredData - Whether or not this is data an administrator entered (System message, etc)
+	 * @param bool $translateParameters - Whether or not parameters should be translated
 	 * @return  string                      - The translated phrase
 	 */
-	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false, $translateParameters=false)
-	{
-		if ($phrase == '' || is_numeric($phrase)){
+	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false, $translateParameters = false) {
+		if ($phrase == '' || is_numeric($phrase)) {
 			return $phrase;
 		}
 
 		global $activeLanguage;
 		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasPermission('Translate Aspen'));
-		try{
+		try {
 			if (!empty($activeLanguage)) {
 				$translationKey = $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase;
 				$existingTranslation = array_key_exists($translationKey, $this->cachedTranslations) ? $this->cachedTranslations[$translationKey] : false;
@@ -121,13 +118,13 @@ class Translator
 									];
 									$this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
 								}
-							}else{
+							} else {
 								$termTooLong = true;
 							}
 						} catch (Exception $e) {
 							$termTooLong = true;
 						}
-						if ($termTooLong){
+						if ($termTooLong) {
 							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
 								//Just show the phrase for now, maybe show the error in debug mode?
 								if (IPAddress::showDebuggingInformation()) {
@@ -170,9 +167,9 @@ class Translator
 
 					if ($activeLanguage->code == 'pig') {
 						$fullTranslation = $this->getPigLatinTranslation($phrase);
-					}elseif ($activeLanguage->code == 'ubb') {
+					} elseif ($activeLanguage->code == 'ubb') {
 						$fullTranslation = $this->getUbbiDubbiTranslation($phrase);
-					}else {
+					} else {
 						//Search for the translation
 						$translation = new Translation();
 						$translation->termId = $translationTerm->id;
@@ -231,7 +228,7 @@ class Translator
 								global $logger;
 								$logger->log("Could not update translation", Logger::LOG_ERROR);
 							}
-						} else if ($defaultTextChanged) {
+						} elseif ($defaultTextChanged) {
 							$translation->needsReview = 1;
 							$translation->update();
 						}
@@ -254,26 +251,26 @@ class Translator
 				} else {
 					$returnString = $existingTranslation;
 				}
-			}else{
+			} else {
 				//Translation not setup (happens from book covers)
-				if (!empty($defaultText)){
+				if (!empty($defaultText)) {
 					$returnString = $defaultText;
-				}else{
+				} else {
 					$returnString = $phrase;
 				}
 			}
-		}catch (PDOException $e){
+		} catch (PDOException $e) {
 			//tables likely don't exist, ignore
 			$returnString = $phrase;
-			if (!empty($defaultText)){
+			if (!empty($defaultText)) {
 				$returnString = $defaultText;
-			}else{
+			} else {
 				$returnString = $phrase;
 			}
 		}
-		if (count($replacementValues) > 0){
-			foreach ($replacementValues as $index => $replacementValue){
-				if ($translateParameters){
+		if (count($replacementValues) > 0) {
+			foreach ($replacementValues as $index => $replacementValue) {
+				if ($translateParameters) {
 					$replacementValue = $this->translate($replacementValue, '', [], true, $isPublicFacing, $isAdminFacing, $isMetadata, $isAdminEnteredData, $translateParameters);
 				}
 				$returnString = str_replace('%' . $index . '%', $replacementValue, $returnString);
@@ -285,9 +282,8 @@ class Translator
 		return $returnString;
 	}
 
-	private function loadTranslationsFromIniFile()
-	{
-		if (empty($this->words)){
+	private function loadTranslationsFromIniFile() {
+		if (empty($this->words)) {
 			global $configArray;
 
 			// Load file in specified path
@@ -318,19 +314,20 @@ class Translator
 	}
 
 	private $translationModeActive = null;
-	public function translationModeActive(){
-		if ($this->translationModeActive === null){
-			if (isset($_REQUEST['startTranslationMode'])){
+
+	public function translationModeActive() {
+		if ($this->translationModeActive === null) {
+			if (isset($_REQUEST['startTranslationMode'])) {
 				@session_start();
 				$_SESSION['translationMode'] = 'on';
 				$translationModeActive = true;
-			}elseif (isset($_REQUEST['stopTranslationMode'])){
+			} elseif (isset($_REQUEST['stopTranslationMode'])) {
 				@session_start();
 				$_SESSION['translationMode'] = 'off';
 				$translationModeActive = false;
-			}elseif (isset($_SESSION['translationMode'])){
+			} elseif (isset($_SESSION['translationMode'])) {
 				$translationModeActive = ($_SESSION['translationMode'] == 'on');
-			}else{
+			} else {
 				$translationModeActive = false;
 			}
 			$this->translationModeActive = $translationModeActive;
@@ -338,24 +335,36 @@ class Translator
 		return $this->translationModeActive;
 	}
 
-	private static $vowels = ['a', 'e', 'i', 'o', 'u','y', 'A', 'E', 'I', 'O', 'U'];
-	private function getPigLatinTranslation(string $phrase)
-	{
+	private static $vowels = [
+		'a',
+		'e',
+		'i',
+		'o',
+		'u',
+		'y',
+		'A',
+		'E',
+		'I',
+		'O',
+		'U',
+	];
+
+	private function getPigLatinTranslation(string $phrase) {
 		$translation = '';
 		$words = explode(' ', $phrase);
-		foreach ($words as $word){
-			if (preg_match('/%\d+%/', $word)){
+		foreach ($words as $word) {
+			if (preg_match('/%\d+%/', $word)) {
 				$translation .= $word . ' ';
-			}elseif (in_array($word[0], Translator::$vowels)){
+			} elseif (in_array($word[0], Translator::$vowels)) {
 				$translation .= $word . 'way ';
-			}elseif (strlen($word) >= 2 && !in_array($word[0], Translator::$vowels) && !in_array($word[1], Translator::$vowels)){
+			} elseif (strlen($word) >= 2 && !in_array($word[0], Translator::$vowels) && !in_array($word[1], Translator::$vowels)) {
 				$translation .= substr($word, 2) . $word[0] . $word[1] . 'ay ';
-			}else{
+			} else {
 				$translation .= substr($word, 1) . $word[0] . 'ay ';
 			}
 		}
 		$translation = strtolower($translation);
-		if (preg_match('/[A-Z]/', $phrase[0])){
+		if (preg_match('/[A-Z]/', $phrase[0])) {
 			$translation = ucfirst($translation);
 		}
 		return trim($translation);
@@ -364,13 +373,13 @@ class Translator
 	private function getUbbiDubbiTranslation(string $phrase) {
 		$translation = '';
 		$words = explode(' ', $phrase);
-		foreach ($words as $word){
-			if (preg_match('/%\d+%/', $word)){
+		foreach ($words as $word) {
+			if (preg_match('/%\d+%/', $word)) {
 				$translation .= $word . ' ';
-			}else {
+			} else {
 				$translatedWord = '';
 				$lastCharWasVowel = false;
-				for ($i = 0; $i < strlen($word); $i++){
+				for ($i = 0; $i < strlen($word); $i++) {
 					$char = $word[$i];
 					if (in_array($char, Translator::$vowels)) {
 						if (!$lastCharWasVowel) {
@@ -386,7 +395,7 @@ class Translator
 			}
 		}
 		$translation = strtolower($translation);
-		if (preg_match('/[A-Z]/', $phrase[0])){
+		if (preg_match('/[A-Z]/', $phrase[0])) {
 			$translation = ucfirst($translation);
 		}
 		return trim($translation);

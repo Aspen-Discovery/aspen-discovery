@@ -1,7 +1,6 @@
 <?php
 
-class FileUpload extends DataObject
-{
+class FileUpload extends DataObject {
 	public $__table = 'file_uploads';
 	public $id;
 	public $title;
@@ -9,25 +8,53 @@ class FileUpload extends DataObject
 	public $thumbFullPath;
 	public $type;
 
-	static function getObjectStructure() : array
-	{
+	static function getObjectStructure(): array {
 		return [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the page', 'size' => '40', 'maxLength'=>255),
-			'type' => array('property' => 'type', 'type' => 'text', 'label' => 'Type', 'description' => 'The type of file being uploaded', 'maxLength' => 50),
-			'fullPath' => array('property'=>'fullPath', 'type'=>'file', 'label'=>'Full Path', 'description'=>'The path of the file on the server'),
-			'thumbFullPath' => array('property'=>'thumbFullPath', 'type' => 'text', 'label'=>'Thumbnail Full Path', 'description'=>'The path of the generated thumbnail on the server', 'serverValidation' => 'makeThumbnail', 'readOnly' => true),
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id within the database',
+			],
+			'title' => [
+				'property' => 'title',
+				'type' => 'text',
+				'label' => 'Title',
+				'description' => 'The title of the page',
+				'size' => '40',
+				'maxLength' => 255,
+			],
+			'type' => [
+				'property' => 'type',
+				'type' => 'text',
+				'label' => 'Type',
+				'description' => 'The type of file being uploaded',
+				'maxLength' => 50,
+			],
+			'fullPath' => [
+				'property' => 'fullPath',
+				'type' => 'file',
+				'label' => 'Full Path',
+				'description' => 'The path of the file on the server',
+			],
+			'thumbFullPath' => [
+				'property' => 'thumbFullPath',
+				'type' => 'text',
+				'label' => 'Thumbnail Full Path',
+				'description' => 'The path of the generated thumbnail on the server',
+				'serverValidation' => 'makeThumbnail',
+				'readOnly' => true,
+			],
 		];
 	}
-	
-	public function getFileName(){
+
+	public function getFileName() {
 		return basename($this->fullPath);
 	}
 
 	/** @noinspection PhpUnused */
-	function makeThumbnail()
-	{
-		if($this->type == 'web_builder_pdf'){
+	function makeThumbnail() {
+		if ($this->type == 'web_builder_pdf') {
 			$destFullPath = $this->fullPath;
 			$thumbFullPath = '';
 			if (extension_loaded('imagick')) {
@@ -57,8 +84,7 @@ class FileUpload extends DataObject
 		}
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		return true;
 	}
 }

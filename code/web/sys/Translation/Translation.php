@@ -1,8 +1,7 @@
 <?php
 
 
-class Translation extends DataObject
-{
+class Translation extends DataObject {
 	public $__table = 'translations';
 	public $id;
 	public $termId;
@@ -11,13 +10,16 @@ class Translation extends DataObject
 	public $translated;
 	public $needsReview;
 
-	public function getNumericColumnNames() : array
-	{
-		return ['termId', 'languageId', 'translated', 'needsReview'];
+	public function getNumericColumnNames(): array {
+		return [
+			'termId',
+			'languageId',
+			'translated',
+			'needsReview',
+		];
 	}
 
-	public function setTranslation($translation)
-	{
+	public function setTranslation($translation) {
 		$this->translation = $translation;
 		$this->translated = 1;
 		$this->needsReview = 0;

@@ -2,23 +2,21 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_ResetPinPage extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_ResetPinPage extends MyAccount {
+	function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
-		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$pinValidationRules = $catalog->getPasswordPinValidationRules();
-		$interface->assign('pinValidationRules', $pinValidationRules);
 		if ($user) {
+			$pinValidationRules = $user->getPasswordPinValidationRules();
+			$interface->assign('pinValidationRules', $pinValidationRules);
+
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
-			if ($patronHomeLibrary == null){
+			if ($patronHomeLibrary == null) {
 				$allowPinReset = false;
-			}else{
+			} else {
 				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
 			}
 
@@ -37,9 +35,9 @@ class MyAccount_ResetPinPage extends MyAccount
 			}
 
 			if (!empty($user->updateMessage)) {
-				if ($user->updateMessageIsError){
+				if ($user->updateMessageIsError) {
 					$interface->assign('profileUpdateErrors', $user->updateMessage);
-				}else{
+				} else {
 					$interface->assign('profileUpdateMessage', $user->updateMessage);
 				}
 				$user->updateMessage = '';
@@ -53,8 +51,7 @@ class MyAccount_ResetPinPage extends MyAccount
 		$this->display('resetPinPage.tpl', 'Reset PIN/Password');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Reset PIN');

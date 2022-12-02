@@ -1,21 +1,21 @@
 <?php
 /** @noinspection SqlResolve */
-function getAxis360Updates(){
+function getAxis360Updates() {
 	return [
 		'createAxis360Module' => [
 			'title' => 'Create Axis360 modules',
 			'description' => 'Setup modules for Axis360 Integration',
-			'sql' =>[
+			'sql' => [
 				"INSERT INTO modules (name, indexName, backgroundProcess,logClassPath,logClassName) VALUES ('Axis 360', 'grouped_works', 'axis_360_export','/sys/Axis360/Axis360LogEntry.php', 'Axis360LogEntry')",
-			]
+			],
 		],
 
 		'axis360AddSettings' => [
 			'title' => 'Add Settings to Axis360 module',
 			'description' => 'Add Settings to Axis360 module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/Axis360/Axis360Setting.php', settingsClassName='Axis360Setting' WHERE name = 'Axis 360'"
-			]
+				"UPDATE modules set settingsClassPath = '/sys/Axis360/Axis360Setting.php', settingsClassName='Axis360Setting' WHERE name = 'Axis 360'",
+			],
 		],
 
 		'createAxis360SettingsAndScopes' => [
@@ -36,16 +36,16 @@ function getAxis360Updates(){
 				'CREATE TABLE axis360_scopes (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					name VARCHAR(50) NOT NULL
-				) ENGINE = InnoDB'
-			]
+				) ENGINE = InnoDB',
+			],
 		],
 
 		'addSettingIdToAxis360Scopes' => [
 			'title' => 'Add Setting Id to Axis 360 Scopes',
 			'description' => 'Add Setting Id to Axis 360 Scopes',
 			'sql' => [
-				'ALTER TABLE axis360_scopes ADD COLUMN settingId INT(11)'
-			]
+				'ALTER TABLE axis360_scopes ADD COLUMN settingId INT(11)',
+			],
 		],
 
 		'axis360_exportLog' => [
@@ -67,13 +67,13 @@ function getAxis360Updates(){
 					numMetadataChanges INT(11) DEFAULT 0,
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
-			]
+			],
 		],
 
-		'axis360Title' => array(
+		'axis360Title' => [
 			'title' => 'Axis360 title and availability table',
 			'description' => 'Create tables to store titles exported from Axis360.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE axis360_title (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					axis360Id VARCHAR(25) NOT NULL,
@@ -102,8 +102,8 @@ function getAxis360Updates(){
 					INDEX (libraryPrefix),
 					UNIQUE(titleId, libraryPrefix)
 				)",
-			),
-		),
+			],
+		],
 
 		'axis360_add_setting_to_availability' => [
 			'title' => 'Add settingID to Axis360 availability',
@@ -113,7 +113,7 @@ function getAxis360Updates(){
 				'ALTER table axis360_title_availability ADD column settingId INT(11)',
 				'ALTER table axis360_title_availability DROP INDEX titleId',
 				'ALTER table axis360_title_availability ADD UNIQUE titleId(titleId, settingId)',
-			]
+			],
 		],
 
 		'axis360_availability_indexes' => [
@@ -123,7 +123,7 @@ function getAxis360Updates(){
 			'sql' => [
 				'ALTER table axis360_title_availability DROP INDEX titleId_2',
 				'ALTER table axis360_title_availability ADD INDEX titleId2(titleId)',
-			]
+			],
 		],
 
 		'axis360_add_response_info_to_availability' => [
@@ -133,7 +133,7 @@ function getAxis360Updates(){
 				'ALTER table axis360_title_availability ADD column rawChecksum BIGINT',
 				'ALTER table axis360_title_availability ADD column rawResponse MEDIUMTEXT',
 				'ALTER table axis360_title_availability ADD column lastChange INT(11) NOT NULL',
-			]
+			],
 		],
 
 		'axis360_availability_remove_unused_fields' => [
@@ -143,7 +143,7 @@ function getAxis360Updates(){
 			'sql' => [
 				'ALTER table axis360_title_availability DROP column copiesAvailable',
 				'ALTER table axis360_title_availability DROP column totalReserves',
-			]
+			],
 		],
 
 		'axis360_availability_update_for_new_method' => [
@@ -152,30 +152,30 @@ function getAxis360Updates(){
 			'sql' => [
 				'ALTER table axis360_title_availability DROP column availableQty',
 				'ALTER table axis360_title_availability DROP column totalCheckouts',
-				'ALTER table axis360_title_availability ADD COLUMN available TINYINT(1) DEFAULT 1'
-			]
+				'ALTER table axis360_title_availability ADD COLUMN available TINYINT(1) DEFAULT 1',
+			],
 		],
 
-		'add_settings_axis360_exportLog' => array(
+		'add_settings_axis360_exportLog' => [
 			'title' => 'Add Settings to Axis 360 export log',
 			'description' => 'Add settings to axis 360 export log.',
-			'sql' => array(
-				'ALTER table axis360_export_log ADD column settingId INT(11)'
-			)
-		),
+			'sql' => [
+				'ALTER table axis360_export_log ADD column settingId INT(11)',
+			],
+		],
 
-		'axis360_exportLog_num_skipped' => array(
+		'axis360_exportLog_num_skipped' => [
 			'title' => 'Add numSkipped to Axis 360 export log',
 			'description' => 'Add numSkipped to axis 360 export log.',
-			'sql' => array(
-				'ALTER table axis360_export_log ADD column numSkipped INT(11)'
-			)
-		),
+			'sql' => [
+				'ALTER table axis360_export_log ADD column numSkipped INT(11)',
+			],
+		],
 
-		'track_axis360_user_usage' => array(
+		'track_axis360_user_usage' => [
 			'title' => 'Axis 360 Usage by user',
 			'description' => 'Add a table to track how often a particular user uses Axis 360.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_axis360_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					instance VARCHAR(100),
@@ -186,14 +186,14 @@ function getAxis360Updates(){
 				) ENGINE = InnoDB",
 				"ALTER TABLE user_axis360_usage ADD INDEX (instance, userId, year, month)",
 				"ALTER TABLE user_axis360_usage ADD INDEX (instance, year, month)",
-			),
-		),
+			],
+		],
 
-		'track_axis360_record_usage' => array(
+		'track_axis360_record_usage' => [
 			'title' => 'Axis 360 Record Usage',
 			'description' => 'Add a table to track how records within Axis 360 are used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE axis360_record_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					instance VARCHAR(100),
@@ -205,14 +205,14 @@ function getAxis360Updates(){
 				) ENGINE = InnoDB",
 				"ALTER TABLE axis360_record_usage ADD INDEX (instance, axis360Id, year, month)",
 				"ALTER TABLE axis360_record_usage ADD INDEX (instance, year, month)",
-			),
-		),
+			],
+		],
 
-		'track_axis360_stats' => array(
+		'track_axis360_stats' => [
 			'title' => 'Axis 360 Stats',
 			'description' => 'Add a table to track how Axis 360 is used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE axis360_stats (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					instance VARCHAR(100),
@@ -228,16 +228,16 @@ function getAxis360Updates(){
 					numApiErrors INT(11) NOT NULL DEFAULT 0,
 					numConnectionFailures INT(11) NOT NULL DEFAULT 0
 				) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'axis360_stats_index' =>[
+		'axis360_stats_index' => [
 			'title' => 'Axis 360 Stats Index',
 			'description' => 'Add an index to the table for tracking how Axis 360 is used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE axis360_stats ADD INDEX (instance, year, month)",
-			),
-		]
+			],
+		],
 	];
 }

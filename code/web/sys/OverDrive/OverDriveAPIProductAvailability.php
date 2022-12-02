@@ -1,6 +1,6 @@
 <?php
 
-class OverDriveAPIProductAvailability extends DataObject{
+class OverDriveAPIProductAvailability extends DataObject {
 	public $__table = 'overdrive_api_product_availability';   // table name
 
 	public $id;
@@ -16,10 +16,10 @@ class OverDriveAPIProductAvailability extends DataObject{
 	private $_libraryName;
 	private $_settingName;
 
-	function getLibraryName(){
-		if ($this->libraryId == -1){
+	function getLibraryName() {
+		if ($this->libraryId == -1) {
 			return 'Shared Digital Collection';
-		}else{
+		} else {
 			if (empty($this->_libraryName)) {
 				$library = new Library();
 				$library->libraryId = $this->libraryId;
@@ -30,14 +30,14 @@ class OverDriveAPIProductAvailability extends DataObject{
 		}
 	}
 
-	function getSettingName(){
+	function getSettingName() {
 		if (empty($this->_settingName)) {
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
 			$setting = new OverDriveSetting();
 			$setting->id = $this->settingId;
 			if ($setting->find(true)) {
 				$this->_settingName = (string)$setting;
-			}else{
+			} else {
 				$this->_settingName = 'Unknown';
 			}
 		}

@@ -3,18 +3,16 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
-class Admin_UsageGraphs extends Admin_Admin
-{
-	function launch()
-	{
+class Admin_UsageGraphs extends Admin_Admin {
+	function launch() {
 		global $interface;
 		global $enabledModules;
 		global $library;
 		$title = 'Aspen Usage Graph';
 		$stat = $_REQUEST['stat'];
-		if (!empty($_REQUEST['instance'])){
+		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
-		}else{
+		} else {
 			$instanceName = '';
 		}
 
@@ -22,7 +20,7 @@ class Admin_UsageGraphs extends Admin_Admin
 		$columnLabels = [];
 		$userUsage = new AspenUsage();
 		$userUsage->groupBy('year, month');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		$userUsage->selectAdd();
@@ -30,7 +28,7 @@ class Admin_UsageGraphs extends Admin_Admin
 		$userUsage->selectAdd('month');
 		$userUsage->orderBy('year, month');
 
-		switch ($stat){
+		switch ($stat) {
 			case 'generalUsage':
 				$title .= ' - General Usage';
 				break;
@@ -92,7 +90,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Page Views'] = [
 				'borderColor' => 'rgba(255, 99, 132, 1)',
 				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(pageViews) as sumPageViews');
 		}
@@ -100,7 +98,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Authenticated Page Views'] = [
 				'borderColor' => 'rgba(255, 159, 64, 1)',
 				'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as sumPageViewsByAuthenticatedUsers');
 		}
@@ -108,7 +106,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Sessions Started'] = [
 				'borderColor' => 'rgba(0, 255, 55, 1)',
 				'backgroundColor' => 'rgba(0, 255, 55, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(sessionsStarted) as sumSessionsStarted');
 		}
@@ -116,7 +114,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Page Views By Bots'] = [
 				'borderColor' => 'rgba(154, 75, 244, 1)',
 				'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(pageViewsByBots) as sumPageViewsByBots');
 		}
@@ -124,7 +122,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Asynchronous Requests'] = [
 				'borderColor' => 'rgba(54, 162, 235, 1)',
 				'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(ajaxRequests) as sumAjaxRequests');
 		}
@@ -132,7 +130,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Covers Requested'] = [
 				'borderColor' => 'rgba(255, 206, 86, 1)',
 				'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(coverViews) as sumCoverViews');
 		}
@@ -142,7 +140,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Grouped Work Searches'] = [
 				'borderColor' => 'rgba(255, 99, 132, 1)',
 				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(groupedWorkSearches) as sumGroupedWorkSearches');
 		}
@@ -150,7 +148,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['List Searches'] = [
 				'borderColor' => 'rgba(54, 162, 235, 1)',
 				'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(userListSearches) as sumUserListSearches');
 		}
@@ -158,7 +156,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['EDS Searches'] = [
 				'borderColor' => 'rgba(255, 206, 86, 1)',
 				'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(ebscoEdsSearches) as sumEbscoEdsSearches');
 		}
@@ -166,7 +164,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['EBSCOhost Searches'] = [
 				'borderColor' => 'rgba(255, 206, 86, 1)',
 				'backgroundColor' => 'rgba(255, 206, 86, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(ebscohostSearches) as sumEbscohostSearches');
 		}
@@ -174,7 +172,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Events Searches'] = [
 				'borderColor' => 'rgba(75, 192, 192, 1)',
 				'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(eventsSearches) as sumEventsSearches');
 		}
@@ -182,7 +180,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Website Searches'] = [
 				'borderColor' => 'rgba(153, 102, 255, 1)',
 				'backgroundColor' => 'rgba(153, 102, 255, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(websiteSearches) as sumWebsiteSearches');
 		}
@@ -190,7 +188,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Open Archives Searches'] = [
 				'borderColor' => 'rgba(255, 159, 64, 1)',
 				'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(openArchivesSearches) as sumOpenArchivesSearches');
 		}
@@ -198,7 +196,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Genealogy Searches'] = [
 				'borderColor' => 'rgba(154, 75, 244, 1)',
 				'backgroundColor' => 'rgba(2154, 75, 244, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(genealogySearches) as sumGenealogySearches');
 		}
@@ -208,7 +206,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Blocked Pages'] = [
 				'borderColor' => 'rgba(255, 99, 132, 1)',
 				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(blockedRequests) as sumBlockedRequests');
 		}
@@ -216,7 +214,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Blocked API Requests'] = [
 				'borderColor' => 'rgba(255, 159, 64, 1)',
 				'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(blockedApiRequests) as sumBlockedApiRequests');
 		}
@@ -224,7 +222,7 @@ class Admin_UsageGraphs extends Admin_Admin
 			$dataSeries['Errors'] = [
 				'borderColor' => 'rgba(154, 75, 244, 1)',
 				'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 			$userUsage->selectAdd('SUM(pagesWithErrors) as sumPagesWithErrors');
 		}
@@ -313,8 +311,7 @@ class Admin_UsageGraphs extends Admin_Admin
 		$this->display('usage-graph.tpl', $title);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -323,13 +320,14 @@ class Admin_UsageGraphs extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View Dashboards', 'View System Reports']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
 	}
 }

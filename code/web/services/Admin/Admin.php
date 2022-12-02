@@ -11,7 +11,7 @@ abstract class Admin_Admin extends Action {
 		$user = UserAccount::getLoggedInUser();
 
 		//If the user isn't logged in, take them to the login page
-		if (!$user){
+		if (!$user) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$myAccountAction = new MyAccount_Login($isStandalonePage);
 			$myAccountAction->launch();
@@ -25,7 +25,7 @@ abstract class Admin_Admin extends Action {
 		//Make sure the user has permission to access the page
 		$userCanAccess = $this->canView();
 
-		if (!$userCanAccess){
+		if (!$userCanAccess) {
 			$this->display('../Admin/noPermission.tpl', 'Access Error');
 			exit();
 		}
@@ -37,19 +37,17 @@ abstract class Admin_Admin extends Action {
 		$interface->assign('activeMenuOption', 'admin');
 	}
 
-	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
-	{
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true) {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 
 	abstract function canView();
 
 	/** @noinspection PhpUnused */
-	function getInitializationJs() : string
-	{
+	function getInitializationJs(): string {
 		return 'return AspenDiscovery.CollectionSpotlights.updateSpotlightFields();';
 	}
 
-	abstract function getActiveAdminSection() : string;
+	abstract function getActiveAdminSection(): string;
 
 }

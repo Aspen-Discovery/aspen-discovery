@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class WebResourceUsage extends DataObject
-{
+
+class WebResourceUsage extends DataObject {
 	public $__table = 'web_builder_resource_usage';
 	public $id;
 	public $instance;
@@ -13,13 +13,15 @@ class WebResourceUsage extends DataObject
 	public $pageViewsByAuthenticatedUsers;
 	public $pageViewsInLibrary;
 
-	public function getUniquenessFields(): array
-	{
-		return ['resourceName','year', 'month'];
+	public function getUniquenessFields(): array {
+		return [
+			'resourceName',
+			'year',
+			'month',
+		];
 	}
 
-	public function getNumericColumnNames() : array
-	{
+	public function getNumericColumnNames(): array {
 		return [
 			'pageViews',
 			'pageViewsByAuthenticatedUsers',
@@ -27,10 +29,9 @@ class WebResourceUsage extends DataObject
 		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
+		if (in_array($this->instance, $selectedFilters['instances'])) {
 			$okToExport = true;
 		}
 		return $okToExport;

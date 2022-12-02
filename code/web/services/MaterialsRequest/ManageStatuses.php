@@ -4,24 +4,25 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 
-class MaterialsRequest_ManageStatuses extends ObjectEditor
-{
+class MaterialsRequest_ManageStatuses extends ObjectEditor {
 
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'MaterialsRequestStatus';
 	}
-	function getModule() : string
-	{
+
+	function getModule(): string {
 		return 'MaterialsRequest';
 	}
 
-	function getToolName() : string{
+	function getToolName(): string {
 		return 'ManageStatuses';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Materials Request Statuses';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new MaterialsRequestStatus();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
@@ -40,43 +41,46 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		$object->orderBy('description ASC');
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
+		$objectList = [];
+		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'isDefault desc';
 	}
-	function canSort() : bool
-	{
+
+	function canSort(): bool {
 		return false;
 	}
 
-	function getObjectStructure() : array{
+	function getObjectStructure(): array {
 		return MaterialsRequestStatus::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'description';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function customListActions(){
-		$objectActions = array();
 
-		$objectActions[] = array(
+	function customListActions() {
+		$objectActions = [];
+
+		$objectActions[] = [
 			'label' => 'Reset to Default',
 			'action' => 'resetToDefault',
-		);
+		];
 
 		return $objectActions;
 	}
 
 	/** @noinspection PhpUnused */
-	function resetToDefault(){
+	function resetToDefault() {
 		$homeLibrary = Library::getPatronHomeLibrary();
 		if (is_null($homeLibrary)) {
 			//User does not have a home library, this is likely an admin account.  Use the active library
@@ -90,7 +94,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		$materialRequestStatus = new MaterialsRequestStatus();
 		$materialRequestStatus->libraryId = -1;
 		$materialRequestStatus->find();
-		while ($materialRequestStatus->fetch()){
+		while ($materialRequestStatus->fetch()) {
 			$materialRequestStatus->id = null;
 			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
 			$materialRequestStatus->insert();
@@ -98,21 +102,18 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		header("Location: /MaterialsRequest/ManageStatuses");
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageStatuses', 'Manage Materials Requests Statuses');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'materials_request';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Materials Requests');
 	}
 }

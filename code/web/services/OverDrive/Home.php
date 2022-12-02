@@ -4,10 +4,8 @@ require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 
-class OverDrive_Home extends GroupedWorkSubRecordHomeAction
-{
-	function launch()
-	{
+class OverDrive_Home extends GroupedWorkSubRecordHomeAction {
+	function launch() {
 		global $interface;
 
 		if (!$this->recordDriver->isValid()) {
@@ -39,8 +37,7 @@ class OverDrive_Home extends GroupedWorkSubRecordHomeAction
 			$this->loadCitations();
 
 			// Retrieve User Search History
-			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
-				$_SESSION['lastSearchURL'] : false);
+			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
 
 			//Get Next/Previous Links
 			$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
@@ -72,8 +69,7 @@ class OverDrive_Home extends GroupedWorkSubRecordHomeAction
 		}
 	}
 
-	function loadRecordDriver($id)
-	{
+	function loadRecordDriver($id) {
 		$this->recordDriver = new OverDriveRecordDriver($id);
 	}
 }

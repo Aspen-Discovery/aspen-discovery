@@ -759,8 +759,20 @@ public class MarcPermissiveStreamReader implements MarcReader {
                 }
 
                 String tag = dirEntry.substring(0, 3);
-                int length = Integer.parseInt(dirEntry.substring(3, 7));
-                int offset = Integer.parseInt(dirEntry.substring(7, 12));
+                int length;
+                try {
+                    length = Integer.parseInt(dirEntry.substring(3, 7));
+                } catch (NumberFormatException nfe) {
+                    throw new MarcException("Leader position 3-7 was not an integer");
+                }
+
+                int offset;
+                try {
+                    offset = Integer.parseInt(dirEntry.substring(7, 12));
+                } catch (NumberFormatException nfe) {
+                    throw new MarcException("Leader position 7-12 was not an integer");
+                }
+
                 // this looks for the case where the first directory entry is
                 // one byte too short.
                 if ((directoryLength - offsetToFT) % 12 == 11 && tag.charAt(1) != '0') {

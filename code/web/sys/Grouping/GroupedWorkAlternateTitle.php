@@ -1,8 +1,7 @@
 <?php
 
 
-class GroupedWorkAlternateTitle extends DataObject
-{
+class GroupedWorkAlternateTitle extends DataObject {
 	public $__table = 'grouped_work_alternate_titles';
 	public $id;
 	public $permanent_id;
@@ -11,24 +10,58 @@ class GroupedWorkAlternateTitle extends DataObject
 	public $addedBy;
 	public $dateAdded;
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		return [
-			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
-			'permanent_id' => ['property' => 'permanent_id', 'type' => 'text', 'label' => 'Grouped Work ID', 'description' => 'The grouped work id with the alternate title', 'readOnly' => true],
-			'alternateTitle' => ['property' => 'alternateTitle', 'type' => 'text', 'label' => 'Alternate Title', 'description' => 'An alternate title to use when indexing this work'],
-			'alternateAuthor' => ['property' => 'alternateAuthor', 'type' => 'text', 'label' => 'Alternate Author', 'description' => 'An alternate author to use when indexing this work'],
-			'addedByName' => ['property' => 'addedByName', 'type' => 'text', 'label' => 'Added By', 'description' => 'Who added the record', 'readOnly'=> true],
-			'dateAdded' => ['property' => 'dateAdded', 'type' => 'timestamp', 'label' => 'Date Added', 'description' => 'The date the record was added', 'readOnly'=> true],
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'permanent_id' => [
+				'property' => 'permanent_id',
+				'type' => 'text',
+				'label' => 'Grouped Work ID',
+				'description' => 'The grouped work id with the alternate title',
+				'readOnly' => true,
+			],
+			'alternateTitle' => [
+				'property' => 'alternateTitle',
+				'type' => 'text',
+				'label' => 'Alternate Title',
+				'description' => 'An alternate title to use when indexing this work',
+			],
+			'alternateAuthor' => [
+				'property' => 'alternateAuthor',
+				'type' => 'text',
+				'label' => 'Alternate Author',
+				'description' => 'An alternate author to use when indexing this work',
+			],
+			'addedByName' => [
+				'property' => 'addedByName',
+				'type' => 'text',
+				'label' => 'Added By',
+				'description' => 'Who added the record',
+				'readOnly' => true,
+			],
+			'dateAdded' => [
+				'property' => 'dateAdded',
+				'type' => 'timestamp',
+				'label' => 'Date Added',
+				'description' => 'The date the record was added',
+				'readOnly' => true,
+			],
 		];
 	}
 
 	private static $usersById = [];
-	function __get($name){
-		if ($name == 'addedByName'){
-			if (empty($this->_data['addedByName'])){
-				if (array_key_exists($this->addedBy, GroupedWorkAlternateTitle::$usersById)){
+
+	function __get($name) {
+		if ($name == 'addedByName') {
+			if (empty($this->_data['addedByName'])) {
+				if (array_key_exists($this->addedBy, GroupedWorkAlternateTitle::$usersById)) {
 					$this->_data['addedByName'] = GroupedWorkAlternateTitle::$usersById[$this->addedBy];
-				}else {
+				} else {
 					$user = new User();
 					$user->id = $this->addedBy;
 					$user->find(true);
@@ -44,36 +77,33 @@ class GroupedWorkAlternateTitle extends DataObject
 		return $this->_data[$name];
 	}
 
-	function insert()
-	{
+	function insert() {
 		$ret = parent::insert();
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$relatedWork = new GroupedWork();
 		$relatedWork->permanent_id = $this->permanent_id;
-		if ($relatedWork->find(true)){
+		if ($relatedWork->find(true)) {
 			$relatedWork->forceReindex(true);
 		}
 		return $ret;
 	}
 
-	function update()
-	{
+	function update() {
 		$ret = parent::update();
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$relatedWork = new GroupedWork();
 		$relatedWork->permanent_id = $this->permanent_id;
-		if ($relatedWork->find(true)){
+		if ($relatedWork->find(true)) {
 			$relatedWork->forceReindex(true);
 		}
 		return $ret;
 	}
 
-	function delete($useWhere = false)
-	{
+	function delete($useWhere = false) {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$relatedWork = new GroupedWork();
 		$relatedWork->permanent_id = $this->permanent_id;
-		if ($relatedWork->find(true)){
+		if ($relatedWork->find(true)) {
 			$relatedWork->forceReindex(true);
 		}
 		return parent::delete($useWhere);

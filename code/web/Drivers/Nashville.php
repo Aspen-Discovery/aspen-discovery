@@ -4,13 +4,11 @@ require_once ROOT_DIR . '/Drivers/CarlX.php';
 
 class Nashville extends CarlX {
 
-	public function __construct($accountProfile)
-	{
+	public function __construct($accountProfile) {
 		parent::__construct($accountProfile);
 	}
 
-	public function completeFinePayment(User $patron, UserPayment $payment): array
-	{
+	public function completeFinePayment(User $patron, UserPayment $payment): array {
 		global $logger;
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -26,8 +24,14 @@ class Nashville extends CarlX {
 			$allPaymentsSucceed = true;
 			foreach ($accountLinesPaid as $line) {
 				// MSB Payments are in the form of fineId|paymentAmount
-				list($feeId, $pmtAmount) = explode('|', $line);
-				list($feeId, $feeType) = explode('-', $feeId);
+				[
+					$feeId,
+					$pmtAmount,
+				] = explode('|', $line);
+				[
+					$feeId,
+					$feeType,
+				] = explode('-', $feeId);
 				$feeType = CarlX::$fineTypeSIP2Translations[$feeType];
 				if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
 					$feeId = '#' . $feeId;
@@ -84,11 +88,13 @@ class Nashville extends CarlX {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
 		}
-		return ['success' => $success, 'message' => $message];
+		return [
+			'success' => $success,
+			'message' => $message,
+		];
 	}
 
-	public function canPayFine($system): bool
-	{
+	public function canPayFine($system): bool {
 		$canPayFine = false;
 		if ($system == 'NPL') {
 			$canPayFine = true;
@@ -96,8 +102,7 @@ class Nashville extends CarlX {
 		return $canPayFine;
 	}
 
-	protected function createPatronPaymentNote($patronId, $paymentId): array
-	{
+	protected function createPatronPaymentNote($patronId, $paymentId): array {
 		global $logger;
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -132,33 +137,49 @@ class Nashville extends CarlX {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
 		}
-		return ['success' => $success, 'message' => $message];
+		return [
+			'success' => $success,
+			'message' => $message,
+		];
 	}
 
-	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array
-	{
+	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array {
 		$mySip = $this->initSIPConnection();
 		if (!is_null($mySip)) {
 			$in = $mySip->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
 			$msg_result = $mySip->get_message($in);
-            ExternalRequestLogEntry::logRequest('carlx.feePaid', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+			ExternalRequestLogEntry::logRequest('carlx.feePaid', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			if (preg_match("/^38/", $msg_result)) {
 				$result = $mySip->parseFeePaidResponse($msg_result);
 				$success = ($result['fixed']['PaymentAccepted'] == 'Y');
 				$message = $result['variable']['AF'][0];
 				$message = empty($transId) ? $message : $transId . ": " . $message;
-				return ['success' => $success, 'message' => $message];
+				return [
+					'success' => $success,
+					'message' => $message,
+				];
 			} else {
-				return ['success' => false, 'message' => ['text' => 'Unknown problem with circulation server, please try again later.', 'isPublicFacing'=> true]];
+				return [
+					'success' => false,
+					'message' => [
+						'text' => 'Unknown problem with circulation server, please try again later.',
+						'isPublicFacing' => true,
+					],
+				];
 			}
 		} else {
-			return ['success' => false, 'message' => ['text' => 'Could not connect to circulation server, please try again later.', 'isPublicFacing'=> true]];
+			return [
+				'success' => false,
+				'message' => [
+					'text' => 'Could not connect to circulation server, please try again later.',
+					'isPublicFacing' => true,
+				],
+			];
 		}
 	}
 
-	public function getFines(User $patron, $includeMessages = false): array
-	{
-		$myFines = array();
+	public function getFines(User $patron, $includeMessages = false): array {
+		$myFines = [];
 
 		$request = $this->getSearchbyPatronIdRequest($patron);
 
@@ -169,9 +190,9 @@ class Nashville extends CarlX {
 		//$logger->log("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true), Logger::LOG_ERROR);
 		if ($result && !empty($result->FineItems->FineItem)) {
 			if (!is_array($result->FineItems->FineItem)) {
-				$result->FineItems->FineItem = array($result->FineItems->FineItem);
+				$result->FineItems->FineItem = [$result->FineItems->FineItem];
 			}
-			foreach($result->FineItems->FineItem as $fine) {
+			foreach ($result->FineItems->FineItem as $fine) {
 				// hard coded Nashville school branch IDs
 				if ($fine->Branch == 0) {
 					$fine->Branch = $fine->TransactionBranch;
@@ -187,11 +208,11 @@ class Nashville extends CarlX {
 				}
 
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
-					$fine->Identifier = substr($fine->Identifier,9);
+					$fine->Identifier = substr($fine->Identifier, 9);
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
 
-				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
+				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'COLLECTION') !== false) {
 					$fineType = 'COLLECTION AGENCY';
 					$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
 				} else {
@@ -199,19 +220,19 @@ class Nashville extends CarlX {
 					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 				}
 
-				$myFines[] = array(
+				$myFines[] = [
 					'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
 					'type' => $fineType,
-					'reason'  => $fine->FeeNotes,
-					'amount'  => $fine->FineAmount,
+					'reason' => $fine->FeeNotes,
+					'amount' => $fine->FineAmount,
 					'amountVal' => $fine->FineAmount,
 					'amountOutstanding' => $fine->FineAmountOutstanding,
 					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
-					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
-					'system'  => $fine->System,
+					'date' => date('M j, Y', strtotime($fine->FineAssessedDate)),
+					'system' => $fine->System,
 					'canPayFine' => $fine->CanPayFine,
-				);
+				];
 			}
 		}
 
@@ -223,9 +244,9 @@ class Nashville extends CarlX {
 
 			if ($result && !empty($result->LostItems->LostItem)) {
 				if (!is_array($result->LostItems->LostItem)) {
-					$result->LostItems->LostItem = array($result->LostItems->LostItem);
+					$result->LostItems->LostItem = [$result->LostItems->LostItem];
 				}
-				foreach($result->LostItems->LostItem as $fine) {
+				foreach ($result->LostItems->LostItem as $fine) {
 					// hard coded Nashville school branch IDs
 					if ($fine->Branch == 0) {
 						$fine->Branch = $fine->TransactionBranch;
@@ -247,7 +268,7 @@ class Nashville extends CarlX {
 					$fineType = 'FEE';
 					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
-					$myFines[] = array(
+					$myFines[] = [
 						'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
 						'type' => $fineType,
 						'reason' => $fine->FeeNotes,
@@ -259,7 +280,7 @@ class Nashville extends CarlX {
 						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
 						'system' => $fine->System,
 						'canPayFine' => $fine->CanPayFine,
-					);
+					];
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
 				$myLostFines = $this->getLostViaSIP($patron->cat_username);
@@ -277,7 +298,7 @@ class Nashville extends CarlX {
 				}
 			}
 		}
-		$sorter = function($a, $b) {
+		$sorter = function ($a, $b) {
 			$systemA = $a['system'];
 			$systemB = $b['system'];
 			if ($systemA === $systemB) {
@@ -291,8 +312,7 @@ class Nashville extends CarlX {
 		return $myFines;
 	}
 
-	public function getFineSystem($branchId): string
-	{
+	public function getFineSystem($branchId): string {
 		if (($branchId >= 30 && $branchId <= 178 && $branchId != 42 && $branchId != 167 && $branchId != 171) || ($branchId >= 180 && $branchId <= 212 && $branchId != 185 && $branchId != 187)) {
 			return "MNPS";
 		} else {
@@ -300,20 +320,19 @@ class Nashville extends CarlX {
 		}
 	}
 
-	protected function getLostViaSIP(string $patronId): array
-	{
+	protected function getLostViaSIP(string $patronId): array {
 		$mySip = $this->initSIPConnection();
 		$mySip->patron = $patronId;
 		if (!is_null($mySip)) {
 			$in = $mySip->msgPatronInformation('none');
 			$msg_result = $mySip->get_message($in);
-            ExternalRequestLogEntry::logRequest('carlx.getLost', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+			ExternalRequestLogEntry::logRequest('carlx.getLost', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			if (preg_match("/^64/", $msg_result)) {
 				$result = $mySip->parsePatronInfoResponse($msg_result);
 				$fineCount = $result['fixed']['FineCount'];
 				$in = $mySip->msgPatronInformation('fine', 1, $fineCount);
 				$msg_result = $mySip->get_message($in);
-                ExternalRequestLogEntry::logRequest('carlx.fine', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+				ExternalRequestLogEntry::logRequest('carlx.fine', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 				if (preg_match("/^64/", $msg_result)) {
 					$myLostFees = [];
 					$result = $mySip->parsePatronInfoResponse($msg_result);
@@ -326,7 +345,7 @@ class Nashville extends CarlX {
 							$feeItemParsed[$fieldName] = $fieldValue;
 						}
 						if ($feeItemParsed['S'] == 'Lost - fee charged') {
-							$myLostFees[] = array(
+							$myLostFees[] = [
 								'fineId' => $feeItemParsed['I'],
 								//'type' => 'L',
 								//'reason' => $feeItem['T'],
@@ -336,7 +355,7 @@ class Nashville extends CarlX {
 								'amountOutstandingVal' => $feeItemParsed['F'],
 								//'message' => $feeItem['T'],
 								//'date' => date('M j, Y', strtotime($feeItem['1']))
-							);
+							];
 						}
 					}
 					return $myLostFees;
@@ -345,28 +364,27 @@ class Nashville extends CarlX {
 		}
 	}
 
-	function getSelfRegTemplate($reason): string
-	{
+	function getSelfRegTemplate($reason): string {
 		global $activeLanguage;
-		if ($reason == 'duplicate_email'){
-			if ($activeLanguage->code == 'es'){
+		if ($reason == 'duplicate_email') {
+			if ($activeLanguage->code == 'es') {
 				return 'Emails/es-nashville-self-registration-denied-duplicate_email.tpl';
 			} else { // assume en
 				return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
 			}
-		}elseif ($reason == 'duplicate_name+birthdate') {
-			if ($activeLanguage->code == 'es'){
+		} elseif ($reason == 'duplicate_name+birthdate') {
+			if ($activeLanguage->code == 'es') {
 				return 'Emails/es-nashville-self-registration-denied-duplicate_name+birthdate.tpl';
 			} else { // assume en
 				return 'Emails/nashville-self-registration-denied-duplicate_name+birthdate.tpl';
 			}
-		}elseif ($reason == 'success') {
+		} elseif ($reason == 'success') {
 			if ($activeLanguage->code == 'es') {
 				return 'Emails/es-nashville-self-registration.tpl';
 			} else { // assume en
 				return 'Emails/nashville-self-registration.tpl';
 			}
-		}else{
+		} else {
 			return '';
 		}
 	}
@@ -383,7 +401,7 @@ class Nashville extends CarlX {
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
-                ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+				ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 
 				//  Use result to populate SIP2 setings
 				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016

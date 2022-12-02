@@ -3,21 +3,19 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/Suggestions.php';
 
-class SuggestedTitles extends MyAccount
-{
+class SuggestedTitles extends MyAccount {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		global $timer;
 
 		$suggestions = Suggestions::getSuggestions();
 		$timer->logTime("Loaded suggestions");
 
-		$resourceList = array();
+		$resourceList = [];
 		$curIndex = 0;
 		if (is_array($suggestions)) {
-			foreach($suggestions as $suggestion) {
+			foreach ($suggestions as $suggestion) {
 				$interface->assign('resultIndex', ++$curIndex);
 				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 				$recordDriver = new GroupedWorkDriver($suggestion['titleInfo']);
@@ -35,8 +33,7 @@ class SuggestedTitles extends MyAccount
 		$this->display('suggestedTitles.tpl', 'Recommended for You');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Recommended for You');

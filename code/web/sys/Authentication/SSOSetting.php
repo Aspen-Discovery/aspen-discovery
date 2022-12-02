@@ -60,68 +60,68 @@ class SSOSetting extends DataObject {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$fieldMapping = SSOMapping::getObjectStructure();
 
-		$services = array(
+		$services = [
 			'oauth' => 'OAuth 2.0',
-			'saml' => 'SAML 2'
-		);
+			'saml' => 'SAML 2',
+		];
 
-		$oauth_gateways = array(
+		$oauth_gateways = [
 			'google' => 'Google',
-			'custom' => 'Custom'
-		);
+			'custom' => 'Custom',
+		];
 
-		$login_options = array(
+		$login_options = [
 			'0' => 'Both SSO and Local Login',
-			'1' => 'Only SSO Login'
-		);
+			'1' => 'Only SSO Login',
+		];
 
-		$authentication_grant_type = array(
+		$authentication_grant_type = [
 			'0' => 'By Authorization Code (Standard)',
 			'1' => 'By Resource Owner Credentials',
-			'2' => 'By Client Credentials'
-		);
+			'2' => 'By Client Credentials',
+		];
 
 		return [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
+				'description' => 'The unique id',
 			],
 			'name' => [
 				'property' => 'name',
 				'type' => 'text',
 				'label' => 'Name',
 				'description' => 'The name of the setting',
-				'maxLength' => 50
+				'maxLength' => 50,
 			],
-			'service' => array(
+			'service' => [
 				'property' => 'service',
 				'type' => 'enum',
 				'label' => 'Service',
 				'values' => $services,
 				'description' => 'The service used for authenticating users',
 				'default' => 'oauth',
-				'onchange' => 'return AspenDiscovery.Admin.getSSOFields();'
-			),
-			'loginOptions' => array(
+				'onchange' => 'return AspenDiscovery.Admin.getSSOFields();',
+			],
+			'loginOptions' => [
 				'property' => 'loginOptions',
 				'type' => 'enum',
 				'label' => 'Available Options at Login',
 				'values' => $login_options,
 				'description' => 'The login options available to users when logging in',
 				'default' => '0',
-				'hideInLists' => true
-			),
-			'loginHelpText' => array(
+				'hideInLists' => true,
+			],
+			'loginHelpText' => [
 				'property' => 'loginHelpText',
 				'type' => 'textarea',
 				'label' => 'Login Help Text',
 				'description' => 'Additional information provided to users when logging in',
-				'hideInLists' => true
-			),
+				'hideInLists' => true,
+			],
 
-			'oAuthGateway' => array(
+			'oAuthGateway' => [
 				'property' => 'oAuthGateway',
 				'type' => 'enum',
 				'label' => 'Gateway',
@@ -129,66 +129,66 @@ class SSOSetting extends DataObject {
 				'description' => 'The gateway provider used for authenticating users',
 				'default' => 'google',
 				'hideInLists' => true,
-				'onchange' => 'return AspenDiscovery.Admin.toggleOAuthGatewayFields();'
-			),
-			'clientId' => array(
+				'onchange' => 'return AspenDiscovery.Admin.toggleOAuthGatewayFields();',
+			],
+			'clientId' => [
 				'property' => 'clientId',
 				'type' => 'text',
 				'label' => 'Client ID',
 				'description' => 'Client ID used for accessing the gateway provider',
-				'hideInLists' => true
-			),
-			'clientSecret' => array(
+				'hideInLists' => true,
+			],
+			'clientSecret' => [
 				'property' => 'clientSecret',
 				'type' => 'storedPassword',
 				'label' => 'Client Secret',
 				'description' => 'Client secret used for accessing the gateway provider',
-				'hideInLists' => true
-			),
+				'hideInLists' => true,
+			],
 
-			'oAuthGatewayLabel' => array(
+			'oAuthGatewayLabel' => [
 				'property' => 'oAuthGatewayLabel',
 				'type' => 'text',
 				'label' => 'Custom Gateway Label',
 				'description' => 'The public-facing name for the custom gateway',
-				'hideInLists' => true
-			),
-			'oAuthAuthorizeUrl' => array(
+				'hideInLists' => true,
+			],
+			'oAuthAuthorizeUrl' => [
 				'property' => 'oAuthAuthorizeUrl',
 				'type' => 'url',
 				'label' => 'Custom Gateway Authorization Url',
 				'description' => 'The API url used as the main entry point for requesting authorization',
-				'hideInLists' => true
-			),
-			'oAuthAccessTokenUrl' => array(
+				'hideInLists' => true,
+			],
+			'oAuthAccessTokenUrl' => [
 				'property' => 'oAuthAccessTokenUrl',
 				'type' => 'url',
 				'label' => 'Custom Gateway Access Token Url',
 				'description' => 'The API url used to connect and exchange the authorization code for an access token.',
-				'hideInLists' => true
-			),
-			'oAuthResourceOwnerUrl' => array(
+				'hideInLists' => true,
+			],
+			'oAuthResourceOwnerUrl' => [
 				'property' => 'oAuthResourceOwnerUrl',
 				'type' => 'url',
 				'label' => 'Custom Gateway Resource Owner Url',
 				'description' => 'The API url used to access the user details',
-				'hideInLists' => true
-			),
-			'oAuthLogoutUrl' => array(
+				'hideInLists' => true,
+			],
+			'oAuthLogoutUrl' => [
 				'property' => 'oAuthLogoutUrl',
 				'type' => 'url',
 				'label' => 'Custom Gateway Logout Url',
 				'description' => 'The API url used to invalidate a session and force a user to logout',
-				'hideInLists' => true
-			),
-			'oAuthScope' => array(
+				'hideInLists' => true,
+			],
+			'oAuthScope' => [
 				'property' => 'oAuthScope',
 				'type' => 'text',
 				'label' => 'Custom Gateway Scopes',
 				'description' => 'Granular permissions the API client needs to access data',
-				'hideInLists' => true
-			),
-			'oAuthGrantType' => array(
+				'hideInLists' => true,
+			],
+			'oAuthGrantType' => [
 				'property' => 'oAuthGrantType',
 				'type' => 'enum',
 				'label' => 'Authentication Grant Type',
@@ -196,57 +196,57 @@ class SSOSetting extends DataObject {
 				'description' => 'The grant type used when obtaining an access token.',
 				'default' => 0,
 				'hideInLists' => true,
-				'onchange' => 'return AspenDiscovery.Admin.toggleOAuthPrivateKeysField();'
-			),
-			'oAuthPrivateKeys' => array(
+				'onchange' => 'return AspenDiscovery.Admin.toggleOAuthPrivateKeysField();',
+			],
+			'oAuthPrivateKeys' => [
 				'property' => 'oAuthPrivateKeys',
 				'type' => 'file',
 				'label' => 'Private Keys PEM File',
 				'description' => 'A .PEM file that contains private keys to access a client secret.',
-				'hideInLists' => true
-			),
-			'oAuthGatewayIcon' => array(
+				'hideInLists' => true,
+			],
+			'oAuthGatewayIcon' => [
 				'property' => 'oAuthGatewayIcon',
 				'type' => 'image',
 				'label' => 'Custom Gateway Icon',
 				'description' => 'An icon representing the custom gateway',
 				'hideInLists' => true,
-				'thumbWidth' => 32
-			),
-			'oAuthButtonBackgroundColor' => array(
+				'thumbWidth' => 32,
+			],
+			'oAuthButtonBackgroundColor' => [
 				'property' => 'oAuthButtonBackgroundColor',
 				'type' => 'text',
 				'label' => 'Custom Gateway Background Color',
 				'description' => 'Custom Gateway Button Background Color',
-				'hideInLists' => true
-			),
-			'oAuthButtonTextColor' => array(
+				'hideInLists' => true,
+			],
+			'oAuthButtonTextColor' => [
 				'property' => 'oAuthButtonTextColor',
 				'type' => 'text',
 				'label' => 'Custom Gateway Text Color',
 				'description' => 'Custom Gateway Button Foreground Color',
-				'hideInLists' => true
-			),
+				'hideInLists' => true,
+			],
 
-			'ssoName' => array(
+			'ssoName' => [
 				'property' => 'ssoName',
 				'type' => 'text',
 				'label' => 'Name of service',
 				'description' => 'The name to be displayed when referring to the authentication service',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoXmlUrl' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoXmlUrl' => [
 				'property' => 'ssoXmlUrl',
 				'type' => 'text',
 				'label' => 'URL of service metadata XML',
 				'description' => 'The URL at which the metadata XML document for this identity provider can be obtained',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoMetadataFilename' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoMetadataFilename' => [
 				'path' => '/data/aspen-discovery/sso_metadata',
 				'property' => 'ssoMetadataFilename',
 				'type' => 'file',
@@ -254,190 +254,190 @@ class SSOSetting extends DataObject {
 				'description' => 'The XML metadata file if no URL is available',
 				'hideInLists' => true,
 				'readOnly' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoEntityId' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoEntityId' => [
 				'property' => 'ssoEntityId',
 				'type' => 'text',
 				'label' => 'Entity ID of SSO provider',
 				'description' => 'The entity ID of the SSO IdP. This can be found in the IdP\'s metadata',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoUniqueAttribute' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoUniqueAttribute' => [
 				'property' => 'ssoUniqueAttribute',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that uniquely identifies a user',
 				'description' => 'This should be unique to each user',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoIdAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoIdAttr' => [
 				'property' => 'ssoIdAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user ID',
 				'description' => 'This should be unique to each user',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoUsernameAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoUsernameAttr' => [
 				'property' => 'ssoUsernameAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s username',
 				'description' => 'The user\'s username',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoFirstnameAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoFirstnameAttr' => [
 				'property' => 'ssoFirstnameAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s first name',
 				'description' => 'The user\'s first name',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoLastnameAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoLastnameAttr' => [
 				'property' => 'ssoLastnameAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s last name',
 				'description' => 'The user\'s last name',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoEmailAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoEmailAttr' => [
 				'property' => 'ssoEmailAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s email address',
 				'description' => 'The user\'s email address',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoDisplayNameAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoDisplayNameAttr' => [
 				'property' => 'ssoDisplayNameAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s display name',
 				'description' => 'The user\'s display name, if one is not supplied, a name for display will be assembled from first and last names',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoPhoneAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoPhoneAttr' => [
 				'property' => 'ssoPhoneAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s phone number',
 				'description' => 'The user\'s phone number',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoAddressAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoAddressAttr' => [
 				'property' => 'ssoAddressAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s address',
 				'description' => 'The user\'s address',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoCityAttr' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoCityAttr' => [
 				'property' => 'ssoCityAttr',
 				'type' => 'text',
 				'label' => 'Name of the identity provider attribute that contains the user\'s city',
 				'description' => 'The user\'s city',
 				'size' => '512',
 				'hideInLists' => true,
-				'permissions' => ['Library ILS Connection']
-			),
-			'ssoPatronTypeSection' => array(
+				'permissions' => ['Library ILS Connection'],
+			],
+			'ssoPatronTypeSection' => [
 				'property' => 'ssoPatronTypeSection',
 				'type' => 'section',
 				'label' => 'Patron type',
 				'hideInLists' => true,
 				'permissions' => ['Library ILS Options'],
-				'properties' => array(
-					'ssoPatronTypeAttr' => array(
+				'properties' => [
+					'ssoPatronTypeAttr' => [
 						'property' => 'ssoPatronTypeAttr',
 						'type' => 'text',
 						'label' => 'Name of the identity provider attribute that contains the user\'s patron type',
 						'description' => 'The user\'s patron type, this should be a value that is recognised by Aspen. If this is not supplied, please provide a fallback value below',
 						'size' => '512',
 						'hideInLists' => true,
-						'permissions' => ['Library ILS Connection']
-					),
-					'ssoPatronTypeFallback' => array(
+						'permissions' => ['Library ILS Connection'],
+					],
+					'ssoPatronTypeFallback' => [
 						'property' => 'ssoPatronTypeFallback',
 						'type' => 'text',
 						'label' => 'A fallback value for patron type',
 						'description' => 'A value to be used in the event the identity provider does not supply a patron type attribute, this should be a value that is recognised by Aspen.',
 						'size' => '512',
 						'hideInLists' => true,
-						'permissions' => ['Library ILS Connection']
-					),
-				)
-			),
-			'ssoLibraryIdSection' => array(
+						'permissions' => ['Library ILS Connection'],
+					],
+				],
+			],
+			'ssoLibraryIdSection' => [
 				'property' => 'ssoLibraryIdSection',
 				'type' => 'section',
 				'label' => 'Library ID',
 				'hideInLists' => true,
 				'permissions' => ['Library ILS Options'],
-				'properties' => array(
-					'ssoLibraryIdAttr' => array(
+				'properties' => [
+					'ssoLibraryIdAttr' => [
 						'property' => 'ssoLibraryIdAttr',
 						'type' => 'text',
 						'label' => 'Name of the identity provider attribute that contains the user\'s library ID',
 						'description' => 'The user\'s library ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below',
 						'size' => '512',
 						'hideInLists' => true,
-						'permissions' => ['Library ILS Connection']
-					),
-					'ssoLibraryIdFallback' => array(
+						'permissions' => ['Library ILS Connection'],
+					],
+					'ssoLibraryIdFallback' => [
 						'property' => 'ssoLibraryIdFallback',
 						'type' => 'text',
 						'label' => 'A fallback value for library ID',
 						'description' => 'A value to be used in the event the identity provider does not supply a library ID attribute, this should be an ID that is recognised by your LMS',
 						'size' => '512',
 						'hideInLists' => true,
-						'permissions' => ['Library ILS Connection']
-					),
-				)
-			),
-			'ssoCategoryIdSection' => array(
+						'permissions' => ['Library ILS Connection'],
+					],
+				],
+			],
+			'ssoCategoryIdSection' => [
 				'property' => 'ssoCategoryIdSection',
 				'type' => 'section',
 				'label' => 'Patron category ID',
 				'hideInLists' => true,
 				'permissions' => ['Library ILS Options'],
-				'properties' => array(
-					'ssoCategoryIdAttr' => array(
+				'properties' => [
+					'ssoCategoryIdAttr' => [
 						'property' => 'ssoCategoryIdAttr',
 						'type' => 'text',
 						'label' => 'Name of the identity provider attribute that contains the user\'s patron category ID',
 						'description' => 'The user\'s patron category ID, this should be an ID that is recognised by your LMS. If this is not supplied, please provide a fallback value below',
 						'size' => '512',
 						'hideInLists' => true,
-						'permissions' => ['Library ILS Connection']
-					),
-					'ssoCategoryIdFallback' => array(
+						'permissions' => ['Library ILS Connection'],
+					],
+					'ssoCategoryIdFallback' => [
 						'property' => 'ssoCategoryIdFallback',
 						'type' => 'text',
 						'label' => 'A fallback value for category ID',
 						'description' => 'A value to be used in the event the identity provider does not supply a category ID attribute, this should be an ID that is recognised by your LMS',
 						'size' => '512',
 						'hideInLists' => true,
-						'permissions' => ['Library ILS Connection']
-					),
-				)
-			),
+						'permissions' => ['Library ILS Connection'],
+					],
+				],
+			],
 
-			'dataMapping' => array(
+			'dataMapping' => [
 				'property' => 'dataMapping',
 				'type' => 'oneToMany',
 				'label' => 'User Data Mapping',
@@ -450,10 +450,10 @@ class SSOSetting extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
-				'hideInLists' => true
-			),
+				'hideInLists' => true,
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
@@ -461,7 +461,7 @@ class SSOSetting extends DataObject {
 				'description' => 'Define libraries that use this setting',
 				'values' => $libraryList,
 				'hideInLists' => true,
-			),
+			],
 		];
 	}
 
@@ -496,7 +496,7 @@ class SSOSetting extends DataObject {
 
 	public function getFieldMappings() {
 		if (!isset($this->_dataMapping) && $this->id) {
-			$this->_dataMapping = array();
+			$this->_dataMapping = [];
 			$dataMapping = new SSOMapping();
 			$dataMapping->ssoSettingId = $this->id;
 			if ($dataMapping->find()) {
@@ -565,15 +565,15 @@ class SSOSetting extends DataObject {
 	public function genericOAuthProvider() {
 		global $configArray;
 		$redirectUri = $configArray['Site']['url'] . '/Authentication/OAuth';
-		return array(
+		return [
 			'urlAuthorize' => $this->oAuthAuthorizeUrl,
 			'urlAccessToken' => $this->oAuthAccessTokenUrl,
 			'clientId' => $this->clientId,
 			'clientSecret' => $this->clientSecret ?? '',
 			'redirectUri' => $redirectUri,
 			'urlResourceOwnerDetails' => $this->oAuthResourceOwnerUrl,
-			'scopes' => $this->oAuthScope
-		);
+			'scopes' => $this->oAuthScope,
+		];
 	}
 
 	public function getAuthorizationUrl() {
@@ -631,7 +631,7 @@ class SSOSetting extends DataObject {
 			'email' => 'email',
 			'userId' => 'sub',
 			'firstName' => 'given_name',
-			'lastName' => 'family_name'
+			'lastName' => 'family_name',
 		];
 
 		$mappings = new SSOMapping();

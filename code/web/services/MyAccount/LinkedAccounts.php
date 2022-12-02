@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class LinkedAccounts extends MyAccount
-{
-	function launch()
-	{
+class LinkedAccounts extends MyAccount {
+	function launch() {
 		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
@@ -17,7 +15,7 @@ class LinkedAccounts extends MyAccount
 		if ($user) {
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
 			$patron = $user->getUserReferredTo($patronId);
 
@@ -37,8 +35,7 @@ class LinkedAccounts extends MyAccount
 		$this->display('linkedAccounts.tpl', 'Linked Accounts');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Linked Accounts');

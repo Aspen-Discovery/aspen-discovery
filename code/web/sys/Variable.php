@@ -6,12 +6,11 @@ class Variable extends DataObject {
 	public $name;
 	public $value;
 
-	public function getNumericColumnNames(): array
-	{
+	public function getNumericColumnNames(): array {
 		return ['id'];
 	}
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		return [
 			'id' => [
 				'property' => 'id',

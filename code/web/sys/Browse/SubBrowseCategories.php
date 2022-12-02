@@ -10,54 +10,77 @@ class SubBrowseCategories extends DataObject {
 	public $subCategoryId;    // ID of the browse Category which is the Sub-Category or Child browse category
 	public $_source; //Source of the sub browse category, loaded at runtime, will be browseCategory, userList, or savedSearch
 
-	function getUniquenessFields(): array
-	{
-		return ['browseCategoryId', 'subCategoryId'];
+	function getUniquenessFields(): array {
+		return [
+			'browseCategoryId',
+			'subCategoryId',
+		];
 	}
 
-	static function getObjectStructure() : array{
+	static function getObjectStructure(): array {
 		$browseCategoryList = self::listBrowseCategories();
-		return array(
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the sub-category row within the database'),
-			'browseCategoryId' => array('property'=>'browseCategoryId', 'type'=>'label', 'label'=>'Browse Category', 'description'=>'The parent browse category'),
-			'subCategoryId'    => array('property'=>'subCategoryId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Sub-Category', 'description'=>'The sub-category of the parent browse category'),
-			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines the order of the sub-categories .  Lower weights are displayed to the left of the screen.', 'required'=> true),
-		);
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id of the sub-category row within the database',
+			],
+			'browseCategoryId' => [
+				'property' => 'browseCategoryId',
+				'type' => 'label',
+				'label' => 'Browse Category',
+				'description' => 'The parent browse category',
+			],
+			'subCategoryId' => [
+				'property' => 'subCategoryId',
+				'type' => 'enum',
+				'values' => $browseCategoryList,
+				'label' => 'Sub-Category',
+				'description' => 'The sub-category of the parent browse category',
+			],
+			'weight' => [
+				'property' => 'weight',
+				'type' => 'numeric',
+				'label' => 'Weight',
+				'weight' => 'Defines the order of the sub-categories .  Lower weights are displayed to the left of the screen.',
+				'required' => true,
+			],
+		];
 	}
 
-	static function listBrowseCategories(){
-		$browseCategoryList = array();
+	static function listBrowseCategories() {
+		$browseCategoryList = [];
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
-		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
+		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;
 			$browseCategories->whereAdd("sharing = 'everyone'");
 			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
 			$browseCategories->find();
 
-			while ($browseCategories->fetch()){
+			while ($browseCategories->fetch()) {
 				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
 			}
 
-		} else if(UserAccount::userHasPermission('Administer All Browse Categories')) {
+		} elseif (UserAccount::userHasPermission('Administer All Browse Categories')) {
 			$browseCategories->find();
 
-			while ($browseCategories->fetch()){
+			while ($browseCategories->fetch()) {
 				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
 			}
 		}
 		return $browseCategoryList;
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->subCategoryId;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['browseCategoryId']);
 		unset($return['subCategoryId']);
@@ -71,17 +94,16 @@ class SubBrowseCategories extends DataObject {
 		//Add the subcategory
 		$browseCategory = new BrowseCategory();
 		$browseCategory->id = $this->subCategoryId;
-		if ($browseCategory->find(true)){
+		if ($browseCategory->find(true)) {
 			$links['subCategory'] = $browseCategory->toArray();
 		}
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData)){
-			if (isset($jsonData['subCategory'])){
+		if (isset($jsonData)) {
+			if (isset($jsonData['subCategory'])) {
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 				$subCategoryObj = new BrowseCategory();
 				$subCategoryObj->loadFromJSON($jsonData['subCategory'], $mappings, $overrideExisting);
