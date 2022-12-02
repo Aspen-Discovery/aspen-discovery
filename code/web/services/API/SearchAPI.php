@@ -1632,31 +1632,36 @@ class SearchAPI extends Action {
 						$savedSearches = $listApi->getSavedSearches($appUser->id);
 						$allSearches = $savedSearches['searches'];
 						foreach ($allSearches as $savedSearch) {
-							if (!$categoryInformation->isDismissed($appUser)) {
-								$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
-								$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12);
-								$formattedSavedSearchResults = [];
-								if (count($savedSearchResults) > 0) {
-									foreach ($savedSearchResults as $savedSearchResult) {
-										$formattedSavedSearchResults[] = [
-											'id' => $savedSearchResult['id'],
-											'title_display' => $savedSearchResult['title'],
-											'isNew' => $savedSearchResult['isNew'],
-										];
+							require_once ROOT_DIR . '/sys/SearchEntry.php';
+							$obj = new SearchEntry();
+							$obj->id = $savedSearch['id'];
+							if ($obj->find(true)) {
+								if (!$obj->isDismissed($appUser)) {
+									$thisId = $categoryInformation->textId . '_' . $savedSearch['id'];
+									$savedSearchResults = $this->getAppBrowseCategoryResults($thisId, $appUser, 12);
+									$formattedSavedSearchResults = [];
+									if (count($savedSearchResults) > 0) {
+										foreach ($savedSearchResults as $savedSearchResult) {
+											$formattedSavedSearchResults[] = [
+												'id' => $savedSearchResult['id'],
+												'title_display' => $savedSearchResult['title'],
+												'isNew' => $savedSearchResult['isNew'],
+											];
+										}
 									}
-								}
-								$categoryResponse = [
-									'key' => $thisId,
-									'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
-									'source' => "SavedSearch",
-									'sourceId' => $savedSearch['id'],
-									'isHidden' => $categoryInformation->isDismissed($appUser),
-									'records' => $formattedSavedSearchResults,
-								];
-								$formattedCategories[] = $categoryResponse;
-								$numCategoriesProcessed++;
-								if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-									break;
+									$categoryResponse = [
+										'key' => $thisId,
+										'title' => $categoryInformation->label . ': ' . $obj->title,
+										'source' => 'SavedSearch',
+										'sourceId' => $obj->id,
+										'isHidden' => $obj->isDismissed($appUser),
+										'records' => $formattedSavedSearchResults,
+									];
+									$formattedCategories[] = $categoryResponse;
+									$numCategoriesProcessed++;
+									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+										break;
+									}
 								}
 							}
 						}
@@ -1665,20 +1670,27 @@ class SearchAPI extends Action {
 						$allUserLists = $userLists['lists'] ?? [];
 						if (count($allUserLists) > 0) {
 							foreach ($allUserLists as $userList) {
-								if ($userList['id'] != "recommendations" && !$categoryInformation->isDismissed($appUser)) {
-									$thisId = $categoryInformation->textId . '_' . $userList['id'];
-									$categoryResponse = [
-										'key' => $thisId,
-										'title' => $categoryInformation->label . ': ' . $userList['title'],
-										'source' => "List",
-										'sourceId' => $userList['id'],
-										'isHidden' => $categoryInformation->isDismissed($appUser),
-										'records' => $this->getAppBrowseCategoryResults($thisId, null, 12),
-									];
-									$formattedCategories[] = $categoryResponse;
-									$numCategoriesProcessed++;
-									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-										break;
+								if ($userList['id'] != "recommendations") {
+									require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+									$obj = new UserList();
+									$obj->id = $userList['id'];
+									if ($obj->find(true)) {
+										if (!$obj->isDismissed($appUser)) {
+											$thisId = $categoryInformation->textId . '_' . $userList['id'];
+											$categoryResponse = [
+												'key' => $thisId,
+												'title' => $categoryInformation->label . ': ' . $userList['title'],
+												'source' => "List",
+												'sourceId' => $userList['id'],
+												'isHidden' => $categoryInformation->isDismissed($appUser),
+												'records' => $this->getAppBrowseCategoryResults($thisId, null, 12),
+											];
+											$formattedCategories[] = $categoryResponse;
+											$numCategoriesProcessed++;
+											if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+												break;
+											}
+										}
 									}
 								}
 							}
