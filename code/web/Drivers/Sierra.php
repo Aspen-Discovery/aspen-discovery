@@ -1,32 +1,34 @@
 <?php
 
 require_once ROOT_DIR . '/Drivers/Millennium.php';
-class Sierra extends Millennium{
+
+class Sierra extends Millennium {
 	protected $urlIdRegExp = "/.*\/([\d]*)$/";
 	protected $urlInnReachIdRegExp = "/.*\/(\d*)@.*$/";
 
 	private $sierraToken = null;
 	private $lastResponseCode;
-	private /** @noinspection PhpPropertyOnlyWrittenInspection */ $lastError;
+	private /** @noinspection PhpPropertyOnlyWrittenInspection */
+		$lastError;
 	private $lastErrorMessage;
 
 	private $_sierraDNAConnection;
 
-	public function _connectToApi(){
-		if ($this->sierraToken == null){
+	public function _connectToApi() {
+		if ($this->sierraToken == null) {
 			$apiVersion = $this->accountProfile->apiVersion;
 			$tokenUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/token/";
 			$ch = curl_init($tokenUrl);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
-			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			$authInfo = base64_encode($this->accountProfile->oAuthClientId . ":" . $this->accountProfile->oAuthClientSecret);
-			$headers = array(
+			$headers = [
 				'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
 				'Authorization: Basic ' . $authInfo,
-			);
+			];
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 			curl_setopt($ch, CURLOPT_POST, 1);
@@ -43,23 +45,23 @@ class Sierra extends Millennium{
 		return $this->sierraToken;
 	}
 
-	public function __destruct(){
+	public function __destruct() {
 		$this->closeSierraDNAConnection();
 	}
 
-	public function _callUrl($requestType, $url){
+	public function _callUrl($requestType, $url) {
 		$tokenData = $this->_connectToAPI();
-		if ($tokenData){
+		if ($tokenData) {
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			$host = parse_url($url, PHP_URL_HOST);
-			$headers = array(
-					"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
-					"User-Agent: Aspen Discovery",
-					//"X-Forwarded-For: " . IPAddress::getActiveIp(),
-					"Host: " . $host,
-			);
+			$headers = [
+				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
+				"User-Agent: Aspen Discovery",
+				//"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				"Host: " . $host,
+			];
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -74,8 +76,8 @@ class Sierra extends Millennium{
 			curl_close($ch);
 
 			$returnVal = json_decode($return);
-			if ($returnVal != null){
-				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+			if ($returnVal != null) {
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.') {
 					return $returnVal;
 				}
 			}
@@ -83,23 +85,23 @@ class Sierra extends Millennium{
 		return null;
 	}
 
-	public function _postPage($requestType, $url, $postParams){
+	public function _postPage($requestType, $url, $postParams) {
 
 		$tokenData = $this->_connectToAPI();
-		if ($tokenData){
+		if ($tokenData) {
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			$host = parse_url($url, PHP_URL_HOST);
-			$headers = array(
+			$headers = [
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
 				"X-Forwarded-For: " . IPAddress::getActiveIp(),
 				"Accept-Language: *",
 				"Host: " . $host,
 				'Content-Type: application/json',
-				'Accept: application/json'
-			);
+				'Accept: application/json',
+			];
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -113,7 +115,7 @@ class Sierra extends Millennium{
 					$post_string = http_build_query($postParams);
 				}
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
-			}else{
+			} else {
 				$post_string = '';
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
 				$headers[] = 'Content-Length: 0';
@@ -133,8 +135,8 @@ class Sierra extends Millennium{
 			ExternalRequestLogEntry::logRequest($requestType, 'POST', $url, $headers, $post_string, $responseCode, $return, []);
 			curl_close($ch);
 			$returnVal = json_decode($return);
-			if ($returnVal != null){
-				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+			if ($returnVal != null) {
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.') {
 					return $returnVal;
 				}
 			}
@@ -142,25 +144,25 @@ class Sierra extends Millennium{
 		return null;
 	}
 
-	public function _sendPage($requestType, $httpMethod, $url, $postParams){
+	public function _sendPage($requestType, $httpMethod, $url, $postParams) {
 
 		$tokenData = $this->_connectToAPI();
-		if ($tokenData){
+		if ($tokenData) {
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			$host = parse_url($url, PHP_URL_HOST);
-			$headers = array(
+			$headers = [
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
 				//"X-Forwarded-For: " . IPAddress::getActiveIp(),
 				"Host: " . $host,
-			);
-			if ($httpMethod == 'PUT'){
+			];
+			if ($httpMethod == 'PUT') {
 				$headers[] = 'Content-Type: application/json';
 				if ($postParams === null || $postParams === false) {
 					$headers[] = 'Content-Length: 0';
-				}else{
+				} else {
 					if (is_array($postParams)) {
 						$postParams = json_encode($postParams);
 					}
@@ -179,13 +181,13 @@ class Sierra extends Millennium{
 				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
 			}
 			if ($postParams != null) {
-				if (is_array($postParams)){
+				if (is_array($postParams)) {
 					$postFields = http_build_query($postParams);
-				}else{
+				} else {
 					$postFields = $postParams;
 				}
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-			}else{
+			} else {
 				$postFields = '';
 			}
 			$return = curl_exec($ch);
@@ -198,8 +200,8 @@ class Sierra extends Millennium{
 			ExternalRequestLogEntry::logRequest($requestType, $httpMethod, $url, $headers, $postFields, $responseCode, $return, []);
 			curl_close($ch);
 			$returnVal = json_decode($return);
-			if ($returnVal != null){
-				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+			if ($returnVal != null) {
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.') {
 					return $returnVal;
 				}
 			}
@@ -214,8 +216,7 @@ class Sierra extends Millennium{
 	 * - emailPin - The pin itself is emailed to the user
 	 * @return string
 	 */
-	function getForgotPasswordType()
-	{
+	function getForgotPasswordType() {
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			return 'emailAspenResetLink';
 		} else {
@@ -223,34 +224,33 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function getHolds($patron) : array
-	{
+	public function getHolds($patron): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
-		$availableHolds = array();
-		$unavailableHolds = array();
-		$return = array(
+		$availableHolds = [];
+		$unavailableHolds = [];
+		$return = [
 			'available' => $availableHolds,
-			'unavailable' => $unavailableHolds
-		);
+			'unavailable' => $unavailableHolds,
+		];
 
 		$patronId = $patron->username;
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
 
-		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/holds";
-		if ($this->accountProfile->apiVersion > 4){
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/holds";
+		if ($this->accountProfile->apiVersion > 4) {
 			$sierraUrl .= "?fields=default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
 		} else {
 			$sierraUrl .= "?fields=default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
 		}
 		$holds = $this->_callUrl('sierra.getHolds', $sierraUrl);
 
-		if($holds->total == 0) {
+		if ($holds->total == 0) {
 			return $return;
 		}
 
 		// these will be consistent for every hold
 		$pickupLocations = $patron->getValidPickupBranches($this->accountProfile->recordSource);
-		if(is_array($pickupLocations)) {
+		if (is_array($pickupLocations)) {
 			if (count($pickupLocations) > 1) {
 				$canUpdatePL = true;
 			} else {
@@ -292,20 +292,21 @@ class Sierra extends Millennium{
 			// check item record status
 			if (preg_match($this->urlIdRegExp, $sierraHold->record, $m)) {
 				$recordId = $m[1];
-			}else {
+			} else {
 				$recordId = substr($sierraHold->record, strrpos($sierraHold->record, '/') + 1);
 			}
 			if ($sierraHold->recordType == 'i') {
 				$recordItemStatus = $sierraHold->status->code;
 				// If this is an inn-reach exclude from check -- this comes later
-				if(! strstr($recordId, "@")) {
+				if (!strstr($recordId, "@")) {
 					// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
 					// the "on hold shelf" status is for another patron.
-					if($recordItemStatus != "!" && $recordStatus != '0') {
+					if ($recordItemStatus != "!" && $recordStatus != '0') {
 						// check for in transit status see
-						if($recordItemStatus == 't') {
-							if(isset($sierraHold->priority) && (int)$sierraHold->priority == 1)
+						if ($recordItemStatus == 't') {
+							if (isset($sierraHold->priority) && (int)$sierraHold->priority == 1) {
 								$recordStatus = 't';
+							}
 						}
 					}
 				} else {
@@ -319,7 +320,7 @@ class Sierra extends Millennium{
 			switch ((string)$recordStatus) {
 				case '0':
 				case '-':
-					if($sierraHold->frozen) {
+					if ($sierraHold->frozen) {
 						$status = "Frozen";
 					} else {
 						$status = 'On hold';
@@ -327,7 +328,7 @@ class Sierra extends Millennium{
 					$freezeable = true;
 					$cancelable = true;
 
-					if($canUpdatePL) {
+					if ($canUpdatePL) {
 						$updatePickup = true;
 					} else {
 						$updatePickup = false;
@@ -337,53 +338,53 @@ class Sierra extends Millennium{
 				case 'j':
 				case 'i':
 				case '!':
-					$status       = 'Ready';
-					$cancelable   = true;
-					$freezeable   = false;
+					$status = 'Ready';
+					$cancelable = true;
+					$freezeable = false;
 					$updatePickup = false;
 					$available = true;
 					break;
 				case 't':
-					$status     = 'In transit';
+					$status = 'In transit';
 					$cancelable = true;
 					$freezeable = false;
-					if($canUpdatePL) {
+					if ($canUpdatePL) {
 						$updatePickup = true;
 					} else {
 						$updatePickup = false;
 					}
 					break;
 				case "&": // inn-reach status
-					$status       = "Requested";
-					$cancelable   = true;
-					$freezeable   = false;
+					$status = "Requested";
+					$cancelable = true;
+					$freezeable = false;
 					$updatePickup = false;
 					break;
 				case "#": // inn-reach status
 					$sierraHold->status->code = 'i';
-					$status             = 'Ready';
-					$freezeable         = false;
-					$cancelable         = false;
+					$status = 'Ready';
+					$freezeable = false;
+					$cancelable = false;
 					$updatePickup = false;
 					$available = true;
 					break;
 				default:
-					if(isset($recordItemStatusMessage)) {
+					if (isset($recordItemStatusMessage)) {
 						$status = $recordItemStatusMessage;
 					} else {
 						$status = 'On hold';
 					}
-					$cancelable   = false;
-					$freezeable   = false;
+					$cancelable = false;
+					$freezeable = false;
 					$updatePickup = false;
 			}
-			$curHold->status    = $status;
-			if(isset($curHold->holdQueueLength)) {
+			$curHold->status = $status;
+			if (isset($curHold->holdQueueLength)) {
 				// if the patron is the only person on wait list hold can't be frozen
-				if(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
+				if (isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
 					$freezeable = false;
 					// if there is no priority set but queueLength = 1
-				} elseif(!isset($curHold->position) && $curHold->holdQueueLength == 1) {
+				} elseif (!isset($curHold->position) && $curHold->holdQueueLength == 1) {
 					$freezeable = false;
 				}
 			}
@@ -395,32 +396,32 @@ class Sierra extends Millennium{
 			unset($status, $freezeable, $cancelable, $updatePickup);
 
 			// pick up location
-			if (!empty($sierraHold->pickupLocation)){
+			if (!empty($sierraHold->pickupLocation)) {
 				$pickupBranch = new Location();
 				$pickupBranch->code = $sierraHold->pickupLocation->code;
-				if ($pickupBranch->find(true)){
-					$curHold->pickupLocationId   = $pickupBranch->locationId;
+				if ($pickupBranch->find(true)) {
+					$curHold->pickupLocationId = $pickupBranch->locationId;
 					$curHold->pickupLocationName = $pickupBranch->displayName;
-				}else{
-					$curHold->pickupLocationId   = false;
+				} else {
+					$curHold->pickupLocationId = false;
 					$curHold->pickupLocationName = $sierraHold->pickupLocation->name;
 				}
-			} else{
+			} else {
 				//This shouldn't happen but we have had examples where it did
 				global $logger;
 				$logger->log("Patron with barcode {$patron->getBarcode()} has a hold with out a pickup location ", Logger::LOG_ERROR);
-				$curHold->pickupLocationId   = false;
+				$curHold->pickupLocationId = false;
 				$curHold->pickupLocationName = '';
 			}
 
 			// determine if this is an innreach hold
 			// or if it's a regular ILS hold
-			if(strstr($recordId, "@")) {
+			if (strstr($recordId, "@")) {
 				$titleAuthor = $this->getTitleAndAuthorForInnReachHold($curHold->cancelId);
-				if ($titleAuthor !== false){
+				if ($titleAuthor !== false) {
 					$curHold->title = $titleAuthor['title'];
 					$curHold->author = $titleAuthor['author'];
-				}else{
+				} else {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';
 				}
@@ -433,10 +434,10 @@ class Sierra extends Millennium{
 				$recordType = $sierraHold->recordType;
 				// for item level holds we need to grab the bib id.
 				$id = $recordId; //$m[1];
-				if($recordType == 'i') {
+				if ($recordType == 'i') {
 					$itemId = ".i{$id}" . $this->getCheckDigit($id);
 					$id = $this->getBibIdForItem($itemId, $id);
-				}else{
+				} else {
 					$recordXD = $this->getCheckDigit($id);
 					$id = ".b{$id}{$recordXD}";
 				}
@@ -452,12 +453,12 @@ class Sierra extends Millennium{
 					if ($recordDriver->isValid()) {
 						$curHold->updateFromRecordDriver($recordDriver);
 					}
-				}else{
+				} else {
 					$curHold->sourceId = '';
 					$curHold->recordId = '';
 				}
 			}
-			if($available) {
+			if ($available) {
 				$return['available'][] = $curHold;
 			} else {
 				$return['unavailable'][] = $curHold;
@@ -467,34 +468,33 @@ class Sierra extends Millennium{
 		return $return;
 	}
 
-	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
-	{
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 		$readingHistoryEnabled = false;
 		$patronId = $patron->username;
 
-		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts/history/activationStatus";
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/checkouts/history/activationStatus";
 
 		$readingHistoryEnabledResponse = $this->_callUrl('sierra.getReadingHistoryStatus', $sierraUrl);
 
-		if (!empty($readingHistoryEnabledResponse)){
+		if (!empty($readingHistoryEnabledResponse)) {
 			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
 		}
-		$readingHistoryTitles = array();
+		$readingHistoryTitles = [];
 
 		//Sierra does not report reading history enabled properly so we should always get it.
-		if (true || $readingHistoryEnabled){
-			ini_set('memory_limit','2G');
+		if (true || $readingHistoryEnabled) {
+			ini_set('memory_limit', '2G');
 
 			$numProcessed = 0;
 			$totalToProcess = 1000;
-			while ($numProcessed < $totalToProcess){
-				$getReadingHistoryUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts/history?limit=100&offset=$numProcessed&sortField=outDate&sortOrder=desc";
+			while ($numProcessed < $totalToProcess) {
+				$getReadingHistoryUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/checkouts/history?limit=100&offset=$numProcessed&sortField=outDate&sortOrder=desc";
 
 				$readingHistoryResponse = $this->_callUrl('sierra.getReadingHistory', $getReadingHistoryUrl);
-				if ($readingHistoryResponse && $readingHistoryResponse->total > 0){
+				if ($readingHistoryResponse && $readingHistoryResponse->total > 0) {
 					$totalToProcess = $readingHistoryResponse->total;
-					foreach ($readingHistoryResponse->entries as $historyEntry){
-						$curTitle = array();
+					foreach ($readingHistoryResponse->entries as $historyEntry) {
+						$curTitle = [];
 						preg_match($this->urlIdRegExp, $historyEntry->bib, $matches);
 						$bibId = ".b{$matches[1]}" . $this->getCheckDigit($matches[1]);
 						$curTitle['id'] = $bibId;
@@ -516,28 +516,28 @@ class Sierra extends Millennium{
 							$curTitle['title'] = $recordDriver->getTitle();
 							$curTitle['format'] = $recordDriver->getFormats();
 							$curTitle['author'] = $recordDriver->getPrimaryAuthor();
-						}else{
+						} else {
 							//get title and author by looking up the bib
 							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
-							if ($getBibResponse){
-								if (isset($getBibResponse->deleted) && $getBibResponse->deleted == true){
+							if ($getBibResponse) {
+								if (isset($getBibResponse->deleted) && $getBibResponse->deleted == true) {
 									$curTitle['title'] = 'Deleted from catalog';
 									$curTitle['author'] = 'Unknown';
 									$curTitle['format'] = 'Unknown';
-								}else{
+								} else {
 									if (isset($getBibResponse->title)) {
 										$curTitle['title'] = $getBibResponse->title;
-									}else{
+									} else {
 										$curTitle['title'] = 'Unknown';
 									}
 									if (isset($getBibResponse->author)) {
 										$curTitle['author'] = $getBibResponse->author;
-									}else{
+									} else {
 										$curTitle['author'] = 'Unknown';
 									}
 									$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
 								}
-							}else{
+							} else {
 								$curTitle['title'] = 'Unknown';
 								$curTitle['author'] = 'Unknown';
 								$curTitle['format'] = 'Unknown';
@@ -549,33 +549,36 @@ class Sierra extends Millennium{
 						$readingHistoryTitles[] = $curTitle;
 					}
 					$numProcessed += count($readingHistoryResponse->entries);
-				}else{
+				} else {
 					break;
 				}
 			}
 		}
 
-		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
+		return [
+			'historyActive' => $readingHistoryEnabled,
+			'titles' => $readingHistoryTitles,
+			'numTitles' => count($readingHistoryTitles),
+		];
 	}
 
-	public function getCheckouts(User $patron) : array
-	{
+	public function getCheckouts(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		$checkedOutTitles = array();
+		$checkedOutTitles = [];
 
 		$patronId = $patron->username;
 
 		$numProcessed = 0;
 		$total = -1;
 
-		while ($numProcessed < $total || $total == -1){
-			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts?fields=default,barcode,callNumber&limit=100&offset={$numProcessed}";
+		while ($numProcessed < $total || $total == -1) {
+			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/checkouts?fields=default,barcode,callNumber&limit=100&offset={$numProcessed}";
 			$checkouts = $this->_callUrl('sierra.getCheckouts', $sierraUrl);
-			if ($total == -1){
+			if ($total == -1) {
 				$total = $checkouts->total;
 			}
 
-			foreach ($checkouts->entries as $i => $entry){
+			foreach ($checkouts->entries as $i => $entry) {
 				preg_match($this->urlIdRegExp, $entry->id, $m);
 				$checkoutId = $m[1];
 
@@ -592,18 +595,18 @@ class Sierra extends Millennium{
 				if (isset($entry->barcode)) {
 					$curCheckout->barcode = $entry->barcode;
 				}
-				if(strpos($entry->item, "@") !== false) {
+				if (strpos($entry->item, "@") !== false) {
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
 					if ($titleAuthor != false) {
 						$curCheckout->title = $titleAuthor['title'];
 						$curCheckout->author = $titleAuthor['author'];
 						$curCheckout->formats = ['Unknown'];
-					}else{
+					} else {
 						$curCheckout->title = 'Unknown';
 						$curCheckout->author = 'Unknown';
 						$curCheckout->formats = ['Unknown'];
 					}
-				}else{
+				} else {
 					preg_match($this->urlIdRegExp, $entry->item, $m);
 					$itemIdShort = $m[1];
 					$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
@@ -612,12 +615,12 @@ class Sierra extends Millennium{
 					$curCheckout->callNumber = $entry->callNumber;
 
 					$curCheckout->itemId = $itemId;
-					if ($bibId != false){
+					if ($bibId != false) {
 						$curCheckout->sourceId = $bibId;
 						$curCheckout->recordId = $bibId;
 						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
-						if ($recordDriver->isValid()){
+						if ($recordDriver->isValid()) {
 							$curCheckout->updateFromRecordDriver($recordDriver);
 							$relatedRecord = $recordDriver->getRelatedRecord();
 							if ($relatedRecord != null) {
@@ -627,27 +630,27 @@ class Sierra extends Millennium{
 										if (!empty($item->volume)) {
 											$curCheckout->volume = $item->volume;
 										}
-										if ($item->callNumber != $curCheckout->callNumber){
+										if ($item->callNumber != $curCheckout->callNumber) {
 											$curCheckout->callNumber = $item->callNumber;
 										}
 										break;
 									}
 								}
 							}
-						}else{
+						} else {
 							$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
 							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
-							if ($getBibResponse){
+							if ($getBibResponse) {
 								$curCheckout->title = isset($getBibResponse->title) ? $getBibResponse->title : 'Unknown';
 								$curCheckout->author = isset($getBibResponse->author) ? $getBibResponse->author : 'Unknown';
 								$curCheckout->formats = [isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown'];
-							}else{
+							} else {
 								$curCheckout->title = 'Unknown';
 								$curCheckout->author = 'Unknown';
 								$curCheckout->formats = ['Unknown'];
 							}
 						}
-					}else{
+					} else {
 						$curCheckout->sourceId = '';
 						$curCheckout->recordId = '';
 					}
@@ -662,12 +665,11 @@ class Sierra extends Millennium{
 		return $checkedOutTitles;
 	}
 
-	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
-	{
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null) {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/{$itemId}/renewal";
 		$renewResponse = $this->_postPage('sierra.renewCheckout', $sierraUrl, '');
 
-		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204){
+		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ":" . $recordId);
 			if ($recordDriver->isValid()) {
@@ -678,21 +680,34 @@ class Sierra extends Millennium{
 
 			$return = ['success' => true];
 			if ($title) {
-				$return['message'] = translate(['text' => '%1% has been renewed.', 1=> $title, 'isPublicFacing' => true]);
+				$return['message'] = translate([
+					'text' => '%1% has been renewed.',
+					1 => $title,
+					'isPublicFacing' => true,
+				]);
 			} else {
-				$return['message'] = translate(['text' => 'Your item has been renewed', 'isPublicFacing' => true]);
+				$return['message'] = translate([
+					'text' => 'Your item has been renewed',
+					'isPublicFacing' => true,
+				]);
 			}
 
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
-		}else{
-			$message = translate(['text' => "Unable to renew your checkout", 'isPublicFacing' => true]);
-			if (!empty($renewResponse) && !empty($renewResponse->description)){
-				$message .= '<br/>' . translate(['text' => $renewResponse->description, 'isPublicFacing' => true]);
+		} else {
+			$message = translate([
+				'text' => "Unable to renew your checkout",
+				'isPublicFacing' => true,
+			]);
+			if (!empty($renewResponse) && !empty($renewResponse->description)) {
+				$message .= '<br/>' . translate([
+						'text' => $renewResponse->description,
+						'isPublicFacing' => true,
+					]);
 			}
 			return [
 				'success' => false,
-				'message' => $message
+				'message' => $message,
 			];
 		}
 
@@ -703,8 +718,7 @@ class Sierra extends Millennium{
 	 * @param string $itemId
 	 * @return string|false
 	 */
-	private function getBibIdForItem(string $itemId, $shortId)
-	{
+	private function getBibIdForItem(string $itemId, $shortId) {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
 		$groupedWorkItem = new GroupedWorkItem();
@@ -722,122 +736,175 @@ class Sierra extends Millennium{
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
 			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/$shortId";
 			$itemInfo = $this->_callUrl('sierra.getItemInfo', $sierraUrl);
-			if (!empty($itemInfo)){
+			if (!empty($itemInfo)) {
 				$id = reset($itemInfo->bibIds);
 				$id = '.b' . $id . $this->getCheckDigit($id);
-			}else{
+			} else {
 				$id = false;
 			}
 		}
 		return $id;
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array {
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToFreezeId}";
 		$params = [
-			'freeze' => true
+			'freeze' => true,
 		];
 		$freezeResponse = $this->_sendPage('sierra.freezeHold', 'PUT', $sierraUrl, $params);
-		if (!$freezeResponse){
+		if (!$freezeResponse) {
 			$patron->forceReloadOfHolds();
 			return [
 				'success' => true,
-				'message' => translate(['text'=>"Hold frozen successfully.", 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => "Hold frozen successfully.",
+					'isPublicFacing' => true,
+				]),
 			];
-		}else{
+		} else {
 			$return = [
 				'success' => true,
-				'message' => translate(['text'=>"Unable to freeze your hold.", 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => "Unable to freeze your hold.",
+					'isPublicFacing' => true,
+				]),
 			];
-			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $freezeResponse->description)), 'isPublicFacing'=>true]);
+			$return['message'] .= ' ' . translate([
+					'text' => trim(str_replace('WebPAC Error : ', '', $freezeResponse->description)),
+					'isPublicFacing' => true,
+				]);
 			return $return;
 		}
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) : array {
+	function thawHold($patron, $recordId, $itemToThawId): array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToThawId}";
 		$params = [
-			'freeze' => false
+			'freeze' => false,
 		];
 		$thawResponse = $this->_sendPage('sierra.thawHold', 'PUT', $sierraUrl, json_encode($params));
-		if (!$thawResponse){
+		if (!$thawResponse) {
 			$patron->forceReloadOfHolds();
 			return [
 				'success' => true,
-				'message' => translate(['text'=>'Hold thawed successfully.', 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => 'Hold thawed successfully.',
+					'isPublicFacing' => true,
+				]),
 			];
-		}else{
+		} else {
 			$return = [
 				'success' => true,
-				'message' => translate(['text'=>"Unable to thaw your hold.", 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => "Unable to thaw your hold.",
+					'isPublicFacing' => true,
+				]),
 			];
-			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $thawResponse->description)), 'isPublicFacing'=>true]);
+			$return['message'] .= ' ' . translate([
+					'text' => trim(str_replace('WebPAC Error : ', '', $thawResponse->description)),
+					'isPublicFacing' => true,
+				]);
 			return $return;
 		}
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array {
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation): array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToUpdateId}";
 		$params = [
-			'pickupLocation' => $newPickupLocation
+			'pickupLocation' => $newPickupLocation,
 		];
 		$changePickupResponse = $this->_sendPage('sierra.changePickupLocation', 'PUT', $sierraUrl, json_encode($params));
-		if (!$changePickupResponse){
+		if (!$changePickupResponse) {
 			$patron->forceReloadOfHolds();
 			$result['success'] = true;
-			$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'The pickup location of your hold was changed successfully.',
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Pickup location updated', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Pickup location updated',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'The pickup location of your hold was changed successfully.',
+				'isPublicFacing' => true,
+			]);
 
 			return $result;
-		}else{
-			$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$changePickupResponse->ErrorMessage}";;
+		} else {
+			$message = translate([
+					'text' => 'Sorry, the pickup location of your hold could not be changed.',
+					'isPublicFacing' => true,
+				]) . " {$changePickupResponse->ErrorMessage}";;
 			$result['success'] = false;
 			$result['message'] = $message;
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Unable to update pickup location', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to update pickup location',
+				'isPublicFacing' => true,
+			]);
 			$result['api']['message'] = trim(str_replace('WebPAC Error : ', '', $changePickupResponse->ErrorMessage));
 
 			return $result;
 		}
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array{
+	public function cancelHold($patron, $recordId, $cancelId = null, $isIll = false): array {
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$cancelId}";
 		$cancelHoldResponse = $this->_sendPage('sierra.cancelHold', 'DELETE', $sierraUrl, '');
-		if (!$cancelHoldResponse){
+		if (!$cancelHoldResponse) {
 			$patron->forceReloadOfHolds();
 			return [
 				'success' => true,
-				'message' => translate(['text'=>'Hold cancelled successfully.', 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => 'Hold cancelled successfully.',
+					'isPublicFacing' => true,
+				]),
 			];
-		}else{
+		} else {
 			$return = [
 				'success' => true,
-				'message' => translate(['text'=>"Unable to cancel your hold.", 'isPublicFacing'=>true])
+				'message' => translate([
+					'text' => "Unable to cancel your hold.",
+					'isPublicFacing' => true,
+				]),
 			];
-			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $cancelHoldResponse->description)), 'isPublicFacing'=>true]);
+			$return['message'] .= ' ' . translate([
+					'text' => trim(str_replace('WebPAC Error : ', '', $cancelHoldResponse->description)),
+					'isPublicFacing' => true,
+				]);
 			return $return;
 		}
 	}
 
-	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
-	{
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$hold_result = [
 			'success' => false,
-			'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
+			'message' => translate([
+				'text' => 'There was an error placing your hold.',
+				'isPublicFacing' => true,
+			]),
 			'api' => [
-				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]),
-				'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true])
+				'title' => translate([
+					'text' => 'Unable to place hold',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'There was an error placing your hold.',
+					'isPublicFacing' => true,
+				]),
 			],
 		];
 
-		if (strpos($recordId, ':')){
-			list(,$recordId) = explode(':', $recordId);
+		if (strpos($recordId, ':')) {
+			[
+				,
+				$recordId,
+			] = explode(':', $recordId);
 		}
 
 		$recordType = substr($recordId, 1, 1);
@@ -846,10 +913,10 @@ class Sierra extends Millennium{
 		$params = [
 			'recordType' => $recordType,
 			'recordNumber' => (int)$recordNumber,
-			'pickupLocation' => $pickupBranch
+			'pickupLocation' => $pickupBranch,
 		];
 
-		if ($cancelDate != null){
+		if ($cancelDate != null) {
 			$params['neededBy'] = $cancelDate;
 		}
 
@@ -865,32 +932,53 @@ class Sierra extends Millennium{
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/{$patron->username}/holds/requests";
 		$placeHoldResponse = $this->_postPage('sierra.placeHold', $sierraUrl, json_encode($params));
-		if ($placeHoldResponse == null && ($this->lastResponseCode == 200 || $this->lastResponseCode = 204)){
+		if ($placeHoldResponse == null && ($this->lastResponseCode == 200 || $this->lastResponseCode = 204)) {
 			$hold_result['success'] = true;
-			$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
+			$hold_result['message'] = translate([
+				'text' => "Your hold was placed successfully.",
+				'isPublicFacing' => true,
+			]);
 
-			$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
-			$hold_result['api']['message'] = translate(['text'=> 'Your hold was placed successfully.', 'isPublicFacing'=>true]);
-			$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
+			$hold_result['api']['title'] = translate([
+				'text' => 'Hold placed successfully',
+				'isPublicFacing' => true,
+			]);
+			$hold_result['api']['message'] = translate([
+				'text' => 'Your hold was placed successfully.',
+				'isPublicFacing' => true,
+			]);
+			$hold_result['api']['action'] = translate([
+				'text' => 'Go to Holds',
+				'isPublicFacing' => true,
+			]);
 
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfHolds();
-		}else{
+		} else {
 			//Get the hold form
 			$message = isset($placeHoldResponse->description) ? $placeHoldResponse->description : $placeHoldResponse->name;
 			$hold_result['success'] = false;
-			$hold_result['message'] = translate(['text'=>$message, 'isPublicFacing'=>true]);
+			$hold_result['message'] = translate([
+				'text' => $message,
+				'isPublicFacing' => true,
+			]);
 
-			$hold_result['api']['title'] = translate(['text'=>$message, 'isPublicFacing'=>true]);
-			$hold_result['api']['message'] = translate(['text'=> $message, 'isPublicFacing'=>true]);
-			if (isset($placeHoldResponse->code) && isset($placeHoldResponse->details->itemsAsVolumes)){
+			$hold_result['api']['title'] = translate([
+				'text' => $message,
+				'isPublicFacing' => true,
+			]);
+			$hold_result['api']['message'] = translate([
+				'text' => $message,
+				'isPublicFacing' => true,
+			]);
+			if (isset($placeHoldResponse->code) && isset($placeHoldResponse->details->itemsAsVolumes)) {
 				$items = [];
-				foreach ($placeHoldResponse->details->itemsAsVolumes as $itemFromSierra){
+				foreach ($placeHoldResponse->details->itemsAsVolumes as $itemFromSierra) {
 					$items[] = [
 						'itemNumber' => '.i' . $itemFromSierra->id . $this->getCheckDigit($itemFromSierra->id),
 						'location' => $itemFromSierra->location->name,
 						'callNumber' => $itemFromSierra->callNumber,
-						'status' => $itemFromSierra->status->display
+						'status' => $itemFromSierra->status->display,
 					];
 				}
 				$hold_result['items'] = $items;
@@ -900,32 +988,29 @@ class Sierra extends Millennium{
 		return $hold_result;
 	}
 
-	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
-	{
+	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 		//return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 
-	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
-	{
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		return parent::placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 		// TODO: Use Sierra APIs to place volume holds
 	}
 
-	function allowFreezingPendingHolds(){
+	function allowFreezingPendingHolds() {
 		return false;
 	}
 
-	public function hasFastRenewAll() : bool{
+	public function hasFastRenewAll(): bool {
 		return false;
 	}
 
-	public function patronLogin($username, $password, $validatedViaSSO)
-	{
+	public function patronLogin($username, $password, $validatedViaSSO) {
 		$username = trim($username);
 		$password = trim($password);
 		$loginMethod = $this->accountProfile->loginConfiguration;
-		if ($loginMethod == 'barcode_pin'){
+		if ($loginMethod == 'barcode_pin') {
 			//If we use user names, we may need to lookup the barcode by the user name.
 //			$params = [
 //				'varFieldTag' => 'i',
@@ -950,19 +1035,19 @@ class Sierra extends Millennium{
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
 			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/validate";
 			$this->_postPage('sierra.validatePatron', $sierraUrl, json_encode($params));
-			if ($this->lastResponseCode != 204){
+			if ($this->lastResponseCode != 204) {
 				return false;
 			}
 
 
-		}else{ // $loginMethod == 'name_barcode'
+		} else { // $loginMethod == 'name_barcode'
 
 		}
 
 		//We've passed validation, get information for the patron
 		$patronInfo = $this->getPatronInfoByBarcode($username);
 
-		if (!$patronInfo){
+		if (!$patronInfo) {
 			return false;
 		}
 
@@ -970,7 +1055,7 @@ class Sierra extends Millennium{
 		$user = new User();
 		$user->source = $this->accountProfile->name;
 		$user->username = $patronInfo->id;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
 		$user->cat_username = $username;
@@ -978,9 +1063,12 @@ class Sierra extends Millennium{
 
 		$forceDisplayNameUpdate = false;
 		$primaryName = reset($patronInfo->names);
-		if (strpos($primaryName, ',') !== false){
-			list($firstName, $lastName) = explode(',', $primaryName, 2);
-		}else{
+		if (strpos($primaryName, ',') !== false) {
+			[
+				$firstName,
+				$lastName,
+			] = explode(',', $primaryName, 2);
+		} else {
 			$lastName = $primaryName;
 			$firstName = '';
 		}
@@ -1009,11 +1097,11 @@ class Sierra extends Millennium{
 		return $user;
 	}
 
-	public function getPatronInfoByBarcode($barcode){
+	public function getPatronInfoByBarcode($barcode) {
 		$params = [
 			'varFieldTag' => 'b',
 			'varFieldContent' => $barcode,
-			'fields' => 'id,names,deleted,suppressed,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,patronCodes,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
+			'fields' => 'id,names,deleted,suppressed,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,patronCodes,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate',
 		];
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
@@ -1021,22 +1109,21 @@ class Sierra extends Millennium{
 		$sierraUrl .= http_build_query($params);
 
 		$response = $this->_callUrl('sierra.findPatronByBarcode', $sierraUrl);
-		if (!$response){
+		if (!$response) {
 			return false;
-		}else{
-			if ($response->deleted || $response->suppressed){
+		} else {
+			if ($response->deleted || $response->suppressed) {
 				return false;
-			}else{
+			} else {
 				return $response;
 			}
 		}
 	}
 
-	public function findNewUser($patronBarcode)
-	{
+	public function findNewUser($patronBarcode) {
 		$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
 
-		if (!$patronInfo){
+		if (!$patronInfo) {
 			return false;
 		}
 
@@ -1044,16 +1131,19 @@ class Sierra extends Millennium{
 		$user = new User();
 		$user->source = $this->accountProfile->name;
 		$user->username = $patronInfo->id;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
 		$user->cat_username = $patronBarcode;
 
 		$forceDisplayNameUpdate = false;
 		$primaryName = reset($patronInfo->names);
-		if (strpos($primaryName, ',') !== false){
-			list($firstName, $lastName) = explode(',', $primaryName, 2);
-		}else{
+		if (strpos($primaryName, ',') !== false) {
+			[
+				$firstName,
+				$lastName,
+			] = explode(',', $primaryName, 2);
+		} else {
 			$lastName = $primaryName;
 			$firstName = '';
 		}
@@ -1083,15 +1173,14 @@ class Sierra extends Millennium{
 		return $user;
 	}
 
-	public function getAccountSummary(User $patron): AccountSummary
-	{
+	public function getAccountSummary(User $patron): AccountSummary {
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
 		$summary->userId = $patron->id;
 		$summary->source = 'ils';
 		$summary->resetCounters();
 		$patronInfo = $this->getPatronInfoByBarcode($patron->getBarcode());
-		if ($patronInfo){
+		if ($patronInfo) {
 			$checkouts = $this->getCheckouts($patron);
 			$summary->numCheckedOut = count($checkouts);
 			foreach ($checkouts as $checkout) {
@@ -1106,25 +1195,28 @@ class Sierra extends Millennium{
 
 			$summary->totalFines = $patronInfo->moneyOwed;
 
-			list ($yearExp, $monthExp, $dayExp) = explode("-", $patronInfo->expirationDate);
+			[
+				$yearExp,
+				$monthExp,
+				$dayExp,
+			] = explode("-", $patronInfo->expirationDate);
 			$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 		}
 
 		return $summary;
 	}
 
-	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) : array
-	{
+	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade): array {
 		$result = [
 			'success' => false,
-			'messages' => []
+			'messages' => [],
 		];
 
-		if ($canUpdateContactInfo){
+		if ($canUpdateContactInfo) {
 			global $library;
 			$params = [];
 
-			if (isset($_REQUEST['email'])){
+			if (isset($_REQUEST['email'])) {
 				$patron->email = $_REQUEST['email'];
 				$params['emails'] = [$_REQUEST['email']];
 			}
@@ -1138,7 +1230,7 @@ class Sierra extends Millennium{
 					$params['phones'][] = $tmpPhone;
 				}
 			}
-			if ($library->allowPatronAddressUpdates){
+			if ($library->allowPatronAddressUpdates) {
 				$params['addresses'] = [];
 				$address = new stdClass();
 				$address->lines = [];
@@ -1150,7 +1242,7 @@ class Sierra extends Millennium{
 				$params['addresses'][] = $address;
 			}
 
-			if (isset($_REQUEST['notices']) && !empty($_REQUEST['notices'])){
+			if (isset($_REQUEST['notices']) && !empty($_REQUEST['notices'])) {
 				$params['fixedFields'] = [];
 				$noticeField = new stdClass();
 				$fieldValue = new stdClass();
@@ -1161,72 +1253,69 @@ class Sierra extends Millennium{
 			}
 
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
-			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patron->username;
+			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
 			$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
 
-			if ($this->lastResponseCode == 204){
+			if ($this->lastResponseCode == 204) {
 				$result['success'] = true;
 				$result['messages'][] = 'Your account was updated successfully.';
 				$patron->update();
-			}else{
+			} else {
 				$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;
 			}
-		}else{
+		} else {
 			$result['messages'][] = 'You do not have permission to update profile information.';
 		}
 
 		return $result;
 	}
 
-	public function getSelfRegistrationFields()
-	{
+	public function getSelfRegistrationFields() {
 		return parent::getSelfRegistrationFields();
 		// TODO: Use Sierra APIs to get Self Registration fields
 	}
 
-	public function selfRegister() : array
-	{
+	public function selfRegister(): array {
 		return parent::selfRegister();
 		// TODO: Use Sierra APIs to self register
 	}
 
-	public function getFines($patron = null, $includeMessages = false) : array
-	{
+	public function getFines($patron = null, $includeMessages = false): array {
 		$fines = [];
 
 		$params = [
-			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description,invoiceNumber'
+			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description,invoiceNumber',
 		];
 
 		$patronId = $patron->username;
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
-		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/fines?";
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/fines?";
 		$sierraUrl .= http_build_query($params);
 
 		$finesResponse = $this->_callUrl('sierra.getFines', $sierraUrl);
-		if ($finesResponse && $finesResponse->total > 0){
-			foreach ($finesResponse->entries as $fineEntry){
+		if ($finesResponse && $finesResponse->total > 0) {
+			foreach ($finesResponse->entries as $fineEntry) {
 				$fineUrl = $fineEntry->id;
 				$fineId = substr($fineUrl, strrpos($fineUrl, '/') + 1);
 				$fineAmount = $fineEntry->itemCharge + $fineEntry->processingFee + $fineEntry->billingFee;
 				$message = '';
-				if (isset($fineEntry->description)){
+				if (isset($fineEntry->description)) {
 					$message = $fineEntry->description;
-				}else{
-					if (isset($fineEntry->item)){
+				} else {
+					if (isset($fineEntry->item)) {
 						preg_match($this->urlIdRegExp, $fineEntry->item, $m);
 						$itemIdShort = $m[1];
 						$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
 						$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
-						if ($bibId != false){
+						if ($bibId != false) {
 							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 							$recordDriver = new MarcRecordDriver((string)$bibId);
-							if ($recordDriver->isValid()){
+							if ($recordDriver->isValid()) {
 								$message = $recordDriver->getTitle();
-							}else{
+							} else {
 								$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
 								$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
-								if ($getBibResponse){
+								if ($getBibResponse) {
 									$message = $getBibResponse->title;
 								}
 							}
@@ -1250,16 +1339,15 @@ class Sierra extends Millennium{
 		return $fines;
 	}
 
-	function showOutstandingFines()
-	{
+	function showOutstandingFines() {
 		return true;
 	}
 
-	public function completeFinePayment(User $patron, UserPayment $payment){
+	public function completeFinePayment(User $patron, UserPayment $payment) {
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
-			'message' => ''
+			'message' => '',
 		];
 
 		$userFines = $this->getFines($patron);
@@ -1267,17 +1355,20 @@ class Sierra extends Millennium{
 		//Before adding payments, we need to
 
 		$paymentParams = [
-			'payments' => []
+			'payments' => [],
 		];
 
 		$finePayments = explode(',', $payment->finesPaid);
-		foreach ($finePayments as $finePayment){
-			list($fineId, $paymentAmount) = explode('|', $finePayment);
+		foreach ($finePayments as $finePayment) {
+			[
+				$fineId,
+				$paymentAmount,
+			] = explode('|', $finePayment);
 
 			//Find the fine in the list of user payments so we can tell if it's fully paid or partially paid
 			$fineInvoiceNumber = '';
-			foreach ($userFines as $userFine){
-				if ($userFine['fineId'] == $fineId){
+			foreach ($userFines as $userFine) {
+				if ($userFine['fineId'] == $fineId) {
 					$fineInvoiceNumber = $userFine['invoiceNumber'];
 					break;
 				}
@@ -1296,17 +1387,17 @@ class Sierra extends Millennium{
 
 		$patronId = $patron->username;
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
-		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/fines/payment";
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/fines/payment";
 
 		$makePaymentResponse = $this->_sendPage('sierra.addPayment', 'PUT', $sierraUrl, json_encode($paymentParams));
 
-		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204){
+		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204) {
 			$result['success'] = true;
-		}else{
+		} else {
 			$result['success'] = false;
-			if (isset($makePaymentResponse->description)){
+			if (isset($makePaymentResponse->description)) {
 				$result['message'] = $makePaymentResponse->description;
-			}else{
+			} else {
 				$result['message'] = 'Could not record fine payment.';
 			}
 		}
@@ -1316,39 +1407,37 @@ class Sierra extends Millennium{
 	}
 
 	/** @noinspection PhpRedundantMethodOverrideInspection */
-	function importListsFromIls($patron)
-	{
+	function importListsFromIls($patron) {
 		//There is no way to do this from the APIs so we need to resort to screen scraping.
 		return parent::importListsFromIls($patron);
 	}
 
-	public function loadContactInformation(User $user){
+	public function loadContactInformation(User $user) {
 		$patronInfo = $this->getPatronInfoByBarcode($user->getBarcode());
 
-		if (!$patronInfo){
+		if (!$patronInfo) {
 			return;
 		}
 		$this->loadContactInformationFromApiResult($user, $patronInfo);
 	}
 
-	private function loadContactInformationFromApiResult(User $user, stdClass $patronInfo)
-	{
+	private function loadContactInformationFromApiResult(User $user, stdClass $patronInfo) {
 		$user->_fullname = reset($patronInfo->names);
 		if (!empty($patronInfo->addresses)) {
 			$primaryAddress = reset($patronInfo->addresses);
 			$user->_address1 = $primaryAddress->lines[0];
 			$line2 = $primaryAddress->lines[1];
-			if (strpos($line2, ',')){
+			if (strpos($line2, ',')) {
 				$user->_city = substr($line2, 0, strrpos($line2, ','));
 				$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
 				$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
 				$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
-			}else{
+			} else {
 				$user->_city = $line2;
 			}
 		}
 		$primaryPhone = reset($patronInfo->phones);
-		if (!empty($primaryPhone)){
+		if (!empty($primaryPhone)) {
 			$user->phone = $primaryPhone->number;
 		}
 		if (!empty($patronInfo->emails)) {
@@ -1409,9 +1498,13 @@ class Sierra extends Millennium{
 			$user->_homeLocation = $location->displayName;
 		}
 
-		if ($patronInfo->expirationDate){
+		if ($patronInfo->expirationDate) {
 			$user->_expires = $patronInfo->expirationDate;
-			list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
+			[
+				$yearExp,
+				$monthExp,
+				$dayExp,
+			] = explode("-", $user->_expires);
 			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 			$timeNow = time();
 			$timeToExpire = $timeExpire - $timeNow;
@@ -1454,52 +1547,70 @@ class Sierra extends Millennium{
 //		];
 //	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin) : array
-	{
+	function updatePin(User $patron, string $oldPin, string $newPin): array {
 		if ($patron->cat_password != $oldPin) {
-			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
+			return [
+				'success' => false,
+				'message' => "The old PIN provided is incorrect.",
+			];
 		}
 		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
-		$result = ['success' => false, 'message' => "Unknown error updating password."];
+		$result = [
+			'success' => false,
+			'message' => "Unknown error updating password.",
+		];
 		$params = [
 			'pin' => $newPin,
 		];
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
-		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patron->username;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
 		$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
-		if ($this->lastResponseCode == 204){
+		if ($this->lastResponseCode == 204) {
 			$result['success'] = true;
 			$result['message'] = 'Your password was updated successfully.';
 			$patron->cat_password = $newPin;
 			$patron->update();
-		}else{
-			$message = translate(['text'=>'Unable to update PIN. ', 'isPublicFacing'=>true, 'inAttribute'=>true]);
-			if (!empty($this->lastErrorMessage)){
-				$message .= translate(['text'=>$this->lastErrorMessage, 'isPublicFacing'=>true, 'inAttribute'=>true]);
+		} else {
+			$message = translate([
+				'text' => 'Unable to update PIN. ',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]);
+			if (!empty($this->lastErrorMessage)) {
+				$message .= translate([
+					'text' => $this->lastErrorMessage,
+					'isPublicFacing' => true,
+					'inAttribute' => true,
+				]);
 			}
-			if (!empty($updatePatronResponse) && !empty($updatePatronResponse->description)){
-				$message .= '<br/>' . translate(['text'=>$updatePatronResponse->description, 'isPublicFacing'=>true, 'inAttribute'=>true]);
+			if (!empty($updatePatronResponse) && !empty($updatePatronResponse->description)) {
+				$message .= '<br/>' . translate([
+						'text' => $updatePatronResponse->description,
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]);
 			}
 			$result['message'] = $message;
 		}
 		return $result;
 	}
 
-	public function connectToSierraDNA(){
-		if ($this->_sierraDNAConnection == null){
+	public function connectToSierraDNA() {
+		if ($this->_sierraDNAConnection == null) {
 			$accountProfile = $this->accountProfile;
 			$this->_sierraDNAConnection = pg_connect("host={$accountProfile->databaseHost} port={$accountProfile->databasePort} dbname={$accountProfile->databaseName} user={$accountProfile->databaseUser} password={$accountProfile->databasePassword}");
 		}
 		return $this->_sierraDNAConnection;
 	}
 
-	public function closeSierraDNAConnection(){
-		if ($this->_sierraDNAConnection != null){
+	public function closeSierraDNAConnection() {
+		if ($this->_sierraDNAConnection != null) {
 			pg_close($this->_sierraDNAConnection);
 			$this->_sierraDNAConnection = null;
 		}
 	}
-	public function getTitleAndAuthorForInnReachCheckout($checkoutId){
+
+	public function getTitleAndAuthorForInnReachCheckout($checkoutId) {
 		/** @noinspection SqlResolve */
 		$checkoutInfoSql = "SELECT 
 			  bib_record_property.best_title as title,
@@ -1514,12 +1625,12 @@ class Sierra extends Millennium{
 			  AND checkout.item_record_id = bib_record_item_record_link.item_record_id
 			  AND bib_record_item_record_link.bib_record_id = bib_record_property.bib_record_id";
 		$innReachConnection = $this->connectToSierraDNA();
-		$res = pg_query_params($innReachConnection, $checkoutInfoSql, array($checkoutId));
+		$res = pg_query_params($innReachConnection, $checkoutInfoSql, [$checkoutId]);
 		$titleAndAuthor = pg_fetch_array($res, 0);
 		return $titleAndAuthor;
 	}
 
-	public function getTitleAndAuthorForInnReachHold(string $holdId) : array{
+	public function getTitleAndAuthorForInnReachHold(string $holdId): array {
 		/** @noinspection SqlResolve */
 		$holdInfoSql = "SELECT 
 			  bib_record_property.best_title as title,
@@ -1535,12 +1646,12 @@ class Sierra extends Millennium{
 					AND sierra_view.hold.record_id = bib_record_item_record_link.item_record_id
 					AND bib_record_item_record_link.bib_record_id = bib_record_property.bib_record_id";
 		$innReachConnection = $this->connectToSierraDNA();
-		$res = pg_query_params($innReachConnection, $holdInfoSql, array($holdId));
+		$res = pg_query_params($innReachConnection, $holdInfoSql, [$holdId]);
 		$titleAndAuthor = pg_fetch_array($res, 0);
 		return $titleAndAuthor;
 	}
 
-	public function showHoldPosition() : bool {
+	public function showHoldPosition(): bool {
 		return true;
 	}
 }

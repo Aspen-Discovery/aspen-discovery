@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/Drivers/AbstractDriver.php';
 require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 
-abstract class AbstractEContentDriver extends AbstractDriver
-{
+abstract class AbstractEContentDriver extends AbstractDriver {
 	public abstract function getAccountSummary(User $user): AccountSummary;
 
 	/**
