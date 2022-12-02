@@ -3237,7 +3237,7 @@ class UserAPI extends Action {
 			} else {
 				$results['message'] = 'Invalid Patron';
 			}
-		} elseif (isset($_REQUEST['id'])) {
+		} else if (isset($_REQUEST['id'])) {
 			$user = new User();
 			$user->id = $_REQUEST['id'];
 			if ($user->find(true)) {
@@ -3256,6 +3256,7 @@ class UserAPI extends Action {
 
 	/** @noinspection PhpUnused */
 	function updateBrowseCategoryStatus() {
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 		$result = [
 			'success' => false,
 			'title' => translate([
@@ -3269,8 +3270,70 @@ class UserAPI extends Action {
 		];
 		if (isset($_REQUEST['browseCategoryId'])) {
 			$user = $this->getUserForApiCall();
+			$givenId = $_REQUEST['browseCategoryId'];
+			$label = explode('_', $givenId);
+			$id = $label[3];
 			if ($user && !($user instanceof AspenError)) {
-				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				if (strpos($givenId, 'system_saved_searches') !== false) {
+					$searchEntry = new SearchEntry();
+					$searchEntry->id = $id;
+					if (!$searchEntry->find(true)) {
+						return [
+							'success' => false,
+							'title' => translate([
+								'text' => 'Error updating preferences',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Unable to find saved search',
+								'isPublicFacing' => true
+							])
+						];
+					}
+				} else if (strpos($givenId, 'system_user_lists') !== false) {
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+					$userList = new UserList();
+					$userList->id = $id;
+					if (!$userList->find(true)) {
+						return [
+							'success' => false,
+							'title' => translate([
+								'text' => 'Error updating preferences',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Unable to find user list',
+								'isPublicFacing' => true
+							])
+						];
+					}
+				} else {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+					$browseCategory = new BrowseCategory();
+					$browseCategory->textId = $givenId;
+					if (!$browseCategory->find(true)) {
+						return [
+							'success' => false,
+							'title' => translate([
+								'text' => 'Error updating preferences',
+								'isPublicFacing' => true
+							]),
+							'message' => translate([
+								'text' => 'Unable to find browse category',
+								'isPublicFacing' => true
+							])
+						];
+					}
+
+					$isDismissed = new BrowseCategoryDismissal();
+					$isDismissed->browseCategoryId = $givenId;
+					$isDismissed->userId = $user->id;
+					if (!$isDismissed->find(true)) {
+						$browseCategory->numTimesDismissed += 1;
+						$browseCategory->update();
+					}
+				}
+				
 				$browseCategoryDismissal = new BrowseCategoryDismissal();
 				$browseCategoryDismissal->browseCategoryId = $_REQUEST['browseCategoryId'];
 				$browseCategoryDismissal->userId = $user->id;
@@ -3283,7 +3346,7 @@ class UserAPI extends Action {
 							'isPublicFacing' => true
 						]),
 						'message' => translate([
-							'text' => 'Browse category has been hidden',
+							'text' => 'Browse category has been unhidden',
 							'isPublicFacing' => true
 						])
 					];
@@ -3296,7 +3359,7 @@ class UserAPI extends Action {
 							'isPublicFacing' => true
 						]),
 						'message' => translate([
-							'text' => 'Browse category has been unhidden',
+							'text' => 'Browse category has been hidden',
 							'isPublicFacing' => true
 						])
 					];
