@@ -1787,7 +1787,6 @@ class SearchAPI extends Action {
 								'isHidden' => $categoryInformation->isDismissed($appUser),
 								'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12),
 							];
-
 							$numCategoriesProcessed++;
 							$formattedCategories[] = $categoryResponse;
 						}
