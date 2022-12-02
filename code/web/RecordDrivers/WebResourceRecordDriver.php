@@ -2,13 +2,11 @@
 
 require_once 'IndexRecordDriver.php';
 
-class WebResourceRecordDriver extends IndexRecordDriver
-{
+class WebResourceRecordDriver extends IndexRecordDriver {
 	private $valid;
 	private $recordtype;
 
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		if (is_array($recordData)) {
 			parent::__construct($recordData);
 			$this->valid = true;
@@ -22,18 +20,15 @@ class WebResourceRecordDriver extends IndexRecordDriver
 		$this->recordtype = $this->fields['recordtype'];
 	}
 
-	public function isValid()
-	{
+	public function isValid() {
 		return $this->valid;
 	}
 
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		return $this->getSearchResult('list');
 	}
 
-	public function getSearchResult($view = 'list')
-	{
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
@@ -51,8 +46,7 @@ class WebResourceRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/WebPage/result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -72,21 +66,18 @@ class WebResourceRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'WebBuilder';
 	}
 
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		// TODO: Implement getStaffView() method.
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		if (isset($this->fields['description'])) {
 			return strip_tags($this->fields['description']);
-		}else{
+		} else {
 			return '';
 		}
 	}
@@ -99,13 +90,11 @@ class WebResourceRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
-	public function getLinkUrl($absolutePath = false)
-	{
+	public function getLinkUrl($absolutePath = false) {
 		return $this->fields['source_url'];
 	}
 }

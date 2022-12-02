@@ -2,12 +2,10 @@
 
 require_once 'IndexRecordDriver.php';
 
-class OpenArchivesRecordDriver extends IndexRecordDriver
-{
+class OpenArchivesRecordDriver extends IndexRecordDriver {
 	private $valid;
 
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		if (is_array($recordData)) {
 			parent::__construct($recordData);
 			$this->valid = true;
@@ -20,21 +18,18 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		}
 	}
 
-	public function isValid()
-	{
+	public function isValid() {
 		return $this->valid;
 	}
 
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		//Use getSearchResult to do the bulk of the assignments
 		$this->getSearchResult('list', false);
 		//Switch template
 		return 'RecordDrivers/OpenArchives/listEntry.tpl';
 	}
 
-	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
-	{
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -87,16 +82,14 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/OpenArchives/result.tpl';
 	}
 
-	public function getBrowseResult()
-	{
+	public function getBrowseResult() {
 		global $interface;
 		$interface->assign('openInNewWindow', true);
 		$interface->assign('onclick', "AspenDiscovery.OpenArchives.trackUsage('{$this->getId()}')");
 		return parent::getBrowseResult();
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -109,18 +102,15 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'OpenArchives';
 	}
 
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		// TODO: Implement getStaffView() method.
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		return $this->fields['description'];
 	}
 
@@ -132,13 +122,11 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
-	public function getLinkUrl($absolutePath = false)
-	{
+	public function getLinkUrl($absolutePath = false) {
 		return $this->fields['identifier'];
 	}
 

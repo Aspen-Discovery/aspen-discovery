@@ -2,22 +2,19 @@
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
-class PersonRecord extends IndexRecordDriver
-{
+class PersonRecord extends IndexRecordDriver {
 	/** @var Person $person */
 	private $person;
 	private $id;
 
-	public function __construct($record)
-	{
+	public function __construct($record) {
 		// Call the parent's constructor...
 		parent::__construct($record);
 
 		$this->id = $this->getUniqueID();
 	}
 
-	private function getPerson()
-	{
+	private function getPerson() {
 		if (!isset($this->person)) {
 			$person = new Person();
 			$person->personId = $this->id;
@@ -37,8 +34,7 @@ class PersonRecord extends IndexRecordDriver
 	 * @param string $view
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list')
-	{
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$interface->assign('summId', $this->id);
@@ -59,13 +55,11 @@ class PersonRecord extends IndexRecordDriver
 		return 'RecordDrivers/Person/result.tpl';
 	}
 
-	function getBreadcrumb()
-	{
+	function getBreadcrumb() {
 		return $this->getName();
 	}
 
-	function getName()
-	{
+	function getName() {
 		$name = '';
 		if (isset($this->fields['firstName'])) {
 			$name = $this->fields['firstName'];
@@ -86,13 +80,11 @@ class PersonRecord extends IndexRecordDriver
 	}
 
 
-	function getPermanentId()
-	{
+	function getPermanentId() {
 		return $this->id;
 	}
 
-	function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		$person = $this->getPerson();
 		global $configArray;
 		if ($absolutePath) {
@@ -124,16 +116,14 @@ class PersonRecord extends IndexRecordDriver
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		$this->getSearchResult('list');
 
 		//Switch template
 		return 'RecordDrivers/Person/listEntry.tpl';
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'Person';
 	}
 
@@ -145,18 +135,15 @@ class PersonRecord extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		return '';
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		return '';
 	}
 
-	public function getBrowseResult()
-	{
+	public function getBrowseResult() {
 		global $interface;
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
@@ -166,18 +153,17 @@ class PersonRecord extends IndexRecordDriver
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getName());
 
-        //Get cover image size
-        global $interface;
-        $appliedTheme = $interface->getAppliedTheme();
+		//Get cover image size
+		global $interface;
+		$appliedTheme = $interface->getAppliedTheme();
 
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 
-        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-        }
-        else {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-        }
+		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		} else {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		}
 
 		return 'RecordDrivers/Person/browse_result.tpl';
 	}

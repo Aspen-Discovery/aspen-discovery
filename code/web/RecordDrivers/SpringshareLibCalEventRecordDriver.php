@@ -3,14 +3,12 @@
 require_once 'IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/SpringshareLibCalEvent.php';
 
-class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
-{
+class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	private $valid;
 	/** @var SpringshareLibCalEvent */
 	private $eventObject;
 
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		if (is_array($recordData)) {
 			parent::__construct($recordData);
 			$this->valid = true;
@@ -23,34 +21,31 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		}
 	}
 
-	public function isValid()
-	{
+	public function isValid() {
 		return $this->valid;
 	}
 
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		return $this->getSearchResult('list');
 	}
 
-	public function getSearchResult($view = 'list')
-	{
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('eventUrl', $this->getLinkUrl());
-        $interface->assign('externalUrl', $this->getExternalUrl());
-        $interface->assign('branch', $this->getBranch());
-        $interface->assign('title', $this->getTitle());
+		$interface->assign('externalUrl', $this->getExternalUrl());
+		$interface->assign('branch', $this->getBranch());
+		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
 			$interface->assign('description', $this->fields['description']);
 		} else {
 			$interface->assign('description', '');
 		}
-		if (array_key_exists('reservation_state', $this->fields) && in_array('Cancelled', $this->fields['reservation_state'] )) {
+		if (array_key_exists('reservation_state', $this->fields) && in_array('Cancelled', $this->fields['reservation_state'])) {
 			$interface->assign('isCancelled', true);
-		}else{
+		} else {
 			$interface->assign('isCancelled', false);
 		}
 		$interface->assign('start_date', $this->fields['start_date']);
@@ -76,8 +71,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/Events/springshare_libcal_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -90,32 +84,28 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'SpringshareLibCal'; // TODO: verify module name 2022 03 16 James
 	}
 
-    public function getMoreDetailsOptions()
-    {
-        global $interface;
-        $moreDetailsOptions = new StdClass();
-        if ($interface->getVariable('showStaffView')){
-            $moreDetailsOptions['staff'] = array(
-                'label' => 'Staff View',
-                'body' => $interface->fetch($this->getStaffView())
-            );
-        }
-        return $moreDetailsOptions;
-    }
-
-	public function getStaffView()
-	{
-        global $interface;
-        return $this->getEventObject()->getDecodedData();
+	public function getMoreDetailsOptions() {
+		global $interface;
+		$moreDetailsOptions = new StdClass();
+		if ($interface->getVariable('showStaffView')) {
+			$moreDetailsOptions['staff'] = [
+				'label' => 'Staff View',
+				'body' => $interface->fetch($this->getStaffView()),
+			];
+		}
+		return $moreDetailsOptions;
 	}
 
-	public function getDescription()
-	{
+	public function getStaffView() {
+		global $interface;
+		return $this->getEventObject()->getDecodedData();
+	}
+
+	public function getDescription() {
 		if (isset($this->fields['description'])) {
 			return $this->fields['description'];
 		} else {
@@ -132,91 +122,80 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 	 * @return  string              Unique identifier.
 	 */
 
-    public function getPermanentID()
-    {
-        return $this->getUniqueID();
-    }
+	public function getPermanentID() {
+		return $this->getUniqueID();
+	}
 
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
-    public function getExternalUrl($absolutePath = false)
-    {
-        return $this->fields['url'];
-    }
-
-	public function getLinkUrl($absolutePath = false)
-	{
-        return '/Springshare/'.$this->getId().'/Event';
+	public function getExternalUrl($absolutePath = false) {
+		return $this->fields['url'];
 	}
 
-	private function getType()
-	{
+	public function getLinkUrl($absolutePath = false) {
+		return '/Springshare/' . $this->getId() . '/Event';
+	}
+
+	private function getType() {
 		return $this->fields['type'];
 	}
 
-	private function getSource()
-	{
+	private function getSource() {
 		return $this->fields['source'];
 	}
 
-	function getEventCoverUrl()
-	{
-        return $this->fields['image_url'];
+	function getEventCoverUrl() {
+		return $this->fields['image_url'];
 	}
 
-	function getEventObject(){
-		if ($this->eventObject == null){
+	function getEventObject() {
+		if ($this->eventObject == null) {
 			$this->eventObject = new SpringshareLibCalEvent();
 			$this->eventObject->externalId = $this->getIdentifier();
-			if (!$this->eventObject->find(true)){
+			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
 			}
 		}
 		return $this->eventObject;
 	}
 
-	private function getIdentifier()
-	{
+	private function getIdentifier() {
 		return $this->fields['identifier'];
 	}
 
-    // TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
-	public function getStartDate() : ?object
-	{
+	// TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
+	public function getStartDate(): ?object {
 		try {
-            $startDate = new DateTime($this->fields['start_date']);
-            $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-            return $startDate;
+			$startDate = new DateTime($this->fields['start_date']);
+			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $startDate;
 		} catch (Exception $e) {
 			return null;
 		}
 	}
 
-    // TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
-    public function getStartDateString()
-    {
-        try {
-            return $this->fields['start_date'];
-        } catch (Exception $e) {
-            return null;
-        }
-    }
+	// TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
+	public function getStartDateString() {
+		try {
+			return $this->fields['start_date'];
+		} catch (Exception $e) {
+			return null;
+		}
+	}
 
-    public function getEndDateString()
-    {
-        try {
-            return $this->fields['end_date'];
-        } catch (Exception $e) {
-            return null;
-        }
-    }
+	public function getEndDateString() {
+		try {
+			return $this->fields['end_date'];
+		} catch (Exception $e) {
+			return null;
+		}
+	}
 
-    public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		$result = parent::getSpotlightResult($collectionSpotlight, $index);
-		if ($collectionSpotlight->style == 'text-list'){
+		if ($collectionSpotlight->style == 'text-list') {
 			global $interface;
 			$interface->assign('start_date', $this->fields['start_date']);
 			$interface->assign('end_date', $this->fields['end_date']);
@@ -226,24 +205,23 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		return $result;
 	}
 
-    public function getAudiences() {
-        return $this->fields['age_group'];
-    }
+	public function getAudiences() {
+		return $this->fields['age_group'];
+	}
 
-    public function getCategories() {
-        return $this->fields['program_type'];
-    }
+	public function getCategories() {
+		return $this->fields['program_type'];
+	}
 
-    public function getBranch() {
-        return implode(", ", $this->fields['branch']);
-    }
+	public function getBranch() {
+		return implode(", ", $this->fields['branch']);
+	}
 
-    public function isRegistrationRequired(): bool
-    {
-        if ($this->fields['registration_required'] == "Yes") {
-            return true;
-        } else {
-            return false;
-        }
-    }
+	public function isRegistrationRequired(): bool {
+		if ($this->fields['registration_required'] == "Yes") {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
