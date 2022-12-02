@@ -1780,15 +1780,18 @@ class SearchAPI extends Action {
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
 						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
-							$categoryResponse = [
-								'key' => $categoryInformation->textId,
-								'title' => $categoryInformation->label,
-								'source' => $categoryInformation->source,
-								'isHidden' => $categoryInformation->isDismissed($appUser),
-								'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12),
-							];
-							$numCategoriesProcessed++;
-							$formattedCategories[] = $categoryResponse;
+							$records = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12);
+								if(count($records) > 0) {
+									$categoryResponse = [
+										'key' => $categoryInformation->textId,
+										'title' => $categoryInformation->label,
+										'source' => $categoryInformation->source,
+										'isHidden' => $categoryInformation->isDismissed($appUser),
+										'records' => $records,
+									];
+									$numCategoriesProcessed++;
+									$formattedCategories[] = $categoryResponse;
+								}
 						}
 						if ($includeSubCategories) {
 							if (count($subCategories) > 0) {
@@ -1798,27 +1801,30 @@ class SearchAPI extends Action {
 									if ($temp->find(true)) {
 										if ($temp->isValidForDisplay($appUser)) {
 											if ($temp->source != '') {
-												$parent = new BrowseCategory();
-												$parent->id = $subCategory->browseCategoryId;
-												if ($parent->find(true)) {
-													$parentLabel = $parent->label;
-												}
-												if ($parentLabel == $temp->label) {
-													$displayLabel = $temp->label;
-												} else {
-													$displayLabel = $parentLabel . ': ' . $temp->label;
-												}
-												$categoryResponse = [
-													'key' => $temp->textId,
-													'title' => $displayLabel,
-													'source' => $temp->source,
-													'isHidden' => $temp->isDismissed($appUser),
-													'records' => $this->getAppBrowseCategoryResults($temp->textId, null, 12),
-												];
-												$formattedCategories[] = $categoryResponse;
-												$numCategoriesProcessed++;
-												if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-													break;
+												$records = $this->getAppBrowseCategoryResults($temp->textId, null, 12);
+												if(count($records) > 0) {
+													$parent = new BrowseCategory();
+													$parent->id = $subCategory->browseCategoryId;
+													if ($parent->find(true)) {
+														$parentLabel = $parent->label;
+													}
+													if ($parentLabel == $temp->label) {
+														$displayLabel = $temp->label;
+													} else {
+														$displayLabel = $parentLabel . ': ' . $temp->label;
+													}
+													$categoryResponse = [
+														'key' => $temp->textId,
+														'title' => $displayLabel,
+														'source' => $temp->source,
+														'isHidden' => $temp->isDismissed($appUser),
+														'records' => $records,
+													];
+													$formattedCategories[] = $categoryResponse;
+													$numCategoriesProcessed++;
+													if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+														break;
+													}
 												}
 											}
 										}
