@@ -1,23 +1,41 @@
 <?php
 
-class RequestTrackerConnection extends DataObject
-{
+class RequestTrackerConnection extends DataObject {
 	public $__table = 'request_tracker_connection';
 	public $id;
 	public $baseUrl;
 	public $activeTicketFeed;
 
-	public static function getObjectStructure(){
-		return array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'Base URL', 'description' => 'The base URL of the Request Tracker System', 'maxLength' => 255, 'required' => true),
-			'activeTicketFeed' => array('property' => 'activeTicketFeed', 'type' => 'url', 'label' => 'Ticket Feed', 'description' => 'The RSS Feed with all active tickets', 'hideInLists' => true, 'required' => false),
-		);
+	public static function getObjectStructure() {
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'baseUrl' => [
+				'property' => 'baseUrl',
+				'type' => 'url',
+				'label' => 'Base URL',
+				'description' => 'The base URL of the Request Tracker System',
+				'maxLength' => 255,
+				'required' => true,
+			],
+			'activeTicketFeed' => [
+				'property' => 'activeTicketFeed',
+				'type' => 'url',
+				'label' => 'Ticket Feed',
+				'description' => 'The RSS Feed with all active tickets',
+				'hideInLists' => true,
+				'required' => false,
+			],
+		];
 	}
 
-	public function getActiveTickets(){
+	public function getActiveTickets() {
 		$activeTickets = [];
-		if (!empty( $this->activeTicketFeed)) {
+		if (!empty($this->activeTicketFeed)) {
 			$rssFeed = $this->activeTicketFeed;
 			$rssDataRaw = @file_get_contents($rssFeed);
 			$rssData = new SimpleXMLElement($rssDataRaw);
@@ -29,7 +47,7 @@ class RequestTrackerConnection extends DataObject
 						'id' => $matches[1],
 						'title' => (string)$item->title,
 						'description' => (string)$item->description,
-						'link' => (string)$item->link
+						'link' => (string)$item->link,
 					];
 				}
 			}

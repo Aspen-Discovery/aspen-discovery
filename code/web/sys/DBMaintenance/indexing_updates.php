@@ -1,26 +1,25 @@
 <?php
 
-function getIndexingUpdates()
-{
+function getIndexingUpdates() {
 	/** @noinspection SqlResolve */
-	return array(
-		'ils_hold_summary' => array(
+	return [
+		'ils_hold_summary' => [
 			'title' => 'ILS Hold Summary',
 			'description' => 'Create ils hold summary table to store summary information about the available holds',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE ils_hold_summary (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					ilsId VARCHAR (20) NOT NULL,
 					numHolds INT(11) DEFAULT 0,
 					UNIQUE(ilsId)
-				) ENGINE = InnoDB"
-			),
-		),
+				) ENGINE = InnoDB",
+			],
+		],
 
-		'indexing_profile' => array(
+		'indexing_profile' => [
 			'title' => 'Indexing profile setup',
 			'description' => 'Setup indexing information table to store information about how to index ',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS `indexing_profiles` (
 				  `id` int(11) NOT NULL AUTO_INCREMENT,
 				  `name` varchar(50) NOT NULL,
@@ -128,8 +127,8 @@ function getIndexingUpdates()
 				  PRIMARY KEY (`id`),
 				  KEY `locationId` (`locationId`,`indexingProfileId`)
 				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
 		'indexing_records_default_sub_location' => [
 			'title' => 'Set Sub Location defaults for Indexing Records',
@@ -139,165 +138,165 @@ function getIndexingUpdates()
 				"ALTER TABLE library_records_to_include CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
 				"ALTER TABLE location_records_owned CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
 				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
-			]
+			],
 		],
 
-		'indexing_profile_collection' => array(
+		'indexing_profile_collection' => [
 			'title' => 'Indexing profile collections',
 			'description' => 'Add handling of collections to indexing profile table',
-			'sql' => array(
-				"ALTER TABLE indexing_profiles ADD COLUMN `collection` char(1) DEFAULT NULL"
-			)
-		),
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN `collection` char(1) DEFAULT NULL",
+			],
+		],
 
-		'indexing_profile_catalog_driver' => array(
+		'indexing_profile_catalog_driver' => [
 			'title' => 'Indexing profile catalog driver',
 			'description' => 'Add handling catalog driver to indexing profile table',
-			'sql' => array(
-				"ALTER TABLE indexing_profiles ADD COLUMN `catalogDriver` varchar(50) DEFAULT NULL"
-			)
-		),
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN `catalogDriver` varchar(50) DEFAULT NULL",
+			],
+		],
 
-		'indexing_profile_holdability' => array(
+		'indexing_profile_holdability' => [
 			'title' => 'Setup additional holdability filters',
 			'description' => 'Setup additional filters for determining if something is holdable',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableITypes` varchar(255) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableStatuses` varchar(255) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableLocations` varchar(512) DEFAULT NULL",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_marc_encoding' => array(
+		'indexing_profile_marc_encoding' => [
 			'title' => 'Indexing Profiles - marc encoding',
 			'description' => 'Correct UTF8 setting for marc encoding',
-			'sql' => array(
-				"ALTER TABLE indexing_profiles CHANGE marcEncoding `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8'"
-			)
-		),
+			'sql' => [
+				"ALTER TABLE indexing_profiles CHANGE marcEncoding `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8'",
+			],
+		],
 
-		'indexing_profile_last_checkin_date' => array(
+		'indexing_profile_last_checkin_date' => [
 			'title' => 'Indexing Profiles - last checkin date',
 			'description' => 'add field for last check in date',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `lastCheckinFormat` varchar(20) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `lastCheckinDate` char(1) DEFAULT NULL",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_specific_order_location' => array(
+		'indexing_profile_specific_order_location' => [
 			'title' => 'Indexing Profiles - specific order location',
 			'description' => 'add field for the specific location code since Millennium/Sierra do not always export the detailed',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `orderLocationSingle` char(1) DEFAULT NULL",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_specified_formats' => array(
+		'indexing_profile_specified_formats' => [
 			'title' => 'Indexing Profiles - specified format',
 			'description' => 'Allow specified formats for use with side loaded eContent',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles CHANGE formatSource `formatSource` enum('bib','item', 'specified') NOT NULL DEFAULT 'bib'",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormat` varchar(50) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormatCategory` varchar(50) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormatBoost` int DEFAULT NULL",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_filenames_to_include' => array(
+		'indexing_profile_filenames_to_include' => [
 			'title' => 'Indexing Profiles - filenames to include',
 			'description' => 'Allow additional control over which files are included in an indexing profile',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc'",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_collectionsToSuppress' => array(
+		'indexing_profile_collectionsToSuppress' => [
 			'title' => 'Indexing Profiles - collections to suppress',
 			'description' => 'Allow specific collection codes to be suppressed',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `collectionsToSuppress` varchar(100) DEFAULT ''",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_folderCreation' => array(
+		'indexing_profile_folderCreation' => [
 			'title' => 'Indexing Profiles - Individual Folder Creation',
 			'description' => 'Determine how marc record folders should be created',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `numCharsToCreateFolderFrom` int(11) DEFAULT 4",
 				"ALTER TABLE indexing_profiles ADD COLUMN `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1",
 				"UPDATE indexing_profiles SET `numCharsToCreateFolderFrom` = 7 WHERE name = 'hoopla'",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_dueDateFormat' => array(
+		'indexing_profile_dueDateFormat' => [
 			'title' => 'Indexing Profiles - Due Date Format',
 			'description' => 'Set the Due Date Format for an indexing profile',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `dueDateFormat` varchar(20) DEFAULT 'yyMMdd'",
 				"updateDueDateFormat",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_extendLocationsToSuppress' => array(
+		'indexing_profile_extendLocationsToSuppress' => [
 			'title' => 'Indexing Profiles - Extend Locations To Suppress Size',
 			'description' => 'Extend Locations To Suppress Size for an indexing profile',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles CHANGE `locationsToSuppress` `locationsToSuppress` varchar(255)",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_doAutomaticEcontentSuppression' => array(
+		'indexing_profile_doAutomaticEcontentSuppression' => [
 			'title' => 'Indexing Profiles - Do Automatic EContent Suppression',
 			'description' => 'Allow logic for whether or not automatic econtent suppression is enabled or disabled in an indexing profile',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_groupUnchangedFiles' => array(
+		'indexing_profile_groupUnchangedFiles' => [
 			'title' => 'Indexing Profiles - Group Unchanged Files',
 			'description' => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
-			)
-		),
+			],
+		],
 
-		'indexing_profile__remove_groupUnchangedFiles' => array(
+		'indexing_profile__remove_groupUnchangedFiles' => [
 			'title' => 'Indexing Profiles - Remove Group Unchanged Files',
 			'description' => 'Remove Group Unchanged Files since it is not used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles DROP COLUMN groupUnchangedFiles",
-			)
-		),
+			],
+		],
 
-		'indexing_profile_marc_record_subfield' => array(
+		'indexing_profile_marc_record_subfield' => [
 			'title' => 'Indexing Profiles - Marc Record Subfield',
 			'description' => 'Define the subfield for the marc record',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN `recordNumberSubfield` char(1) DEFAULT 'a'",
-			)
-		),
+			],
+		],
 
-		'translation_map_regex' => array(
+		'translation_map_regex' => [
 			'title' => 'Translation Maps Regex',
 			'description' => 'Setup Translation Maps to use regular expressions',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE translation_maps ADD COLUMN `usesRegularExpressions` tinyint(1) DEFAULT 0",
-			)
-		),
+			],
+		],
 
-		'volume_information' => array(
+		'volume_information' => [
 			'title' => 'Volume Information',
 			'description' => 'Store information about volumes for use within display.  These do not need to be indexed independently.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS `ils_volume_info` (
 				  `id` int(11) NOT NULL AUTO_INCREMENT,
 				  `recordId` varchar(50) NOT NULL COMMENT 'Full Record ID including the source',
@@ -308,14 +307,14 @@ function getIndexingUpdates()
 				  KEY `recordId` (`recordId`),
 				  UNIQUE `volumeId` (`volumeId`)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
 		'volume_display_order' => [
 			'title' => 'Volume display order',
 			'description' => 'Add display order to volumes',
 			'sql' => [
-				'ALTER TABLE ils_volume_info ADD COLUMN displayOrder SMALLINT default 0'
+				'ALTER TABLE ils_volume_info ADD COLUMN displayOrder SMALLINT default 0',
 			],
 		],
 
@@ -323,8 +322,8 @@ function getIndexingUpdates()
 			'title' => 'Volume info - increase display order length',
 			'description' => 'Make the field longer to store big things (and negative numbers)',
 			'sql' => [
-				'ALTER TABLE ils_volume_info CHANGE COLUMN displayOrder displayOrder INT(11) default 0'
-			]
+				'ALTER TABLE ils_volume_info CHANGE COLUMN displayOrder displayOrder INT(11) default 0',
+			],
 		],
 
 		'volume_increase_field_lengths' => [
@@ -332,14 +331,14 @@ function getIndexingUpdates()
 			'description' => 'Make the field longer to store big things (and negative numbers)',
 			'sql' => [
 				'ALTER TABLE ils_volume_info CHANGE COLUMN relatedItems relatedItems TEXT',
-				'ALTER TABLE ils_volume_info CHANGE COLUMN displayLabel displayLabel VARCHAR(512) NOT NULL'
-			]
+				'ALTER TABLE ils_volume_info CHANGE COLUMN displayLabel displayLabel VARCHAR(512) NOT NULL',
+			],
 		],
 
-		'last_check_in_status_adjustments' => array(
+		'last_check_in_status_adjustments' => [
 			'title' => 'Last Check In Time Status Adjustments',
 			'description' => 'Add additional fields to adjust status based on last check-in time.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
 				  `id` int(11) NOT NULL AUTO_INCREMENT,
 				  `indexingProfileId` int(11) NOT NULL,
@@ -351,13 +350,13 @@ function getIndexingUpdates()
 				  PRIMARY KEY (`id`),
 				  KEY (indexingProfileId)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
-		'records_to_include_2017-06' => array(
+		'records_to_include_2017-06' => [
 			'title' => 'Records To Include Updates 2017.06',
 			'description' => 'Additional control over what is included, URL rewriting.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE library_records_to_include ADD COLUMN iType VARCHAR(100)",
 				"ALTER TABLE library_records_to_include ADD COLUMN audience VARCHAR(100)",
 				"ALTER TABLE library_records_to_include ADD COLUMN format VARCHAR(100)",
@@ -375,22 +374,22 @@ function getIndexingUpdates()
 				"ALTER TABLE location_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
 				"ALTER TABLE location_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
 				"ALTER TABLE location_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
-			)
-		),
+			],
+		],
 
-		'records_to_include_2018-03' => array(
+		'records_to_include_2018-03' => [
 			'title' => 'Increase Records To Include URL Replacement Column',
 			'description' => 'Increase Records To Include URL Replacement Column to 255 characters.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `library_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
 				"ALTER TABLE `location_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
-			)
-		),
+			],
+		],
 
-		'ils_exportLog' => array(
+		'ils_exportLog' => [
 			'title' => 'ILS export log',
 			'description' => 'Create log for ils export via api.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS ils_extract_log(
 					id INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
 					indexingProfile VARCHAR(50) NOT NULL,
@@ -405,30 +404,30 @@ function getIndexingUpdates()
 					`notes` TEXT COMMENT 'Additional information about the run', 
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
-			)
-		),
+			],
+		],
 
-		'ils_exportLog_skips' => array(
+		'ils_exportLog_skips' => [
 			'title' => 'ILS export log add skips',
 			'description' => 'Add tracking of skipped records to export log',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE ils_extract_log ADD COLUMN numSkipped INT(11) DEFAULT 0",
-			)
-		),
+			],
+		],
 
-		'ils_exportLog_num_regroups' => array(
+		'ils_exportLog_num_regroups' => [
 			'title' => 'ILS export log add regroups',
 			'description' => 'Add tracking of number of records regrouped to export log',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE ils_extract_log ADD COLUMN numChangedAfterGrouping INT(11) DEFAULT 0",
 				"ALTER TABLE ils_extract_log ADD COLUMN numRegrouped INT(11) DEFAULT 0",
-			)
-		),
+			],
+		],
 
-		'track_ils_user_usage' => array(
+		'track_ils_user_usage' => [
 			'title' => 'ILS Usage by user',
 			'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_ils_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					userId INT(11) NOT NULL,
@@ -439,14 +438,14 @@ function getIndexingUpdates()
 				) ENGINE = InnoDB",
 				"ALTER TABLE user_ils_usage ADD INDEX (userId, indexingProfileId, year, month)",
 				"ALTER TABLE user_ils_usage ADD INDEX (year, month)",
-			),
-		),
+			],
+		],
 
-		'track_ils_record_usage' => array(
+		'track_ils_record_usage' => [
 			'title' => 'ILS/Side Load Record Usage',
 			'description' => 'Add a table to track how records within the ils and side loads are used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE ils_record_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					indexingProfileId INT(11) NOT NULL,
@@ -457,43 +456,43 @@ function getIndexingUpdates()
 				) ENGINE = InnoDB",
 				"ALTER TABLE ils_record_usage ADD INDEX (recordId, year, month)",
 				"ALTER TABLE ils_record_usage ADD INDEX (year, month)",
-			),
-		),
+			],
+		],
 
 		'track_ils_self_registrations' => [
 			'title' => 'Track Self Registrations',
 			'description' => 'Track self registrations done by indexing profile',
 			'sql' => [
-				'ALTER TABLE user_ils_usage ADD COLUMN selfRegistrationCount INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE user_ils_usage ADD COLUMN selfRegistrationCount INT(11) DEFAULT 0',
+			],
 		],
 
 		'track_pdf_downloads' => [
 			'title' => 'Tracking of PDF Downloads',
 			'description' => 'Track PDF Downloads by User and by indexing profile',
-			'sql' =>[
+			'sql' => [
 				'ALTER TABLE user_ils_usage ADD COLUMN pdfDownloadCount INT(11) DEFAULT 0',
 				'ALTER TABLE ils_record_usage ADD COLUMN pdfDownloadCount INT(11) DEFAULT 0',
 				'ALTER TABLE ils_record_usage CHANGE COLUMN timesUsed timesUsed INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'track_pdf_views' => [
 			'title' => 'Tracking of PDF Views',
 			'description' => 'Track PDF Views by User and by indexing profile',
-			'sql' =>[
+			'sql' => [
 				'ALTER TABLE user_ils_usage ADD COLUMN pdfViewCount INT(11) DEFAULT 0',
-				'ALTER TABLE ils_record_usage ADD COLUMN pdfViewCount INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE ils_record_usage ADD COLUMN pdfViewCount INT(11) DEFAULT 0',
+			],
 		],
 
 		'track_supplemental_file_downloads' => [
 			'title' => 'Tracking of Supplemental File Downloads',
 			'description' => 'Track Supplemental File Downloads by User and by indexing profile',
-			'sql' =>[
+			'sql' => [
 				'ALTER TABLE user_ils_usage ADD COLUMN supplementalFileDownloadCount INT(11) DEFAULT 0',
 				'ALTER TABLE ils_record_usage ADD COLUMN supplementalFileDownloadCount INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'ils_usage_add_instance' => [
@@ -507,7 +506,7 @@ function getIndexingUpdates()
 				'ALTER TABLE user_ils_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_ils_usage DROP INDEX userId',
 				'ALTER TABLE user_ils_usage ADD UNIQUE INDEX (instance, userId, indexingProfileId, year, month)',
-			]
+			],
 		],
 
 		'indexing_profile_add_continuous_update_fields' => [
@@ -516,8 +515,8 @@ function getIndexingUpdates()
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN runFullUpdate TINYINT(1) DEFAULT 0',
 				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfChangedRecords INT(11) DEFAULT 0',
-				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0',
+			],
 		],
 
 		'indexing_profile_last_marc_export' => [
@@ -525,7 +524,7 @@ function getIndexingUpdates()
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateFromMarcExport INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'indexing_profile_last_volume_export_timestamp' => [
@@ -533,7 +532,7 @@ function getIndexingUpdates()
 			'description' => 'Add fields to track when the last volume export file was saved',
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastVolumeExportTimestamp INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'indexing_profile_regroup_all_records' => [
@@ -541,15 +540,15 @@ function getIndexingUpdates()
 			'description' => 'Add the ability to regroup all records at the beginning of indexing',
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN regroupAllRecords TINYINT(1) DEFAULT 0',
-			]
+			],
 		],
 
 		'regroup_21_03' => [
 			'title' => 'Regroup all records for 21.03',
 			'description' => 'Regroup all records for 21.03',
 			'sql' => [
-				'UPDATE indexing_profiles set regroupAllRecords = 1'
-			]
+				'UPDATE indexing_profiles set regroupAllRecords = 1',
+			],
 		],
 
 		'authorities' => [
@@ -570,7 +569,7 @@ function getIndexingUpdates()
 				) ENGINE = InnoDB",
 				"ALTER TABLE title_authorities ADD UNIQUE INDEX (originalName)",
 				"ALTER TABLE title_authorities ADD INDEX (authoritativeName)",
-			]
+			],
 		],
 
 		'accelerated_reader' => [
@@ -616,7 +615,7 @@ function getIndexingUpdates()
 					ftpPassword VARCHAR(255) NOT NULL,
 					lastFetched INT NOT NULL default 0
 				) ENGINE = InnoDB",
-			]
+			],
 		],
 
 		'format_status_maps' => [
@@ -641,7 +640,7 @@ function getIndexingUpdates()
 				  `groupedStatus` varchar(50) NOT NULL,
 				  PRIMARY KEY (`id`),
 				  UNIQUE KEY (`indexingProfileId`,`value`)
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8"
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 			],
 		],
 
@@ -649,7 +648,7 @@ function getIndexingUpdates()
 			'title' => 'Convert to Format Status Maps',
 			'description' => 'Convert translation maps to format and status maps',
 			'sql' => [
-				"createFormatAndStatusMapsFromTranslationMaps"
+				"createFormatAndStatusMapsFromTranslationMaps",
 			],
 		],
 
@@ -683,8 +682,8 @@ function getIndexingUpdates()
 			'title' => 'Format table - mustPickupAtHoldingBranch',
 			'description' => 'Allow holds to be forced to be picked up at the holding branch by format',
 			'sql' => [
-				'ALTER TABLE format_map_values ADD COLUMN mustPickupAtHoldingBranch TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE format_map_values ADD COLUMN mustPickupAtHoldingBranch TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'sideloads' => [
@@ -724,7 +723,7 @@ function getIndexingUpdates()
 					PRIMARY KEY (`id`),
 					UNIQUE KEY `name` (`name`)
 				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			]
+			],
 		],
 
 		'sideload_defaults' => [
@@ -732,14 +731,14 @@ function getIndexingUpdates()
 			'description' => 'Update default values for sideloads',
 			'sql' => [
 				"ALTER table sideloads CHANGE COLUMN recordNumberPrefix recordNumberPrefix varchar(10) NOT NULL DEFAULT '';",
-				"ALTER table sideloads CHANGE COLUMN itemTag itemTag char(3) NOT NULL DEFAULT '';"
-			]
+				"ALTER table sideloads CHANGE COLUMN itemTag itemTag char(3) NOT NULL DEFAULT '';",
+			],
 		],
 
-		'track_sideload_user_usage' => array(
+		'track_sideload_user_usage' => [
 			'title' => 'Sideload Usage by user',
 			'description' => 'Add a table to track how often a particular user uses side loads.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_sideload_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					userId INT(11) NOT NULL,
@@ -750,14 +749,14 @@ function getIndexingUpdates()
 				) ENGINE = InnoDB",
 				"ALTER TABLE user_sideload_usage ADD INDEX (userId, sideloadId, year, month)",
 				"ALTER TABLE user_sideload_usage ADD INDEX (year, month)",
-			),
-		),
+			],
+		],
 
-		'track_sideload_record_usage' => array(
+		'track_sideload_record_usage' => [
 			'title' => 'Side Load Record Usage',
 			'description' => 'Add a table to track how side loaded records are used.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE sideload_record_usage (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					sideloadId INT(11) NOT NULL,
@@ -768,8 +767,8 @@ function getIndexingUpdates()
 				) ENGINE = InnoDB",
 				"ALTER TABLE sideload_record_usage ADD INDEX (sideloadId, year, month)",
 				"ALTER TABLE sideload_record_usage ADD INDEX (year, month)",
-			),
-		),
+			],
+		],
 
 		'sideload_usage_add_instance' => [
 			'title' => 'Side Load Usage - Instance Information',
@@ -782,13 +781,13 @@ function getIndexingUpdates()
 				'ALTER TABLE user_sideload_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_sideload_usage DROP INDEX userId',
 				'ALTER TABLE user_sideload_usage ADD UNIQUE INDEX (instance, userId, sideLoadId, year, month)',
-			]
+			],
 		],
 
-		'sideload_log' => array(
+		'sideload_log' => [
 			'title' => 'Side Load log',
 			'description' => 'Create log for Side Load Processing.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS sideload_log(
 					`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
 					`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
@@ -805,8 +804,8 @@ function getIndexingUpdates()
 					numSkipped INT(11) DEFAULT 0,
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
-			)
-		),
+			],
+		],
 
 		'sideload_scoping' => [
 			'title' => 'Side Load Scoping',
@@ -817,8 +816,8 @@ function getIndexingUpdates()
 					name VARCHAR(50) NOT NULL,
 					sideLoadId INT(11) NOT NULL,
 					restrictToChildrensMaterial TINYINT DEFAULT 0
-				) ENGINE = InnoDB'
-			]
+				) ENGINE = InnoDB',
+			],
 		],
 
 		'sideload_scope_match_and_rewrite' => [
@@ -829,8 +828,8 @@ function getIndexingUpdates()
 				"ALTER TABLE sideload_scopes ADD COLUMN marcValueToMatch VARCHAR(100)",
 				"ALTER TABLE sideload_scopes ADD COLUMN includeExcludeMatches TINYINT default 1",
 				"ALTER TABLE sideload_scopes ADD COLUMN urlToMatch VARCHAR(100)",
-				"ALTER TABLE sideload_scopes ADD COLUMN urlReplacement VARCHAR(100)"
-			]
+				"ALTER TABLE sideload_scopes ADD COLUMN urlReplacement VARCHAR(100)",
+			],
 		],
 
 		'sideload_scope_url_match_and_rewrite_embiggening' => [
@@ -838,8 +837,8 @@ function getIndexingUpdates()
 			'description' => 'Update scopes to allow limitation by MARC tag and perform URL rewriting',
 			'sql' => [
 				"ALTER TABLE sideload_scopes CHANGE COLUMN urlToMatch urlToMatch VARCHAR(255)",
-				"ALTER TABLE sideload_scopes CHANGE COLUMN urlReplacement urlReplacement VARCHAR(255)"
-			]
+				"ALTER TABLE sideload_scopes CHANGE COLUMN urlReplacement urlReplacement VARCHAR(255)",
+			],
 		],
 
 		'sideload_files' => [
@@ -854,8 +853,8 @@ function getIndexingUpdates()
 					deletedTime INT(11) default 0,
 					lastIndexed INT(11) default 0,
 					UNIQUE sideloadFile(sideLoadId, filename)
-				) ENGINE INNODB"
-			]
+				) ENGINE INNODB",
+			],
 		],
 
 		'library_location_side_load_scoping' => [
@@ -876,7 +875,7 @@ function getIndexingUpdates()
 					PRIMARY KEY (`id`),
 					UNIQUE (locationId, sideLoadScopeId)
 				) ENGINE=InnoDB',
-			]
+			],
 		],
 
 		'create_ils_modules' => [
@@ -889,18 +888,18 @@ function getIndexingUpdates()
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Horizon', 'grouped_works', 'horizon_export')",
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Symphony', 'grouped_works', 'symphony_export')",
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Side Loads', 'grouped_works', 'sideload_processing')",
-				"INSERT INTO modules (name, indexName, backgroundProcess, enabled) VALUES ('User Lists', 'lists', 'user_list_indexer', 1)"
-			]
+				"INSERT INTO modules (name, indexName, backgroundProcess, enabled) VALUES ('User Lists', 'lists', 'user_list_indexer', 1)",
+			],
 		],
 
 		'fix_sierra_module_background_process' => [
 			'title' => 'Fix Sierra module background process',
 			'description' => 'Fix Sierra module background process',
 			'sql' => [
-				"UPDATE modules set backgroundProcess = 'sierra_export_api' WHERE name = 'Sierra'"
-			]
+				"UPDATE modules set backgroundProcess = 'sierra_export_api' WHERE name = 'Sierra'",
+			],
 		],
-		
+
 		'scheduled_work_index' => [
 			'title' => 'Scheduled Work Indexing',
 			'description' => 'Create tables to store scheduled indexing for works',
@@ -912,8 +911,8 @@ function getIndexingUpdates()
 					processed TINYINT(1) DEFAULT 0,
 					INDEX allfields(processed, indexAfter, permanent_id),
 					INDEX permanent_id(permanent_id)
-				) ENGINE=InnoDB'
-			]
+				) ENGINE=InnoDB',
+			],
 		],
 
 		'record_identifiers_to_reload' => [
@@ -927,8 +926,8 @@ function getIndexingUpdates()
 					processed TINYINT(1) DEFAULT 0,
 					INDEX (type, identifier),
 					INDEX (processed, type)
-				)'
-			]
+				)',
+			],
 		],
 
 		'unknown_language_handling' => [
@@ -939,48 +938,48 @@ function getIndexingUpdates()
 				"ALTER TABLE indexing_profiles ADD COLUMN treatUndeterminedLanguageAs VARCHAR(50) DEFAULT 'English'",
 				"ALTER TABLE sideloads ADD COLUMN treatUnknownLanguageAs VARCHAR(50) DEFAULT 'English'",
 				"ALTER TABLE sideloads ADD COLUMN treatUndeterminedLanguageAs VARCHAR(50) DEFAULT 'English'",
-			]
+			],
 		],
 
 		'large_print_indexing' => [
 			'title' => 'Large Print Indexing',
 			'description' => 'Add an option for whether or not the record should be checked for large print subjects',
 			'sql' => [
-				'ALTER TABLE indexing_profiles ADD COLUMN checkRecordForLargePrint TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE indexing_profiles ADD COLUMN checkRecordForLargePrint TINYINT(1) DEFAULT 0',
+			],
 		],
 
-		'indexing_module_add_log' =>[
+		'indexing_module_add_log' => [
 			'title' => 'Indexing add log info to module',
 			'description' => 'Add logging information to Indexing modules',
 			'sql' => [
 				"UPDATE modules set logClassPath='/sys/ILS/IlsExtractLogEntry.php', logClassName='IlsExtractLogEntry' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')",
 				"UPDATE modules set logClassPath='/sys/Indexing/SideLoadLogEntry.php', logClassName='SideLoadLogEntry' WHERE name = 'Side Loads'",
-			]
+			],
 		],
 
 		'indexing_module_add_settings2' => [
 			'title' => 'Add Settings to Indexing module',
 			'description' => 'Add Settings to Indexing module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/Indexing/IndexingProfile.php', settingsClassName = 'IndexingProfile' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')"
-			]
+				"UPDATE modules set settingsClassPath = '/sys/Indexing/IndexingProfile.php', settingsClassName = 'IndexingProfile' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')",
+			],
 		],
 
 		'indexing_profile_determineAudienceBy' => [
 			'title' => 'Indexing Profile - determineAudienceBy',
 			'description' => 'Add the ability to control how audience is determined to Indexing Profiles',
 			'sql' => [
-				'ALTER TABLE indexing_profiles ADD COLUMN determineAudienceBy TINYINT DEFAULT 0'
-			]
+				'ALTER TABLE indexing_profiles ADD COLUMN determineAudienceBy TINYINT DEFAULT 0',
+			],
 		],
 
 		'indexing_profile_audienceSubfield' => [
 			'title' => 'Indexing Profile - audienceSubfield',
 			'description' => 'Add the ability to control which field is used to determine audience',
 			'sql' => [
-				'ALTER TABLE indexing_profiles ADD COLUMN audienceSubfield char(1) DEFAULT null'
-			]
+				'ALTER TABLE indexing_profiles ADD COLUMN audienceSubfield char(1) DEFAULT null',
+			],
 		],
 
 		'indexing_exclude_locations' => [
@@ -995,23 +994,23 @@ function getIndexingUpdates()
 				"ALTER TABLE location_records_owned ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
 				"ALTER TABLE location_records_to_include ADD COLUMN locationsToExclude varchar(100) NOT NULL DEFAULT ''",
 				"ALTER TABLE location_records_to_include ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
-			]
+			],
 		],
 
 		'indexing_includeLocationNameInDetailedLocation' => [
 			'title' => 'Indexing - includeLocationNameInDetailedLocation',
 			'description' => 'Add a new field to determine how detailed location is built',
 			'sql' => [
-				"ALTER TABLE indexing_profiles ADD COLUMN includeLocationNameInDetailedLocation TINYINT(1) DEFAULT 1"
-			]
+				"ALTER TABLE indexing_profiles ADD COLUMN includeLocationNameInDetailedLocation TINYINT(1) DEFAULT 1",
+			],
 		],
 
 		'indexing_lastUpdateOfAuthorities' => [
 			'title' => 'Indexing add lastUpdateOfAuthorities',
 			'description' => 'Add lastUpdateOfAuthorities to Indexing Profiles to optimize loading authorities from the ILS',
 			'sql' => [
-				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAuthorities INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAuthorities INT(11) DEFAULT 0',
+			],
 		],
 
 		'indexing_simplify_format_boosting' => [
@@ -1022,40 +1021,39 @@ function getIndexingUpdates()
 				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 4 and formatBoost <=7',
 				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 7 and formatBoost <=8',
 				'UPDATE format_map_values SET formatBoost = 9 WHERE formatBoost > 8 and formatBoost <=10',
-				'UPDATE format_map_values SET formatBoost = 12 WHERE formatBoost > 10'
-			]
+				'UPDATE format_map_values SET formatBoost = 12 WHERE formatBoost > 10',
+			],
 		],
 
 		'create_polaris_module' => [
 			'title' => 'Create Polaris Module',
 			'description' => 'Create module for integration with Polaris',
 			'sql' => [
-				"INSERT INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Polaris', 'grouped_works', 'polaris_export', '/sys/ILS/IlsExtractLogEntry.php', 'IlsExtractLogEntry', '/sys/Indexing/IndexingProfile.php', 'IndexingProfile')"
-			]
+				"INSERT INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Polaris', 'grouped_works', 'polaris_export', '/sys/ILS/IlsExtractLogEntry.php', 'IlsExtractLogEntry', '/sys/Indexing/IndexingProfile.php', 'IndexingProfile')",
+			],
 		],
 
 		'indexing_profile__full_export_record_threshold' => [
 			'title' => 'Indexing Profile - Full Export Record Threshold',
 			'description' => 'Add a threshold for to ensure that the maximum id within a full export is equal or greater than the threshold before processing',
 			'sql' => [
-				'ALTER TABLE indexing_profiles ADD COLUMN fullMarcExportRecordIdThreshold INT DEFAULT 0'
-			]
+				'ALTER TABLE indexing_profiles ADD COLUMN fullMarcExportRecordIdThreshold INT DEFAULT 0',
+			],
 		],
 
 		'indexing_profile_lastChangeProcessed' => [
 			'title' => 'Indexing Profile - Last Change processed',
 			'description' => 'Add tracking for the last record id processed so we can resume extracts that have errors',
 			'sql' => [
-				"ALTER TABLE indexing_profiles ADD COLUMN lastChangeProcessed INT DEFAULT 0"
-			]
+				"ALTER TABLE indexing_profiles ADD COLUMN lastChangeProcessed INT DEFAULT 0",
+			],
 		],
 
-	);
+	];
 }
 
 /** @noinspection PhpUnused */
-function createFormatAndStatusMapsFromTranslationMaps(&$update)
-{
+function createFormatAndStatusMapsFromTranslationMaps(&$update) {
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 	require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 	require_once ROOT_DIR . '/sys/Indexing/TranslationMapValue.php';

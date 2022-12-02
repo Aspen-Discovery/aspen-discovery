@@ -36,12 +36,12 @@
  * -------------------------------------------------------------
  *
  * @param string $haystack String to highlight
- * @param mixed  $needle   Array of words to highlight (null for none)
+ * @param mixed $needle Array of words to highlight (null for none)
  *
  * @return string          Highlighted, HTML encoded string
  */
 function smarty_modifier_highlight($haystack, $needle = null) {
-	if ($needle == null){
+	if ($needle == null) {
 		return $haystack;
 	}
 	// Normalize value to an array so we can loop through it; this saves us from
@@ -50,29 +50,32 @@ function smarty_modifier_highlight($haystack, $needle = null) {
 	// if $haystack already has highlighting markers in it, we may want to send
 	// in a blank needle.
 	if (!is_array($needle)) {
-		$needle = empty($needle) ? array() : array($needle);
+		$needle = empty($needle) ? [] : [$needle];
 	}
 
 	// Highlight search terms one phrase at a time; we just put in placeholders
 	// for the start and end span tags at this point so we can do proper URL
 	// encoding later.
 	foreach ($needle as $phrase) {
-		$phrase = trim(str_replace(array('"', '*', '?'), '', $phrase));
+		$phrase = trim(str_replace([
+			'"',
+			'*',
+			'?',
+		], '', $phrase));
 		if ($phrase != '') {
 			$phrase = preg_quote($phrase, '/');
-			$haystack = preg_replace(
-                "/($phrase)/iu",
-                '{{{{START_HILITE}}}}$1{{{{END_HILITE}}}}', $haystack
-			);
+			$haystack = preg_replace("/($phrase)/iu", '{{{{START_HILITE}}}}$1{{{{END_HILITE}}}}', $haystack);
 		}
 	}
 
 	// URL encode the string, then put in the highlight spans:
-	$haystack = str_replace(
-		array('{{{{START_HILITE}}}}', '{{{{END_HILITE}}}}'),
-		array('<span class="highlight">', '</span>'),
-		$haystack
-	);
+	$haystack = str_replace([
+			'{{{{START_HILITE}}}}',
+			'{{{{END_HILITE}}}}',
+		], [
+			'<span class="highlight">',
+			'</span>',
+		], $haystack);
 
 	return $haystack;
 }

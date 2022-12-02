@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_ContactInformation extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_ContactInformation extends MyAccount {
+	function launch() {
 		global $configArray;
 		global $interface;
 		global $offlineMode;
@@ -18,16 +16,16 @@ class MyAccount_ContactInformation extends MyAccount
 		if ($user) {
 
 			$patronUpdateForm = $user->getPatronUpdateForm();
-			if ($patronUpdateForm != null){
+			if ($patronUpdateForm != null) {
 				$interface->assign('patronUpdateForm', $patronUpdateForm);
-			}else{
+			} else {
 				$user->loadContactInformation();
 			}
 
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
-			if ($patronHomeLibrary == null){
+			if ($patronHomeLibrary == null) {
 				$canUpdateContactInfo = false;
 				$canUpdateAddress = false;
 				$canUpdatePhoneNumber = false;
@@ -37,7 +35,7 @@ class MyAccount_ContactInformation extends MyAccount
 				$showAlternateLibraryOptionsInProfile = false;
 				$allowAccountLinking = true;
 				$passwordLabel = 'Library Card Number';
-			}else{
+			} else {
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
 				$canUpdatePhoneNumber = ($patronHomeLibrary->allowPatronPhoneNumberUpdates == 1);
@@ -46,7 +44,7 @@ class MyAccount_ContactInformation extends MyAccount
 				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowAccountLinking = ($patronHomeLibrary->allowLinkedAccounts == 1);
-				if (($user->_finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)){
+				if (($user->_finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)) {
 					$canUpdateContactInfo = false;
 					$canUpdateAddress = false;
 				}
@@ -89,9 +87,9 @@ class MyAccount_ContactInformation extends MyAccount
 			}
 
 			if (!empty($user->updateMessage)) {
-				if ($user->updateMessageIsError){
+				if ($user->updateMessageIsError) {
 					$interface->assign('profileUpdateErrors', $user->updateMessage);
-				}else{
+				} else {
 					$interface->assign('profileUpdateMessage', $user->updateMessage);
 				}
 				$user->updateMessage = '';
@@ -99,24 +97,27 @@ class MyAccount_ContactInformation extends MyAccount
 			}
 
 			$interface->assign('profile', $user);
-		}else{
+		} else {
 			$canUpdateContactInfo = false;
 			$canUpdateAddress = false;
 		}
 
 		// switch for hack for Millennium driver profile updating when updating is allowed but address updating is not allowed.
-		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && in_array($ils, array('Millennium', 'Sierra'));
+		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && in_array($ils, [
+				'Millennium',
+				'Sierra',
+			]);
 		$interface->assign('millenniumNoAddress', $millenniumNoAddress);
 
 
 		// CarlX Specific Options
 		if ($ils == 'CarlX' && !$offlineMode) {
 			// Get Phone Types
-			$phoneTypes = array();
+			$phoneTypes = [];
 			/** @var CarlX $driver */
 			$driver = CatalogFactory::getCatalogConnectionInstance();
 			$rawPhoneTypes = $driver->getPhoneTypeList();
-			foreach ($rawPhoneTypes as $rawPhoneTypeSubArray){
+			foreach ($rawPhoneTypes as $rawPhoneTypeSubArray) {
 				foreach ($rawPhoneTypeSubArray as $phoneType => $phoneTypeLabel) {
 					$phoneTypes["$phoneType"] = $phoneTypeLabel;
 				}
@@ -127,8 +128,7 @@ class MyAccount_ContactInformation extends MyAccount
 		$this->display('contactInformation.tpl', 'Contact Information');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Contact Information');

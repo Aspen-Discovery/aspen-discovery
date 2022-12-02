@@ -3,28 +3,26 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . "/sys/MaterialsRequest.php";
 
-class MaterialsRequest_NewRequestIls extends MyAccount
-{
+class MaterialsRequest_NewRequestIls extends MyAccount {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		global $library;
 
 		$user = UserAccount::getActiveUserObj();
-		$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
+		$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
 		$patron = $user->getUserReferredTo($patronId);
 		$interface->assign('patronId', $patronId);
 
 		$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
 
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit'])) {
 			$result = $catalogConnection->processMaterialsRequestForm($patron);
-			if ($result['success']){
+			if ($result['success']) {
 				header('Location: /MaterialsRequest/IlsRequests?patronId=' . $patronId);
 				exit;
-			}else{
+			} else {
 				global $interface;
 				$interface->assign('errors', [$result['message']]);
 			}
@@ -34,8 +32,7 @@ class MaterialsRequest_NewRequestIls extends MyAccount
 		$this->display($requestForm, 'Materials Request');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'New Materials Request');

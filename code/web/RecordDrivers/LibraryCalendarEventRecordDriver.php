@@ -3,14 +3,12 @@
 require_once 'IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarEvent.php';
 
-class LibraryCalendarEventRecordDriver extends IndexRecordDriver
-{
+class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 	private $valid;
 	/** @var LMLibraryCalendarEvent */
 	private $eventObject;
 
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		if (is_array($recordData)) {
 			parent::__construct($recordData);
 			$this->valid = true;
@@ -23,18 +21,15 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		}
 	}
 
-	public function isValid()
-	{
+	public function isValid() {
 		return $this->valid;
 	}
 
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		return $this->getSearchResult('list');
 	}
 
-	public function getSearchResult($view = 'list')
-	{
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
@@ -46,9 +41,9 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		} else {
 			$interface->assign('description', '');
 		}
-		if (array_key_exists('reservation_state', $this->fields) && in_array('Cancelled', $this->fields['reservation_state'] )) {
+		if (array_key_exists('reservation_state', $this->fields) && in_array('Cancelled', $this->fields['reservation_state'])) {
 			$interface->assign('isCancelled', true);
-		}else{
+		} else {
 			$interface->assign('isCancelled', false);
 		}
 		$interface->assign('start_date', $this->fields['start_date']);
@@ -74,8 +69,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/Events/library_calendar_result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -88,18 +82,15 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'LMLCEvents';
 	}
 
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		// TODO: Implement getStaffView() method.
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		if (isset($this->fields['description'])) {
 			return $this->fields['description'];
 		} else {
@@ -115,53 +106,46 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
-	public function getLinkUrl($absolutePath = false)
-	{
+	public function getLinkUrl($absolutePath = false) {
 		return $this->fields['url'];
 	}
 
-	private function getType()
-	{
+	private function getType() {
 		return $this->fields['type'];
 	}
 
-	private function getSource()
-	{
+	private function getSource() {
 		return $this->fields['source'];
 	}
 
-	function getEventCoverUrl()
-	{
+	function getEventCoverUrl() {
 		$decodedData = $this->getEventObject()->getDecodedData();
-		if (!empty($decodedData->image)){
+		if (!empty($decodedData->image)) {
 			return $decodedData->image;
 		}
 		return null;
 	}
 
-	function getEventObject(){
-		if ($this->eventObject == null){
+	function getEventObject() {
+		if ($this->eventObject == null) {
 			$this->eventObject = new LMLibraryCalendarEvent();
 			$this->eventObject->externalId = $this->getIdentifier();
-			if (!$this->eventObject->find(true)){
+			if (!$this->eventObject->find(true)) {
 				$this->eventObject = false;
 			}
 		}
 		return $this->eventObject;
 	}
 
-	private function getIdentifier()
-	{
+	private function getIdentifier() {
 		return $this->fields['identifier'];
 	}
 
-	public function getStartDate()
-	{
+	public function getStartDate() {
 		try {
 			//Need to specify timezone since we start as a timstamp
 			$startDate = new DateTime($this->fields['start_date']);
@@ -172,9 +156,9 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		}
 	}
 
-	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		$result = parent::getSpotlightResult($collectionSpotlight, $index);
-		if ($collectionSpotlight->style == 'text-list'){
+		if ($collectionSpotlight->style == 'text-list') {
 			global $interface;
 			$interface->assign('start_date', $this->fields['start_date']);
 			$interface->assign('end_date', $this->fields['end_date']);

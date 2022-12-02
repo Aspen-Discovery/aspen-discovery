@@ -11,7 +11,7 @@ class CourseReserves_Home extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadCover(){
+	function reloadCover() {
 		$courseReserveId = $_REQUEST['id'];
 		$courseReserve = new CourseReserve();
 		$courseReserve->id = $courseReserveId;
@@ -20,7 +20,7 @@ class CourseReserves_Home extends Action {
 		$bookCoverInfo = new BookCoverInfo();
 		$bookCoverInfo->recordType = 'course_reserve';
 		$bookCoverInfo->recordId = $courseReserve->id;
-		if ($bookCoverInfo->find(true)){
+		if ($bookCoverInfo->find(true)) {
 			$bookCoverInfo->imageSource = '';
 			$bookCoverInfo->thumbnailLoaded = 0;
 			$bookCoverInfo->mediumLoaded = 0;
@@ -28,7 +28,10 @@ class CourseReserves_Home extends Action {
 			$bookCoverInfo->update();
 		}
 
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+		return [
+			'success' => true,
+			'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.',
+		];
 	}
 
 	function launch() {
@@ -40,7 +43,7 @@ class CourseReserves_Home extends Action {
 		require_once ROOT_DIR . '/sys/CourseReserves/CourseReserveEntry.php';
 		$courseReserve = new CourseReserve();
 		$courseReserve->id = $listId;
-		if ($courseReserve->find(true)){
+		if ($courseReserve->find(true)) {
 			// Send list to template so title/description can be displayed:
 			$interface->assign('courseReserve', $courseReserve);
 
@@ -48,11 +51,14 @@ class CourseReserves_Home extends Action {
 
 			$template = 'courseReserve.tpl';
 
-		}else{
+		} else {
 			$template = 'invalidReserve.tpl';
 		}
 
-		$this->display($template, isset($courseReserve->title) ? $courseReserve->title : translate(['text' => 'Course Reserve', 'isPublicFacing'=>true]), '', false);
+		$this->display($template, isset($courseReserve->title) ? $courseReserve->title : translate([
+			'text' => 'Course Reserve',
+			'isPublicFacing' => true,
+		]), '', false);
 	}
 
 	/**
@@ -61,18 +67,20 @@ class CourseReserves_Home extends Action {
 	 * @access  public
 	 * @param CourseReserve $list
 	 */
-	public function buildListForDisplay(CourseReserve $list)
-	{
+	public function buildListForDisplay(CourseReserve $list) {
 		global $interface;
 
 		$queryParams = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
-		if ($queryParams == null){
+		if ($queryParams == null) {
 			$queryParams = [];
-		}else{
+		} else {
 			$queryParamsTmp = explode("&", $queryParams);
 			$queryParams = [];
 			foreach ($queryParamsTmp as $param) {
-				list($name, $value) = explode("=", $param);
+				[
+					$name,
+					$value,
+				] = explode("=", $param);
 				$queryParams[$name] = $value;
 			}
 		}
@@ -81,48 +89,49 @@ class CourseReserves_Home extends Action {
 		$totalRecords = $list->numTitlesOnReserve();
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$startRecord = ($page - 1) * $recordsPerPage;
-		if ($startRecord < 0){
+		if ($startRecord < 0) {
 			$startRecord = 0;
 		}
 		$endRecord = $page * $recordsPerPage;
-		if ($endRecord > $totalRecords){
+		if ($endRecord > $totalRecords) {
 			$endRecord = $totalRecords;
 		}
-		$pageInfo = array(
+		$pageInfo = [
 			'resultTotal' => $totalRecords,
 			'startRecord' => $startRecord,
-			'endRecord'   => $endRecord,
-			'perPage'     => $recordsPerPage
-		);
-		$resourceList = $list->getCourseReserveRecords($startRecord , $recordsPerPage, 'html', null);
+			'endRecord' => $endRecord,
+			'perPage' => $recordsPerPage,
+		];
+		$resourceList = $list->getCourseReserveRecords($startRecord, $recordsPerPage, 'html', null);
 		$interface->assign('resourceList', $resourceList);
 
 		// Set up paging of list contents:
 		$interface->assign('recordCount', $pageInfo['resultTotal']);
 		$interface->assign('recordStart', $pageInfo['startRecord']);
-		$interface->assign('recordEnd',   $pageInfo['endRecord']);
+		$interface->assign('recordEnd', $pageInfo['endRecord']);
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
 		$link = $_SERVER['REQUEST_URI'];
-		if (preg_match('/[&?]page=/', $link)){
+		if (preg_match('/[&?]page=/', $link)) {
 			$link = preg_replace("/page=\\d+/", "page=%d", $link);
-		}else if (strpos($link, "?") > 0){
+		} elseif (strpos($link, "?") > 0) {
 			$link .= "&page=%d";
-		}else{
+		} else {
 			$link .= "?page=%d";
 		}
-		$options = array('totalItems' => $pageInfo['resultTotal'],
+		$options = [
+			'totalItems' => $pageInfo['resultTotal'],
 			'perPage' => $pageInfo['perPage'],
 			'fileName' => $link,
-			'append'    => false);
+			'append' => false,
+		];
 		require_once ROOT_DIR . '/sys/Pager.php';
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Course Reserve');
 		return $breadcrumbs;

@@ -12,8 +12,7 @@ class MyAccount_Logout extends Action {
 		die();
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

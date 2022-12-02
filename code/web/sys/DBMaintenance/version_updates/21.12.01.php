@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_12_01() : array
-{
+function getUpdates21_12_01(): array {
 	return [
 		/*'name' => [
 			'title' => '',
@@ -14,8 +13,9 @@ function getUpdates21_12_01() : array
 			'title' => 'OverDrive Max Extraction Threads',
 			'description' => 'Add a number of extraction threads to use when extracting from OverDrive',
 			'sql' => [
-				'ALTER TABLE overdrive_settings ADD COLUMN numExtractionThreads INT(11) DEFAULT 10'
-			]
-		], //overdrive_max_extraction_threads
+				'ALTER TABLE overdrive_settings ADD COLUMN numExtractionThreads INT(11) DEFAULT 10',
+			],
+		],
+		//overdrive_max_extraction_threads
 	];
 }

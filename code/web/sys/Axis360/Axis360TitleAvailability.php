@@ -1,6 +1,6 @@
 <?php
 
-class Axis360TitleAvailability extends DataObject{
+class Axis360TitleAvailability extends DataObject {
 	public $__table = 'axis360_title_availability';   // table name
 
 	public $id;

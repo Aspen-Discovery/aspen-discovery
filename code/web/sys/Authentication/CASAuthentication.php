@@ -6,27 +6,25 @@ class CASAuthentication implements Authentication {
 	static $clientInitialized = false;
 
 
-	public function __construct($additionalInfo) {
+	public function __construct($additionalInfo) {}
 
-	}
-
-	public function authenticate($validatedViaSSO){
+	public function authenticate($validatedViaSSO) {
 		$this->initializeCASClient();
 
-		try{
+		try {
 			global $logger;
 			$logger->log("Forcing CAS authentication", Logger::LOG_DEBUG);
 			$isValidated = phpCAS::forceAuthentication();
-			if ($isValidated){
+			if ($isValidated) {
 				$userAttributes = phpCAS::getAttributes();
 				//TODO: If we use other CAS systems we will need a configuration option to store which
 				//attribute the id is in
 				$userId = $userAttributes['flcid'];
 				return $userId;
-			}else{
+			} else {
 				return false;
 			}
-		}catch (CAS_AuthenticationException $e){
+		} catch (CAS_AuthenticationException $e) {
 			global $logger;
 			$logger->log("Error authenticating in CAS $e", Logger::LOG_ERROR);
 			$isValidated = false;
@@ -43,15 +41,15 @@ class CASAuthentication implements Authentication {
 	 * @return bool|AspenError|string return false if the user cannot authenticate, the barcode if they can, and an error if configuration is incorrect
 	 */
 	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
-		if($username == '' || $password == ''){
+		if ($username == '' || $password == '') {
 			$this->initializeCASClient();
 
-			try{
+			try {
 				global $logger;
 				$logger->log("Checking CAS Authentication", Logger::LOG_DEBUG);
 				$isValidated = phpCAS::checkAuthentication();
-				$logger->log("isValidated = ". ($isValidated ? 'true' : 'false'), Logger::LOG_DEBUG);
-			}catch (CAS_AuthenticationException $e){
+				$logger->log("isValidated = " . ($isValidated ? 'true' : 'false'), Logger::LOG_DEBUG);
+			} catch (CAS_AuthenticationException $e) {
 				global $logger;
 				$logger->log("Error validating account in CAS $e", Logger::LOG_ERROR);
 				$isValidated = false;
@@ -65,10 +63,10 @@ class CASAuthentication implements Authentication {
 				if (isset($userAttributes['flcid'])) {
 					$userId = $userAttributes['flcid'];
 					return $userId;
-				}else{
+				} else {
 					$logger->log("Did not find flcid in user attributes " . print_r($userAttributes, true), Logger::LOG_WARNING);
 				}
-			}else{
+			} else {
 				return false;
 			}
 		} else {

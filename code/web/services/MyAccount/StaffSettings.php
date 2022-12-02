@@ -2,10 +2,8 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MyAccount_StaffSettings extends MyAccount
-{
-	function launch()
-	{
+class MyAccount_StaffSettings extends MyAccount {
+	function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -13,9 +11,9 @@ class MyAccount_StaffSettings extends MyAccount
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -30,7 +28,7 @@ class MyAccount_StaffSettings extends MyAccount
 				$patron->updateStaffSettings();
 
 				session_write_close();
-				$actionUrl = '/MyAccount/StaffSettings' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/StaffSettings' . ($patronId == $user->id ? '' : '?patronId=' . $patronId); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
@@ -45,8 +43,7 @@ class MyAccount_StaffSettings extends MyAccount
 		$this->display('staffSettings.tpl', 'Staff Settings');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Staff Settings');

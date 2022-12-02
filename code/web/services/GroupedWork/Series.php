@@ -2,11 +2,10 @@
 
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
-class GroupedWork_Series extends Action
-{
+class GroupedWork_Series extends Action {
 	private $seriesTitle;
-	function launch()
-	{
+
+	function launch() {
 		global $interface;
 		global $timer;
 		global $logger;
@@ -18,9 +17,9 @@ class GroupedWork_Series extends Action
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
-		if (!$recordDriver->isValid()){
+		if (!$recordDriver->isValid()) {
 			$interface->assign('id', $id);
-			$logger->log("Did not find a record for id {$id} in solr." , Logger::LOG_DEBUG);
+			$logger->log("Did not find a record for id {$id} in solr.", Logger::LOG_DEBUG);
 			$interface->setTemplate('../Record/invalidRecord.tpl');
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
@@ -30,9 +29,12 @@ class GroupedWork_Series extends Action
 		$novelist = NovelistFactory::getNovelist();
 		$seriesData = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
 
-		if ($seriesData == null){
-			$interface->assign('error', translate(['text' => 'Could not load series data', 'isPublicFacing'=>true]));
-		}else {
+		if ($seriesData == null) {
+			$interface->assign('error', translate([
+				'text' => 'Could not load series data',
+				'isPublicFacing' => true,
+			]));
+		} else {
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
@@ -42,8 +44,8 @@ class GroupedWork_Series extends Action
 
 			//Loading the series title is not reliable.  Do not try to load it.
 			$this->seriesTitle = null;
-			$seriesAuthors = array();
-			$resourceList = array();
+			$seriesAuthors = [];
+			$resourceList = [];
 			$seriesTitles = $seriesData->getSeriesTitles();
 			$recordIndex = 1;
 			if (isset($seriesTitles) && is_array($seriesTitles)) {
@@ -87,11 +89,10 @@ class GroupedWork_Series extends Action
 		}
 
 		// Display Page
-		$this->display('view-series.tpl', $this->seriesTitle,'', false);
+		$this->display('view-series.tpl', $this->seriesTitle, '', false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', $this->seriesTitle, false);
 		return $breadcrumbs;

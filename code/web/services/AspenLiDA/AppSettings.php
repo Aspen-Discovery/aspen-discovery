@@ -3,60 +3,55 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
 
-class AspenLiDA_AppSettings extends ObjectEditor
-{
-	function getObjectType() : string {
+class AspenLiDA_AppSettings extends ObjectEditor {
+	function getObjectType(): string {
 		return 'AppSetting';
 	}
 
-	function getToolName() : string {
+	function getToolName(): string {
 		return 'AppSettings';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'AspenLiDA';
 	}
 
-	function getPageTitle() : string {
+	function getPageTitle(): string {
 		return 'App Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array {
-		$list = array();
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new AppSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
 
-	function getDefaultSort() : string {
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return AppSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
@@ -64,13 +59,11 @@ class AspenLiDA_AppSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'aspen_lida';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Aspen LiDA Settings');
 	}
 

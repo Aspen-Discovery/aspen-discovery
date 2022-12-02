@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/BaseLogEntry.php';
-class Axis360LogEntry extends BaseLogEntry
-{
+
+class Axis360LogEntry extends BaseLogEntry {
 	public $__table = 'axis360_export_log';   // table name
 	public $id;
 	public $lastUpdate;

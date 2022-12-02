@@ -7,8 +7,7 @@ class Help_OverDriveReadError extends Action {
 		$this->display('Help/overdriveError.tpl', 'Error in OverDrive');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'OverDrive Error');
 		return $breadcrumbs;

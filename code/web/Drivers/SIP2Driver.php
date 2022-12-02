@@ -114,13 +114,13 @@ abstract class SIP2Driver extends AbstractIlsDriver {
 	/**
 	 * Process SIP2 User Account
 	 *
-	 * @param array $info An array of user information
+	 * @author  Bob Wicksall <bwicksall@pls-net.org>
 	 * @param string $username The user's ILS username
 	 * @param string $password The user's ILS password
 	 * @param array $patronInfoResponse The user's ILS password
+	 * @param array $info An array of user information
 	 * @return  User
 	 * @access  public
-	 * @author  Bob Wicksall <bwicksall@pls-net.org>
 	 */
 	private function loadPatronInformation($info, $username, $password, $patronInfoResponse) {
 		global $timer;

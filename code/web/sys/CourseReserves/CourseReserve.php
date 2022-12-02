@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class CourseReserve extends DataObject
-{
+class CourseReserve extends DataObject {
 	public $__table = 'course_reserve';
 	public $id;
 	public $created;
@@ -14,13 +13,12 @@ class CourseReserve extends DataObject
 	public $courseNumber;
 	public $courseTitle;
 
-	public static function getSourceListsForBrowsingAndCarousels()
-	{
+	public static function getSourceListsForBrowsingAndCarousels() {
 		$courseReserves = new CourseReserve();
 		$courseReserves->deleted = 0;
 		$courseReserves->orderBy('courseNumber, courseTitle, courseInstructor');
 		$courseReserves->find();
-		$sourceLists = array();
+		$sourceLists = [];
 		$sourceLists[-1] = 'Generate from search term and filters';
 		while ($courseReserves->fetch()) {
 			$numItems = $courseReserves->numTitlesOnReserve();
@@ -35,8 +33,7 @@ class CourseReserve extends DataObject
 		return $this->courseNumber . ' ' . $this->courseTitle . ' - ' . $this->courseInstructor;
 	}
 
-	public function getNumericColumnNames() : array
-	{
+	public function getNumericColumnNames(): array {
 		return ['deleted'];
 	}
 
@@ -51,12 +48,12 @@ class CourseReserve extends DataObject
 	/**
 	 * @var array An array of resources keyed by the course reserve id since we can iterate over multiple course reserves while fetching from the DB
 	 */
-	private $reserveTitles = array();
+	private $reserveTitles = [];
 
 	/**
 	 * @return array      of list entries
 	 */
-	function getTitles(){
+	function getTitles() {
 		require_once ROOT_DIR . '/sys/CourseReserves/CourseReserveEntry.php';
 		$reserveEntry = new CourseReserveEntry();
 		$reserveEntry->courseReserveId = $this->id;
@@ -68,8 +65,8 @@ class CourseReserve extends DataObject
 		$reserveEntries = [];
 		$idsBySource = [];
 		$reserveEntry->find();
-		while ($reserveEntry->fetch()){
-			if (!array_key_exists($reserveEntry->source, $idsBySource)){
+		while ($reserveEntry->fetch()) {
+			if (!array_key_exists($reserveEntry->source, $idsBySource)) {
 				$idsBySource[$reserveEntry->source] = [];
 			}
 			$idsBySource[$reserveEntry->source][] = $reserveEntry->sourceId;
@@ -78,7 +75,7 @@ class CourseReserve extends DataObject
 				'sourceId' => $reserveEntry->sourceId,
 				'title' => $reserveEntry->title,
 				'courseReserveEntryId' => $reserveEntry->id,
-				'courseReserveEntry' => clone($reserveEntry)
+				'courseReserveEntry' => clone($reserveEntry),
 			];
 
 			$reserveEntries[] = $tmpListEntry;
@@ -87,21 +84,20 @@ class CourseReserve extends DataObject
 		$reserveEntry = null;
 		return [
 			'courseReserveEntries' => $reserveEntries,
-			'idsBySource' => $idsBySource
+			'idsBySource' => $idsBySource,
 		];
 	}
 
 	/**
 	 * @return CourseReserveEntry[]|null
 	 */
-	function getReserveTitles()
-	{
-		if (isset($this->reserveTitles[$this->id])){
+	function getReserveTitles() {
+		if (isset($this->reserveTitles[$this->id])) {
 			return $this->reserveTitles[$this->id];
 		}
 		$titles = $this->getTitles();
 		$this->reserveTitles[$this->id] = [];
-		foreach ($titles['courseReserveEntries'] as $reserveEntry){
+		foreach ($titles['courseReserveEntries'] as $reserveEntry) {
 			$this->reserveTitles[$this->id][] = $reserveEntry['courseReserveEntry'];
 		}
 
@@ -123,15 +119,15 @@ class CourseReserve extends DataObject
 		$courseReserveEntryInfo = $this->getTitles();
 
 		//Trim to the number of records we want to return
-		if ($numItems > 0){
+		if ($numItems > 0) {
 			$filteredReserveEntries = array_slice($courseReserveEntryInfo['courseReserveEntries'], $start, $numItems);
-		}else{
+		} else {
 			$filteredReserveEntries = $courseReserveEntryInfo['courseReserveEntries'];
 		}
 
 		$filteredIdsBySource = [];
 		foreach ($filteredReserveEntries as $listItemEntry) {
-			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)) {
 				$filteredIdsBySource[$listItemEntry['source']] = [];
 			}
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
@@ -139,21 +135,21 @@ class CourseReserve extends DataObject
 
 		//Load the actual items from each source
 		$listResults = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false){
+			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			}else{
+			} else {
 				$records = $searchObject->getRecords($sourceIds);
 				if ($format == 'html') {
 					$listResults = $listResults + $this->getResultListHTML($records, $filteredReserveEntries, $start);
-				}elseif ($format == 'summary') {
+				} elseif ($format == 'summary') {
 					$listResults = $listResults + $this->getResultListSummary($records, $filteredReserveEntries);
-				}elseif ($format == 'recordDrivers') {
+				} elseif ($format == 'recordDrivers') {
 					$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredReserveEntries);
-				}elseif ($format == 'citations') {
+				} elseif ($format == 'citations') {
 					$listResults = $listResults + $this->getResultListCitations($records, $filteredReserveEntries, $citationFormat);
-				}else{
+				} else {
 					AspenError::raiseError("Unknown display format $format in getCourseReserveRecords");
 				}
 			}
@@ -191,10 +187,9 @@ class CourseReserve extends DataObject
 	 * @param int $startRecord The first record being displayed
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getCourseReserveResultListHTML($records, $allListEntryIds, $startRecord = 0)
-	{
+	private function getCourseReserveResultListHTML($records, $allListEntryIds, $startRecord = 0) {
 		global $interface;
-		$html = array();
+		$html = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -233,10 +228,9 @@ class CourseReserve extends DataObject
 	 * @param int $startRecord The first record being displayed
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getResultListHTML($records, $allListEntryIds, $startRecord = 0)
-	{
+	private function getResultListHTML($records, $allListEntryIds, $startRecord = 0) {
 		global $interface;
-		$html = array();
+		$html = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -264,9 +258,8 @@ class CourseReserve extends DataObject
 		return $html;
 	}
 
-	private function getResultListSummary($records, $allListEntryIds)
-	{
-		$results = array();
+	private function getResultListSummary($records, $allListEntryIds) {
+		$results = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -275,7 +268,8 @@ class CourseReserve extends DataObject
 			reset($records);
 			/**
 			 * @var int $docIndex
-			 * @var CourseReservesRecordDriver $recordDriver */
+			 * @var CourseReservesRecordDriver $recordDriver
+			 */
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$current = $recordDriver;
@@ -289,9 +283,9 @@ class CourseReserve extends DataObject
 		return $results;
 	}
 
-	private function getResultListCitations($records, $allListEntryIds, $format){
+	private function getResultListCitations($records, $allListEntryIds, $format) {
 		global $interface;
-		$results = array();
+		$results = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -311,9 +305,8 @@ class CourseReserve extends DataObject
 		return $results;
 	}
 
-	private function getResultListRecordDrivers($records, $allListEntryIds)
-	{
-		$results = array();
+	private function getResultListRecordDrivers($records, $allListEntryIds) {
+		$results = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -321,7 +314,7 @@ class CourseReserve extends DataObject
 			reset($records);
 			/**
 			 * @var int $docIndex
-			 * @var IndexRecordDriver  $recordDriver
+			 * @var IndexRecordDriver $recordDriver
 			 */
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
@@ -337,8 +330,8 @@ class CourseReserve extends DataObject
 	}
 
 	/**
-	 * @param int $start     position of first list item to fetch
-	 * @param int $numItems  Number of items to fetch for this result
+	 * @param int $start position of first list item to fetch
+	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
 	public function getBrowseRecords($start, $numItems) {
@@ -350,7 +343,7 @@ class CourseReserve extends DataObject
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
-			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)) {
 				$filteredIdsBySource[$listItemEntry['source']] = [];
 			}
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
@@ -358,11 +351,11 @@ class CourseReserve extends DataObject
 
 		//Load catalog items
 		$browseRecords = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false){
+			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			}else{
+			} else {
 				$records = $searchObject->getRecords($sourceIds);
 				$browseRecords = array_merge($browseRecords, $this->getBrowseRecordHTML($records, $listEntryInfo['courseReserveEntries'], $start));
 			}
@@ -375,8 +368,8 @@ class CourseReserve extends DataObject
 	}
 
 	/**
-	 * @param int $start     position of first list item to fetch
-	 * @param int $numItems  Number of items to fetch for this result
+	 * @param int $start position of first list item to fetch
+	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
 	public function getBrowseRecordsRaw($start, $numItems) {
@@ -388,7 +381,7 @@ class CourseReserve extends DataObject
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
-			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)) {
 				$filteredIdsBySource[$listItemEntry['source']] = [];
 			}
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
@@ -396,19 +389,19 @@ class CourseReserve extends DataObject
 
 		//Load catalog items
 		$browseRecords = [];
-		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds) {
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
-			if ($searchObject === false){
+			if ($searchObject === false) {
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
-			}else{
+			} else {
 				$records = $searchObject->getRecords($sourceIds);
-				foreach ($records as $key => $record){
-					if ($record instanceof ListsRecordDriver){
+				foreach ($records as $key => $record) {
+					if ($record instanceof ListsRecordDriver) {
 						$browseRecords[$key] = $record->getFields();
-					}else{
+					} else {
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$groupedWorkDriver = new GroupedWorkDriver($key);
-						if($groupedWorkDriver->isValid()){
+						if ($groupedWorkDriver->isValid()) {
 							$browseRecords[$key]['id'] = $groupedWorkDriver->getPermanentId();
 							$browseRecords[$key]['title_display'] = $groupedWorkDriver->getShortTitle();
 						} else {
@@ -436,10 +429,9 @@ class CourseReserve extends DataObject
 	 * @param int $start
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getBrowseRecordHTML($records, $allListEntryIds, $start)
-	{
+	private function getBrowseRecordHTML($records, $allListEntryIds, $start) {
 		global $interface;
-		$html = array();
+		$html = [];
 		//Reorder the documents based on the list of id's
 		foreach ($allListEntryIds as $listPosition => $currentId) {
 			// use $IDList as the order guide for the html
@@ -465,22 +457,21 @@ class CourseReserve extends DataObject
 	/**
 	 * @return array
 	 */
-	public static function getCourseReserveSortOptions()
-	{
+	public static function getCourseReserveSortOptions() {
 		return CourseReserve::$__courseReserveSortOptions;
 	}
 
-	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight)
-	{
+	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight) {
 		$allEntries = $this->getReserveTitles();
 
 		$results = [];
 		/**
 		 * @var string $key
-		 * @var UserListEntry $entry */
-		foreach ($allEntries as $key => $entry){
+		 * @var UserListEntry $entry
+		 */
+		foreach ($allEntries as $key => $entry) {
 			$recordDriver = $entry->getRecordDriver();
-			if ($recordDriver == null){
+			if ($recordDriver == null) {
 				//Don't show this result because it no lonnger exists in teh catalog.
 				/*$results[$key] = [
 					'title' => 'Unhandled Source ' . $entry->source,
@@ -488,13 +479,13 @@ class CourseReserve extends DataObject
 					'formattedTextOnlyTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
 					'formattedTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
 				];*/
-			}else{
-				if ($recordDriver->isValid()){
+			} else {
+				if ($recordDriver->isValid()) {
 					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
 				}
 			}
 
-			if (count($results) == $collectionSpotlight->numTitlesToShow){
+			if (count($results) == $collectionSpotlight->numTitlesToShow) {
 				break;
 			}
 		}
@@ -502,13 +493,13 @@ class CourseReserve extends DataObject
 		return $results;
 	}
 
-	public static function getUserListsForSaveForm($source, $sourceId){
+	public static function getUserListsForSaveForm($source, $sourceId) {
 		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 		//Get a list of all lists for the user
-		$containingLists = array();
-		$nonContainingLists = array();
+		$containingLists = [];
+		$nonContainingLists = [];
 
 		$user = UserAccount::getActiveUserObj();
 
@@ -517,24 +508,24 @@ class CourseReserve extends DataObject
 		$userLists->whereAdd('deleted = 0');
 		$userLists->orderBy('title');
 		$userLists->find();
-		while ($userLists->fetch()){
+		while ($userLists->fetch()) {
 			//Check to see if the user has already added the title to the list.
 			$userListEntry = new UserListEntry();
 			$userListEntry->listId = $userLists->id;
 			$userListEntry->source = $source;
 			$userListEntry->sourceId = $sourceId;
-			if ($userListEntry->find(true)){
-				$containingLists[] = array(
-					'id' => $userLists->id,
-					'title' => $userLists->title
-				);
-			}else{
-				$selected = $user->lastListUsed == $userLists->id;
-				$nonContainingLists[] = array(
+			if ($userListEntry->find(true)) {
+				$containingLists[] = [
 					'id' => $userLists->id,
 					'title' => $userLists->title,
-					'selected' => $selected
-				);
+				];
+			} else {
+				$selected = $user->lastListUsed == $userLists->id;
+				$nonContainingLists[] = [
+					'id' => $userLists->id,
+					'title' => $userLists->title,
+					'selected' => $selected,
+				];
 			}
 		}
 
@@ -543,12 +534,11 @@ class CourseReserve extends DataObject
 
 		return [
 			'containingLists' => $containingLists,
-			'nonContainingLists' => $nonContainingLists
+			'nonContainingLists' => $nonContainingLists,
 		];
 	}
 
-	public static function getUserListsForRecord($source, $sourceId)
-	{
+	public static function getUserListsForRecord($source, $sourceId) {
 		$userLists = [];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -556,18 +546,18 @@ class CourseReserve extends DataObject
 		$userListEntry->source = $source;
 		$userListEntry->sourceId = $sourceId;
 		$userListEntry->find();
-		while ($userListEntry->fetch()){
+		while ($userListEntry->fetch()) {
 			//Check to see if the user has access to the list
 			$userList = new CourseReserve();
 			$userList->id = $userListEntry->listId;
-			if ($userList->find(true)){
+			if ($userList->find(true)) {
 				$okToShow = false;
 				$key = '';
 				if (!$userList->deleted) {
 					if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id) {
 						$okToShow = true;
 						$key = 0 . strtolower($userList->title);
-					} else if ($userList->public == 1 && $userList->searchable == 1) {
+					} elseif ($userList->public == 1 && $userList->searchable == 1) {
 						$okToShow = true;
 						$key = 1 . strtolower($userList->title);
 					}
@@ -575,7 +565,7 @@ class CourseReserve extends DataObject
 				if ($okToShow) {
 					$userLists[$key] = [
 						'link' => '/MyAccount/MyList/' . $userList->id,
-						'title' => $userList->title
+						'title' => $userList->title,
 					];
 				}
 			}

@@ -22,92 +22,92 @@ class ACISpeedpaySetting extends DataObject {
 	static function getObjectStructure(): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
-		$billerAccount_options = array(
+		$billerAccount_options = [
 			'username' => 'Username',
-			'cat_username' => 'Catalog Username/Barcode'
-		);
+			'cat_username' => 'Catalog Username/Barcode',
+		];
 
-		$structure = array(
-			'id' => array(
+		$structure = [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'name' => array(
+				'description' => 'The unique id',
+			],
+			'name' => [
 				'property' => 'name',
 				'type' => 'text',
 				'label' => 'Name',
 				'description' => 'A name for the settings',
-				'maxLength' => 50
-			),
-			'sandboxMode' => array(
+				'maxLength' => 50,
+			],
+			'sandboxMode' => [
 				'property' => 'sandboxMode',
 				'type' => 'checkbox',
 				'label' => 'Use ACI Sandbox',
 				'description' => 'Whether or not to use ACI Speedpay in Sandbox mode',
 				'hideInLists' => false,
-				'note' => 'This is for testing only! No funds will be received by the library.'
-			),
-			'clientId' => array(
+				'note' => 'This is for testing only! No funds will be received by the library.',
+			],
+			'clientId' => [
 				'property' => 'clientId',
 				'type' => 'text',
 				'label' => 'Client ID',
 				'description' => 'Client identifier used for client authentication. This value is provided by ACI.',
-				'hideInLists' => true
-			),
-			'clientSecret' => array(
+				'hideInLists' => true,
+			],
+			'clientSecret' => [
 				'property' => 'clientSecret',
 				'type' => 'storedPassword',
 				'label' => 'Client Secret',
 				'description' => 'Client API token used for client authentication. This value is provided by ACI.',
-				'hideInLists' => true
-			),
-			'apiAuthKey' => array(
+				'hideInLists' => true,
+			],
+			'apiAuthKey' => [
 				'property' => 'apiAuthKey',
 				'type' => 'storedPassword',
 				'label' => 'API Auth Key',
 				'description' => 'The API key used to access the API. This value is provided by ACI.',
-				'hideInLists' => true
-			),
-			'sdkClientId' => array(
+				'hideInLists' => true,
+			],
+			'sdkClientId' => [
 				'property' => 'sdkClientId',
 				'type' => 'text',
 				'label' => 'SDK Client ID',
 				'description' => 'Client identifier used for SDK client authentication. This value is provided by ACI.',
-				'hideInLists' => true
-			),
-			'sdkClientSecret' => array(
+				'hideInLists' => true,
+			],
+			'sdkClientSecret' => [
 				'property' => 'sdkClientSecret',
 				'type' => 'storedPassword',
 				'label' => 'SDK Client Secret',
 				'description' => 'Client token used for SDK client authentication. This value is provided by ACI.',
-				'hideInLists' => true
-			),
-			'sdkApiAuthKey' => array(
+				'hideInLists' => true,
+			],
+			'sdkApiAuthKey' => [
 				'property' => 'sdkApiAuthKey',
 				'type' => 'storedPassword',
 				'label' => 'SDK API Auth Key',
 				'description' => 'The API key used to access the SDK. This value is provided by ACI.',
-				'hideInLists' => true
-			),
-			'billerId' => array(
+				'hideInLists' => true,
+			],
+			'billerId' => [
 				'property' => 'billerId',
 				'type' => 'text',
 				'label' => 'Biller Id',
 				'description' => 'A unique identifier assigned by your ACI project manager.',
-				'hideInLists' => true
-			),
-			'billerAccountId' => array(
+				'hideInLists' => true,
+			],
+			'billerAccountId' => [
 				'property' => 'billerAccountId',
 				'type' => 'enum',
 				'label' => 'Biller Account Id Field',
 				'values' => $billerAccount_options,
 				'description' => 'The identifier field used to connect payments to users.',
-				'hideInLists' => true
-			),
+				'hideInLists' => true,
+			],
 
-			'libraries' => array(
+			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
@@ -115,8 +115,8 @@ class ACISpeedpaySetting extends DataObject {
 				'description' => 'Define libraries that use these settings',
 				'values' => $libraryList,
 				'hideInLists' => true,
-			),
-		);
+			],
+		];
 
 		if (!UserAccount::userHasPermission('Library eCommerce Options')) {
 			unset($structure['libraries']);
@@ -221,7 +221,7 @@ class ACISpeedpaySetting extends DataObject {
 			'paymentAmount' => [
 				'value' => $amount,
 				'currencyCode' => 'USD',
-				'precision' => 2
+				'precision' => 2,
 			],
 		];
 
@@ -246,7 +246,7 @@ class ACISpeedpaySetting extends DataObject {
 		$postParams = [
 			'grant_type' => 'client_credentials',
 			'client_id' => $this->clientId,
-			'client_secret' => $this->clientSecret
+			'client_secret' => $this->clientSecret,
 		];
 		$url = $baseUrl . '/auth/v1/auth';
 		$authCodeResults = $authCodeRequest->curlPostPage($url, $postParams);
@@ -276,7 +276,7 @@ class ACISpeedpaySetting extends DataObject {
 		$serviceAccountAuthorization->addCustomHeaders([
 			"X-Auth-Key: $this->sdkApiAuthKey",
 			'Content-Type: application/x-www-form-urlencoded',
-			'Accept: application/json'
+			'Accept: application/json',
 		], true);
 
 		$postParams = [
@@ -346,7 +346,7 @@ class ACISpeedpaySetting extends DataObject {
 				],
 				'emailAddress' => $patron->email,
 
-			]
+			],
 		];
 
 		$requestTransaction = $transactionRequest->curlPostBodyData($url, $postParams);
@@ -362,7 +362,7 @@ class ACISpeedpaySetting extends DataObject {
 				$payment->update();
 				$result = [
 					'success' => true,
-					'message' => 'Payment completed.'
+					'message' => 'Payment completed.',
 				];
 			} else {
 				$payment->error = 1;

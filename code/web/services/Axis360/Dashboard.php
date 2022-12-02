@@ -6,10 +6,8 @@ require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 
-class Axis360_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class Axis360_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('Axis360Stats');
@@ -38,23 +36,43 @@ class Axis360_Dashboard extends Admin_Dashboard
 		$statsAllTime = $this->getStats($instanceName, null, null);
 		$interface->assign('statsAllTime', $statsAllTime);
 
-		list($activeRecordsThisMonth, $loansThisMonth, $holdsThisMonth) = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear);
+		[
+			$activeRecordsThisMonth,
+			$loansThisMonth,
+			$holdsThisMonth,
+		] = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('activeRecordsThisMonth', $activeRecordsThisMonth);
 		$interface->assign('loansThisMonth', $loansThisMonth);
 		$interface->assign('holdsThisMonth', $holdsThisMonth);
-		list($activeRecordsLastMonth, $loansLastMonth, $holdsLastMonth) = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear);
+		[
+			$activeRecordsLastMonth,
+			$loansLastMonth,
+			$holdsLastMonth,
+		] = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('activeRecordsLastMonth', $activeRecordsLastMonth);
 		$interface->assign('loansLastMonth', $loansLastMonth);
 		$interface->assign('holdsLastMonth', $holdsLastMonth);
-		list($activeRecordsThisYear, $loansThisYear, $holdsThisYear) = $this->getRecordStats($instanceName, null, $this->thisYear);
+		[
+			$activeRecordsThisYear,
+			$loansThisYear,
+			$holdsThisYear,
+		] = $this->getRecordStats($instanceName, null, $this->thisYear);
 		$interface->assign('activeRecordsThisYear', $activeRecordsThisYear);
 		$interface->assign('loansThisYear', $loansThisYear);
 		$interface->assign('holdsThisYear', $holdsThisYear);
-		list($activeRecordsLastYear, $loansLastYear, $holdsLastYear) = $this->getRecordStats($instanceName, null, $this->lastYear);
+		[
+			$activeRecordsLastYear,
+			$loansLastYear,
+			$holdsLastYear,
+		] = $this->getRecordStats($instanceName, null, $this->lastYear);
 		$interface->assign('activeRecordsLastYear', $activeRecordsLastYear);
 		$interface->assign('loansLastYear', $loansLastYear);
 		$interface->assign('holdsLastYear', $holdsLastYear);
-		list($activeRecordsAllTime, $loansAllTime, $holdsAllTime) = $this->getRecordStats($instanceName, null, null);
+		[
+			$activeRecordsAllTime,
+			$loansAllTime,
+			$holdsAllTime,
+		] = $this->getRecordStats($instanceName, null, null);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 		$interface->assign('loansAllTime', $loansAllTime);
 		$interface->assign('holdsAllTime', $holdsAllTime);
@@ -68,10 +86,9 @@ class Axis360_Dashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return int
 	 */
-	public function getUserStats($instanceName, $month, $year): int
-	{
+	public function getUserStats($instanceName, $month, $year): int {
 		$userUsage = new UserAxis360Usage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -89,10 +106,9 @@ class Axis360_Dashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return array
 	 */
-	public function getRecordStats($instanceName, $month, $year): array
-	{
+	public function getRecordStats($instanceName, $month, $year): array {
 		$usage = new Axis360RecordUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -121,10 +137,9 @@ class Axis360_Dashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return Axis360Stats
 	 */
-	public function getStats($instanceName, $month, $year): Axis360Stats
-	{
+	public function getStats($instanceName, $month, $year): Axis360Stats {
 		$stats = new Axis360Stats();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$stats->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -144,15 +159,14 @@ class Axis360_Dashboard extends Admin_Dashboard
 		$stats->selectAdd('SUM(numApiErrors) as numApiErrors');
 		$stats->selectAdd('SUM(numConnectionFailures) as numConnectionFailures');
 
-		if ($stats->find(true)){
+		if ($stats->find(true)) {
 			return $stats;
-		}else{
+		} else {
 			return new Axis360Stats();
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
@@ -160,13 +174,14 @@ class Axis360_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'axis360';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

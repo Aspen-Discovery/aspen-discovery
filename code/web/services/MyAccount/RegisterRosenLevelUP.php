@@ -10,8 +10,7 @@ require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
 // TO DO: make use of linked accounts
 // TO DO: disambiguate role TEACHER vs PARENT
 
-class MyAccount_RegisterRosenLevelUP extends MyAccount
-{
+class MyAccount_RegisterRosenLevelUP extends MyAccount {
 	private $cookies;
 	private $levelUPResult;
 	private $parent_email;
@@ -28,35 +27,46 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	private $student_school_name;
 	private $student_username;
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		$this->levelUPResult = new stdClass();
-		$this->levelUPResult->interfaceArray = array();
+		$this->levelUPResult->interfaceArray = [];
 		$user = UserAccount::getLoggedInUser();
 		$this->rosenLevelUPSetting = new RosenLevelUPSetting();
-		if (!$this->rosenLevelUPSetting->find(true)){
+		if (!$this->rosenLevelUPSetting->find(true)) {
 			global $logger;
-			$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'Error: Rosen LevelUP is not set up for this Library System', 'isPublicFacing'=> true]);
+			$this->levelUPResult->interfaceArray['message'] = translate([
+				'text' => 'Error: Rosen LevelUP is not set up for this Library System',
+				'isPublicFacing' => true,
+			]);
 			$logger->log('Error: Rosen LevelUP is not set up for this Library System', Logger::LOG_NOTICE);
 			$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 			$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
 			return;
 		}
 
-		$this->rosen_help = translate(['text' => 'For further assistance, use the Help menu.', 'isPublicFacing'=> true]);
+		$this->rosen_help = translate([
+			'text' => 'For further assistance, use the Help menu.',
+			'isPublicFacing' => true,
+		]);
 
 		if ($user) {
 			// Disable form for ineligible patron types
 			$this->student_is_eligible = false;
 			if ($this->rosenLevelUPSetting->lu_eligible_ptypes == '*') {
 				$this->student_is_eligible = true;
-			} else if (preg_match("/\b({$user->patronType})\b/", $this->rosenLevelUPSetting->lu_eligible_ptypes)) {
+			} elseif (preg_match("/\b({$user->patronType})\b/", $this->rosenLevelUPSetting->lu_eligible_ptypes)) {
 				$this->student_is_eligible = true;
 			}
 			if ($this->student_is_eligible == false) {
 				global $logger;
-				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'Error: patron is not eligible to register for Rosen LevelUP.', 'isPublicFacing'=> true]) .' <a href=\"/MyAccount/RegisterRosenLevelUP\">' . translate(['text' => 'Log in with a different Library account', 'isPublicFacing'=> true]) . '</a>';
+				$this->levelUPResult->interfaceArray['message'] = translate([
+						'text' => 'Error: patron is not eligible to register for Rosen LevelUP.',
+						'isPublicFacing' => true,
+					]) . ' <a href=\"/MyAccount/RegisterRosenLevelUP\">' . translate([
+						'text' => 'Log in with a different Library account',
+						'isPublicFacing' => true,
+					]) . '</a>';
 				$logger->log('Error from LevelUP. User ID : ' . $user->id . 'Ineligible user', Logger::LOG_NOTICE);
 				$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
@@ -149,13 +159,23 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 							if ($this->levelUPResult->UploadResponse->status == '200') {
 								global $logger;
 								$this->levelUPResult->interfaceArray['success'] = 'success';
-								$this->levelUPResult->interfaceArray['message'] = translate(['text' => "<p>Congratulations!!! You have successfully registered </p><p>STUDENT Username %1% with </p><p>PARENT Username %2%. </p><p>You will receive an email shortly with these details. </p><p>Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.</p>", 1 => $this->student_username, 2 => $this->parent_username, 'isPublicFacing'=> true]);
+								$this->levelUPResult->interfaceArray['message'] = translate([
+									'text' => "<p>Congratulations!!! You have successfully registered </p><p>STUDENT Username %1% with </p><p>PARENT Username %2%. </p><p>You will receive an email shortly with these details. </p><p>Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.</p>",
+									1 => $this->student_username,
+									2 => $this->parent_username,
+									'isPublicFacing' => true,
+								]);
 								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
 
 								// following successful registration, email the parent with registration information
 								try {
 									$body = $this->parent_first_name . " " . $this->parent_last_name . "\n\n";
-									$body .= translate(['text' => 'Welcome to LevelUP! Your PARENT username: %2%. Your STUDENT\'S username: %1%.', 1 => $this->student_username, 2 => $this->parent_username, 'isPublicFacing'=> true]);
+									$body .= translate([
+										'text' => 'Welcome to LevelUP! Your PARENT username: %2%. Your STUDENT\'S username: %1%.',
+										1 => $this->student_username,
+										2 => $this->parent_username,
+										'isPublicFacing' => true,
+									]);
 									$body_template = $interface->fetch('Emails/rosen-levelup.tpl');
 									$body .= $body_template;
 									require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -170,7 +190,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 								UserAccount::softLogout();
 							} else {
 								global $logger;
-				 				$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
+								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
 								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->UploadResponse->error, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 							}
@@ -182,12 +202,12 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 					foreach ($fields as &$property) {
 						if ($property['type'] == 'section') {
 							foreach ($property['properties'] as &$propertyInSection) {
-								if ($property['type'] != 'storedPassword' && $property['type'] != 'password'){
+								if ($property['type'] != 'storedPassword' && $property['type'] != 'password') {
 									$userValue = $_REQUEST[$propertyInSection['property']];
 									$propertyInSection['default'] = $userValue;
 								}
 							}
-						} elseif ($property['type'] != 'storedPassword' && $property['type'] != 'password'){
+						} elseif ($property['type'] != 'storedPassword' && $property['type'] != 'password') {
 							$userValue = $_REQUEST[$property['property']];
 							$property['default'] = $userValue;
 						}
@@ -215,44 +235,120 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	}
 
 	function getLevelUPRegistrationFields() {
-		$fields = array();
-		$fields[] = array('property' => 'student_username', 'default' => $this->student_username, 'type' => 'text', 'label' => 'Student Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'student_pw', 'type' => 'storedPassword', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
-		$fields[] = array('property' => 'student_first_name', 'default' => $this->student_first_name, 'type' => 'text', 'label' => 'Student First Name', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'student_last_name', 'default' => $this->student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
-		$locationList = array();
+		$fields = [];
+		$fields[] = [
+			'property' => 'student_username',
+			'default' => $this->student_username,
+			'type' => 'text',
+			'label' => 'Student Rosen LevelUP Username',
+			'maxLength' => 40,
+			'required' => true,
+		];
+		$fields[] = [
+			'property' => 'student_pw',
+			'type' => 'storedPassword',
+			'label' => 'Student Rosen LevelUP Password',
+			'maxLength' => 40,
+			'required' => true,
+			'repeat' => true,
+		];
+		$fields[] = [
+			'property' => 'student_first_name',
+			'default' => $this->student_first_name,
+			'type' => 'text',
+			'label' => 'Student First Name',
+			'maxLength' => 40,
+			'required' => true,
+		];
+		$fields[] = [
+			'property' => 'student_last_name',
+			'default' => $this->student_last_name,
+			'type' => 'text',
+			'label' => 'Student Last Name',
+			'maxLength' => 40,
+			'required' => true,
+		];
+		$locationList = [];
 		$locationList[0] = "school not listed";
 		$locationList[$this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code] = $this->student_school_name;
-		$fields[] = array('property' => 'student_school', 'default' => $this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
-		$studentGradeLevelsList = array();
+		$fields[] = [
+			'property' => 'student_school',
+			'default' => $this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code,
+			'type' => 'enum',
+			'label' => 'Student School',
+			'values' => $locationList,
+			'required' => true,
+		];
+		$studentGradeLevelsList = [];
 		$studentGradeLevelsList['K'] = 'Pre-K and K';
 		$studentGradeLevelsList['1'] = '1';
 		$studentGradeLevelsList['2'] = '2+';
-		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => $studentGradeLevelsList, 'required' => true);
-		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
-		$fields[] = array('property' => 'parent_first_name', 'default' => $this->parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'parent_last_name', 'default' => $this->parent_last_name, 'type' => 'text', 'label' => 'Parent Last Name', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'parent_email', 'default' => $this->parent_email, 'type' => 'email', 'label' => 'Parent Email', 'maxLength' => 128, 'required' => true);
+		$fields[] = [
+			'property' => 'student_grade_level',
+			'default' => $this->student_grade_level,
+			'type' => 'enum',
+			'label' => 'Student Grade Level, K-2',
+			'values' => $studentGradeLevelsList,
+			'required' => true,
+		];
+		$fields[] = [
+			'property' => 'parent_username',
+			'default' => $this->parent_username,
+			'type' => 'text',
+			'label' => 'Parent Rosen LevelUP Username',
+			'maxLength' => 40,
+			'required' => true,
+		];
+		$fields[] = [
+			'property' => 'parent_pw',
+			'type' => 'storedPassword',
+			'label' => 'Parent Rosen LevelUP Password',
+			'maxLength' => 40,
+			'required' => true,
+			'repeat' => true,
+		];
+		$fields[] = [
+			'property' => 'parent_first_name',
+			'default' => $this->parent_first_name,
+			'type' => 'text',
+			'label' => 'Parent First Name',
+			'maxLength' => 40,
+			'required' => true,
+		];
+		$fields[] = [
+			'property' => 'parent_last_name',
+			'default' => $this->parent_last_name,
+			'type' => 'text',
+			'label' => 'Parent Last Name',
+			'maxLength' => 40,
+			'required' => true,
+		];
+		$fields[] = [
+			'property' => 'parent_email',
+			'default' => $this->parent_email,
+			'type' => 'email',
+			'label' => 'Parent Email',
+			'maxLength' => 128,
+			'required' => true,
+		];
 		return $fields;
 	}
 
-	function levelUPLogin()
-	{
+	function levelUPLogin() {
 		$curl = curl_init($this->rosenLevelUPSetting->lu_api_host . '/api/login');
-		curl_setopt_array($curl, array(
+		curl_setopt_array($curl, [
 			CURLOPT_HEADER => true,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_POSTFIELDS => "{\"username\": \"" . $this->rosenLevelUPSetting->lu_api_un . "\",\"password\": \"" . $this->rosenLevelUPSetting->lu_api_pw . "\"}",
-			CURLOPT_HTTPHEADER => array(
-				"Content-Type: application/json"
-			),
-		));
+			CURLOPT_HTTPHEADER => [
+				"Content-Type: application/json",
+			],
+		]);
 		$loginResponse = curl_exec($curl);
 		$this->levelUPResult->LoginResponse = $this->levelUPParseResponse('Login', $curl, $loginResponse);
 		curl_close($curl);
 		preg_match_all('/Set-Cookie:\s*([^;]*)/mi', $this->levelUPResult->LoginResponse, $matches);
-		$cookies = array();
+		$cookies = [];
 		foreach ($matches[1] as $item) {
 			parse_str($item, $cookie);
 			$cookies = array_merge($cookies, $cookie);
@@ -272,19 +368,31 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			$parseResponse->content = json_decode($responseBody, true);
 			$parseResponse->error = '';
 			$parseResponse->status = $responseCode;
-			$parseResponse->message = translate(['text' => "Rosen LevelUP User Account API yielded HTTP response code", 'isPublicFacing'=> true]) . $parseResponse->status;
+			$parseResponse->message = translate([
+					'text' => "Rosen LevelUP User Account API yielded HTTP response code",
+					'isPublicFacing' => true,
+				]) . $parseResponse->status;
 		} elseif ($responseCode == '404') {
 			$parseResponse->content = json_decode($responseBody, true);
 			$parseResponse->error = 'Not found';
 			$parseResponse->status = '404';
-			$parseResponse->message = translate(['text' => "Rosen LevelUP User Account API yielded HTTP response code", 'isPublicFacing'=> true]) . $parseResponse->status;
+			$parseResponse->message = translate([
+					'text' => "Rosen LevelUP User Account API yielded HTTP response code",
+					'isPublicFacing' => true,
+				]) . $parseResponse->status;
 		} elseif ($responseCode) {
 			$parseResponse->status = $responseCode;
-			$parseResponse->message = translate(['text' => "Rosen LevelUP User Account API yielded HTTP response code", 'isPublicFacing'=> true]) . $parseResponse->status;
+			$parseResponse->message = translate([
+					'text' => "Rosen LevelUP User Account API yielded HTTP response code",
+					'isPublicFacing' => true,
+				]) . $parseResponse->status;
 		} else {
 			$parseResponse = new stdClass();
 			$parseResponse->error = 'Unavailable';
-			$parseResponse->message = translate(['text' => 'Rosen LevelUP User Account API is not currently available', 'isPublicFacing'=> true]);
+			$parseResponse->message = translate([
+				'text' => 'Rosen LevelUP User Account API is not currently available',
+				'isPublicFacing' => true,
+			]);
 		}
 		return $parseResponse;
 	}
@@ -292,25 +400,43 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	function levelUPQuery($username, $role = 'STUDENT') {
 		/* query LevelUP username */
 		$curl = curl_init($this->rosenLevelUPSetting->lu_api_host . '/external/users/' . $username);
-		curl_setopt_array($curl, array(
+		curl_setopt_array($curl, [
 			CURLOPT_HEADER => true,
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_HTTPHEADER => array(
-				'Cookie: COOKIE-BEARER=' . $this->levelUPResult->cookies['COOKIE-BEARER']
-			),
-		));
+			CURLOPT_HTTPHEADER => [
+				'Cookie: COOKIE-BEARER=' . $this->levelUPResult->cookies['COOKIE-BEARER'],
+			],
+		]);
 		$response = curl_exec($curl);
 		$queryResponse = $this->levelUPParseResponse('Query', $curl, $response);
 		curl_close($curl);
 		$queryResponse->message = '';
 		if ($queryResponse->status == '404') { // i.e., username not found
-			$this->levelUPResult->{strtolower($role)."_username_avail"} = 1;
+			$this->levelUPResult->{strtolower($role) . "_username_avail"} = 1;
 		} elseif ($queryResponse->status == '200') { // i.e., username found
 			$queryResponse->error = $role . ' Username already exists.';
 			if ($role == 'STUDENT') {
-				$queryResponse->message = translate(['text' => "%1% %2% has already been registered with Rosen LevelUP. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username for this %1%", 1 => translate(['text'=>$role,'isPublicFacing'=>true, 'inAttribute'=>true]), 2 => $username, 'isPublicFacing'=> true]);
+				$queryResponse->message = translate([
+					'text' => "%1% %2% has already been registered with Rosen LevelUP. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username for this %1%",
+					1 => translate([
+						'text' => $role,
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]),
+					2 => $username,
+					'isPublicFacing' => true,
+				]);
 			} elseif ($role == 'PARENT') {
-				$queryResponse->message = translate(['text' => "%1% %2% has already been registered with Rosen LevelUP with a different email address. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username or a different email for this %1%", 1 => translate(['text'=>$role,'isPublicFacing'=>true, 'inAttribute'=>true]), 2 => $username, 'isPublicFacing'=> true]);
+				$queryResponse->message = translate([
+					'text' => "%1% %2% has already been registered with Rosen LevelUP with a different email address. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username or a different email for this %1%",
+					1 => translate([
+						'text' => $role,
+						'isPublicFacing' => true,
+						'inAttribute' => true,
+					]),
+					2 => $username,
+					'isPublicFacing' => true,
+				]);
 			}
 		} else {
 			// TO DO: figure out what the other cases are and implement them
@@ -372,26 +498,25 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$json_string .= '}]\'';
 		$curl = curl_init($this->rosenLevelUPSetting->lu_api_host . '/external/users/upload');
 
-		curl_setopt_array($curl, array(
+		curl_setopt_array($curl, [
 			CURLOPT_HEADER => true,
 			CURLOPT_POST => true,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_POSTFIELDS => $json_string,
-			CURLOPT_HTTPHEADER => array(
+			CURLOPT_HTTPHEADER => [
 				'X-XSRF-TOKEN: ' . $this->levelUPResult->cookies['XSRF-TOKEN'],
 				'Cookie: XSRF-TOKEN=' . $this->levelUPResult->cookies['XSRF-TOKEN'],
 				'Cookie: COOKIE-BEARER=' . $this->levelUPResult->cookies['COOKIE-BEARER'],
-				'Content-Type: application/json'
-			),
-		));
+				'Content-Type: application/json',
+			],
+		]);
 		$response = curl_exec($curl);
 		$uploadResponse = $this->levelUPParseResponse('Upload', $curl, $response);
 		curl_close($curl);
 		return $uploadResponse;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

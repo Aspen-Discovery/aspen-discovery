@@ -3,35 +3,30 @@
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/ILS/IlsExtractLogEntry.php';
 
-class ILS_IndexingLog extends Admin_IndexingLog
-{
-	function getIndexLogEntryObject(): BaseLogEntry
-	{
+class ILS_IndexingLog extends Admin_IndexingLog {
+	function getIndexLogEntryObject(): BaseLogEntry {
 		return new IlsExtractLogEntry();
 	}
 
-	function getTemplateName() : string
-	{
+	function getTemplateName(): string {
 		return 'ilsExtractLog.tpl';
 	}
 
-	function getTitle() : string
-	{
+	function getTitle(): string {
 		return 'ILS Export Log';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'ILS';
 	}
 
-	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
-		if ($indexingObject instanceof IlsExtractLogEntry){
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
+		if ($indexingObject instanceof IlsExtractLogEntry) {
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
@@ -39,8 +34,7 @@ class ILS_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ils_integration';
 	}
 }

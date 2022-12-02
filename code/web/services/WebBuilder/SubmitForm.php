@@ -1,19 +1,18 @@
 <?php
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
-class WebBuilder_SubmitForm extends Action
-{
+class WebBuilder_SubmitForm extends Action {
 	private $form;
-	function launch()
-	{
+
+	function launch() {
 		require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 		$id = strip_tags($_REQUEST['id']);
 		$this->form = new CustomForm();
 		$this->form->id = $id;
-		if (!$this->form->find(true)){
+		if (!$this->form->find(true)) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -31,7 +30,7 @@ class WebBuilder_SubmitForm extends Action
 						$interface->assign('submissionError', 'The CAPTCHA response was incorrect, please try again.');
 						$processForm = false;
 					}
-				}else{
+				} else {
 					$interface->assign('submissionError', 'You must be logged in to submit a response, please login and try again.');
 					$processForm = false;
 				}
@@ -45,9 +44,9 @@ class WebBuilder_SubmitForm extends Action
 				DataObjectUtil::updateFromUI($serializedData, $structure);
 
 				//Convert the form values to JSON
-				if ($this->form->includeIntroductoryTextInEmail){
+				if ($this->form->includeIntroductoryTextInEmail) {
 					$htmlData = '<div>' . $this->form->introText . '</div>';
-				}else{
+				} else {
 					$htmlData = '';
 				}
 				$htmlData .= $serializedData->getPrintableHtmlData($structure);
@@ -92,23 +91,25 @@ class WebBuilder_SubmitForm extends Action
 				}
 				if (empty($this->form->submissionResultText)) {
 					$interface->assign('submissionResultText', 'Thank you for your response.');
-				}else{
+				} else {
 					$interface->assign('submissionResultText', $this->form->submissionResultText);
 				}
 			}
-		}else{
+		} else {
 			$interface->assign('submissionError', 'The form was not submitted correctly');
 		}
 
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', $this->form->title . ' Submission', true);
-		if (UserAccount::userHasPermission(['Administer All Custom Forms', 'Administer Library Custom Forms'])){
+		if (UserAccount::userHasPermission([
+			'Administer All Custom Forms',
+			'Administer Library Custom Forms',
+		])) {
 			$breadcrumbs[] = new Breadcrumb('/WebBuilder/CustomForms?id=' . $this->form->id . '&objectAction=edit', 'Edit', true);
 		}
 		return $breadcrumbs;

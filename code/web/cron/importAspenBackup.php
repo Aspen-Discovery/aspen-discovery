@@ -13,9 +13,9 @@ $dbName = $configArray['Database']['database_aspen_dbname'];
 
 //List the files to import
 $sqlBackupDir = "/data/aspen-discovery/$serverName/sql_backup/";
-if (file_exists($sqlBackupDir)){
+if (file_exists($sqlBackupDir)) {
 	$exportFiles = scandir($sqlBackupDir);
-	foreach ($exportFiles as $exportFile){
+	foreach ($exportFiles as $exportFile) {
 		if ($exportFile != '.' && $exportFile != '..' && is_file($sqlBackupDir . $exportFile)) {
 			if (strpos($exportFile, ".sql") > 0) {
 				echo("Importing $exportFile\n");

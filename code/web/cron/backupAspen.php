@@ -15,14 +15,14 @@ $dbName = $configArray['Database']['database_aspen_dbname'];
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 $curDateTime = date('ymdHis');
-foreach ($allTables as $table){
+foreach ($allTables as $table) {
 	$exportFile = "/tmp/$serverName.$curDateTime.$table.sql";
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $exportFile";
 	exec($dumpCommand);
 }
-if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")){
+if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
 }
 
@@ -30,9 +30,9 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")){
 exec("cd /tmp;tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz $serverName.$curDateTime.*");
 
 //Cleanup the files
-foreach ($allTables as $table){
+foreach ($allTables as $table) {
 	$exportFile = "/tmp/$serverName.$curDateTime.$table.sql";
-	if (file_exists($exportFile)){
+	if (file_exists($exportFile)) {
 		unlink($exportFile);
 	}
 }

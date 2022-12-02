@@ -3,11 +3,9 @@
 include_once ROOT_DIR . '/services/Admin/Admin.php';
 include_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
-class Enrichment_NYTLists extends Admin_Admin
-{
+class Enrichment_NYTLists extends Admin_Admin {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
@@ -31,14 +29,14 @@ class Enrichment_NYTLists extends Admin_Admin
 				return strcasecmp($subjectArray0->display_name, $subjectArray1->display_name);
 			};
 
-			$prevYear = date("Y-m-d",strtotime("-1 year"));
+			$prevYear = date("Y-m-d", strtotime("-1 year"));
 			$availableLists = $availableLists->results;
 			usort($availableLists, $availableListsCompareFunction);
 
 			// only fetch list of lists that have been updated by NYT in the last year (used for create/update dropdown)
 			$activeAvailableLists = [];
-			foreach($availableLists as $availableList) {
-				if($availableList->newest_published_date > $prevYear) {
+			foreach ($availableLists as $availableList) {
+				if ($availableList->newest_published_date > $prevYear) {
 					$activeAvailableLists[] = $availableList;
 				}
 			}
@@ -54,7 +52,7 @@ class Enrichment_NYTLists extends Admin_Admin
 					//Find and update the correct Aspen Discovery list, creating a new list as needed.
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
-					try{
+					try {
 						$results = $listApi->createUserListFromNYT($selectedList, null);
 						if ($results['success'] == false) {
 							$interface->assign('error', $results['message']);
@@ -62,7 +60,7 @@ class Enrichment_NYTLists extends Admin_Admin
 							$interface->assign('successMessage', $results['message']);
 						}
 						sleep(7);
-					}catch (Exception $e){
+					} catch (Exception $e) {
 						$interface->assign('error', $e->getMessage());
 					}
 				}
@@ -74,7 +72,7 @@ class Enrichment_NYTLists extends Admin_Admin
 			$nyTimesUser = new User();
 			$nyTimesUser->username = 'nyt_user';
 			if ($nyTimesUser->find(1)) {
-				$prevYear = date("Y-m-d",strtotime("-1 year"));
+				$prevYear = date("Y-m-d", strtotime("-1 year"));
 				// Get User Lists
 				$nyTimesUserLists = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
@@ -84,14 +82,14 @@ class Enrichment_NYTLists extends Admin_Admin
 				$existingLists = $nyTimesUserLists->fetchAll();
 
 				$activeNYTLists = [];
-				foreach($existingLists as $existingList) {
+				foreach ($existingLists as $existingList) {
 					$activeNYTList = new UserList();
 					$activeNYTList->id = $existingList->id;
 					$activeNYTList->find();
-					while($activeNYTList->fetch()) {
+					while ($activeNYTList->fetch()) {
 						$nytListModified = strtotime($activeNYTList->nytListModified);
 						$lastModified = date('Y-m-d', $nytListModified);
-						if($lastModified >= $prevYear) {
+						if ($lastModified >= $prevYear) {
 							$activeNYTLists[] = $activeNYTList;
 						} else {
 							$activeNYTList->delete();
@@ -105,8 +103,7 @@ class Enrichment_NYTLists extends Admin_Admin
 		$this->display('nytLists.tpl', 'Lists from New York Times');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Catalog / Grouped Works');
@@ -114,13 +111,11 @@ class Enrichment_NYTLists extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'third_party_enrichment';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('View New York Times Lists');
 	}
 }

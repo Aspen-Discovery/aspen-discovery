@@ -14,7 +14,7 @@ class Donations_NewDonation extends Action {
 		$donationSettings->find();
 
 
-		if($donationSettings->find(true)){
+		if ($donationSettings->find(true)) {
 			$donation = new Donation();
 			$donation->donationSettingId = $donationSettings->id;
 			$donation->donateToLibraryId = $library->libraryId;
@@ -78,7 +78,7 @@ class Donations_NewDonation extends Action {
 
 	}
 
-	function getBreadcrumbs() : array {
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', 'Make a Donation', true);

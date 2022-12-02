@@ -4,73 +4,61 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/VDX/VdxHoldGroup.php';
 
-class VDX_VDXHoldGroups extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class VDX_VDXHoldGroups extends ObjectEditor {
+	function getObjectType(): string {
 		return 'VdxHoldGroup';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'VDXHoldGroups';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'VDX';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'VDX Hold Groups';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new VdxHoldGroup();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
-		$objectList = array();
+		$objectList = [];
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'id asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return VdxHoldGroup::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ill_integration', 'Interlibrary Loan');
@@ -78,13 +66,11 @@ class VDX_VDXHoldGroups extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ill_integration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer VDX Hold Groups');
 	}
 }

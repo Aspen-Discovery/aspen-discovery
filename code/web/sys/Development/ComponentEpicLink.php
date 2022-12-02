@@ -26,33 +26,33 @@ class ComponentEpicLink extends DataObject {
 			$epicList[$epic->id] = $epic->name;
 		}
 
-		return array(
-			'id' => array(
+		return [
+			'id' => [
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
-			),
-			'epicId' => array(
+				'description' => 'The unique id',
+			],
+			'epicId' => [
 				'property' => 'epicId',
 				'type' => 'enum',
 				'values' => $epicList,
 				'label' => 'Epic',
 				'description' => 'The epic related to the component',
-				'required' => true
-			),
-			'componentId' => array(
+				'required' => true,
+			],
+			'componentId' => [
 				'property' => 'componentId',
 				'type' => 'enum',
 				'values' => $componentList,
 				'label' => 'Task',
 				'description' => 'The component related to the ticket',
-				'required' => true
-			),
-		);
+				'required' => true,
+			],
+		];
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		if ($context == 'relatedEpics') {
 			return '/Development/Epics?objectAction=edit&id=' . $this->epicId;
 		} else {

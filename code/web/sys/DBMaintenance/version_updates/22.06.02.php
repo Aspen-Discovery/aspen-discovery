@@ -1,7 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates22_06_02() : array
-{
+function getUpdates22_06_02(): array {
 	$curTime = time();
 	return [
 		/*'name' => [
@@ -16,7 +15,8 @@ function getUpdates22_06_02() : array
 			'description' => 'Force records to reindex if the language was |||',
 			'sql' => [
 				"INSERT INTO grouped_work_scheduled_index (permanent_id,processed, indexAfter) SELECT permanent_id, 0, $curTime FROM grouped_work where permanent_id like '%|||'",
-			]
-		], //force_reindex_of_records_with_pipe_language
+			],
+		],
+		//force_reindex_of_records_with_pipe_language
 	];
 }

@@ -4,16 +4,14 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
 
-class Axis360RecordDriver extends GroupedWorkSubDriver
-{
+class Axis360RecordDriver extends GroupedWorkSubDriver {
 	private $id;
 	/** @var Axis360Title */
 	private $axis360Title;
 	private $axis360RawMetadata;
 	private $valid;
 
-	public function __construct($recordId, $groupedWork = null)
-	{
+	public function __construct($recordId, $groupedWork = null) {
 		$this->id = $recordId;
 
 		$this->axis360Title = new Axis360Title();
@@ -30,16 +28,14 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	public function getIdWithSource()
-	{
+	public function getIdWithSource() {
 		return 'axis360:' . $this->id;
 	}
 
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */
-	public function loadGroupedWork()
-	{
+	public function loadGroupedWork() {
 		if ($this->groupedWork == null) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -54,8 +50,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'Axis360';
 	}
 
@@ -67,8 +62,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		global $interface;
 		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
@@ -83,8 +77,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 *
 	 * @return  string
 	 */
-	public function getTitle()
-	{
+	public function getTitle() {
 		$title = $this->axis360Title->title;
 		$subtitle = $this->getSubtitle();
 		if (strlen($subtitle) > 0) {
@@ -96,8 +89,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	/**
 	 * @return  string
 	 */
-	public function getAuthor()
-	{
+	public function getAuthor() {
 		return $this->axis360Title->primaryAuthor;
 	}
 
@@ -108,9 +100,8 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 * @access  public
 	 * @return  array              Array of elements in the table of contents
 	 */
-	public function getTableOfContents()
-	{
-		return array();
+	public function getTableOfContents() {
+		return [];
 	}
 
 	/**
@@ -121,18 +112,15 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->id;
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		return '';
 	}
 
-	public function getMoreDetailsOptions()
-	{
+	public function getMoreDetailsOptions() {
 		global $interface;
 
 		$isbn = $this->getCleanISBN();
@@ -151,54 +139,52 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 			if (count($relatedRecords) > 1) {
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$interface->assign('workId', $groupedWorkDriver->getPermanentId());
-				$moreDetailsOptions['otherEditions'] = array(
+				$moreDetailsOptions['otherEditions'] = [
 					'label' => 'Other Editions and Formats',
 					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-					'hideByDefault' => false
-				);
+					'hideByDefault' => false,
+				];
 			}
 		}
 
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
 			'body' => $interface->fetch('Axis360/view-more-details.tpl'),
-		);
+		];
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects'] = array(
+		$moreDetailsOptions['subjects'] = [
 			'label' => 'Subjects',
 			'body' => $interface->fetch('RecordDrivers/Axis360/view-subjects.tpl'),
-		);
-		$moreDetailsOptions['citations'] = array(
+		];
+		$moreDetailsOptions['citations'] = [
 			'label' => 'Citations',
 			'body' => $interface->fetch('Record/cite.tpl'),
-		);
+		];
 
 		if ($interface->getVariable('showStaffView')) {
-			$moreDetailsOptions['staff'] = array(
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'onShow' => "AspenDiscovery.Axis360.getStaffView('{$this->id}');",
 				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
-			);
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getISBNs()
-	{
+	public function getISBNs() {
 		return $this->getFieldValue('isbn');
 	}
 
-	public function getISSNs()
-	{
-		return array();
+	public function getISSNs() {
+		return [];
 	}
 
 	protected $_actions = null;
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
-	{
+
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null) {
 		if ($this->_actions === null) {
-			$this->_actions = array();
+			$this->_actions = [];
 			//Check to see if the title is on hold or checked out to the patron.
 			$loadDefaultActions = true;
 			if (UserAccount::isLoggedIn()) {
@@ -209,19 +195,25 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 
 			if ($loadDefaultActions) {
 				if ($isAvailable) {
-					$this->_actions[] = array(
-						'title' => translate(['text'=>'Check Out Axis 360','isPublicFacing'=>true]),
+					$this->_actions[] = [
+						'title' => translate([
+							'text' => 'Check Out Axis 360',
+							'isPublicFacing' => true,
+						]),
 						'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
 						'requireLogin' => false,
-						'type' => 'axis360_checkout'
-					);
+						'type' => 'axis360_checkout',
+					];
 				} else {
-					$this->_actions[] = array(
-						'title' => translate(['text'=>'Place Hold Axis 360','isPublicFacing'=>true]),
+					$this->_actions[] = [
+						'title' => translate([
+							'text' => 'Place Hold Axis 360',
+							'isPublicFacing' => true,
+						]),
 						'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
 						'requireLogin' => false,
-						'type' => 'axis360_hold'
-					);
+						'type' => 'axis360_hold',
+					];
 				}
 			}
 		}
@@ -232,27 +224,26 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 * Returns an array of contributors to the title, ideally with the role appended after a pipe symbol
 	 * @return array
 	 */
-	function getContributors()
-	{
+	function getContributors() {
 		// TODO: Implement getContributors() method.
-		$contributors = array();
+		$contributors = [];
 		if (!empty($this->axis360RawMetadata->authors)) {
 			$authors = $this->axis360RawMetadata->authors;
-			if (is_array($authors->author)){
+			if (is_array($authors->author)) {
 				foreach ($authors->author as $author) {
 					$contributors[] = $author;
 				}
-			}else{
+			} else {
 				$contributors[] = $authors->author;
 			}
 		}
 		if (!empty($this->axis360RawMetadata->narrators)) {
 			$authors = $this->axis360RawMetadata->narrators;
-			if (is_array($authors->author)){
+			if (is_array($authors->author)) {
 				foreach ($authors->author as $author) {
 					$contributors[] = $author . '|Narrator';
 				}
-			}else{
+			} else {
 				$contributors[] = $authors->author . '|Narrator';
 			}
 		}
@@ -265,22 +256,20 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 * @access  protected
 	 * @return  array
 	 */
-	function getEditions()
-	{
+	function getEditions() {
 		// No specific information provided by Axis 360
-		return array();
+		return [];
 	}
 
 	/**
 	 * @return array
 	 */
-	function getFormats()
-	{
+	function getFormats() {
 		if ($this->axis360RawMetadata->formatType == 'eBook') {
 			return ['eBook'];
-		}else if ($this->axis360RawMetadata->formatType == 'eAudiobook') {
+		} elseif ($this->axis360RawMetadata->formatType == 'eAudiobook') {
 			return ['eAudiobook'];
-		}else {
+		} else {
 			return ['Unknown'];
 		}
 	}
@@ -290,24 +279,21 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 *
 	 * @return  array
 	 */
-	function getFormatCategory()
-	{
+	function getFormatCategory() {
 		if ($this->axis360RawMetadata->formatType == 'eBook') {
 			return ['eBook'];
-		}else if ($this->axis360RawMetadata->formatType == 'eAudiobook') {
+		} elseif ($this->axis360RawMetadata->formatType == 'eAudiobook') {
 			return ['Audio Books'];
-		}else {
+		} else {
 			return ['Unknown'];
 		}
 	}
 
-	public function getLanguage()
-	{
+	public function getLanguage() {
 		return 'English';
 	}
 
-	public function getNumHolds() : int
-	{
+	public function getNumHolds(): int {
 		//TODO:  Check to see if we can determine number of holds on a title
 		return 0;
 	}
@@ -315,57 +301,50 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	/**
 	 * @return array
 	 */
-	function getPlacesOfPublication()
-	{
+	function getPlacesOfPublication() {
 		//Not provided within the metadata
-		return array();
+		return [];
 	}
 
 	/**
 	 * Returns the primary author of the work
 	 * @return String
 	 */
-	function getPrimaryAuthor()
-	{
+	function getPrimaryAuthor() {
 		return $this->axis360Title->primaryAuthor;
 	}
 
 	/**
 	 * @return array
 	 */
-	function getPublishers()
-	{
+	function getPublishers() {
 		return [];
 	}
 
 	/**
 	 * @return array
 	 */
-	function getPublicationDates()
-	{
+	function getPublicationDates() {
 		return [];
 	}
 
-	public function getRecordType()
-	{
+	public function getRecordType() {
 		return 'axis360';
 	}
 
-	function getRelatedRecord()
-	{
+	function getRelatedRecord() {
 		$id = 'axis360:' . $this->id;
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
-	public function getSemanticData()
-	{
+	public function getSemanticData() {
 		// Schema.org
 		// Get information about the record
 		$relatedRecord = $this->getRelatedRecord();
 		if ($relatedRecord != null) {
 			require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 			$linkedDataRecord = new LDRecordOffer($relatedRecord);
-			$semanticData [] = array(
+			$semanticData [] = [
 				'@context' => 'http://schema.org',
 				'@type' => $linkedDataRecord->getWorkType(),
 				'name' => $this->getTitle(),
@@ -373,8 +352,8 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 				'bookEdition' => $this->getEditions(),
 				'isAccessibleForFree' => true,
 				'image' => $this->getBookcoverUrl('medium'),
-				"offers" => $linkedDataRecord->getOffers()
-			);
+				"offers" => $linkedDataRecord->getOffers(),
+			];
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
@@ -383,7 +362,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
 			return $semanticData;
-		}else{
+		} else {
 			return null;
 		}
 	}
@@ -393,8 +372,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 *
 	 * @return string
 	 */
-	function getShortTitle()
-	{
+	function getShortTitle() {
 		return $this->axis360Title->title;
 	}
 
@@ -403,8 +381,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 *
 	 * @return string
 	 */
-	function getSubtitle()
-	{
+	function getSubtitle() {
 		if (!empty($this->axis360RawMetadata->subtitle)) {
 			return $this->axis360RawMetadata->subtitle;
 		} else {
@@ -412,25 +389,23 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	function isValid()
-	{
+	function isValid() {
 		return $this->valid;
 	}
 
-	function loadSubjects()
-	{
+	function loadSubjects() {
 		$subjects = [];
 		$rawSubjects = $this->getMetadataFieldArray('subject');
-		foreach ($rawSubjects as $key => $subject){
+		foreach ($rawSubjects as $key => $subject) {
 			$subjects[$key] = str_replace('/', ' -- ', $subject);
 		}
 		global $interface;
 		$interface->assign('subjects', $subjects);
 	}
 
-	function getMetadataFieldArray($fieldName){
-		foreach ($this->axis360RawMetadata->fields as $fieldInfo){
-			if ($fieldInfo->name == $fieldName){
+	function getMetadataFieldArray($fieldName) {
+		foreach ($this->axis360RawMetadata->fields as $fieldInfo) {
+			if ($fieldInfo->name == $fieldName) {
 				return $fieldInfo->values;
 			}
 		}
@@ -441,23 +416,21 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 * @param User $patron
 	 * @return string mixed
 	 */
-	public function getAccessOnlineLinkUrl($patron)
-	{
+	public function getAccessOnlineLinkUrl($patron) {
 		global $configArray;
 		return $configArray['Site']['url'] . '/Axis360/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
 	}
 
-	function getStatusSummary()
-	{
+	function getStatusSummary() {
 		$relatedRecord = $this->getRelatedRecord();
-		$statusSummary = array();
-		if ($relatedRecord == null){
+		$statusSummary = [];
+		if ($relatedRecord == null) {
 			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
 			$statusSummary['class'] = 'unavailable';
 			$statusSummary['showPlaceHold'] = false;
 			$statusSummary['showCheckout'] = false;
-		}else{
+		} else {
 			if ($relatedRecord->getAvailableCopies() > 0) {
 				$statusSummary['status'] = "Available from Axis 360";
 				$statusSummary['available'] = true;
@@ -475,9 +448,9 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		return $statusSummary;
 	}
 
-	function getFieldValue($fieldName){
-		foreach ($this->axis360RawMetadata->fields as $field){
-			if ($field->name == $fieldName){
+	function getFieldValue($fieldName) {
+		foreach ($this->axis360RawMetadata->fields as $field) {
+			if ($field->name == $fieldName) {
 				return $field->values;
 			}
 		}

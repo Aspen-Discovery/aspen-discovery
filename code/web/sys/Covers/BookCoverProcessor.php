@@ -1,6 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
-class BookCoverProcessor{
+
+class BookCoverProcessor {
 	/**
 	 * @var BookCoverInfo
 	 */
@@ -29,8 +30,7 @@ class BookCoverProcessor{
 	private $timer;
 	private $doTimings;
 
-	public function loadCover($configArray, $timer, $logger)
-	{
+	public function loadCover($configArray, $timer, $logger) {
 		$this->configArray = $configArray;
 		$this->timer = $timer;
 		$this->doTimings = $this->configArray['System']['coverTimings'];
@@ -65,10 +65,10 @@ class BookCoverProcessor{
 			if ($this->getLibraryCalendarCover($this->id)) {
 				return true;
 			}
-        } elseif ($this->type == 'springshare_libcal_event') {
-            if ($this->getSpringshareLibCalCover($this->id)) {
-                return true;
-            }
+		} elseif ($this->type == 'springshare_libcal_event') {
+			if ($this->getSpringshareLibCalCover($this->id)) {
+				return true;
+			}
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
@@ -88,12 +88,12 @@ class BookCoverProcessor{
 				if ($this->getOverDriveCover()) {
 					return true;
 				}
-			} else if ($this->type == 'hoopla') {
+			} elseif ($this->type == 'hoopla') {
 				//Will exit if we find a cover
 				if ($this->getHooplaCover($this->id)) {
 					return true;
 				}
-			} else if ($this->type == 'cloud_library') {
+			} elseif ($this->type == 'cloud_library') {
 				//Will exit if we find a cover
 				if ($this->getCloudLibraryCover($this->id, true)) {
 					return true;
@@ -118,24 +118,24 @@ class BookCoverProcessor{
 				if ($this->getZinioCover($this->type . ':' . $this->id)) {
 					return true;
 				}
-			} elseif (array_key_exists($this->type, $sideLoadSettings)){
+			} elseif (array_key_exists($this->type, $sideLoadSettings)) {
 				if ($this->getSideLoadedCover($this->id)) {
 					return true;
 				}
 			}
 
-			if ($this->type == 'grouped_work' && $this->getUploadedGroupedWorkCover($this->id)){
+			if ($this->type == 'grouped_work' && $this->getUploadedGroupedWorkCover($this->id)) {
 				return true;
-			}elseif ($this->type != 'grouped_work'){
+			} elseif ($this->type != 'grouped_work') {
 				//Check to see if we have have an uploaded cover for the work
-				if ($this->loadGroupedWork()){
-					if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
+				if ($this->loadGroupedWork()) {
+					if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())) {
 						return true;
 					}
 				}
 			}
 
-			if ($this->type == 'list' && $this->getUploadedListCover($this->id)){
+			if ($this->type == 'list' && $this->getUploadedListCover($this->id)) {
 				return true;
 			}
 
@@ -157,13 +157,16 @@ class BookCoverProcessor{
 		return $this->getDefaultCover();
 	}
 
-	private function getHooplaCover($id){
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(":", $id);
+	private function getHooplaCover($id) {
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		$driver = new HooplaRecordDriver($id);
-		if ($driver->isValid()){
+		if ($driver->isValid()) {
 			$coverUrl = $driver->getHooplaCoverUrl();
 			return $this->processImageURL('hoopla', $coverUrl, true);
 		}
@@ -171,8 +174,8 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getSideLoadedCover($sourceAndId){
-		if (strpos($sourceAndId, ':') !== false){
+	private function getSideLoadedCover($sourceAndId) {
+		if (strpos($sourceAndId, ':') !== false) {
 			// Side-loaded Record requires both source & id
 
 			require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
@@ -185,15 +188,15 @@ class BookCoverProcessor{
 						$coverUrl = null;
 						if ($linkField->getSubfield('u') != null) {
 							$coverUrl = $linkField->getSubfield('u')->getData();
-						}elseif ($linkField->getSubfield('a') != null) {
+						} elseif ($linkField->getSubfield('a') != null) {
 							$coverUrl = $linkField->getSubfield('a')->getData();
 						}
-						if ($coverUrl != null){
+						if ($coverUrl != null) {
 							$isImage = false;
 							$extension = substr($coverUrl, -4);
 							if ((strcasecmp($extension, '.jpg') === 0) || (strcasecmp($extension, '.gif') === 0) || (strcasecmp($extension, '.png') === 0)) {
 								$isImage = true;
-							}elseif ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
+							} elseif ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
 								$isImage = true;
 							}
 							if ($isImage) {
@@ -209,83 +212,95 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getColoradoGovDocCover(){
+	private function getColoradoGovDocCover() {
 		$filename = "interface/themes/responsive/images/state_flag_of_colorado.png";
-		if ($this->processImageURL('coloradoGovDoc', $filename, false)){
+		if ($this->processImageURL('coloradoGovDoc', $filename, false)) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
 	/**
-	 * @param string $id  When using a grouped work, the Ebrary Id should be passed to this function
+	 * @param string $id When using a grouped work, the Ebrary Id should be passed to this function
 	 * @return bool
 	 */
 	private function getEbraryCover($id) {
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(":", $id);
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		$coverId = preg_replace('/^[a-zA-Z]+/', '', $id);
 		$coverUrl = "http://ebookcentral.proquest.com/covers/$coverId-l.jpg";
-		if ($this->processImageURL('ebrary', $coverUrl, true)){
+		if ($this->processImageURL('ebrary', $coverUrl, true)) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
 	private function getClassroomVideoOnDemandCover($id) {
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(":", $id);
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		$coverId = preg_replace('/^10+/', '', $id);
 		$coverUrl = "http://cvod.infobase.com/image/$coverId";
-		if ($this->processImageURL('classroomVideoOnDemand', $coverUrl,true)){
+		if ($this->processImageURL('classroomVideoOnDemand', $coverUrl, true)) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
 	private function getFilmsOnDemandCover($id) {
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(":", $id);
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		$coverId = preg_replace('/^10+/', '', $id);
 		$coverUrl = "http://fod.infobase.com/image/$coverId";
-		if ($this->processImageURL('filmsOnDemand',$coverUrl, true)){
+		if ($this->processImageURL('filmsOnDemand', $coverUrl, true)) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	private function getOverDriveCover($id = null){
+	private function getOverDriveCover($id = null) {
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 		$overDriveProduct = new OverDriveAPIProduct();
 		if (strpos($id, ':') !== false) {
-			list(, $id) = explode(":", $id);
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		$overDriveProduct->overdriveId = $id == null ? $this->id : $id;
-		if ($overDriveProduct->find(true)){
+		if ($overDriveProduct->find(true)) {
 			$overDriveMetadata = new OverDriveAPIProductMetaData();
 			$overDriveMetadata->productId = $overDriveProduct->id;
 			$overDriveMetadata->find(true);
 			$filename = $overDriveMetadata->cover;
-			if ($filename != null){
+			if ($filename != null) {
 				return $this->processImageURL('overdrive', $filename, true);
-			}else{
+			} else {
 				return false;
 			}
-		}else{
+		} else {
 			return false;
 		}
 	}
 
 	private function getZinioCover($sourceAndId) {
-		if (strpos($sourceAndId, ':') !== false){
+		if (strpos($sourceAndId, ':') !== false) {
 			// Side loaded Record requires both source & id
 
 			require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
@@ -305,9 +320,12 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getCloudLibraryCover($id, $createDefaultIfNotFound = false){
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(":", $id);
+	private function getCloudLibraryCover($id, $createDefaultIfNotFound = false) {
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 		$driver = new CloudLibraryRecordDriver($id);
@@ -315,10 +333,10 @@ class BookCoverProcessor{
 			$coverUrl = $driver->getCloudLibraryBookcoverUrl();
 			if ($coverUrl != null) {
 				return $this->processImageURL('cloud_library', $coverUrl, true);
-			}else{
-				if ($createDefaultIfNotFound){
+			} else {
+				if ($createDefaultIfNotFound) {
 					return $this->getDefaultCover($driver);
-				}else{
+				} else {
 					return false;
 				}
 			}
@@ -326,7 +344,7 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function loadParameters(){
+	private function loadParameters() {
 		//Check parameters
 		if (!count($_GET)) {
 			$this->error = "No parameters provided.";
@@ -337,119 +355,125 @@ class BookCoverProcessor{
 		// provided size matches an accepted list, and we'll strip illegal characters from the
 		// ISBN.
 		$this->size = isset($_GET['size']) ? $_GET['size'] : 'small';
-		if (!in_array($this->size, array('small', 'medium', 'large'))) {
+		if (!in_array($this->size, [
+			'small',
+			'medium',
+			'large',
+		])) {
 			$this->error = "No size provided, please specify small, medium, or large.";
 			return false;
 		}
-		if (isset($_GET['isn']) && is_array($_GET['isn'])){
+		if (isset($_GET['isn']) && is_array($_GET['isn'])) {
 			$_GET['isn'] = array_pop($_GET['isn']);
 		}
 		$this->isn = isset($_GET['isn']) ? preg_replace('/[^0-9xX]/', '', $_GET['isn']) : null;
-		if (strlen($this->isn) == 0){
+		if (strlen($this->isn) == 0) {
 			$this->isn = null;
 		}
 
-		if (isset($_GET['upc']) && is_array($_GET['upc'])){
+		if (isset($_GET['upc']) && is_array($_GET['upc'])) {
 			$_GET['upc'] = array_pop($_GET['upc']);
 		}
 		$this->upc = isset($_GET['upc']) ? ltrim(preg_replace('/[^0-9xX]/', '', $_GET['upc']), '0') : null;
-		if (strlen($this->upc) == 0){
+		if (strlen($this->upc) == 0) {
 			//Strip any leading zeroes
 			$this->upc = null;
 		}
 
-		if (isset($_GET['issn']) && is_array($_GET['issn'])){
+		if (isset($_GET['issn']) && is_array($_GET['issn'])) {
 			$_GET['issn'] = array_pop($_GET['issn']);
 		}
 		$this->issn = isset($_GET['issn']) ? preg_replace('/[^0-9xX]/', '', $_GET['issn']) : null;
-		if (strlen($this->issn) == 0){
+		if (strlen($this->issn) == 0) {
 			$this->issn = null;
 		}
 
-		if (isset($_GET['id']) && is_array($_GET['id'])){
+		if (isset($_GET['id']) && is_array($_GET['id'])) {
 			$_GET['id'] = array_pop($_GET['id']);
 		}
 		$this->id = isset($_GET['id']) ? $_GET['id'] : '';
 		//If this is external eContent, we don't care about that part, just use the remaining id
 		$this->id = str_replace('external_econtent:', '', $this->id);
-		if (isset($_GET['type'])){
-			$this->type =  $_GET['type'];
-		}else{
-			if (preg_match('/[a-f\\d]{8}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{12}/', $this->id)){
+		if (isset($_GET['type'])) {
+			$this->type = $_GET['type'];
+		} else {
+			if (preg_match('/[a-f\\d]{8}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{12}/', $this->id)) {
 				$this->type = 'grouped_work';
-			}else{
+			} else {
 				$this->type = 'ils';
 			}
 		}
-		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds' && $this->type != 'ebscohost'){
-			list($this->type, $this->id) = explode(':', $this->id);
+		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds' && $this->type != 'ebscohost') {
+			[
+				$this->type,
+				$this->id,
+			] = explode(':', $this->id);
 		}
 
 		$this->bookCoverInfo = new BookCoverInfo();
 		//First check to see if this has a custom cover due to being an e-book
-		if (!empty($this->id)){
-			if ($this->isEContent){
+		if (!empty($this->id)) {
+			if ($this->isEContent) {
 				$this->cacheName = 'econtent' . $this->id;
-			}else{
-				if ($this->type == 'grouped_work'){
+			} else {
+				if ($this->type == 'grouped_work') {
 					$this->cacheName = $this->id;
-				}else{
+				} else {
 					$this->cacheName = $this->type . '_' . $this->id;
 				}
 			}
 			$this->bookCoverInfo->recordId = $this->id;
 			$this->bookCoverInfo->recordType = $this->type;
 			$this->bookCoverInfo->find(true);
-		}else if (!is_null($this->isn)){
+		} elseif (!is_null($this->isn)) {
 			$this->cacheName = $this->isn;
 			$this->bookCoverInfo->recordId = $this->isn;
 			$this->bookCoverInfo->recordType = 'unknown_isbn';
 			$this->bookCoverInfo->find(true);
-		}else if (!is_null($this->upc)){
+		} elseif (!is_null($this->upc)) {
 			$this->cacheName = $this->upc;
 			$this->bookCoverInfo->recordId = $this->upc;
 			$this->bookCoverInfo->recordType = 'unknown_upc';
-		}else if (!is_null($this->issn)){
+		} elseif (!is_null($this->issn)) {
 			$this->cacheName = $this->issn;
 			$this->bookCoverInfo->recordId = $this->issn;
 			$this->bookCoverInfo->recordType = 'unknown_issn';
-		}else{
+		} else {
 			$this->error = "ISN, UPC, or id must be provided.";
 			return false;
 		}
 		$this->cacheName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $this->cacheName);
 		$this->cacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $this->cacheName . '.png';
-		/** @var Library */
-		global $library;
+		/** @var Library */ global $library;
 		$this->defaultCoverCacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
 		$this->logTime("load parameters");
 		return true;
 	}
 
-	private function addCachingHeader(){
+	private function addCachingHeader() {
 		//Add caching information
-		$expires = 60*60*24*14;  //expire the cover in 2 weeks on the client side
-		header("Cache-Control: maxage=".$expires);
-		header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
+		$expires = 60 * 60 * 24 * 14;  //expire the cover in 2 weeks on the client side
+		header("Cache-Control: maxage=" . $expires);
+		header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
 		$this->log("Added caching header", Logger::LOG_NOTICE);
 	}
 
-	private function addModificationHeaders($filename){
+	private function addModificationHeaders($filename) {
 		$timestamp = filemtime($filename);
 		$this->logTime("Got file timestamp $timestamp");
-		$last_modified = substr(date('r', $timestamp), 0, -5).'GMT';
-		$etag = '"'.md5($last_modified).'"';
+		$last_modified = substr(date('r', $timestamp), 0, -5) . 'GMT';
+		$etag = '"' . md5($last_modified) . '"';
 		$this->logTime("Got last_modified $last_modified and etag $etag");
 		// Send the headers
 		header("Last-Modified: $last_modified");
 		header("ETag: $etag");
 
-		if ($this->reload){
+		if ($this->reload) {
 			return true;
 		}
 		// See if the client has provided the required headers
-		$if_modified_since = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ?stripslashes($_SERVER['HTTP_IF_MODIFIED_SINCE']) : false;
-		$if_none_match = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? 	stripslashes($_SERVER['HTTP_IF_NONE_MATCH']) : 	false;
+		$if_modified_since = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? stripslashes($_SERVER['HTTP_IF_MODIFIED_SINCE']) : false;
+		$if_none_match = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? stripslashes($_SERVER['HTTP_IF_NONE_MATCH']) : false;
 		if (!$if_modified_since && !$if_none_match) {
 			$this->log("Caching headers not sent, return full image", Logger::LOG_NOTICE);
 			return true;
@@ -469,9 +493,9 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function returnImage($localPath){
+	private function returnImage($localPath) {
 		header('Content-type: image/png');
-		if ($this->addModificationHeaders($localPath)){
+		if ($this->addModificationHeaders($localPath)) {
 			$this->logTime("Added modification headers");
 			$this->addCachingHeader();
 			$this->logTime("Added caching headers");
@@ -480,12 +504,12 @@ class BookCoverProcessor{
 			readfile($localPath);
 			$this->log("Read file $localPath", Logger::LOG_DEBUG);
 			$this->logTime("echo file $localPath");
-		}else{
+		} else {
 			$this->logTime("Added modification headers");
 		}
 	}
 
-	private function getCoverFromProvider(){
+	private function getCoverFromProvider() {
 		// Update to allow retrieval of covers based on upc
 		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
 			$this->log("Looking for picture based on isbn and upc.", Logger::LOG_NOTICE);
@@ -493,15 +517,15 @@ class BookCoverProcessor{
 			//TODO: Allow these to be sorted
 			require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
 			$syndeticsSettings = new SyndeticsSetting();
-			if ($syndeticsSettings->find(true)){
-				if ($this->syndetics($syndeticsSettings->syndeticsKey)){
+			if ($syndeticsSettings->find(true)) {
+				if ($this->syndetics($syndeticsSettings->syndeticsKey)) {
 					return true;
 				}
 			}
 
 			require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 			$contentCafeSettings = new ContentCafeSetting();
-			if ($contentCafeSettings->find(true)){
+			if ($contentCafeSettings->find(true)) {
 				if ($contentCafeSettings->enabled) {
 					if ($this->contentCafe($contentCafeSettings)) {
 						return true;
@@ -511,8 +535,8 @@ class BookCoverProcessor{
 
 			require_once ROOT_DIR . '/sys/Enrichment/CoceServerSetting.php';
 			$coceServerSettings = new CoceServerSetting();
-			if ($coceServerSettings->find(true)){
-				if ($this->coce($coceServerSettings)){
+			if ($coceServerSettings->find(true)) {
+				if ($this->coce($coceServerSettings)) {
 					return true;
 				}
 			}
@@ -520,13 +544,13 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getCoverFromMarc($marcRecord = null){
+	private function getCoverFromMarc($marcRecord = null) {
 		$this->log("Looking for picture as part of 856 tag.", Logger::LOG_NOTICE);
 
-		if ($marcRecord == null){
+		if ($marcRecord == null) {
 			//Process the marc record
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
-			if ($this->type != 'overdrive' && $this->type != 'hoopla'){
+			if ($this->type != 'overdrive' && $this->type != 'hoopla') {
 				$marcRecord = MarcLoader::loadMarcRecordByILSId($this->type . ':' . $this->id);
 			}
 		}
@@ -537,23 +561,23 @@ class BookCoverProcessor{
 
 		//Get the 856 tags
 		$marcFields = $marcRecord->getFields('856');
-		if ($marcFields){
+		if ($marcFields) {
 			/** @var File_MARC_Data_Field $marcField */
-			foreach ($marcFields as $marcField){
+			foreach ($marcFields as $marcField) {
 				//Check to see if this is a cover to use for VuFind
-				if ($marcField->getSubfield('2') && (strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Vufind_Image') == 0 || strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Aspen') == 0)){
-					if ($marcField->getSubfield('3') && (strcasecmp(trim($marcField->getSubfield('3')->getData()), 'Cover Image') == 0 || strcasecmp(trim($marcField->getSubfield('3')->getData()), 'CoverImage') == 0)){
+				if ($marcField->getSubfield('2') && (strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Vufind_Image') == 0 || strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Aspen') == 0)) {
+					if ($marcField->getSubfield('3') && (strcasecmp(trim($marcField->getSubfield('3')->getData()), 'Cover Image') == 0 || strcasecmp(trim($marcField->getSubfield('3')->getData()), 'CoverImage') == 0)) {
 						//Can use either subfield f or subfield u
-						if ($marcField->getSubfield('f')){
+						if ($marcField->getSubfield('f')) {
 							//Just references the file, add the original directory
 							$filename = $this->bookCoverPath . '/original/' . trim($marcField->getSubfield('f')->getData());
-							if ($this->processImageURL('marcRecord', $filename, false)){
+							if ($this->processImageURL('marcRecord', $filename, false)) {
 								//We got a successful match
 								return true;
 							}
-						}elseif ($marcField->getSubfield('u')){
+						} elseif ($marcField->getSubfield('u')) {
 							//Full url to the image
-							if ($this->processImageURL('marcRecord', trim($marcField->getSubfield('u')->getData()), true)){
+							if ($this->processImageURL('marcRecord', trim($marcField->getSubfield('u')->getData()), true)) {
 								//We got a successful match
 								return true;
 							}
@@ -564,14 +588,14 @@ class BookCoverProcessor{
 		}
 
 		//Check for Flatirons covers
-        $marcFields = $marcRecord->getFields('962');
-		if ($marcFields){
+		$marcFields = $marcRecord->getFields('962');
+		if ($marcFields) {
 			$this->log("Found 962 field", Logger::LOG_NOTICE);
-			foreach ($marcFields as $marcField){
-				if ($marcField->getSubfield('u')){
+			foreach ($marcFields as $marcField) {
+				if ($marcField->getSubfield('u')) {
 					$this->log("Found 962u subfield", Logger::LOG_NOTICE);
 					$subfield_u = $marcField->getSubfield('u')->getData();
-					if ($this->processImageURL('marcRecord', $subfield_u, true)){
+					if ($this->processImageURL('marcRecord', $subfield_u, true)) {
 						return true;
 					}
 				}
@@ -581,15 +605,14 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getCachedCover()
-	{
+	private function getCachedCover() {
 		$hasCachedImage = false;
 		if ($this->bookCoverInfo->getNumResults() == 1) {
 			if ($this->size == 'small' && $this->bookCoverInfo->thumbnailLoaded == 1) {
 				$hasCachedImage = true;
-			} else if ($this->size == 'medium' && $this->bookCoverInfo->mediumLoaded == 1) {
+			} elseif ($this->size == 'medium' && $this->bookCoverInfo->mediumLoaded == 1) {
 				$hasCachedImage = true;
-			} else if ($this->size == 'large' && $this->bookCoverInfo->largeLoaded == 1) {
+			} elseif ($this->size == 'large' && $this->bookCoverInfo->largeLoaded == 1) {
 				$hasCachedImage = true;
 			}
 		}
@@ -600,8 +623,7 @@ class BookCoverProcessor{
 
 
 			if ($this->bookCoverInfo->imageSource == 'default') {
-				/** @var Library */
-				global $library;
+				/** @var Library */ global $library;
 				$fileName = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
 			} else {
 				$fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
@@ -627,27 +649,27 @@ class BookCoverProcessor{
 	 * @param RecordInterface $recordDriver
 	 * @return bool
 	 */
-	function getDefaultCover($recordDriver = null){
+	function getDefaultCover($recordDriver = null) {
 		//Get the resource for the cover so we can load the title and author
 		$title = '';
 		$author = '';
-		if($this->type == 'grouped_work'){
+		if ($this->type == 'grouped_work') {
 			$this->loadGroupedWork();
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			if ($this->groupedWork){
+			if ($this->groupedWork) {
 				$title = ucwords($this->groupedWork->getTitle());
 				$author = ucwords($this->groupedWork->getPrimaryAuthor());
 			}
-		}else{
-			if ($recordDriver == null){
+		} else {
+			if ($recordDriver == null) {
 				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
 			}
-			if ($recordDriver->isValid()){
+			if ($recordDriver->isValid()) {
 				$title = $recordDriver->getTitle();
 				if ($recordDriver instanceof OpenArchivesRecordDriver) {
 					$author = '';
-				}else{
+				} else {
 					$author = $recordDriver->getAuthor();
 				}
 			}
@@ -664,34 +686,36 @@ class BookCoverProcessor{
 
 	function processImageURL($source, $url, $attemptRefetch = true) {
 		$this->log("Processing $url", Logger::LOG_NOTICE);
-		$context = stream_context_create(array('http'=>array(
-			'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n"
-		)));
+		$context = stream_context_create([
+			'http' => [
+				'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n",
+			],
+		]);
 
 		ExternalRequestLogEntry::logRequest("$source.getCover", 'GET', $url, [], '', 0, '', []);
 		if ($image = @file_get_contents($url, false, $context)) {
 			// Figure out file paths -- $tempFile will be used to store the downloaded
 			// image for analysis.  $finalFile will be used for long-term storage if
 			// $cache is true or for temporary display purposes if $cache is false.
-			if ($source == 'default'){
+			if ($source == 'default') {
 				$tempFile = str_replace('.png', uniqid(), $this->defaultCoverCacheFile);
 				$finalFile = $this->defaultCoverCacheFile;
-			}else{
+			} else {
 				$tempFile = str_replace('.png', uniqid(), $this->cacheFile);
 				$finalFile = $this->cacheFile;
 			}
 
 			//Make sure we don't get an image not found cover
 			$imageChecksum = md5($image);
-			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c'){
+			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c') {
 				return false;
-			}elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e'){
+			} elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e') {
 				//Syndetics Unbound default image at medium size
 				return false;
-			}elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b'){
+			} elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b') {
 				//Syndetics Unbound default image at small size
 				return false;
-			}elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db'){
+			} elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db') {
 				//Syndetics Unbound default image at large size
 				return false;
 			}
@@ -706,7 +730,11 @@ class BookCoverProcessor{
 				$this->error = "Unable to write to image directory $tempFile.";
 				return false;
 			}
-			list($width, $height, $type) = @getimagesize($tempFile);
+			[
+				$width,
+				$height,
+				$type,
+			] = @getimagesize($tempFile);
 
 			// File too small -- delete it and report failure.
 			if ($width < 2 && $height < 2) {
@@ -715,17 +743,17 @@ class BookCoverProcessor{
 			}
 
 			// Test Image for for partial load
-			if(!$imageResource = @imagecreatefromstring($image)){
+			if (!$imageResource = @imagecreatefromstring($image)) {
 				$this->log("Could not create image from string $url", Logger::LOG_ERROR);
 				@unlink($tempFile);
 				return false;
 			}
 
 			// Check the color of the bottom left corner
-			$rgb = imagecolorat($imageResource, 0, $height-1);
+			$rgb = imagecolorat($imageResource, 0, $height - 1);
 			if ($rgb == 8421504) {
 				// Confirm by checking the color of the bottom right corner
-				$rgb = imagecolorat($imageResource, $width-1, $height-1);
+				$rgb = imagecolorat($imageResource, $width - 1, $height - 1);
 				if ($rgb == 8421504) {
 					// This is an image with partial gray at the bottom
 					// (r:128,g:128,b:128)
@@ -741,50 +769,50 @@ class BookCoverProcessor{
 				}
 			}
 
-			if ($this->size == 'small'){
+			if ($this->size == 'small') {
 				$maxDimension = 100;
-			}elseif ($this->size == 'medium'){
+			} elseif ($this->size == 'medium') {
 				$maxDimension = 200;
-			}else{
+			} else {
 				$maxDimension = 400;
 			}
 
 			//Check to see if the image needs to be re-sized
-			if ($width > $maxDimension || $height > $maxDimension){
+			if ($width > $maxDimension || $height > $maxDimension) {
 				// We no longer need the temp file:
 				@unlink($tempFile);
 
-				if ($width > $height){
+				if ($width > $height) {
 					$new_width = $maxDimension;
-					$new_height = floor( $height * ( $maxDimension / $width ) );
-				}else{
+					$new_height = floor($height * ($maxDimension / $width));
+				} else {
 					$new_height = $maxDimension;
-					$new_width = floor( $width * ( $maxDimension / $height ) );
+					$new_width = floor($width * ($maxDimension / $height));
 				}
 
 				$this->log("Resizing image New Width: $new_width, New Height: $new_height", Logger::LOG_NOTICE);
 
 				// create a new temporary image
-				$tmp_img = imagecreatetruecolor( $new_width, $new_height );
+				$tmp_img = imagecreatetruecolor($new_width, $new_height);
 
 				// copy and resize old image into new image
-				if (!imagecopyresampled( $tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height )){
+				if (!imagecopyresampled($tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height)) {
 					$this->log("Could not resize image $url to $this->localFile", Logger::LOG_ERROR);
 					return false;
 				}
 
 				// save thumbnail into a file
-				if (file_exists($finalFile)){
+				if (file_exists($finalFile)) {
 					$this->log("File $finalFile already exists, deleting", Logger::LOG_DEBUG);
 					unlink($finalFile);
 				}
 
-				if (!@imagepng( $tmp_img, $finalFile, 9)){
+				if (!@imagepng($tmp_img, $finalFile, 9)) {
 					$this->log("Could not save re-sized file $$this->localFile", Logger::LOG_ERROR);
 					return false;
 				}
 
-			}else{
+			} else {
 				$this->log("Image is the correct size, not resizing.", Logger::LOG_NOTICE);
 
 				// Conversion needed -- do some normalization for non-PNG images:
@@ -805,7 +833,7 @@ class BookCoverProcessor{
 					// We no longer need the temp file:
 					@unlink($tempFile);
 					imagedestroy($imageResource);
-					if (!$conversionOk){
+					if (!$conversionOk) {
 						return false;
 					}
 					$this->log("Finished creating png at $finalFile.", Logger::LOG_NOTICE);
@@ -828,9 +856,8 @@ class BookCoverProcessor{
 		}
 	}
 
-	function syndetics($key)
-	{
-		if (is_null($this->isn) && is_null($this->upc) && is_null($this->issn)){
+	function syndetics($key) {
+		if (is_null($this->isn) && is_null($this->upc) && is_null($this->issn)) {
 			return false;
 		}
 		switch ($this->size) {
@@ -849,13 +876,13 @@ class BookCoverProcessor{
 
 		$url = 'https://syndetics.com';
 		$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}";
-		if (!empty($this->isn)){
+		if (!empty($this->isn)) {
 			$url .= "&isbn=" . $this->isn;
 		}
-		if (!empty($this->upc)){
+		if (!empty($this->upc)) {
 			$url .= "&upc=" . $this->upc;
 		}
-		if (!empty($this->issn)){
+		if (!empty($this->issn)) {
 			$url .= "&issn=" . $this->issn;
 		}
 		$this->log("Syndetics url: $url", Logger::LOG_DEBUG);
@@ -885,18 +912,18 @@ class BookCoverProcessor{
 		$url = 'http://contentcafe2.btol.com';
 		$url .= "/ContentCafe/Jacket.aspx?UserID={$settings->contentCafeId}&Password={$settings->pwd}&Return=1&Type={$size}&erroroverride=1&Value=";
 
-		if (!empty($this->isn)){
-			if ($this->processImageURL('contentCafe', $url . $this->isn, true)){
+		if (!empty($this->isn)) {
+			if ($this->processImageURL('contentCafe', $url . $this->isn, true)) {
 				return true;
 			}
 		}
-		if (!empty($this->upc)){
-			if ($this->processImageURL('contentCafe', $url . $this->upc, true)){
+		if (!empty($this->upc)) {
+			if ($this->processImageURL('contentCafe', $url . $this->upc, true)) {
 				return true;
 			}
 		}
-		if (!empty($this->issn)){
-			if ($this->processImageURL('contentCafe', $url . $this->issn, true)){
+		if (!empty($this->issn)) {
+			if ($this->processImageURL('contentCafe', $url . $this->issn, true)) {
 				return true;
 			}
 		}
@@ -904,19 +931,18 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	function coce(CoceServerSetting $coceServerSetting)
-	{
-		if (!empty($this->isn)){
+	function coce(CoceServerSetting $coceServerSetting) {
+		if (!empty($this->isn)) {
 			$url = $coceServerSetting->coceServerUrl;
-			if (substr($url, -1, 1) !== '/'){
+			if (substr($url, -1, 1) !== '/') {
 				$url .= '/';
 			}
 			//Use ISBN 10 if possible
 			$isbn = $this->isn;
-			if (strlen($isbn) == 13){
+			if (strlen($isbn) == 13) {
 				require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
 				$isbn = ISBNConverter::convertISBN13to10($isbn);
-				if (empty($isbn)){
+				if (empty($isbn)) {
 					$isbn = $this->isn;
 				}
 			}
@@ -924,58 +950,57 @@ class BookCoverProcessor{
 			$url .= "cover?id={$isbn}&provider=gb,aws,ol&all";
 			$results = file_get_contents($url);
 			$jsonResults = json_decode($results);
-			if ($jsonResults){
+			if ($jsonResults) {
 				$bookCovers = $jsonResults->$isbn;
-				if (!empty($bookCovers->gb)){
-					if ($this->processImageURL('coce_google_books', $bookCovers->gb, true)){
+				if (!empty($bookCovers->gb)) {
+					if ($this->processImageURL('coce_google_books', $bookCovers->gb, true)) {
 						//Make sure we aren't getting their image not found image
 						return true;
 					}
 				}
-				if (!empty($bookCovers->aws)){
-					if ($this->processImageURL('coce_amazon', $bookCovers->aws, true)){
+				if (!empty($bookCovers->aws)) {
+					if ($this->processImageURL('coce_amazon', $bookCovers->aws, true)) {
 						return true;
 					}
 				}
-				if (!empty($bookCovers->ol)){
-					if ($this->processImageURL('coce_open_library', $bookCovers->ol, true)){
+				if (!empty($bookCovers->ol)) {
+					if ($this->processImageURL('coce_open_library', $bookCovers->ol, true)) {
 						return true;
 					}
 				}
 			}
-		}else{
+		} else {
 			return false;
 		}
 
 		return false;
 	}
 
-	function google(GoogleApiSetting $googleApiSettings,$title = null, $author = null)
-	{
+	function google(GoogleApiSetting $googleApiSettings, $title = null, $author = null) {
 		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
-		if ($this->type != 'grouped_work'){
+		if ($this->type != 'grouped_work') {
 			return false;
 		}
-		if (is_null($this->isn) && is_null($title) && is_null($author)){
+		if (is_null($this->isn) && is_null($title) && is_null($author)) {
 			return false;
 		}
-		if (is_null($title) && is_null($author)){
+		if (is_null($title) && is_null($author)) {
 			$source = 'google_isbn';
 			$url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . $this->isn;
-		}else{
+		} else {
 			$source = 'google_title_author';
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$title = StringUtils::removeTrailingPunctuation($title);
 			$author = StringUtils::removeTrailingPunctuation($author);
 			$url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:"' . urlencode($title) . '"';
-			if (!is_null($author)){
+			if (!is_null($author)) {
 				$url .= "+inauthor:" . urlencode($author);
-			}else{
+			} else {
 				return false;
 			}
 		}
 
-		if (!empty($googleApiSettings->googleBooksKey)){
+		if (!empty($googleApiSettings->googleBooksKey)) {
 			$url .= '&key=' . $googleApiSettings->googleBooksKey;
 		}
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
@@ -983,14 +1008,14 @@ class BookCoverProcessor{
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
 			if ($json = json_decode($result, true)) {
-				if (array_key_exists('totalItems', $json) && $json['totalItems'] > 0 && count($json['items']) > 0){
-					foreach ($json['items'] as $item){
-						if (!empty($item['volumeInfo']['imageLinks']['thumbnail'])){
-							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)){
+				if (array_key_exists('totalItems', $json) && $json['totalItems'] > 0 && count($json['items']) > 0) {
+					foreach ($json['items'] as $item) {
+						if (!empty($item['volumeInfo']['imageLinks']['thumbnail'])) {
+							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)) {
 								return true;
 							}
-						}elseif (!empty($item['volumeInfo']['imageLinks']['smallThumbnail'])){
-							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)){
+						} elseif (!empty($item['volumeInfo']['imageLinks']['smallThumbnail'])) {
+							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)) {
 								return true;
 							}
 						}
@@ -1002,9 +1027,9 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = ''){
+	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = '') {
 		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
-		if ($this->type != 'grouped_work'){
+		if ($this->type != 'grouped_work') {
 			return false;
 		}
 
@@ -1013,32 +1038,38 @@ class BookCoverProcessor{
 		$title = StringUtils::removeTrailingPunctuation($title);
 		$title = str_replace('.', '', $title);
 		$encodedTitle = urlencode($title);
-		if (!is_array($year)){
+		if (!is_array($year)) {
 			$year = [$year];
 		}
-		foreach ($year as $curYear){
-			if (strpos($curYear, ',')){
+		foreach ($year as $curYear) {
+			if (strpos($curYear, ',')) {
 				$years = explode(',', $curYear);
 				$year = array_merge($year, $years);
 			}
 		}
 
 		$foundTitle = $this->searchOmdbForCover($year, $encodedTitle, $omdbSettings, $source);
-		if ($foundTitle) return true;
+		if ($foundTitle) {
+			return true;
+		}
 
 		//Also try the short title
 		$shortTitle = StringUtils::removeTrailingPunctuation($shortTitle);
 		$shortTitle = str_replace('.', '', $shortTitle);
 		$encodedShortTitle = urlencode($shortTitle);
 		$foundTitle = $this->searchOmdbForCover($year, $encodedShortTitle, $omdbSettings, $source);
-		if ($foundTitle) return true;
+		if ($foundTitle) {
+			return true;
+		}
 
 		//Next try the title up to anything with an = character
-		if (strpos($title, ' = ') !== false){
+		if (strpos($title, ' = ') !== false) {
 			$trimmedTitle = substr($title, 0, strpos($title, ' = '));
 			$encodedTrimmedTitle = urlencode($trimmedTitle);
 			$foundTitle = $this->searchOmdbForCover($year, $encodedTrimmedTitle, $omdbSettings, $source);
-			if ($foundTitle) return true;
+			if ($foundTitle) {
+				return true;
+			}
 		}
 
 		//Try one last time without a year
@@ -1082,8 +1113,8 @@ class BookCoverProcessor{
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
 			if ($json = json_decode($result, true)) {
-				if (array_key_exists('Poster', $json)){
-					if ($this->processImageURL($source, $json['Poster'], true)){
+				if (array_key_exists('Poster', $json)) {
+					if ($this->processImageURL($source, $json['Poster'], true)) {
 						return true;
 					}
 				}
@@ -1093,67 +1124,67 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	function log($message, $level = Logger::LOG_DEBUG){
-		if ($this->doCoverLogging){
+	function log($message, $level = Logger::LOG_DEBUG) {
+		if ($this->doCoverLogging) {
 			$this->logger->log($message, $level);
 		}
 	}
 
-	function logTime($message){
-		if ($this->doTimings){
+	function logTime($message) {
+		if ($this->doTimings) {
 			$this->timer->logTime($message);
 		}
 	}
 
 	private function getGroupedWorkCover() {
-		if ($this->loadGroupedWork()){
+		if ($this->loadGroupedWork()) {
 			$oldType = $this->type;
 			$this->type = 'grouped_work';
-			if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
+			if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())) {
 				return true;
 			}
 
-			if ($this->getReferencedGroupedWorkCover($this->groupedWork->getPermanentId())){
+			if ($this->getReferencedGroupedWorkCover($this->groupedWork->getPermanentId())) {
 				return true;
 			}
 
 			//Have not found a grouped work based on isbn or upc, check based on related records
 			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
 			global $sideLoadSettings;
-			foreach ($relatedRecords as $relatedRecord){
-				if (strcasecmp($relatedRecord->source, 'OverDrive') == 0){
-					if ($this->getOverDriveCover($relatedRecord->id)){
+			foreach ($relatedRecords as $relatedRecord) {
+				if (strcasecmp($relatedRecord->source, 'OverDrive') == 0) {
+					if ($this->getOverDriveCover($relatedRecord->id)) {
 						return true;
 					}
-				}elseif (strcasecmp($relatedRecord->source, 'Hoopla') == 0){
-					if ($this->getHooplaCover($relatedRecord->id)){
+				} elseif (strcasecmp($relatedRecord->source, 'Hoopla') == 0) {
+					if ($this->getHooplaCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (strcasecmp($relatedRecord->source, 'cloud_library') == 0){
+				} elseif (strcasecmp($relatedRecord->source, 'cloud_library') == 0) {
 					if ($this->getCloudLibraryCover($relatedRecord->id)) {
 						return true;
 					}
-				}elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0){
-					if ($this->getColoradoGovDocCover()){
+				} elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0) {
+					if ($this->getColoradoGovDocCover()) {
 						return true;
 					}
-				}elseif (strcasecmp($relatedRecord->source, 'Classroom Video on Demand') == 0){
-					if ($this->getClassroomVideoOnDemandCover($relatedRecord->id)){
+				} elseif (strcasecmp($relatedRecord->source, 'Classroom Video on Demand') == 0) {
+					if ($this->getClassroomVideoOnDemandCover($relatedRecord->id)) {
 						return true;
 					}
-				}elseif (stripos($relatedRecord->source, 'proquest') !== false || stripos($relatedRecord->source, 'ebrary') !== false){
-					if ($this->getEbraryCover($relatedRecord->id)){
+				} elseif (stripos($relatedRecord->source, 'proquest') !== false || stripos($relatedRecord->source, 'ebrary') !== false) {
+					if ($this->getEbraryCover($relatedRecord->id)) {
 						return true;
 					}
-				}elseif (stripos($relatedRecord->source, 'films on demand') !== false){
-					if ($this->getFilmsOnDemandCover($relatedRecord->id)){
+				} elseif (stripos($relatedRecord->source, 'films on demand') !== false) {
+					if ($this->getFilmsOnDemandCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord->source, 'zinio') !== false){
+				} elseif (stripos($relatedRecord->source, 'zinio') !== false) {
 					if ($this->getZinioCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (array_key_exists(strtolower($relatedRecord->source), $sideLoadSettings)){
+				} elseif (array_key_exists(strtolower($relatedRecord->source), $sideLoadSettings)) {
 					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
@@ -1245,9 +1276,9 @@ class BookCoverProcessor{
 						$allIsbns = $groupedWorkDriver->getISBNs();
 						foreach ($allIsbns as $isbn) {
 							$this->isn = $isbn;
-							if ($this->getCoverFromProvider()){
+							if ($this->getCoverFromProvider()) {
 								return true;
-							}else {
+							} else {
 								if (!$hasCoceSettings && $hasGoogleSettings && $this->google($googleApiSettings)) {
 									return true;
 								}
@@ -1273,23 +1304,23 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function loadGroupedWork(){
-		if ($this->groupedWork == null){
+	private function loadGroupedWork() {
+		if ($this->groupedWork == null) {
 			// Include Search Engine Class
 			require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			if ($this->type == 'grouped_work'){
+			if ($this->type == 'grouped_work') {
 				$this->groupedWork = new GroupedWorkDriver($this->id);
-				if (!$this->groupedWork->isValid){
+				if (!$this->groupedWork->isValid) {
 					$this->groupedWork = false;
 				}
-			}else{
+			} else {
 				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
-				if ($recordDriver && $recordDriver->isValid()){
+				if ($recordDriver && $recordDriver->isValid()) {
 					$this->groupedWork = $recordDriver->getGroupedWorkDriver();
-					if (!$this->groupedWork->isValid){
+					if (!$this->groupedWork->isValid) {
 						$this->groupedWork = false;
 					}
 				}
@@ -1299,8 +1330,7 @@ class BookCoverProcessor{
 		return $this->groupedWork;
 	}
 
-	private function setBookCoverInfo($source, $width, $height)
-	{
+	private function setBookCoverInfo($source, $width, $height) {
 		$this->bookCoverInfo->imageSource = $source;
 		if ($this->bookCoverInfo->sourceWidth == null || $width > $this->bookCoverInfo->sourceWidth) {
 			$this->bookCoverInfo->sourceWidth = $width;
@@ -1325,8 +1355,7 @@ class BookCoverProcessor{
 		}
 	}
 
-	private function getOpenArchivesCover($id)
-	{
+	private function getOpenArchivesCover($id) {
 		//The thumbnail is not saved in the metadata.  To get the URL we need to fetch the page
 		//and then get the thumbnail from the og:image element
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
@@ -1339,7 +1368,7 @@ class BookCoverProcessor{
 			$curlWrapper = new CurlWrapper();
 			$pageContents = $curlWrapper->curlGetPage($url);
 			$curlInfo = curl_getinfo($curlWrapper->curl_connection);
-			if ($curlInfo['url'] != $url){
+			if ($curlInfo['url'] != $url) {
 				//If these don't match, some form of redirect was done.
 				$url = $curlInfo['url'];
 			}
@@ -1355,7 +1384,7 @@ class BookCoverProcessor{
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			}elseif (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
+			} elseif (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
@@ -1370,17 +1399,17 @@ class BookCoverProcessor{
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			}else{
+			} else {
 				require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
 				$sourceCollection = new OpenArchivesCollection();
 				$sourceCollection->id = $openArchivesRecord->sourceCollection;
-				if ($sourceCollection->find(true)){
-					if (!empty($sourceCollection->imageRegex)){
+				if ($sourceCollection->find(true)) {
+					if (!empty($sourceCollection->imageRegex)) {
 						$expressions = preg_split("/[\r\n]+/", $sourceCollection->imageRegex);
-						foreach ($expressions as $expression){
+						foreach ($expressions as $expression) {
 							if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
 								$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
-								if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+								if ($this->processImageURL('open_archives', $bookcoverUrl, true)) {
 									return true;
 								}
 							}
@@ -1392,8 +1421,7 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getListCover($id)
-	{
+	private function getListCover($id) {
 		//Build a cover based on the titles within list
 		require_once ROOT_DIR . '/sys/Covers/ListCoverBuilder.php';
 		$coverBuilder = new ListCoverBuilder();
@@ -1402,9 +1430,9 @@ class BookCoverProcessor{
 		$userList->id = $id;
 
 		if ($userList->find(true)) {
-			if ($this->getUploadedListCover($id)){
+			if ($this->getUploadedListCover($id)) {
 				return true;
-			} else  {
+			} else {
 				$title = $userList->title;
 				$listTitles = $userList->getListTitles();
 				$coverBuilder->getCover($title, $listTitles, $this->cacheFile);
@@ -1417,7 +1445,10 @@ class BookCoverProcessor{
 
 	private function getCourseReservesCover($id) {
 		if (strpos($id, ':') !== false) {
-			list(, $id) = explode(":", $id);
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CourseReservesRecordDriver.php';
 		$driver = new CourseReservesRecordDriver($id);
@@ -1433,20 +1464,23 @@ class BookCoverProcessor{
 
 	private function getLibraryCalendarCover($id) {
 		if (strpos($id, ':') !== false) {
-			list(, $id) = explode(":", $id);
+			[
+				,
+				$id,
+			] = explode(":", $id);
 		}
 		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 		$driver = new LibraryCalendarEventRecordDriver($id);
 		if ($driver) {
 //			$coverUrl = $driver->getEventCoverUrl();
 //			if ($coverUrl == null) {
-				require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-				$coverBuilder = new EventCoverBuilder();
-				$props = [
-					'eventDate' => $driver->getStartDate()
-				];
-				$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-				return $this->processImageURL('default_event', $this->cacheFile, false);
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$props = [
+				'eventDate' => $driver->getStartDate(),
+			];
+			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
 //			}else{
 //				return $this->processImageURL('library_calendar_event', $coverUrl, true);
 //			}
@@ -1454,46 +1488,48 @@ class BookCoverProcessor{
 		return false;
 	}
 
-    private function getSpringshareLibCalCover($id) {
-        if (strpos($id, ':') !== false) {
-            list(, $id) = explode(":", $id);
-        }
-        require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
-        $driver = new SpringshareLibCalEventRecordDriver($id);
-        if ($driver) {
+	private function getSpringshareLibCalCover($id) {
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+		$driver = new SpringshareLibCalEventRecordDriver($id);
+		if ($driver) {
 //			$coverUrl = $driver->getEventCoverUrl();
 //			if ($coverUrl == null) {
-            require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
-            $coverBuilder = new EventCoverBuilder();
-            $props = [
-                'eventDate' => $driver->getStartDate()
-            ];
-            $coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
-            return $this->processImageURL('default_event', $this->cacheFile, false);
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$props = [
+				'eventDate' => $driver->getStartDate(),
+			];
+			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
 //			}else{
 //				return $this->processImageURL('springshare_libcal_event', $coverUrl, true);
 //			}
-        }
-        return false;
-    }
+		}
+		return false;
+	}
 
-	private function getWebPageCover($id)
-	{
+	private function getWebPageCover($id) {
 		//Build a cover based on the title of the page
 		require_once ROOT_DIR . '/sys/Covers/WebPageCoverBuilder.php';
 		$coverBuilder = new WebPageCoverBuilder();
 
 		$recordDriver = null;
-		if ($this->type == 'WebPage'){
+		if ($this->type == 'WebPage') {
 			require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
 			$recordDriver = new WebsitePageRecordDriver($this->type . ':' . $id);
-		}elseif ($this->type == 'BasicPage'){
+		} elseif ($this->type == 'BasicPage') {
 			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
 			$recordDriver = new BasicPageRecordDriver($this->type . ':' . $id);
-		}elseif ($this->type == 'PortalPage'){
+		} elseif ($this->type == 'PortalPage') {
 			require_once ROOT_DIR . '/RecordDrivers/PortalPageRecordDriver.php';
 			$recordDriver = new PortalPageRecordDriver($this->type . ':' . $id);
-		}elseif ($this->type == 'WebResource') {
+		} elseif ($this->type == 'WebResource') {
 			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 			$recordDriver = new WebResourceRecordDriver($this->type . ':' . $id);
 		}
@@ -1507,21 +1543,19 @@ class BookCoverProcessor{
 		}
 	}
 
-	private function getUploadedListCover($id)
-	{
+	private function getUploadedListCover($id) {
 		$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
-		if (file_exists($uploadedImage)){
+		if (file_exists($uploadedImage)) {
 			return $this->processImageURL('upload', $uploadedImage);
 		}
 		return false;
 	}
 
-	private function getUploadedGroupedWorkCover($permanentId)
-	{
+	private function getUploadedGroupedWorkCover($permanentId) {
 		$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
-		if (file_exists($uploadedImage)){
+		if (file_exists($uploadedImage)) {
 			return $this->processImageURL('upload', $uploadedImage);
-		}elseif (strlen($permanentId) == 40) {
+		} elseif (strlen($permanentId) == 40) {
 			$permanentId = substr($permanentId, 0, 36);
 			$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
 			if (file_exists($uploadedImage)) {
@@ -1531,8 +1565,7 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getReferencedGroupedWorkCover($permanentId)
-	{
+	private function getReferencedGroupedWorkCover($permanentId) {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $permanentId;
@@ -1540,13 +1573,13 @@ class BookCoverProcessor{
 			$referenceId = $groupedWork->referenceCover;
 			require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 			$recordDriver = RecordDriverFactory::initRecordDriverById($referenceId);
-			if ($recordDriver && $recordDriver->isValid()){
-				$referencedCover = str_replace(':','_',$referenceId);
+			if ($recordDriver && $recordDriver->isValid()) {
+				$referencedCover = str_replace(':', '_', $referenceId);
 
 				$referencedCoverURL_lg = $this->bookCoverPath . '/large/' . $referencedCover . '.png';
 				$referencedCoverURL_md = $this->bookCoverPath . '/medium/' . $referencedCover . '.png';
 
-				if (file_exists($referencedCoverURL_lg)){
+				if (file_exists($referencedCoverURL_lg)) {
 					return $this->processImageURL('reference ' . $referenceId, $referencedCoverURL_lg);
 				} elseif (file_exists($referencedCoverURL_md)) {
 					return $this->processImageURL('reference ' . $referenceId, $referencedCoverURL_md);
@@ -1558,8 +1591,7 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getEbscoEdsCover($id)
-	{
+	private function getEbscoEdsCover($id) {
 		//Build a cover based on the title of the page
 		require_once ROOT_DIR . '/sys/Covers/EbscoCoverBuilder.php';
 		$coverBuilder = new EbscoCoverBuilder();
@@ -1569,7 +1601,7 @@ class BookCoverProcessor{
 		if ($edsRecordDriver->isValid()) {
 			$title = $edsRecordDriver->getTitle();
 			$props = [
-				'format' => $edsRecordDriver->getFormats()
+				'format' => $edsRecordDriver->getFormats(),
 			];
 			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_ebsco', $this->cacheFile, false);
@@ -1578,8 +1610,7 @@ class BookCoverProcessor{
 		}
 	}
 
-	private function getEbscohostCover($id)
-	{
+	private function getEbscohostCover($id) {
 		//Build a cover based on the title of the page
 		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
 		$coverBuilder = new DefaultCoverImageBuilder();
@@ -1603,8 +1634,7 @@ class BookCoverProcessor{
 	 * @param string $source
 	 * @return bool
 	 */
-	protected function searchOmdbForCover($year, string $encodedShortTitle, OMDBSetting $omdbSettings, string $source): bool
-	{
+	protected function searchOmdbForCover($year, string $encodedShortTitle, OMDBSetting $omdbSettings, string $source): bool {
 		$foundTitle = false;
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		foreach ($year as $curYear) {
@@ -1620,7 +1650,9 @@ class BookCoverProcessor{
 					}
 				}
 			}
-			if ($foundTitle) break;
+			if ($foundTitle) {
+				break;
+			}
 		}
 		return $foundTitle;
 	}

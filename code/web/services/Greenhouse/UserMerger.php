@@ -1,46 +1,44 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-abstract class UserMerger extends Admin_Admin
-{
+
+abstract class UserMerger extends Admin_Admin {
 	protected $importPath;
 	protected $importDirExists;
 	protected $setupErrors;
-	function launch()
-	{
+
+	function launch() {
 		global $serverName;
 		$this->importPath = '/data/aspen-discovery/' . $serverName . '/import/';
 		$this->importDirExists = false;
 		$this->setupErrors = [];
-		if (!file_exists($this->importPath)){
-			if (!mkdir($this->importPath, 0774, true)){
+		if (!file_exists($this->importPath)) {
+			if (!mkdir($this->importPath, 0774, true)) {
 				$this->setupErrors[] = 'Could not create import directory';
-			}else{
+			} else {
 				chgrp($this->importPath, 'aspen_apache');
 				chmod($this->importPath, 0774);
 				$this->importDirExists = true;
 			}
-		}else{
+		} else {
 			$this->importDirExists = true;
 		}
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'greenhouse';
 	}
 
-	function canView() : bool
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	function getBlankResult() : array{
+	function getBlankResult(): array {
 		return [
 			'numUsersUpdated' => 0,
 			'numUsersMerged' => 0,
@@ -60,10 +58,11 @@ abstract class UserMerger extends Admin_Admin
 			'numUserPaymentsMoved' => 0,
 			'numUserStaffSettingsMoved' => 0,
 			'numRatingsReviewsMoved' => 0,
-			'errors' => []
+			'errors' => [],
 		];
 	}
-	function mergeUsers(User $originalUser, User $newUser, &$result){
+
+	function mergeUsers(User $originalUser, User $newUser, &$result) {
 		try {
 			//We have both the new and old record in the database, they need to be merged.
 			//We will move everything from the new user to the old user, update the old user with the
@@ -197,7 +196,7 @@ abstract class UserMerger extends Admin_Admin
 					$clonedSystemMessageDismissals->__destruct();
 					$clonedSystemMessageDismissals = null;
 					$result['numSystemMessageDismissalsMoved']++;
-				}catch (Exception $e){
+				} catch (Exception $e) {
 					$result['errors'][] = "Error moving system message dismissal from new User {$newUser->id} to original User {$originalUser->id} $e";
 				}
 			}
@@ -214,7 +213,7 @@ abstract class UserMerger extends Admin_Admin
 					$clonedPlacardDismissals->__destruct();
 					$clonedPlacardDismissals = null;
 					$result['numPlacardDismissalsMoved']++;
-				}catch (Exception $e){
+				} catch (Exception $e) {
 					$result['errors'][] = "Error moving placard dismissal from new User {$newUser->id} to original User {$originalUser->id} $e";
 				}
 			}
@@ -290,7 +289,7 @@ abstract class UserMerger extends Admin_Admin
 			$originalUser->update();
 
 			$result['numUsersMerged']++;
-		}catch (Exception $e){
+		} catch (Exception $e) {
 			$result['errors'][] = "Error moving user data from new User {$newUser->id} to original User {$originalUser->id} $e";
 		}
 	}

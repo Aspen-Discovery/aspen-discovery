@@ -1,7 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-class ImportListsFromClassic extends MyAccount{
+
+class ImportListsFromClassic extends MyAccount {
 
 	/**
 	 * Process parameters and display the page.
@@ -9,8 +10,7 @@ class ImportListsFromClassic extends MyAccount{
 	 * @return void
 	 * @access public
 	 */
-	public function launch()
-	{
+	public function launch() {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -25,8 +25,7 @@ class ImportListsFromClassic extends MyAccount{
 		$this->display('listImportResults.tpl', 'Import Results');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Import Lists');

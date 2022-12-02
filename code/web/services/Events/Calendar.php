@@ -1,10 +1,8 @@
 <?php
 
 
-class Events_Calendar extends Action
-{
-	function launch()
-	{
+class Events_Calendar extends Action {
+	function launch() {
 		global $interface;
 		global $timer;
 
@@ -14,12 +12,12 @@ class Events_Calendar extends Action
 		$today = new DateTime();
 		if (isset($_REQUEST['month'])) {
 			$month = $_REQUEST['month'];
-		}else{
+		} else {
 			$month = $today->format('m');
 		}
 		if (isset($_REQUEST['year'])) {
 			$year = $_REQUEST['year'];
-		}else{
+		} else {
 			$year = $today->format('Y');
 		}
 		$paddedMonth = str_pad($month, 2, '0', STR_PAD_LEFT);
@@ -89,47 +87,47 @@ class Events_Calendar extends Action
 		//Get a list of weeks for the month
 		$weeks = [];
 		$dayNum = 1;
-		$maxDay = cal_days_in_month ( CAL_GREGORIAN, $month , $year);
-		for ($i = 0; $i < 5; $i++){
+		$maxDay = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+		for ($i = 0; $i < 5; $i++) {
 			$week = [
-				'days' => []
+				'days' => [],
 			];
 
 			$startDayIndex = 0;
-			if ($i == 0){
+			if ($i == 0) {
 				$startDayIndex = $calendarStartDay->format('N');
-				for ($j = 0; $j < $startDayIndex; $j++){
+				for ($j = 0; $j < $startDayIndex; $j++) {
 					$week['days'][] = [
 						'day' => '',
 						'fullDate' => '',
-						'events' => []
+						'events' => [],
 					];
 				}
 			}
-			for ($j = $startDayIndex; $j < 7; $j++){
+			for ($j = $startDayIndex; $j < 7; $j++) {
 				$eventDay = $year . '-' . $paddedMonth . '-' . str_pad($dayNum, 2, '0', STR_PAD_LEFT);
 				$eventDate = new DateTime($eventDay);
 
 				$eventDayObj = [
 					'day' => $dayNum,
 					'fullDate' => $eventDate->format('l, F jS'),
-					'events' => []
+					'events' => [],
 				];
 
 				//Loop through search results to find events for this day
 				foreach ($searchResults as $result) {
-					if (in_array($eventDay, $result['event_day'])){
+					if (in_array($eventDay, $result['event_day'])) {
 						$startDate = new DateTime($result['start_date']);
 						$startDate->setTimezone($defaultTimezone);
 						$formattedTime = date_format($startDate, "h:iA");
 						$endDate = new DateTime($result['end_date']);
 						$endDate->setTimezone($defaultTimezone);
 						$formattedTime .= ' - ' . date_format($endDate, "h:iA");
-						if (($endDate->getTimestamp() - $startDate-> getTimestamp()) > 24 * 60 * 60){
+						if (($endDate->getTimestamp() - $startDate->getTimestamp()) > 24 * 60 * 60) {
 							$formattedTime = 'All day';
 						}
 						$isCancelled = false;
-						if (array_key_exists('reservation_state', $result) && in_array('Cancelled', $result['reservation_state'] )) {
+						if (array_key_exists('reservation_state', $result) && in_array('Cancelled', $result['reservation_state'])) {
 							$isCancelled = true;
 						}
 						$eventDayObj['events'][] = [
@@ -137,7 +135,7 @@ class Events_Calendar extends Action
 							'title' => $result['title'],
 							'link' => $result['url'],
 							'formattedTime' => $formattedTime,
-							'isCancelled' => $isCancelled
+							'isCancelled' => $isCancelled,
 						];
 					}
 				}
@@ -158,8 +156,7 @@ class Events_Calendar extends Action
 		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, '');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');

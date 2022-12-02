@@ -7,8 +7,7 @@
  * @param string $name The ini file's name from the [Extra_Config] section of config.ini
  * @return  string      The file path
  */
-function getExtraConfigArrayFile($name)
-{
+function getExtraConfigArrayFile($name) {
 	global $configArray;
 
 	// Load the filename from config.ini, and use the key name as a default
@@ -36,8 +35,7 @@ function getExtraConfigArrayFile($name)
  * @param string $name The name of the translation map should not include _map.properties
  * @return  string[]      The file path
  */
-function getTranslationMap($name)
-{
+function getTranslationMap($name) {
 	//Check to see if there is a domain name based sub-folder for he configuration
 	global $serverName;
 	global $memCache;
@@ -62,7 +60,7 @@ function getTranslationMap($name)
 
 	// Try to load the .ini file; if loading fails, the file probably doesn't
 	// exist, so we can treat it as an empty array.
-	$mapValues = array();
+	$mapValues = [];
 	$fHnd = fopen($mapFilename, 'r');
 	while (($line = fgets($fHnd)) !== false) {
 		if (substr($line, 0, 1) == '#') {
@@ -81,8 +79,7 @@ function getTranslationMap($name)
 	return $mapValues;
 }
 
-function mapValue($mapName, $value)
-{
+function mapValue($mapName, $value) {
 	$map = getTranslationMap($mapName);
 	if ($map == null || $map == false) {
 		return $value;
@@ -111,9 +108,8 @@ function mapValue($mapName, $value)
  * @param string $name The ini file's name from the [Extra_Config] section of config.ini
  * @return  array       The retrieved configuration settings.
  */
-function getExtraConfigArray($name)
-{
-	static $extraConfigs = array();
+function getExtraConfigArray($name) {
+	static $extraConfigs = [];
 
 	// If the requested settings aren't loaded yet, pull them in:
 	if (!isset($extraConfigs[$name])) {
@@ -121,7 +117,7 @@ function getExtraConfigArray($name)
 		// exist, so we can treat it as an empty array.
 		$extraConfigs[$name] = @parse_ini_file(getExtraConfigArrayFile($name), true);
 		if ($extraConfigs[$name] === false) {
-			$extraConfigs[$name] = array();
+			$extraConfigs[$name] = [];
 		}
 	}
 
@@ -135,11 +131,10 @@ function getExtraConfigArray($name)
  * @param array $custom_ini Overrides to apply on top of the base array.
  * @return  array       The merged results.
  */
-function ini_merge($config_ini, $custom_ini)
-{
+function ini_merge($config_ini, $custom_ini) {
 	foreach ($custom_ini as $k => $v) {
 		if (is_array($v)) {
-			$config_ini[$k] = ini_merge(isset($config_ini[$k]) ? $config_ini[$k] : array(), $custom_ini[$k]);
+			$config_ini[$k] = ini_merge(isset($config_ini[$k]) ? $config_ini[$k] : [], $custom_ini[$k]);
 		} else {
 			$config_ini[$k] = $v;
 		}
@@ -153,8 +148,7 @@ function ini_merge($config_ini, $custom_ini)
  *
  * @return  array       The desired config.ini settings in array format.
  */
-function readConfig()
-{
+function readConfig() {
 	//Read default configuration file
 	$configFile = ROOT_DIR . '/../../sites/default/conf/config.ini';
 	$mainArray = parse_ini_file($configFile, true);
@@ -225,7 +219,7 @@ function readConfig()
 		} else {
 			$mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
 		}
-		if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443){
+		if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) {
 			$mainArray['Site']['url'] .= ":" . $_SERVER['SERVER_PORT'];
 		}
 	}
@@ -241,8 +235,7 @@ function readConfig()
  *
  * @return array the configuration options adjusted based on the scoping rules.
  */
-function updateConfigForScoping($configArray)
-{
+function updateConfigForScoping($configArray) {
 	global $timer;
 	global $fullServerName;
 
@@ -251,10 +244,10 @@ function updateConfigForScoping($configArray)
 		$fullServerName = $_GET['test_servername'];
 		if (empty($fullServerName)) {
 			setcookie('test_servername', $_COOKIE['test_servername'], time() - 1000, '/');
-		} else if (!isset($_COOKIE['test_servername']) || ($_COOKIE['test_servername'] != $fullServerName)) {
+		} elseif (!isset($_COOKIE['test_servername']) || ($_COOKIE['test_servername'] != $fullServerName)) {
 			setcookie('test_servername', $fullServerName, 0, '/');
 		}
-	} else if (isset($_COOKIE['test_servername'])) {
+	} elseif (isset($_COOKIE['test_servername'])) {
 		$fullServerName = $_COOKIE['test_servername'];
 	}
 
@@ -263,7 +256,7 @@ function updateConfigForScoping($configArray)
 	$subdomain = null;
 	$timer->logTime('starting updateConfigForScoping');
 
-	$subdomainsToTest = array();
+	$subdomainsToTest = [];
 	if (strpos($fullServerName, '.')) {
 		$subdomainsToTest = getSubdomainsToTestFromServerName($fullServerName, $subdomainsToTest);
 	}
@@ -293,7 +286,7 @@ function updateConfigForScoping($configArray)
 				$Library->fetch();
 				$library = $Library;
 				$timer->logTime("found the library based on active_library server variable");
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				global $logger;
 				$logger->log("Error loading library $e", Logger::LOG_ALERT);
 			}
@@ -333,9 +326,7 @@ function updateConfigForScoping($configArray)
 					$Location->find();
 					if ($Location->getNumResults() == 1) {
 						$Location->fetch();
-						//We found a location for the subdomain, get the library.
-						/** @var Library $librarySingleton */
-						global $librarySingleton;
+						//We found a location for the subdomain, get the library. /** @var Library $librarySingleton */ global $librarySingleton;
 						$library = $librarySingleton->getLibraryForLocation($Location->locationId);
 						$locationSingleton->setActiveLocation(clone $Location);
 						$timer->logTime("found the location and library based on subdomain");
@@ -408,15 +399,14 @@ function updateConfigForScoping($configArray)
  * @param array $subdomainsToTest
  * @return array
  */
-function getSubdomainsToTestFromServerName($fullServerName, array $subdomainsToTest): array
-{
+function getSubdomainsToTestFromServerName($fullServerName, array $subdomainsToTest): array {
 	$serverComponents = explode('.', $fullServerName);
 	$tempSubdomain = '';
 	if (count($serverComponents) >= 3) {
 		//URL is probably of the form subdomain.librarysite.org or subdomain.opac.librarysite.org
 		$subdomainsToTest[] = $serverComponents[0];
 		$tempSubdomain = $serverComponents[0];
-	} else if (count($serverComponents) == 2) {
+	} elseif (count($serverComponents) == 2) {
 		//URL could be either subdomain.localhost or librarysite.org. Only use the subdomain
 		//If the second component is localhost.
 		if (strcasecmp($serverComponents[1], 'localhost') == 0) {

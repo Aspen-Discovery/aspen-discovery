@@ -1,8 +1,7 @@
 <?php
 
 
-class AspenSiteCache extends DataObject
-{
+class AspenSiteCache extends DataObject {
 	public $__table = 'greenhouse_cache';
 	public $id;
 	public $siteId;

@@ -1,7 +1,7 @@
 <?php
 
 class LDRecordOffer {
-    /** @var Grouping_Record */
+	/** @var Grouping_Record */
 	private $relatedRecord;
 
 	public function __construct($record) {
@@ -9,20 +9,22 @@ class LDRecordOffer {
 	}
 
 	public function getOffers() {
-		$offers = array();
+		$offers = [];
 		foreach ($this->relatedRecord->getItemSummary() as $itemData) {
 			if ($itemData['isLibraryItem'] || $itemData['isEContent']) {
-				$offerData = array(
+				$offerData = [
 					"availability" => $this->getOfferAvailability($itemData),
 					'availableDeliveryMethod' => $this->getDeliveryMethod(),
-					"itemOffered" => array(
+					"itemOffered" => [
 						'@type' => 'CreativeWork',
-						'@id' => $this->getOfferLinkUrl(), //URL to the record
-					),
-					"offeredBy" => $this->getLibraryUrl(), //URL to the library that owns the item
+						'@id' => $this->getOfferLinkUrl(),
+						//URL to the record
+					],
+					"offeredBy" => $this->getLibraryUrl(),
+					//URL to the library that owns the item
 					"price" => '0',
 					"inventoryLevel" => $itemData['availableCopies'],
-				);
+				];
 				$locationCode = $itemData['locationCode'];
 				$subLocation = $itemData['subLocation'];
 				if (strlen($locationCode) > 0) {
@@ -46,13 +48,13 @@ class LDRecordOffer {
 
 	function getLibraryUrl() {
 		global $configArray;
-		$offerBy = array();
+		$offerBy = [];
 		global $library;
-		$offerBy[] = array(
-				"@type" => "Library",
-				"@id" => $configArray['Site']['url'] . "/Library/{$library->libraryId}/System",
-				"name" => $library->displayName
-		);
+		$offerBy[] = [
+			"@type" => "Library",
+			"@id" => $configArray['Site']['url'] . "/Library/{$library->libraryId}/System",
+			"name" => $library->displayName,
+		];
 		return $offerBy;
 	}
 
@@ -91,20 +93,20 @@ class LDRecordOffer {
 		$locations->libraryId = $library->libraryId;
 		$escapedCode = $locations->escape($locationCode);
 		$locations->whereAdd("LEFT($escapedCode, LENGTH(code)) = code");
-		if ($subLocation){
+		if ($subLocation) {
 			$locations->subLocation = $subLocation;
 		}
 		$locations->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 		$locations->find();
-		$subLocations = array();
+		$subLocations = [];
 		while ($locations->fetch()) {
 
-			$subLocations[] = array(
-					'@type' => 'Place',
-					'name' => $locations->displayName,
-					'@id' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch"
+			$subLocations[] = [
+				'@type' => 'Place',
+				'name' => $locations->displayName,
+				'@id' => $configArray['Site']['url'] . "/Library/{$locations->locationId}/Branch",
 
-			);
+			];
 		}
 		return $subLocations;
 

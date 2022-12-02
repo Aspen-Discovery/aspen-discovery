@@ -2,11 +2,9 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
-class Lists extends MyAccount
-{
+class Lists extends MyAccount {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		global $library;
 
@@ -34,7 +32,7 @@ class Lists extends MyAccount
 		$listCount = $userLists->count();
 		$userLists->find();
 		$lists = [];
-		while ($userLists->fetch()){
+		while ($userLists->fetch()) {
 			$lists[] = clone $userLists;
 		}
 		$interface->assign('lists', $lists);
@@ -42,22 +40,21 @@ class Lists extends MyAccount
 
 		$interface->assign('enableListDescriptions', $library->enableListDescriptions);
 
-		$options = array(
+		$options = [
 			'totalItems' => $listCount,
 			'fileName' => '/MyAccount/MyLists?page=%d',
 			'perPage' => $listsPerPage,
-			'showCovers' => isset($_REQUEST['showCovers'])
-		);
+			'showCovers' => isset($_REQUEST['showCovers']),
+		];
 		$pager = new Pager($options);
 
-			$interface->assign('pageLinks', $pager->getLinks());
+		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('../MyAccount/lists.tpl', 'My Lists');
 
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Lists');

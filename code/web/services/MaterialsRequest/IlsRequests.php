@@ -5,18 +5,16 @@ require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MaterialsRequest_IlsRequests extends MyAccount
-{
+class MaterialsRequest_IlsRequests extends MyAccount {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		//Get a list of all materials requests for the user
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
 			$linkedUsers = $user->getLinkedUsers();
-			$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
+			$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
 			$interface->assign('patronId', $patronId);
 
 			$patron = $user->getUserReferredTo($patronId);
@@ -28,21 +26,20 @@ class MaterialsRequest_IlsRequests extends MyAccount
 
 			$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
-			if (isset($_REQUEST['submit'])){
+			if (isset($_REQUEST['submit'])) {
 				$catalogConnection->deleteMaterialsRequests($patron);
 			}
 			$requestTemplate = $catalogConnection->getMaterialsRequestsPage($patron);
 
 			$title = 'My Materials Requests';
 			$this->display($requestTemplate, $title);
-		}else{
+		} else {
 			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
 			exit;
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/IlsRequests', 'My Materials Requests');

@@ -1,10 +1,8 @@
 <?php
 
 
-class StaffDirectory extends Action
-{
-	function launch()
-	{
+class StaffDirectory extends Action {
+	function launch() {
 		global $interface;
 		global $library;
 
@@ -15,9 +13,9 @@ class StaffDirectory extends Action
 		$staffMember->find();
 		$staffMembers = [];
 		$hasPhotos = false;
-		while ($staffMember->fetch()){
+		while ($staffMember->fetch()) {
 			$staffMembers[] = clone $staffMember;
-			if (!empty($staffMember->photo)){
+			if (!empty($staffMember->photo)) {
 				$hasPhotos = true;
 			}
 		}
@@ -28,8 +26,7 @@ class StaffDirectory extends Action
 		$this->display('staffDirectory.tpl', 'Staff Directory', '');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', 'Staff Directory', true);

@@ -1,8 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/User/CircEntry.php';
 
-class Hold extends CircEntry
-{
+class Hold extends CircEntry {
 	public $__table = 'user_hold';
 	public $shortId;
 	public $itemId;
@@ -31,30 +30,44 @@ class Hold extends CircEntry
 	//Try to get rid of
 	public $_freezeError;
 
-	public function getNumericColumnNames() : array
-	{
-		return ['userId', 'available', 'cancelable', 'locationUpdateable', 'position', 'holdQueueLength', 'createDate', 'availableDate', 'expirationDate', 'automaticCancellationDate', 'frozen', 'canFreeze', 'reactivateDate', 'isIll'];
+	public function getNumericColumnNames(): array {
+		return [
+			'userId',
+			'available',
+			'cancelable',
+			'locationUpdateable',
+			'position',
+			'holdQueueLength',
+			'createDate',
+			'availableDate',
+			'expirationDate',
+			'automaticCancellationDate',
+			'frozen',
+			'canFreeze',
+			'reactivateDate',
+			'isIll',
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	public function getPreviewActions(){
+	public function getPreviewActions() {
 		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
+		if ($recordDriver != false) {
 			return $recordDriver->getPreviewActions();
-		}else{
+		} else {
 			return null;
 		}
 	}
 
-	public function getArrayForAPIs(){
+	public function getArrayForAPIs() {
 		$hold = $this->toArray();
 		if ($hold['type'] == 'ils') {
 			$hold['holdSource'] = 'ILS';
-		}elseif ($hold['type'] == 'cloud_library') {
+		} elseif ($hold['type'] == 'cloud_library') {
 			$hold['holdSource'] = 'CloudLibrary';
-		}elseif ($hold['type'] == 'axis360') {
+		} elseif ($hold['type'] == 'axis360') {
 			$hold['holdSource'] = 'Axis360';
-		}elseif ($hold['type'] == 'overdrive') {
+		} elseif ($hold['type'] == 'overdrive') {
 			global $configArray;
 			$hold['holdSource'] = 'OverDrive';
 			$hold['overDriveId'] = $hold['sourceId'];
@@ -77,7 +90,7 @@ class Hold extends CircEntry
 		$hold['expire'] = $hold['expirationDate'];
 		$hold['frozen'] = (boolean)$hold['frozen'];
 		$hold['cancelable'] = (boolean)$hold['cancelable'];
-		if($hold['automaticCancellationDate'] == 0 || empty($hold['automaticCancellationDate'])) {
+		if ($hold['automaticCancellationDate'] == 0 || empty($hold['automaticCancellationDate'])) {
 			$hold['automaticCancellation'] = null;
 			$hold['automaticCancellationDate'] = null;
 		} else {
@@ -94,13 +107,13 @@ class Hold extends CircEntry
 			$hold['currentPickupName'] = $this->pickupLocationName;
 			$location = new Location();
 			$location->locationId = $this->pickupLocationId;
-			if ($location->find(true)){
+			if ($location->find(true)) {
 				$hold['currentPickupId'] = $location->code;
 				$hold['location'] = $location->code;
 			}
 		}
 		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver && $recordDriver->isValid()){
+		if ($recordDriver && $recordDriver->isValid()) {
 			$hold['isbn'] = $recordDriver->getCleanISBN();
 			$hold['upc'] = $recordDriver->getUPC();
 			$hold['format_category'] = $recordDriver->getFormatCategory();
@@ -109,7 +122,7 @@ class Hold extends CircEntry
 		return $hold;
 	}
 
-	public function getFormats(){
+	public function getFormats() {
 		if ($this->format == null) {
 			$recordDriver = $this->getRecordDriver();
 			if ($recordDriver != false) {
@@ -117,31 +130,30 @@ class Hold extends CircEntry
 			} else {
 				return 'Unknown';
 			}
-		}else{
+		} else {
 			return [$this->format];
 		}
 	}
 
-	private function performPreSaveChecks(){
+	private function performPreSaveChecks() {
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-		if (strlen($this->title) > 500){
+		if (strlen($this->title) > 500) {
 			$this->title = StringUtils::trimStringToLengthAtWordBoundary($this->title, 500, true);
 		}
-		if (strlen($this->title2) > 500){
+		if (strlen($this->title2) > 500) {
 			$this->title2 = StringUtils::trimStringToLengthAtWordBoundary($this->title2, 500, true);
 		}
-		if (strlen($this->author) > 500){
+		if (strlen($this->author) > 500) {
 			$this->author = StringUtils::trimStringToLengthAtWordBoundary($this->author, 500, true);
 		}
 	}
-	public function insert()
-	{
+
+	public function insert() {
 		$this->performPreSaveChecks();
 		return parent::insert();
 	}
 
-	public function update()
-	{
+	public function update() {
 		$this->performPreSaveChecks();
 		return parent::update();
 	}

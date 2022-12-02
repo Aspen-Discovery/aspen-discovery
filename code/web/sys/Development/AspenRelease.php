@@ -18,7 +18,7 @@ class AspenRelease extends DataObject {
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
+				'description' => 'The unique id',
 			],
 			'name' => [
 				'property' => 'name',
@@ -27,25 +27,25 @@ class AspenRelease extends DataObject {
 				'description' => 'The name of the release',
 				'maxLength' => 10,
 				'required' => true,
-				'canBatchUpdate' => false
+				'canBatchUpdate' => false,
 			],
 			'releaseDateTest' => [
 				'property' => 'releaseDateTest',
 				'type' => 'date',
 				'label' => 'Release Date to Test Servers',
-				'description' => 'The official release to Test and Implementation servers'
+				'description' => 'The official release to Test and Implementation servers',
 			],
 			'releaseDate' => [
 				'property' => 'releaseDate',
 				'type' => 'date',
 				'label' => 'Release Date to Production Servers',
-				'description' => 'The official release to live servers'
+				'description' => 'The official release to live servers',
 			],
 			'totalStoryPoints' => [
 				'property' => 'totalStoryPoints',
 				'type' => 'label',
 				'label' => 'Total Story Points',
-				'description' => 'The total number of story points assigned to the release'
+				'description' => 'The total number of story points assigned to the release',
 			],
 			'relatedTasks' => [
 				'property' => 'relatedTasks',
@@ -61,7 +61,7 @@ class AspenRelease extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 		];
 	}

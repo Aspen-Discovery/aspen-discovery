@@ -1,20 +1,14 @@
 <?php
 
 /** @noinspection SqlResolve */
-function getThemingUpdates()
-{
+function getThemingUpdates() {
 	return [
 		'themes_setup' => [
 			'title' => 'Theme Setup',
 			'description' => 'Initial setup of themes table. ',
 			'continueOnError' => false,
 			'sql' => [
-				"CREATE TABLE IF NOT EXISTS themes (" .
-					"id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " .
-					"themeName VARCHAR(100) NOT NULL, " .
-					"extendsTheme VARCHAR(100) NULL DEFAULT NULL, " .
-					"logoName VARCHAR(100) NOT NULL " .
-				")",
+				"CREATE TABLE IF NOT EXISTS themes (" . "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " . "themeName VARCHAR(100) NOT NULL, " . "extendsTheme VARCHAR(100) NULL DEFAULT NULL, " . "logoName VARCHAR(100) NOT NULL " . ")",
 				"ALTER TABLE themes ADD INDEX `themeName` (`themeName`)",
 			],
 		],
@@ -70,8 +64,8 @@ function getThemingUpdates()
 			'description' => 'Update theme table to have default values for logo and favicon to prevent errors',
 			'sql' => [
 				"ALTER TABLE themes CHANGE COLUMN logoName logoName VARCHAR(100) default ''",
-				"ALTER TABLE themes CHANGE COLUMN favicon favicon VARCHAR(100) default ''"
-			]
+				"ALTER TABLE themes CHANGE COLUMN favicon favicon VARCHAR(100) default ''",
+			],
 		],
 
 		'themes_primary_colors' => [
@@ -126,7 +120,7 @@ function getThemingUpdates()
 			'sql' => [
 				'ALTER TABLE themes add COLUMN additionalCss TEXT',
 				'ALTER TABLE themes add COLUMN additionalCssType TINYINT(1) DEFAULT 0',
-			]
+			],
 		],
 
 		'themes_button_radius' => [
@@ -137,7 +131,7 @@ function getThemingUpdates()
 				'ALTER TABLE themes add COLUMN buttonRadiusDefault tinyint(1) DEFAULT 1',
 				'ALTER TABLE themes add COLUMN smallButtonRadius INT DEFAULT 3',
 				'ALTER TABLE themes add COLUMN smallButtonRadiusDefault tinyint(1) DEFAULT 1',
-			]
+			],
 		],
 
 		'themes_button_radius2' => [
@@ -150,7 +144,7 @@ function getThemingUpdates()
 				'ALTER TABLE themes CHANGE COLUMN smallButtonRadius smallButtonRadius VARCHAR(6) DEFAULT null',
 				'UPDATE themes set smallButtonRadius = null',
 				'ALTER TABLE themes DROP COLUMN smallButtonRadiusDefault',
-			]
+			],
 		],
 
 		'themes_browse_category_colors' => [
@@ -183,7 +177,7 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightBackgroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColor CHAR(7) DEFAULT '#ffffff'",
 				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_additional_fonts' => [
@@ -192,7 +186,7 @@ function getThemingUpdates()
 			'sql' => [
 				"ALTER TABLE `themes` ADD COLUMN customHeadingFont VARCHAR(100)",
 				"ALTER TABLE `themes` ADD COLUMN customBodyFont VARCHAR(100)",
-			]
+			],
 		],
 
 		'themes_capitalize_browse_categories' => [
@@ -200,7 +194,7 @@ function getThemingUpdates()
 			'description' => 'Switch to capitalize browse categories',
 			'sql' => [
 				"ALTER TABLE `themes` ADD COLUMN capitalizeBrowseCategories TINYINT(1) DEFAULT -1",
-			]
+			],
 		],
 
 		'themes_button_colors' => [
@@ -258,7 +252,7 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverBorderColor CHAR(7) DEFAULT '#269abc'",
 				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
-				
+
 				"ALTER TABLE `themes` ADD COLUMN warningButtonBackgroundColor CHAR(7) DEFAULT '#f0ad4e'",
 				"ALTER TABLE `themes` ADD COLUMN warningButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE `themes` ADD COLUMN warningButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
@@ -284,7 +278,7 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBorderColor CHAR(7) DEFAULT '#ac2925'",
 				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_editions_button_colors' => [
@@ -303,7 +297,7 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverBorderColor CHAR(7) DEFAULT '#dae0e5'",
 				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_tools_button_colors' => [
@@ -322,7 +316,7 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverBorderColor CHAR(7) DEFAULT '#636363'",
 				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_footer_design' => [
@@ -374,7 +368,7 @@ function getThemingUpdates()
 			'sql' => [
 				"ALTER TABLE themes ADD COLUMN linkColor CHAR(7) DEFAULT '#3174AF'",
 				"ALTER TABLE themes ADD COLUMN linkColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_link_hover_color' => [
@@ -384,7 +378,7 @@ function getThemingUpdates()
 			'sql' => [
 				"ALTER TABLE themes ADD COLUMN linkHoverColor CHAR(7) DEFAULT '#265a87'",
 				"ALTER TABLE themes ADD COLUMN linkHoverColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_badges' => [
@@ -397,7 +391,7 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN badgeForegroundColor CHAR(7) DEFAULT '#ffffff'",
 				"ALTER TABLE themes ADD COLUMN badgeForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN badgeBorderRadius VARCHAR(6) DEFAULT null",
-			]
+			],
 		],
 
 		'themes_results_breadcrumbs' => [
@@ -413,7 +407,7 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN breadcrumbsBackgroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN breadcrumbsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
 				"ALTER TABLE themes ADD COLUMN breadcrumbsForegroundColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'themes_search_tools' => [
@@ -427,7 +421,7 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN searchToolsBorderColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
 				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColorDefault tinyint(1) DEFAULT 1",
-			]
+			],
 		],
 
 		'theme_reorganize_menu' => [
@@ -454,8 +448,8 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN menuDropdownBackgroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColor CHAR(7) DEFAULT '#404040'",
 				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColorDefault tinyint(1) DEFAULT 1",
-				"updateAllThemes"
-			]
+				"updateAllThemes",
+			],
 		],
 
 		'theme_modal_dialog' => [
@@ -472,7 +466,7 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColor CHAR(7) DEFAULT '#e5e5e5'",
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColorDefault tinyint(1) DEFAULT 1",
-				"updateAllThemes"
+				"updateAllThemes",
 			],
 		],
 
@@ -480,16 +474,16 @@ function getThemingUpdates()
 			'title' => 'Rebuild Themes for 21.03',
 			'description' => 'Rebuild Themes for 21.03',
 			'sql' => [
-				"updateAllThemes"
-			]
+				"updateAllThemes",
+			],
 		],
 	];
 }
 
-function updateAllThemes(){
+function updateAllThemes() {
 	$theme = new Theme();
 	$theme->find();
-	while ($theme->fetch()){
+	while ($theme->fetch()) {
 		$theme->generateCss(true);
 	}
 }

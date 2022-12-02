@@ -3,8 +3,7 @@
 require_once ROOT_DIR . '/sys/Grouping/StatusInformation.php';
 require_once ROOT_DIR . '/sys/Grouping/Item.php';
 
-class Grouping_Record
-{
+class Grouping_Record {
 	public $id;
 	public $databaseId;
 
@@ -58,12 +57,11 @@ class Grouping_Record
 	 * @param string $source
 	 * @param bool $useAssociativeArray
 	 */
-	public function __construct($recordId, $recordDetails, $recordDriver, $volumeData, $source, $useAssociativeArray = false)
-	{
+	public function __construct($recordId, $recordDetails, $recordDriver, $volumeData, $source, $useAssociativeArray = false) {
 		$this->_driver = $recordDriver;
 		$this->_url = $recordDriver != null ? $recordDriver->getRecordUrl() : '';
 		$this->id = $recordId;
-		if ($useAssociativeArray){
+		if ($useAssociativeArray) {
 			$this->format = $recordDetails['format'];
 			$this->formatCategory = $recordDetails['formatCategory'];
 			$this->databaseId = $recordDetails['id'];
@@ -75,7 +73,7 @@ class Grouping_Record
 			if (isset($recordDetails['isClosedCaptioned'])) {
 				$this->closedCaptioned = $recordDetails['isClosedCaptioned'];
 			}
-		}else{
+		} else {
 			$this->format = $recordDetails[1];
 			$this->formatCategory = $recordDetails[2];
 			$this->edition = $recordDetails[3];
@@ -91,13 +89,13 @@ class Grouping_Record
 		$this->source = $source;
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
-		if ($recordDriver != null && $recordDriver instanceof OverDriveRecordDriver){
+		if ($recordDriver != null && $recordDriver instanceof OverDriveRecordDriver) {
 			$availability = $recordDriver->getAvailability();
 			if ($availability != null) {
 				$this->_statusInformation->addCopies($availability->copiesOwned);
 				$this->_statusInformation->addAvailableCopies($availability->copiesAvailable);
 				$this->_statusInformation->setAvailableOnline($availability->copiesAvailable > 0);
-			}else{
+			} else {
 				$this->_statusInformation->addCopies(0);
 				$this->_statusInformation->addAvailableCopies(0);
 				$this->_statusInformation->setAvailableOnline(false);
@@ -108,21 +106,20 @@ class Grouping_Record
 		$this->_volumeData = $volumeData;
 		if (!empty($volumeData)) {
 			$this->_volumeData = [];
-			foreach ($volumeData as $volumeInfo){
-				if ($volumeInfo->recordId == $this->id){
+			foreach ($volumeData as $volumeInfo) {
+				if ($volumeInfo->recordId == $this->id) {
 					$this->_volumeData[] = $volumeInfo;
 				}
 			}
 		}
-		if ($recordDriver != null && $recordDriver instanceof SideLoadedRecord){
+		if ($recordDriver != null && $recordDriver instanceof SideLoadedRecord) {
 			$this->_statusInformation->setIsShowStatus($recordDriver->isShowStatus());
-		}else{
+		} else {
 			$this->_statusInformation->setIsShowStatus(true);
 		}
 	}
 
-	function addItem(Grouping_Item $item)
-	{
+	function addItem(Grouping_Item $item) {
 		$item->setRecord($this);
 		$this->_items[] = $item;
 		//Update the record with information from the item and from scoping.
@@ -148,7 +145,7 @@ class Grouping_Record
 		}
 		if ($item->holdable) {
 			$this->_holdable = true;
-			if ($item->locallyOwned || $item->libraryOwned){
+			if ($item->locallyOwned || $item->libraryOwned) {
 				$this->_locallyHoldable = true;
 			}
 		}
@@ -187,8 +184,8 @@ class Grouping_Record
 
 		$this->_statusInformation->setGroupedStatus(GroupedWorkDriver::keepBestGroupedStatus($this->getStatusInformation()->getGroupedStatus(), $item->groupedStatus));
 
-		if (!empty($this->_volumeData)){
-			foreach ($this->_volumeData as $volumeInfo){
+		if (!empty($this->_volumeData)) {
+			foreach ($this->_volumeData as $volumeInfo) {
 				if ((strlen($volumeInfo->relatedItems) != 0) && (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
 					$item->volume = $volumeInfo->displayLabel;
 					$item->volumeId = $volumeInfo->volumeId;
@@ -198,8 +195,7 @@ class Grouping_Record
 		}
 	}
 
-	function getSchemaOrgBookFormat()
-	{
+	function getSchemaOrgBookFormat() {
 		switch ($this->format) {
 			case 'Book':
 			case 'Large Print':
@@ -227,8 +223,7 @@ class Grouping_Record
 		}
 	}
 
-	function getSchemaOrgType()
-	{
+	function getSchemaOrgType() {
 		switch ($this->format) {
 			case 'Audio':
 			case 'Audio Book':
@@ -291,122 +286,107 @@ class Grouping_Record
 	/**
 	 * @return int
 	 */
-	public function getAvailableCopies(): int
-	{
+	public function getAvailableCopies(): int {
 		return $this->_statusInformation->getAvailableCopies();
 	}
 
 	/**
 	 * @param int $availableCopies
 	 */
-	public function addAvailableCopies(int $availableCopies): void
-	{
+	public function addAvailableCopies(int $availableCopies): void {
 		$this->_statusInformation->addAvailableCopies($availableCopies);
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getCopies(): int
-	{
+	public function getCopies(): int {
 		return $this->_statusInformation->getCopies();
 	}
 
 	/**
 	 * @param int $copies
 	 */
-	public function addCopies(int $copies): void
-	{
+	public function addCopies(int $copies): void {
 		$this->_statusInformation->addCopies($copies);
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isHoldable(): bool
-	{
+	public function isHoldable(): bool {
 		return $this->_holdable;
 	}
 
 	/**
 	 * @param bool $holdable
 	 */
-	public function setHoldable(bool $holdable): void
-	{
+	public function setHoldable(bool $holdable): void {
 		$this->_holdable = $holdable;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isLocallyHoldable(): bool
-	{
+	public function isLocallyHoldable(): bool {
 		return $this->_locallyHoldable;
 	}
 
 	/**
 	 * @param bool $locallyHoldable
 	 */
-	public function setLocallyHoldable(bool $locallyHoldable): void
-	{
+	public function setLocallyHoldable(bool $locallyHoldable): void {
 		$this->_locallyHoldable = $locallyHoldable;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getClass(): string
-	{
+	public function getClass(): string {
 		return $this->_class;
 	}
 
 	/**
 	 * @param string $class
 	 */
-	public function setClass(string $class): void
-	{
+	public function setClass(string $class): void {
 		$this->_class = $class;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getLocalCopies(): int
-	{
+	public function getLocalCopies(): int {
 		return $this->_statusInformation->getLocalCopies();
 	}
 
 	/**
 	 * @param int $localCopies
 	 */
-	public function addLocalCopies(int $localCopies): void
-	{
+	public function addLocalCopies(int $localCopies): void {
 		$this->_statusInformation->addLocalCopies($localCopies);
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function hasLocalItem(): bool
-	{
+	public function hasLocalItem(): bool {
 		return $this->_hasLocalItem;
 	}
 
 	/**
 	 * @param bool $hasLocalItem
 	 */
-	public function setHasLocalItem(bool $hasLocalItem): void
-	{
+	public function setHasLocalItem(bool $hasLocalItem): void {
 		$this->_hasLocalItem = $hasLocalItem;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getItemSummary(): array
-	{
-		if (empty($this->_itemSummary)){
-			foreach ($this->_items as $item){
+	public function getItemSummary(): array {
+		if (empty($this->_itemSummary)) {
+			foreach ($this->_items as $item) {
 				$key = $item->getSummaryKey();
 				$itemSummary = $item->getSummary();
 				$this->addItemDetails($key, $itemSummary);
@@ -418,8 +398,7 @@ class Grouping_Record
 		return $this->_itemSummary;
 	}
 
-	public function getItemsDisplayedByDefault(): array
-	{
+	public function getItemsDisplayedByDefault(): array {
 		if ($this->_itemsDisplayedByDefault == null) {
 			//Make sure everything gets initialized
 			$this->getItemDetails();
@@ -427,13 +406,11 @@ class Grouping_Record
 		return $this->_itemsDisplayedByDefault;
 	}
 
-	public function hasItemSummary($itemKey): bool
-	{
+	public function hasItemSummary($itemKey): bool {
 		return isset($this->_itemSummary[$itemKey]);
 	}
 
-	public function addItemSummary($key, $itemSummaryInfo, $groupedStatus): void
-	{
+	public function addItemSummary($key, $itemSummaryInfo, $groupedStatus): void {
 		if ($this->hasItemSummary($key)) {
 			$this->_itemSummary[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
 			$this->_itemSummary[$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
@@ -453,8 +430,8 @@ class Grouping_Record
 		if ($this->_itemsDisplayedByDefault == null) {
 			$this->_itemsDisplayedByDefault = [];
 		}
-		if ($itemSummaryInfo['displayByDefault']){
-			if (isset($this->_itemsDisplayedByDefault[$key])){
+		if ($itemSummaryInfo['displayByDefault']) {
+			if (isset($this->_itemsDisplayedByDefault[$key])) {
 				$this->_itemsDisplayedByDefault[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
 				$this->_itemsDisplayedByDefault[$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
 				$this->_itemsDisplayedByDefault[$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
@@ -463,24 +440,22 @@ class Grouping_Record
 				if ($lastStatus != $this->_itemsDisplayedByDefault[$key]['status']) {
 					$this->_itemsDisplayedByDefault[$key]['statusFull'] = $itemSummaryInfo['statusFull'];
 				}
-			}else{
+			} else {
 				$this->_itemsDisplayedByDefault[$key] = $itemSummaryInfo;
 			}
 		}
 	}
 
-	public function sortItemSummary(): void
-	{
+	public function sortItemSummary(): void {
 		ksort($this->_itemSummary);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getItemDetails(): array
-	{
-		if (empty($this->_itemDetails)){
-			foreach ($this->_items as $item){
+	public function getItemDetails(): array {
+		if (empty($this->_itemDetails)) {
+			foreach ($this->_items as $item) {
 				$key = $item->getSummaryKey();
 				$itemSummary = $item->getSummary();
 				$this->addItemDetails($key . $item->itemId, $itemSummary);
@@ -492,45 +467,39 @@ class Grouping_Record
 		return $this->_itemDetails;
 	}
 
-	public function addItemDetails($key, $itemSummaryInfo): void
-	{
+	public function addItemDetails($key, $itemSummaryInfo): void {
 		$this->_itemDetails[$key] = $itemSummaryInfo;
 	}
 
-	public function sortItemDetails(): void
-	{
+	public function sortItemDetails(): void {
 		ksort($this->_itemDetails);
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getShelfLocation(): string
-	{
+	public function getShelfLocation(): string {
 		return $this->_shelfLocation;
 	}
 
 	/**
 	 * @param string $shelfLocation
 	 */
-	public function setShelfLocation(string $shelfLocation): void
-	{
+	public function setShelfLocation(string $shelfLocation): void {
 		$this->_shelfLocation = $shelfLocation;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getCallNumber(): string
-	{
+	public function getCallNumber(): string {
 		return $this->_callNumber;
 	}
 
 	/**
 	 * @param string $callNumber
 	 */
-	public function setCallNumber(string $callNumber): void
-	{
+	public function setCallNumber(string $callNumber): void {
 		$this->_callNumber = $callNumber;
 	}
 
@@ -539,16 +508,15 @@ class Grouping_Record
 	/**
 	 * @return array
 	 */
-	public function getActions(): array
-	{
+	public function getActions(): array {
 		if ($this->_allActions == null) {
 			//TODO: Add volume information
 			if ($this->_driver != null) {
 				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
 			}
-			
+
 			$actionsToReturn = $this->_actions;
-			if (empty($this->_actions) && $this->_driver != null){
+			if (empty($this->_actions) && $this->_driver != null) {
 				foreach ($this->_items as $item) {
 					$item->setActions($this->_driver->getItemActions($item));
 					$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
@@ -564,51 +532,45 @@ class Grouping_Record
 	/**
 	 * @param array $actions
 	 */
-	public function setActions(array $actions): void
-	{
+	public function setActions(array $actions): void {
 		$this->_actions = $actions;
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function getEContentSource()
-	{
+	public function getEContentSource() {
 		return $this->_eContentSource;
 	}
 
 	/**
 	 * @param mixed $eContentSource
 	 */
-	public function setEContentSource($eContentSource): void
-	{
+	public function setEContentSource($eContentSource): void {
 		$this->_eContentSource = $eContentSource;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isEContent(): bool
-	{
+	public function isEContent(): bool {
 		return $this->_isEContent;
 	}
 
 	/**
 	 * @param bool $isEContent
 	 */
-	public function setIsEContent(bool $isEContent): void
-	{
+	public function setIsEContent(bool $isEContent): void {
 		$this->_isEContent = $isEContent;
 	}
 
 	/**
 	 * @return int
 	 */
-	function getHoldRatio(): int
-	{
+	function getHoldRatio(): int {
 		if ($this->getCopies() > 0) {
 			return $this->_statusInformation->getNumHolds() / $this->getCopies();
-		}else{
+		} else {
 			return 0;
 		}
 	}
@@ -616,29 +578,25 @@ class Grouping_Record
 	/**
 	 * @return int
 	 */
-	function getLocalAvailableCopies(): int
-	{
+	function getLocalAvailableCopies(): int {
 		return $this->_statusInformation->getLocalAvailableCopies();
 	}
 
 	/**
 	 * @return string
 	 */
-	function getUrl(): string
-	{
+	function getUrl(): string {
 		return $this->_url;
 	}
 
 	/**
 	 * @param string $url
 	 */
-	function setUrl(string $url): void
-	{
+	function setUrl(string $url): void {
 		$this->_url = $url;
 	}
 
-	function getStatusInformation()
-	{
+	function getStatusInformation() {
 		return $this->_statusInformation;
 	}
 
@@ -657,58 +615,49 @@ class Grouping_Record
 	/**
 	 * @return int
 	 */
-	function getOnOrderCopies(): int
-	{
+	function getOnOrderCopies(): int {
 		return $this->_statusInformation->getOnOrderCopies();
 	}
 
-	function addOnOrderCopies($numCopies)
-	{
+	function addOnOrderCopies($numCopies) {
 		$this->_statusInformation->addOnOrderCopies($numCopies);
 	}
 
 	/**
 	 * @return null|GroupedWorkSubDriver
 	 */
-	function getDriver()
-	{
+	function getDriver() {
 		return $this->_driver;
 	}
 
-	public function getItems()
-	{
+	public function getItems() {
 		return $this->_items;
 	}
 
-	public function getVolumeData()
-	{
+	public function getVolumeData() {
 		return $this->_volumeData;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getFormat(): string
-	{
+	public function getFormat(): string {
 		return $this->format;
 	}
 
-	public function isLocallyOwned()
-	{
+	public function isLocallyOwned() {
 		return $this->_statusInformation->isLocallyOwned();
 	}
 
 
-	public function isLibraryOwned()
-	{
+	public function isLibraryOwned() {
 		return $this->_statusInformation->isLibraryOwned();
 	}
 
-	public function getHoldPickupSetting()
-	{
+	public function getHoldPickupSetting() {
 		$result = 0;
 		global $indexingProfiles;
-		if(array_key_exists($this->source, $indexingProfiles)) {
+		if (array_key_exists($this->source, $indexingProfiles)) {
 			$indexingProfile = $indexingProfiles[$this->source];
 			$formatMap = $indexingProfile->formatMap;
 			/** @var FormatMapValue $formatMapValue */

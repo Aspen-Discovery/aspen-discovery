@@ -1,22 +1,21 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-class Greenhouse_ClearAspenData extends Admin_Admin
-{
-	function launch()
-	{
+
+class Greenhouse_ClearAspenData extends Admin_Admin {
+	function launch() {
 		global $interface;
 
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['submit'])) {
 			$submissionResults = [
 				'success' => false,
-				'message' => 'Nothing was selected to be cleaned'
+				'message' => 'Nothing was selected to be cleaned',
 			];
 
 			$success = false;
 			global $serverName;
-			if (!isset($_REQUEST['confirmation']) || ($_REQUEST['confirmation'] != $serverName)){
+			if (!isset($_REQUEST['confirmation']) || ($_REQUEST['confirmation'] != $serverName)) {
 				$message = 'Confirmation did not match, not deleting data!';
-			}else{
+			} else {
 				set_time_limit(0);
 				$message = '';
 				//Get a list of all admin users so we can preserve data for them.
@@ -24,7 +23,7 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 				$adminListIds = $adminLists->fetchAll('id');
 				$adminListIdsString = implode(',', $adminListIds);
 
-				foreach ($_REQUEST['dataElement'] as $element){
+				foreach ($_REQUEST['dataElement'] as $element) {
 					if ($element == 'bibData') {
 						require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 						$message .= $this->deleteAll('IlsVolumeInfo');
@@ -44,38 +43,66 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$objectToDelete = new GroupedWorkItemUrl();
 						$objectToDelete->whereAdd("groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where sourceId IN ($indexedSourceIdsStr)))");
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
 						$objectToDelete = new GroupedWorkItem();
 						$objectToDelete->whereAdd("groupedWorkRecordId IN (SELECT id from grouped_work_records where sourceId IN ($indexedSourceIdsStr))");
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
 						$objectToDelete = new GroupedWorkRecord();
 						$objectToDelete->whereAddIn("sourceId", $indexedSourceIds, false);
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 						$objectToDelete = new GroupedWorkPrimaryIdentifier();
 						$objectToDelete->whereAddIn("type", $indexingProfileNames, true);
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
 						$objectToDelete = new IlsRecord();
 						$objectToDelete->whereAddIn("source", $indexingProfileNames, true);
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						//Finally clear solr data
 						$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
 						/** @var Solr $index */
 						$index = $solrSearcher->getIndexEngine();
 						if ($index->deleteAllRecords()) {
-							$message .= translate(['text' => 'Cleared Solr Index', 'isAdminFacing'=>true]) . '<br/>';
+							$message .= translate([
+									'text' => 'Cleared Solr Index',
+									'isAdminFacing' => true,
+								]) . '<br/>';
 						}
 
 						//Also force a nightly index
@@ -84,18 +111,23 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 
 						$indexingProfile = new IndexingProfile();
 						$allIndexingProfiles = $indexingProfile->fetchAll();
-						foreach ($allIndexingProfiles as $indexingProfile){
+						foreach ($allIndexingProfiles as $indexingProfile) {
 							$indexingProfile->runFullUpdate = true;
 							$indexingProfile->update();
 						}
 
 						$success = true;
-					}else if ($element == 'userData') {
+					} elseif ($element == 'userData') {
 						require_once ROOT_DIR . '/sys/Account/User.php';
 						$objectToDelete = new User();
 						$objectToDelete->whereAdd("source <> 'admin'");
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						//Get a list of all admin users so we can preserve data for them.
 						$adminUsers = new User();
@@ -122,7 +154,12 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$objectToDelete = new UserRoles();
 						$objectToDelete->whereAdd("userId NOT IN ($adminUserIdsString)");
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 						$message .= $this->deleteAll('BrowseCategoryDismissal');
@@ -161,16 +198,21 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$objectToDelete = new SearchEntry();
 						$objectToDelete->whereAdd("user_id NOT IN ($adminUserIdsString)");
 						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+						$message .= translate([
+								'text' => 'Deleted %1% %2% objects',
+								1 => $numDeleted,
+								2 => get_class($objectToDelete),
+								'isAdminFacing' => true,
+							]) . '<br/>';
 
 						$success = true;
-					}else if ($element == 'userLists') {
+					} elseif ($element == 'userLists') {
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 						$message .= $this->deleteAll('UserList');
 
 						require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 						$message .= $this->deleteAll('UserListEntry');
-					}else if ($element == 'statistics'){
+					} elseif ($element == 'statistics') {
 						require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 						$message .= $this->deleteAll('Axis360RecordUsage');
 
@@ -256,7 +298,7 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$message .= $this->deleteAll('WebPageUsage');
 
 						$success = true;
-					}else if ($element == 'webBuilderContent'){
+					} elseif ($element == 'webBuilderContent') {
 						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 						$message .= $this->deleteAll('BasicPage');
 
@@ -337,44 +379,45 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 				}
 			}
 
-			if (!empty($message)){
+			if (!empty($message)) {
 				$submissionResults['message'] = $message;
 				$submissionResults['success'] = $success;
 			}
 
 			$interface->assign('submissionResults', $submissionResults);
 		}
-		$this->display('clearAspenData.tpl', 'Clear Aspen Data',false);
+		$this->display('clearAspenData.tpl', 'Clear Aspen Data', false);
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('', 'Clear Aspen Data');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'greenhouse';
 	}
 
-	function canView() : bool
-	{
-		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+	function canView(): bool {
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private function deleteAll(string $className) : string
-	{
+	private function deleteAll(string $className): string {
 		/** @var DataObject $objectToDelete */
 		$objectToDelete = new $className();
 		$numDeleted = $objectToDelete->deleteAll();
-		return translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+		return translate([
+				'text' => 'Deleted %1% %2% objects',
+				1 => $numDeleted,
+				2 => get_class($objectToDelete),
+				'isAdminFacing' => true,
+			]) . '<br/>';
 	}
 }

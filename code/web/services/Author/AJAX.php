@@ -9,8 +9,8 @@ class Author_AJAX {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			echo $this->$method();
-		}else {
-			echo json_encode(array('error'=>'invalid_method'));
+		} else {
+			echo json_encode(['error' => 'invalid_method']);
 		}
 	}
 
@@ -23,15 +23,15 @@ class Author_AJAX {
 		$id = $_REQUEST['workId'];
 		$recordDriver = new GroupedWorkDriver($id);
 
-		$enrichmentResult = array();
+		$enrichmentResult = [];
 		$enrichmentData = $recordDriver->loadEnrichment();
 		$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
 
 		/** @var NovelistData $novelistData */
-		if (isset( $enrichmentData['novelist'])){
+		if (isset($enrichmentData['novelist'])) {
 			$novelistData = $enrichmentData['novelist'];
 
-			if ($novelistData->getAuthorCount()){
+			if ($novelistData->getAuthorCount()) {
 				$interface->assign('similarAuthors', $novelistData->getAuthors());
 				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
 			}
@@ -42,18 +42,18 @@ class Author_AJAX {
 	}
 
 	/** @noinspection PhpUnused */
-	function getWikipediaData(){
+	function getWikipediaData() {
 		global $configArray;
 		global $library;
 		global $interface;
 		global $memCache;
-		$returnVal = array();
+		$returnVal = [];
 		if ($library->showWikipediaContent == 1) {
 			// Only use first two characters of language string; Wikipedia
 			// uses language domains but doesn't break them up into regional
 			// variations like pt-br or en-gb.
 			$authorName = $_REQUEST['articleName'];
-			if (is_array($authorName)){
+			if (is_array($authorName)) {
 				$authorName = reset($authorName);
 			}
 			$authorName = trim($authorName);
@@ -63,22 +63,22 @@ class Author_AJAX {
 			$authorEnrichment = new AuthorEnrichment();
 			$authorEnrichment->authorName = $authorName;
 			$doLookup = true;
-			if ($authorEnrichment->find(true)){
-				if ($authorEnrichment->hideWikipedia){
+			if ($authorEnrichment->find(true)) {
+				if ($authorEnrichment->hideWikipedia) {
 					$doLookup = false;
-				}else {
+				} else {
 					require_once ROOT_DIR . '/sys/WikipediaParser.php';
 					$wikipediaUrl = $authorEnrichment->wikipediaUrl;
 					$authorName = str_replace('https://en.wikipedia.org/wiki/', '', $wikipediaUrl);
 					$authorName = urldecode($authorName);
 				}
 			}
-			if ($doLookup){
+			if ($doLookup) {
 				global $activeLanguage;
 				$wiki_lang = substr($activeLanguage->code, 0, 2);
 				$interface->assign('wiki_lang', $wiki_lang);
-				$authorInfo  = $memCache->get("wikipedia_article_{$authorName}_{$wiki_lang}" );
-				if ($authorInfo == false || isset($_REQUEST['reload'])){
+				$authorInfo = $memCache->get("wikipedia_article_{$authorName}_{$wiki_lang}");
+				if ($authorInfo == false || isset($_REQUEST['reload'])) {
 					require_once ROOT_DIR . '/services/Author/Wikipedia.php';
 					$wikipediaParser = new Author_Wikipedia();
 					$authorInfo = $wikipediaParser->getWikipedia($authorName, $wiki_lang);
@@ -88,17 +88,16 @@ class Author_AJAX {
 				$returnVal['article'] = $authorInfo;
 				$interface->assign('info', $authorInfo);
 				$returnVal['formatted_article'] = $interface->fetch('Author/wikipedia_article.tpl');
-			}else{
+			} else {
 				$returnVal['success'] = false;
 			}
-		}else{
+		} else {
 			$returnVal['success'] = false;
 		}
-		return  json_encode($returnVal);
+		return json_encode($returnVal);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

@@ -2,22 +2,22 @@
 require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
-class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
+class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction {
 
-	function launch(){
+	function launch() {
 		global $interface;
 
-		if (!$this->recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()) {
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
-		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
+		if (is_null($groupedWork) || !$groupedWork->isValid()) {  // initRecordDriverById itself does a validity check and returns null if not.
 			$interface->assign('invalidWork', true);
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
-		}else{
+		} else {
 			$interface->assign('recordDriver', $this->recordDriver);
 
 			$this->loadCitations();
@@ -43,7 +43,7 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 
 			//Get Related Records to make sure we initialize items
 			$recordInfo = $this->recordDriver->getGroupedWorkDriver()->getRelatedRecord($this->recordDriver->getIdWithSource());
-			if ($recordInfo == null){
+			if ($recordInfo == null) {
 				$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 				die();
 			}
@@ -64,31 +64,31 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('staffDetails', $this->recordDriver->getStaffView());
 
 			// Display Page
-			$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 
 		}
 	}
 
-	function loadRecordDriver($id){
+	function loadRecordDriver($id) {
 		global $activeRecordProfile;
 		$subType = '';
-		if (isset($activeRecordProfile)){
+		if (isset($activeRecordProfile)) {
 			$subType = $activeRecordProfile;
-		}else{
+		} else {
 			$indexingProfile = new IndexingProfile();
 			$indexingProfile->name = 'ils';
-			if ($indexingProfile->find(true)){
+			if ($indexingProfile->find(true)) {
 				$subType = $indexingProfile->name;
-			}else{
+			} else {
 				$indexingProfile = new IndexingProfile();
 				$indexingProfile->id = 1;
-				if ($indexingProfile->find(true)){
+				if ($indexingProfile->find(true)) {
 					$subType = $indexingProfile->name;
 				}
 			}
 		}
 
 
-		$this->recordDriver = new ExternalEContentDriver($subType . ':'. $id);
+		$this->recordDriver = new ExternalEContentDriver($subType . ':' . $id);
 	}
 }

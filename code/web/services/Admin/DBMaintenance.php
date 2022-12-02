@@ -3,14 +3,13 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/API/SystemAPI.php';
+
 /**
  * Provides a method of running SQL updates to the database.
  * Shows a list of updates that are available with a description of the
  */
-class Admin_DBMaintenance extends Admin_Admin
-{
-	function launch()
-	{
+class Admin_DBMaintenance extends Admin_Admin {
+	function launch() {
 		global $interface;
 
 		$systemAPI = new SystemAPI();
@@ -51,8 +50,7 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	}
 
-	private function createUpdatesTable()
-	{
+	private function createUpdatesTable() {
 		global $aspen_db;
 		//Check to see if the updates table exists
 		$result = $aspen_db->query("SHOW TABLES");
@@ -67,15 +65,11 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 		if (!$tableFound) {
 			//Create the table to mark which updates have been run.
-			$aspen_db->query("CREATE TABLE db_update (" .
-				"update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," .
-				"date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" .
-				") ENGINE = InnoDB");
+			$aspen_db->query("CREATE TABLE db_update (" . "update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," . "date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" . ") ENGINE = InnoDB");
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
@@ -83,13 +77,11 @@ class Admin_DBMaintenance extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_admin';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
 }

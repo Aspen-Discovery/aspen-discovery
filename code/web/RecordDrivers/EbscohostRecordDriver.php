@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
-class EbscohostRecordDriver extends RecordInterface
-{
+class EbscohostRecordDriver extends RecordInterface {
 	/** @var SimpleXMLElement */
 	private $recordData;
 
@@ -17,15 +16,18 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
 	 * @access  public
 	 */
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		if (is_string($recordData)) {
 			if (!empty($recordData)) {
 				/** @var SearchObject_EbscohostSearcher $ebscohostSearcher */
 				$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
-				list($dbId, $uniqueIdField, $uniqueId) = explode(':', $recordData);
+				[
+					$dbId,
+					$uniqueIdField,
+					$uniqueId,
+				] = explode(':', $recordData);
 				$this->recordData = $ebscohostSearcher->retrieveRecord($dbId, $uniqueIdField, $uniqueId);
-			}else{
+			} else {
 				$this->recordData = null;
 			}
 		} else {
@@ -33,13 +35,11 @@ class EbscohostRecordDriver extends RecordInterface
 		}
 	}
 
-	public function isValid()
-	{
+	public function isValid() {
 		return is_object($this->recordData);
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 
 		$recordCover = $this->getRecordCoverUrl();
@@ -60,14 +60,13 @@ class EbscohostRecordDriver extends RecordInterface
 	}
 
 
-
-	public function getRecordCoverUrl(){
+	public function getRecordCoverUrl() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$imgInfo = $this->getChildByTagName($controlInfo, 'img');
-				if ($imgInfo != null){
+				if ($imgInfo != null) {
 					return (string)$imgInfo->attributes()['src'];
 				}
 			}
@@ -80,8 +79,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @param bool $unscoped
 	 * @return string
 	 */
-	public function getLinkUrl($unscoped = false)
-	{
+	public function getLinkUrl($unscoped = false) {
 		return '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID();
 	}
 
@@ -89,13 +87,11 @@ class EbscohostRecordDriver extends RecordInterface
 	 * Overridden because we are linking straight to EBSCO
 	 * @return string
 	 */
-	public function getAbsoluteUrl()
-	{
+	public function getAbsoluteUrl() {
 		return $this->getRecordUrl();
 	}
 
-	public function getRecordUrl()
-	{
+	public function getRecordUrl() {
 		//TODO: Switch back to an internal link once we do a full EBSCO implementation
 		//global $configArray;
 		//return '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
@@ -103,18 +99,15 @@ class EbscohostRecordDriver extends RecordInterface
 	}
 
 	/** @noinspection PhpUnused */
-	public function getEbscoUrl()
-	{
+	public function getEbscoUrl() {
 		return $this->recordData->PLink;
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'EBSCOhost';
 	}
 
-	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
-	{
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -168,8 +161,7 @@ class EbscohostRecordDriver extends RecordInterface
 		return 'RecordDrivers/EBSCOhost/result.tpl';
 	}
 
-	public function getBrowseResult()
-	{
+	public function getBrowseResult() {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -179,18 +171,17 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summTitle', $this->getTitle());
 
-        //Get cover image size
-        global $interface;
-        $appliedTheme = $interface->getAppliedTheme();
+		//Get cover image size
+		global $interface;
+		$appliedTheme = $interface->getAppliedTheme();
 
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 
-        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-        }
-        else {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-        }
+		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		} else {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		}
 		return 'RecordDrivers/EBSCOhost/browse_result.tpl';
 	}
 
@@ -202,8 +193,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCombinedResult()
-	{
+	public function getCombinedResult() {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -227,15 +217,15 @@ class EbscohostRecordDriver extends RecordInterface
 		return 'RecordDrivers/EBSCOhost/combinedResult.tpl';
 	}
 
-	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		global $interface;
 		$interface->assign('showRatings', $collectionSpotlight->showRatings);
 
 		$interface->assign('key', $index);
 
-		if ($collectionSpotlight->coverSize == 'small'){
+		if ($collectionSpotlight->coverSize == 'small') {
 			$imageUrl = $this->getBookcoverUrl('small');
-		}else{
+		} else {
 			$imageUrl = $this->getBookcoverUrl('medium');
 		}
 
@@ -247,7 +237,7 @@ class EbscohostRecordDriver extends RecordInterface
 		$interface->assign('titleURL', $this->getLinkUrl());
 		$interface->assign('imageUrl', $imageUrl);
 
-		if ($collectionSpotlight->showRatings){
+		if ($collectionSpotlight->showRatings) {
 			$interface->assign('ratingData', null);
 			$interface->assign('showNotInterested', false);
 		}
@@ -256,12 +246,12 @@ class EbscohostRecordDriver extends RecordInterface
 			'title' => $this->getTitle(),
 			'author' => $this->getAuthor(),
 		];
-		if ($collectionSpotlight->style == 'text-list'){
+		if ($collectionSpotlight->style == 'text-list') {
 			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
-		}elseif ($collectionSpotlight->style == 'horizontal-carousel'){
+		} elseif ($collectionSpotlight->style == 'horizontal-carousel') {
 			$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
-		}else{
-			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+		} else {
+			$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
 
 		return $result;
@@ -275,8 +265,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		return null;
 	}
 
@@ -285,16 +274,15 @@ class EbscohostRecordDriver extends RecordInterface
 	 *
 	 * @return  string
 	 */
-	public function getTitle()
-	{
+	public function getTitle() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
-				if ($artInfo != null){
+				if ($artInfo != null) {
 					$tig = $this->getChildByTagName($artInfo, 'tig');
-					if ($tig != null){
+					if ($tig != null) {
 						$atl = $this->getChildByTagName($tig, 'atl');
 						return (string)$atl;
 					}
@@ -304,9 +292,9 @@ class EbscohostRecordDriver extends RecordInterface
 		return 'Unknown';
 	}
 
-	private function getChildByTagName(SimpleXMLElement $parentNode, string $name) : ?SimpleXMLElement{
-		foreach ($parentNode->children() as $child){
-			if ($child->getName() == $name){
+	private function getChildByTagName(SimpleXMLElement $parentNode, string $name): ?SimpleXMLElement {
+		foreach ($parentNode->children() as $child) {
+			if ($child->getName() == $name) {
 				return $child;
 			}
 		}
@@ -320,8 +308,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  array              Array of elements in the table of contents
 	 */
-	public function getTableOfContents()
-	{
+	public function getTableOfContents() {
 		return null;
 	}
 
@@ -333,17 +320,15 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTag'] . ':' . $header->attributes()['uiTerm'];
 		}
 		return "";
 	}
 
-	public function getId()
-	{
+	public function getId() {
 		return $this->getUniqueID();
 	}
 
@@ -353,21 +338,19 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasReviews()
-	{
+	public function hasReviews() {
 		return false;
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
-				if ($artInfo != null){
+				if ($artInfo != null) {
 					$ab = $this->getChildByTagName($artInfo, 'ab');
-					if ($ab != null){
+					if ($ab != null) {
 						return (string)$ab;
 					}
 				}
@@ -376,32 +359,30 @@ class EbscohostRecordDriver extends RecordInterface
 		return '';
 	}
 
-	public function getMoreDetailsOptions()
-	{
+	public function getMoreDetailsOptions() {
 		// TODO: Implement getMoreDetailsOptions() method.
 	}
 
-	public function getFormats()
-	{
+	public function getFormats() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
-				if ($artInfo != null){
+				if ($artInfo != null) {
 					$ougenre = $this->getChildByTagName($artInfo, 'ougenre');
-					if ($ougenre != null){
+					if ($ougenre != null) {
 						return (string)$ougenre;
 					}
 					$pubType = $this->getChildByTagName($artInfo, 'pubtype');
 					$docType = $this->getChildByTagName($artInfo, 'doctype');
-					if ($docType != null){
-						if (!empty($pubType)){
+					if ($docType != null) {
+						if (!empty($pubType)) {
 							return (string)$pubType . ' - ' . (string)$docType;
-						}else{
+						} else {
 							return (string)$docType;
 						}
-					}elseif ($pubType != null){
+					} elseif ($pubType != null) {
 						return (string)$pubType;
 					}
 				}
@@ -410,41 +391,37 @@ class EbscohostRecordDriver extends RecordInterface
 		return "Unknown";
 	}
 
-	public function getCleanISSN()
-	{
+	public function getCleanISSN() {
 		return '';
 	}
 
-	public function getSourceDatabase()
-	{
+	public function getSourceDatabase() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			return $header->attributes()['longDbName'];
 		}
 		return '';
 	}
 
-	public function getPrimaryAuthor()
-	{
+	public function getPrimaryAuthor() {
 		return $this->getAuthor();
 	}
 
-	public function getAuthor()
-	{
+	public function getAuthor() {
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
-				if ($artInfo != null){
+				if ($artInfo != null) {
 					$tig = $this->getChildByTagName($artInfo, 'aug');
-					if ($tig != null){
+					if ($tig != null) {
 						$atl = $this->getChildByTagName($tig, 'au');
 						return (string)$atl;
 					}
 				}
 				$illusInfo = $this->getChildByTagName($controlInfo, 'illusinfo');
-				if ($illusInfo != null){
+				if ($illusInfo != null) {
 					return $illusInfo->attributes()['type'];
 				}
 			}
@@ -453,23 +430,21 @@ class EbscohostRecordDriver extends RecordInterface
 		return "";
 	}
 
-	public function getExploreMoreInfo()
-	{
+	public function getExploreMoreInfo() {
 		return [];
 	}
 
-	public function getAllSubjectHeadings()
-	{
-		$subjectHeadings = array();
+	public function getAllSubjectHeadings() {
+		$subjectHeadings = [];
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$artInfo = $this->getChildByTagName($controlInfo, 'artinfo');
-				if ($artInfo != null){
+				if ($artInfo != null) {
 					$su = $this->getChildByTagName($artInfo, 'su');
-					if ($su != null){
-						foreach ($su->children() as $child){
+					if ($su != null) {
+						foreach ($su->children() as $child) {
 							$subjectHeadings[] = (string)$child;
 						}
 					}
@@ -479,8 +454,7 @@ class EbscohostRecordDriver extends RecordInterface
 		return $subjectHeadings;
 	}
 
-	public function getPermanentId()
-	{
+	public function getPermanentId() {
 		return $this->getUniqueID();
 	}
 
@@ -495,8 +469,7 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		$this->getSearchResult('list');
 
 		//Switch template
@@ -513,19 +486,18 @@ class EbscohostRecordDriver extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCitation($format)
-	{
+	public function getCitation($format) {
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
 
 		// Build author list:
-		$authors = array();
+		$authors = [];
 		$primary = $this->getAuthor();
 		if (!empty($primary)) {
 			$authors[] = $primary;
 		}
 
 		//$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
+		$details = [
 			'authors' => $authors,
 			'title' => $this->getTitle(),
 			'subtitle' => '',
@@ -533,8 +505,8 @@ class EbscohostRecordDriver extends RecordInterface
 			'pubName' => null,
 			'pubDate' => null,
 			'edition' => null,
-			'format' => $this->getFormats()
-		);
+			'format' => $this->getFormats(),
+		];
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
@@ -553,17 +525,16 @@ class EbscohostRecordDriver extends RecordInterface
 		return '';
 	}
 
-	private function getPublishers()
-	{
-		$publishers = array();
+	private function getPublishers() {
+		$publishers = [];
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
-				if ($pubInfo != null){
+				if ($pubInfo != null) {
 					$publisher = $this->getChildByTagName($pubInfo, 'pub');
-					if ($publisher != null){
+					if ($publisher != null) {
 						$publishers[] = (string)$publisher;
 					}
 				}
@@ -572,17 +543,16 @@ class EbscohostRecordDriver extends RecordInterface
 		return $publishers;
 	}
 
-	private function getPublicationPlaces()
-	{
-		$publicationPlaces = array();
+	private function getPublicationPlaces() {
+		$publicationPlaces = [];
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
-				if ($pubInfo != null){
+				if ($pubInfo != null) {
 					$place = $this->getChildByTagName($pubInfo, 'place');
-					if ($place != null){
+					if ($place != null) {
 						$publicationPlaces[] = (string)$place;
 					}
 				}
@@ -590,17 +560,17 @@ class EbscohostRecordDriver extends RecordInterface
 		}
 		return $publicationPlaces;
 	}
-	private function getPublicationDates()
-	{
-		$publicationDates = array();
+
+	private function getPublicationDates() {
+		$publicationDates = [];
 		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null){
+		if ($header != null) {
 			$controlInfo = $this->getChildByTagName($header, 'controlInfo');
-			if ($controlInfo != null){
+			if ($controlInfo != null) {
 				$pubInfo = $this->getChildByTagName($controlInfo, 'pubinfo');
-				if ($pubInfo != null){
+				if ($pubInfo != null) {
 					$dt = $this->getChildByTagName($pubInfo, 'dt');
-					if ($dt != null){
+					if ($dt != null) {
 						$publicationDates[] = $dt->attributes()['day'] . '/' . $dt->attributes()['month'] . '/' . $dt->attributes()['year'];
 					}
 				}
@@ -610,16 +580,19 @@ class EbscohostRecordDriver extends RecordInterface
 	}
 
 	protected $_actions = null;
-	public function getRecordActions()
-	{
+
+	public function getRecordActions() {
 		if ($this->_actions === null) {
-			$this->_actions = array();
-			$this->_actions[] = array(
-				'title' => translate(['text'=>'Access Online','isPublicFacing'=>true]),
+			$this->_actions = [];
+			$this->_actions[] = [
+				'title' => translate([
+					'text' => 'Access Online',
+					'isPublicFacing' => true,
+				]),
 				'url' => '/EBSCOhost/AccessOnline?id=' . $this->getUniqueID(),
 				'requireLogin' => true,
-				'type' => 'ebscohost_access_online'
-			);
+				'type' => 'ebscohost_access_online',
+			];
 		}
 		return $this->_actions;
 	}

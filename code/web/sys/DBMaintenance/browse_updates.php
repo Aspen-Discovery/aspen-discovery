@@ -1,11 +1,11 @@
 <?php
 
-function getBrowseUpdates(){
+function getBrowseUpdates() {
 	return [
-		'browse_categories' => array(
+		'browse_categories' => [
 			'title' => 'Browse Categories',
 			'description' => 'Setup Browse Category Table',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE browse_category (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							textId VARCHAR(60) NOT NULL DEFAULT -1,
@@ -17,53 +17,53 @@ function getBrowseUpdates(){
 							defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
 							UNIQUE (textId)
 						) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'browse_categories_search_term_and_stats' => array(
+		'browse_categories_search_term_and_stats' => [
 			'title' => 'Browse Categories Search Term and Stats',
 			'description' => 'Add a search term and statistics to browse categories',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE browse_category ADD searchTerm VARCHAR(100) NOT NULL DEFAULT ''",
 				"ALTER TABLE browse_category ADD numTimesShown MEDIUMINT NOT NULL DEFAULT 0",
 				"ALTER TABLE browse_category ADD numTitlesClickedOn MEDIUMINT NOT NULL DEFAULT 0",
-			),
-		),
+			],
+		],
 
-		'browse_categories_search_term_length' => array(
+		'browse_categories_search_term_length' => [
 			'title' => 'Browse Category Search Term Length',
 			'description' => 'Increase the length of the search term field',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE browse_category CHANGE searchTerm searchTerm VARCHAR(500) NOT NULL DEFAULT ''",
-			),
-		),
+			],
+		],
 
-		'browse_categories_lists' => array(
+		'browse_categories_lists' => [
 			'title' => 'Browse Categories from Lists',
 			'description' => 'Add a the ability to define a browse category from a list',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE browse_category ADD sourceListId MEDIUMINT NULL DEFAULT NULL",
-			),
-		),
+			],
+		],
 
-		'sub-browse_categories' => array(
+		'sub-browse_categories' => [
 			'title' => 'Enable Browse Sub-Categories',
 			'description' => 'Add a the ability to define a browse category from a list',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `browse_category_subcategories` (
 							  `id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							  `browseCategoryId` int(11) NOT NULL,
 							  `subCategoryId` int(11) NOT NULL,
 							  `weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT '0',
 							  UNIQUE (`subCategoryId`,`browseCategoryId`)
-							) ENGINE=InnoDB DEFAULT CHARSET=utf8"
-			),
-		),
+							) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+			],
+		],
 
-		'localized_browse_categories' => array(
+		'localized_browse_categories' => [
 			'title' => 'Localized Browse Categories',
 			'description' => 'Setup Localized Browse Category Tables',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE browse_category_library (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							libraryId INT(11) NOT NULL,
@@ -78,8 +78,8 @@ function getBrowseUpdates(){
 							weight INT NOT NULL DEFAULT '0',
 							UNIQUE (locationId, browseCategoryTextId)
 						) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
 		'browse_category_groups' => [
 			'title' => 'Browse Category Groups',
@@ -110,7 +110,7 @@ function getBrowseUpdates(){
 				"ALTER TABLE library DROP COLUMN browseCategoryRatingsMode",
 				"ALTER TABLE location DROP COLUMN defaultBrowseMode",
 				"ALTER TABLE location DROP COLUMN browseCategoryRatingsMode",
-			]
+			],
 		],
 
 		'browse_category_source' => [
@@ -119,8 +119,8 @@ function getBrowseUpdates(){
 			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE browse_category ADD COLUMN source VARCHAR(50) NOT NULL',
-				'updateBrowseCategorySources'
-			]
+				'updateBrowseCategorySources',
+			],
 		],
 
 		'browse_category_library_updates' => [
@@ -128,14 +128,14 @@ function getBrowseUpdates(){
 			'description' => 'Update Browse Category to store the library the category belongs to',
 			'sql' => [
 				'ALTER TABLE browse_category ADD COLUMN libraryId INT(11) DEFAULT -1',
-				'updateBrowseCategoryLibraries'
-			]
-		]
+				'updateBrowseCategoryLibraries',
+			],
+		],
 	];
 }
 
 /** @noinspection PhpUnused */
-function populateBrowseCategoryGroups(){
+function populateBrowseCategoryGroups() {
 	//Convert library browse categories to browse category groups
 	global $aspen_db;
 
@@ -151,19 +151,19 @@ function populateBrowseCategoryGroups(){
 	$libraryRow = $librariesRS->fetch();
 
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-	while ($libraryRow != null){
+	while ($libraryRow != null) {
 		$defaultBrowseMode = $libraryRow['defaultBrowseMode'];
-		if ($defaultBrowseMode == 'covers'){
+		if ($defaultBrowseMode == 'covers') {
 			$defaultBrowseMode = 0;
-		}else{
+		} else {
 			$defaultBrowseMode = 1;
 		}
 		$browseCategoryRatingsMode = $libraryRow['browseCategoryRatingsMode'];
-		if ($browseCategoryRatingsMode == 'popup'){
+		if ($browseCategoryRatingsMode == 'popup') {
 			$browseCategoryRatingsMode = 1;
-		}elseif ($browseCategoryRatingsMode == 'stars'){
+		} elseif ($browseCategoryRatingsMode == 'stars') {
 			$browseCategoryRatingsMode = 2;
-		}else{
+		} else {
 			$browseCategoryRatingsMode = 0;
 		}
 
@@ -171,7 +171,7 @@ function populateBrowseCategoryGroups(){
 		$libraryBrowseCategorySQL = "SELECT browse_category.id as browse_category_id from browse_category_library inner join browse_category on browseCategoryTextId = textId WHERE libraryId = {$libraryRow['libraryId']} order by weight";
 		$libraryBrowseCategoryRS = $aspen_db->query($libraryBrowseCategorySQL, PDO::FETCH_ASSOC);
 		$libraryBrowseCategoryRow = $libraryBrowseCategoryRS->fetch();
-		while ($libraryBrowseCategoryRow != null){
+		while ($libraryBrowseCategoryRow != null) {
 			$libraryBrowseCategories[] = $libraryBrowseCategoryRow['browse_category_id'];
 			$libraryBrowseCategoryRow = $libraryBrowseCategoryRS->fetch();
 		}
@@ -181,20 +181,20 @@ function populateBrowseCategoryGroups(){
 		$browseCategoryGroup->defaultBrowseMode = $defaultBrowseMode;
 		$browseCategoryGroup->browseCategoryRatingsMode = $browseCategoryRatingsMode;
 		$browseCategoryGroup->find();
-		while ($browseCategoryGroup->fetch()){
+		while ($browseCategoryGroup->fetch()) {
 			//Verify that the browse categories are correct
 			$browseCategories = $browseCategoryGroup->getBrowseCategories();
-			if (count($libraryBrowseCategories) == count($browseCategories)){
+			if (count($libraryBrowseCategories) == count($browseCategories)) {
 				$index = 0;
 				$allMatch = true;
-				foreach ($browseCategories as $id => $browseCategory){
-					if ($libraryBrowseCategories[$index] != $id){
+				foreach ($browseCategories as $id => $browseCategory) {
+					if ($libraryBrowseCategories[$index] != $id) {
 						$allMatch = false;
 						break;
 					}
 					$index++;
 				}
-				if ($allMatch){
+				if ($allMatch) {
 					$createNewGroup = false;
 					$library = new Library();
 					$library->libraryId = $libraryRow['libraryId'];
@@ -206,7 +206,7 @@ function populateBrowseCategoryGroups(){
 			}
 		}
 
-		if ($createNewGroup){
+		if ($createNewGroup) {
 			//Create the group
 			$browseCategoryGroup = new BrowseCategoryGroup();
 			$browseCategoryGroup->name = $libraryRow['displayName'];
@@ -215,7 +215,7 @@ function populateBrowseCategoryGroups(){
 			$browseCategoryGroup->insert();
 
 			//Add the browse categories
-			foreach ($libraryBrowseCategories as $index => $id){
+			foreach ($libraryBrowseCategories as $index => $id) {
 				$browseCategoryGroupEntry = new BrowseCategoryGroupEntry();
 				$browseCategoryGroupEntry->browseCategoryGroupId = $browseCategoryGroup->id;
 				$browseCategoryGroupEntry->browseCategoryId = $id;
@@ -238,19 +238,19 @@ function populateBrowseCategoryGroups(){
 	$locationRow = $locationsRS->fetch();
 
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-	while ($locationRow != null){
+	while ($locationRow != null) {
 		$defaultBrowseMode = $locationRow['defaultBrowseMode'];
-		if ($defaultBrowseMode == 'covers' || empty($defaultBrowseMode)){
+		if ($defaultBrowseMode == 'covers' || empty($defaultBrowseMode)) {
 			$defaultBrowseMode = 0;
-		}else{
+		} else {
 			$defaultBrowseMode = 1;
 		}
 		$browseCategoryRatingsMode = $locationRow['browseCategoryRatingsMode'];
-		if ($browseCategoryRatingsMode == 'popup'){
+		if ($browseCategoryRatingsMode == 'popup') {
 			$browseCategoryRatingsMode = 1;
-		}elseif ($browseCategoryRatingsMode == 'stars'){
+		} elseif ($browseCategoryRatingsMode == 'stars') {
 			$browseCategoryRatingsMode = 2;
-		}else{
+		} else {
 			$browseCategoryRatingsMode = 0;
 		}
 
@@ -258,48 +258,48 @@ function populateBrowseCategoryGroups(){
 		$locationBrowseCategorySQL = "SELECT browse_category.id as browse_category_id from browse_category_location inner join browse_category on browseCategoryTextId = textId WHERE locationId = {$locationRow['locationId']} order by weight";
 		$locationBrowseCategoryRS = $aspen_db->query($locationBrowseCategorySQL, PDO::FETCH_ASSOC);
 		$locationBrowseCategoryRow = $locationBrowseCategoryRS->fetch();
-		while ($locationBrowseCategoryRow != null){
+		while ($locationBrowseCategoryRow != null) {
 			$locationBrowseCategories[] = $locationBrowseCategoryRow['browse_category_id'];
 			$locationBrowseCategoryRow = $locationBrowseCategoryRS->fetch();
 		}
 
-		if (count($locationBrowseCategories) == 0){
+		if (count($locationBrowseCategories) == 0) {
 			$location = new location();
 			$location->locationId = $locationRow['locationId'];
 			$location->find(true);
-			if ($location->getParentLibrary()->browseCategoryGroupId == $browseCategoryGroup->id){
+			if ($location->getParentLibrary()->browseCategoryGroupId == $browseCategoryGroup->id) {
 				$location->browseCategoryGroupId = -1;
-			}else {
+			} else {
 				$location->browseCategoryGroupId = $browseCategoryGroup->id;
 			}
 			$location->update();
-		}else{
+		} else {
 			$createNewGroup = true;
 			$browseCategoryGroup = new BrowseCategoryGroup();
 			$browseCategoryGroup->defaultBrowseMode = $defaultBrowseMode;
 			$browseCategoryGroup->browseCategoryRatingsMode = $browseCategoryRatingsMode;
 			$browseCategoryGroup->find();
-			while ($browseCategoryGroup->fetch()){
+			while ($browseCategoryGroup->fetch()) {
 				//Verify that the browse categories are correct
 				$browseCategories = $browseCategoryGroup->getBrowseCategories();
-				if (count($locationBrowseCategories) == count($browseCategories)){
+				if (count($locationBrowseCategories) == count($browseCategories)) {
 					$index = 0;
 					$allMatch = true;
-					foreach ($browseCategories as $id => $browseCategory){
-						if ($locationBrowseCategories[$index] != $id){
+					foreach ($browseCategories as $id => $browseCategory) {
+						if ($locationBrowseCategories[$index] != $id) {
 							$allMatch = false;
 							break;
 						}
 						$index++;
 					}
-					if ($allMatch){
+					if ($allMatch) {
 						$createNewGroup = false;
 						$location = new location();
 						$location->locationId = $locationRow['locationId'];
 						$location->find(true);
-						if ($location->getParentLibrary()->browseCategoryGroupId == $browseCategoryGroup->id){
+						if ($location->getParentLibrary()->browseCategoryGroupId == $browseCategoryGroup->id) {
 							$location->browseCategoryGroupId = -1;
-						}else {
+						} else {
 							$location->browseCategoryGroupId = $browseCategoryGroup->id;
 						}
 						$location->update();
@@ -308,7 +308,7 @@ function populateBrowseCategoryGroups(){
 				}
 			}
 
-			if ($createNewGroup){
+			if ($createNewGroup) {
 				//Create the group
 				$browseCategoryGroup = new BrowseCategoryGroup();
 				$browseCategoryGroup->name = $locationRow['displayName'];
@@ -317,7 +317,7 @@ function populateBrowseCategoryGroups(){
 				$browseCategoryGroup->insert();
 
 				//Add the browse categories
-				foreach ($locationBrowseCategories as $index => $id){
+				foreach ($locationBrowseCategories as $index => $id) {
 					$browseCategoryGroupEntry = new BrowseCategoryGroupEntry();
 					$browseCategoryGroupEntry->browseCategoryGroupId = $browseCategoryGroup->id;
 					$browseCategoryGroupEntry->browseCategoryId = $id;
@@ -339,7 +339,7 @@ function populateBrowseCategoryGroups(){
 }
 
 /** @noinspection PhpUnused */
-function updateBrowseCategorySources(){
+function updateBrowseCategorySources() {
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 	$validSources = BaseBrowsable::getBrowseSources();
 	$browseCategories = new BrowseCategory();
@@ -348,8 +348,8 @@ function updateBrowseCategorySources(){
 	while ($browseCategories->fetch()) {
 		$allBrowseCategories[] = clone $browseCategories;
 	}
-	foreach ($allBrowseCategories as $index => $browseCategory){
-		if (empty($browseCategory->source)){
+	foreach ($allBrowseCategories as $index => $browseCategory) {
+		if (empty($browseCategory->source)) {
 			if (!array_key_exists($browseCategory->source, $validSources)) {
 				if (!empty($browseCategory->sourceListId) && $browseCategory->sourceListId != -1) {
 					$browseCategory->source = 'List';
@@ -363,24 +363,24 @@ function updateBrowseCategorySources(){
 }
 
 /** @noinspection PhpUnused */
-function updateBrowseCategoryLibraries(){
+function updateBrowseCategoryLibraries() {
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 	$browseCategory = new BrowseCategory();
 	$browseCategory->find();
 	$allBrowseCategories = [];
 	$users = [];
 	while ($browseCategory->fetch()) {
-		if (!array_key_exists($browseCategory->userId, $users)){
+		if (!array_key_exists($browseCategory->userId, $users)) {
 			$user = new User();
 			$user->id = $browseCategory->userId;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$users[$user->id] = $user;
-			}else{
+			} else {
 				continue;
 			}
 		}
 		$userLibrary = $user->getHomeLibrary();
-		if ($userLibrary != null){
+		if ($userLibrary != null) {
 			$browseCategory->libraryId = $userLibrary->libraryId;
 		}
 		$browseCategory->update();

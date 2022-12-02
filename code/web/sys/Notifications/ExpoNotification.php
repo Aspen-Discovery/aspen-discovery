@@ -3,24 +3,23 @@ require_once ROOT_DIR . '/sys/Account/UserNotification.php';
 require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
-class ExpoNotification extends DataObject
-{
+class ExpoNotification extends DataObject {
 	/** @var CurlWrapper */
 	private $expoCurlWrapper;
 
-	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType){
+	public function sendExpoPushNotification($body, $pushToken, $userId, $notificationType) {
 		global $logger;
 		//https://docs.expo.dev/push-notifications/sending-notifications
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/send";
 		$this->expoCurlWrapper = new CurlWrapper();
-		$headers = array(
+		$headers = [
 			'Host: exp.host',
 			'Accept: application/json',
 			'Accept-Encoding: gzip, deflate',
 			'Content-Type: application/json',
-			'Authorization: Bearer ' . $bearerAuthToken
-		);
+			'Authorization: Bearer ' . $bearerAuthToken,
+		];
 		$this->expoCurlWrapper->addCustomHeaders($headers, true);
 		$logger->log("Sending notification to Expo servers", Logger::LOG_ERROR);
 		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
@@ -34,15 +33,15 @@ class ExpoNotification extends DataObject
 		if ($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
-			if($data['status'] != "error") {
-				if($data['id']) {
+			if ($data['status'] != "error") {
+				if ($data['id']) {
 					$notification->receiptId = $data['id'];
 				}
 			} else {
 				$error = $data['details'];
 				$notification->error = 1;
 				$notification->message = $error['error'] . ": " . $data['message'];
-				if($error['error'] == "DeviceNotRegistered") {
+				if ($error['error'] == "DeviceNotRegistered") {
 					// we need to delete the bad token to stop trying to send to it
 					UserNotificationToken::deleteToken($pushToken);
 				}
@@ -57,32 +56,32 @@ class ExpoNotification extends DataObject
 		$notification->insert();
 	}
 
-	public function getExpoNotificationReceipt($receiptId){
+	public function getExpoNotificationReceipt($receiptId) {
 		//https://docs.expo.dev/push-notifications/sending-notifications/#push-receipt-errors
 		$bearerAuthToken = $this->getNotificationAccessToken();
 		$url = "https://exp.host/--/api/v2/push/getReceipts";
 		$this->expoCurlWrapper = new CurlWrapper();
-		$headers = array(
+		$headers = [
 			'Host: exp.host',
 			'Accept: application/json',
 			'Accept-Encoding: gzip, deflate',
 			'Content-Type: application/json',
-			'Authorization: Bearer ' . $bearerAuthToken
-		);
+			'Authorization: Bearer ' . $bearerAuthToken,
+		];
 		$this->expoCurlWrapper->addCustomHeaders($headers, true);
 		$body = ['ids' => [$receiptId]];
 		$response = $this->expoCurlWrapper->curlPostPage($url, json_encode($body));
-		if($this->expoCurlWrapper->getResponseCode() == 200) {
+		if ($this->expoCurlWrapper->getResponseCode() == 200) {
 			$json = json_decode($response, true);
 			$data = $json['data'];
 			$notification = new UserNotification();
 			$notification->receiptId = $receiptId;
-			if($notification->find(true)) {
-				if(array_key_exists($receiptId, $data)) {
+			if ($notification->find(true)) {
+				if (array_key_exists($receiptId, $data)) {
 					$notification->completed = 1;
 				} else {
 					$error = $data['details'];
-					if($data['message']) {
+					if ($data['message']) {
 						$error .= ": " . $data['message'];
 					}
 					$notification->error = 1;

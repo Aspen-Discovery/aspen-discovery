@@ -3,48 +3,55 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Admin_Variables extends ObjectEditor{
+class Admin_Variables extends ObjectEditor {
 
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'Variable';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Variables';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'System Variables';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
-		$variableList = array();
+
+	function getAllObjects($page, $recordsPerPage): array {
+		$variableList = [];
 
 		$object = new Variable();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$variableList[$object->id] = clone $object;
 		}
 		return $variableList;
 	}
 
-	function getDefaultSort() : string
-	{
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
-	function getObjectStructure() : array{
+
+	function getObjectStructure(): array {
 		return Variable::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'name';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function canAddNew(){
+
+	function canAddNew() {
 		return UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin';
 	}
-	function canDelete(){
+
+	function canDelete() {
 		return true;
 	}
 
@@ -52,31 +59,31 @@ class Admin_Variables extends ObjectEditor{
 	 * @param DataObject $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject) : array{
-		$actions = array();
-		if ($existingObject && $existingObject->getPrimaryKeyValue() != ''){
-			$actions[] = array(
+	function getAdditionalObjectActions($existingObject): array {
+		$actions = [];
+		if ($existingObject && $existingObject->getPrimaryKeyValue() != '') {
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp (seconds)',
 				'url' => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;id=" . $existingObject->getPrimaryKeyValue(),
-			);
-			$actions[] = array(
+			];
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp (milliseconds)',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;ms=1&amp;id=" . $existingObject->getPrimaryKeyValue(),
-			);
-			$actions[] = array(
+				'url' => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;ms=1&amp;id=" . $existingObject->getPrimaryKeyValue(),
+			];
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span> Increase by 10,000',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->getPrimaryKeyValue(),
-			);
-			$actions[] = array(
+				'url' => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->getPrimaryKeyValue(),
+			];
+			$actions[] = [
 				'text' => '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span> Decrease by 500',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->getPrimaryKeyValue(),
-			);
+				'url' => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->getPrimaryKeyValue(),
+			];
 		}
 		return $actions;
 	}
 
 	/** @noinspection PhpUnused */
-	function setToNow(){
+	function setToNow() {
 		$id = $_REQUEST['id'];
 		$useMilliseconds = isset($_REQUEST['ms']) && ($_REQUEST['ms'] == 1 || $_REQUEST['ms'] == 'true');
 		if (!empty($id) && ctype_digit($id)) {
@@ -91,7 +98,7 @@ class Admin_Variables extends ObjectEditor{
 	}
 
 	/** @noinspection PhpUnused */
-	function IncrementVariable(){
+	function IncrementVariable() {
 		$id = $_REQUEST['id'];
 		if (!empty($id) && ctype_digit($id)) {
 			$variable = new Variable();
@@ -112,8 +119,7 @@ class Admin_Variables extends ObjectEditor{
 		}
 	}
 
-	function editObject($objectAction, $structure)
-	{
+	function editObject($objectAction, $structure) {
 		if ($objectAction == 'save') {
 			if (!empty($_REQUEST['name']) && $_REQUEST['name'] == 'offline_mode_when_offline_login_allowed') {
 				if (!empty($_REQUEST['value']) && $_REQUEST['value'] == 'true' || $_REQUEST['value'] == 1) {
@@ -129,8 +135,7 @@ class Admin_Variables extends ObjectEditor{
 		parent::editObject($objectAction, $structure);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
@@ -138,23 +143,19 @@ class Admin_Variables extends ObjectEditor{
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_admin';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer System Variables');
 	}
 
-	function canBatchEdit()
-	{
+	function canBatchEdit() {
 		return false;
 	}
 
-	function canCompare()
-	{
+	function canCompare() {
 		return false;
 	}
 }

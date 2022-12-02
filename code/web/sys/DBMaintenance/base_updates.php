@@ -1,7 +1,6 @@
 <?php
 /** @noinspection SqlResolve */
-function getInitialUpdates()
-{
+function getInitialUpdates() {
 	return [
 		'modules' => [
 			'title' => 'Create modules table',
@@ -15,7 +14,7 @@ function getInitialUpdates()
 							backgroundProcess VARCHAR(50) DEFAULT ""
 						) ENGINE=InnoDB DEFAULT CHARSET=utf8',
 				'ALTER TABLE modules add INDEX (enabled)',
-			]
+			],
 		],
 		'module_log_information' => [
 			'title' => 'Module log information',
@@ -23,7 +22,7 @@ function getInitialUpdates()
 			'sql' => [
 				'ALTER TABLE modules ADD COLUMN logClassPath VARCHAR(100)',
 				'ALTER TABLE modules ADD COLUMN logClassName VARCHAR(35)',
-			]
+			],
 		],
 		'module_settings_information' => [
 			'title' => 'Settings Information for modules',
@@ -31,18 +30,17 @@ function getInitialUpdates()
 			'sql' => [
 				'ALTER TABLE modules ADD COLUMN settingsClassPath VARCHAR(100)',
 				'ALTER TABLE modules ADD COLUMN settingsClassName VARCHAR(35)',
-			]
+			],
 		],
 	];
 }
 
-function getPostLibraryBaseUpdates()
-{
+function getPostLibraryBaseUpdates() {
 	return [
-		'authentication_profiles' => array(
+		'authentication_profiles' => [
 			'title' => 'Setup Authentication Profiles',
 			'description' => 'Setup authentication profiles to store information about how to authenticate',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS `account_profiles` (
 				  `id` int(11) NOT NULL AUTO_INCREMENT,
 				  `name` varchar(50) NOT NULL DEFAULT 'ils',
@@ -55,99 +53,99 @@ function getPostLibraryBaseUpdates()
 				  PRIMARY KEY (`id`),
 				  UNIQUE KEY `name` (`name`)
 				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
-		'account_profiles_1' => array(
+		'account_profiles_1' => [
 			'title' => 'Update Account Profiles 1',
 			'description' => 'Update Account Profiles with additional data to make integration easier',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `vendorOpacUrl` varchar(100) NOT NULL",
 				"ALTER TABLE `account_profiles` ADD `patronApiUrl` varchar(100) NOT NULL",
 				"ALTER TABLE `account_profiles` ADD `recordSource` varchar(50) NOT NULL",
 				"ALTER TABLE `account_profiles` ADD `weight` int(11) NOT NULL",
-			)
-		),
+			],
+		],
 
-		'account_profiles_2' => array(
+		'account_profiles_2' => [
 			'title' => 'Update Account Profiles 2',
 			'description' => 'Update Account Profiles with additional data to reduce information stored in config',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `databaseHost` varchar(100)",
 				"ALTER TABLE `account_profiles` ADD `databaseName` varchar(50)",
 				"ALTER TABLE `account_profiles` ADD `databaseUser` varchar(50)",
 				"ALTER TABLE `account_profiles` ADD `databasePassword` varchar(50)",
 				"ALTER TABLE `account_profiles` ADD `sipHost` varchar(100)",
 				"ALTER TABLE `account_profiles` ADD `sipPort` varchar(50)",
-			)
-		),
+			],
+		],
 
-		'account_profiles_3' => array(
+		'account_profiles_3' => [
 			'title' => 'Update Account Profiles 3',
 			'description' => 'Update Account Profiles with additional information about SIP',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `sipUser` varchar(50)",
 				"ALTER TABLE `account_profiles` ADD `sipPassword` varchar(50)",
-			)
-		),
+			],
+		],
 
-		'account_profiles_4' => array(
+		'account_profiles_4' => [
 			'title' => 'Update Account Profiles 4',
 			'description' => 'Add database port to connection information',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `databasePort` varchar(5)",
-			)
-		),
+			],
+		],
 
-		'account_profiles_5' => array(
+		'account_profiles_5' => [
 			'title' => 'Update Account Profiles 5',
 			'description' => 'Add database timezone to connection information',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `databaseTimezone` varchar(50)",
-			)
-		),
+			],
+		],
 
-		'account_profiles_oauth' => array(
+		'account_profiles_oauth' => [
 			'title' => 'Account Profiles - OAuth',
 			'description' => 'Add information for connecting to APIs with OAuth2 credentials',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `oAuthClientId` varchar(36)",
 				"ALTER TABLE `account_profiles` ADD `oAuthClientSecret` varchar(36)",
-			)
-		),
+			],
+		],
 
-		'account_profiles_ils' => array(
+		'account_profiles_ils' => [
 			'title' => 'Account Profiles - ILS Type',
 			'description' => 'Add information for the type of ILS being used',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `ils` varchar(20) DEFAULT 'koha'",
 				"UPDATE account_profiles set ils = lcase(driver)",
-			)
-		),
+			],
+		],
 
-		'account_profiles_api_version' => array(
+		'account_profiles_api_version' => [
 			'title' => 'Account Profiles - API Version',
 			'description' => 'Add api version for sierra',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `account_profiles` ADD `apiVersion` varchar(10) DEFAULT ''",
 				"UPDATE account_profiles set apiVersion = '5' where ils = 'sierra'",
-			)
-		),
+			],
+		],
 
 		'account_profiles_admin_login_configuration' => [
 			'title' => 'Change login configuration for the admin Account Profile',
 			'description' => 'Change the login configuration for the admin Account Profile to match stored data',
 			'sql' => [
-				"UPDATE account_profiles set loginConfiguration = 'barcode_pin' WHERE name = 'admin'"
-			]
+				"UPDATE account_profiles set loginConfiguration = 'barcode_pin' WHERE name = 'admin'",
+			],
 		],
 
 		'account_profiles_staff_information' => [
@@ -155,53 +153,52 @@ function getPostLibraryBaseUpdates()
 			'description' => 'Add staff login information for performing actions where APIs need elevated permissions',
 			'sql' => [
 				'ALTER TABLE account_profiles ADD COLUMN staffUsername VARCHAR(100) default null',
-				'ALTER TABLE account_profiles ADD COLUMN staffPassword VARCHAR(50) default null'
-			]
+				'ALTER TABLE account_profiles ADD COLUMN staffPassword VARCHAR(50) default null',
+			],
 		],
 
 		'account_profiles_workstation_id' => [
 			'title' => 'Account Profile Workstation ID',
 			'description' => 'Add Workstation ID to support Polaris',
 			'sql' => [
-				"ALTER TABLE account_profiles ADD COLUMN workstationId VARCHAR(10) default ''"
-			]
+				"ALTER TABLE account_profiles ADD COLUMN workstationId VARCHAR(10) default ''",
+			],
 		],
 
 		'account_profiles_domain' => [
 			'title' => 'Account Profile domain',
 			'description' => 'Add domain to support Polaris',
 			'sql' => [
-				"ALTER TABLE account_profiles ADD COLUMN domain VARCHAR(100) default ''"
-			]
-		]
+				"ALTER TABLE account_profiles ADD COLUMN domain VARCHAR(100) default ''",
+			],
+		],
 	];
 }
 
-function getFinalBaseUpdates()
-{
+function getFinalBaseUpdates() {
 	global $configArray;
-	return array(
-		'index_search_stats' => array(
+	return [
+		'index_search_stats' => [
 			'title' => 'Index search stats table',
 			'description' => 'Add index to search stats table to improve autocomplete speed',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search_stats` ADD INDEX `search_index` ( `type` , `libraryId` , `locationId` , `phrase`, `numResults` )",
-			),
-		),
+			],
+		],
 
-		'index_search_stats_counts' => array(
+		'index_search_stats_counts' => [
 			'title' => 'Index search stats table counts',
 			'description' => 'Add index to search stats table to improve autocomplete speed',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search_stats` ADD INDEX `numResults` (`numResults` )",
 				"ALTER TABLE `search_stats` ADD INDEX `numSearches` (`numSearches` )",
-			),
-		),
+			],
+		],
 
-		'new_search_stats' => array(
+		'new_search_stats' => [
 			'title' => 'Create new search stats table with better performance',
 			'description' => 'Create an optimized table for performing auto completes based on prior searches',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `search_stats_new` (
 						  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The unique id of the search statistic',
 						  `phrase` varchar(500) NOT NULL COMMENT 'The phrase being searched for',
@@ -216,44 +213,38 @@ function getFinalBaseUpdates()
 				"INSERT INTO search_stats_new (phrase, lastSearch, numSearches) SELECT TRIM(REPLACE(phrase, char(9), '')) as phrase, MAX(lastSearch), sum(numSearches) FROM search_stats WHERE numResults > 0 GROUP BY TRIM(REPLACE(phrase,char(9), ''))",
 				"DELETE FROM search_stats_new WHERE phrase LIKE '%(%'",
 				"DELETE FROM search_stats_new WHERE phrase LIKE '%)%'",
-			),
-		),
+			],
+		],
 
-		'recommendations_optOut' => array(
+		'recommendations_optOut' => [
 			'title' => 'Recommendations Opt Out',
 			'description' => 'Add tracking for whether the user wants to opt out of recommendations',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user` ADD `disableRecommendations` TINYINT NOT NULL DEFAULT '0'",
-			),
-		),
+			],
+		],
 
-		'remove_editorial_reviews' => array(
+		'remove_editorial_reviews' => [
 			'title' => 'Remove Editorial Review table',
 			'description' => 'Remove editorial review tables',
-			'sql' => array(
+			'sql' => [
 				"DROP TABLE editorial_reviews;",
-			),
-		),
+			],
+		],
 
-		'readingHistory' => array(
+		'readingHistory' => [
 			'title' => 'Reading History Creation',
 			'description' => 'Update reading History to include an id table',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS	user_reading_history(" .
-				"`userId` INT NOT NULL COMMENT 'The id of the user who checked out the item', " .
-				"`resourceId` INT NOT NULL COMMENT 'The record id of the item that was checked out', " .
-				"`lastCheckoutDate` DATE NOT NULL COMMENT 'The first day we detected that the item was checked out to the patron', " .
-				"`firstCheckoutDate` DATE NOT NULL COMMENT 'The last day we detected the item was checked out to the patron', " .
-				"`daysCheckedOut` INT NOT NULL COMMENT 'The total number of days the item was checked out even if it was checked out multiple times.', " .
-				"PRIMARY KEY ( `userId` , `resourceId` )" .
-				") ENGINE = InnoDB COMMENT = 'The reading history for patrons';",
-			),
-		),
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS	user_reading_history(" . "`userId` INT NOT NULL COMMENT 'The id of the user who checked out the item', " . "`resourceId` INT NOT NULL COMMENT 'The record id of the item that was checked out', " . "`lastCheckoutDate` DATE NOT NULL COMMENT 'The first day we detected that the item was checked out to the patron', " . "`firstCheckoutDate` DATE NOT NULL COMMENT 'The last day we detected the item was checked out to the patron', " .
+				"`daysCheckedOut` INT NOT NULL COMMENT 'The total number of days the item was checked out even if it was checked out multiple times.', " . "PRIMARY KEY ( `userId` , `resourceId` )" . ") ENGINE = InnoDB COMMENT = 'The reading history for patrons';",
+			],
+		],
 
-		'readingHistory_work' => array(
+		'readingHistory_work' => [
 			'title' => 'Reading History For Grouped Works',
 			'description' => 'Update reading History to remove resources and work with works',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS	user_reading_history_work(
 						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						userId INT NOT NULL COMMENT 'The id of the user who checked out the item',
@@ -270,41 +261,41 @@ function getFinalBaseUpdates()
 						INDEX ( userId, title ),
 						INDEX ( userId, author )
 						) ENGINE = InnoDB DEFAULT CHARSET=utf8 COMMENT = 'The reading history for patrons';",
-				"DROP TABLE user_reading_history"
-			),
-		),
+				"DROP TABLE user_reading_history",
+			],
+		],
 
-		'readingHistory_deletion' => array(
+		'readingHistory_deletion' => [
 			'title' => 'Update Reading History Deletion so we mark it as deleted rather than permanently deleting',
 			'description' => 'Update Reading History to handle deletions',
-			'sql' => array(
-				"ALTER TABLE user_reading_history_work ADD `deleted` TINYINT NOT NULL DEFAULT '0'"
-			),
-		),
+			'sql' => [
+				"ALTER TABLE user_reading_history_work ADD `deleted` TINYINT NOT NULL DEFAULT '0'",
+			],
+		],
 
-		'coverArt_suppress' => array(
+		'coverArt_suppress' => [
 			'title' => 'Cover Art Suppress',
 			'description' => 'Add tracking for whether the user wants to suppress cover art',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user` ADD `disableCoverArt` TINYINT NOT NULL DEFAULT '0'",
-			),
-		),
+			],
+		],
 
-		'readingHistoryUpdate1' => array(
+		'readingHistoryUpdate1' => [
 			'title' => 'Reading History Update 1',
 			'description' => 'Update reading History to include an id table',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `user_reading_history` DROP PRIMARY KEY',
 				'ALTER TABLE `user_reading_history` ADD UNIQUE `user_resource` ( `userId` , `resourceId` ) ',
 				'ALTER TABLE `user_reading_history` ADD `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST ',
-			),
-		),
+			],
+		],
 
 
-		'notInterested' => array(
+		'notInterested' => [
 			'title' => 'Not Interested Table',
 			'description' => 'Create a table for records the user is not interested in so they can be omitted from search results',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `user_not_interested` (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							userId INT(11) NOT NULL,
@@ -314,80 +305,62 @@ function getFinalBaseUpdates()
 							UNIQUE INDEX (userId, resourceId),
 							INDEX (userId)
 						)",
-			),
-		),
+			],
+		],
 
-		'notInterestedWorks' => array(
+		'notInterestedWorks' => [
 			'title' => 'Not Interested Table Works Update',
 			'description' => 'Update Not Interested Table to Link to Works',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"TRUNCATE TABLE `user_not_interested`",
 				"ALTER TABLE `user_not_interested` ADD COLUMN groupedRecordPermanentId VARCHAR(36)",
 				"ALTER TABLE `user_not_interested` DROP resourceId",
-			),
-		),
+			],
+		],
 
-		'notInterestedWorksRemoveUserIndex' => array(
+		'notInterestedWorksRemoveUserIndex' => [
 			'title' => 'Not Interested Table Works Update to remove old indexes',
 			'description' => 'Update Not Interested Table to Remove old indexes that limited users to one title as not interested',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user_not_interested DROP INDEX userId",
 				"ALTER TABLE user_not_interested DROP INDEX userId_2",
 				"ALTER TABLE user_not_interested ADD INDEX(`userId`)",
-			),
-		),
+			],
+		],
 
-		'materialsRequest' => array(
+		'materialsRequest' => [
 			'title' => 'Materials Request Table Creation',
 			'description' => 'Update reading History to include an id table',
-			'sql' => array(
-				'CREATE TABLE IF NOT EXISTS materials_request (' .
-				'id int(11) NOT NULL AUTO_INCREMENT, ' .
-				'title varchar(255), ' .
-				'author varchar(255), ' .
-				'format varchar(25), ' .
-				'ageLevel varchar(25), ' .
-				'isbn varchar(15), ' .
-				'oclcNumber varchar(30), ' .
-				'publisher varchar(255), ' .
-				'publicationYear varchar(4), ' .
-				'articleInfo varchar(255), ' .
-				'abridged TINYINT, ' .
-				'about TEXT, ' .
-				'comments TEXT, ' .
-				"status enum('pending', 'owned', 'purchased', 'referredToILL', 'ILLplaced', 'ILLreturned', 'notEnoughInfo', 'notAcquiredOutOfPrint', 'notAcquiredNotAvailable', 'notAcquiredFormatNotAvailable', 'notAcquiredPrice', 'notAcquiredPublicationDate', 'requestCancelled') DEFAULT 'pending', " .
-				'dateCreated int(11), ' .
-				'createdBy int(11), ' .
-				'dateUpdated int(11), ' .
-				'PRIMARY KEY (id) ' .
-				') ENGINE=InnoDB',
-			),
-		),
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS materials_request (' . 'id int(11) NOT NULL AUTO_INCREMENT, ' . 'title varchar(255), ' . 'author varchar(255), ' . 'format varchar(25), ' . 'ageLevel varchar(25), ' . 'isbn varchar(15), ' . 'oclcNumber varchar(30), ' . 'publisher varchar(255), ' . 'publicationYear varchar(4), ' . 'articleInfo varchar(255), ' . 'abridged TINYINT, ' . 'about TEXT, ' . 'comments TEXT, ' .
+				"status enum('pending', 'owned', 'purchased', 'referredToILL', 'ILLplaced', 'ILLreturned', 'notEnoughInfo', 'notAcquiredOutOfPrint', 'notAcquiredNotAvailable', 'notAcquiredFormatNotAvailable', 'notAcquiredPrice', 'notAcquiredPublicationDate', 'requestCancelled') DEFAULT 'pending', " . 'dateCreated int(11), ' . 'createdBy int(11), ' . 'dateUpdated int(11), ' . 'PRIMARY KEY (id) ' . ') ENGINE=InnoDB',
+			],
+		],
 
-		'materialsRequest_update1' => array(
+		'materialsRequest_update1' => [
 			'title' => 'Materials Request Update 1',
 			'description' => 'Material Request add fields for sending emails and creating holds',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD `emailSent` TINYINT NOT NULL DEFAULT 0',
 				'ALTER TABLE `materials_request` ADD `holdsCreated` TINYINT NOT NULL DEFAULT 0',
-			),
-		),
+			],
+		],
 
-		'materialsRequest_update2' => array(
+		'materialsRequest_update2' => [
 			'title' => 'Materials Request Update 2',
 			'description' => 'Material Request add fields phone and email so user can supply a different email address',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD `email` VARCHAR(80)',
 				'ALTER TABLE `materials_request` ADD `phone` VARCHAR(15)',
-			),
-		),
+			],
+		],
 
-		'materialsRequest_update3' => array(
+		'materialsRequest_update3' => [
 			'title' => 'Materials Request Update 3',
 			'description' => 'Material Request add fields season, magazineTitle, split isbn and upc',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD `season` VARCHAR(80)',
 				'ALTER TABLE `materials_request` ADD `magazineTitle` VARCHAR(255)',
 				//'ALTER TABLE `materials_request` CHANGE `isbn_upc` `isbn` VARCHAR( 15 )',
@@ -401,29 +374,29 @@ function getFinalBaseUpdates()
 				'ALTER TABLE `materials_request` ADD `placeHoldWhenAvailable` TINYINT',
 				'ALTER TABLE `materials_request` ADD `holdPickupLocation` VARCHAR(10)',
 				'ALTER TABLE `materials_request` ADD `bookmobileStop` VARCHAR(50)',
-			),
-		),
+			],
+		],
 
-		'materialsRequest_update4' => array(
+		'materialsRequest_update4' => [
 			'title' => 'Materials Request Update 4',
 			'description' => 'Material Request add illItem field and make status field not an enum so libraries can easily add statuses',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD `illItem` VARCHAR(80)',
-			),
-		),
+			],
+		],
 
-		'materialsRequest_update5' => array(
+		'materialsRequest_update5' => [
 			'title' => 'Materials Request Update 5',
 			'description' => 'Material Request add magazine number',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD `magazineNumber` VARCHAR(80)',
-			),
-		),
+			],
+		],
 
-		'materialsRequest_update6' => array(
+		'materialsRequest_update6' => [
 			'title' => 'Materials Request Update 6',
 			'description' => 'Updater Materials Requests to add indexes for improved performance',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD INDEX(createdBy)',
 				'ALTER TABLE `materials_request` ADD INDEX(dateUpdated)',
 				'ALTER TABLE `materials_request` ADD INDEX(dateCreated)',
@@ -431,31 +404,22 @@ function getFinalBaseUpdates()
 				'ALTER TABLE `materials_request` ADD INDEX(holdsCreated)',
 				'ALTER TABLE `materials_request` ADD INDEX(format)',
 				'ALTER TABLE `materials_request` ADD INDEX(subFormat)',
-			),
-		),
+			],
+		],
 
-		'materialsRequest_update7' => array(
+		'materialsRequest_update7' => [
 			'title' => 'Add Assignee Column to Materials Request Table',
 			'description' => 'Column for the id number of the staff member the request is assigned to.',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request` ADD COLUMN `assignedTo` INT NULL',
-			),
-		),
+			],
+		],
 
-		'materialsRequestStatus' => array(
+		'materialsRequestStatus' => [
 			'title' => 'Materials Request Status Table Creation',
 			'description' => 'Update reading History to include an id table',
-			'sql' => array(
-				'CREATE TABLE IF NOT EXISTS materials_request_status (' .
-				'id int(11) NOT NULL AUTO_INCREMENT, ' .
-				'description varchar(80), ' .
-				'isDefault TINYINT DEFAULT 0, ' .
-				'sendEmailToPatron TINYINT, ' .
-				'emailTemplate TEXT, ' .
-				'isOpen TINYINT, ' .
-				'isPatronCancel TINYINT, ' .
-				'PRIMARY KEY (id) ' .
-				') ENGINE=InnoDB',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS materials_request_status (' . 'id int(11) NOT NULL AUTO_INCREMENT, ' . 'description varchar(80), ' . 'isDefault TINYINT DEFAULT 0, ' . 'sendEmailToPatron TINYINT, ' . 'emailTemplate TEXT, ' . 'isOpen TINYINT, ' . 'isPatronCancel TINYINT, ' . 'PRIMARY KEY (id) ' . ') ENGINE=InnoDB',
 
 				"INSERT INTO materials_request_status (description, isDefault, sendEmailToPatron, emailTemplate, isOpen) VALUES ('Request Pending', 1, 0, '', 1)",
 				"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen) VALUES ('Already owned/On order', 1, 'This email is to let you know the status of your recent request for an item that you did not find in our catalog. The Library already owns this item or it is already on order. Please access our catalog to place this item on hold.	Please check our online catalog periodically to put a hold for this item.', 0)",
@@ -481,221 +445,177 @@ function getFinalBaseUpdates()
 				"UPDATE materials_request SET status = (SELECT id FROM materials_request_status WHERE isDefault =1)",
 
 				"ALTER TABLE materials_request CHANGE `status` `status` INT(11)",
-			),
-		),
+			],
+		],
 
-		'manageMaterialsRequestFieldsToDisplay' => array(
+		'manageMaterialsRequestFieldsToDisplay' => [
 			'title' => 'Manage Material Requests Fields to Display Table Creation',
 			'description' => 'New table to manage columns displayed in lists of materials requests on the manage page.',
-			'sql' => array(
-				"CREATE TABLE `materials_request_fields_to_display` ("
-				. "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,"
-				. "  `libraryId` int(11) NOT NULL,"
-				. "  `columnNameToDisplay` varchar(30) NOT NULL,"
-				. "  `labelForColumnToDisplay` varchar(45) NOT NULL,"
-				. "  `weight` smallint(2) unsigned NOT NULL DEFAULT '0',"
-				. "  PRIMARY KEY (`id`),"
-				. "  UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`),"
-				. "  KEY `libraryId` (`libraryId`)"
-				. ") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-			),
-		),
+			'sql' => [
+				"CREATE TABLE `materials_request_fields_to_display` (" . "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT," . "  `libraryId` int(11) NOT NULL," . "  `columnNameToDisplay` varchar(30) NOT NULL," . "  `labelForColumnToDisplay` varchar(45) NOT NULL," . "  `weight` smallint(2) unsigned NOT NULL DEFAULT '0'," . "  PRIMARY KEY (`id`)," . "  UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`)," . "  KEY `libraryId` (`libraryId`)" .
+				") ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+			],
+		],
 
-		'materialsRequestFormats' => array(
+		'materialsRequestFormats' => [
 			'title' => 'Material Requests Formats Table Creation',
 			'description' => 'New table to manage materials formats that can be requested.',
-			'sql' => array(
-				'CREATE TABLE `materials_request_formats` ('
-				. '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-				. '`libraryId` INT UNSIGNED NOT NULL,'
-				. ' `format` VARCHAR(30) NOT NULL,'
-				. '`formatLabel` VARCHAR(60) NOT NULL,'
-				. '`authorLabel` VARCHAR(45) NOT NULL,'
-				. '`weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0,'
-				. "`specialFields` SET('Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season') NULL,"
-				. 'PRIMARY KEY (`id`),'
-				. 'INDEX `libraryId` (`libraryId` ASC));'
-			),
-		),
+			'sql' => [
+				'CREATE TABLE `materials_request_formats` (' . '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,' . '`libraryId` INT UNSIGNED NOT NULL,' . ' `format` VARCHAR(30) NOT NULL,' . '`formatLabel` VARCHAR(60) NOT NULL,' . '`authorLabel` VARCHAR(45) NOT NULL,' . '`weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0,' . "`specialFields` SET('Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season') NULL," . 'PRIMARY KEY (`id`),' . 'INDEX `libraryId` (`libraryId` ASC));',
+			],
+		],
 
-		'materialsRequestFormFields' => array(
+		'materialsRequestFormFields' => [
 			'title' => 'Material Requests Form Fields Table Creation',
 			'description' => 'New table to manage materials request form fields.',
-			'sql' => array(
-				'CREATE TABLE `materials_request_form_fields` ('
-				. '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-				. '`libraryId` INT UNSIGNED NOT NULL,'
-				. '`formCategory` VARCHAR(55) NOT NULL,'
-				. '`fieldLabel` VARCHAR(255) NOT NULL,'
-				. '`fieldType` VARCHAR(30) NULL,'
-				. '`weight` SMALLINT(2) UNSIGNED NOT NULL,'
-				. 'PRIMARY KEY (`id`),'
-				. 'UNIQUE INDEX `id_UNIQUE` (`id` ASC),'
-				. 'INDEX `libraryId` (`libraryId` ASC));'
-			),
-		),
+			'sql' => [
+				'CREATE TABLE `materials_request_form_fields` (' . '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,' . '`libraryId` INT UNSIGNED NOT NULL,' . '`formCategory` VARCHAR(55) NOT NULL,' . '`fieldLabel` VARCHAR(255) NOT NULL,' . '`fieldType` VARCHAR(30) NULL,' . '`weight` SMALLINT(2) UNSIGNED NOT NULL,' . 'PRIMARY KEY (`id`),' . 'UNIQUE INDEX `id_UNIQUE` (`id` ASC),' . 'INDEX `libraryId` (`libraryId` ASC));',
+			],
+		],
 
-		'staffSettingsTable' => array(
+		'staffSettingsTable' => [
 			'title' => 'Staff Settings Table Creation',
 			'description' => 'New table to contain user settings for staff users.',
-			'sql' => array(
-				'CREATE TABLE `user_staff_settings` ('
-				. '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-				. '`userId` INT UNSIGNED NOT NULL,'
-				. '`materialsRequestReplyToAddress` VARCHAR(70) NULL,'
-				. '`materialsRequestEmailSignature` TINYTEXT NULL,'
-				. 'PRIMARY KEY (`id`),'
-				. 'UNIQUE INDEX `userId_UNIQUE` (`userId` ASC),'
-				. 'INDEX `userId` (`userId` ASC));'
-			),
-		),
+			'sql' => [
+				'CREATE TABLE `user_staff_settings` (' . '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,' . '`userId` INT UNSIGNED NOT NULL,' . '`materialsRequestReplyToAddress` VARCHAR(70) NULL,' . '`materialsRequestEmailSignature` TINYTEXT NULL,' . 'PRIMARY KEY (`id`),' . 'UNIQUE INDEX `userId_UNIQUE` (`userId` ASC),' . 'INDEX `userId` (`userId` ASC));',
+			],
+		],
 
 		'staffSettingsAllowNegativeUserId' => [
 			'title' => 'Staff Settings Allow Negative User ids',
 			'description' => 'Allow negative user ids for staff settings',
 			'sql' => [
-				'ALTER TABLE user_staff_settings change column userId userId INT NOT NULL'
-			]
+				'ALTER TABLE user_staff_settings change column userId userId INT NOT NULL',
+			],
 		],
 
-		'materialsRequestLibraryId' => array(
+		'materialsRequestLibraryId' => [
 			'title' => 'Add LibraryId to Material Requests Table',
 			'description' => 'Add LibraryId column to Materials Request table and populate column for existing requests.',
-			'sql' => array(
-				'ALTER TABLE `materials_request` '
-				. 'ADD COLUMN `libraryId` INT UNSIGNED NULL AFTER `id`, '
-				. 'ADD COLUMN `formatId` INT UNSIGNED NULL AFTER `format`; ',
+			'sql' => [
+				'ALTER TABLE `materials_request` ' . 'ADD COLUMN `libraryId` INT UNSIGNED NULL AFTER `id`, ' . 'ADD COLUMN `formatId` INT UNSIGNED NULL AFTER `format`; ',
 
-				'UPDATE  `materials_request`'
-				. 'LEFT JOIN `user` ON (user.id=materials_request.createdBy) '
-				. 'LEFT JOIN `location` ON (location.locationId=user.homeLocationId) '
-				. 'SET materials_request.libraryId = location.libraryId '
-				. 'WHERE materials_request.libraryId IS null '
-				. 'and user.id IS NOT null '
-				. 'and location.libraryId IS not null;',
+				'UPDATE  `materials_request`' . 'LEFT JOIN `user` ON (user.id=materials_request.createdBy) ' . 'LEFT JOIN `location` ON (location.locationId=user.homeLocationId) ' . 'SET materials_request.libraryId = location.libraryId ' . 'WHERE materials_request.libraryId IS null ' . 'and user.id IS NOT null ' . 'and location.libraryId IS not null;',
 
-				'UPDATE `materials_request` '
-				. 'LEFT JOIN `location` ON (location.locationId=materials_request.holdPickupLocation) '
-				. 'SET materials_request.libraryId = location.libraryId '
-				. ' WHERE materials_request.libraryId IS null and location.libraryId IS not null;'
-			),
-		),
+				'UPDATE `materials_request` ' . 'LEFT JOIN `location` ON (location.locationId=materials_request.holdPickupLocation) ' . 'SET materials_request.libraryId = location.libraryId ' . ' WHERE materials_request.libraryId IS null and location.libraryId IS not null;',
+			],
+		],
 
-		'materialsRequestFixColumns' => array(
+		'materialsRequestFixColumns' => [
 			'title' => 'Change a Couple Column Data-Types for Material Requests Table',
 			'description' => 'Change illItem column data types for Material Requests Table.',
-			'sql' => array(
-				'ALTER TABLE `materials_request` CHANGE COLUMN `illItem` `illItem` TINYINT(4) NULL DEFAULT NULL ;'
-			),
-		),
+			'sql' => [
+				'ALTER TABLE `materials_request` CHANGE COLUMN `illItem` `illItem` TINYINT(4) NULL DEFAULT NULL ;',
+			],
+		],
 
-		'materialsRequestStatus_update1' => array(
+		'materialsRequestStatus_update1' => [
 			'title' => 'Materials Request Status Update 1',
 			'description' => 'Material Request Status add library id',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `materials_request_status` ADD `libraryId` INT(11) DEFAULT '-1'",
 				'ALTER TABLE `materials_request_status` ADD INDEX (`libraryId`)',
-			),
-		),
+			],
+		],
 
-		'catalogingRole' => array(
+		'catalogingRole' => [
 			'title' => 'Create cataloging role',
 			'description' => 'Create cataloging role to handle materials requests, econtent loading, etc.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('cataloging', 'Allows user to perform cataloging activities.')",
-			),
-		),
+			],
+		],
 
-		'superCatalogerRole' => array(
+		'superCatalogerRole' => [
 			'title' => 'Create superCataloger role',
 			'description' => 'Create cataloging role to handle additional actions typically reserved for consortial offices, etc.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('superCataloger', 'Allows user to perform cataloging activities that require advanced knowledge.')",
-			),
-		),
+			],
+		],
 
-		'materialRequestsRole' => array(
+		'materialRequestsRole' => [
 			'title' => 'Create library material requests role',
 			'description' => 'Create library materials request role to handle material requests for a specific library system.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('library_material_requests', 'Allows user to manage material requests for a specific library.')",
-			),
-		),
+			],
+		],
 
-		'newRolesJan2016' => array(
+		'newRolesJan2016' => [
 			'title' => 'Create new roles',
 			'description' => 'Create library manager, location manager, and circulation reports roles.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('libraryManager', 'Allows user to do basic configuration for their library.')",
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('locationManager', 'Allows user to do basic configuration for their location.')",
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('circulationReports', 'Allows user to view offline circulation reports.')",
-			),
-		),
+			],
+		],
 
-		'libraryAdmin' => array(
+		'libraryAdmin' => [
 			'title' => 'Create library admin role',
 			'description' => 'Create library admin to allow .',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('libraryAdmin', 'Allows user to update library configuration for their library system only for their home location.')",
-			),
-		),
+			],
+		],
 
-		'contentEditor' => array(
+		'contentEditor' => [
 			'title' => 'Create Content Editor role',
 			'description' => 'Create Content Editor Role to allow creation of widgets.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('contentEditor', 'Allows creation of widgets.')",
-			),
-		),
+			],
+		],
 
-		'listPublisherRole' => array(
+		'listPublisherRole' => [
 			'title' => 'Create library publisher role',
 			'description' => 'Create library publisher role to include lists from specific users within search results.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('listPublisher', 'Optionally only include lists from people with this role in search results.')",
-			),
-		),
+			],
+		],
 
-		'archivesRole' => array(
+		'archivesRole' => [
 			'title' => 'Create archives role',
 			'description' => 'Create archives role to allow control over archives integration.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO `roles` (`name`, `description`) VALUES ('archives', 'Control overall archives integration.')",
-			),
-		),
+			],
+		],
 
-		'ip_lookup_1' => array(
+		'ip_lookup_1' => [
 			'title' => 'IP Lookup Update 1',
 			'description' => 'Add start and end ranges for IP Lookup table to improve performance.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE ip_lookup ADD COLUMN startIpVal BIGINT",
 				"ALTER TABLE ip_lookup ADD COLUMN endIpVal BIGINT",
 				"ALTER TABLE `ip_lookup` ADD INDEX ( `startIpVal` )",
 				"ALTER TABLE `ip_lookup` ADD INDEX ( `endIpVal` )",
-				"createDefaultIpRanges"
-			),
-		),
+				"createDefaultIpRanges",
+			],
+		],
 
-		'ip_lookup_2' => array(
+		'ip_lookup_2' => [
 			'title' => 'IP Lookup Update 2',
 			'description' => 'Change start and end ranges to be big integers.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `ip_lookup` CHANGE `startIpVal` `startIpVal` BIGINT NULL DEFAULT NULL ",
 				"ALTER TABLE `ip_lookup` CHANGE `endIpVal` `endIpVal` BIGINT NULL DEFAULT NULL ",
-				"createDefaultIpRanges"
-			),
-		),
+				"createDefaultIpRanges",
+			],
+		],
 
-		'ip_lookup_3' => array(
+		'ip_lookup_3' => [
 			'title' => 'IP Lookup isOpac switch',
 			'description' => 'Add an IsOpac switch to each ip address entry',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `ip_lookup` ADD COLUMN `isOpac` TINYINT UNSIGNED NOT NULL DEFAULT 1",
-			),
-		),
+			],
+		],
 
 		'ip_lookup_blocking' => [
 			'title' => 'IP Lookup Blocking',
@@ -704,46 +624,46 @@ function getFinalBaseUpdates()
 				"ALTER TABLE ip_lookup ADD COLUMN blockAccess TINYINT NOT NULL DEFAULT 0",
 				"ALTER TABLE ip_lookup ADD COLUMN allowAPIAccess TINYINT NOT NULL DEFAULT 0",
 				"INSERT INTO ip_lookup (location, ip, locationid, startIpVal, endIpVal, blockAccess, allowAPIAccess, isOpac) VALUES ('Internal', '127.0.0.1', -1, 2130706433, 2130706433, 0, 1, 0)",
-			]
+			],
 		],
 
-		'ip_debugging' =>[
+		'ip_debugging' => [
 			'title' => 'IP Lookup Debugging',
 			'description' => 'Allow debugging based on IP address of the user',
 			'sql' => [
 				'ALTER TABLE ip_lookup ADD COLUMN showDebuggingInformation TINYINT NOT NULL DEFAULT 0',
-				"UPDATE ip_lookup set showDebuggingInformation = 1 where ip ='127.0.0.1'"
-			]
+				"UPDATE ip_lookup set showDebuggingInformation = 1 where ip ='127.0.0.1'",
+			],
 		],
 
 		'ip_log_timing' => [
 			'title' => 'IP Lookup timing',
 			'description' => 'Add the ability to log timing information by IP address',
 			'sql' => [
-				'ALTER TABLE ip_lookup ADD COLUMN logTimingInformation TINYINT DEFAULT 0'
-			]
+				'ALTER TABLE ip_lookup ADD COLUMN logTimingInformation TINYINT DEFAULT 0',
+			],
 		],
 
 		'ip_log_queries' => [
 			'title' => 'IP Query Logging',
 			'description' => 'Add the ability to log database queries information by IP address',
 			'sql' => [
-				'ALTER TABLE ip_lookup ADD COLUMN logAllQueries TINYINT DEFAULT 0'
-			]
+				'ALTER TABLE ip_lookup ADD COLUMN logAllQueries TINYINT DEFAULT 0',
+			],
 		],
 
 		'remove_merged_records' => [
 			'title' => 'Remove unused Merged Records Table',
 			'description' => 'Remove unused Merged Records Table',
 			'sql' => [
-				'DROP TABLE IF EXISTS merged_records'
-			]
+				'DROP TABLE IF EXISTS merged_records',
+			],
 		],
 
-		'nongrouped_records' => array(
+		'nongrouped_records' => [
 			'title' => 'Non-grouped Records Table',
 			'description' => 'Create non-grouped Records table to store records that should not be grouped',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `nongrouped_records` (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							`source` VARCHAR( 50 ) NOT NULL,
@@ -751,13 +671,13 @@ function getFinalBaseUpdates()
 							`notes` VARCHAR( 255 ) NOT NULL,
 							UNIQUE INDEX (source, recordId)
 						)",
-			),
-		),
+			],
+		],
 
-		'author_enrichment' => array(
+		'author_enrichment' => [
 			'title' => 'Author Enrichment',
 			'description' => 'Create a table to store enrichment for authors',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `author_enrichment` (
 									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 									`authorName` VARCHAR( 255 ) NOT NULL,
@@ -765,55 +685,55 @@ function getFinalBaseUpdates()
 									`wikipediaUrl` VARCHAR( 255 ),
 									INDEX(authorName)
 								)",
-			),
-		),
+			],
+		],
 
-		'variables_table' => array(
+		'variables_table' => [
 			'title' => 'Variables Table',
 			'description' => 'Create Variables Table for storing basic variables for use in programs (system writable config)',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `variables` (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							`name` VARCHAR( 128 ) NOT NULL,
 							`value` VARCHAR( 255 ),
 							INDEX(name)
 						)",
-			),
-		),
+			],
+		],
 
-		'variables_table_uniqueness' => array(
+		'variables_table_uniqueness' => [
 			'title' => 'Variables Table Uniqueness',
 			'description' => 'Create Variables Table for storing basic variables for use in programs (system writable config)',
-			'sql' => array(
+			'sql' => [
 				"DELETE FROM variables where name = 'lastPartialReindexFinish'",
 				"ALTER TABLE variables ADD UNIQUE (name)",
-			),
-		),
+			],
+		],
 
-		'variables_validateChecksumsFromDisk' => array(
+		'variables_validateChecksumsFromDisk' => [
 			'title' => 'Variables Validate Checksums from Disk variable',
 			'description' => 'Add a variable to control whether or not we should validate checksums on the disk.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO variables (name, value) VALUES ('validateChecksumsFromDisk', 'false')",
-			),
-		),
+			],
+		],
 
-		'variables_offline_mode_when_offline_login_allowed' => array(
+		'variables_offline_mode_when_offline_login_allowed' => [
 			'title' => 'Variables Offline Mode When Offline Login is Allowed',
 			'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO variables (name, value) VALUES ('offline_mode_when_offline_login_allowed', 'false')",
-			),
-		),
+			],
+		],
 
-		'variables_full_index_warnings' => array(
+		'variables_full_index_warnings' => [
 			'title' => 'Variables for how long of an interval to allow between full indexes',
 			'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
-			'sql' => array(
+			'sql' => [
 				"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalWarning', '86400')",
 				"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalCritical', '129600')",
-			),
-		),
+			],
+		],
 
 		'create_system_variables_table' => [
 			'title' => 'Create System Variables Table',
@@ -824,32 +744,32 @@ function getFinalBaseUpdates()
 							errorEmail VARCHAR( 128 ),
 							ticketEmail VARCHAR( 128 ),
 							searchErrorEmail VARCHAR( 128 )
-						)'
-			]
+						)',
+			],
 		],
 
 		'loadCoversFrom020z' => [
 			'title' => 'Allow loading covers from the 020z',
 			'description' => 'Update System variables to allow loading covers from the 020z',
 			'sql' => [
-				'ALTER TABLE system_variables ADD COLUMN loadCoversFrom020z TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE system_variables ADD COLUMN loadCoversFrom020z TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'runNightlyFullIndex' => [
 			'title' => 'Run Nightly Full Index',
 			'description' => 'Whether or not a new full index should be run in the middle of the night',
 			'sql' => [
-				'ALTER TABLE system_variables ADD COLUMN runNightlyFullIndex TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE system_variables ADD COLUMN runNightlyFullIndex TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'currencyCode' => [
 			'title' => 'Currency code system variable',
 			'description' => 'Add currency code to system variables',
 			'sql' => [
-				"ALTER TABLE system_variables ADD COLUMN currencyCode CHAR(3) DEFAULT 'USD'"
-			]
+				"ALTER TABLE system_variables ADD COLUMN currencyCode CHAR(3) DEFAULT 'USD'",
+			],
 		],
 
 		'htmlForMarkdown' => [
@@ -859,15 +779,15 @@ function getFinalBaseUpdates()
 			'sql' => [
 				"ALTER TABLE system_variables ADD COLUMN allowableHtmlTags VARCHAR(512) DEFAULT 'p|div|span|a|b|em|strong|i|ul|ol|li|br|h1|h2|h3|h4|h5|h6'",
 				"ALTER TABLE system_variables ADD COLUMN allowHtmlInMarkdownFields TINYINT(1) DEFAULT 1",
-				"ALTER TABLE system_variables ADD COLUMN useHtmlEditorRatherThanMarkdown TINYINT(1) DEFAULT 0"
-			]
+				"ALTER TABLE system_variables ADD COLUMN useHtmlEditorRatherThanMarkdown TINYINT(1) DEFAULT 0",
+			],
 		],
 
-		'utf8_update' => array(
+		'utf8_update' => [
 			'title' => 'Update to UTF-8',
 			'description' => 'Update database to use UTF-8 encoding',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER DATABASE " . $configArray['Database']['database_aspen_dbname'] . " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;",
 				//"ALTER TABLE administrators CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 				"ALTER TABLE bad_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -886,75 +806,58 @@ function getFinalBaseUpdates()
 				"ALTER TABLE user_reading_history CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 				"ALTER TABLE user_roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 				"ALTER TABLE user_suggestions CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-			),
-		),
+			],
+		],
 
-		'index_resources' => array(
+		'index_resources' => [
 			'title' => 'Index resources',
 			'description' => 'Add a new index to resources table to make record id and source unique',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				//Update resource table indexes
-				"ALTER TABLE `resource` ADD UNIQUE `records_by_source` (`record_id`, `source`)"
-			),
-		),
+				"ALTER TABLE `resource` ADD UNIQUE `records_by_source` (`record_id`, `source`)",
+			],
+		],
 
-		'reindexLog' => array(
+		'reindexLog' => [
 			'title' => 'Reindex Log table',
 			'description' => 'Create Reindex Log table to track reindexing.',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS reindex_log(" .
-				"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex log', " .
-				"`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the reindex started', " .
-				"`endTime` INT(11) NULL COMMENT 'The timestamp when the reindex process ended', " .
-				"PRIMARY KEY ( `id` )" .
-				") ENGINE = InnoDB;",
-				"CREATE TABLE IF NOT EXISTS reindex_process_log(" .
-				"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex process', " .
-				"`reindex_id` INT(11) NOT NULL COMMENT 'The id of the reindex log this process ran during', " .
-				"`processName` VARCHAR(50) NOT NULL COMMENT 'The name of the process being run', " .
-				"`recordsProcessed` INT(11) NOT NULL COMMENT 'The number of records processed from marc files', " .
-				"`eContentRecordsProcessed` INT(11) NOT NULL COMMENT 'The number of econtent records processed from the database', " .
-				"`resourcesProcessed` INT(11) NOT NULL COMMENT 'The number of resources processed from the database', " .
-				"`numErrors` INT(11) NOT NULL COMMENT 'The number of errors that occurred during the process', " .
-				"`numAdded` INT(11) NOT NULL COMMENT 'The number of additions that occurred during the process', " .
-				"`numUpdated` INT(11) NOT NULL COMMENT 'The number of items updated during the process', " .
-				"`numDeleted` INT(11) NOT NULL COMMENT 'The number of items deleted during the process', " .
-				"`numSkipped` INT(11) NOT NULL COMMENT 'The number of items skipped during the process', " .
-				"`notes` TEXT COMMENT 'Additional information about the process', " .
-				"PRIMARY KEY ( `id` ), INDEX ( `reindex_id` ), INDEX ( `processName` )" .
-				") ENGINE = InnoDB;",
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS reindex_log(" . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex log', " . "`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the reindex started', " . "`endTime` INT(11) NULL COMMENT 'The timestamp when the reindex process ended', " . "PRIMARY KEY ( `id` )" . ") ENGINE = InnoDB;",
+				"CREATE TABLE IF NOT EXISTS reindex_process_log(" . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex process', " . "`reindex_id` INT(11) NOT NULL COMMENT 'The id of the reindex log this process ran during', " . "`processName` VARCHAR(50) NOT NULL COMMENT 'The name of the process being run', " . "`recordsProcessed` INT(11) NOT NULL COMMENT 'The number of records processed from marc files', " .
+				"`eContentRecordsProcessed` INT(11) NOT NULL COMMENT 'The number of econtent records processed from the database', " . "`resourcesProcessed` INT(11) NOT NULL COMMENT 'The number of resources processed from the database', " . "`numErrors` INT(11) NOT NULL COMMENT 'The number of errors that occurred during the process', " . "`numAdded` INT(11) NOT NULL COMMENT 'The number of additions that occurred during the process', " .
+				"`numUpdated` INT(11) NOT NULL COMMENT 'The number of items updated during the process', " . "`numDeleted` INT(11) NOT NULL COMMENT 'The number of items deleted during the process', " . "`numSkipped` INT(11) NOT NULL COMMENT 'The number of items skipped during the process', " . "`notes` TEXT COMMENT 'Additional information about the process', " . "PRIMARY KEY ( `id` ), INDEX ( `reindex_id` ), INDEX ( `processName` )" . ") ENGINE = InnoDB;",
 
-			),
-		),
+			],
+		],
 
-		'reindexLog_1' => array(
+		'reindexLog_1' => [
 			'title' => 'Reindex Log table update 1',
 			'description' => 'Update Reindex Log table to include notes and last update.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE reindex_log ADD COLUMN `notes` TEXT COMMENT 'Notes related to the overall process'",
 				"ALTER TABLE reindex_log ADD `lastUpdate` INT(11) COMMENT 'The last time the log was updated'",
-			),
-		),
+			],
+		],
 
-		'reindexLog_2' => array(
+		'reindexLog_2' => [
 			'title' => 'Reindex Log table update 2',
 			'description' => 'Update Reindex Log table to include a count of non-marc records that have been processed.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE reindex_process_log ADD COLUMN `overDriveNonMarcRecordsProcessed` INT(11) COMMENT 'The number of overdrive records processed that do not have a marc record associated with them.'",
-			),
-		),
+			],
+		],
 
 
-		'reindexLog_grouping' => array(
+		'reindexLog_grouping' => [
 			'title' => 'Reindex Log Grouping Update',
 			'description' => 'Update Reindex Logging for Record Grouping.',
-			'sql' => array(
+			'sql' => [
 				"DROP TABLE reindex_process_log",
 				"ALTER TABLE reindex_log ADD COLUMN numWorksProcessed INT(11) NOT NULL DEFAULT 0",
-				"ALTER TABLE reindex_log ADD COLUMN numListsProcessed INT(11) NOT NULL DEFAULT 0"
-			),
-		),
+				"ALTER TABLE reindex_log ADD COLUMN numListsProcessed INT(11) NOT NULL DEFAULT 0",
+			],
+		],
 
 		'reindexLog_nightly_updates' => [
 			'title' => 'Reindex Log Update for Nightly Index',
@@ -962,7 +865,7 @@ function getFinalBaseUpdates()
 			'sql' => [
 				'ALTER TABLE reindex_log DROP COLUMN numListsProcessed',
 				'ALTER TABLE reindex_log ADD COLUMN numErrors INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'reindexLog_unique_index' => [
@@ -970,144 +873,125 @@ function getFinalBaseUpdates()
 			'description' => 'Add a unique index to the reindex log',
 			'sql' => [
 				'ALTER TABLE reindex_log ADD UNIQUE id(id)',
-			]
+			],
 		],
 
-		'cronLog' => array(
+		'cronLog' => [
 			'title' => 'Cron Log table',
 			'description' => 'Create Cron Log table to track reindexing.',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS cron_log(" .
-				"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of the cron log', " .
-				"`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the cron run started', " .
-				"`endTime` INT(11) NULL COMMENT 'The timestamp when the cron run ended', " .
-				"`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the cron run last updated (to check for stuck processes)', " .
-				"`notes` TEXT COMMENT 'Additional information about the cron run', " .
-				"PRIMARY KEY ( `id` )" .
-				") ENGINE = InnoDB;",
-				"CREATE TABLE IF NOT EXISTS cron_process_log(" .
-				"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of cron process', " .
-				"`cronId` INT(11) NOT NULL COMMENT 'The id of the cron run this process ran during', " .
-				"`processName` VARCHAR(50) NOT NULL COMMENT 'The name of the process being run', " .
-				"`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the process started', " .
-				"`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the process last updated (to check for stuck processes)', " .
-				"`endTime` INT(11) NULL COMMENT 'The timestamp when the process ended', " .
-				"`numErrors` INT(11) NOT NULL DEFAULT 0 COMMENT 'The number of errors that occurred during the process', " .
-				"`numUpdates` INT(11) NOT NULL DEFAULT 0 COMMENT 'The number of updates, additions, etc. that occurred', " .
-				"`notes` TEXT COMMENT 'Additional information about the process', " .
-				"PRIMARY KEY ( `id` ), INDEX ( `cronId` ), INDEX ( `processName` )" .
-				") ENGINE = InnoDB;",
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS cron_log(" . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of the cron log', " . "`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the cron run started', " . "`endTime` INT(11) NULL COMMENT 'The timestamp when the cron run ended', " . "`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the cron run last updated (to check for stuck processes)', " . "`notes` TEXT COMMENT 'Additional information about the cron run', " .
+				"PRIMARY KEY ( `id` )" . ") ENGINE = InnoDB;",
+				"CREATE TABLE IF NOT EXISTS cron_process_log(" . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of cron process', " . "`cronId` INT(11) NOT NULL COMMENT 'The id of the cron run this process ran during', " . "`processName` VARCHAR(50) NOT NULL COMMENT 'The name of the process being run', " . "`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the process started', " .
+				"`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the process last updated (to check for stuck processes)', " . "`endTime` INT(11) NULL COMMENT 'The timestamp when the process ended', " . "`numErrors` INT(11) NOT NULL DEFAULT 0 COMMENT 'The number of errors that occurred during the process', " . "`numUpdates` INT(11) NOT NULL DEFAULT 0 COMMENT 'The number of updates, additions, etc. that occurred', " . "`notes` TEXT COMMENT 'Additional information about the process', " .
+				"PRIMARY KEY ( `id` ), INDEX ( `cronId` ), INDEX ( `processName` )" . ") ENGINE = InnoDB;",
 
-			),
-		),
+			],
+		],
 
 		'cron_log_errors' => [
 			'title' => 'Cron Log errors',
 			'description' => 'Add error counts and notes to the main cron log for consistency',
 			'sql' => [
-				'ALTER TABLE cron_log ADD COLUMN numErrors INT(11) NOT NULL DEFAULT 0'
-			]
+				'ALTER TABLE cron_log ADD COLUMN numErrors INT(11) NOT NULL DEFAULT 0',
+			],
 		],
 
 		'cron_process_skips' => [
 			'title' => 'Cron Process Log skips',
 			'description' => 'Add error counts and notes to the main cron log for consistency',
 			'sql' => [
-				'ALTER TABLE cron_process_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0'
-			]
+				'ALTER TABLE cron_process_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0',
+			],
 		],
 
-		'marcImport' => array(
+		'marcImport' => [
 			'title' => 'Marc Import table',
 			'description' => 'Create a table to store information about marc records that are being imported.',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS marc_import(" .
-				"`id` VARCHAR(50) COMMENT 'The id of the marc record in the ils', " .
-				"`checksum` INT(11) NOT NULL COMMENT 'The timestamp when the reindex started', " .
-				"PRIMARY KEY ( `id` )" .
-				") ENGINE = InnoDB;",
-			),
-		),
-		'marcImport_1' => array(
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS marc_import(" . "`id` VARCHAR(50) COMMENT 'The id of the marc record in the ils', " . "`checksum` INT(11) NOT NULL COMMENT 'The timestamp when the reindex started', " . "PRIMARY KEY ( `id` )" . ") ENGINE = InnoDB;",
+			],
+		],
+		'marcImport_1' => [
 			'title' => 'Marc Import table Update 1',
 			'description' => 'Increase the length of the checksum field for the marc import.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE marc_import CHANGE `checksum` `checksum` BIGINT NOT NULL COMMENT 'The checksum of the id as it currently exists in the active index.'",
-			),
-		),
-		'marcImport_2' => array(
+			],
+		],
+		'marcImport_2' => [
 			'title' => 'Marc Import table Update 2',
 			'description' => 'Increase the length of the checksum field for the marc import.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE marc_import ADD COLUMN `backup_checksum` BIGINT COMMENT 'The checksum of the id in the backup index.'",
 				"ALTER TABLE marc_import ADD COLUMN `eContent` TINYINT NOT NULL COMMENT 'Whether or not the record was detected as eContent in the active index.'",
 				"ALTER TABLE marc_import ADD COLUMN `backup_eContent` TINYINT COMMENT 'Whether or not the record was detected as eContent in the backup index.'",
-			),
-		),
-		'marcImport_3' => array(
+			],
+		],
+		'marcImport_3' => [
 			'title' => 'Marc Import table Update 3',
 			'description' => 'Make backup fields optional.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE marc_import CHANGE `backup_checksum` `backup_checksum` BIGINT COMMENT 'The checksum of the id in the backup index.'",
 				"ALTER TABLE marc_import CHANGE `backup_eContent` `backup_eContent` TINYINT COMMENT 'Whether or not the record was detected as eContent in the backup index.'",
-			),
-		),
-		'add_indexes' => array(
+			],
+		],
+		'add_indexes' => [
 			'title' => 'Add indexes',
 			'description' => 'Add indexes to tables that were not defined originally',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `list_widget_lists` ADD INDEX `ListWidgetId` ( `listWidgetId` ) ',
 				'ALTER TABLE `location` ADD INDEX `ValidHoldPickupBranch` ( `validHoldPickupBranch` ) ',
-			),
-		),
+			],
+		],
 
-		'add_indexes2' => array(
+		'add_indexes2' => [
 			'title' => 'Add indexes 2',
 			'description' => 'Add additional indexes to tables that were not defined originally',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `materials_request_status` ADD INDEX ( `isDefault` )',
 				'ALTER TABLE `materials_request_status` ADD INDEX ( `isOpen` )',
 				'ALTER TABLE `materials_request_status` ADD INDEX ( `isPatronCancel` )',
-				'ALTER TABLE `materials_request` ADD INDEX ( `status` )'
-			),
-		),
+				'ALTER TABLE `materials_request` ADD INDEX ( `status` )',
+			],
+		],
 
-		'remove_spelling_words' => array(
+		'remove_spelling_words' => [
 			'title' => 'Remove Spelling Words',
 			'description' => 'Optimizations to spelling to ensure indexes are used',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				'DROP TABLE `spelling_words`',
-			),
-		),
+			],
+		],
 
-		'remove_library_and location_boost' => array(
+		'remove_library_and location_boost' => [
 			'title' => 'Remove Lib and Loc Boosting',
 			'description' => 'Allow boosting of library and location boosting to be disabled',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `library` DROP COLUMN `boostByLibrary`",
 				"ALTER TABLE `location` DROP COLUMN `boostByLocation`",
-			),
-		),
+			],
+		],
 
-		'rename_tables' => array(
+		'rename_tables' => [
 			'title' => 'Rename tables',
 			'description' => 'Rename tables for consistency and cross platform usage',
-			'sql' => array(
+			'sql' => [
 				//Update resource table indexes
 				'RENAME TABLE usageTracking TO usage_tracking',
 				'RENAME TABLE nonHoldableLocations TO non_holdable_locations',
 				'RENAME TABLE pTypeRestrictedLocations TO ptype_restricted_locations',
-			),
-		),
+			],
+		],
 
-		'millenniumTables' => array(
+		'millenniumTables' => [
 			'title' => 'Millennium table setup',
 			'description' => 'Add new tables for millennium installations',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE `millennium_cache` (
 								`recordId` VARCHAR( 20 ) NOT NULL COMMENT 'The recordId being checked',
 								`scope` INT(16) NOT NULL COMMENT 'The scope that was loaded',
@@ -1131,98 +1015,60 @@ function getFinalBaseUpdates()
 							`holdingDisplay` VARCHAR(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium',
 							`availableAtCircDesk` TINYINT(4) NOT NULL COMMENT 'The item is available if the patron visits the circulation desk.',
 							PRIMARY KEY (`locationId`)
-						) ENGINE=InnoDB"
-			),
-		),
+						) ENGINE=InnoDB",
+			],
+		],
 
-		'loan_rule_determiners_1' => array(
+		'loan_rule_determiners_1' => [
 			'title' => 'Loan Rule Determiners',
 			'description' => 'Build tables to store loan rule determiners',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS loan_rules (" .
-				"`id` INT NOT NULL AUTO_INCREMENT, " .
-				"`loanRuleId` INT NOT NULL COMMENT 'The location id', " .
-				"`name` varchar(50) NOT NULL COMMENT 'The location code the rule applies to', " .
-				"`code` char(1) NOT NULL COMMENT '', " .
-				"`normalLoanPeriod` INT(4) NOT NULL COMMENT 'Number of days the item checks out for', " .
-				"`holdable` TINYINT NOT NULL DEFAULT '0', " .
-				"`bookable` TINYINT NOT NULL DEFAULT '0', " .
-				"`homePickup` TINYINT NOT NULL DEFAULT '0', " .
-				"`shippable` TINYINT NOT NULL DEFAULT '0', " .
-				"PRIMARY KEY ( `id` ), " .
-				"INDEX ( `loanRuleId` ), " .
-				"INDEX (`holdable`) " .
-				") ENGINE=InnoDB",
-				"CREATE TABLE IF NOT EXISTS loan_rule_determiners (" .
-				"`id` INT NOT NULL AUTO_INCREMENT, " .
-				"`rowNumber` INT NOT NULL COMMENT 'The row of the determiner.  Rules are processed in reverse order', " .
-				"`location` varchar(10) NOT NULL COMMENT '', " .
-				"`patronType` VARCHAR(50) NOT NULL COMMENT 'The patron types that this rule applies to', " .
-				"`itemType` VARCHAR(255) NOT NULL DEFAULT '0' COMMENT 'The item types that this rule applies to', " .
-				"`ageRange` varchar(10) NOT NULL COMMENT '', " .
-				"`loanRuleId` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM', " .
-				"`active` TINYINT NOT NULL DEFAULT '0', " .
-				"PRIMARY KEY ( `id` ), " .
-				"INDEX ( `rowNumber` ), " .
-				"INDEX (`active`) " .
-				") ENGINE=InnoDB",
-			),
-		),
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS loan_rules (" . "`id` INT NOT NULL AUTO_INCREMENT, " . "`loanRuleId` INT NOT NULL COMMENT 'The location id', " . "`name` varchar(50) NOT NULL COMMENT 'The location code the rule applies to', " . "`code` char(1) NOT NULL COMMENT '', " . "`normalLoanPeriod` INT(4) NOT NULL COMMENT 'Number of days the item checks out for', " . "`holdable` TINYINT NOT NULL DEFAULT '0', " . "`bookable` TINYINT NOT NULL DEFAULT '0', " .
+				"`homePickup` TINYINT NOT NULL DEFAULT '0', " . "`shippable` TINYINT NOT NULL DEFAULT '0', " . "PRIMARY KEY ( `id` ), " . "INDEX ( `loanRuleId` ), " . "INDEX (`holdable`) " . ") ENGINE=InnoDB",
+				"CREATE TABLE IF NOT EXISTS loan_rule_determiners (" . "`id` INT NOT NULL AUTO_INCREMENT, " . "`rowNumber` INT NOT NULL COMMENT 'The row of the determiner.  Rules are processed in reverse order', " . "`location` varchar(10) NOT NULL COMMENT '', " . "`patronType` VARCHAR(50) NOT NULL COMMENT 'The patron types that this rule applies to', " . "`itemType` VARCHAR(255) NOT NULL DEFAULT '0' COMMENT 'The item types that this rule applies to', " .
+				"`ageRange` varchar(10) NOT NULL COMMENT '', " . "`loanRuleId` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM', " . "`active` TINYINT NOT NULL DEFAULT '0', " . "PRIMARY KEY ( `id` ), " . "INDEX ( `rowNumber` ), " . "INDEX (`active`) " . ") ENGINE=InnoDB",
+			],
+		],
 
-		'loan_rule_determiners_increase_ptype_length' => array(
+		'loan_rule_determiners_increase_ptype_length' => [
 			'title' => 'Increase PType field length for Loan Rule Determiners',
 			'description' => 'Increase PType field length for Loan Rule Determiners',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE loan_rule_determiners CHANGE COLUMN patronType `patronType` VARCHAR(255) NOT NULL COMMENT 'The patron types that this rule applies to'",
-			),
-		),
+			],
+		],
 
-		'location_hours' => array(
+		'location_hours' => [
 			'title' => 'Location Hours',
 			'description' => 'Build table to store hours for a location',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS location_hours (" .
-				"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of hours entry', " .
-				"`locationId` INT NOT NULL COMMENT 'The location id', " .
-				"`day` INT NOT NULL COMMENT 'Day of the week 0 to 7 (Sun to Monday)', " .
-				"`closed` TINYINT NOT NULL DEFAULT '0' COMMENT 'Whether or not the library is closed on this day', " .
-				"`open` varchar(10) NOT NULL COMMENT 'Open hour (24hr format) HH:MM', " .
-				"`close` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM', " .
-				"PRIMARY KEY ( `id` ), " .
-				"UNIQUE KEY (`locationId`, `day`) " .
-				") ENGINE=InnoDB",
-			),
-		),
-		'holiday' => array(
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS location_hours (" . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of hours entry', " . "`locationId` INT NOT NULL COMMENT 'The location id', " . "`day` INT NOT NULL COMMENT 'Day of the week 0 to 7 (Sun to Monday)', " . "`closed` TINYINT NOT NULL DEFAULT '0' COMMENT 'Whether or not the library is closed on this day', " . "`open` varchar(10) NOT NULL COMMENT 'Open hour (24hr format) HH:MM', " .
+				"`close` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM', " . "PRIMARY KEY ( `id` ), " . "UNIQUE KEY (`locationId`, `day`) " . ") ENGINE=InnoDB",
+			],
+		],
+		'holiday' => [
 			'title' => 'Holidays',
 			'description' => 'Build table to store holidays',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS holiday (" .
-				"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of holiday', " .
-				"`libraryId` INT NOT NULL COMMENT 'The library system id', " .
-				"`date` date NOT NULL COMMENT 'Date of holiday', " .
-				"`name` varchar(100) NOT NULL COMMENT 'Name of holiday', " .
-				"PRIMARY KEY ( `id` ), " .
-				"UNIQUE KEY (`date`) " .
-				") ENGINE=InnoDB",
-			),
-		),
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS holiday (" . "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of holiday', " . "`libraryId` INT NOT NULL COMMENT 'The library system id', " . "`date` date NOT NULL COMMENT 'Date of holiday', " . "`name` varchar(100) NOT NULL COMMENT 'Name of holiday', " . "PRIMARY KEY ( `id` ), " . "UNIQUE KEY (`date`) " . ") ENGINE=InnoDB",
+			],
+		],
 
-		'holiday_1' => array(
+		'holiday_1' => [
 			'title' => 'Holidays 1',
 			'description' => 'Update indexes for holidays',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE holiday DROP INDEX `date`",
 				"ALTER TABLE holiday ADD INDEX Date (`date`) ",
 				"ALTER TABLE holiday ADD INDEX Library (`libraryId`) ",
 				"ALTER TABLE holiday ADD UNIQUE KEY LibraryDate(`date`, `libraryId`) ",
-			),
-		),
+			],
+		],
 
-		'ptype' => array(
+		'ptype' => [
 			'title' => 'P-Type',
 			'description' => 'Build tables to store information related to P-Types.',
-			'sql' => array(
+			'sql' => [
 				'CREATE TABLE IF NOT EXISTS ptype(
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							pType INT(11) NOT NULL,
@@ -1230,37 +1076,37 @@ function getFinalBaseUpdates()
 							UNIQUE KEY (pType),
 							PRIMARY KEY (id)
 						)',
-			),
-		),
+			],
+		],
 
-		'masquerade_ptypes' => array(
+		'masquerade_ptypes' => [
 			'title' => 'P-Type setting for Masquerade Permissions',
 			'description' => 'Build tables to store information related to P-Types.',
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE `ptype` ADD COLUMN `masquerade` VARCHAR(45) NOT NULL DEFAULT \'none\' AFTER `maxHolds`;',
-			),
-		),
+			],
+		],
 
-		'non_numeric_ptypes' => array(
+		'non_numeric_ptypes' => [
 			'title' => 'Allow P-Types to be stored as strings',
 			'description' => 'This accommodates any ILS that does not use numeric P-Types',
-			'sql' => array(
-				'ALTER TABLE `ptype` CHANGE COLUMN `pType` `pType` VARCHAR(20) NOT NULL ;'
-			),
-		),
+			'sql' => [
+				'ALTER TABLE `ptype` CHANGE COLUMN `pType` `pType` VARCHAR(20) NOT NULL ;',
+			],
+		],
 
-		'session_update_1' => array(
+		'session_update_1' => [
 			'title' => 'Session Update 1',
 			'description' => 'Add a field for whether or not the session was started with remember me on.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE session ADD COLUMN `remember_me` TINYINT NOT NULL DEFAULT 0 COMMENT 'Whether or not the session was started with remember me on.'",
-			),
-		),
+			],
+		],
 
-		'offline_holds' => array(
+		'offline_holds' => [
 			'title' => 'Offline Holds',
 			'description' => 'Stores information about holds that have been placed while the circulation system is offline',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE offline_hold (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`timeEntered` INT(11) NOT NULL,
@@ -1277,31 +1123,31 @@ function getFinalBaseUpdates()
 							INDEX(`bibId`),
 							INDEX(`status`),
 							PRIMARY KEY(`id`)
-						) ENGINE = InnoDB"
-			)
-		),
+						) ENGINE = InnoDB",
+			],
+		],
 
-		'offline_holds_update_1' => array(
+		'offline_holds_update_1' => [
 			'title' => 'Offline Holds Update 1',
 			'description' => 'Add the ability to store a name for patrons that have not logged in before.  Also used for conversions',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `offline_hold` CHANGE `patronId` `patronId` INT( 11 ) NULL",
 				"ALTER TABLE `offline_hold` ADD COLUMN `patronName` VARCHAR( 200 ) NULL",
-			)
-		),
+			],
+		],
 
-		'offline_holds_update_2' => array(
+		'offline_holds_update_2' => [
 			'title' => 'Offline Holds Update 2',
 			'description' => 'Add the ability to store a name for patrons that have not logged in before.  Also used for conversions',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `offline_hold` ADD COLUMN `itemId` VARCHAR( 20 ) NULL",
-			)
-		),
+			],
+		],
 
-		'offline_circulation' => array(
+		'offline_circulation' => [
 			'title' => 'Offline Circulation',
 			'description' => 'Stores information about circulation activities done while the circulation system was offline',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE offline_circulation (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`timeEntered` INT(11) NOT NULL,
@@ -1325,14 +1171,14 @@ function getFinalBaseUpdates()
 							INDEX(`type`),
 							INDEX(`status`),
 							PRIMARY KEY(`id`)
-						) ENGINE = InnoDB"
-			)
-		),
+						) ENGINE = InnoDB",
+			],
+		],
 
-		'novelist_data' => array(
+		'novelist_data' => [
 			'title' => 'Novelist Data',
 			'description' => 'Stores basic information from Novelist for efficiency purposes.  We can\'t cache everything due to contract.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE novelist_data (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							groupedRecordPermanentId VARCHAR(36),
@@ -1346,31 +1192,31 @@ function getFinalBaseUpdates()
 							INDEX(`groupedRecordPermanentId`),
 							PRIMARY KEY(`id`)
 						) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'novelist_data_json' => array(
+		'novelist_data_json' => [
 			'title' => 'Novelist Data JSON',
 			'description' => 'Updates to cache full json response for a short period for performance.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE novelist_data ADD COLUMN jsonResponse MEDIUMTEXT",
 				"UPDATE novelist_data set lastUpdate = 0",
-			),
-		),
+			],
+		],
 
-		'novelist_data_indexes' => array(
+		'novelist_data_indexes' => [
 			'title' => 'Novelist Data Add Indexes',
 			'description' => 'Add indexes to novelist data for performance.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE novelist_data ADD INDEX primaryISBN(primaryISBN)",
 				"ALTER TABLE novelist_data ADD INDEX series(seriesTitle, volume)",
-			),
-		),
+			],
+		],
 
-		'syndetics_data' => array(
+		'syndetics_data' => [
 			'title' => 'Syndetics Data',
 			'description' => 'Stores basic information from Syndetics for efficiency purposes.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE syndetics_data (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							groupedRecordPermanentId VARCHAR(36),
@@ -1384,26 +1230,26 @@ function getFinalBaseUpdates()
 							INDEX(`groupedRecordPermanentId`),
 							PRIMARY KEY(`id`)
 						) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'syndetics_data_update_1' => array(
+		'syndetics_data_update_1' => [
 			'title' => 'Syndetics Data Update 1',
 			'description' => 'Add additional information about when specific content is last updated.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE syndetics_data CHANGE COLUMN lastUpdate lastDescriptionUpdate INT(11) DEFAULT 0",
 				"ALTER TABLE syndetics_data ADD COLUMN lastTableOfContentsUpdate INT(11) DEFAULT 0",
 				"ALTER TABLE syndetics_data ADD COLUMN lastExcerptUpdate INT(11) DEFAULT 0",
 				"ALTER TABLE syndetics_data DROP COLUMN hasSyndeticsData",
-			),
-		),
+			],
+		],
 
 
-		'ils_marc_checksums' => array(
+		'ils_marc_checksums' => [
 			'title' => 'ILS MARC Checksums',
 			'description' => 'Add a table to store checksums of MARC records stored in the ILS so we can determine if the record needs to be updated during grouping.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS ils_marc_checksums (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							ilsId VARCHAR(20) NOT NULL,
@@ -1411,38 +1257,38 @@ function getFinalBaseUpdates()
 							PRIMARY KEY (id),
 							UNIQUE (ilsId)
 						) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			),
-		),
+			],
+		],
 
-		'ils_marc_checksum_first_detected' => array(
+		'ils_marc_checksum_first_detected' => [
 			'title' => 'ILS MARC Checksums First Detected',
 			'description' => 'Update ILS Marc Checksums to include when the record was first detected.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE ils_marc_checksums ADD dateFirstDetected BIGINT UNSIGNED NULL",
-			),
-		),
+			],
+		],
 
-		'ils_marc_checksum_first_detected_signed' => array(
+		'ils_marc_checksum_first_detected_signed' => [
 			'title' => 'ILS MARC Checksums First Detected',
 			'description' => 'Update ILS Marc Checksums to make when the record was first detected a signed value.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE ils_marc_checksums CHANGE dateFirstDetected dateFirstDetected BIGINT SIGNED NULL",
-			),
-		),
+			],
+		],
 
-		'ils_marc_checksum_source' => array(
+		'ils_marc_checksum_source' => [
 			'title' => 'ILS MARC Checksum Source',
 			'description' => 'Add a source to the ILS MARC Checksums table to allow for ',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE ils_marc_checksums ADD source VARCHAR(50) NOT NULL DEFAULT 'ils'",
 				"ALTER TABLE ils_marc_checksums ADD UNIQUE (`source`, `ilsId`)",
-			),
-		),
+			],
+		],
 
-		'work_level_ratings' => array(
+		'work_level_ratings' => [
 			'title' => 'Work Level Ratings',
 			'description' => 'Stores user ratings at the work level rather than the individual record.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_work_review (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							groupedRecordPermanentId VARCHAR(36),
@@ -1454,30 +1300,30 @@ function getFinalBaseUpdates()
 							INDEX(`userId`),
 							PRIMARY KEY(`id`)
 						) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
 		'user_review_imported_from' => [
 			'title' => 'User Review Imported From',
 			'description' => 'Add information about where a review was imported from',
 			'sql' => [
-				'ALTER TABLE user_work_review ADD COLUMN importedFrom VARCHAR(20)'
-			]
+				'ALTER TABLE user_work_review ADD COLUMN importedFrom VARCHAR(20)',
+			],
 		],
 
 		'remove_old_user_rating_table' => [
 			'title' => 'Remove user rating',
 			'description' => 'Remove old user rating table.',
-			'sql' => array(
+			'sql' => [
 				"DROP TABLE user_rating",
-			),
+			],
 		],
 
 
-		'user_list_entry' => array(
+		'user_list_entry' => [
 			'title' => 'User List Entry (Grouped Work)',
 			'description' => 'Add grouped works to lists rather than resources.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_list_entry (
 							id INT(11) NOT NULL AUTO_INCREMENT,
 							groupedWorkPermanentId VARCHAR(36),
@@ -1489,27 +1335,27 @@ function getFinalBaseUpdates()
 							INDEX(`listId`),
 							PRIMARY KEY(`id`)
 						) ENGINE = InnoDB",
-			),
-		),
+			],
+		],
 
-		'user_list_indexing' => array(
+		'user_list_indexing' => [
 			'title' => 'Update User List to make indexing easier',
 			'description' => 'Add date updated and deleted to the table so we can easily do partial indexes of the data.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE user_list ADD dateUpdated INT(11)",
 				"ALTER TABLE user_list ADD deleted TINYINT(1) DEFAULT 0",
 				"ALTER TABLE user_list DROP created",
 				"ALTER TABLE user_list ADD created INT(11)",
-			)
-		),
+			],
+		],
 
-		'user_list_sorting' => array(
+		'user_list_sorting' => [
 			'title' => 'Store a default sorting setting for a user list',
 			'description' => 'Allows user to set the way in which their list will be sorted by default.',
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `user_list` ADD `defaultSort` VARCHAR(20)",
-			)
-		),
+			],
+		],
 
 		'user_list_searching' => [
 			'title' => 'User List Searching',
@@ -1517,8 +1363,8 @@ function getFinalBaseUpdates()
 			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE user_list ADD searchable TINYINT(1) DEFAULT 0',
-				'updateSearchableLists'
-			]
+				'updateSearchableLists',
+			],
 		],
 
 		'user_list_indexing_settings' => [
@@ -1530,16 +1376,16 @@ function getFinalBaseUpdates()
 							runFullUpdate TINYINT(1) DEFAULT 1,
 							lastUpdateOfChangedLists INT(11) DEFAULT 0,
 							lastUpdateOfAllLists INT(11) DEFAULT 0
-						) ENGINE = InnoDB;'
-			]
+						) ENGINE = InnoDB;',
+			],
 		],
 
 		'default_list_indexing' => [
 			'title' => 'User List Indexing Settings - setup defaults',
 			'description' => 'Setup default indexing settings by converting from variables',
 			'sql' => [
-				'createDefaultListIndexingSettings'
-			]
+				'createDefaultListIndexingSettings',
+			],
 		],
 
 		'user_list_indexing_log' => [
@@ -1559,27 +1405,27 @@ function getFinalBaseUpdates()
 						    numSkipped INT(11) DEFAULT 0,
 						    numErrors INT(11) DEFAULT 0, 
 						    PRIMARY KEY ( `id` )
-						) ENGINE = InnoDB;'
-			]
+						) ENGINE = InnoDB;',
+			],
 		],
 
 		//KK Todo: create the database maintenance task to create table to hold the new york times updates
 
-		'remove_old_resource_tables' => array(
+		'remove_old_resource_tables' => [
 			'title' => 'Remove old Resource Tables',
 			'description' => 'Remove old tables that were used for storing information based on resource',
-			'sql' => array(
+			'sql' => [
 				"DROP TABLE IF EXISTS comments",
 				"DROP TABLE IF EXISTS resource_tags",
 				"DROP TABLE IF EXISTS user_resource",
 				"DROP TABLE IF EXISTS resource",
-			),
-		),
+			],
+		],
 
-		'remove_unused_options' => array(
+		'remove_unused_options' => [
 			'title' => 'Remove Unused Library and Location Options',
 			'description' => 'Remove unused options for library and location tables',
-			'sql' => array(
+			'sql' => [
 				//"ALTER TABLE library DROP accountingUnit",
 				//"ALTER TABLE library DROP makeOrderRecordsAvailableToOtherLibraries",
 				"ALTER TABLE library DROP searchesFile",
@@ -1599,41 +1445,41 @@ function getFinalBaseUpdates()
 				"ALTER TABLE location DROP showAmazonReviews",
 				"ALTER TABLE location DROP footerTemplate",
 				"ALTER TABLE location DROP homePageWidgetId",
-			),
-		),
+			],
+		],
 
-		'archive_private_collections' => array(
+		'archive_private_collections' => [
 			'title' => 'Archive Private Collections',
 			'description' => 'Create a table to store information about collections that should be private to the owning library',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS archive_private_collections (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  privateCollections MEDIUMTEXT,
 									  PRIMARY KEY (`id`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
-		'archive_subjects' => array(
+		'archive_subjects' => [
 			'title' => 'Archive Subjects',
 			'description' => 'Create a table to store information about what subjects should be ignored and restricted',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS archive_subjects (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  subjectsToIgnore MEDIUMTEXT,
 									  subjectsToRestrict MEDIUMTEXT,
 									  PRIMARY KEY (`id`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
-		'archive_requests' => array(
+		'archive_requests' => [
 			'title' => 'Archive Requests',
 			'description' => 'Create a table to store information about the requests for copies of archive information',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS archive_requests (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  name VARCHAR(100) NOT NULL,
@@ -1654,14 +1500,14 @@ function getFinalBaseUpdates()
 									  INDEX(`pid`),
 									  INDEX(`name`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
-		'claim_authorship_requests' => array(
+		'claim_authorship_requests' => [
 			'title' => 'Claim Authorship Requests',
 			'description' => 'Create a table to store information about the people who are claiming authorship of archive information',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS claim_authorship_requests (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  name VARCHAR(100) NOT NULL,
@@ -1674,60 +1520,60 @@ function getFinalBaseUpdates()
 									  INDEX(`pid`),
 									  INDEX(`name`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
+			],
+		],
 
-		'add_search_source_to_saved_searches' => array(
+		'add_search_source_to_saved_searches' => [
 			'title' => 'Store the Search Source with saved searches',
 			'description' => 'Add column to store the source for a search in the search table',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
-			)
-		),
+			],
+		],
 
 
-		'saved_searches_created_default' => array(
+		'saved_searches_created_default' => [
 			'title' => 'Change default creation date for saved searches',
 			'description' => 'Change default creation date for saved searches since it gives errors in newer MySQL versions',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search` CHANGE COLUMN `created` `created` DATE NOT NULL;",
-			)
-		),
+			],
+		],
 
-		'add_search_url_to_saved_searches' => array(
+		'add_search_url_to_saved_searches' => [
 			'title' => 'Store the Search Url with saved searches',
 			'description' => 'Add column to store the url for a search in the search table to optimize finding old versions',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search` ADD COLUMN `searchUrl` VARCHAR(255) DEFAULT NULL;",
-			)
-		),
+			],
+		],
 
-		'increase_search_url_size' => array(
+		'increase_search_url_size' => [
 			'title' => 'Increase allowable length of search url',
 			'description' => 'Increase allowable length of search url',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search` CHANGE COLUMN `searchUrl` `searchUrl` VARCHAR(1000) DEFAULT NULL;",
-			)
-		),
+			],
+		],
 
-		'increase_search_url_size_round_2' => array(
+		'increase_search_url_size_round_2' => [
 			'title' => 'Increase allowable length of search url again',
 			'description' => 'Increase allowable length of search url',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"ALTER TABLE `search` CHANGE COLUMN `searchUrl` `searchUrl` VARCHAR(2500) DEFAULT NULL;",
-			)
-		),
+			],
+		],
 
-		'record_grouping_log' => array(
+		'record_grouping_log' => [
 			'title' => 'Record Grouping Log',
 			'description' => 'Create Log for record grouping',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE IF NOT EXISTS record_grouping_log(
 									`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
 									`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
@@ -1736,27 +1582,27 @@ function getFinalBaseUpdates()
 									`notes` TEXT COMMENT 'Additional information about the run includes stats per source', 
 									PRIMARY KEY ( `id` )
 									) ENGINE = InnoDB;",
-			)
-		),
+			],
+		],
 
 		'remove_record_grouping_log' => [
 			'title' => 'Remove Record Grouping Log',
 			'description' => 'Remove the Record Grouping Log since we no longer use it',
 			'sql' => [
 				'DROP TABLE record_grouping_log',
-			]
+			],
 		],
 
-		'change_to_innodb' => array(
+		'change_to_innodb' => [
 			'title' => 'Change to INNODB',
 			'description' => 'Change all tables to use INNODB rather than MyISAM',
 			'continueOnError' => false,
-			'sql' => array(
-				'convertTablesToInnoDB'
-			)
-		),
+			'sql' => [
+				'convertTablesToInnoDB',
+			],
+		],
 
-		'bookcover_info' => array(
+		'bookcover_info' => [
 			'title' => 'Bookcover info',
 			'description' => 'Crate a table to store information about bookcover generation process',
 			'continueOnError' => false,
@@ -1778,36 +1624,36 @@ function getFinalBaseUpdates()
 				"ALTER TABLE bookcover_info ADD INDEX lastUsed (lastUsed)",
 				"ALTER TABLE bookcover_info ADD UNIQUE INDEX record_info (recordType, recordId)",
 				"ALTER TABLE bookcover_info ADD INDEX imageSource (imageSource)",
-			]
-		),
+			],
+		],
 
-		'add_referencecover_groupedwork' => array(
+		'add_referencecover_groupedwork' => [
 			'title' => 'Add reference cover column to grouped work table',
 			'description' => 'Allows staff to reference a related work cover for the grouped work cover',
-			'sql' => array(
-				"ALTER TABLE `grouped_work` ADD `referenceCover` VARCHAR(50)"
-			),
-		),
+			'sql' => [
+				"ALTER TABLE `grouped_work` ADD `referenceCover` VARCHAR(50)",
+			],
+		],
 
-		'sendgrid_settings' => array(
+		'sendgrid_settings' => [
 			'title' => 'SendGrid Settings',
 			'description' => 'Add settings to handle SendGrid configuration',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'CREATE TABLE IF NOT EXISTS sendgrid_settings(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							fromAddress VARCHAR(255),
 							replyToAddress VARCHAR(255),
 							apiKey VARCHAR(255)
-						) ENGINE = InnoDB;'
-			)
-		),
+						) ENGINE = InnoDB;',
+			],
+		],
 
 		'aspen_usage' => [
 			'title' => 'Aspen Usage Table',
 			'description' => 'Add a table to track usage of aspen',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'CREATE TABLE IF NOT EXISTS aspen_usage(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							year INT(4) NOT NULL,
@@ -1827,26 +1673,26 @@ function getFinalBaseUpdates()
 							userListSearches INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 				"ALTER TABLE aspen_usage ADD INDEX (year, month)",
-			)
+			],
 		],
 
 		'aspen_usage_websites' => [
 			'title' => 'Aspen Usage for Website Searches',
 			'description' => 'Add a column to track usage of website searches within Aspen',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE aspen_usage ADD COLUMN websiteSearches INT(11) DEFAULT 0',
-			)
+			],
 		],
 
 		'aspen_usage_blocked_requests' => [
 			'title' => 'Aspen Usage for Requests that have been blocked',
 			'description' => 'Add a column to which requests have been blocked (both regular requests and API)',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'ALTER TABLE aspen_usage ADD COLUMN blockedRequests INT(11) DEFAULT 0',
 				'ALTER TABLE aspen_usage ADD COLUMN blockedApiRequests INT(11) DEFAULT 0',
-			)
+			],
 		],
 
 		'aspen_usage_instance' => [
@@ -1855,8 +1701,8 @@ function getFinalBaseUpdates()
 			'sql' => [
 				'ALTER TABLE aspen_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE aspen_usage DROP INDEX year',
-				'ALTER TABLE aspen_usage ADD INDEX (instance, year, month)'
-			]
+				'ALTER TABLE aspen_usage ADD INDEX (instance, year, month)',
+			],
 		],
 
 		'aspen_usage_remove_slow_pages' => [
@@ -1865,7 +1711,7 @@ function getFinalBaseUpdates()
 			'sql' => [
 				'ALTER TABLE aspen_usage DROP COLUMN slowPages',
 				'ALTER TABLE aspen_usage DROP COLUMN slowAjaxRequests',
-			]
+			],
 		],
 
 		'aspen_usage_add_sessions' => [
@@ -1873,14 +1719,14 @@ function getFinalBaseUpdates()
 			'description' => 'Add a count of the number of sessions started',
 			'sql' => [
 				'ALTER TABLE aspen_usage ADD COLUMN sessionsStarted INT(11) DEFAULT 0',
-			]
+			],
 		],
 
 		'slow_pages' => [
 			'title' => 'Slow Page Tracking',
 			'description' => 'Add tables to track which pages are slow',
 			'continueOnError' => false,
-			'sql' => array(
+			'sql' => [
 				'CREATE TABLE IF NOT EXISTS slow_page(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							year INT(4) NOT NULL,
@@ -1900,22 +1746,30 @@ function getFinalBaseUpdates()
 							timesSlow INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 				"ALTER TABLE slow_ajax_request ADD INDEX (year, month, module, action, method)",
-			)
+			],
 		],
 
 		'slow_page_granularity' => [
 			'title' => 'Slow request granularity',
 			'description' => 'Add additional granularity to slow request log',
 			'sql' => [
-				'ALTER TABLE slow_page add column timesFast INT(11)', //Less than .5 seconds
-				'ALTER TABLE slow_page add column timesAcceptable INT(11)', //Less than 1 second
-				'ALTER TABLE slow_page add column timesSlower INT(11)', //More than 2 seconds
-				'ALTER TABLE slow_page add column timesVerySlow INT(11)', //More than 4 seconds
-				'ALTER TABLE slow_ajax_request add column timesFast INT(11)', //Less than .5 seconds
-				'ALTER TABLE slow_ajax_request add column timesAcceptable INT(11)', //Less than 1 second
-				'ALTER TABLE slow_ajax_request add column timesSlower INT(11)', //More than 2 seconds
-				'ALTER TABLE slow_ajax_request add column timesVerySlow INT(11)', //More than 4 seconds
-			]
+				'ALTER TABLE slow_page add column timesFast INT(11)',
+				//Less than .5 seconds
+				'ALTER TABLE slow_page add column timesAcceptable INT(11)',
+				//Less than 1 second
+				'ALTER TABLE slow_page add column timesSlower INT(11)',
+				//More than 2 seconds
+				'ALTER TABLE slow_page add column timesVerySlow INT(11)',
+				//More than 4 seconds
+				'ALTER TABLE slow_ajax_request add column timesFast INT(11)',
+				//Less than .5 seconds
+				'ALTER TABLE slow_ajax_request add column timesAcceptable INT(11)',
+				//Less than 1 second
+				'ALTER TABLE slow_ajax_request add column timesSlower INT(11)',
+				//More than 2 seconds
+				'ALTER TABLE slow_ajax_request add column timesVerySlow INT(11)',
+				//More than 4 seconds
+			],
 		],
 
 		'memory_table' => [
@@ -1996,7 +1850,7 @@ function getFinalBaseUpdates()
 							placardId INT(11) NOT NULL,
 							triggerWord VARCHAR(100) NOT NULL
 						) ENGINE = INNODB;',
-				'ALTER TABLE placard_trigger ADD INDEX triggerWord (triggerWord)'
+				'ALTER TABLE placard_trigger ADD INDEX triggerWord (triggerWord)',
 			],
 		],
 
@@ -2019,8 +1873,8 @@ function getFinalBaseUpdates()
 							libraryId INT,
 							UNIQUE INDEX placardLibrary(placardId, libraryId)
 						) ENGINE = INNODB;',
-				'INSERT INTO placard_library (libraryId, placardId) SELECT libraryId, placards.id from library, placards;'
-			]
+				'INSERT INTO placard_library (libraryId, placardId) SELECT libraryId, placards.id from library, placards;',
+			],
 		],
 
 		'placard_location_scope' => [
@@ -2033,16 +1887,16 @@ function getFinalBaseUpdates()
 							locationId INT,
 							UNIQUE INDEX placardLocation(placardId, locationId)
 						) ENGINE = INNODB;',
-				'INSERT INTO placard_location (locationId, placardId) SELECT locationId, placards.id from location, placards;'
-			]
+				'INSERT INTO placard_location (locationId, placardId) SELECT locationId, placards.id from location, placards;',
+			],
 		],
 
 		'placard_trigger_exact_match' => [
 			'title' => 'Placard Trigger Exact Match',
 			'description' => 'Add ability to force triggers to use fuzzy matching',
 			'sql' => [
-				'ALTER TABLE placard_trigger ADD COLUMN exactMatch TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE placard_trigger ADD COLUMN exactMatch TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'placard_timing' => [
@@ -2050,8 +1904,8 @@ function getFinalBaseUpdates()
 			'description' => 'Add the ability to set start and end times for when placards are shown',
 			'sql' => [
 				'ALTER TABLE placards ADD COLUMN startDate INT(11) DEFAULT 0',
-				'ALTER TABLE placards ADD COLUMN endDate INT(11) DEFAULT 0'
-			]
+				'ALTER TABLE placards ADD COLUMN endDate INT(11) DEFAULT 0',
+			],
 		],
 
 		'system_messages' => [
@@ -2087,15 +1941,15 @@ function getFinalBaseUpdates()
 							locationId INT,
 							UNIQUE INDEX systemMessageLocation(systemMessageId, locationId)
 						) ENGINE = INNODB;',
-			]
+			],
 		],
 
 		'system_message_style' => [
 			'title' => 'System Message Style',
 			'description' => 'The default styling to apply to the message',
 			'sql' => [
-				"ALTER TABLE system_messages ADD COLUMN messageStyle VARCHAR(10) default ''"
-			]
+				"ALTER TABLE system_messages ADD COLUMN messageStyle VARCHAR(10) default ''",
+			],
 		],
 
 		'novelist_settings' => [
@@ -2107,7 +1961,7 @@ function getFinalBaseUpdates()
 							profile VARCHAR(50) NOT NULL,
 							pwd VARCHAR(50) NOT NULL
 						) ENGINE = INNODB;',
-				'populateNovelistSettings'
+				'populateNovelistSettings',
 			],
 		],
 
@@ -2124,7 +1978,7 @@ function getFinalBaseUpdates()
 							hasExcerpt TINYINT(1) DEFAULT 0,
 							hasAuthorNotes  TINYINT(1) DEFAULT 0
 						) ENGINE = INNODB;',
-				'populateContentCafeSettings'
+				'populateContentCafeSettings',
 			],
 		],
 
@@ -2144,7 +1998,7 @@ function getFinalBaseUpdates()
 							hasFictionProfile TINYINT(1) DEFAULT 0,
 							hasAuthorNotes  TINYINT(1) DEFAULT 0
 						) ENGINE = INNODB;',
-				'populateSyndeticsSettings'
+				'populateSyndeticsSettings',
 			],
 		],
 
@@ -2152,8 +2006,8 @@ function getFinalBaseUpdates()
 			'title' => 'Syndetics Unbound',
 			'description' => 'Add Syndetics Unbound Support',
 			'sql' => [
-				'ALTER TABLE syndetics_settings ADD COLUMN syndeticsUnbound TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE syndetics_settings ADD COLUMN syndeticsUnbound TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'google_api_settings' => [
@@ -2178,16 +2032,16 @@ function getFinalBaseUpdates()
 				'ALTER TABLE google_api_settings CHANGE COLUMN googleBooksKey googleBooksKey VARCHAR(50)',
 				'ALTER TABLE google_api_settings ADD COLUMN googleMapsKey VARCHAR(60)',
 				'ALTER TABLE google_api_settings ADD COLUMN googleTranslateKey VARCHAR(60)',
-				"ALTER TABLE google_api_settings ADD COLUMN googleTranslateLanguages VARCHAR(100) default 'ar,da,en,es,fr,de,it,ja,pl,pt,ru,sv,th,vi,zh-CN,zh-TW'"
+				"ALTER TABLE google_api_settings ADD COLUMN googleTranslateLanguages VARCHAR(100) default 'ar,da,en,es,fr,de,it,ja,pl,pt,ru,sv,th,vi,zh-CN,zh-TW'",
 			],
 		],
 
-		'google_analytics_version'  => [
+		'google_analytics_version' => [
 			'title' => 'Google API - Analytics Version',
 			'description' => 'Add the ability to determine which version of Google Analytics should be embedded.',
 			'sql' => [
-				"ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsVersion VARCHAR(5) DEFAULT 'v3'"
-			]
+				"ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsVersion VARCHAR(5) DEFAULT 'v3'",
+			],
 		],
 
 		'google_remove_google_translate' => [
@@ -2196,7 +2050,7 @@ function getFinalBaseUpdates()
 			'sql' => [
 				'ALTER TABLE google_api_settings DROP COLUMN googleTranslateKey',
 				'ALTER TABLE google_api_settings DROP COLUMN googleTranslateLanguages',
-			]
+			],
 		],
 
 		'coce_settings' => [
@@ -2239,8 +2093,8 @@ function getFinalBaseUpdates()
 				'CREATE TABLE omdb_settings(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							apiKey VARCHAR(10) NOT NULL
-						) ENGINE = INNODB;'
-			]
+						) ENGINE = INNODB;',
+			],
 		],
 
 		'recaptcha_settings' => [
@@ -2253,7 +2107,7 @@ function getFinalBaseUpdates()
 							publicKey VARCHAR(50) NOT NULL,
 							privateKey VARCHAR(50) NOT NULL
 						) ENGINE = INNODB;',
-				'populateRecaptchaSettings'
+				'populateRecaptchaSettings',
 			],
 		],
 
@@ -2273,7 +2127,7 @@ function getFinalBaseUpdates()
 							INDEX (objectType, objectId),
 							INDEX (changedBy)
 						) ENGINE = INNODB;',
-			]
+			],
 		],
 
 		'object_history_field_lengths' => [
@@ -2282,7 +2136,7 @@ function getFinalBaseUpdates()
 			'sql' => [
 				'ALTER TABLE object_history CHANGE COLUMN oldValue oldValue TEXT',
 				'ALTER TABLE object_history CHANGE COLUMN newValue newValue TEXT',
-			]
+			],
 		],
 
 		'rosen_levelup_settings' => [
@@ -2301,16 +2155,16 @@ function getFinalBaseUpdates()
 							lu_ptypes_1 VARCHAR(50),
 							lu_ptypes_2 VARCHAR(50),
 							lu_ptypes_k VARCHAR(50)
-						) ENGINE = INNODB;'
-			]
+						) ENGINE = INNODB;',
+			],
 		],
 
 		'rosen_levelup_settings_school_prefix' => [
 			'title' => 'Rosen LevelUP API Settings - School Code Prefix',
 			'description' => 'Add the ability to generate a prefix for location code to accommodate Rosen requirement that school codes be not just numbers. E.g., change Amqui Elementary location code 105 to "Nashville 105"',
 			'sql' => [
-				'ALTER TABLE rosen_levelup_settings ADD lu_location_code_prefix VARCHAR(50)'
-			]
+				'ALTER TABLE rosen_levelup_settings ADD lu_location_code_prefix VARCHAR(50)',
+			],
 		],
 
 		'ip_address_logs' => [
@@ -2328,8 +2182,8 @@ function getFinalBaseUpdates()
 							numBlockedApiRequests INT default 0,
 							lastRequest INT default 0,
 							UNIQUE ip(year, month, instance, ipAddress)
-						) ENGINE = INNODB;'
-			]
+						) ENGINE = INNODB;',
+			],
 		],
 
 		'ip_address_logs_login_info' => [
@@ -2338,7 +2192,7 @@ function getFinalBaseUpdates()
 			'sql' => [
 				'ALTER TABLE usage_by_ip_address ADD COLUMN numLoginAttempts INT default 0',
 				'ALTER TABLE usage_by_ip_address ADD COLUMN numFailedLoginAttempts INT default 0',
-			]
+			],
 		],
 
 		'host_information' => [
@@ -2351,8 +2205,8 @@ function getFinalBaseUpdates()
 							libraryId INT(11), 
 							locationId INT(11) DEFAULT -1,
 							defaultPath VARCHAR(50)
-						) ENGINE = INNODB'
-			]
+						) ENGINE = INNODB',
+			],
 		],
 
 		'javascript_snippets' => [
@@ -2382,15 +2236,15 @@ function getFinalBaseUpdates()
 							('Local Enrichment', 'Administer All JavaScript Snippets', '', 70, 'Allows the user to define JavaScript Snippets to be added to the site. This permission has security implications.'),
 							('Local Enrichment', 'Administer Library JavaScript Snippets', '', 71, 'Allows the user to define JavaScript Snippets to be added to the site for their library. This permission has security implications.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All JavaScript Snippets'))",
-			]
+			],
 		],
 
 		'user_list_force_reindex_20_18' => [
 			'title' => 'Force Reindex of all lists for 20.18',
 			'description' => 'Force reindex of all lists due to new functionality in 20.18',
 			'sql' => [
-				'UPDATE list_indexing_settings set runFullUpdate = 1'
-			]
+				'UPDATE list_indexing_settings set runFullUpdate = 1',
+			],
 		],
 
 		'api_usage_stats' => [
@@ -2406,8 +2260,8 @@ function getFinalBaseUpdates()
 							method VARCHAR(75) NOT NULL,
 							numCalls INT(11) DEFAULT 0
 						) ENGINE = InnoDB',
-				'ALTER TABLE api_usage ADD UNIQUE (year, month, module, method)'
-			]
+				'ALTER TABLE api_usage ADD UNIQUE (year, month, module, method)',
+			],
 		],
 
 		'create_nyt_update_log' => [
@@ -2424,45 +2278,45 @@ function getFinalBaseUpdates()
 							numAdded INT(11) NOT NULL DEFAULT 0,
 							numUpdated INT(11) NOT NULL DEFAULT 0,
 							notes TEXT
-						) ENGINE = InnoDB'
-			]
+						) ENGINE = InnoDB',
+			],
 		],
 
 		'nyt_update_log_numSkipped' => [
 			'title' => 'Add Num Skipped to NYT Update Log',
 			'description' => 'Add number of records skipped to NYT Update log',
 			'sql' => [
-				'ALTER TABLE nyt_update_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0'
-			]
+				'ALTER TABLE nyt_update_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0',
+			],
 		],
 		'web_builder_custom_from_submission_isRead' => [
 			'title' => 'Add "Mark as Read" checkbox for custom form submissions',
 			'description' => 'Add "Mark as Read" checkbox for custom form submissions that enables filtering based on unread/read status',
 			'sql' => [
-				'ALTER TABLE web_builder_custom_from_submission ADD COLUMN isRead TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE web_builder_custom_from_submission ADD COLUMN isRead TINYINT(1) DEFAULT 0',
+			],
 		],
 		'add_useHomeLink_to_layout_settings' => [
 			'title' => 'Add useHomeLink to Layout Settings',
 			'description' => 'Add useHomeLink dropdown to Layout Settings to better define the usage of homeLink',
 			'sql' => [
-				'ALTER TABLE layout_settings ADD COLUMN useHomeLink VARCHAR(75) NOT NULL'
-			]
+				'ALTER TABLE layout_settings ADD COLUMN useHomeLink VARCHAR(75) NOT NULL',
+			],
 		],
 		'update_useHomeLink_tinyint' => [
 			'title' => 'Update useHomeLink to TINYINT type',
 			'description' => 'Update useHomeLink to TINYINT type',
 			'sql' => [
 				"UPDATE layout_settings set useHomeLink = 0 where useHomeLink = ''",
-				'ALTER TABLE layout_settings MODIFY COLUMN useHomeLink TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE layout_settings MODIFY COLUMN useHomeLink TINYINT(1) DEFAULT 0',
+			],
 		],
 		'add_browseLinkText_to_layout_settings' => [
 			'title' => 'Add browseLinkText to Layout Settings',
 			'description' => 'Add browseLinkText dropdown to Layout Settings to allow custom text for catalog home link',
 			'sql' => [
-				'ALTER TABLE layout_settings ADD COLUMN browseLinkText VARCHAR(30) DEFAULT "Browse"'
-			]
+				'ALTER TABLE layout_settings ADD COLUMN browseLinkText VARCHAR(30) DEFAULT "Browse"',
+			],
 		],
 		'update_useHomeLink' => [
 			'title' => 'Update useHomeLink based on previous preferences',
@@ -2472,43 +2326,42 @@ function getFinalBaseUpdates()
 				'UPDATE layout_settings SET useHomeLink="1" WHERE useHomeLinkForLogo="0" AND useHomeLinkInBreadcrumbs="1"',
 				'UPDATE layout_settings SET useHomeLink="2" WHERE useHomeLinkForLogo="1" AND useHomeLinkInBreadcrumbs="0"',
 				'UPDATE layout_settings SET useHomeLink="3" WHERE useHomeLinkForLogo="1" AND useHomeLinkInBreadcrumbs="1"',
-			]
+			],
 		],
 		'remove_old_homeLink' => [
 			'title' => 'Remove useHomeLinkForLogo and useHomeLinkInBreadcrumbs columns',
 			'description' => 'Remove useHomeLinkForLogo and useHomeLinkInBreadcrumbs columns',
 			'sql' => [
 				'ALTER TABLE layout_settings DROP COLUMN useHomeLinkInBreadcrumbs',
-				'ALTER TABLE layout_settings DROP COLUMN useHomeLinkForLogo'
-			]
+				'ALTER TABLE layout_settings DROP COLUMN useHomeLinkForLogo',
+			],
 		],
 		'add_showBookIcon_to_layout_settings' => [
 			'title' => 'Add showBookIcon to Layout Settings',
 			'description' => 'Add showBookIcon to allow changing between the book and home icon for catalog home',
 			'sql' => [
-				'ALTER TABLE layout_settings ADD COLUMN showBookIcon TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE layout_settings ADD COLUMN showBookIcon TINYINT(1) DEFAULT 0',
+			],
 		],
 		'add_makeAccordion_to_portalRow' => [
 			'title' => 'Add makeAccordion to web_builder_portal_row',
 			'description' => 'Add option to make web builder row accordion style with content',
 			'sql' => [
-				'ALTER TABLE web_builder_portal_row ADD COLUMN makeAccordion TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE web_builder_portal_row ADD COLUMN makeAccordion TINYINT(1) DEFAULT 0',
+			],
 		],
 		'extend_placard_link' => [
 			'title' => 'Allow for longer links for placards',
 			'description' => 'Extend the placard link column to 500 characters',
 			'sql' => [
-				'ALTER TABLE placards MODIFY link VARCHAR(500);'
-			]
-		]
-	);
+				'ALTER TABLE placards MODIFY link VARCHAR(500);',
+			],
+		],
+	];
 }
 
 /** @noinspection PhpUnused */
-function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
-{
+function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update) {
 	global $configArray;
 	$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
@@ -2524,8 +2377,7 @@ function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */
 }
 
 /** @noinspection PhpUnused */
-function createDefaultIpRanges()
-{
+function createDefaultIpRanges() {
 	require_once ROOT_DIR . 'sys/IP/IPAddress.php';
 	$subnet = new IPAddress();
 	$subnet->find();
@@ -2535,8 +2387,7 @@ function createDefaultIpRanges()
 }
 
 /** @noinspection PhpUnused */
-function updateDueDateFormat()
-{
+function updateDueDateFormat() {
 	global $configArray;
 	if (isset($configArray['Reindex']['dueDateFormat'])) {
 		$ilsIndexingProfile = new IndexingProfile();
@@ -2557,8 +2408,7 @@ function updateDueDateFormat()
 
 
 /** @noinspection PhpUnused */
-function updateShowSeriesInMainDetails()
-{
+function updateShowSeriesInMainDetails() {
 	$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
 	$groupedWorkDisplaySettings->find();
 	while ($groupedWorkDisplaySettings->fetch()) {
@@ -2570,8 +2420,7 @@ function updateShowSeriesInMainDetails()
 }
 
 /** @noinspection PhpUnused */
-function populateNovelistSettings()
-{
+function populateNovelistSettings() {
 	global $configArray;
 	if (!empty($configArray['Novelist']['profile'])) {
 		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
@@ -2583,8 +2432,7 @@ function populateNovelistSettings()
 }
 
 /** @noinspection PhpUnused */
-function populateContentCafeSettings()
-{
+function populateContentCafeSettings() {
 	global $configArray;
 	if (!empty($configArray['ContentCafe']['id'])) {
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
@@ -2600,8 +2448,7 @@ function populateContentCafeSettings()
 }
 
 /** @noinspection PhpUnused */
-function populateSyndeticsSettings()
-{
+function populateSyndeticsSettings() {
 	global $configArray;
 	if (!empty($configArray['Syndetics']['key'])) {
 		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
@@ -2620,8 +2467,7 @@ function populateSyndeticsSettings()
 }
 
 /** @noinspection PhpUnused */
-function populateRecaptchaSettings()
-{
+function populateRecaptchaSettings() {
 	global $configArray;
 	if (!empty($configArray['ReCaptcha']['publicKey'])) {
 		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
@@ -2633,7 +2479,7 @@ function populateRecaptchaSettings()
 }
 
 /** @noinspection PhpUnused */
-function updateSearchableLists(){
+function updateSearchableLists() {
 	//Get a list of users who have permission to create searchable lists
 	require_once ROOT_DIR . '/sys/Administration/Permission.php';
 	require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
@@ -2647,11 +2493,11 @@ function updateSearchableLists(){
 	$permissionRoles = new RolePermissions();
 	$permissionRoles->permissionId = $permission->id;
 	$permissionRoles->find();
-	while ($permissionRoles->fetch()){
+	while ($permissionRoles->fetch()) {
 		$userRole = new UserRoles();
 		$userRole->roleId = $permissionRoles->roleId;
 		$userRole->find();
-		while($userRole->fetch()){
+		while ($userRole->fetch()) {
 			makeListsSearchableForUser($userRole->userId);
 		}
 	}
@@ -2660,11 +2506,11 @@ function updateSearchableLists(){
 	$pType = new PType();
 	$pType->whereAdd('assignedRoleId > -1');
 	$pType->find();
-	while ($pType->fetch()){
+	while ($pType->fetch()) {
 		$user = new User();
 		$user->patronType = $pType;
 		$user->find();
-		while ($user->fetch()){
+		while ($user->fetch()) {
 			makeListsSearchableForUser($user->id);
 		}
 	}
@@ -2672,7 +2518,7 @@ function updateSearchableLists(){
 	//finally update nyt user
 	$user = new User();
 	$user->cat_username = 'nyt_user';
-	if ($user->find(true)){
+	if ($user->find(true)) {
 		makeListsSearchableForUser($user->id);
 	}
 }
@@ -2680,8 +2526,7 @@ function updateSearchableLists(){
 /**
  * @param int $userId
  */
-function makeListsSearchableForUser($userId)
-{
+function makeListsSearchableForUser($userId) {
 	$userList = new UserList();
 	$userList->user_id = $userId;
 	$userList->find();
@@ -2689,7 +2534,7 @@ function makeListsSearchableForUser($userId)
 	while ($userList->fetch()) {
 		$allLists[] = clone $userList;
 	}
-	foreach ($allLists as $list){
+	foreach ($allLists as $list) {
 		if ($list->searchable == 0) {
 			$list->searchable = 1;
 			$list->update();
@@ -2698,15 +2543,15 @@ function makeListsSearchableForUser($userId)
 }
 
 /** @noinspection PhpUnused */
-function createDefaultListIndexingSettings(){
+function createDefaultListIndexingSettings() {
 	require_once ROOT_DIR . '/sys/UserLists/ListIndexingSettings.php';
 	$listIndexingSettings = new ListIndexingSettings();
 	$listIndexingSettings->find();
-	if (!$listIndexingSettings->fetch()){
+	if (!$listIndexingSettings->fetch()) {
 		$listIndexingSettings = new ListIndexingSettings();
 		$variable = new Variable();
 		$variable->name = 'last_user_list_index_time';
-		if ($variable->find(true)){
+		if ($variable->find(true)) {
 			$listIndexingSettings->lastUpdateOfChangedLists = $variable->value;
 			$variable->delete();
 		}

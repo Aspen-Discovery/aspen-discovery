@@ -3,8 +3,7 @@
 require_once 'SessionInterface.php';
 require_once ROOT_DIR . '/sys/Session/Session.php';
 
-class MySQLSession extends SessionInterface
-{
+class MySQLSession extends SessionInterface {
 	public function open($sess_path, $sess_name) {
 		$rand = rand(0, 1000);
 		if ($rand == 53) {
@@ -26,8 +25,7 @@ class MySQLSession extends SessionInterface
 		return true;
 	}
 
-	public function read($sess_id)
-	{
+	public function read($sess_id) {
 		$s = new Session();
 		$s->session_id = $sess_id;
 
@@ -35,7 +33,7 @@ class MySQLSession extends SessionInterface
 			global $logger;
 			$logger->log("Reading existing session $sess_id", Logger::LOG_DEBUG);
 			return $s->data;
-		}else{
+		} else {
 			return "";
 		}
 	}
@@ -45,8 +43,7 @@ class MySQLSession extends SessionInterface
 	 * @param $data
 	 * @return bool
 	 */
-	public function write($sess_id, $data)
-	{
+	public function write($sess_id, $data) {
 		global $logger;
 		global $module;
 		global $action;
@@ -54,17 +51,7 @@ class MySQLSession extends SessionInterface
 			//Don't update sessions on AJAX and JSON calls
 			if (isset($_REQUEST['method'])) {
 				$method = $_REQUEST['method'];
-				if ($method != 'loginUser'
-					&& $method != 'login'
-					&& $method != 'initiateMasquerade'
-					&& $method != 'endMasquerade'
-					&& $method != 'lockFacet'
-					&& $method != 'unlockFacet'
-					&& !isset($_REQUEST['showCovers'])
-					&& !isset($_REQUEST['sort'])
-					&& !isset($_REQUEST['availableHoldSort'])
-					&& !isset($_REQUEST['unavailableHoldSort'])
-					&& !isset($_REQUEST['autologout'])) {
+				if ($method != 'loginUser' && $method != 'login' && $method != 'initiateMasquerade' && $method != 'endMasquerade' && $method != 'lockFacet' && $method != 'unlockFacet' && !isset($_REQUEST['showCovers']) && !isset($_REQUEST['sort']) && !isset($_REQUEST['availableHoldSort']) && !isset($_REQUEST['unavailableHoldSort']) && !isset($_REQUEST['autologout'])) {
 					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
 					return true;
 				}
@@ -76,7 +63,7 @@ class MySQLSession extends SessionInterface
 
 		$s = new Session();
 		$s->session_id = $sess_id;
-		if ($s->find(true)){
+		if ($s->find(true)) {
 			$logger->log("Updating session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->last_used = time();
@@ -93,7 +80,7 @@ class MySQLSession extends SessionInterface
 				}
 			}
 			$result = $s->update();
-		}else{
+		} else {
 			$logger->log("Inserting new session $sess_id", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->created = date('Y-m-d h:i:s');
@@ -114,12 +101,11 @@ class MySQLSession extends SessionInterface
 		return true;
 	}
 
-	public function destroy($sess_id)
-	{
+	public function destroy($sess_id) {
 		// Now do database-specific destruction:
 		$s = new Session();
 		$s->session_id = $sess_id;
-		if ($s->find(true)){
+		if ($s->find(true)) {
 			global $logger;
 			$logger->log("Destroying session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			// Perform standard actions required by all session methods:
@@ -127,7 +113,7 @@ class MySQLSession extends SessionInterface
 
 			$numDeleted = $s->delete();
 			return $numDeleted == 1;
-		}else{
+		} else {
 			global $logger;
 			$logger->log("Session $sess_id has already been destroyed {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			//Already deleted
@@ -136,8 +122,7 @@ class MySQLSession extends SessionInterface
 
 	}
 
-	public function gc($sess_maxlifetime)
-	{
+	public function gc($sess_maxlifetime) {
 		//Do nothing here, delete old sessions in Java Cron
 		return true;
 	}

@@ -1,8 +1,7 @@
 <?php
 
 
-class ILSRecordUsage extends DataObject
-{
+class ILSRecordUsage extends DataObject {
 	public $__table = 'ils_record_usage';
 	public $id;
 	public $instance;
@@ -15,15 +14,19 @@ class ILSRecordUsage extends DataObject
 	public $supplementalFileDownloadCount;
 	public $pdfViewCount;
 
-	public function getUniquenessFields(): array
-	{
-		return ['instance','indexingProfileId', 'recordId','year', 'month'];
+	public function getUniquenessFields(): array {
+		return [
+			'instance',
+			'indexingProfileId',
+			'recordId',
+			'year',
+			'month',
+		];
 	}
 
-	public function okToExport(array $selectedFilters): bool
-	{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->instance, $selectedFilters['instances'])){
+		if (in_array($this->instance, $selectedFilters['instances'])) {
 			$okToExport = true;
 		}
 		return $okToExport;

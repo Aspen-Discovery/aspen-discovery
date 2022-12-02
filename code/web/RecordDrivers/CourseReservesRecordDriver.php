@@ -1,12 +1,11 @@
 <?php
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 
-class CourseReservesRecordDriver extends IndexRecordDriver
-{
+class CourseReservesRecordDriver extends IndexRecordDriver {
 	private $courseReservesObject;
 	private $valid = true;
-	public function __construct($record)
-	{
+
+	public function __construct($record) {
 		// Call the parent's constructor...
 		if (is_string($record)) {
 			/** @var SearchObject_CourseReservesSearcher $searchObject */
@@ -16,24 +15,23 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 				$fields = $searchObject->getRecord($record);
 				if ($fields == null) {
 					$this->valid = false;
-				}else {
+				} else {
 					parent::__construct($fields);
 				}
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				$this->valid = false;
 			}
 			enableErrorHandler();
-		}else {
+		} else {
 			parent::__construct($record);
 		}
 	}
 
-	public function isValid(){
+	public function isValid() {
 		return $this->valid;
 	}
 
-	function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 		if ($absolutePath) {
 			$bookCoverUrl = $configArray['Site']['url'];
@@ -55,7 +53,7 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 	 * @param bool $showListsAppearingOn
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list', $showListsAppearingOn = true){
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -68,9 +66,9 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 		$interface->assign('summShortId', $id);
 		$interface->assign('summTitle', $this->getTitle(true));
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
-		if (isset($this->fields['num_titles'])){
+		if (isset($this->fields['num_titles'])) {
 			$interface->assign('summNumTitles', $this->fields['num_titles']);
-		}else{
+		} else {
 			$interface->assign('summNumTitles', 0);
 		}
 		$interface->assign('summDateUpdated', $this->getCourseReserve()->dateUpdated);
@@ -78,41 +76,40 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/CourseReserve/result.tpl';
 	}
 
-	public function getMoreDetailsOptions(){
-		return array();
+	public function getMoreDetailsOptions() {
+		return [];
 	}
 
 	// initially taken From GroupedWorkDriver.php getBrowseResult();
-	public function getBrowseResult(){
+	public function getBrowseResult() {
 		global $interface;
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 
-		$url ='/CourseReserves/'.$id;
+		$url = '/CourseReserves/' . $id;
 
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
-        //Get cover image size
-        global $interface;
-        $appliedTheme = $interface->getAppliedTheme();
+		//Get cover image size
+		global $interface;
+		$appliedTheme = $interface->getAppliedTheme();
 
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 
-        if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-        }
-        else {
-            $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-        }
+		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		} else {
+			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		}
 
 		return 'RecordDrivers/CourseReserve/cover_result.tpl';
 	}
 
 	function getFormat() {
 		// overwrites class IndexRecordDriver getFormat() so that getBookCoverURL() call will work without warning notices
-		return array('Course Reserve');
+		return ['Course Reserve'];
 	}
 
 	/**
@@ -124,12 +121,12 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 	public function getTitle($useHighlighting = false) {
 		// Don't check for highlighted values if highlighting is disabled:
 		if ($this->highlight && $useHighlighting) {
-			if (isset($this->fields['_highlighting']['title_display'][0])){
+			if (isset($this->fields['_highlighting']['title_display'][0])) {
 				return $this->fields['_highlighting']['title_display'][0];
 			}
 		}
 
-		if (isset($this->fields['title_display'])){
+		if (isset($this->fields['title_display'])) {
 			return $this->fields['title_display'];
 		}
 		return '';
@@ -146,8 +143,7 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		//Use getSearchResult to do the bulk of the assignments
 		$this->getSearchResult('list', false);
 
@@ -155,8 +151,7 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/CourseReserve/listEntry.tpl';
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'CourseReserve';
 	}
 
@@ -168,23 +163,20 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		return null;
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		return '';
 	}
 
-	private function getCourseReserve()
-	{
-		if ($this->courseReservesObject == null){
+	private function getCourseReserve() {
+		if ($this->courseReservesObject == null) {
 			require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
 			$this->courseReservesObject = new CourseReserve();
 			$this->courseReservesObject->id = $this->getId();
-			if (!$this->courseReservesObject->find(true)){
+			if (!$this->courseReservesObject->find(true)) {
 				$this->courseReservesObject = false;
 			}
 		}
@@ -197,8 +189,7 @@ class CourseReservesRecordDriver extends IndexRecordDriver
 	 * @access  protected
 	 * @return  string
 	 */
-	public function getPrimaryAuthor()
-	{
+	public function getPrimaryAuthor() {
 		return isset($this->fields['instructor_display']) ? $this->fields['instructor_display'] : '';
 	}
 }

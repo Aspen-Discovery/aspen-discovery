@@ -1,20 +1,20 @@
 <?php
 
-class NonGroupedRecord extends DataObject{
+class NonGroupedRecord extends DataObject {
 	public $__table = 'nongrouped_records';
 	public $id;
 	public $source;
 	public $recordId;
 	public $notes;
 
-	static function getObjectStructure() : array {
+	static function getObjectStructure(): array {
 		global $indexingProfiles;
 		global $sideLoadSettings;
-		$availableSources = array();
-		foreach ($indexingProfiles as $profile){
+		$availableSources = [];
+		foreach ($indexingProfiles as $profile) {
 			$availableSources[$profile->name] = $profile->name;
 		}
-		foreach ($sideLoadSettings as $profile){
+		foreach ($sideLoadSettings as $profile) {
 			$availableSources[$profile->name] = $profile->name;
 		}
 		$availableSources['axis360'] = 'Axis 360';

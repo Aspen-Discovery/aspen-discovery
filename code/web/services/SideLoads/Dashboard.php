@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 
-class SideLoads_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class SideLoads_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('SideLoadedRecordUsage');
@@ -54,10 +52,9 @@ class SideLoads_Dashboard extends Admin_Dashboard
 	 * @param int[] $profilesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($instanceName, $month, $year, $profilesToGetStatsFor): array
-	{
+	public function getUserStats($instanceName, $month, $year, $profilesToGetStatsFor): array {
 		$userUsage = new UserSideLoadUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -89,10 +86,9 @@ class SideLoads_Dashboard extends Admin_Dashboard
 	 * @param int[] $profilesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getRecordStats($instanceName, $month, $year, $profilesToGetStatsFor): array
-	{
+	public function getRecordStats($instanceName, $month, $year, $profilesToGetStatsFor): array {
 		$usage = new SideLoadedRecordUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -111,20 +107,19 @@ class SideLoads_Dashboard extends Admin_Dashboard
 		$usageStats = [];
 		foreach ($profilesToGetStatsFor as $id => $name) {
 			$usageStats[$id] = [
-				'numRecordsUsed' => 0
+				'numRecordsUsed' => 0,
 			];
 		}
 		while ($usage->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$usage->sideLoadId] = [
-				'numRecordsUsed' => $usage->numRecordsUsed
+				'numRecordsUsed' => $usage->numRecordsUsed,
 			];
 		}
 		return $usageStats;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Loads');
@@ -132,13 +127,14 @@ class SideLoads_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'side_loads';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

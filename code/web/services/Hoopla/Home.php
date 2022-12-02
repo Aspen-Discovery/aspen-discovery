@@ -2,14 +2,14 @@
 require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 
-class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
-	function launch(){
+class Hoopla_Home extends GroupedWorkSubRecordHomeAction {
+	function launch() {
 		global $interface;
 
-		if (isset($_REQUEST['searchId'])){
+		if (isset($_REQUEST['searchId'])) {
 			$_SESSION['searchId'] = $_REQUEST['searchId'];
 			$interface->assign('searchId', $_SESSION['searchId']);
-		}else if (isset($_SESSION['searchId'])){
+		} elseif (isset($_SESSION['searchId'])) {
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
@@ -17,16 +17,16 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 		$interface->assign('id', $id);
 		$this->recordDriver = new HooplaRecordDriver($id);
 
-		if (!$this->recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()) {
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
-		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
+		if (is_null($groupedWork) || !$groupedWork->isValid()) {  // initRecordDriverById itself does a validity check and returns null if not.
 			$interface->assign('invalidWork', true);
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
-		}else{
+		} else {
 			$interface->assign('recordDriver', $this->recordDriver);
 
 			//Load status summary
@@ -71,7 +71,7 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 		}
 	}
 
-	function loadRecordDriver($id){
+	function loadRecordDriver($id) {
 		$this->recordDriver = new HooplaRecordDriver($id);
 	}
 

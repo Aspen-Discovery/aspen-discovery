@@ -26,8 +26,7 @@ class ItemAPI extends Action {
 	/** @var  Solr $db */
 	public $db;
 
-	function launch()
-	{
+	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		header('Content-type: application/json');
@@ -35,42 +34,48 @@ class ItemAPI extends Action {
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppGroupedWork', 'getItemDetails'))) {
+			if ($this->grantTokenAccess()) {
+				if (in_array($method, [
+					'getAppGroupedWork',
+					'getItemDetails',
+				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('ItemAPI', $method);
 					$output = json_encode($this->$method());
 				} else {
 					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-					$output = json_encode(array('error' => 'invalid_method'));
+					$output = json_encode(['error' => 'invalid_method']);
 				}
 			} else {
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(array('error' => 'unauthorized_access'));
+				$output = json_encode(['error' => 'unauthorized_access']);
 			}
 			ExternalRequestLogEntry::logRequest('ItemAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 			echo $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
 			if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
 				// Connect to Catalog
-				if ($method != 'getBookcoverById' && $method != 'getBookCover'){
+				if ($method != 'getBookcoverById' && $method != 'getBookCover') {
 					$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 					header('Content-type: application/json');
 					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				}
 
-				if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor'))){
+				if (in_array($method, [
+					'getDescriptionByRecordId',
+					'getDescriptionByTitleAndAuthor',
+				])) {
 					$output = json_encode($this->$method());
-				}else{
-					$output = json_encode(array('result'=>$this->$method()));
+				} else {
+					$output = json_encode(['result' => $this->$method()]);
 				}
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('ItemAPI', $method);
 			} else {
-				$output = json_encode(array('error'=>"invalid_method '$method'"));
+				$output = json_encode(['error' => "invalid_method '$method'"]);
 			}
 			echo $output;
 		} else {
@@ -79,7 +84,7 @@ class ItemAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getDescriptionByTitleAndAuthor(){
+	function getDescriptionByTitleAndAuthor() {
 		global $configArray;
 
 		//Load the title and author from the data passed in
@@ -89,50 +94,50 @@ class ItemAPI extends Action {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$this->db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
 		}
 
 		//Search the database by title and author
-		if ($title && $author){
+		if ($title && $author) {
 			$searchResults = $this->db->search("$title $author");
-		}elseif ($title){
+		} elseif ($title) {
 			$searchResults = $this->db->search("title:$title");
-		}elseif ($author){
+		} elseif ($author) {
 			$searchResults = $this->db->search("author:$author");
-		}else{
-			return array(
+		} else {
+			return [
 				'result' => false,
-				'message' => 'Please enter a title and/or author'
-			);
+				'message' => 'Please enter a title and/or author',
+			];
 		}
 
-		if ($searchResults['response']['numFound'] == 0){
-			$results = array(
+		if ($searchResults['response']['numFound'] == 0) {
+			$results = [
 				'result' => false,
-				'message' => 'Sorry, we could not find a description for that title and author'
-			);
-		} else{
+				'message' => 'Sorry, we could not find a description for that title and author',
+			];
+		} else {
 			$firstRecord = $searchResults['response']['docs'][0];
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWork = new GroupedWorkDriver($firstRecord);
 
-			$results = array(
+			$results = [
 				'result' => true,
 				'message' => 'Found a summary for record ' . $firstRecord['title_display'] . ' by ' . $firstRecord['author_display'],
 				'recordsFound' => $searchResults['response']['numFound'],
-				'description' => $groupedWork->getDescription()
-			);
+				'description' => $groupedWork->getDescription(),
+			];
 		}
 		return $results;
 	}
 
 	/** @noinspection PhpUnused */
-	function getDescriptionByRecordId(){
+	function getDescriptionByRecordId() {
 		global $configArray;
 
 		//Load the record id that the user wants to search for
@@ -141,43 +146,43 @@ class ItemAPI extends Action {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$this->db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
 		}
 
 		//Search the database by title and author
-		if ($recordId){
-			if (preg_match('/^b\d{7}[\dx]$/', $recordId)){
+		if ($recordId) {
+			if (preg_match('/^b\d{7}[\dx]$/', $recordId)) {
 				$recordId = '.' . $recordId;
 			}
 			$searchResults = $this->db->search("$recordId", 'Id');
-		}else{
-			return array(
+		} else {
+			return [
 				'result' => false,
-				'message' => 'Please enter the record Id to look for'
-			);
+				'message' => 'Please enter the record Id to look for',
+			];
 		}
 
-		if ($searchResults['response']['numFound'] == 0){
-			$results = array(
+		if ($searchResults['response']['numFound'] == 0) {
+			$results = [
 				'result' => false,
-				'message' => 'Sorry, we could not find a description for that record id'
-			);
-		} else{
+				'message' => 'Sorry, we could not find a description for that record id',
+			];
+		} else {
 			$firstRecord = $searchResults['response']['docs'][0];
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWork = new GroupedWorkDriver($firstRecord);
 
-			$results = array(
+			$results = [
 				'result' => true,
 				'message' => 'Found a summary for record ' . $firstRecord['title_display'] . ' by ' . $firstRecord['author_display'],
 				'recordsFound' => $searchResults['response']['numFound'],
-				'description' => $groupedWork->getDescription()
-			);
+				'description' => $groupedWork->getDescription(),
+			];
 		}
 		return $results;
 	}
@@ -186,24 +191,24 @@ class ItemAPI extends Action {
 	 * Load a marc record for a particular id from the server
 	 * @noinspection PhpUnused
 	 */
-	function getMarcRecord(){
+	function getMarcRecord() {
 		$id = $_REQUEST['id'];
 		$shortId = str_replace('.', '', $id);
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();
 		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
+		while ($indexingProfile->fetch()) {
 			$folderName = $indexingProfile->individualMarcPath;
-			if ($indexingProfile->createFolderFromLeadingCharacters){
+			if ($indexingProfile->createFolderFromLeadingCharacters) {
 				$subFolder = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
-			}else{
+			} else {
 				$subFolder = substr($shortId, 0, -$indexingProfile->numCharsToCreateFolderFrom);
 			}
 			$individualName = $folderName . "/{$subFolder}/{$shortId}.mrc";
-			if (file_exists($individualName)){
+			if (file_exists($individualName)) {
 				header('Content-Type: application/octet-stream');
 				header("Content-Transfer-Encoding: Binary");
-				header("Content-disposition: attachment; filename=\"".$id.".mrc\"");
+				header("Content-disposition: attachment; filename=\"" . $id . ".mrc\"");
 				readfile($individualName);
 				die();
 			}
@@ -211,25 +216,25 @@ class ItemAPI extends Action {
 		require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 		$sideLoad = new SideLoad();
 		$sideLoad->find();
-		while ($sideLoad->fetch()){
+		while ($sideLoad->fetch()) {
 			$folderName = $sideLoad->individualMarcPath;
-			if ($sideLoad->createFolderFromLeadingCharacters){
+			if ($sideLoad->createFolderFromLeadingCharacters) {
 				$subFolder = substr($shortId, 0, $sideLoad->numCharsToCreateFolderFrom);
-			}else{
+			} else {
 				$subFolder = substr($shortId, -$sideLoad->numCharsToCreateFolderFrom);
 			}
 			$individualName = $folderName . "/{$subFolder}/{$shortId}.mrc";
-			if (file_exists($individualName)){
+			if (file_exists($individualName)) {
 				header('Content-Type: application/octet-stream');
 				header("Content-Transfer-Encoding: Binary");
-				header("Content-disposition: attachment; filename=\"".$id.".mrc\"");
+				header("Content-disposition: attachment; filename=\"" . $id . ".mrc\"");
 				readfile($individualName);
 				die();
 			}
 		}
 		return [
 			'result' => false,
-			'message' => 'Could not find a file for the specified record'
+			'message' => 'Could not find a file for the specified record',
 		];
 	}
 
@@ -237,11 +242,11 @@ class ItemAPI extends Action {
 	 * Get information about a particular item and return it as JSON
 	 * @noinspection PhpUnused
 	 */
-	function getItem(){
+	function getItem() {
 		global $timer;
 		global $configArray;
 		global $solrScope;
-		$itemData = array();
+		$itemData = [];
 
 		//Load basic information
 		$this->id = $_GET['id'];
@@ -250,17 +255,20 @@ class ItemAPI extends Action {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$this->db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
 		}
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
-			return array('error', 'Record does not exist');
+			return [
+				'error',
+				'Record does not exist',
+			];
 		}
 		$this->record = $record;
 
@@ -268,13 +276,13 @@ class ItemAPI extends Action {
 		$timer->logTime('Initialized the Record Driver');
 
 		//Generate basic information from the marc file to make display easier.
-		if (isset($record['isbn'])){
+		if (isset($record['isbn'])) {
 			$itemData['isbn'] = $record['isbn'][0];
 		}
-		if (isset($record['upc'])){
+		if (isset($record['upc'])) {
 			$itemData['upc'] = $record['upc'][0];
 		}
-		if (isset($record['issn'])){
+		if (isset($record['issn'])) {
 			$itemData['issn'] = $record['issn'][0];
 		}
 		$itemData['title'] = $record['title_display'];
@@ -306,10 +314,10 @@ class ItemAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getBasicItemInfo(){
+	function getBasicItemInfo() {
 		global $timer;
 		global $configArray;
-		$itemData = array();
+		$itemData = [];
 
 		//Load basic information
 		$this->id = $_GET['id'];
@@ -318,10 +326,10 @@ class ItemAPI extends Action {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$this->db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
 		}
@@ -337,11 +345,17 @@ class ItemAPI extends Action {
 
 		// Get ISBN for cover and review use
 		$itemData['isbn'] = $this->recordDriver->getCleanISBN();
-		if (empty($itemData['isbn'])) unset($itemData['isbn']);
+		if (empty($itemData['isbn'])) {
+			unset($itemData['isbn']);
+		}
 		$itemData['upc'] = $this->recordDriver->getCleanUPC();
-		if (empty($itemData['upc'])) unset($itemData['upc']);
+		if (empty($itemData['upc'])) {
+			unset($itemData['upc']);
+		}
 		$itemData['issn'] = $this->recordDriver->getISSNs();
-		if (empty($itemData['issn'])) unset($itemData['issn']);
+		if (empty($itemData['issn'])) {
+			unset($itemData['issn']);
+		}
 
 		//Generate basic information from the marc file to make display easier.
 		$itemData['title'] = $record['title'];
@@ -366,8 +380,8 @@ class ItemAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getItemAvailability(){
-		$itemData = array();
+	function getItemAvailability() {
+		$itemData = [];
 		global $library;
 
 		//Load basic information
@@ -379,30 +393,30 @@ class ItemAPI extends Action {
 		//Rather than calling the catalog, update to load information from the index
 		//Need to match historical data so we don't break EBSCO
 		$recordDriver = RecordDriverFactory::initRecordDriverById($fullId);
-		if ($recordDriver->isValid()){
+		if ($recordDriver->isValid()) {
 			$copies = $recordDriver->getCopies();
-			$holdings = array();
+			$holdings = [];
 			$i = 0;
 			foreach ($copies as $copy) {
 				$key = $copy['shelfLocation'];
 				$key = preg_replace('~\W~', '_', $key);
-				$holdings[$key][] = array(
-						'location' => $copy['shelfLocation'],
-						'callnumber' => $copy['callNumber'],
-						'status' => $copy['status'],
-						'dueDate' => '',
-						'statusFull' => $copy['status'],
-						'statusfull' => $copy['status'],
-						'id' => $fullId,
-						'number' =>  $i++,
-						'type' => 'holding',
-						'availability' => $copy['available'],
-						'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
-						'libraryDisplayName' => $copy['shelfLocation'],
-						'section' => $copy['section'],
-						'sectionId' => $copy['sectionId'],
-						'lastCheckinDate' => $copy['lastCheckinDate'],
-				);
+				$holdings[$key][] = [
+					'location' => $copy['shelfLocation'],
+					'callnumber' => $copy['callNumber'],
+					'status' => $copy['status'],
+					'dueDate' => '',
+					'statusFull' => $copy['status'],
+					'statusfull' => $copy['status'],
+					'id' => $fullId,
+					'number' => $i++,
+					'type' => 'holding',
+					'availability' => $copy['available'],
+					'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
+					'libraryDisplayName' => $copy['shelfLocation'],
+					'section' => $copy['section'],
+					'sectionId' => $copy['sectionId'],
+					'lastCheckinDate' => $copy['lastCheckinDate'],
+				];
 			}
 			$itemData['holdings'] = $holdings;
 		}
@@ -411,7 +425,7 @@ class ItemAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getBookcoverById(){
+	function getBookcoverById() {
 		$record = $this->loadSolrRecord($_GET['id']);
 		$isbn = isset($record['isbn']) ? ISBN::normalizeISBN($record['isbn'][0]) : null;
 		$upc = isset($record['upc']) ? $record['upc'][0] : null;
@@ -421,50 +435,70 @@ class ItemAPI extends Action {
 		$this->getBookCover($isbn, $upc, $formatCategory, $id, $issn);
 	}
 
-	function getBookCover($isbn = null, $upc = null, $formatCategory = null, $size = null, $id = null, $issn = null){
-		if (is_null($isbn)) {$isbn = $_GET['isbn'];}
+	function getBookCover($isbn = null, $upc = null, $formatCategory = null, $size = null, $id = null, $issn = null) {
+		if (is_null($isbn)) {
+			$isbn = $_GET['isbn'];
+		}
 		$_GET['isn'] = ISBN::normalizeISBN($isbn);
-		if (is_null($issn)) {$issn = $_GET['issn'];}
+		if (is_null($issn)) {
+			$issn = $_GET['issn'];
+		}
 		$_GET['iss'] = $issn;
-		if (is_null($upc)) {$upc = $_GET['upc'];}
+		if (is_null($upc)) {
+			$upc = $_GET['upc'];
+		}
 		$_GET['upc'] = $upc;
-		if (is_null($formatCategory)) {$formatCategory = $_GET['formatCategory'];}
+		if (is_null($formatCategory)) {
+			$formatCategory = $_GET['formatCategory'];
+		}
 		$_GET['category'] = $formatCategory;
-		if (is_null($size)) {$size = isset($_GET['size']) ? $_GET['size'] : 'small';}
+		if (is_null($size)) {
+			$size = isset($_GET['size']) ? $_GET['size'] : 'small';
+		}
 		$_GET['size'] = $size;
-		if (is_null($id)) {$id = $_GET['id'];}
+		if (is_null($id)) {
+			$id = $_GET['id'];
+		}
 		$_GET['id'] = $id;
 		include_once(ROOT_DIR . '/bookcover.php');
 	}
 
 	/** @noinspection PhpUnused */
-	function clearBookCoverCacheById(){
+	function clearBookCoverCacheById() {
 		$id = strip_tags($_REQUEST['id']);
-		$sizes = array('small', 'medium', 'large');
-		$extensions = array('jpg', 'gif', 'png');
+		$sizes = [
+			'small',
+			'medium',
+			'large',
+		];
+		$extensions = [
+			'jpg',
+			'gif',
+			'png',
+		];
 		$record = $this->loadSolrRecord($id);
-		$filenamesToCheck = array();
+		$filenamesToCheck = [];
 		$filenamesToCheck[] = $id;
-		if (isset($record['isbn'])){
+		if (isset($record['isbn'])) {
 			$isbns = $record['isbn'];
-			foreach ($isbns as $isbn){
+			foreach ($isbns as $isbn) {
 				$filenamesToCheck[] = preg_replace('/[^0-9xX]/', '', $isbn);
 			}
 		}
-		if (isset($record['upc'])){
+		if (isset($record['upc'])) {
 			$upcs = $record['upc'];
-			if (isset($upcs)){
+			if (isset($upcs)) {
 				$filenamesToCheck = array_merge($filenamesToCheck, $upcs);
 			}
 		}
-		$deletedFiles = array();
+		$deletedFiles = [];
 		global $configArray;
 		$coverPath = $configArray['Site']['coverPath'];
-		foreach ($filenamesToCheck as $filename){
-			foreach ($extensions as $extension){
-				foreach ($sizes as $size){
+		foreach ($filenamesToCheck as $filename) {
+			foreach ($extensions as $extension) {
+				foreach ($sizes as $size) {
 					$tmpFilename = "$coverPath/$size/$filename.$extension";
-					if (file_exists($tmpFilename)){
+					if (file_exists($tmpFilename)) {
 						$deletedFiles[] = $tmpFilename;
 						unlink($tmpFilename);
 					}
@@ -472,73 +506,73 @@ class ItemAPI extends Action {
 			}
 		}
 
-		return array('deletedFiles' => $deletedFiles);
+		return ['deletedFiles' => $deletedFiles];
 	}
 
 	/** @noinspection PhpUnused */
-	public function getCopyAndHoldCounts(){
-		if (!isset($_REQUEST['recordId']) || strlen($_REQUEST['recordId']) == 0){
-			return array('error' => 'Please provide a record to load data for');
+	public function getCopyAndHoldCounts() {
+		if (!isset($_REQUEST['recordId']) || strlen($_REQUEST['recordId']) == 0) {
+			return ['error' => 'Please provide a record to load data for'];
 		}
 		$recordId = $_REQUEST['recordId'];
 		/** @var GroupedWorkDriver|MarcRecordDriver|OverDriveRecordDriver|ExternalEContentDriver $driver */
 		$driver = RecordDriverFactory::initRecordDriverById($recordId);
-		if ($driver == null || !$driver->isValid()){
-			return array('error' => 'Sorry we could not find a record with that ID');
-		}else{
+		if ($driver == null || !$driver->isValid()) {
+			return ['error' => 'Sorry we could not find a record with that ID'];
+		} else {
 			if ($driver instanceof GroupedWorkDriver) {
 				/** @var GroupedWorkDriver $driver */
 				$manifestations = $driver->getRelatedManifestations();
-				$returnData = array();
-				foreach ($manifestations as $manifestation){
-					$manifestationSummary = array(
-							'format' => $manifestation->format,
-							'copies' => $manifestation->getCopies(),
-							'availableCopies' => $manifestation->getAvailableCopies(),
-							'numHolds' => $manifestation->getNumHolds(),
-							'available' => $manifestation->isAvailable(),
-							'isEContent' => $manifestation->isEContent(),
-							'groupedStatus' => $manifestation->getGroupedStatus(),
-							'numRelatedRecords' => $manifestation->getNumRelatedRecords(),
-					);
-					foreach ($manifestation['relatedRecords'] as $relatedRecord){
+				$returnData = [];
+				foreach ($manifestations as $manifestation) {
+					$manifestationSummary = [
+						'format' => $manifestation->format,
+						'copies' => $manifestation->getCopies(),
+						'availableCopies' => $manifestation->getAvailableCopies(),
+						'numHolds' => $manifestation->getNumHolds(),
+						'available' => $manifestation->isAvailable(),
+						'isEContent' => $manifestation->isEContent(),
+						'groupedStatus' => $manifestation->getGroupedStatus(),
+						'numRelatedRecords' => $manifestation->getNumRelatedRecords(),
+					];
+					foreach ($manifestation['relatedRecords'] as $relatedRecord) {
 						$manifestationSummary['relatedRecords'][] = $relatedRecord['id'];
 					}
 					$returnData[] = $manifestationSummary;
 				}
 				return $returnData;
-			}elseif ($driver instanceof OverDriveRecordDriver){
+			} elseif ($driver instanceof OverDriveRecordDriver) {
 				/** @var OverDriveRecordDriver $driver */
 				$copies = count($driver->getItems());
 				$holds = $driver->getNumHolds();
-				return array(
-						'copies' => $copies,
-						'holds' => $holds,
-				);
-			}elseif ($driver instanceof ExternalEContentDriver || $driver instanceof HooplaRecordDriver){
+				return [
+					'copies' => $copies,
+					'holds' => $holds,
+				];
+			} elseif ($driver instanceof ExternalEContentDriver || $driver instanceof HooplaRecordDriver) {
 				/** @var ExternalEContentDriver $driver */
-				return array(
-						'copies' => 1,
-						'holds' => 0,
-				);
-			}else{
+				return [
+					'copies' => 1,
+					'holds' => 0,
+				];
+			} else {
 				/** @var MarcRecordDriver| $driver */
 				$copies = count($driver->getCopies());
 				$holds = $driver->getNumHolds();
-				return array(
-						'copies' => $copies,
-						'holds' => $holds,
-				);
+				return [
+					'copies' => $copies,
+					'holds' => $holds,
+				];
 			}
 		}
 	}
 
-	public function loadSolrRecord($id){
+	public function loadSolrRecord($id) {
 		global $configArray;
 		//Load basic information
-		if (isset($id)){
+		if (isset($id)) {
 			$this->id = $id;
-		}else{
+		} else {
 			$this->id = $_GET['id'];
 		}
 
@@ -547,10 +581,10 @@ class ItemAPI extends Action {
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1){
+		if ($systemVariables->searchVersion == 1) {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 			$this->db = new GroupedWorksSolrConnector($url);
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
 			$this->db = new GroupedWorksSolrConnector2($url);
 		}
@@ -562,8 +596,7 @@ class ItemAPI extends Action {
 		return $record;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 
@@ -587,7 +620,7 @@ class ItemAPI extends Action {
 			$itemData['subtitle'] = $groupedWorkDriver->getSubtitle();
 			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
 			$itemData['description'] = strip_tags($groupedWorkDriver->getDescriptionFast());
-			if($itemData['description'] == '') {
+			if ($itemData['description'] == '') {
 				$itemData['description'] = "Description Not Provided";
 			}
 			$itemData['isbn'] = $groupedWorkDriver->getCleanISBN();
@@ -598,7 +631,7 @@ class ItemAPI extends Action {
 			$itemData['ratingData']['count'] = $ratingData['count'];
 
 			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
-			foreach ($relatedManifestations as $relatedManifestation){
+			foreach ($relatedManifestations as $relatedManifestation) {
 
 				/** @var  $relatedVariations Grouping_Variation[] */
 				$relatedVariations = $relatedManifestation->getVariationInformation();
@@ -611,24 +644,24 @@ class ItemAPI extends Action {
 						$recordActions = $relatedRecord->getActions();
 						$actions = [];
 						foreach ($recordActions as $recordAction) {
-							$action = array(
+							$action = [
 								'title' => $recordAction['title'],
-							);
+							];
 
-							if(isset($recordAction['type'])) {
+							if (isset($recordAction['type'])) {
 								$action['type'] = $recordAction['type'];
 							}
 
-							if(isset($recordAction['url'])) {
+							if (isset($recordAction['url'])) {
 								$action['url'] = $recordAction['url'];
 							}
 
-							if(isset($recordAction['redirectUrl'])) {
+							if (isset($recordAction['redirectUrl'])) {
 								$action['redirectUrl'] = $recordAction['redirectUrl'];
 							}
 
-							if($relatedRecord->source == "overdrive" && isset($recordAction['type'])) {
-								if($recordAction['type'] == "overdrive_sample") {
+							if ($relatedRecord->source == "overdrive" && isset($recordAction['type'])) {
+								if ($recordAction['type'] == "overdrive_sample") {
 									$action['formatId'] = $recordAction['formatId'];
 									$action['sampleNumber'] = $recordAction['sampleNumber'];
 								}
@@ -648,57 +681,57 @@ class ItemAPI extends Action {
 							$shelfLocation = $item->shelfLocation;
 							$callNumber = $item->callNumber;
 
-							if (empty($item->volume)){
+							if (empty($item->volume)) {
 								$numItemsWithoutVolumes++;
-							}else{
+							} else {
 								$numItemsWithVolumes++;
 							}
 
 							$hasItemsWithoutVolumes = $numItemsWithoutVolumes > 0;
 							$majorityOfItemsHaveVolumes = $numItemsWithVolumes > $numItemsWithoutVolumes;
 
-							if($item->eContentSource == "Hoopla") {
+							if ($item->eContentSource == "Hoopla") {
 								require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 								$hooplaDriver = new HooplaRecordDriver($item->itemId);
 								$publicationDate = $hooplaDriver->getPublicationDates();
-								if(is_array($publicationDate) && $publicationDate != null) {
+								if (is_array($publicationDate) && $publicationDate != null) {
 									$publicationDate = $publicationDate[0];
 								} elseif (count($publicationDate) == 0) {
 									$publicationDate = $relatedRecord->publicationDate;
 								}
 								$publisher = $hooplaDriver->getPublishers();
-								if(is_array($publisher) && $publisher != null) {
+								if (is_array($publisher) && $publisher != null) {
 									$publisher = $publisher[0];
 								} elseif (count($publisher) == 0) {
 									$publisher = $relatedRecord->publisher;
 								}
 								$edition = $hooplaDriver->getEditions();
-								if(is_array($edition) && $edition != null) {
+								if (is_array($edition) && $edition != null) {
 									$edition = $edition[0];
 								} elseif (count($edition) == 0) {
 									$edition = $relatedRecord->edition;
 								}
 								$physical = $hooplaDriver->getPhysicalDescriptions();
-								if(is_array($physical) && $physical != null) {
+								if (is_array($physical) && $physical != null) {
 									$physical = $physical[0];
 								} elseif (count($physical) == 0) {
 									$physical = $relatedRecord->physical;
 								}
-							} elseif($item->eContentSource == "OverDrive") {
+							} elseif ($item->eContentSource == "OverDrive") {
 								require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 								$overdriveDriver = new OverDriveRecordDriver($item->itemId);
 								$publicationDate = $relatedRecord->publicationDate;
 								$publisher = $relatedRecord->publisher;
 								$edition = $relatedRecord->edition;
 								$physical = $relatedRecord->physical;
-							} elseif($item->eContentSource == "CloudLibrary") {
+							} elseif ($item->eContentSource == "CloudLibrary") {
 								require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 								$cloudLibraryDriver = new CloudLibraryRecordDriver($item->itemId);
 								$publicationDate = $cloudLibraryDriver->getPublicationDates();
 								$publisher = $cloudLibraryDriver->getPublishers();
 								$edition = $cloudLibraryDriver->getEditions();
 								$physical = $relatedRecord->physical;
-							} elseif($item->eContentSource == "Axis360") {
+							} elseif ($item->eContentSource == "Axis360") {
 								require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 								$axis360Driver = new Axis360RecordDriver($item->itemId);
 								$publicationDate = $axis360Driver->getPublicationDates();
@@ -716,7 +749,7 @@ class ItemAPI extends Action {
 						$recordVolumes = $relatedRecord->getVolumeData();
 
 						$holdable = $relatedRecord->isHoldable();
-						$record = array(
+						$record = [
 							'id' => $relatedRecord->id,
 							'source' => $relatedRecord->source,
 							'format' => $relatedRecord->format,
@@ -739,7 +772,7 @@ class ItemAPI extends Action {
 							'hasItemsWithoutVolumes' => $hasItemsWithoutVolumes,
 							'majorityOfItemsHaveVolumes' => $majorityOfItemsHaveVolumes,
 							'volumes' => $recordVolumes,
-						);
+						];
 						$records[] = $record;
 						$itemData['language'] = $relatedRecord->language;
 
@@ -753,20 +786,29 @@ class ItemAPI extends Action {
 				/** @var  $allVariationsFormat Grouping_Variation[] */
 				/** @var  $allVariationsLanguage Grouping_Variation[] */
 
-				foreach($relatedManifestation->getVariations() as $filter) {
+				foreach ($relatedManifestation->getVariations() as $filter) {
 					if (!isset($filterOnFormat)) {
-						$filterOnFormat[] = array('format' => $filter->manifestation->format, 'format' => $filter->manifestation->format);
-					} elseif (!in_array( $filter->manifestation->format, array_column($filterOnFormat, 'format'))) {
-						$filterOnFormat[] = array('format' =>  $filter->manifestation->format, 'format' => $filter->manifestation->format);
+						$filterOnFormat[] = [
+							'format' => $filter->manifestation->format,
+							'format' => $filter->manifestation->format,
+						];
+					} elseif (!in_array($filter->manifestation->format, array_column($filterOnFormat, 'format'))) {
+						$filterOnFormat[] = [
+							'format' => $filter->manifestation->format,
+							'format' => $filter->manifestation->format,
+						];
 					}
 					if (!isset($filterOnLanguage)) {
-						$filterOnLanguage[] = array('language' => $filter->language);
-					} elseif (!in_array( $filter->language, array_column($filterOnLanguage, 'language'))) {
-						$filterOnLanguage[] = array('language' =>  $filter->language);
+						$filterOnLanguage[] = ['language' => $filter->language];
+					} elseif (!in_array($filter->language, array_column($filterOnLanguage, 'language'))) {
+						$filterOnLanguage[] = ['language' => $filter->language];
 					}
 				}
 
-				$itemData['filterOn'] = array('format' => $filterOnFormat, 'language' => $filterOnLanguage);
+				$itemData['filterOn'] = [
+					'format' => $filterOnFormat,
+					'language' => $filterOnLanguage,
+				];
 
 			}
 			return $itemData;
@@ -774,8 +816,8 @@ class ItemAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAppBasicItemInfo(){
-		$itemData = array();
+	function getAppBasicItemInfo() {
+		$itemData = [];
 
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		require_once ROOT_DIR . '/sys/Grouping/Manifestation.php';
@@ -796,7 +838,7 @@ class ItemAPI extends Action {
 			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
 			$itemData['formats'] = $groupedWorkDriver->getFormatsArray();
 			$itemData['description'] = $groupedWorkDriver->getDescriptionFast();
-			if($itemData['description'] == '') {
+			if ($itemData['description'] == '') {
 				$itemData['description'] = "Description Not Provided";
 			}
 			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
@@ -808,38 +850,44 @@ class ItemAPI extends Action {
 			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
 			$allVariations = [];
 
-			foreach($relatedManifestations as $manifestation) {
+			foreach ($relatedManifestations as $manifestation) {
 
 				$statusMessage = $manifestation->getNumberOfCopiesMessage();
-				if($statusMessage == '') {
+				if ($statusMessage == '') {
 					$statusMessage = $manifestation->getStatusInformation()->_groupedStatus;
 				}
 
 				$action = $manifestation->getActions();
 
-				$manifestationSummary = array(
+				$manifestationSummary = [
 					'format' => $manifestation->format,
 					'records' => $manifestation->getItemSummary(),
 					'variation' => $manifestation->getVariations(),
 					'status' => $statusMessage,
 					'action' => $action,
-				);
+				];
 
 				$itemList[] = $manifestationSummary;
 
 				/** @var  $allVariationsFormat Grouping_Variation[] */
 				/** @var  $allVariationsLanguage Grouping_Variation[] */
 
-				foreach($manifestation->getVariations() as $variation) {
+				foreach ($manifestation->getVariations() as $variation) {
 					if (!isset($allVariationsFormat)) {
-						$allVariationsFormat[] = array('format' => $variation->manifestation->format, 'formatCategory' => $variation->manifestation->formatCategory);
-					} elseif (!in_array( $variation->manifestation->format, array_column($allVariationsFormat, 'format'))) {
-						$allVariationsFormat[] = array('format' =>  $variation->manifestation->format, 'formatCategory' => $variation->manifestation->formatCategory);
+						$allVariationsFormat[] = [
+							'format' => $variation->manifestation->format,
+							'formatCategory' => $variation->manifestation->formatCategory,
+						];
+					} elseif (!in_array($variation->manifestation->format, array_column($allVariationsFormat, 'format'))) {
+						$allVariationsFormat[] = [
+							'format' => $variation->manifestation->format,
+							'formatCategory' => $variation->manifestation->formatCategory,
+						];
 					}
 					if (!isset($allVariationsLanguage)) {
-						$allVariationsLanguage[] = array('language' => $variation->language);
-					} elseif (!in_array( $variation->language, array_column($allVariationsLanguage, 'language'))) {
-						$allVariationsLanguage[] = array('language' =>  $variation->language);
+						$allVariationsLanguage[] = ['language' => $variation->language];
+					} elseif (!in_array($variation->language, array_column($allVariationsLanguage, 'language'))) {
+						$allVariationsLanguage[] = ['language' => $variation->language];
 					}
 				}
 
@@ -865,8 +913,8 @@ class ItemAPI extends Action {
 		$recordDriver = new GroupedWorkDriver($groupedWorkId);
 
 		$relatedManifestation = null;
-		foreach($recordDriver->getRelatedManifestations() as $relatedManifestation){
-			if($relatedManifestation->format == $format) {
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $format) {
 				break;
 			}
 		}

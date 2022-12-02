@@ -3,19 +3,17 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class ReadingHistory extends MyAccount
-{
-	function launch()
-	{
+class ReadingHistory extends MyAccount {
+	function launch() {
 		global $interface;
 		global $library;
 
-		if (!$library->enableReadingHistory){
+		if (!$library->enableReadingHistory) {
 			//User shouldn't get here
 			$module = 'Error';
 			$action = 'Handle404';
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -37,39 +35,39 @@ class ReadingHistory extends MyAccount
 				array_unshift($linkedUsers, $user);
 				$interface->assign('linkedUsers', $linkedUsers);
 			}
-			$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
+			$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
 
 			$patron = $user->getUserReferredTo($patronId);
 
 			$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
-			if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+			if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])) {
 				$interface->assign('page', $_REQUEST['page']);
-			}else{
+			} else {
 				$interface->assign('page', 1);
 			}
-			if (isset($_REQUEST['readingHistoryFilter'])){
+			if (isset($_REQUEST['readingHistoryFilter'])) {
 				$interface->assign('readingHistoryFilter', strip_tags($_REQUEST['readingHistoryFilter']));
-			}else{
+			} else {
 				$interface->assign('readingHistoryFilter', '');
 			}
 			$interface->assign('historyActive', $patron->trackReadingHistory);
 			//Check to see if there is an action to perform.
-			if (!empty($_REQUEST['readingHistoryAction'])){
+			if (!empty($_REQUEST['readingHistoryAction'])) {
 				//Perform the requested action
-				$selectedTitles = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
+				$selectedTitles = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : [];
 				$readingHistoryAction = $_REQUEST['readingHistoryAction'];
 				$patron->doReadingHistoryAction($readingHistoryAction, $selectedTitles);
 
 				//redirect back to the current location without the action.
 				$newLocation = "/MyAccount/ReadingHistory";
-				if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
+				if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut') {
 					$params[] = 'page=' . $_REQUEST['page'];
 				}
-				if (isset($_REQUEST['patronId'])){
+				if (isset($_REQUEST['patronId'])) {
 					$params[] = 'patronId=' . $_REQUEST['patronId'];
 				}
-				if (!empty($params)){
+				if (!empty($params)) {
 					$additionalParams = implode('&', $params);
 					$newLocation .= '?' . $additionalParams;
 				}
@@ -81,8 +79,7 @@ class ReadingHistory extends MyAccount
 		$this->display('readingHistory.tpl', 'Reading History');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Your Reading History');

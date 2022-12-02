@@ -1,15 +1,13 @@
 <?php
 
-class AuthorEnrichment extends DataObject
-{
+class AuthorEnrichment extends DataObject {
 	public $__table = 'author_enrichment';    // table name
 	public $id;
 	public $authorName;
 	public $hideWikipedia;
 	public $wikipediaUrl;
 
-	static function getObjectStructure() : array
-	{
+	static function getObjectStructure(): array {
 		return [
 			[
 				'property' => 'id',

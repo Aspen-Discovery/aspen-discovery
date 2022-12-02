@@ -1,7 +1,6 @@
 <?php
 
-class TicketStats extends DataObject
-{
+class TicketStats extends DataObject {
 	public $__table = 'ticket_stats';
 	public $id;
 	public $year;

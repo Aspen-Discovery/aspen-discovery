@@ -6,40 +6,42 @@ require_once ROOT_DIR . '/sys/Pager.php';
 
 class Genealogy_Results extends ResultsAction {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
 		$aspenUsage->genealogySearches++;
 
 		//Check to see if a user is logged in with admin permissions
-		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Administer Genealogy')){
+		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Administer Genealogy')) {
 			$interface->assign('userIsAdmin', true);
-		}else{
+		} else {
 			$interface->assign('userIsAdmin', false);
 		}
 
 		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		//Check to see if the year has been set and if so, convert to a filter and resend.
-		$dateFilters = array('birthYear', 'deathYear');
-		foreach ($dateFilters as $dateFilter){
-			if (isset($_REQUEST[$dateFilter . 'yearfrom']) || isset($_REQUEST[$dateFilter . 'yearto'])){
+		$dateFilters = [
+			'birthYear',
+			'deathYear',
+		];
+		foreach ($dateFilters as $dateFilter) {
+			if (isset($_REQUEST[$dateFilter . 'yearfrom']) || isset($_REQUEST[$dateFilter . 'yearto'])) {
 				$queryParams = $_GET;
 				$yearFrom = preg_match('/\d{2,4}/', $_REQUEST[$dateFilter . 'yearfrom']) ? $_REQUEST[$dateFilter . 'yearfrom'] : '*';
 				$yearTo = preg_match('/\d{2,4}/', $_REQUEST[$dateFilter . 'yearto']) ? $_REQUEST[$dateFilter . 'yearto'] : '*';
-				if (strlen($yearFrom) == 2){
+				if (strlen($yearFrom) == 2) {
 					$yearFrom = '19' . $yearFrom;
-				}else if (strlen($yearFrom) == 3){
+				} elseif (strlen($yearFrom) == 3) {
 					$yearFrom = '0' . $yearFrom;
 				}
-				if (strlen($yearTo) == 2){
+				if (strlen($yearTo) == 2) {
 					$yearTo = '19' . $yearTo;
-				}else if (strlen($yearFrom) == 3){
+				} elseif (strlen($yearFrom) == 3) {
 					$yearTo = '0' . $yearTo;
 				}
-				if ($yearTo != '*' && $yearFrom != '*' && $yearTo < $yearFrom){
+				if ($yearTo != '*' && $yearFrom != '*' && $yearTo < $yearFrom) {
 					$tmpYear = $yearTo;
 					$yearTo = $yearFrom;
 					$yearFrom = $tmpYear;
@@ -48,21 +50,21 @@ class Genealogy_Results extends ResultsAction {
 				unset($queryParams['action']);
 				unset($queryParams[$dateFilter . 'yearfrom']);
 				unset($queryParams[$dateFilter . 'yearto']);
-				$queryParamStrings = array();
-				foreach($queryParams as $paramName => $queryValue){
-					if (is_array($queryValue)){
-						foreach ($queryValue as $arrayValue){
-							if (strlen($arrayValue) > 0){
+				$queryParamStrings = [];
+				foreach ($queryParams as $paramName => $queryValue) {
+					if (is_array($queryValue)) {
+						foreach ($queryValue as $arrayValue) {
+							if (strlen($arrayValue) > 0) {
 								$queryParamStrings[] = $paramName . '[]=' . $arrayValue;
 							}
 						}
-					}else{
-						if (strlen($queryValue)){
+					} else {
+						if (strlen($queryValue)) {
 							$queryParamStrings[] = $paramName . '=' . $queryValue;
 						}
 					}
 				}
-				if ($yearFrom != '*' || $yearTo != '*'){
+				if ($yearFrom != '*' || $yearTo != '*') {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
@@ -90,7 +92,7 @@ class Genealogy_Results extends ResultsAction {
 			echo $searchObject->buildRSS();
 			// And we're done
 			exit();
-		}else if ($searchObject->getView() == 'excel'){
+		} elseif ($searchObject->getView() == 'excel') {
 			// Throw the Excel spreadsheet to screen for download
 			$searchObject->buildExcel();
 			// And we're done
@@ -99,9 +101,9 @@ class Genealogy_Results extends ResultsAction {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('rssLink',    $searchObject->getRSSUrl());
-		$interface->assign('excelLink',  $searchObject->getExcelUrl());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('rssLink', $searchObject->getRSSUrl());
+		$interface->assign('excelLink', $searchObject->getExcelUrl());
 
 		$displayQuery = $searchObject->displayQuery();
 
@@ -113,7 +115,7 @@ class Genealogy_Results extends ResultsAction {
 			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
 			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
-		}elseif ($result instanceof AspenError) {
+		} elseif ($result instanceof AspenError) {
 			AspenError::raiseError($result->getMessage());
 		}
 		$timer->logTime('Process Search');
@@ -121,14 +123,14 @@ class Genealogy_Results extends ResultsAction {
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
-		$interface->assign('lookfor',             $searchObject->displayQuery());
-		$interface->assign('searchType',          $searchObject->getSearchType());
+		$interface->assign('lookfor', $searchObject->displayQuery());
+		$interface->assign('searchType', $searchObject->getSearchType());
 		// Will assign null for an advanced search
-		$interface->assign('searchIndex',         $searchObject->getSearchIndex());
+		$interface->assign('searchIndex', $searchObject->getSearchIndex());
 
-        //Always get spelling suggestions to account for cases where something is misspelled, but still gets results
-        $spellingSuggestions = $searchObject->getSpellingSuggestions();
-        $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
+		//Always get spelling suggestions to account for cases where something is misspelled, but still gets results
+		$spellingSuggestions = $searchObject->getSpellingSuggestions();
+		$interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
 		// We'll need recommendations no matter how many results we found:
 		$interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates('top'));
@@ -138,7 +140,7 @@ class Genealogy_Results extends ResultsAction {
 		$searchObject->close();
 		$interface->assign('time', round($searchObject->getTotalSpeed(), 2));
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
-		$interface->assign('searchId',    $searchObject->getSearchId());
+		$interface->assign('searchId', $searchObject->getSearchId());
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$interface->assign('page', $currentPage);
 
@@ -153,10 +155,7 @@ class Genealogy_Results extends ResultsAction {
 			if ($error !== false) {
 				// If it's a parse error or the user specified an invalid field, we
 				// should display an appropriate message:
-				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException')
-						|| preg_match('/^undefined field/', $error['msg'])
-						|| stristr($error['msg'], 'org.apache.solr.search.SyntaxError')
-						) {
+				if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg']) || stristr($error['msg'], 'org.apache.solr.search.SyntaxError')) {
 					$interface->assign('parseError', $error['msg']);
 
 					// Unexpected error -- let's treat this as a fatal condition.
@@ -174,7 +173,7 @@ class Genealogy_Results extends ResultsAction {
 			$summary = $searchObject->getResultSummary();
 			$interface->assign('recordCount', $summary['resultTotal']);
 			$interface->assign('recordStart', $summary['startRecord']);
-			$interface->assign('recordEnd',   $summary['endRecord']);
+			$interface->assign('recordEnd', $summary['endRecord']);
 
 			// Was the empty result set due to an error?
 			$error = $searchObject->getIndexError();
@@ -201,21 +200,20 @@ class Genealogy_Results extends ResultsAction {
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
-					AspenError::raiseError(new AspenError('Unable to process query<br>' .
-							'Solr Returned: ' . print_r($error, true)));
+					AspenError::raiseError(new AspenError('Unable to process query<br>' . 'Solr Returned: ' . print_r($error, true)));
 				}
 			}
 
 			$facetSet = $searchObject->getFacetList();
-			$interface->assign('facetSet',       $facetSet);
+			$interface->assign('facetSet', $facetSet);
 
 			//Check to see if a format category is already set
 			$categorySelected = false;
-			if (isset($facetSet['top'])){
-				foreach ($facetSet['top'] as $title=>$cluster){
-					if ($cluster['label'] == 'Category'){
-						foreach ($cluster['list'] as $thisFacet){
-							if ($thisFacet['isApplied']){
+			if (isset($facetSet['top'])) {
+				foreach ($facetSet['top'] as $title => $cluster) {
+					if ($cluster['label'] == 'Category') {
+						foreach ($cluster['list'] as $thisFacet) {
+							if ($thisFacet['isApplied']) {
 								$categorySelected = true;
 							}
 						}
@@ -236,9 +234,11 @@ class Genealogy_Results extends ResultsAction {
 
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
-			$options = array('totalItems' => $summary['resultTotal'],
-			                 'fileName'   => $link,
-			                 'perPage'    => $summary['perPage']);
+			$options = [
+				'totalItems' => $summary['resultTotal'],
+				'fileName' => $link,
+				'perPage' => $summary['perPage'],
+			];
 			$pager = new Pager($options);
 			$interface->assign('pageLinks', $pager->getLinks());
 			$timer->logTime('finish hits processing');
@@ -257,8 +257,7 @@ class Genealogy_Results extends ResultsAction {
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, $sidebar, false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return parent::getResultsBreadcrumbs('Genealogy Search');
 	}
 }

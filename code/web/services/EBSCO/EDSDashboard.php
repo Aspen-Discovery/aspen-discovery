@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 
-class EBSCO_EDSDashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class EBSCO_EDSDashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('EbscoEdsRecordUsage');
@@ -47,16 +45,15 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return int
 	 */
-	public function getUserStats($instanceName, $month, $year): int
-	{
+	public function getUserStats($instanceName, $month, $year): int {
 		$userUsage = new UserEbscoEdsUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
-		if ($month != null){
+		if ($month != null) {
 			$userUsage->month = $month;
 		}
-		if ($year != null){
+		if ($year != null) {
 			$userUsage->year = $year;
 		}
 		return $userUsage->count();
@@ -68,16 +65,15 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return array
 	 */
-	public function getRecordStats($instanceName, $month, $year): array
-	{
+	public function getRecordStats($instanceName, $month, $year): array {
 		$usage = new EbscoEdsRecordUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
-		if ($month != null){
+		if ($month != null) {
 			$usage->month = $month;
 		}
-		if ($year != null){
+		if ($year != null) {
 			$usage->year = $year;
 		}
 		$usage->selectAdd(null);
@@ -92,12 +88,11 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 			'recordsUsed' => $usage->recordsUsed,
 			'numRecordsViewed' => (($usage->numRecordsViewed != null) ? $usage->numRecordsViewed : 0),
 			'numRecordsUsed' => (($usage->numRecordsUsed != null) ? $usage->numRecordsUsed : 0),
-			'numClicks' => (($usage->numClicks != null) ? $usage->numClicks : 0)
+			'numClicks' => (($usage->numClicks != null) ? $usage->numClicks : 0),
 		];
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebsco', 'EBSCO');
@@ -105,13 +100,14 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ebsco';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

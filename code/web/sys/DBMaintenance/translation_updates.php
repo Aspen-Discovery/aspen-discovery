@@ -1,21 +1,13 @@
 <?php
 
-function getTranslationUpdates()
-{
+function getTranslationUpdates() {
 	return [
 		'languages_setup' => [
 			'title' => 'Language Setup',
 			'description' => 'Initial setup of language table. ',
 			'continueOnError' => false,
 			'sql' => [
-				"CREATE TABLE IF NOT EXISTS languages (" .
-				"id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " .
-				"weight INT NOT NULL DEFAULT '0', " .
-				"code CHAR(3) NOT NULL, " .
-				"displayName VARCHAR(50), " .
-				"displayNameEnglish VARCHAR(50), " .
-				"facetValue VARCHAR(100) NOT NULL " .
-				")",
+				"CREATE TABLE IF NOT EXISTS languages (" . "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " . "weight INT NOT NULL DEFAULT '0', " . "code CHAR(3) NOT NULL, " . "displayName VARCHAR(50), " . "displayNameEnglish VARCHAR(50), " . "facetValue VARCHAR(100) NOT NULL " . ")",
 				"ALTER TABLE languages ADD UNIQUE INDEX `code` (`code`)",
 				"INSERT INTO languages (code, displayName, displayNameEnglish, facetValue) VALUES ('en', 'English', 'English', 'English')",
 			],
@@ -33,8 +25,8 @@ function getTranslationUpdates()
 			'title' => 'Language locales',
 			'description' => 'Add locales to languages for use when formatting numbers',
 			'sql' => [
-				"ALTER TABLE languages ADD COLUMN locale VARCHAR(10) DEFAULT 'en-US'"
-			]
+				"ALTER TABLE languages ADD COLUMN locale VARCHAR(10) DEFAULT 'en-US'",
+			],
 		],
 
 		'translation_terms' => [
@@ -48,8 +40,8 @@ function getTranslationUpdates()
 					samplePageUrl VARCHAR(255)
 				)',
 				'ALTER TABLE translation_terms ADD UNIQUE INDEX term (term)',
-				'ALTER TABLE translation_terms ADD INDEX url (samplePageUrl)'
-			]
+				'ALTER TABLE translation_terms ADD INDEX url (samplePageUrl)',
+			],
 		],
 
 		'translations' => [
@@ -73,7 +65,7 @@ function getTranslationUpdates()
 			'description' => 'Add the translator role',
 			'sql' => [
 				"INSERT INTO roles (name, description) VALUES ('translator', 'Allows the user to translate the system.')",
-			]
+			],
 		],
 
 		'translation_term_default_text' => [
@@ -81,8 +73,8 @@ function getTranslationUpdates()
 			'description' => 'Add default text to translation term so we can determine when to reload translations',
 			'sql' => [
 				'ALTER TABLE translation_terms ADD COLUMN defaultText TEXT',
-				'ALTER TABLE translations ADD COLUMN needsReview TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE translations ADD COLUMN needsReview TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'translation_case_sensitivity' => [
@@ -91,7 +83,7 @@ function getTranslationUpdates()
 			'sql' => [
 				"ALTER TABLE translations CHANGE translation translation TEXT COLLATE utf8_bin",
 				"DELETE FROM translations WHERE languageId = 1",
-				"TRUNCATE TABLE cached_values"
+				"TRUNCATE TABLE cached_values",
 			],
 		],
 
@@ -100,7 +92,7 @@ function getTranslationUpdates()
 			'description' => 'Make sure that translations are case sensitive so Book and BOOK can be translated differently',
 			'sql' => [
 				"ALTER TABLE translation_terms CHANGE term term VARCHAR(50) COLLATE utf8_bin",
-				"TRUNCATE TABLE cached_values"
+				"TRUNCATE TABLE cached_values",
 			],
 		],
 
@@ -109,7 +101,7 @@ function getTranslationUpdates()
 			'description' => 'Make sure that translations are case sensitive so Book and BOOK can be translated differently',
 			'sql' => [
 				"ALTER TABLE translation_terms CHANGE term term VARCHAR(1000) COLLATE utf8_bin",
-				"TRUNCATE TABLE cached_values"
+				"TRUNCATE TABLE cached_values",
 			],
 		],
 	];

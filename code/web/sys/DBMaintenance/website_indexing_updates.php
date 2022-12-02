@@ -1,12 +1,11 @@
 <?php
 
-function getWebsiteIndexingUpdates()
-{
-	return array(
-		'website_indexing_tables' => array(
+function getWebsiteIndexingUpdates() {
+	return [
+		'website_indexing_tables' => [
 			'title' => 'Website Indexing tables',
 			'description' => 'Create tables for websites to be indexed.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE website_indexing_settings (
 			    	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 				    name VARCHAR(75) NOT NULL,
@@ -42,13 +41,13 @@ function getWebsiteIndexingUpdates()
 				    PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
 				"ALTER TABLE website_index_log ADD INDEX(websiteName)",
-			),
-		),
+			],
+		],
 
-		'track_website_user_usage' => array(
+		'track_website_user_usage' => [
 			'title' => 'Website Usage by user',
 			'description' => 'Add a table to track how often a particular user uses indexed websites.',
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE user_website_usage (
 				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 				    userId INT(11) NOT NULL,
@@ -58,14 +57,14 @@ function getWebsiteIndexingUpdates()
 				    usageCount INT(11)
 				) ENGINE = InnoDB",
 				"ALTER TABLE user_website_usage ADD INDEX (websiteId, year, month, userId)",
-			),
-		),
+			],
+		],
 
-		'website_record_usage' => array(
+		'website_record_usage' => [
 			'title' => 'Website Page Usage',
 			'description' => 'Add a table to track how pages within indexed sites are viewed.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql' => [
 				"CREATE TABLE website_page_usage (
 				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 				    webPageId INT(11),
@@ -75,8 +74,8 @@ function getWebsiteIndexingUpdates()
 				    timesUsed INT(11) NOT NULL
 				) ENGINE = InnoDB",
 				"ALTER TABLE website_page_usage ADD INDEX (webPageId, year, month)",
-			),
-		),
+			],
+		],
 
 		'website_usage_add_instance' => [
 			'title' => 'Website Usage - Instance Information',
@@ -89,7 +88,7 @@ function getWebsiteIndexingUpdates()
 				'ALTER TABLE user_website_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_website_usage DROP INDEX websiteId',
 				'ALTER TABLE user_website_usage ADD INDEX (instance, websiteId, year, month)',
-			]
+			],
 		],
 
 		'create_web_indexer_module' => [
@@ -97,8 +96,8 @@ function getWebsiteIndexingUpdates()
 			'description' => 'Setup Web Indexer module',
 			'sql' => [
 				//oai indexer runs daily so we don't check the background process
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Web Indexer', 'website_pages', 'web_indexer')"
-			]
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Web Indexer', 'website_pages', 'web_indexer')",
+			],
 		],
 
 		'web_indexer_add_paths_to_exclude' => [
@@ -106,48 +105,48 @@ function getWebsiteIndexingUpdates()
 			'description' => 'Allow specific paths to not be indexed using the web indexer',
 			'sql' => [
 				"ALTER TABLE website_indexing_settings ADD COLUMN pathsToExclude MEDIUMTEXT",
-			]
+			],
 		],
 
-		'web_indexer_module_add_log' =>[
+		'web_indexer_module_add_log' => [
 			'title' => 'Web Indexer add log info to module',
 			'description' => 'Add logging information to web indexer module',
 			'sql' => [
 				"UPDATE modules set logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name='Web Indexer'",
-			]
+			],
 		],
 
 		'web_builder_add_settings' => [
 			'title' => 'Add Settings to Web Builder module',
 			'description' => 'Add Settings to Web Builder module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/WebsiteIndexing/WebsiteIndexSetting.php', settingsClassName = 'WebsiteIndexSetting' WHERE name = 'Web Indexer'"
-			]
+				"UPDATE modules set settingsClassPath = '/sys/WebsiteIndexing/WebsiteIndexSetting.php', settingsClassName = 'WebsiteIndexSetting' WHERE name = 'Web Indexer'",
+			],
 		],
 
 
-		'web_indexer_add_title_expression' =>[
+		'web_indexer_add_title_expression' => [
 			'title' => 'Web Indexer add title expression',
 			'description' => 'Add a regular expression to extract titles from',
 			'sql' => [
 				"ALTER TABLE website_indexing_settings ADD COLUMN pageTitleExpression VARCHAR(255) DEFAULT ''",
-			]
+			],
 		],
 
-		'web_indexer_add_description_expression' =>[
+		'web_indexer_add_description_expression' => [
 			'title' => 'Web Indexer add description expression',
 			'description' => 'Add a regular expression to extract description from',
 			'sql' => [
 				"ALTER TABLE website_indexing_settings ADD COLUMN descriptionExpression VARCHAR(255) DEFAULT ''",
-			]
+			],
 		],
 
 		'web_indexer_deleted_settings' => [
 			'title' => 'Web Indexer add the ability to delete settings',
 			'description' => 'Add deleted field for website indexing settings',
 			'sql' => [
-				'ALTER TABLE website_indexing_settings ADD COLUMN deleted TINYINT(1) DEFAULT 0'
-			]
+				'ALTER TABLE website_indexing_settings ADD COLUMN deleted TINYINT(1) DEFAULT 0',
+			],
 		],
 
 		'web_indexer_scoping' => [
@@ -165,16 +164,16 @@ function getWebsiteIndexingUpdates()
 					settingId INT(11) NOT NULL,
 					locationId INT(11) NOT NULL,
 					UNIQUE (settingId, locationId)
-				) ENGINE = InnoDB'
-			]
+				) ENGINE = InnoDB',
+			],
 		],
 
 		'web_indexer_max_pages_to_index' => [
 			'title' => 'Web Indexer add a maximum number of pages to index',
 			'description' => 'Add a maximum number of pages to index for website indexing settings',
 			'sql' => [
-				'ALTER TABLE website_indexing_settings ADD COLUMN maxPagesToIndex INT(11) DEFAULT 2500'
-			]
+				'ALTER TABLE website_indexing_settings ADD COLUMN maxPagesToIndex INT(11) DEFAULT 2500',
+			],
 		],
 
 		'web_indexer_url_length' => [
@@ -182,7 +181,7 @@ function getWebsiteIndexingUpdates()
 			'description' => 'Increase the URL within a page so that pages with longer URLs can be indexed properly',
 			'sql' => [
 				'ALTER TABLE website_pages CHANGE url url VARCHAR(600)',
-			]
-		]
-	);
+			],
+		],
+	];
 }

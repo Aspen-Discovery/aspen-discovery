@@ -2,20 +2,28 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-class EBSCO_JSON extends JSON_Action
-{
+class EBSCO_JSON extends JSON_Action {
 	/** @noinspection PhpUnused */
-	public function dismissResearchStarter() : array {
+	public function dismissResearchStarter(): array {
 		if (!isset($_REQUEST['id'])) {
-			return ['success' => false, 'message' => 'ID was not provided'];
+			return [
+				'success' => false,
+				'message' => 'ID was not provided',
+			];
 		}
-		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
 		$id = $_REQUEST['id'];
 
 		require_once ROOT_DIR . '/sys/Ebsco/ResearchStarter.php';
 		$researchStarter = new ResearchStarter();
 		$researchStarter->id = $id;
-		if ($researchStarter->find(true)){
+		if ($researchStarter->find(true)) {
 			require_once ROOT_DIR . '/sys/Ebsco/ResearchStarterDismissal.php';
 			$dismissal = new ResearchStarterDismissal();
 			$dismissal->researchStarterId = $id;
@@ -24,9 +32,9 @@ class EBSCO_JSON extends JSON_Action
 			$result = [
 				'success' => true,
 				'title' => 'Research Starter Dismissed',
-				'message' => "This research starter will not be shown again.  You can hide all research starters by editing <a href='/MyAccount/MyPreferences'>your preferences</a>."
+				'message' => "This research starter will not be shown again.  You can hide all research starters by editing <a href='/MyAccount/MyPreferences'>your preferences</a>.",
 			];
-		}else{
+		} else {
 			$result['message'] = 'Could not find that Research Starter';
 		}
 
@@ -34,10 +42,12 @@ class EBSCO_JSON extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	public function trackEdsUsage() : array
-	{
+	public function trackEdsUsage(): array {
 		if (!isset($_REQUEST['id'])) {
-			return ['success' => false, 'message' => 'ID was not provided'];
+			return [
+				'success' => false,
+				'message' => 'ID was not provided',
+			];
 		}
 		$id = $_REQUEST['id'];
 
@@ -81,44 +91,47 @@ class EBSCO_JSON extends JSON_Action
 			}
 		}
 
-		return ['success' => true, 'message' => 'Updated usage for EBSCO EDS record ' . $id];
+		return [
+			'success' => true,
+			'message' => 'Updated usage for EBSCO EDS record ' . $id,
+		];
 	}
 
 	/** @noinspection PhpUnused */
-	function getResearchStarters() : array {
+	function getResearchStarters(): array {
 		global $enabledModules;
-		if (array_key_exists('EBSCO EDS', $enabledModules)){
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/SearchObject/EbscoEdsSearcher.php';
 			$edsSearcher = new SearchObject_EbscoEdsSearcher();
 			$researchStarters = $edsSearcher->getResearchStarters($_REQUEST['lookfor']);
 			$result = [
 				'success' => true,
-				'researchStarters' => ''
+				'researchStarters' => '',
 			];
-			foreach ($researchStarters as $researchStarter){
+			foreach ($researchStarters as $researchStarter) {
 				$result['researchStarters'] .= $researchStarter->getDisplayHtml();
 			}
 			return $result;
-		}else{
+		} else {
 			return [
 				'success' => true,
-				'researchStarters' => ''
+				'researchStarters' => '',
 			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getTitleAuthor() : array {
+	function getTitleAuthor(): array {
 		$result = [
 			'success' => false,
 			'title' => 'Unknown',
-			'author' => 'Unknown'
+			'author' => 'Unknown',
 		];
 		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
 		$id = $_REQUEST['id'];
-		if (!empty($id)){
+		if (!empty($id)) {
 			$recordDriver = new EbscohostRecordDriver($id);
-			if ($recordDriver->isValid()){
+			if ($recordDriver->isValid()) {
 				$result['success'] = true;
 				$result['title'] = $recordDriver->getTitle();
 				$result['author'] = $recordDriver->getAuthor();

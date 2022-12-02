@@ -3,35 +3,30 @@
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/UserLists/ListIndexingLogEntry.php';
 
-class UserLists_IndexingLog extends Admin_IndexingLog
-{
-	function getIndexLogEntryObject(): BaseLogEntry
-	{
+class UserLists_IndexingLog extends Admin_IndexingLog {
+	function getIndexLogEntryObject(): BaseLogEntry {
 		return new ListIndexingLogEntry();
 	}
 
-	function getTemplateName() : string
-	{
+	function getTemplateName(): string {
 		return 'listIndexingLog.tpl';
 	}
 
-	function getTitle() : string
-	{
+	function getTitle(): string {
 		return 'User List Indexing Log';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'UserLists';
 	}
 
-	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
-		if ($indexingObject instanceof ListIndexingLogEntry){
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
+		if ($indexingObject instanceof ListIndexingLogEntry) {
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#user_lists', 'User Lists');
@@ -39,8 +34,7 @@ class UserLists_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'user_lists';
 	}
 }

@@ -36,10 +36,10 @@ class DevelopmentTask extends DataObject {
 			2 => 'Feature',
 			3 => 'Code Maintenance',
 			4 => 'Server Maintenance',
-			5 => 'Support'
+			5 => 'Support',
 		];
 		$availableReleases = [
-			0 => 'None'
+			0 => 'None',
 		];
 		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
 		$aspenReleases = new AspenRelease();
@@ -50,7 +50,7 @@ class DevelopmentTask extends DataObject {
 		}
 
 		$availableSprints = [
-			0 => 'None'
+			0 => 'None',
 		];
 		require_once ROOT_DIR . '/sys/Development/DevelopmentSprint.php';
 		$sprints = new DevelopmentSprint();
@@ -61,7 +61,7 @@ class DevelopmentTask extends DataObject {
 		}
 
 		$availableEpics = [
-			0 => 'None'
+			0 => 'None',
 		];
 		require_once ROOT_DIR . '/sys/Development/DevelopmentEpic.php';
 		$epic = new DevelopmentEpic();
@@ -83,7 +83,7 @@ class DevelopmentTask extends DataObject {
 			7 => 'QA Changes needed',
 			8 => 'Verify after Deploy',
 			9 => 'Done!!',
-			10 => "Won't Do"
+			10 => "Won't Do",
 		];
 		$storyPoints = [
 			0 => 0,
@@ -95,7 +95,7 @@ class DevelopmentTask extends DataObject {
 			5 => 5,
 			8 => 8,
 			13 => 13,
-			21 => 21
+			21 => 21,
 		];
 
 		require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
@@ -115,7 +115,7 @@ class DevelopmentTask extends DataObject {
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
+				'description' => 'The unique id',
 			],
 			'taskType' => [
 				'property' => 'taskType',
@@ -123,7 +123,7 @@ class DevelopmentTask extends DataObject {
 				'values' => $taskTypes,
 				'label' => 'Task Types',
 				'description' => 'The type of the task',
-				'default' => 0
+				'default' => 0,
 			],
 			'name' => [
 				'property' => 'name',
@@ -132,7 +132,7 @@ class DevelopmentTask extends DataObject {
 				'description' => 'The name of the task',
 				'maxLength' => 255,
 				'required' => true,
-				'canBatchUpdate' => false
+				'canBatchUpdate' => false,
 			],
 			'epicId' => [
 				'property' => 'epicId',
@@ -141,14 +141,14 @@ class DevelopmentTask extends DataObject {
 				'description' => 'The epic related to the task (if any)',
 				'values' => $availableEpics,
 				'required' => true,
-				'canBatchUpdate' => true
+				'canBatchUpdate' => true,
 			],
 			'dueDate' => [
 				'property' => 'dueDate',
 				'type' => 'date',
 				'values' => $taskTypes,
 				'label' => 'Due Date',
-				'description' => 'When the task needs to be completed by'
+				'description' => 'When the task needs to be completed by',
 			],
 			'dueDateComment' => [
 				'property' => 'dueDateComment',
@@ -157,7 +157,7 @@ class DevelopmentTask extends DataObject {
 				'description' => 'More information about the due date',
 				'maxLength' => 255,
 				'required' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'description' => [
 				'property' => 'description',
@@ -165,7 +165,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Description',
 				'description' => 'A Description for the Task',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'relatedComponents' => [
 				'property' => 'relatedComponents',
@@ -181,7 +181,7 @@ class DevelopmentTask extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'sprintId' => [
 				'property' => 'sprintId',
@@ -190,7 +190,7 @@ class DevelopmentTask extends DataObject {
 				'description' => 'The sprint related to the task (if any)',
 				'values' => $availableSprints,
 				'canBatchUpdate' => true,
-				'default' => 0
+				'default' => 0,
 			],
 			'releaseId' => [
 				'property' => 'releaseId',
@@ -199,7 +199,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Release in',
 				'description' => 'The planned release for the task',
 				'default' => 0,
-				'canBatchUpdate' => true
+				'canBatchUpdate' => true,
 			],
 			'status' => [
 				'property' => 'status',
@@ -208,7 +208,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Status',
 				'description' => 'The current status of the task',
 				'default' => 0,
-				'canBatchUpdate' => true
+				'canBatchUpdate' => true,
 			],
 			'storyPoints' => [
 				'property' => 'storyPoints',
@@ -216,7 +216,7 @@ class DevelopmentTask extends DataObject {
 				'values' => $storyPoints,
 				'label' => 'Story Points',
 				'description' => 'The number of story points assigned to the task',
-				'default' => 0
+				'default' => 0,
 			],
 			'devTestingNotes' => [
 				'property' => 'devTestingNotes',
@@ -224,7 +224,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Testing Notes (from Development)',
 				'description' => 'Testing notes to aid in testing the fix',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'qaFeedback' => [
 				'property' => 'qaFeedback',
@@ -232,7 +232,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'QA Feedback (from testing)',
 				'description' => 'Feedback from testing the fix',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'releaseNoteText' => [
 				'property' => 'releaseNoteText',
@@ -240,7 +240,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Descriptive Text to add to Release Notes',
 				'description' => 'The text to be added to release notes',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'newSettingsAdded' => [
 				'property' => 'newSettingsAdded',
@@ -248,7 +248,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'New Settings Added (for release notes)',
 				'description' => 'New settings that were added as part of development',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'suggestedForCommunityDev' => [
 				'property' => 'suggestedForCommunityDev',
@@ -256,7 +256,7 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Suggested for Community Development',
 				'description' => 'If this is a good development for anyone in the community',
 				'hideInLists' => true,
-				'default' => 0
+				'default' => 0,
 			],
 			'relatedTickets' => [
 				'property' => 'relatedTickets',
@@ -272,7 +272,7 @@ class DevelopmentTask extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'requestingPartners' => [
 				'property' => 'requestingPartners',
@@ -288,12 +288,12 @@ class DevelopmentTask extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 		];
 	}
 
-	function getEditLink($context) : string{
+	function getEditLink($context): string {
 		return '/Development/Tasks?objectAction=edit&id=' . $this->id;
 	}
 
@@ -336,9 +336,9 @@ class DevelopmentTask extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "epicId") {
 			$this->_epicId = $value;
-		} else if ($name == "sprintId") {
+		} elseif ($name == "sprintId") {
 			$this->_sprintId = $value;
-		} else if ($name == "relatedTickets") {
+		} elseif ($name == "relatedTickets") {
 			$this->_relatedTickets = $value;
 		} elseif ($name == "relatedComponents") {
 			$this->_relatedComponents = $value;
@@ -376,20 +376,20 @@ class DevelopmentTask extends DataObject {
 		return $ret;
 	}
 
-	private function saveRelatedEpic(){
-		if ($this->id){
+	private function saveRelatedEpic() {
+		if ($this->id) {
 			require_once ROOT_DIR . '/sys/Development/TaskEpicLink.php';
-			if ($this->_epicId === 0){
+			if ($this->_epicId === 0) {
 				$epicTaskLink = new TaskEpicLink();
 				$epicTaskLink->taskId = $this->id;
 				$epicTaskLink->delete(true);
-			}else{
+			} else {
 				$epicTaskLink = new TaskEpicLink();
 				$epicTaskLink->taskId = $this->id;
-				if ($epicTaskLink->find(true)){
+				if ($epicTaskLink->find(true)) {
 					$epicTaskLink->epicId = $this->_epicId;
 					$epicTaskLink->update();
-				}else{
+				} else {
 					$epicTaskLink->epicId = $this->_epicId;
 					$epicTaskLink->insert();
 				}
@@ -397,20 +397,20 @@ class DevelopmentTask extends DataObject {
 		}
 	}
 
-	private function saveRelatedSprint(){
-		if ($this->id){
+	private function saveRelatedSprint() {
+		if ($this->id) {
 			require_once ROOT_DIR . '/sys/Development/TaskSprintLink.php';
-			if ($this->_sprintId === 0){
+			if ($this->_sprintId === 0) {
 				$taskSprintLink = new TaskSprintLink();
 				$taskSprintLink->taskId = $this->id;
 				$taskSprintLink->delete(true);
-			}else{
+			} else {
 				$taskSprintLink = new TaskSprintLink();
 				$taskSprintLink->taskId = $this->id;
-				if ($taskSprintLink->find(true)){
+				if ($taskSprintLink->find(true)) {
 					$taskSprintLink->sprintId = $this->_sprintId;
 					$taskSprintLink->update();
-				}else{
+				} else {
 					$taskSprintLink->sprintId = $this->_sprintId;
 					$taskSprintLink->insert();
 				}

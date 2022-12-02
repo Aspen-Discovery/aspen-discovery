@@ -4,10 +4,8 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 
-class TwoFactorAuth extends ObjectEditor
-{
-	function launch()
-	{
+class TwoFactorAuth extends ObjectEditor {
+	function launch() {
 		global $interface;
 		global $library;
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
@@ -20,68 +18,63 @@ class TwoFactorAuth extends ObjectEditor
 			parent::launch();
 		}
 	}
-	
-	function getObjectType() : string {
+
+	function getObjectType(): string {
 		return 'TwoFactorAuthSetting';
 	}
 
-	function getToolName() : string {
+	function getToolName(): string {
 		return 'TwoFactorAuth';
 	}
 
-	function getPageTitle() : string {
+	function getPageTitle(): string {
 		return 'Two-Factor Authentication Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array {
-		$list = array();
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new TwoFactorAuthSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
 
-	function getDefaultSort() : string {
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return TwoFactorAuthSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
-		$actions = array();
+	function getAdditionalObjectActions($existingObject): array {
+		$actions = [];
 		if ($existingObject && $existingObject->id != '') {
-			$actions[] = array(
+			$actions[] = [
 				'text' => 'Recover User Account',
 				'url' => '/Admin/TwoFactorAuth?objectAction=recoverAccount&id=' . $existingObject->id,
-			);
+			];
 		}
 
 		return $actions;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
@@ -89,13 +82,11 @@ class TwoFactorAuth extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Two-Factor Authentication');
 	}
 }

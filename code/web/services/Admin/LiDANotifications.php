@@ -4,45 +4,54 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotification.php';
 
-class Admin_LiDANotifications extends ObjectEditor
-{
+class Admin_LiDANotifications extends ObjectEditor {
 
-	function getObjectType() : string{
+	function getObjectType(): string {
 		return 'LiDANotification';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'LiDANotifications';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'LiDA Notifications';
 	}
-	function canDelete(){
-		return UserAccount::userHasPermission(['Send Notifications to All Libraries', 'Send Notifications to All Locations', 'Send Notifications to Home Library', 'Send Notifications to Home Location', 'Send Notifications to Home Library Locations']);
+
+	function canDelete() {
+		return UserAccount::userHasPermission([
+			'Send Notifications to All Libraries',
+			'Send Notifications to All Locations',
+			'Send Notifications to Home Library',
+			'Send Notifications to Home Location',
+			'Send Notifications to Home Library Locations',
+		]);
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
+
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new LiDANotification();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingMessages = true;
-		if (!UserAccount::userHasPermission('Send Notifications to All Libraries')){
+		if (!UserAccount::userHasPermission('Send Notifications to All Libraries')) {
 			$librarySystemMessage = new LiDANotificationLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			if ($library != null){
+			if ($library != null) {
 				$librarySystemMessage->libraryId = $library->libraryId;
 				$systemMessagesForLibrary = [];
 				$librarySystemMessage->find();
-				while ($librarySystemMessage->fetch()){
+				while ($librarySystemMessage->fetch()) {
 					$systemMessagesForLibrary[] = $librarySystemMessage->lidaNotificationId;
 				}
 				if (count($systemMessagesForLibrary) > 0) {
 					$object->whereAddIn('id', $systemMessagesForLibrary, false);
-				}else{
+				} else {
 					$userHasExistingMessages = false;
 				}
 			}
 		}
-		$list = array();
+		$list = [];
 		if ($userHasExistingMessages) {
 			$object->find();
 			while ($object->fetch()) {
@@ -51,25 +60,28 @@ class Admin_LiDANotifications extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'id asc';
 	}
-	function getObjectStructure() : array{
+
+	function getObjectStructure(): array {
 		return LiDANotification::getObjectStructure();
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
-	function getInstructions() : string
-	{
+
+	function getInstructions(): string {
 		return '';
 	}
-	function getBreadcrumbs() : array
-	{
+
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
@@ -77,28 +89,31 @@ class Admin_LiDANotifications extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'local_enrichment';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Send Notifications to All Libraries', 'Send Notifications to All Locations', 'Send Notifications to Home Library', 'Send Notifications to Home Location', 'Send Notifications to Home Library Locations']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Send Notifications to All Libraries',
+			'Send Notifications to All Locations',
+			'Send Notifications to Home Library',
+			'Send Notifications to Home Location',
+			'Send Notifications to Home Library Locations',
+		]);
 	}
 
-	function getInitializationJs() : string
-	{
+	function getInitializationJs(): string {
 		return 'AspenDiscovery.Admin.getUrlOptions(); AspenDiscovery.Admin.getDeepLinkFullPath()';
 	}
 
-/*	public function getFilterFields($structure){
-		$filterFields = parent::getFilterFields($structure);
+	/*	public function getFilterFields($structure){
+			$filterFields = parent::getFilterFields($structure);
 
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
-		$filterFields['locations'] = array('property' => 'locations', 'type' => 'enum', 'label' => 'Location', 'values' => $locationList, 'description' => 'Whether or not closed tickets are shown', 'readOnly'=>true);
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications'));
+			$filterFields['locations'] = array('property' => 'locations', 'type' => 'enum', 'label' => 'Location', 'values' => $locationList, 'description' => 'Whether or not closed tickets are shown', 'readOnly'=>true);
 
-		ksort($filterFields);
-		return $filterFields;
-	}*/
+			ksort($filterFields);
+			return $filterFields;
+		}*/
 }

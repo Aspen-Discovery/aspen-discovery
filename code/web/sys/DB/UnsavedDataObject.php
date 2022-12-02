@@ -1,23 +1,21 @@
 <?php
 
 
-class UnsavedDataObject extends DataObject
-{
-	function __get($name){
+class UnsavedDataObject extends DataObject {
+	function __get($name) {
 		return $this->_data[$name];
 	}
 
-	public function setProperty($propertyName, $newValue, $propertyStructure) : bool
-	{
+	public function setProperty($propertyName, $newValue, $propertyStructure): bool {
 		$this->__set($propertyName, $newValue);
 		return true;
 	}
 
-	function __set($name, $value){
+	function __set($name, $value) {
 		$this->_data[$name] = $value;
 	}
 
-	function serializeDataToJson($structure){
+	function serializeDataToJson($structure) {
 
 		$dataToEncode = [];
 		foreach ($this->_data as $fieldId => $value) {
@@ -27,7 +25,7 @@ class UnsavedDataObject extends DataObject
 		return json_encode($dataToEncode);
 	}
 
-	function getPrintableHtmlData($structure){
+	function getPrintableHtmlData($structure) {
 		$printableData = '';
 		foreach ($this->_data as $fieldId => $value) {
 			$fieldLabel = $structure[$fieldId]['label'];
@@ -36,7 +34,7 @@ class UnsavedDataObject extends DataObject
 		return $printableData;
 	}
 
-	function getPrintableTextData($structure){
+	function getPrintableTextData($structure) {
 		$printableData = '';
 		foreach ($this->_data as $fieldId => $value) {
 			$fieldLabel = $structure[$fieldId]['label'];

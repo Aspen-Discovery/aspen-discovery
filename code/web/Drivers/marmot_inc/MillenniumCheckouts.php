@@ -43,7 +43,7 @@ class MillenniumCheckouts {
 	 */
 	public function getCheckouts(User $user, IndexingProfile $indexingProfile): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		$checkedOutTitles = array();
+		$checkedOutTitles = [];
 		global $timer;
 		$timer->logTime("Ready to load checked out titles from Millennium");
 		//Load the information from millennium using CURL
@@ -59,7 +59,7 @@ class MillenniumCheckouts {
 
 			$sRows = preg_split("/<tr([^>]*)>/", $s);
 			$sCount = 0;
-			$sKeys = array_pad(array(), 10, "");
+			$sKeys = array_pad([], 10, "");
 
 			//Get patron's location to determine if renewals are allowed.
 			global $locationSingleton;
@@ -70,7 +70,7 @@ class MillenniumCheckouts {
 				$patronCanRenew = false;
 				if ($patronLocation->ptypesToAllowRenewals == '*') {
 					$patronCanRenew = true;
-				} else if (preg_match("/^({$patronLocation->ptypesToAllowRenewals})$/", $patronPType)) {
+				} elseif (preg_match("/^({$patronLocation->ptypesToAllowRenewals})$/", $patronPType)) {
 					$patronCanRenew = true;
 				}
 			} else {
@@ -91,7 +91,7 @@ class MillenniumCheckouts {
 					//print_r($scols[$i]);
 					if ($sCount == 1) {
 						$sKeys[$i] = $scols[$i];
-					} else if ($sCount > 1) {
+					} elseif ($sCount > 1) {
 
 						if (stripos($sKeys[$i], "TITLE") > -1) {
 							if (preg_match('/.*?<a href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $scols[$i], $matches)) {
@@ -128,7 +128,7 @@ class MillenniumCheckouts {
 							if (preg_match('/(.*)Renewed (\d+) time(?:s)?/i', $due, $matches)) {
 								$due = trim($matches[1]);
 								$renewCount = $matches[2];
-							} else if (preg_match('/(.*)\+\d+ HOLD.*/i', $due, $matches)) {
+							} elseif (preg_match('/(.*)\+\d+ HOLD.*/i', $due, $matches)) {
 								$due = trim($matches[1]);
 							}
 							if (preg_match('/(\d{2}-\d{2}-\d{2})/', $due, $dueMatches)) {
@@ -154,7 +154,7 @@ class MillenniumCheckouts {
 
 
 						if (stripos($sKeys[$i], "RENEW") > -1) {
-							$matches = array();
+							$matches = [];
 							if (preg_match('/<input\s*type="checkbox"\s*name="renew(\d+)"\s*id="renew(\d+)"\s*value="(.*?)"\s*\/>/', $scols[$i], $matches)) {
 								$curTitle->canRenew = $patronCanRenew;
 								$curTitle->itemIndex = $matches[1];
@@ -213,21 +213,21 @@ class MillenniumCheckouts {
 		$checkedOutPageText = $driver->curlWrapper->curlGetPage($curl_url); // TODO Initial page load needed?
 
 		//Post renewal information
-		$renewAllPostVariables = array(
+		$renewAllPostVariables = [
 			'currentsortorder' => 'current_checkout',
 			'renewall' => 'YES',
-		);
+		];
 
 		$checkedOutPageText = $driver->curlWrapper->curlPostPage($curl_url, $renewAllPostVariables);
 		//$logger->log("Result of Renew All\r\n" . $checkedOutPageText, Logger::LOG_NOTICE);
 
 		//Clear the existing patron info and get new information.
-		$renew_result = array(
+		$renew_result = [
 			'success' => false,
-			'message' => array(),
+			'message' => [],
 			'Renewed' => 0,
-			'NotRenewed' => 0
-		);
+			'NotRenewed' => 0,
+		];
 		$renew_result['Total'] = $curCheckedOut;
 
 		// pattern from marmot sierra :  <b>  RENEWED</b>
@@ -307,11 +307,11 @@ class MillenniumCheckouts {
 		// Loading this page is not necessary in most cases, but if the patron has a Staff ptype we go into staff mode which makes this page load necessary.
 		$driver->curlWrapper->curlGetPage($curl_url);
 
-		$renewPostVariables = array(
+		$renewPostVariables = [
 			'currentsortorder' => 'current_checkout',
 			'renewsome' => 'YES',
 			'renew' . $itemIndex => $itemId,
-		);
+		];
 		$checkedOutPageText = $driver->curlWrapper->curlPostPage($curl_url, $renewPostVariables);
 
 		//Parse the checked out titles into individual rows
@@ -352,7 +352,7 @@ class MillenniumCheckouts {
 							if (strcasecmp($title, 'INTERLIBRARY LOAN MATERIAL') === 0) {
 								$message = "<p style=\"font-style:italic\">$title</p><p>" . translate([
 										'text' => 'Unable to renew interlibrary loan materials',
-										'isPublicFacing' => true
+										'isPublicFacing' => true,
 									]) . "</p>";
 							} else {
 								$message = "<p style=\"font-style:italic\">$title</p><p>Unable to renew: $msg.</p>";
@@ -381,10 +381,10 @@ class MillenniumCheckouts {
 			$patron->forceReloadOfCheckouts();
 		}
 
-		return array(
+		return [
 			'itemId' => $itemId,
 			'success' => $success,
-			'message' => $message
-		);
+			'message' => $message,
+		];
 	}
 }

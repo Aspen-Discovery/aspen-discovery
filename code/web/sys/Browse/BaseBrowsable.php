@@ -1,8 +1,7 @@
 <?php
 
 
-abstract class BaseBrowsable extends DataObject
-{
+abstract class BaseBrowsable extends DataObject {
 	public $source;                    //varchar(255)
 	public $searchTerm;
 	public $defaultFilter;
@@ -10,8 +9,7 @@ abstract class BaseBrowsable extends DataObject
 	public $sourceCourseReserveId;
 	public $defaultSort;
 
-	public function getSolrSort()
-	{
+	public function getSolrSort() {
 		if ($this->defaultSort == 'relevance') {
 			return 'relevance';
 		} elseif ($this->defaultSort == 'popularity') {
@@ -40,8 +38,7 @@ abstract class BaseBrowsable extends DataObject
 	 *
 	 * @return boolean
 	 */
-	public function updateFromSearch($searchObj)
-	{
+	public function updateFromSearch($searchObj) {
 		$this->source = $searchObj->getEngineName();
 		//Search terms
 		$searchTerms = $searchObj->getSearchTerms();
@@ -51,7 +48,7 @@ abstract class BaseBrowsable extends DataObject
 			} else {
 				if (!isset($searchTerms[0]['index'])) {
 					$this->searchTerm = $searchObj->displayQuery();
-				} else if ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
+				} elseif ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
 					$this->searchTerm = $searchTerms[0]['lookfor'];
 				} else {
 					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
@@ -65,7 +62,7 @@ abstract class BaseBrowsable extends DataObject
 		$filters = $searchObj->getFilterList();
 		$formattedFilters = '';
 		foreach ($filters as $filter) {
-			foreach ($filter as $filterValue){
+			foreach ($filter as $filterValue) {
 				if (strlen($formattedFilters) > 0) {
 					$formattedFilters .= "\r\n";
 				}
@@ -102,32 +99,31 @@ abstract class BaseBrowsable extends DataObject
 		return true;
 	}
 
-	public static function getBrowseSources()
-	{
+	public static function getBrowseSources() {
 		$spotlightSources = [
-			'GroupedWork' => 'Grouped Work Search'
+			'GroupedWork' => 'Grouped Work Search',
 		];
 		global $enabledModules;
-		if (array_key_exists('User Lists', $enabledModules)){
+		if (array_key_exists('User Lists', $enabledModules)) {
 			$spotlightSources['List'] = 'Public List';
 		}
-		if (array_key_exists('Course Reserves', $enabledModules)){
+		if (array_key_exists('Course Reserves', $enabledModules)) {
 			$spotlightSources['CourseReserve'] = 'Course Reserve';
 			$spotlightSources['CourseReserves'] = 'Course Reserves search';
 		}
-		if (array_key_exists('EBSCO EDS', $enabledModules)){
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$spotlightSources['EbscoEds'] = 'EBSCO EDS Search';
 		}
-		if (array_key_exists('Events', $enabledModules)){
+		if (array_key_exists('Events', $enabledModules)) {
 			$spotlightSources['Events'] = 'Events Search';
 		}
-		if (array_key_exists('Genealogy', $enabledModules)){
+		if (array_key_exists('Genealogy', $enabledModules)) {
 			$spotlightSources['Genealogy'] = 'Genealogy Search';
 		}
-		if (array_key_exists('Open Archives', $enabledModules)){
+		if (array_key_exists('Open Archives', $enabledModules)) {
 			$spotlightSources['OpenArchives'] = 'Open Archives Search';
 		}
-		if (array_key_exists('Web Indexer', $enabledModules)){
+		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$spotlightSources['Websites'] = 'Website Search';
 		}
 

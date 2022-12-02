@@ -7,8 +7,7 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  *
  * This class provides recommendations displaying facets beside search results
  */
-class SideFacets implements RecommendationInterface
-{
+class SideFacets implements RecommendationInterface {
 	/** @var  SearchObject_SolrSearcher $searchObject */
 	private $searchObject;
 	private $facetSettings;
@@ -32,8 +31,8 @@ class SideFacets implements RecommendationInterface
 		$mainSection = empty($params[0]) ? 'Results' : $params[0];
 
 		$this->facetSettings = $searchObject->getFacetConfig();
-		$this->mainFacets = array();
-		foreach ($this->facetSettings as $facetName => $facet){
+		$this->mainFacets = [];
+		foreach ($this->facetSettings as $facetName => $facet) {
 			if (!$facet->showAboveResults) {
 				$this->mainFacets[$facetName] = $facet->displayName;
 				$this->facets[$facet->facetName] = $facet;
@@ -70,9 +69,9 @@ class SideFacets implements RecommendationInterface
 
 		//Get applied facets
 		$filterList = $this->searchObject->getFilterList();
-		foreach ($filterList as $facetKey => $facet){
+		foreach ($filterList as $facetKey => $facet) {
 			//Remove any top facets since the removal links are displayed above results
-			if (strpos($facet[0]['field'], 'availability_toggle') === 0){
+			if (strpos($facet[0]['field'], 'availability_toggle') === 0) {
 				unset($filterList[$facetKey]);
 			}
 		}
@@ -82,10 +81,10 @@ class SideFacets implements RecommendationInterface
 		$sideFacets = $this->searchObject->getFacetList($this->mainFacets);
 
 		$lockSection = $this->searchObject->getSearchName();
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
 			$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
-		}else{
+		} else {
 			$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
 		}
 		$lockedFacets = isset($lockedFacets[$lockSection]) ? $lockedFacets[$lockSection] : [];
@@ -102,10 +101,10 @@ class SideFacets implements RecommendationInterface
 
 				//Do special processing of facets
 				if (preg_match('/time_since_added/i', $facetKey)) {
-					$timeSinceAddedFacet   = $this->updateTimeSinceAddedFacet($facet);
+					$timeSinceAddedFacet = $this->updateTimeSinceAddedFacet($facet);
 					$sideFacets[$facetKey] = $timeSinceAddedFacet;
 				} elseif ($facetKey == 'rating_facet') {
-					$userRatingFacet       = $this->updateUserRatingsFacet($facet);
+					$userRatingFacet = $this->updateUserRatingsFacet($facet);
 					$sideFacets[$facetKey] = $userRatingFacet;
 				} else {
 					$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
@@ -115,9 +114,9 @@ class SideFacets implements RecommendationInterface
 				$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
 				$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
 			}
-		}else{
+		} else {
 			//Process other searchers to add more facet popup
-			foreach ($sideFacets as $facetKey => $facet){
+			foreach ($sideFacets as $facetKey => $facet) {
 				/** @var FacetSetting $facetSetting */
 				$facetSetting = $this->facetSettings[$facetKey];
 				$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
@@ -127,23 +126,23 @@ class SideFacets implements RecommendationInterface
 		$interface->assign('sideFacetSet', $sideFacets);
 	}
 
-	private function updateTimeSinceAddedFacet($timeSinceAddedFacet){
+	private function updateTimeSinceAddedFacet($timeSinceAddedFacet) {
 		//See if there is a value selected
 		$valueSelected = false;
-		foreach ($timeSinceAddedFacet['list'] as $facetValue){
-			if (isset($facetValue['isApplied']) && $facetValue['isApplied'] == true){
+		foreach ($timeSinceAddedFacet['list'] as $facetValue) {
+			if (isset($facetValue['isApplied']) && $facetValue['isApplied'] == true) {
 				$valueSelected = true;
 			}
 		}
-		if ($valueSelected){
+		if ($valueSelected) {
 			//Get rid of all values except the selected value which will allow the value to be removed
 			//We remove the other values because it is confusing to have results both longer and shorter than the current value.
-			foreach ($timeSinceAddedFacet['list'] as $facetKey => $facetValue){
-				if (!isset($facetValue['isApplied']) || $facetValue['isApplied'] == false){
+			foreach ($timeSinceAddedFacet['list'] as $facetKey => $facetValue) {
+				if (!isset($facetValue['isApplied']) || $facetValue['isApplied'] == false) {
 					unset($timeSinceAddedFacet['list'][$facetKey]);
 				}
 			}
-		}else{
+		} else {
 			//Make sure to show all values
 			$timeSinceAddedFacet['valuesToShow'] = count($timeSinceAddedFacet['list']);
 			//Reverse the display of the list so Day is first and year is last
@@ -152,18 +151,25 @@ class SideFacets implements RecommendationInterface
 		return $timeSinceAddedFacet;
 	}
 
-	private function updateUserRatingsFacet($userRatingFacet){
+	private function updateUserRatingsFacet($userRatingFacet) {
 		global $interface;
 		$ratingApplied = false;
-		$ratingLabels = array();
-		foreach ($userRatingFacet['list'] as $facetValue ){
-			if ($facetValue['isApplied']){
+		$ratingLabels = [];
+		foreach ($userRatingFacet['list'] as $facetValue) {
+			if ($facetValue['isApplied']) {
 				$ratingApplied = true;
-				$ratingLabels = array($facetValue['value']);
+				$ratingLabels = [$facetValue['value']];
 			}
 		}
-		if (!$ratingApplied){
-			$ratingLabels =array('fiveStar','fourStar','threeStar','twoStar','oneStar', 'Unrated');
+		if (!$ratingApplied) {
+			$ratingLabels = [
+				'fiveStar',
+				'fourStar',
+				'threeStar',
+				'twoStar',
+				'oneStar',
+				'Unrated',
+			];
 		}
 		$interface->assign('ratingLabels', $ratingLabels);
 		return $userRatingFacet;
@@ -188,8 +194,7 @@ class SideFacets implements RecommendationInterface
 	 * @param FacetSetting $facetSetting
 	 * @return array
 	 */
-	private function applyFacetSettings($facetKey, array $sideFacets, FacetSetting $facetSetting, $lockedFacets): array
-	{
+	private function applyFacetSettings($facetKey, array $sideFacets, FacetSetting $facetSetting, $lockedFacets): array {
 		//Do other handling of the display
 		if ($facetSetting->sortMode == 'alphabetically') {
 			asort($sideFacets[$facetKey]['list']);
@@ -222,9 +227,9 @@ class SideFacets implements RecommendationInterface
 				$sideFacets[$facetKey]['list'] = array_slice($facetsList, 0, 5);
 			}
 
-			$sortedList = array();
+			$sortedList = [];
 			foreach ($facetsList as $key => $value) {
-				$sortedList[strtolower($key).$key] = $value;
+				$sortedList[strtolower($key) . $key] = $value;
 			}
 			ksort($sortedList);
 			$sideFacets[$facetKey]['sortedList'] = $sortedList;

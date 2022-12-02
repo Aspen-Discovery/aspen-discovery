@@ -1,10 +1,8 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 
-class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
-{
-	public function __construct()
-	{
+class SearchObject_ListsSearcher extends SearchObject_SolrSearcher {
+	public function __construct() {
 		parent::__construct();
 
 		global $configArray;
@@ -31,8 +29,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) &&
-			is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -43,10 +40,10 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		$this->sortOptions = array(
+		$this->sortOptions = [
 			'relevance' => 'Best Match',
-			'title' => 'Title'
-		);
+			'title' => 'Title',
+		];
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -63,8 +60,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null)
-	{
+	public function init($searchSource = null) {
 		// Call the standard initialization routine in the parent:
 		parent::init('lists');
 
@@ -75,7 +71,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if ($restored instanceof AspenError) {
+		} elseif ($restored instanceof AspenError) {
 			return false;
 		}
 
@@ -96,7 +92,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 
 		//Validate we got good search terms
 		foreach ($this->searchTerms as &$searchTerm) {
-			if (isset($searchTerm['index'])){
+			if (isset($searchTerm['index'])) {
 				if ($searchTerm['index'] == 'Keyword') {
 					$searchTerm['index'] = 'ListsKeyword';
 				} elseif ($searchTerm['index'] == 'Title') {
@@ -104,8 +100,8 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 				} elseif ($searchTerm['index'] == 'Author') {
 					$searchTerm['index'] = 'ListsAuthor';
 				}
-			}else{
-				foreach ($searchTerm['group'] as &$group){
+			} else {
+				foreach ($searchTerm['group'] as &$group) {
 					if ($group['field'] == 'Keyword') {
 						$group['field'] = 'ListsKeyword';
 					} elseif ($group['field'] == 'Title') {
@@ -125,12 +121,23 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		return true;
 	} // End init()
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			'ListsKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'ListsTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'ListsAuthor' => translate(['text'=>'Author', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'ListsKeyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'ListsTitle' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'ListsAuthor' => translate([
+				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
@@ -138,29 +145,24 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 	 * Turn our results into an Excel document
 	 * @param array $result
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null) {
 		// TODO: Implement buildExcel() method.
 	}
 
-	public function getUniqueField()
-	{
+	public function getUniqueField() {
 		return 'id';
 	}
 
-	public function getRecordDriverForResult($current)
-	{
+	public function getRecordDriverForResult($current) {
 		require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
 		return new ListsRecordDriver($current);
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'listsSearches';
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -169,8 +171,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'ListsTitle') {
 			$suggestionHandler = 'title_suggest';
@@ -182,8 +183,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 	}
 
 	//TODO: Convert this to use definitions so they can be customized in admin
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$author = new LibraryFacetSetting();
@@ -202,12 +202,11 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'Lists';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'ListsKeyword';
 	}
 }

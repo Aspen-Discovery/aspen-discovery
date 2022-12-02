@@ -21,7 +21,7 @@ class DevelopmentEpic extends DataObject {
 	public $_relatedComponents;
 	public $_totalStoryPoints;
 
-	public static function getObjectStructure() : array {
+	public static function getObjectStructure(): array {
 		$privateStatuses = [
 			0 => 'Under Consideration',
 			1 => 'Planned, Researching',
@@ -33,7 +33,7 @@ class DevelopmentEpic extends DataObject {
 			7 => 'Needs Review',
 			8 => 'Pending Release',
 			9 => 'Done!!',
-			10 => "Won't Do"
+			10 => "Won't Do",
 		];
 
 		require_once ROOT_DIR . '/sys/Development/EpicPartnerLink.php';
@@ -53,7 +53,7 @@ class DevelopmentEpic extends DataObject {
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id'
+				'description' => 'The unique id',
 			],
 			'name' => [
 				'property' => 'name',
@@ -62,7 +62,7 @@ class DevelopmentEpic extends DataObject {
 				'description' => 'The name of the epic',
 				'maxLength' => 255,
 				'required' => true,
-				'canBatchUpdate' => false
+				'canBatchUpdate' => false,
 			],
 			'description' => [
 				'property' => 'description',
@@ -70,35 +70,35 @@ class DevelopmentEpic extends DataObject {
 				'label' => 'Description',
 				'description' => 'A Description for the Task',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
-			'linkToDesign' => array(
+			'linkToDesign' => [
 				'property' => 'linkToDesign',
 				'type' => 'url',
 				'label' => 'Link To Design',
 				'description' => 'An optional link to where the designs are located',
-				'maxLength' => 255
-			),
-			'linkToRequirements' => array(
+				'maxLength' => 255,
+			],
+			'linkToRequirements' => [
 				'property' => 'linkToRequirements',
 				'type' => 'url',
 				'label' => 'Link To Requirements',
 				'description' => 'An optional link to where the requirements are located',
-				'maxLength' => 255
-			),
+				'maxLength' => 255,
+			],
 			'internalComments' => [
 				'property' => 'internalComments',
 				'type' => 'html',
 				'label' => 'Internal Comments',
 				'description' => 'Internal Comments on the Epic',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'dueDate' => [
 				'property' => 'dueDate',
 				'type' => 'date',
 				'label' => 'Due Date',
-				'description' => 'A date we need to deliver the epic by'
+				'description' => 'A date we need to deliver the epic by',
 			],
 			'dueDateComment' => [
 				'property' => 'dueDateComment',
@@ -106,7 +106,7 @@ class DevelopmentEpic extends DataObject {
 				'label' => 'Due Date Comment',
 				'description' => 'Comments about the due date',
 				'canBatchUpdate' => false,
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'privateStatus' => [
 				'property' => 'privateStatus',
@@ -114,7 +114,7 @@ class DevelopmentEpic extends DataObject {
 				'values' => $privateStatuses,
 				'label' => 'Status',
 				'description' => 'The current status of the epic',
-				'default' => 0
+				'default' => 0,
 			],
 			'relatedComponents' => [
 				'property' => 'relatedComponents',
@@ -130,7 +130,7 @@ class DevelopmentEpic extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'requestingPartners' => [
 				'property' => 'requestingPartners',
@@ -146,7 +146,7 @@ class DevelopmentEpic extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'relatedTasks' => [
 				'property' => 'relatedTasks',
@@ -162,13 +162,13 @@ class DevelopmentEpic extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 			'totalStoryPoints' => [
 				'property' => 'totalStoryPoints',
 				'type' => 'label',
 				'label' => 'Total Story Points',
-				'description' => 'The total number of story points assigned to the release'
+				'description' => 'The total number of story points assigned to the release',
 			],
 		];
 	}

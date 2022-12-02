@@ -1,9 +1,8 @@
 <?php
 
 
-class WorldPay_Complete extends Action
-{
-	public function launch(){
+class WorldPay_Complete extends Action {
+	public function launch() {
 		global $logger;
 		$logger->log("Completing FIS WorldPay Payment", Logger::LOG_ERROR);
 
@@ -19,8 +18,7 @@ class WorldPay_Complete extends Action
 		die();
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return [];
 	}
 }

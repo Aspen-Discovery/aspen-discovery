@@ -6,16 +6,17 @@ require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 class CiteList extends Action {
 	private $listId;
 	private $listTitle;
+
 	function launch() {
 		global $interface;
 
 		//Get all lists for the user
 
 		// Fetch List object
-		if (isset($_REQUEST['listId'])){
+		if (isset($_REQUEST['listId'])) {
 			$list = new UserList();
 			$list->id = $_GET['listId'];
-			if ($list->find(true)){
+			if ($list->find(true)) {
 				$this->listId = $list->id;
 				$this->listTitle = $list->title;
 			}
@@ -32,12 +33,14 @@ class CiteList extends Action {
 
 		// Display Page
 		$interface->assign('listId', $list->id);
-		$pageTitle = translate(['text' => 'Citations for %1%', '1'=>$list->title]);
+		$pageTitle = translate([
+			'text' => 'Citations for %1%',
+			'1' => $list->title,
+		]);
 		$this->display('listCitations.tpl', $pageTitle, 'Search/home-sidebar.tpl', false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		if (!empty($this->listId)) {

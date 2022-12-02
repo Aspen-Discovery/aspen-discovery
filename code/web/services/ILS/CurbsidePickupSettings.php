@@ -4,61 +4,55 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
 
-class ILS_CurbsidePickupSettings extends ObjectEditor
-{
-	function getObjectType() : string {
+class ILS_CurbsidePickupSettings extends ObjectEditor {
+	function getObjectType(): string {
 		return 'CurbsidePickupSetting';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return "ILS";
 	}
 
-	function getToolName() : string {
+	function getToolName(): string {
 		return 'CurbsidePickupSettings';
 	}
 
-	function getPageTitle() : string {
+	function getPageTitle(): string {
 		return 'Curbside Pickup Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array {
-		$list = array();
+	function getAllObjects($page, $recordsPerPage): array {
+		$list = [];
 
 		$object = new CurbsidePickupSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
 
-	function getDefaultSort() : string {
+	function getDefaultSort(): string {
 		return 'name asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return CurbsidePickupSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
@@ -66,13 +60,11 @@ class ILS_CurbsidePickupSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'ils_integration';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Curbside Pickup');
 	}
 }

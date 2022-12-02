@@ -14,7 +14,7 @@ if (true || $configArray['Site']['isProduction']) {
 	$baseUrl = $configArray['Site']['url'];
 	$sitemapFiles = scandir(ROOT_DIR . '/sitemaps/');
 	foreach ($sitemapFiles as $sitemapFile) {
-		if (strpos($sitemapFile, 'grouped_work_site_map_' . $subdomain) === 0){
+		if (strpos($sitemapFile, 'grouped_work_site_map_' . $subdomain) === 0) {
 			$sitemaps[] = $baseUrl . '/' . $sitemapFile;
 		}
 	}
@@ -22,7 +22,7 @@ if (true || $configArray['Site']['isProduction']) {
 
 echo('<?xml version="1.0" encoding="UTF-8"?>');
 echo('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-foreach ($sitemaps as $sitemap){
+foreach ($sitemaps as $sitemap) {
 	echo("<sitemap><loc>$sitemap</loc></sitemap>");
 }
 echo('</sitemapindex>');

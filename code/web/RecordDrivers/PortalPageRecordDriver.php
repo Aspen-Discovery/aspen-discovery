@@ -2,13 +2,11 @@
 
 require_once 'IndexRecordDriver.php';
 
-class PortalPageRecordDriver extends IndexRecordDriver
-{
+class PortalPageRecordDriver extends IndexRecordDriver {
 	private $valid;
 	private $recordtype;
 
-	public function __construct($recordData)
-	{
+	public function __construct($recordData) {
 		if (is_array($recordData)) {
 			parent::__construct($recordData);
 			$this->valid = true;
@@ -22,18 +20,15 @@ class PortalPageRecordDriver extends IndexRecordDriver
 		$this->recordtype = $this->fields['recordtype'];
 	}
 
-	public function isValid()
-	{
+	public function isValid() {
 		return $this->valid;
 	}
 
-	public function getListEntry($listId = null, $allowEdit = true)
-	{
+	public function getListEntry($listId = null, $allowEdit = true) {
 		return $this->getSearchResult('list');
 	}
 
-	public function getSearchResult($view = 'list')
-	{
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
@@ -50,8 +45,7 @@ class PortalPageRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/WebPage/result.tpl';
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false)
-	{
+	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
 		global $configArray;
 
 		if ($absolutePath) {
@@ -64,47 +58,48 @@ class PortalPageRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule() : string
-	{
+	public function getModule(): string {
 		return 'WebBuilder';
 	}
 
-	public function getStaffView()
-	{
+	public function getStaffView() {
 		// TODO: Implement getStaffView() method.
 	}
 
-	public function getDescription()
-	{
+	public function getDescription() {
 		$portalPage = $this->getPortalPage();
 		if ($portalPage != null && $portalPage->canView()) {
 			if (isset($this->fields['description'])) {
 				return strip_tags($this->fields['description']);
-			}else{
+			} else {
 				return '';
 			}
-		}else{
-			if ($portalPage != null){
+		} else {
+			if ($portalPage != null) {
 				return $portalPage->getHiddenReason();
-			}else{
+			} else {
 				return '';
 			}
 		}
 	}
 
 	private $portalPage;
-	private function getPortalPage() : ?PortalPage {
+
+	private function getPortalPage(): ?PortalPage {
 		if ($this->portalPage == null) {
 			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 			$this->portalPage = new PortalPage();
-			list(,$id) = explode(':',$this->getId());
+			[
+				,
+				$id,
+			] = explode(':', $this->getId());
 			$this->portalPage->id = $id;
 			if ($this->portalPage->find(true)) {
 				return $this->portalPage;
 			} else {
 				return null;
 			}
-		}else{
+		} else {
 			return $this->portalPage;
 		}
 	}
@@ -117,13 +112,11 @@ class PortalPageRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
+	public function getUniqueID() {
 		return $this->fields['id'];
 	}
 
-	public function getLinkUrl($absolutePath = false)
-	{
+	public function getLinkUrl($absolutePath = false) {
 		return $this->fields['source_url'];
 	}
 }

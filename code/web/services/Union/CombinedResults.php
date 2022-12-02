@@ -1,18 +1,18 @@
 <?php
 
-class Union_CombinedResults extends Action{
+class Union_CombinedResults extends Action {
 	function launch() {
 		global $library;
 		global $locationSingleton;
 		global $interface;
-		if (array_key_exists('lookfor', $_REQUEST)){
+		if (array_key_exists('lookfor', $_REQUEST)) {
 			$lookfor = $_REQUEST['lookfor'];
-		}else{
+		} else {
 			$lookfor = '';
 		}
-		if (array_key_exists('searchIndex', $_REQUEST)){
+		if (array_key_exists('searchIndex', $_REQUEST)) {
 			$basicType = $_REQUEST['searchIndex'];
-		}else{
+		} else {
 			$basicType = 'Keyword';
 		}
 		$interface->assign('lookfor', $lookfor);
@@ -20,10 +20,10 @@ class Union_CombinedResults extends Action{
 
 		$location = $locationSingleton->getActiveLocation();
 		$combinedResultsName = 'Combined Results';
-		if ($location && !$location->useLibraryCombinedResultsSettings){
+		if ($location && !$location->useLibraryCombinedResultsSettings) {
 			$combinedResultsName = $location->combinedResultsLabel;
 			$combinedResultSections = $location->combinedResultSections;
-		}else if ($library){
+		} elseif ($library) {
 			$combinedResultsName = $library->combinedResultsLabel;
 			$combinedResultSections = $library->combinedResultSections;
 		}
@@ -33,8 +33,7 @@ class Union_CombinedResults extends Action{
 		$this->display('combined-results.tpl', $combinedResultsName, '');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb(null, 'Combined Search Results');
 		return $breadcrumbs;

@@ -64,26 +64,26 @@ class MyAccount_Fines extends MyAccount {
 								$finePaymentResult->success = true;
 								$finePaymentResult->message = translate([
 									'text' => 'Your payment was processed successfully, thank you.',
-									'isPublicFacing' => true
+									'isPublicFacing' => true,
 								]);
 							} elseif ($payment->completed == 9) {
 								$finePaymentResult->success = false;
 								$finePaymentResult->message = translate([
 									'text' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.',
-									'isPublicFacing' => true
+									'isPublicFacing' => true,
 								]);
 							} else { // i.e., $payment->completed == 0
 								$finePaymentResult->success = false;
 								$finePaymentResult->message = translate([
 									'text' => 'Your payment has not completed processing.',
-									'isPublicFacing' => true
+									'isPublicFacing' => true,
 								]);
 							}
 						} else {
 							$finePaymentResult->success = false;
 							$finePaymentResult->message = translate([
 								'text' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.',
-								'isPublicFacing' => true
+								'isPublicFacing' => true,
 							]);
 						}
 						$interface->assign('finePaymentResult', $finePaymentResult);
@@ -157,7 +157,7 @@ class MyAccount_Fines extends MyAccount {
 						$serviceAccountAuthorization->addCustomHeaders([
 							"X-Auth-Key: $aciSpeedpaySettings->sdkApiAuthKey",
 							"Content-Type: application/x-www-form-urlencoded",
-							"Accept: application/json"
+							"Accept: application/json",
 						], true);
 
 						$postParams = [

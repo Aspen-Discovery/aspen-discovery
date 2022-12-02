@@ -8,8 +8,7 @@ require_once ROOT_DIR . '/sys/Email/AmazonSesRequest.php';
  * https://github.com/daniel-zahariev/php-aws-ses
  *
  */
-class AmazonSesSetting extends DataObject
-{
+class AmazonSesSetting extends DataObject {
 	public $__table = 'amazon_ses_settings';
 	public $id;
 	public $fromAddress;
@@ -22,13 +21,11 @@ class AmazonSesSetting extends DataObject
 	/**
 	 * @return string[]
 	 */
-	function getEncryptedFieldNames() : array
-	{
+	function getEncryptedFieldNames(): array {
 		return ['accessKeySecret'];
 	}
 
-	public static function getObjectStructure() : array
-	{
+	public static function getObjectStructure(): array {
 		$regions = [
 			'us-east-2' => 'US East (Ohio)',
 			'us-east-1' => 'US East (N. Virginia)',
@@ -54,36 +51,86 @@ class AmazonSesSetting extends DataObject
 			'me-south-1' => 'Middle East (Bahrain)',
 			'sa-east-1' => 'South America (São Paulo)',
 		];
-		return array(
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
-			'fromAddress' => array('property' => 'fromAddress', 'type' => 'email', 'label' => 'From Address', 'description'=>'The address emails are sent from', 'default'=>'no-reply@bywatersolutions.com'),
-			'accessKeyId' => array('property' => 'accessKeyId', 'type' => 'text', 'label' => 'Access Key', 'description'=>'The Access Key used for sending', 'default'=>'', 'hideInLists' => true),
-			'accessKeySecret' => array('property' => 'accessKeySecret', 'type' => 'storedPassword', 'label' => 'Access Key Secret', 'description'=>'The Access Key Secret used for sending', 'default'=>'', 'hideInLists' => true),
-			'singleMailConfigSet' => array('property' => 'singleMailConfigSet', 'type' => 'text', 'label' => 'Single Mail Configuration Set', 'description'=>'Configuration Set to use when sending single emails, can be blank', 'default'=>'', 'hideInLists' => true),
-			'bulkMailConfigSet'  => array('property' => 'bulkMailConfigSet', 'type' => 'text', 'label' => 'Bulk Mail Configuration Set', 'description'=>'Configuration Set to use when sending multiple emails, can be blank', 'default'=>'', 'hideInLists' => true),
-			'region' => array('property' => 'region', 'type' => 'enum', 'values' => $regions, 'label' => 'Region', 'description'=>'The region to use when sending emails', 'default'=>'us-east-2', 'hideInLists' => true),
-		);
+		return [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'fromAddress' => [
+				'property' => 'fromAddress',
+				'type' => 'email',
+				'label' => 'From Address',
+				'description' => 'The address emails are sent from',
+				'default' => 'no-reply@bywatersolutions.com',
+			],
+			'accessKeyId' => [
+				'property' => 'accessKeyId',
+				'type' => 'text',
+				'label' => 'Access Key',
+				'description' => 'The Access Key used for sending',
+				'default' => '',
+				'hideInLists' => true,
+			],
+			'accessKeySecret' => [
+				'property' => 'accessKeySecret',
+				'type' => 'storedPassword',
+				'label' => 'Access Key Secret',
+				'description' => 'The Access Key Secret used for sending',
+				'default' => '',
+				'hideInLists' => true,
+			],
+			'singleMailConfigSet' => [
+				'property' => 'singleMailConfigSet',
+				'type' => 'text',
+				'label' => 'Single Mail Configuration Set',
+				'description' => 'Configuration Set to use when sending single emails, can be blank',
+				'default' => '',
+				'hideInLists' => true,
+			],
+			'bulkMailConfigSet' => [
+				'property' => 'bulkMailConfigSet',
+				'type' => 'text',
+				'label' => 'Bulk Mail Configuration Set',
+				'description' => 'Configuration Set to use when sending multiple emails, can be blank',
+				'default' => '',
+				'hideInLists' => true,
+			],
+			'region' => [
+				'property' => 'region',
+				'type' => 'enum',
+				'values' => $regions,
+				'label' => 'Region',
+				'description' => 'The region to use when sending emails',
+				'default' => 'us-east-2',
+				'hideInLists' => true,
+			],
+		];
 	}
 
-	public function isFromAddressValid() : bool {
+	public function isFromAddressValid(): bool {
 		$ses_request = $this->getRequestHandler('GET');
 		$ses_request->setParameter('Action', 'ListVerifiedEmailAddresses');
 
 		$ses_response = $ses_request->getResponse();
-		if($ses_response->error === false && $ses_response->code !== 200) {
-			$ses_response->error = array('code' => $ses_response->code, 'message' => 'Unexpected HTTP status');
+		if ($ses_response->error === false && $ses_response->code !== 200) {
+			$ses_response->error = [
+				'code' => $ses_response->code,
+				'message' => 'Unexpected HTTP status',
+			];
 		}
-		if($ses_response->error !== false) {
+		if ($ses_response->error !== false) {
 			AspenError::raiseError('listVerifiedEmailAddresses - ' . $ses_response->error->Error->Message);
 			return false;
 		}
 
-		if(!isset($ses_response->body)) {
+		if (!isset($ses_response->body)) {
 			return false;
 		}
 
-		foreach($ses_response->body->ListVerifiedEmailAddressesResult->VerifiedEmailAddresses->member as $address) {
-			if ((string)$address == $this->fromAddress){
+		foreach ($ses_response->body->ListVerifiedEmailAddressesResult->VerifiedEmailAddresses->member as $address) {
+			if ((string)$address == $this->fromAddress) {
 				return true;
 			}
 		}
@@ -97,10 +144,13 @@ class AmazonSesSetting extends DataObject
 		$ses_request->setParameter('EmailAddress', $this->fromAddress);
 
 		$ses_response = $ses_request->getResponse();
-		if($ses_response->error === false && $ses_response->code !== 200) {
-			$ses_response->error = array('code' => $ses_response->code, 'message' => 'Unexpected HTTP status');
+		if ($ses_response->error === false && $ses_response->code !== 200) {
+			$ses_response->error = [
+				'code' => $ses_response->code,
+				'message' => 'Unexpected HTTP status',
+			];
 		}
-		if($ses_response->error !== false) {
+		if ($ses_response->error !== false) {
 			AspenError::raiseError('verifyEmailAddress - ' . $ses_response->error->Error->Message);
 			return false;
 		}
@@ -111,13 +161,14 @@ class AmazonSesSetting extends DataObject
 
 	/** @var AmazonSesRequest */
 	private $_ses_request = null;
+
 	/**
 	 * Get SES Request
 	 *
 	 * @param string $verb HTTP Verb: GET, POST, DELETE
 	 * @return AmazonSesRequest SES Request
 	 */
-	public function getRequestHandler(string $verb) : AmazonSesRequest{
+	public function getRequestHandler(string $verb): AmazonSesRequest {
 		if (empty($this->__ses_request)) {
 			$this->_ses_request = new AmazonSesRequest($this, $verb);
 		} else {
@@ -127,8 +178,7 @@ class AmazonSesSetting extends DataObject
 		return $this->_ses_request;
 	}
 
-	public function getHost() : string
-	{
+	public function getHost(): string {
 		return "email.{$this->region}.amazonaws.com";
 	}
 
@@ -140,13 +190,13 @@ class AmazonSesSetting extends DataObject
 	 * @param boolean $trigger_error Optionally overwrite the class setting for triggering an error (with type check to true/false)
 	 * @return array|false An array containing the unique identifier for this message and a separate request id.
 	 *         Returns false if the provided message is missing any required fields.
-	 *  @link(AWS SES Response formats, http://docs.aws.amazon.com/ses/latest/DeveloperGuide/query-interface-responses.html)
+	 * @link(AWS SES Response formats, http://docs.aws.amazon.com/ses/latest/DeveloperGuide/query-interface-responses.html)
 	 */
-	public function sendEmail(AmazonSesMessage $sesMessage, bool $use_raw_request = false , ?bool $trigger_error = null) {
+	public function sendEmail(AmazonSesMessage $sesMessage, bool $use_raw_request = false, ?bool $trigger_error = null) {
 		$sesMessage->setFrom($this->fromAddress);
 		$sesMessage->setConfigurationSet($this->singleMailConfigSet);
 
-		if(!$sesMessage->validate()) {
+		if (!$sesMessage->validate()) {
 			AspenError::raiseError('sendEmail - Message failed validation.');
 			return false;
 		}
@@ -160,85 +210,85 @@ class AmazonSesSetting extends DataObject
 			$ses_request->setParameter('ConfigurationSetName', $sesMessage->configuration_set);
 		}
 
-		if($action == 'SendRawEmail') {
+		if ($action == 'SendRawEmail') {
 			// https://docs.aws.amazon.com/ses/latest/APIReference/API_SendRawEmail.html
 			$ses_request->setParameter('RawMessage.Data', $sesMessage->getRawMessage());
 		} else {
 			$i = 1;
-			foreach($sesMessage->to as $to) {
-				$ses_request->setParameter('Destination.ToAddresses.member.'.$i, $sesMessage->encodeRecipients($to));
+			foreach ($sesMessage->to as $to) {
+				$ses_request->setParameter('Destination.ToAddresses.member.' . $i, $sesMessage->encodeRecipients($to));
 				$i++;
 			}
 
-			if(is_array($sesMessage->cc)) {
+			if (is_array($sesMessage->cc)) {
 				$i = 1;
-				foreach($sesMessage->cc as $cc) {
-					$ses_request->setParameter('Destination.CcAddresses.member.'.$i, $sesMessage->encodeRecipients($cc));
+				foreach ($sesMessage->cc as $cc) {
+					$ses_request->setParameter('Destination.CcAddresses.member.' . $i, $sesMessage->encodeRecipients($cc));
 					$i++;
 				}
 			}
 
-			if(is_array($sesMessage->bcc)) {
+			if (is_array($sesMessage->bcc)) {
 				$i = 1;
-				foreach($sesMessage->bcc as $bcc) {
-					$ses_request->setParameter('Destination.BccAddresses.member.'.$i, $sesMessage->encodeRecipients($bcc));
+				foreach ($sesMessage->bcc as $bcc) {
+					$ses_request->setParameter('Destination.BccAddresses.member.' . $i, $sesMessage->encodeRecipients($bcc));
 					$i++;
 				}
 			}
 
-			if(is_array($sesMessage->replyto)) {
+			if (is_array($sesMessage->replyto)) {
 				$i = 1;
-				foreach($sesMessage->replyto as $replyto) {
-					$ses_request->setParameter('ReplyToAddresses.member.'.$i, $sesMessage->encodeRecipients($replyto));
+				foreach ($sesMessage->replyto as $replyto) {
+					$ses_request->setParameter('ReplyToAddresses.member.' . $i, $sesMessage->encodeRecipients($replyto));
 					$i++;
 				}
 			}
 
 			$ses_request->setParameter('Source', $sesMessage->encodeRecipients($sesMessage->from));
 
-			if($sesMessage->returnpath != null) {
+			if ($sesMessage->returnpath != null) {
 				$ses_request->setParameter('ReturnPath', $sesMessage->returnpath);
 			}
 
-			if($sesMessage->subject != null && strlen($sesMessage->subject) > 0) {
+			if ($sesMessage->subject != null && strlen($sesMessage->subject) > 0) {
 				$ses_request->setParameter('Message.Subject.Data', $sesMessage->subject);
-				if($sesMessage->subjectCharset != null && strlen($sesMessage->subjectCharset) > 0) {
+				if ($sesMessage->subjectCharset != null && strlen($sesMessage->subjectCharset) > 0) {
 					$ses_request->setParameter('Message.Subject.Charset', $sesMessage->subjectCharset);
 				}
 			}
 
 
-			if($sesMessage->messagetext != null && strlen($sesMessage->messagetext) > 0) {
+			if ($sesMessage->messagetext != null && strlen($sesMessage->messagetext) > 0) {
 				$ses_request->setParameter('Message.Body.Text.Data', $sesMessage->messagetext);
-				if($sesMessage->messageTextCharset != null && strlen($sesMessage->messageTextCharset) > 0) {
+				if ($sesMessage->messageTextCharset != null && strlen($sesMessage->messageTextCharset) > 0) {
 					$ses_request->setParameter('Message.Body.Text.Charset', $sesMessage->messageTextCharset);
 				}
 			}
 
-			if($sesMessage->messagehtml != null && strlen($sesMessage->messagehtml) > 0) {
+			if ($sesMessage->messagehtml != null && strlen($sesMessage->messagehtml) > 0) {
 				$ses_request->setParameter('Message.Body.Html.Data', $sesMessage->messagehtml);
-				if($sesMessage->messageHtmlCharset != null && strlen($sesMessage->messageHtmlCharset) > 0) {
+				if ($sesMessage->messageHtmlCharset != null && strlen($sesMessage->messageHtmlCharset) > 0) {
 					$ses_request->setParameter('Message.Body.Html.Charset', $sesMessage->messageHtmlCharset);
 				}
 			}
 
 			$i = 1;
-			foreach($sesMessage->message_tags as $key => $value) {
-				$ses_request->setParameter('Tags.member.'.$i.'.Name', $key);
-				$ses_request->setParameter('Tags.member.'.$i.'.Value', $value);
+			foreach ($sesMessage->message_tags as $key => $value) {
+				$ses_request->setParameter('Tags.member.' . $i . '.Name', $key);
+				$ses_request->setParameter('Tags.member.' . $i . '.Value', $value);
 				$i++;
 			}
 		}
 
 		$ses_response = $ses_request->getResponse();
-		if($ses_response->error === false && $ses_response->code !== 200) {
-			$response = array(
+		if ($ses_response->error === false && $ses_response->code !== 200) {
+			$response = [
 				'code' => $ses_response->code,
-				'error' => array('Error' => array('message' => 'Unexpected HTTP status')),
-			);
+				'error' => ['Error' => ['message' => 'Unexpected HTTP status']],
+			];
 			return $response;
 		}
-		if($ses_response->error !== false) {
+		if ($ses_response->error !== false) {
 			if ($trigger_error) {
 				AspenError::raiseError('sendEmail - ' . $ses_response->error->Error->Message);
 				return false;
@@ -246,10 +296,10 @@ class AmazonSesSetting extends DataObject
 			return $ses_response;
 		}
 
-		$response = array(
+		$response = [
 			'MessageId' => (string)$ses_response->body->{"{$action}Result"}->MessageId,
 			'RequestId' => (string)$ses_response->body->ResponseMetadata->RequestId,
-		);
+		];
 		return $response;
 	}
 }

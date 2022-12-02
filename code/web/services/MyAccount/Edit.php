@@ -9,12 +9,11 @@ require_once 'Home.php';
  *
  * Used to edit notes for a list entry
  */
-class MyAccount_Edit extends Action
-{
+class MyAccount_Edit extends Action {
 	private $listId;
 	private $listTitle;
-	function launch($msg = null)
-	{
+
+	function launch($msg = null) {
 		global $interface;
 
 		if (!UserAccount::isLoggedIn()) {
@@ -26,24 +25,24 @@ class MyAccount_Edit extends Action
 
 		// Save Data
 		$listId = isset($_REQUEST['listId']) ? $_REQUEST['listId'] : null;
-		if (is_array($listId)){
+		if (is_array($listId)) {
 			$listId = array_pop($listId);
 		}
 		if (!empty($listId) && is_numeric($listId)) {
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-			$userList     = new UserList();
+			$userList = new UserList();
 			$userList->id = $listId;
 			if ($userList->find(true)) {
 				$userObj = UserAccount::getActiveUserObj();
-				if ($userObj == false){
+				if ($userObj == false) {
 					$interface->assign('error', 'You must be logged in to edit list entries, please login again.');
-				}else {
+				} else {
 					$this->listId = $userList->id;
 					$this->listTitle = $userList->title;
 					$userCanEdit = $userObj->canEditList($userList);
-					if (!$userCanEdit){
+					if (!$userCanEdit) {
 						$interface->assign('error', 'Sorry, you don\'t have permissions to edit this list.');
-					}else{
+					} else {
 						if (isset($_POST['submit'])) {
 							$this->saveChanges();
 
@@ -88,19 +87,17 @@ class MyAccount_Edit extends Action
 		$this->display('editListTitle.tpl', 'Edit List Entry');
 	}
 
-	private function saveChanges()
-	{
+	private function saveChanges() {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
-		if ($userListEntry->find(true)){
+		if ($userListEntry->find(true)) {
 			$userListEntry->notes = strip_tags($_REQUEST['notes']);
 			$userListEntry->update();
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		if (!empty($this->listId)) {

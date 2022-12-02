@@ -1,7 +1,6 @@
 <?php
 
-class Grouping_Item
-{
+class Grouping_Item {
 	public $id;
 	/** @var Grouping_Record */
 	private $_record;
@@ -63,9 +62,8 @@ class Grouping_Item
 	 * @param Location $searchLocation
 	 * @param Library $library
 	 */
-	public function __construct($itemDetails, $scopingInfo, $searchLocation, $library, $mainLocationScopeId)
-	{
-		if (is_null($scopingInfo)){
+	public function __construct($itemDetails, $scopingInfo, $searchLocation, $library, $mainLocationScopeId) {
+		if (is_null($scopingInfo)) {
 			//Item details stored in the database
 			$this->itemId = $itemDetails['itemId'];
 			$this->shelfLocation = $itemDetails['shelfLocation'];
@@ -74,12 +72,12 @@ class Grouping_Item
 			$this->isOrderItem = (bool)$itemDetails['isOrderItem'];
 			$this->isEContent = $itemDetails['isEcontent'];
 			$this->eContentSource = $itemDetails['eContentSource'];
-			if ($this->isEContent && !empty($itemDetails['localUrl'])){
-				$this->_relatedUrls[] = array(
+			if ($this->isEContent && !empty($itemDetails['localUrl'])) {
+				$this->_relatedUrls[] = [
 					'source' => $itemDetails['eContentSource'],
 					'file' => '',
-					'url' => $itemDetails['localUrl']
-				);
+					'url' => $itemDetails['localUrl'],
+				];
 			}
 			$this->groupedStatus = $itemDetails['groupedStatus'];
 			$this->status = $itemDetails['status'];
@@ -95,7 +93,7 @@ class Grouping_Item
 			$this->locationCode = $itemDetails['locationCode'];
 			$this->subLocation = $itemDetails['subLocationCode'];
 			$this->lastCheckInDate = $itemDetails['lastCheckInDate'];
-		}else {
+		} else {
 			//Item details stored in solr
 			$this->itemId = $itemDetails[1] == 'null' ? '' : $itemDetails[1];
 			$scopeKey = $itemDetails[0] . ':' . $this->itemId;
@@ -109,17 +107,17 @@ class Grouping_Item
 			$scopingDetails = $scopingInfo[$scopeKey];
 			if ($this->isEContent) {
 				if (strlen($scopingDetails[12]) > 0) {
-					$this->_relatedUrls[] = array(
+					$this->_relatedUrls[] = [
 						'source' => $itemDetails[9],
 						'file' => $itemDetails[10],
-						'url' => $scopingDetails[12]
-					);
+						'url' => $scopingDetails[12],
+					];
 				} else {
-					$this->_relatedUrls[] = array(
+					$this->_relatedUrls[] = [
 						'source' => $itemDetails[9],
 						'file' => $itemDetails[10],
-						'url' => $itemDetails[11]
-					);
+						'url' => $itemDetails[11],
+					];
 				}
 
 				$this->eContentSource = $itemDetails[9];
@@ -152,42 +150,36 @@ class Grouping_Item
 	/**
 	 * @return bool
 	 */
-	public function isInLibraryUseOnly(): bool
-	{
+	public function isInLibraryUseOnly(): bool {
 		return $this->inLibraryUseOnly;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isDisplayByDefault(): bool
-	{
+	public function isDisplayByDefault(): bool {
 		return $this->_displayByDefault;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getActions(): array
-	{
+	public function getActions(): array {
 		return $this->_actions;
 	}
 
 	/**
 	 * @param array $actions
 	 */
-	public function setActions(array $actions): void
-	{
+	public function setActions(array $actions): void {
 		$this->_actions = $actions;
 	}
 
-	public function getRelatedUrls() : array
-	{
+	public function getRelatedUrls(): array {
 		return $this->_relatedUrls;
 	}
 
-	public function getSummaryKey() : string
-	{
+	public function getSummaryKey(): string {
 		$key = str_pad($this->volumeOrder, 10, '0', STR_PAD_LEFT);
 		$key .= $this->shelfLocation . ':' . $this->callNumber;
 		if ($this->locallyOwned) {
@@ -204,13 +196,12 @@ class Grouping_Item
 		return $key;
 	}
 
-	public function getSummary() : array
-	{
+	public function getSummary(): array {
 		global $library;
 
 		if (!empty($this->volume)) {
 			$description = $this->volume . " ";
-		}else{
+		} else {
 			$description = '';
 		}
 		$description .= $this->shelfLocation . ": " . $this->callNumber;
@@ -234,9 +225,9 @@ class Grouping_Item
 		if (!empty($this->lastCheckInDate)) {
 			$date = new DateTime();
 			$date->setTimestamp($this->lastCheckInDate);
-			$lastCheckInDate =$date->format( 'M j, Y');
+			$lastCheckInDate = $date->format('M j, Y');
 		}
-		$itemSummaryInfo = array(
+		$itemSummaryInfo = [
 			'description' => $description,
 			'shelfLocation' => $this->shelfLocation,
 			'callNumber' => $this->callNumber,
@@ -262,13 +253,12 @@ class Grouping_Item
 			'locationCode' => $this->locationCode,
 			'subLocation' => $this->subLocation,
 			'itemId' => $this->itemId,
-			'actions' => $this->getActions()
-		);
+			'actions' => $this->getActions(),
+		];
 		return $itemSummaryInfo;
 	}
 
-	public function setRecord(Grouping_Record $record)
-	{
+	public function setRecord(Grouping_Record $record) {
 		$this->_record = $record;
 	}
 }

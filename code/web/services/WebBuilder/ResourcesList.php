@@ -1,11 +1,9 @@
 <?php
 require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 
-class WebBuilder_ResourcesList extends Action
-{
+class WebBuilder_ResourcesList extends Action {
 
-	function launch()
-	{
+	function launch() {
 		global $library;
 		//Get all the resources.
 		$resourcesByCategory = [];
@@ -21,7 +19,7 @@ class WebBuilder_ResourcesList extends Action
 		$resource->find();
 		$allResources = $resource->fetchAll();
 		$numLoaded = 0;
-		foreach ($allResources as $resource){
+		foreach ($allResources as $resource) {
 			$clonedResource = clone $resource;
 			if ($clonedResource->featured) {
 				$featuredResources[] = $clonedResource;
@@ -43,8 +41,7 @@ class WebBuilder_ResourcesList extends Action
 		$this->display('resourcesList.tpl', 'Research & Learn', '');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', 'Resources', true);

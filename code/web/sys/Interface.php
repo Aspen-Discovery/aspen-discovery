@@ -7,8 +7,7 @@ require_once ROOT_DIR . '/sys/Variable.php';
 require_once ROOT_DIR . '/sys/Session/Session.php';
 
 // Smarty Extension class
-class UInterface extends Smarty
-{
+class UInterface extends Smarty {
 	public $lang;
 	private $themes; // The themes that are active
 	private $theme;
@@ -18,8 +17,7 @@ class UInterface extends Smarty
 	private $url;
 	private $debug = false;
 
-	function __construct()
-	{
+	function __construct() {
 		parent::__construct();
 
 		global $configArray;
@@ -43,14 +41,14 @@ class UInterface extends Smarty
 					$this->assign('mapsKey', $googleSettings->googleMapsKey);
 				}
 			}
-		}catch (Exception $e){
+		} catch (Exception $e) {
 			//This happens when google analytics isn't setup yet
 			$this->assign('enableLanguageSelector', true);
 		}
 		$this->assign('enableLanguageSelector', true);
 
 		//Check to see if we have a google site verification key
-		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
+		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0) {
 			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
 		}
 
@@ -63,8 +61,8 @@ class UInterface extends Smarty
 		//to just set the themes in use globally someplace rather than passing through the INI
 		$themeArray = explode(',', $configArray['Site']['theme']);
 		$this->themes = $themeArray;
-		$this->template_dir  = "$local/interface/themes/responsive/";
-		if (isset($timer)){
+		$this->template_dir = "$local/interface/themes/responsive/";
+		if (isset($timer)) {
 			$timer->logTime('Set theme');
 		}
 
@@ -92,9 +90,12 @@ class UInterface extends Smarty
 		}
 
 
-		$this->plugins_dir   = array('plugins', "$local/interface/plugins");
-		$this->caching       = false;
-		$this->debug         = true;
+		$this->plugins_dir = [
+			'plugins',
+			"$local/interface/plugins",
+		];
+		$this->caching = false;
+		$this->debug = true;
 		$this->compile_check = true;
 
 		unset($local);
@@ -107,7 +108,7 @@ class UInterface extends Smarty
 		$this->assign('site', $configArray['Site']);
 		if (isset($_SERVER['SERVER_NAME'])) {
 			$url = $_SERVER['SERVER_NAME'];
-		}else {
+		} else {
 			$url = $configArray['Site']['url'];
 		}
 		if (isset($_SERVER['HTTPS'])) {
@@ -117,7 +118,7 @@ class UInterface extends Smarty
 		}
 		$this->url = $url;
 
-		$this->assign('template_dir',$this->template_dir);
+		$this->assign('template_dir', $this->template_dir);
 		$this->assign('url', $url);
 
 		global $enabledModules;
@@ -128,7 +129,7 @@ class UInterface extends Smarty
 		if (isset($configArray['Site']['email'])) {
 			$this->assign('supportEmail', $configArray['Site']['email']);
 		}
-		if (isset($configArray['Site']['libraryName'])){
+		if (isset($configArray['Site']['libraryName'])) {
 			$this->assign('consortiumName', $configArray['Site']['libraryName']);
 		}
 		$this->assign('libraryName', $configArray['Site']['title']);
@@ -137,7 +138,7 @@ class UInterface extends Smarty
 			$this->assign('ils', $configArray['Catalog']['ils']);
 			if (isset($configArray['Catalog']['url'])) {
 				$this->assign('classicCatalogUrl', $configArray['Catalog']['url']);
-			} else if (isset($configArray['Catalog']['hipUrl'])) {
+			} elseif (isset($configArray['Catalog']['hipUrl'])) {
 				$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
 			}
 			$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
@@ -156,7 +157,7 @@ class UInterface extends Smarty
 				$offlineMode = true;
 				$this->assign('enableEContentWhileOffline', true);
 				$this->assign('offlineMessage', $systemVariables->offlineMessage);
-			} else if ($systemVariables->catalogStatus == 1) {
+			} elseif ($systemVariables->catalogStatus == 1) {
 				$offlineMode = true;
 				$this->assign('enableEContentWhileOffline', false);
 				$this->assign('offlineMessage', $systemVariables->offlineMessage);
@@ -166,13 +167,13 @@ class UInterface extends Smarty
 
 		$timer->logTime('Basic configuration');
 
-		if (IPAddress::showDebuggingInformation()){
+		if (IPAddress::showDebuggingInformation()) {
 			$this->assign('debug', true);
 		}
-		if ($configArray['System']['debugJs']){
+		if ($configArray['System']['debugJs']) {
 			$this->assign('debugJs', true);
 		}
-		if (isset($configArray['System']['debugCss']) && $configArray['System']['debugCss']){
+		if (isset($configArray['System']['debugCss']) && $configArray['System']['debugCss']) {
 			$this->assign('debugCss', true);
 		}
 
@@ -184,14 +185,14 @@ class UInterface extends Smarty
 
 		$session = new Session();
 		$session->session_id = session_id();
-		if ($session->find(true)){
+		if ($session->find(true)) {
 			$this->assign('session', session_id() . ', remember me ' . $session->remember_me);
-		}else{
+		} else {
 			$this->assign('session', session_id() . ' - not saved');
 		}
 
 		global $activeRecordProfile;
-		if ($activeRecordProfile){
+		if ($activeRecordProfile) {
 			$this->assign('activeRecordProfileModule', $activeRecordProfile->recordUrlComponent);
 		}
 	}
@@ -201,13 +202,13 @@ class UInterface extends Smarty
 	 */
 	function setFinesRelatedTemplateVariables() {
 
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
 
 			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->libraryToUseForPayments == 1){
+			if ($systemVariables->libraryToUseForPayments == 1) {
 				global $library;
 				$homeLibrary = $library;
 			}
@@ -239,14 +240,14 @@ class UInterface extends Smarty
 				} elseif ($finePaymentType >= 2) {
 					$this->assign('eCommerceLink', '/MyAccount/Fines');
 				}
-			}else{
+			} else {
 				$finePaymentType = 0;
 			}
 			$this->assign('finePaymentType', $finePaymentType);
 		}
 	}
 
-	public function getUrl(){
+	public function getUrl() {
 		return $this->url;
 	}
 
@@ -255,51 +256,57 @@ class UInterface extends Smarty
 	 *
 	 * @return array
 	 */
-	public function getThemes(){
+	public function getThemes() {
 		return $this->themes;
 	}
 
-	function setTemplate($tpl)
-	{
+	function setTemplate($tpl) {
 		$this->assign('pageTemplate', $tpl);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	function getTemplate(){
+	function getTemplate() {
 		return $this->getVariable('pageTemplate');
 	}
 
-	function setPageTitle($title, $translateTitle = true, $isPublicFacing = false, $isAdminFacing = false)
-	{
+	function setPageTitle($title, $translateTitle = true, $isPublicFacing = false, $isAdminFacing = false) {
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
-		if ($translateTitle){
-			$translatedTitle = translate(['text'=>$title, 'inAttribute'=>false, 'isPublicFacing' => $isPublicFacing, 'isAdminFacing' => $isAdminFacing]);
-			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true, 'isPublicFacing' => $isPublicFacing, 'isAdminFacing' => $isAdminFacing]);
-		}else{
+		if ($translateTitle) {
+			$translatedTitle = translate([
+				'text' => $title,
+				'inAttribute' => false,
+				'isPublicFacing' => $isPublicFacing,
+				'isAdminFacing' => $isAdminFacing,
+			]);
+			$translatedTitleAttribute = translate([
+				'text' => $title,
+				'inAttribute' => true,
+				'isPublicFacing' => $isPublicFacing,
+				'isAdminFacing' => $isAdminFacing,
+			]);
+		} else {
 			$translatedTitle = $title;
 			$translatedTitleAttribute = $title;
 		}
 		$this->assign('pageTitleShort', $translatedTitle);
 		$this->assign('pageTitleShortAttribute', $translatedTitleAttribute);
-		if ($this->isMobile){
+		if ($this->isMobile) {
 			$this->assign('pageTitle', $translatedTitle);
-		}else{
+		} else {
 			$this->assign('pageTitle', $translatedTitle . ' | ' . $this->get_template_vars('librarySystemName'));
 		}
 	}
 
-	function getLanguage()
-	{
+	function getLanguage() {
 		return $this->lang;
 	}
 
 	/**
 	 * @param Language $lang
 	 */
-	function setLanguage($lang)
-	{
+	function setLanguage($lang) {
 		$this->lang = $lang->code;
 		$this->assign('userLang', $lang);
 	}
@@ -314,19 +321,18 @@ class UInterface extends Smarty
 	 *
 	 * @return string
 	 */
-	function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false)
-	{
+	function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false) {
 		global $timer;
 		$resource = parent::fetch($resource_name, $cache_id, $compile_id, $display);
 		$timer->logTime("Finished fetching $resource_name");
 		return $resource;
 	}
 
-	function getAppliedTheme(){
+	function getAppliedTheme() {
 		return $this->appliedTheme;
 	}
 
-	function loadDisplayOptions($fromBookCoverProcessing = false){
+	function loadDisplayOptions($fromBookCoverProcessing = false) {
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -337,7 +343,7 @@ class UInterface extends Smarty
 		require_once ROOT_DIR . '/services/API/SystemAPI.php';
 		$systemAPI = new SystemAPI();
 		$adminUser = $systemAPI->displayAdminAlert();
-		if($adminUser) {
+		if ($adminUser) {
 			$hasUpdates = $systemAPI->hasPendingDatabaseUpdates();
 			$this->assign('hasSqlUpdates', $hasUpdates);
 		}
@@ -347,9 +353,9 @@ class UInterface extends Smarty
 			$theme = new Theme();
 			//Check to see if we are at a location and if we are if there is a theme applied to it
 			$location = $locationSingleton->getActiveLocation();
-			if (isset($location) && $location->theme != -1){
+			if (isset($location) && $location->theme != -1) {
 				$theme->id = $location->theme;
-			}else {
+			} else {
 				$theme->id = $library->theme;
 			}
 			if ($theme->find(true)) {
@@ -359,7 +365,7 @@ class UInterface extends Smarty
 			}
 
 			//Get extended theme info
-			if($theme->extendsTheme){
+			if ($theme->extendsTheme) {
 				$this->assign('extendedTheme', $theme->extendsTheme);
 			}
 
@@ -368,7 +374,7 @@ class UInterface extends Smarty
 			$this->assign('coverStyle', $theme->coverStyle);
 
 			$browseCategoryLayoutStyle = "masonry";
-			if($theme->browseImageLayout == 1) {
+			if ($theme->browseImageLayout == 1) {
 				$browseCategoryLayoutStyle = "grid";
 			}
 
@@ -443,7 +449,7 @@ class UInterface extends Smarty
 				$this->assign('tertiaryBackgroundColor', $primaryTheme->tertiaryBackgroundColor);
 				$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 			}
-		}catch (PDOException $e){
+		} catch (PDOException $e) {
 			global $logger;
 			$logger->log("Theme interface not found", Logger::LOG_ALERT);
 		}
@@ -453,14 +459,14 @@ class UInterface extends Smarty
 		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
 		$useHomeLink = $library->getLayoutSettings()->useHomeLink;
-		if ($useHomeLink == '2' || $useHomeLink == '3'){
-			if ((isset($location) && $location->homeLink == 'default')){
+		if ($useHomeLink == '2' || $useHomeLink == '3') {
+			if ((isset($location) && $location->homeLink == 'default')) {
 				$this->assign('logoLink', '/');
 			}
-			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
+			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default') {
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);
-			}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
+			} elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default') {
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $library->homeLink);
 			}
@@ -469,11 +475,11 @@ class UInterface extends Smarty
 		// set minimum theme contrast ratio
 		$this->assign('contrastRatio', $library->getLayoutSettings()->contrastRatio);
 
-		if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
+		if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default') {
 			$this->assign('homeLink', $location->homeLink);
-		}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
+		} elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default') {
 			$this->assign('homeLink', $library->homeLink);
-		}elseif ($library->homeLink == 'default') {
+		} elseif ($library->homeLink == 'default') {
 			$this->assign('homeLink', '/');
 		}
 
@@ -561,8 +567,8 @@ class UInterface extends Smarty
 		$this->assign('displayHoldsOnCheckout', $library->displayHoldsOnCheckout);
 
 		$this->assign('allowMaxDaysToFreeze', $library->maxDaysToFreeze);
-		if($library->maxDaysToFreeze > -1) {
-			$this->assign('maxDaysToFreeze', strtotime('+'.$library->maxDaysToFreeze.' days'));
+		if ($library->maxDaysToFreeze > -1) {
+			$this->assign('maxDaysToFreeze', strtotime('+' . $library->maxDaysToFreeze . ' days'));
 		}
 
 		$this->assign('showHoldButtonForUnavailableOnly', $library->showHoldButtonForUnavailableOnly);
@@ -602,7 +608,7 @@ class UInterface extends Smarty
 			$this->assign('showSimilarAuthors', $groupedWorkDisplaySettings->showSimilarAuthors);
 			$this->assign('showStandardReviews', $groupedWorkDisplaySettings->showStandardReviews);
 			$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
-		}else{ // library only
+		} else { // library only
 			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 			$this->assign('showFavorites', $library->showFavorites);
 			$showHoldButton = $library->showHoldButton;
@@ -617,27 +623,27 @@ class UInterface extends Smarty
 			$this->assign('showStandardReviews', $groupedWorkDisplaySettings->showStandardReviews);
 			$this->assign('showRelatedRecordLabels', $groupedWorkDisplaySettings->showRelatedRecordLabels);
 		}
-		if ($showStaffView == 2){
+		if ($showStaffView == 2) {
 			$showStaffView = UserAccount::isStaff();
 		}
 		$this->assign('showStaffView', $showStaffView);
 
-		if ($showHoldButton == 0){
+		if ($showHoldButton == 0) {
 			$showHoldButtonInSearchResults = 0;
 		}
-		if (!empty($library->additionalCss)){
+		if (!empty($library->additionalCss)) {
 			$this->assign('additionalCss', $library->additionalCss);
 		}
-		if (!empty($location->additionalCss)){
+		if (!empty($location->additionalCss)) {
 			$this->assign('additionalCss', $location->additionalCss);
 		}
-		if (!empty($library->headerText)){
+		if (!empty($library->headerText)) {
 			$this->assign('headerText', $library->headerText);
 		}
-		if (!empty($location->headerText)){
+		if (!empty($location->headerText)) {
 			$this->assign('headerText', $location->headerText);
 		}
-		if (!empty($library->footerText)){
+		if (!empty($library->footerText)) {
 			$this->assign('footerText', $library->footerText);
 		}
 		$this->assign('showHoldButton', $showHoldButton);
@@ -652,7 +658,7 @@ class UInterface extends Smarty
 		//Check to see if we should just call it library location
 		$numLocations = $library->getNumLocationsForLibrary();
 		$this->assign('numLocations', $numLocations);
-		if ($numLocations == 1){
+		if ($numLocations == 1) {
 			$locationForLibrary = new Location();
 			$locationForLibrary->libraryId = $library->libraryId;
 			$locationForLibrary->find(true);
@@ -662,7 +668,7 @@ class UInterface extends Smarty
 		$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
 		$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
 
-		if ($location != null){
+		if ($location != null) {
 			$this->assign('showDisplayNameInHeader', $location->showDisplayNameInHeader);
 			$this->assign('librarySystemName', $location->displayName);
 		}
@@ -674,7 +680,7 @@ class UInterface extends Smarty
 				$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
 				$materialRequestType = $library->enableMaterialsRequest;
 				$this->assign('materialRequestType', $materialRequestType);
-			}else{
+			} else {
 				$this->assign('enableAspenMaterialsRequest', false);
 			}
 
@@ -700,7 +706,7 @@ class UInterface extends Smarty
 					$donationEmailTemplate = $donationSettings->donationEmailTemplate;
 					$this->assign('donationEmailTemplate', $donationEmailTemplate);
 				}
-			}catch (Exception $e){
+			} catch (Exception $e) {
 				//Donations are not setup yet.
 			}
 
@@ -734,7 +740,7 @@ class UInterface extends Smarty
 					$libraryLink->category = 'none-' . $libraryLink->id;
 				}
 				if (!array_key_exists($libraryLink->category, $libraryLinks)) {
-					$libraryLinks[$libraryLink->category] = array();
+					$libraryLinks[$libraryLink->category] = [];
 				}
 				$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 				if ($libraryLink->showExpanded) {
@@ -776,13 +782,13 @@ class UInterface extends Smarty
 
 	public function assignAppendToExisting($variableName, $newValue) {
 		$originalValue = $this->get_template_vars($variableName);
-		if ($originalValue == null){
+		if ($originalValue == null) {
 			$this->assign($variableName, $newValue);
-		}else{
-			if (is_array($originalValue)){
+		} else {
+			if (is_array($originalValue)) {
 				$valueToAssign = array_merge($originalValue, $newValue);
-			}else{
-				$valueToAssign = array();
+			} else {
+				$valueToAssign = [];
 				$valueToAssign[] = $originalValue;
 				$valueToAssign[] = $newValue;
 			}
@@ -792,22 +798,22 @@ class UInterface extends Smarty
 
 	public function assignAppendUniqueToExisting($variableName, $newValue) {
 		$originalValue = $this->get_template_vars($variableName);
-		if ($originalValue == null){
+		if ($originalValue == null) {
 			$this->assign($variableName, $newValue);
-		}else{
-			if (is_array($originalValue)){
+		} else {
+			if (is_array($originalValue)) {
 				$valueToAssign = $originalValue;
-				foreach($newValue as $tmpValue){
-					if (!in_array($tmpValue, $valueToAssign)){
+				foreach ($newValue as $tmpValue) {
+					if (!in_array($tmpValue, $valueToAssign)) {
 						$valueToAssign[] = $tmpValue;
 					}
 				}
-			}else{
-				if ($newValue != $originalValue){
-					$valueToAssign = array();
+			} else {
+				if ($newValue != $originalValue) {
+					$valueToAssign = [];
 					$valueToAssign[] = $originalValue;
 					$valueToAssign[] = $newValue;
-				}else{
+				} else {
 					return;
 				}
 			}
@@ -824,9 +830,9 @@ function translate($params) {
 	// object.
 	if (!is_object($translator)) {
 		global $activeLanguage;
-		if (empty($activeLanguage)){
+		if (empty($activeLanguage)) {
 			$code = 'en';
-		}else{
+		} else {
 			$code = $activeLanguage->code;
 		}
 		$translator = new Translator('lang', $code);
@@ -840,8 +846,8 @@ function translate($params) {
 		$isAdminEnteredData = isset($params['isAdminEnteredData']) ? $params['isAdminEnteredData'] : false;
 		$translateParameters = isset($params['translateParameters']) ? $params['translateParameters'] : false;
 		$replacementValues = [];
-		foreach ($params as $index => $param){
-			if (is_numeric($index)){
+		foreach ($params as $index => $param) {
+			if (is_numeric($index)) {
 				$replacementValues[$index] = $param;
 			}
 		}
@@ -853,7 +859,7 @@ function translate($params) {
 
 
 /** @noinspection PhpUnused */
-function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
+function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat) {
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
 	if (isset($content)) {
@@ -867,20 +873,20 @@ function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedP
 		$consistent = true;
 		$firstValue = null;
 		$iterationNumber = 0;
-		foreach ($array as $arrayValue){
-			if ($iterationNumber == 0){
+		foreach ($array as $arrayValue) {
+			if ($iterationNumber == 0) {
 				$firstValue = $arrayValue[$key];
-			}else{
-				if ($firstValue != $arrayValue[$key]){
+			} else {
+				if ($firstValue != $arrayValue[$key]) {
 					$consistent = false;
 					break;
 				}
 			}
 			$iterationNumber++;
 		}
-		if ($consistent == false){
+		if ($consistent == false) {
 			return $content;
-		}else{
+		} else {
 			return "";
 		}
 	}
@@ -888,8 +894,7 @@ function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedP
 }
 
 /** @noinspection PhpUnused */
-function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat)
-{
+function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat) {
 	if (isset($content)) {
 		global $interface;
 		$array = $params['array'];

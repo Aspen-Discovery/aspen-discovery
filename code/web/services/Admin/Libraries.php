@@ -3,31 +3,33 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Admin_Libraries extends ObjectEditor
-{
-	function getObjectType() : string{
+class Admin_Libraries extends ObjectEditor {
+	function getObjectType(): string {
 		return 'Library';
 	}
-	function getToolName() : string{
+
+	function getToolName(): string {
 		return 'Libraries';
 	}
-	function getPageTitle() : string{
+
+	function getPageTitle(): string {
 		return 'Library Systems';
 	}
-	function getAllObjects($page, $recordsPerPage) : array{
-		$libraryList = array();
+
+	function getAllObjects($page, $recordsPerPage): array {
+		$libraryList = [];
 
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasPermission('Administer All Libraries')){
+		if (UserAccount::userHasPermission('Administer All Libraries')) {
 			$object = new Library();
 			$object->orderBy($this->getSort());
 			$this->applyFilters($object);
 			$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 			$object->find();
-			while ($object->fetch()){
+			while ($object->fetch()) {
 				$libraryList[$object->libraryId] = clone $object;
 			}
-		}else{
+		} else {
 			//This doesn't need pagination since there should only be one
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
@@ -35,39 +37,45 @@ class Admin_Libraries extends ObjectEditor
 
 		return $libraryList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'subdomain asc';
 	}
-	function getObjectStructure() : array{
+
+	function getObjectStructure(): array {
 		$objectStructure = Library::getObjectStructure();
-		if (!UserAccount::userHasPermission('Administer All Libraries')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			unset($objectStructure['isDefault']);
 		}
 		return $objectStructure;
 	}
-	function getPrimaryKeyColumn() : string{
+
+	function getPrimaryKeyColumn(): string {
 		return 'subdomain';
 	}
-	function getIdKeyColumn() : string{
+
+	function getIdKeyColumn(): string {
 		return 'libraryId';
 	}
-	function canAddNew(){
+
+	function canAddNew() {
 		return UserAccount::userHasPermission('Administer All Libraries');
 	}
-	function canDelete(){
+
+	function canDelete() {
 		return UserAccount::userHasPermission('Administer All Libraries');
 	}
-	function getAdditionalObjectActions($existingObject) : array{
+
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultMaterialsRequestForm(){
+	function defaultMaterialsRequestForm() {
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
-		if ($library->find(true)){
+		if ($library->find(true)) {
 			$library->clearMaterialsRequestFormFields();
 
 			$defaultFieldsToDisplay = MaterialsRequestFormFields::getDefaultFormFields($libraryId);
@@ -80,11 +88,11 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	/** @noinspection PhpUnused */
-	function defaultMaterialsRequestFormats(){
+	function defaultMaterialsRequestFormats() {
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
-		if ($library->find(true)){
+		if ($library->find(true)) {
 			$library->clearMaterialsRequestFormats();
 
 			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
@@ -95,16 +103,15 @@ class Admin_Libraries extends ObjectEditor
 		die();
 	}
 
-	function getInstructions() : string{
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/admin/systemslocations';
 	}
 
-	function getInitializationJs() : string {
+	function getInitializationJs(): string {
 		return 'return AspenDiscovery.Admin.updateMaterialsRequestFields();';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
@@ -112,22 +119,22 @@ class Admin_Libraries extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'primary_configuration';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Libraries',
+			'Administer Home Library',
+		]);
 	}
 
-	protected function getDefaultRecordsPerPage()
-	{
+	protected function getDefaultRecordsPerPage() {
 		return 250;
 	}
 
-	protected function showQuickFilterOnPropertiesList(){
+	protected function showQuickFilterOnPropertiesList() {
 		return true;
 	}
 }

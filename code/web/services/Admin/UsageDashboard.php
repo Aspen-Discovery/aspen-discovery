@@ -3,10 +3,8 @@ require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebResourceUsage.php';
 
-class Admin_UsageDashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class Admin_UsageDashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('AspenUsage');
@@ -26,21 +24,21 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		$webResourceUsage = [];
 		foreach ($webResources as $webResource) {
 			if (!isset($webResourceUsage)) {
-				$webResourceUsage[] = array(
+				$webResourceUsage[] = [
 					'name' => $webResource,
 					'thisMonth' => $this->getWebResourceStats($instanceName, $webResource, $this->thisMonth, $this->thisYear),
-					'lastMonth' => $this->getWebResourceStats($instanceName, $webResource,  $this->lastMonth, $this->lastMonthYear),
-					'thisYear' => $this->getWebResourceStats($instanceName, $webResource,  null, $this->thisYear),
-					'allTime' => $this->getWebResourceStats($instanceName, $webResource,  null, null)
-				);
-			} elseif (!in_array( $webResource, array_column($webResourceUsage, 'name'))) {
-				$webResourceUsage[] = array(
-					'name' =>  $webResource,
+					'lastMonth' => $this->getWebResourceStats($instanceName, $webResource, $this->lastMonth, $this->lastMonthYear),
+					'thisYear' => $this->getWebResourceStats($instanceName, $webResource, null, $this->thisYear),
+					'allTime' => $this->getWebResourceStats($instanceName, $webResource, null, null),
+				];
+			} elseif (!in_array($webResource, array_column($webResourceUsage, 'name'))) {
+				$webResourceUsage[] = [
+					'name' => $webResource,
 					'thisMonth' => $this->getWebResourceStats($instanceName, $webResource, $this->thisMonth, $this->thisYear),
-					'lastMonth' => $this->getWebResourceStats($instanceName, $webResource,  $this->lastMonth, $this->lastMonthYear),
-					'thisYear' => $this->getWebResourceStats($instanceName, $webResource,  null, $this->thisYear),
-					'allTime' => $this->getWebResourceStats($instanceName, $webResource,  null, null)
-				);
+					'lastMonth' => $this->getWebResourceStats($instanceName, $webResource, $this->lastMonth, $this->lastMonthYear),
+					'thisYear' => $this->getWebResourceStats($instanceName, $webResource, null, $this->thisYear),
+					'allTime' => $this->getWebResourceStats($instanceName, $webResource, null, null),
+				];
 			}
 		}
 		$interface->assign('webResourceUsage', $webResourceUsage);
@@ -53,16 +51,15 @@ class Admin_UsageDashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return int[]
 	 */
-	function getStats($instanceName, $month, $year): array
-	{
+	function getStats($instanceName, $month, $year): array {
 		$usage = new AspenUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
-		if ($month != null){
+		if ($month != null) {
 			$usage->month = $month;
 		}
-		if ($year != null){
+		if ($year != null) {
 			$usage->year = $year;
 		}
 		$usage->selectAdd();
@@ -114,8 +111,7 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		];
 	}
 
-	function getWebResources(): array
-	{
+	function getWebResources(): array {
 		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 		$webResources = [];
 		$object = new WebResource();
@@ -126,6 +122,7 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		}
 		return $webResources;
 	}
+
 	/**
 	 * @param string|null $instanceName
 	 * @param string $resourceName
@@ -133,19 +130,18 @@ class Admin_UsageDashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return int[]
 	 */
-	function getWebResourceStats($instanceName, $resourceName, $month, $year): array
-	{
+	function getWebResourceStats($instanceName, $resourceName, $month, $year): array {
 		$usage = new WebResourceUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
-		if ($month != null){
+		if ($month != null) {
 			$usage->month = $month;
 		}
-		if ($year != null){
+		if ($year != null) {
 			$usage->year = $year;
 		}
-		if (!empty($resourceName)){
+		if (!empty($resourceName)) {
 			$usage->resourceName = $resourceName;
 		}
 
@@ -165,8 +161,7 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		];
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
@@ -174,13 +169,14 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'system_reports';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View Dashboards', 'View System Reports']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
 	}
 }

@@ -1,8 +1,9 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-class MyRatings extends MyAccount{
-	public function launch(){
+
+class MyRatings extends MyAccount {
+	public function launch() {
 		global $interface;
 		global $timer;
 
@@ -16,7 +17,7 @@ class MyRatings extends MyAccount{
 		$rating->find();
 		$ratings = [];
 		$ratedIds = [];
-		while($rating->fetch()){
+		while ($rating->fetch()) {
 			if (!array_key_exists($rating->groupedRecordPermanentId, $ratedIds)) {
 				$ratedIds[$rating->groupedRecordPermanentId] = clone $rating;
 			}
@@ -27,12 +28,12 @@ class MyRatings extends MyAccount{
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$records = $searchObject->getRecords(array_keys($ratedIds));
-		foreach ($ratedIds as $permanentId => $rating){
-			if (array_key_exists($permanentId, $records)){
+		foreach ($ratedIds as $permanentId => $rating) {
+			if (array_key_exists($permanentId, $records)) {
 				$groupedWorkDriver = $records[$permanentId];
-				if ($groupedWorkDriver->isValid){
-					$ratings[$rating->groupedRecordPermanentId] = array(
-						'id' =>$rating->id,
+				if ($groupedWorkDriver->isValid) {
+					$ratings[$rating->groupedRecordPermanentId] = [
+						'id' => $rating->id,
 						'groupedWorkId' => $rating->groupedRecordPermanentId,
 						'title' => $groupedWorkDriver->getTitle(),
 						'author' => $groupedWorkDriver->getPrimaryAuthor(),
@@ -41,7 +42,7 @@ class MyRatings extends MyAccount{
 						'link' => $groupedWorkDriver->getLinkUrl(),
 						'dateRated' => $rating->dateRated,
 						'ratingData' => $groupedWorkDriver->getRatingData(),
-					);
+					];
 				}
 			}
 		}
@@ -54,7 +55,7 @@ class MyRatings extends MyAccount{
 		$notInterestedObj->userId = UserAccount::getActiveUserId();
 		$notInterestedObj->orderBy('dateMarked DESC');
 		$notInterestedObj->find();
-		$notInterestedIds = array();
+		$notInterestedIds = [];
 		while ($notInterestedObj->fetch()) {
 			$notInterestedIds[$notInterestedObj->groupedRecordPermanentId] = clone($notInterestedObj);
 		}
@@ -63,18 +64,18 @@ class MyRatings extends MyAccount{
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$records = $searchObject->getRecords(array_keys($notInterestedIds));
-		foreach ($notInterestedIds as $permanentId => $notInterestedObj){
+		foreach ($notInterestedIds as $permanentId => $notInterestedObj) {
 			if (array_key_exists($permanentId, $notInterestedIds)) {
 				if (array_key_exists($permanentId, $records)) {
 					$groupedWorkDriver = $records[$permanentId];
 					if ($groupedWorkDriver->isValid) {
-						$notInterested[] = array(
+						$notInterested[] = [
 							'id' => $notInterestedObj->id,
 							'title' => $groupedWorkDriver->getTitle(),
 							'author' => $groupedWorkDriver->getPrimaryAuthor(),
 							'dateMarked' => $notInterestedObj->dateMarked,
-							'link' => $groupedWorkDriver->getLinkUrl()
-						);
+							'link' => $groupedWorkDriver->getLinkUrl(),
+						];
 					}
 				}
 			}
@@ -88,8 +89,7 @@ class MyRatings extends MyAccount{
 		$this->display('myRatings.tpl', 'My Ratings', 'Search/home-sidebar.tpl');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('', 'Titles You Rated');

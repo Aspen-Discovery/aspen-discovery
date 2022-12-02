@@ -1,13 +1,13 @@
 <?php
 
-function getRedwoodArchiveUpdates(){
-    return [
-        'redwood_user_contribution' => array(
-            'title' => 'Redwood - User Contribution',
-            'description' => 'Add a table to user submissions for the archives.',
-            'continueOnError' => true,
-            'sql' => array(
-                "CREATE TABLE redwood_user_contribution (
+function getRedwoodArchiveUpdates() {
+	return [
+		'redwood_user_contribution' => [
+			'title' => 'Redwood - User Contribution',
+			'description' => 'Add a table to user submissions for the archives.',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE redwood_user_contribution (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     userId INT(11) NOT NULL,
                     title VARCHAR(255) NOT NULL,
@@ -24,8 +24,8 @@ function getRedwoodArchiveUpdates(){
                     requireShareAlike TINYINT(1) DEFAULT 0,
                     dateContributed INT(11)
                 ) ENGINE = InnoDB",
-                "ALTER TABLE redwood_user_contribution ADD INDEX (userId)",
-            ),
-        ),
-    ];
+				"ALTER TABLE redwood_user_contribution ADD INDEX (userId)",
+			],
+		],
+	];
 }

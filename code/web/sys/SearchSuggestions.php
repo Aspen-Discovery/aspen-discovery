@@ -1,9 +1,7 @@
 <?php
 
-class SearchSuggestions
-{
-	function getAllSuggestions($searchTerm, $searchIndex, $searchSource)
-	{
+class SearchSuggestions {
+	function getAllSuggestions($searchTerm, $searchIndex, $searchSource) {
 		$searcher = SearchObjectFactory::initSearchObjectBySearchSource($searchSource);
 		$searchSuggestions = [];
 		if ($searcher->supportsSuggestions()) {

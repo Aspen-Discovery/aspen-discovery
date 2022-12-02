@@ -1,6 +1,6 @@
 <?php
 
-class GroupedWorkPrimaryIdentifier extends DataObject{
+class GroupedWorkPrimaryIdentifier extends DataObject {
 	public $__table = 'grouped_work_primary_identifiers';    // table name
 
 	public $id;

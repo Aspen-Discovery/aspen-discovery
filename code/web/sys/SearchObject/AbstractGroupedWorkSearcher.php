@@ -2,26 +2,22 @@
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
-abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_SolrSearcher
-{
+abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_SolrSearcher {
 	protected $searchSubType;
 	protected $searchVersion;
 
 	public $selectedAvailabilityToggleValue;
 
-	public function __construct($searchVersion)
-	{
+	public function __construct($searchVersion) {
 		parent::__construct();
 		$this->searchVersion = $searchVersion;
 	}
 
-	public function disableScoping()
-	{
+	public function disableScoping() {
 		$this->indexEngine->disableScoping();
 	}
 
-	public function enableScoping()
-	{
+	public function enableScoping() {
 		$this->indexEngine->enableScoping();
 	}
 
@@ -36,8 +32,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @param String|null $searchTerm
 	 * @return  boolean
 	 */
-	public function init($searchSource = null, $searchTerm = null)
-	{
+	public function init($searchSource = null, $searchTerm = null) {
 		// Call the standard initialization routine in the parent:
 		parent::init($searchSource);
 
@@ -50,7 +45,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		$restored = $this->restoreSavedSearch(null, true, true);
 		if ($restored === true) {
 			return true;
-		} else if (($restored instanceof AspenError)) {
+		} elseif (($restored instanceof AspenError)) {
 			return false;
 		}
 
@@ -92,7 +87,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			if ($action == 'Home' || $author_ajax_call) {
 				$this->searchSubType = 'home';
 				// Remove our empty basic search (default)
-				$this->searchTerms = array();
+				$this->searchTerms = [];
 				// Prepare the search as a normal author search
 				if (isset($_REQUEST['author'])) {
 					$author = $_REQUEST['author'];
@@ -103,10 +98,10 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					$author = 'Not Provided';
 				}
 
-				$this->searchTerms[] = array(
+				$this->searchTerms[] = [
 					'index' => 'Author',
-					'lookfor' => trim(strip_tags($author))
-				);
+					'lookfor' => trim(strip_tags($author)),
+				];
 			}
 
 			// *** Author/Search
@@ -133,7 +128,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					$this->setFacetSortOrder('count');
 				}
 			}
-		} else if ($module == 'MyAccount') {
+		} elseif ($module == 'MyAccount') {
 			// Users Lists
 			$this->spellcheckEnabled = false;
 			$this->searchType = ($action == 'Home') ? 'favorites' : 'list';
@@ -154,8 +149,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initAdvancedFacets()
-	{
+	public function initAdvancedFacets() {
 		global $locationSingleton;
 		// Call the standard initialization routine in the parent:
 		parent::init();
@@ -186,16 +180,15 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
+		$this->searchTerms[] = [
 			'index' => $this->getDefaultIndex(),
-			'lookfor' => ""
-		);
+			'lookfor' => "",
+		];
 
 		return true;
 	}
 
-	public function getDebugTiming()
-	{
+	public function getDebugTiming() {
 		if (!$this->debug) {
 			return null;
 		} else {
@@ -213,15 +206,14 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @return  string   The searched index
 	 */
-	public function getSearchIndex()
-	{
+	public function getSearchIndex() {
 		// Use normal parent method for non-advanced searches.
 		if ($this->searchType == $this->basicSearchType || $this->searchType == 'author') {
 			return parent::getSearchIndex();
 		} else {
 			if ($this->isAdvanced()) {
 				return 'advanced';
-			}else{
+			} else {
 				return null;
 			}
 		}
@@ -231,10 +223,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of summary data (for later merging)
 	 * @return array
 	 */
-	public function getTitleSummaryInformation($orderedListOfIDs = array())
-	{
+	public function getTitleSummaryInformation($orderedListOfIDs = []) {
 		global $solrScope;
-		$titleSummaries = array();
+		$titleSummaries = [];
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
 			/** @var GroupedWorkDriver $record */
@@ -268,10 +259,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	/*
 	 * Get an array of citations for the records within the search results
 	 */
-	public function getCitations($citationFormat)
-	{
+	public function getCitations($citationFormat) {
 		global $interface;
-		$html = array();
+		$html = [];
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
@@ -289,8 +279,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 *
 	 * @return string  Template file name
 	 */
-	public function getDisplayTemplate()
-	{
+	public function getDisplayTemplate() {
 		if ($this->view == 'covers') {
 			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 		} else { // default
@@ -306,8 +295,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML() {
 		global $interface;
 		global $memoryWatcher;
 		global $timer;
@@ -316,20 +304,20 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		$searchEntry = new SearchEntry();
 		$searchEntry = $searchEntry->getSavedSearchByUrl($this->renderSearchUrl(false), session_id(), UserAccount::getActiveUserId());
 		$isSaved = false;
-		if ($searchEntry != null){
+		if ($searchEntry != null) {
 			$isSaved = $searchEntry->saved;
 		}
 		global $library;
 		$location = Location::getSearchLocation(null);
-		if ($location != null){
+		if ($location != null) {
 			$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
-		}else{
+		} else {
 			$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 		}
 		$alwaysFlagNewTitles = $groupedWorkDisplaySettings->alwaysFlagNewTitles;
-		$html = array();
+		$html = [];
 		if (isset($this->indexResult['response'])) {
-			$allWorkIds = array();
+			$allWorkIds = [];
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$allWorkIds[] = $this->indexResult['response']['docs'][$x]['id'];
 			}
@@ -377,8 +365,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @param array $ids Record IDs to load
 	 */
-	public function setQueryIDs($ids)
-	{
+	public function setQueryIDs($ids) {
 		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
 	}
 
@@ -388,8 +375,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @param string $newQuery Query string
 	 */
-	public function setQueryString($newQuery)
-	{
+	public function setQueryString($newQuery) {
 		$this->query = $newQuery;
 	}
 
@@ -399,17 +385,17 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @param string $newSort Sort string
 	 */
-	public function setFacetSortOrder($newSort)
-	{
+	public function setFacetSortOrder($newSort) {
 		// As of Solr 1.4 valid values are:
 		// 'count' = relevancy ranked
 		// 'index' = index order, most likely alphabetical
 		// more info : http://wiki.apache.org/solr/SimpleFacetParameters#facet.sort
-		if ($newSort == 'count' || $newSort == 'index') $this->facetSort = $newSort;
+		if ($newSort == 'count' || $newSort == 'index') {
+			$this->facetSort = $newSort;
+		}
 	}
 
-	public function supportsSuggestions()
-	{
+	public function supportsSuggestions() {
 		return true;
 	}
 
@@ -418,8 +404,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @param string $searchIndex
 	 * @return array
 	 */
-	public function getSearchSuggestions($searchTerm, $searchIndex)
-	{
+	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
 		if ($searchIndex == 'Title' || $searchIndex == 'StartOfTitle') {
 			$suggestionHandler = 'title_suggest';
@@ -438,17 +423,16 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @return  array    Sort value => description array.
 	 */
-	protected function getSortOptions()
-	{
+	protected function getSortOptions() {
 		// Author/Search screen
 		if ($this->searchType == 'author' && $this->searchSubType == 'search') {
 			// It's important to remember here we are talking about on-screen
 			//   sort values, not what is sent to Solr, since this screen
 			//   is really using facet sorting.
-			return array(
+			return [
 				'relevance' => 'sort_author_relevance',
-				'author' => 'sort_author_author'
-			);
+				'author' => 'sort_author_author',
+			];
 		}
 
 		// Everywhere else -- use normal default behavior
@@ -466,17 +450,19 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  protected
 	 * @return  string   Base URL
 	 */
-	protected function getBaseUrl()
-	{
+	protected function getBaseUrl() {
 		// Base URL is different for author searches:
 		if ($this->searchType == 'author') {
-			if ($this->searchSubType == 'home') return "/Author/Home?";
-			if ($this->searchSubType == 'search') return "/Author/Search?";
-		} else if ($this->searchType == 'favorites') {
+			if ($this->searchSubType == 'home') {
+				return "/Author/Home?";
+			}
+			if ($this->searchSubType == 'search') {
+				return "/Author/Search?";
+			}
+		} elseif ($this->searchType == 'favorites') {
 			return '/MyAccount/Home?';
-		} else if ($this->searchType == 'list') {
-			return '/MyAccount/MyList/' .
-				urlencode($_GET['id']) . '?';
+		} elseif ($this->searchType == 'list') {
+			return '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
 		}
 
 		// If none of the special cases were met, use the default from the parent:
@@ -492,14 +478,17 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
-	protected function getSearchParams()
-	{
-		$params = array();
+	protected function getSearchParams() {
+		$params = [];
 		switch ($this->searchType) {
 			// Author Home screen
 			case "author":
-				if ($this->searchSubType == 'home') $params[] = "author=" . urlencode($this->searchTerms[0]['lookfor']);
-				if ($this->searchSubType == 'search') $params[] = "lookfor=" . urlencode($this->searchTerms[0]['lookfor']);
+				if ($this->searchSubType == 'home') {
+					$params[] = "author=" . urlencode($this->searchTerms[0]['lookfor']);
+				}
+				if ($this->searchSubType == 'search') {
+					$params[] = "lookfor=" . urlencode($this->searchTerms[0]['lookfor']);
+				}
 				$params[] = "basicSearchType=Author";
 				break;
 			// New Items or Reserves modules may have a few extra parameters to preserve:
@@ -541,13 +530,9 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  protected
 	 * @return  array           associative: location (top/side) => search settings
 	 */
-	protected function getRecommendationSettings()
-	{
+	protected function getRecommendationSettings() {
 		return parent::getRecommendationSettings();
 	}
-
-
-
 
 
 	/**
@@ -557,8 +542,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @param null|array $result Existing result set (null to do new search)
 	 * @return  string                  XML document
 	 */
-	public function buildRSS($result = null)
-	{
+	public function buildRSS($result = null) {
 		global $configArray;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
@@ -589,7 +573,10 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		$lookfor = $this->displayQuery();
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate([
+					'text' => 'with filters',
+					'isPublicFacing' => true,
+				]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}
@@ -606,9 +593,8 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * Turn our results into an Excel document
 	 * @param null|array $result
 	 */
-	public function buildExcel($result = null)
-	{
-        global $configArray;
+	public function buildExcel($result = null) {
+		global $configArray;
 		try {
 			// First, get the search results if none were provided
 			// (we'll go for 50 at a time)
@@ -617,14 +603,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$result = $this->processSearch(false, false);
 			}
 
-            // Create new PHPExcel object
-            $objPHPExcel = new PHPExcel();
+			// Create new PHPExcel object
+			$objPHPExcel = new PHPExcel();
 
-            // Set properties
-            $objPHPExcel->getProperties()
-                ->setCreator("Aspen Discovery")
-                ->setLastModifiedBy("Aspen Discovery")
-                ->setTitle("Search Results");
+			// Set properties
+			$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("Search Results");
 
 			$objPHPExcel->setActiveSheetIndex(0);
 			$objPHPExcel->getActiveSheet()->setTitle("Search Results");
@@ -644,82 +627,82 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			$maxColumn = $curCol - 1;
 
 			global $solrScope;
-            $docs = $result['response']['docs'];
+			$docs = $result['response']['docs'];
 
 			for ($i = 0; $i < count($docs); $i++) {
-                //Output the row to excel
-                $curDoc = $docs[$i];
-                $curRow++;
-                $curCol = 0;
-                //Output the row to excel
-                $link = '';
-                if ($curDoc['id']) {
-                    $link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
-                }
-                $sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-                $sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
+				//Output the row to excel
+				$curDoc = $docs[$i];
+				$curRow++;
+				$curCol = 0;
+				//Output the row to excel
+				$link = '';
+				if ($curDoc['id']) {
+					$link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
+				}
+				$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
+				$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
 
-                // Publish Dates: Min-Max
-                if (!is_array($curDoc['publishDate'])) {
-                    $publishDates = (array)$curDoc['publishDate'];
-                } else {
-                    $publishDates = $curDoc['publishDate'];
-                }
-                $publishDate = '';
-                if (count($publishDates) == 1) {
-                    $publishDate = $publishDates[0];
-                } elseif (count($publishDates) > 1) {
-                    $publishDate = min($publishDates) . ' - ' . max($publishDates);
-                }
+				// Publish Dates: Min-Max
+				if (!is_array($curDoc['publishDate'])) {
+					$publishDates = (array)$curDoc['publishDate'];
+				} else {
+					$publishDates = $curDoc['publishDate'];
+				}
+				$publishDate = '';
+				if (count($publishDates) == 1) {
+					$publishDate = $publishDates[0];
+				} elseif (count($publishDates) > 1) {
+					$publishDate = min($publishDates) . ' - ' . max($publishDates);
+				}
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
 
-                // Formats
-                if (!is_array($curDoc['format'])) {
-                    $formats = (array)$curDoc['format'];
-                } else {
-                    $formats = $curDoc['format'];
-                }
-                foreach ($formats as $key=>$format) {
-                    $formats[$key] = substr($format, strpos($format, '#') + 1);
-                }
-                $uniqueFormats = array_unique($formats);
+				// Formats
+				if (!is_array($curDoc['format'])) {
+					$formats = (array)$curDoc['format'];
+				} else {
+					$formats = $curDoc['format'];
+				}
+				foreach ($formats as $key => $format) {
+					$formats[$key] = substr($format, strpos($format, '#') + 1);
+				}
+				$uniqueFormats = array_unique($formats);
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
 
-                // Format / Location / Call number, max 3 records
-                //Get the Grouped Work Driver so we can get information about the formats and locations within the record
-                require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-                $groupedWorkDriver = new GroupedWorkDriver($curDoc);
-                $output = [];
-                foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation){
-                    //Manifestation gives us Format & Format Category
-                    if (!$relatedManifestation->isHideByDefault()) {
-                        $format = $relatedManifestation->format;
-                        //Variation gives us the sort
-                        foreach ($relatedManifestation->getVariations() as $variation) {
-                            if (!$variation->isHideByDefault()) {
-                                //Record will give us the call number, and location
-                                //Only do up to 3 records per format?
-                                foreach ($variation->getRecords() as $record) {
-                                    if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
-                                        $copySummary = $record->getItemSummary();
-                                        foreach ($copySummary as $item) {
-                                                $output[] = $format . "::" . $item['description'];
-                                        }
-                                        $output = array_unique($output);
-                                        $output = array_slice($output, 0, 3);
-                                        if (count($output)==0) {
-                                            $output[] = "No copies currently owned by this library";
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                $sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
+				// Format / Location / Call number, max 3 records
+				//Get the Grouped Work Driver so we can get information about the formats and locations within the record
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($curDoc);
+				$output = [];
+				foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
+					//Manifestation gives us Format & Format Category
+					if (!$relatedManifestation->isHideByDefault()) {
+						$format = $relatedManifestation->format;
+						//Variation gives us the sort
+						foreach ($relatedManifestation->getVariations() as $variation) {
+							if (!$variation->isHideByDefault()) {
+								//Record will give us the call number, and location
+								//Only do up to 3 records per format?
+								foreach ($variation->getRecords() as $record) {
+									if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+										$copySummary = $record->getItemSummary();
+										foreach ($copySummary as $item) {
+											$output[] = $format . "::" . $item['description'];
+										}
+										$output = array_unique($output);
+										$output = array_slice($output, 0, 3);
+										if (count($output) == 0) {
+											$output[] = "No copies currently owned by this library";
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
 			}
 			for ($i = 0; $i < $maxColumn; $i++) {
 				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
@@ -736,7 +719,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
 			$objPHPExcel->disconnectWorksheets();
 			unset($objPHPExcel);
-            exit();
+			exit();
 		} catch (Exception $e) {
 			global $logger;
 			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
@@ -750,8 +733,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @access  public
 	 * @throws  AspenError
 	 */
-	function searchForRecordIds($ids)
-	{
+	function searchForRecordIds($ids) {
 		$this->indexResult = $this->indexEngine->searchForRecordIds($ids);
 	}
 
@@ -764,8 +746,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @return  string              The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecordByBarcode($barcode)
-	{
+	function getRecordByBarcode($barcode) {
 		return $this->indexEngine->getRecordByBarcode($barcode);
 	}
 
@@ -777,45 +758,63 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @return  string              The requested resource
 	 * @throws  AspenError
 	 */
-	function getRecordByIsbn($isbn)
-	{
+	function getRecordByIsbn($isbn) {
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
 	}
 
-	public function setPrimarySearch($flag)
-	{
+	public function setPrimarySearch($flag) {
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
-	public function __destruct()
-	{
+	public function __destruct() {
 		if (isset($this->indexEngine)) {
 			$this->indexEngine = null;
 			unset($this->indexEngine);
 		}
 	}
 
-	public function getSearchIndexes()
-	{
+	public function getSearchIndexes() {
 		return [
-			'Keyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'Title' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'StartOfTitle' => translate(['text'=>'Start of Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'Series' => translate(['text'=>'Series', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'Author' => translate(['text'=>'Author', 'isPublicFacing'=>true, 'inAttribute'=>true]),
-			'Subject' => translate(['text'=>'Subject', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Keyword' => translate([
+				'text' => 'Keyword',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Title' => translate([
+				'text' => 'Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'StartOfTitle' => translate([
+				'text' => 'Start of Title',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Series' => translate([
+				'text' => 'Series',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Author' => translate([
+				'text' => 'Author',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'Subject' => translate([
+				'text' => 'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 
-	public function getRecordDriverForResult($record)
-	{
+	public function getRecordDriverForResult($record) {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		return new GroupedWorkDriver($record);
 	}
 
-	public function getSearchesFile()
-	{
+	public function getSearchesFile() {
 		return 'groupedWorksSearches';
 	}
 
@@ -833,8 +832,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * @param string[] $notInterestedTitles
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $page = 1, $limit = 25, array $notInterestedTitles = [])
-	{
+	function getMoreLikeThese($ids, $page = 1, $limit = 25, array $notInterestedTitles = []) {
 		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit, $notInterestedTitles);
 	}
 
@@ -842,8 +840,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	/**
 	 * @return array
 	 */
-	public function getFacetConfig()
-	{
+	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$searchLibrary = Library::getActiveLibrary();
@@ -875,17 +872,15 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		return $this->facetConfig;
 	}
 
-	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null)
-	{
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null) {
 		return $this->indexEngine->getMoreLikeThis($id, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
 	}
 
-	public function getEngineName(){
+	public function getEngineName() {
 		return 'GroupedWork';
 	}
 
-	public function getDefaultIndex()
-	{
+	public function getDefaultIndex() {
 		return 'Keyword';
 	}
 }

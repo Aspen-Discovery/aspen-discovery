@@ -1,8 +1,7 @@
 <?php
 
 
-class GroupedWorkRecord extends DataObject
-{
+class GroupedWorkRecord extends DataObject {
 	public $__table = 'grouped_work_records';
 	public $id;
 	public $groupedWorkId;

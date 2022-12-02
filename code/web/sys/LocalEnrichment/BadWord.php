@@ -1,33 +1,44 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class BadWord extends DataObject
-{
+
+class BadWord extends DataObject {
 	public $__table = 'bad_words';    // table name
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
 
-	public static function getObjectStructure(): array
-	{
+	public static function getObjectStructure(): array {
 		return [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'word' => array('property' => 'word', 'type' => 'text', 'label' => 'Word', 'description' => 'The word to be censored', 'maxLength' => 50, 'required' => true),
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id',
+			],
+			'word' => [
+				'property' => 'word',
+				'type' => 'text',
+				'label' => 'Word',
+				'description' => 'The word to be censored',
+				'maxLength' => 50,
+				'required' => true,
+			],
 		];
 	}
 
 	/**
 	 * @return string[]
 	 */
-	function getBadWordExpressions() : array {
+	function getBadWordExpressions(): array {
 		global $memCache;
 		global $configArray;
 		global $timer;
 		$badWordsList = $memCache->get('bad_words_list');
-		if ($badWordsList === false){
-			$badWordsList = array();
+		if ($badWordsList === false) {
+			$badWordsList = [];
 			$this->find();
-			if ($this->getNumResults()){
-				while ($this->fetch()){
+			if ($this->getNumResults()) {
+				while ($this->fetch()) {
 					$quotedWord = preg_quote(trim($this->word));
 					//$badWordExpression = '/^(?:.*\W)?(' . preg_quote(trim($badWord->word)) . ')(?:\W.*)?$/';
 					$badWordsList[] = "/^$quotedWord(?=\W)|(?<=\W)$quotedWord(?=\W)|(?<=\W)$quotedWord$|^$quotedWord$/i";
@@ -39,8 +50,8 @@ class BadWord extends DataObject
 		return $badWordsList;
 	}
 
-	function censorBadWords(?string $search, string $replacement = '***') : ?string{
-		if ($search == null){
+	function censorBadWords(?string $search, string $replacement = '***'): ?string {
+		if ($search == null) {
 			return $search;
 		}
 		$badWordsList = $this->getBadWordExpressions();
@@ -48,10 +59,12 @@ class BadWord extends DataObject
 		return $result;
 	}
 
-	function hasBadWords($search) : bool{
+	function hasBadWords($search): bool {
 		$badWordsList = $this->getBadWordExpressions();
 		foreach ($badWordsList as $badWord) {
-			if (preg_match($badWord, $search)) return true;
+			if (preg_match($badWord, $search)) {
+				return true;
+			}
 		}
 		return false;
 	}

@@ -37,11 +37,10 @@
  * @param string $haystack String to unhighlight.
  *
  * @return string          Unhighlighted result.
- */ // @codingStandardsIgnoreStart
-function smarty_modifier_unhighlight($haystack)
-{   // @codingStandardsIgnoreEnd
-    return str_replace(
-        array('{{{{START_HILITE}}}}', '{{{{END_HILITE}}}}'), '', $haystack
-    );
+ */
+function smarty_modifier_unhighlight($haystack) {
+	return str_replace([
+			'{{{{START_HILITE}}}}',
+			'{{{{END_HILITE}}}}',
+		], '', $haystack);
 }
-?>

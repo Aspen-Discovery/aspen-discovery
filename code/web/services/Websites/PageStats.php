@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsitePage.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 
-class Websites_PageStats extends Admin_Admin
-{
-	function launch()
-	{
+class Websites_PageStats extends Admin_Admin {
+	function launch() {
 		global $interface;
 
 		$thisMonth = date('n');
@@ -25,9 +23,9 @@ class Websites_PageStats extends Admin_Admin
 		$websiteId = $_REQUEST['siteId'];
 		$website = new WebsiteIndexSetting();
 		$website->id = $websiteId;
-		if (!$website->find(true)){
+		if (!$website->find(true)) {
 			$interface->assign('error', 'Unable to find the specified website');
-		}else{
+		} else {
 			$interface->assign('websiteName', $website->name);
 			$websitePage = new WebsitePage();
 			$pagesToLoadStatsFor = [];
@@ -35,7 +33,7 @@ class Websites_PageStats extends Admin_Admin
 			$websitePage->deleted = "0";
 			$websitePage->orderBy('url');
 			$websitePage->find();
-			while ($websitePage->fetch()){
+			while ($websitePage->fetch()) {
 				$pagesToLoadStatsFor[$websitePage->id] = $websitePage->url;
 			}
 			$interface->assign('pages', $pagesToLoadStatsFor);
@@ -61,8 +59,7 @@ class Websites_PageStats extends Admin_Admin
 	 * @param int[] $pagesToLoadStatsFor
 	 * @return int[]
 	 */
-	public function getPageStats($month, $year, $pagesToLoadStatsFor): array
-	{
+	public function getPageStats($month, $year, $pagesToLoadStatsFor): array {
 		$usage = new WebPageUsage();
 		if ($month != null) {
 			$usage->month = $month;
@@ -82,24 +79,23 @@ class Websites_PageStats extends Admin_Admin
 		foreach ($pagesToLoadStatsFor as $pageId => $url) {
 			$usageStats[$pageId] = [
 				'numRecordsViewed' => 0,
-				'numRecordsUsed' => 0
+				'numRecordsUsed' => 0,
 			];
 		}
 		while ($usage->fetch()) {
 			//Ignore anything that is deleted
-			if (array_key_exists($usage->webPageId, $usageStats)){
+			if (array_key_exists($usage->webPageId, $usageStats)) {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$usageStats[$usage->webPageId] = [
 					'numRecordsViewed' => $usage->numRecordViewed,
-					'numRecordsUsed' => $usage->numRecordsUsed
+					'numRecordsUsed' => $usage->numRecordsUsed,
 				];
 			}
 		}
 		return $usageStats;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
@@ -108,13 +104,14 @@ class Websites_PageStats extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'web_indexer';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

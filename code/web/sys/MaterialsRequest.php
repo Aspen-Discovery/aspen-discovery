@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class MaterialsRequest extends DataObject
-{
+
+class MaterialsRequest extends DataObject {
 	public $__table = 'materials_request';   // table name
 
 	// Note: if table column names are changed, data for class MaterialsRequestFieldsToDisplay will need updated.
@@ -45,12 +45,15 @@ class MaterialsRequest extends DataObject
 	public $assignedTo;
 	public $staffComments;
 
-	public function getNumericColumnNames(): array
-	{
-		return ['emailSent', 'holdsCreated', 'assignedTo'];
+	public function getNumericColumnNames(): array {
+		return [
+			'emailSent',
+			'holdsCreated',
+			'assignedTo',
+		];
 	}
 
-	static function getFormats(bool $activeFormatsOnly) : array {
+	static function getFormats(bool $activeFormatsOnly): array {
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 		$customFormats = new MaterialsRequestFormats();
 		global $library;
@@ -64,19 +67,19 @@ class MaterialsRequest extends DataObject
 		}
 
 		$customFormats->libraryId = $requestLibrary->libraryId;
-		if ($activeFormatsOnly){
+		if ($activeFormatsOnly) {
 			$customFormats->activeForNewRequests = 1;
 		}
 
-		if ($customFormats->count() == 0 ) {
+		if ($customFormats->count() == 0) {
 			// Default Formats to use when no custom formats are created.
 
 			/** @var MaterialsRequestFormats[] $defaultFormats */
 			$defaultFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($requestLibrary->libraryId);
-			$availableFormats = array();
+			$availableFormats = [];
 
 			global $configArray;
-			foreach ($defaultFormats as $index => $materialRequestFormat){
+			foreach ($defaultFormats as $index => $materialRequestFormat) {
 				$format = $materialRequestFormat->format;
 				if (!isset($configArray['MaterialsRequestFormats'][$format]) || $configArray['MaterialsRequestFormats'][$format] != false) {
 					$availableFormats[$format] = $materialRequestFormat->formatLabel;
@@ -112,24 +115,25 @@ class MaterialsRequest extends DataObject
 	}
 
 	static $materialsRequestEnabled = null;
-	static function enableAspenMaterialsRequest($forceReload = false){
-		if (MaterialsRequest::$materialsRequestEnabled != null && $forceReload == false){
+
+	static function enableAspenMaterialsRequest($forceReload = false) {
+		if (MaterialsRequest::$materialsRequestEnabled != null && $forceReload == false) {
 			return MaterialsRequest::$materialsRequestEnabled;
 		}
 		global $library;
 
 		$enableAspenMaterialsRequest = true;
-		if ($library->enableMaterialsRequest != 1){
+		if ($library->enableMaterialsRequest != 1) {
 			$enableAspenMaterialsRequest = false;
-		}else if (UserAccount::isLoggedIn()){
+		} elseif (UserAccount::isLoggedIn()) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			if (is_null($homeLibrary)) {
 				//User does not have a home library, this is likely an admin account.  Use the active library
 				$homeLibrary = $library;
 			}
-			if ($homeLibrary->enableMaterialsRequest != 1){
+			if ($homeLibrary->enableMaterialsRequest != 1) {
 				$enableAspenMaterialsRequest = false;
-			}else if ($homeLibrary->libraryId != $library->libraryId){
+			} elseif ($homeLibrary->libraryId != $library->libraryId) {
 				$enableAspenMaterialsRequest = false;
 			}
 		}
@@ -149,7 +153,7 @@ class MaterialsRequest extends DataObject
 
 	function getRequestFormFields($libraryId, $isStaffRequest = false) {
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
-		$formFields            = new MaterialsRequestFormFields();
+		$formFields = new MaterialsRequestFormFields();
 		$formFields->libraryId = $libraryId;
 		$formFields->orderBy('weight');
 		/** @var MaterialsRequestFormFields[] $fieldsToSortByCategory */
@@ -160,21 +164,28 @@ class MaterialsRequest extends DataObject
 			$fieldsToSortByCategory = $formFields::getDefaultFormFields($libraryId);
 		}
 
-		if (!$isStaffRequest){
-			foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails){
+		if (!$isStaffRequest) {
+			foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails) {
 				//Remove any fields that are available to staff only
-				if (in_array($fieldDetails->fieldType, array('assignedTo','createdBy','libraryCardNumber','id','status','staffComments'))){
+				if (in_array($fieldDetails->fieldType, [
+					'assignedTo',
+					'createdBy',
+					'libraryCardNumber',
+					'id',
+					'status',
+					'staffComments',
+				])) {
 					unset($fieldsToSortByCategory[$fieldKey]);
 				}
 			}
 		}
 
 		// If we use another interface variable that is sorted by category, this should be a method in the Interface class
-		$requestFormFields = array();
+		$requestFormFields = [];
 		if ($fieldsToSortByCategory) {
 			foreach ($fieldsToSortByCategory as $formField) {
 				if (!array_key_exists($formField->formCategory, $requestFormFields)) {
-					$requestFormFields[$formField->formCategory] = array();
+					$requestFormFields[$formField->formCategory] = [];
 				}
 				$requestFormFields[$formField->formCategory][] = $formField;
 			}
@@ -188,22 +199,22 @@ class MaterialsRequest extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function updateUsageTable(){
+	function updateUsageTable() {
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->id = $this->status;
-		if($materialsRequestStatus->find(true)) {
-			if($materialsRequestStatus->isPurchased == 1) {
+		if ($materialsRequestStatus->find(true)) {
+			if ($materialsRequestStatus->isPurchased == 1) {
 				require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
 				MaterialsRequestUsage::incrementStat($this->status, $this->libraryId);
 			}
 		}
 	}
 
-	function sendStatusChangeEmail(){
+	function sendStatusChangeEmail() {
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->id = $this->status;
-		if ($materialsRequestStatus->find(true)){
-			if ($materialsRequestStatus->sendEmailToPatron == 1 && $this->email){
+		if ($materialsRequestStatus->find(true)) {
+			if ($materialsRequestStatus->sendEmailToPatron == 1 && $this->email) {
 				require_once ROOT_DIR . '/sys/Email/Mailer.php';
 				$mail = new Mailer();
 
@@ -224,24 +235,27 @@ class MaterialsRequest extends DataObject
 				$body .= "\r\n\r\n" . $materialsRequestStatus->emailTemplate;
 
 				if (!empty($emailSignature)) {
-					$body .= "\r\n\r\n" .$emailSignature;
+					$body .= "\r\n\r\n" . $emailSignature;
 				}
 
 				//Replace tags with appropriate values
 				$materialsRequestUser = new User();
 				$materialsRequestUser->id = $this->createdBy;
 				$materialsRequestUser->find(true);
-				foreach ($materialsRequestUser as $fieldName => $fieldValue){
-					if (!is_array($fieldValue)){
+				foreach ($materialsRequestUser as $fieldName => $fieldValue) {
+					if (!is_array($fieldValue)) {
 						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
 					}
 				}
-				foreach ($this as $fieldName => $fieldValue){
-					if (!is_array($fieldValue)){
+				foreach ($this as $fieldName => $fieldValue) {
+					if (!is_array($fieldValue)) {
 						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
 					}
 				}
-				$error = $mail->send($this->email, translate(['text'=>"Your Materials Request Update",'isPublicFacing'=>true]), $body, $replyToAddress);
+				$error = $mail->send($this->email, translate([
+					'text' => "Your Materials Request Update",
+					'isPublicFacing' => true,
+				]), $body, $replyToAddress);
 				if (($error instanceof AspenError)) {
 					global $interface;
 					$interface->assign('error', $error->getMessage());
@@ -251,39 +265,40 @@ class MaterialsRequest extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreatedByFirstName(){
+	function getCreatedByFirstName() {
 		if ($this->getCreatedByUser() != false) {
 			return $this->_createdByUser->firstname;
-		}else{
+		} else {
 			return '';
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreatedByLastName(){
+	function getCreatedByLastName() {
 		if ($this->getCreatedByUser() != false) {
 			return $this->_createdByUser->lastname;
-		}else{
+		} else {
 			return '';
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreatedByUserBarcode(){
+	function getCreatedByUserBarcode() {
 		if ($this->getCreatedByUser() != false) {
 			return $this->_createdByUser->getBarcode();
-		}else{
+		} else {
 			return '';
 		}
 	}
 
 	/** @var User */
 	protected $_createdByUser = null;
-	function getCreatedByUser(){
-		if ($this->_createdByUser == null){
+
+	function getCreatedByUser() {
+		if ($this->_createdByUser == null) {
 			$this->_createdByUser = new User();
 			$this->_createdByUser->id = $this->createdBy;
-			if (!$this->_createdByUser->find(true)){
+			if (!$this->_createdByUser->find(true)) {
 				$this->_createdByUser = false;
 			}
 		}
@@ -292,11 +307,12 @@ class MaterialsRequest extends DataObject
 
 	/** @var User */
 	protected $_assigneeUser = null;
-	function getAssigneeUser(){
-		if ($this->_assigneeUser == null){
-			if (empty($this->assignedTo)){
+
+	function getAssigneeUser() {
+		if ($this->_assigneeUser == null) {
+			if (empty($this->assignedTo)) {
 				$this->_assigneeUser = false;
-			}else {
+			} else {
 				$this->_assigneeUser = new User();
 				$this->_assigneeUser->id = $this->assignedTo;
 				if (!$this->_assigneeUser->find(true)) {
@@ -308,24 +324,23 @@ class MaterialsRequest extends DataObject
 	}
 
 	/** @noinspection PhpUnused */
-	function getAssigneeName(){
+	function getAssigneeName() {
 		if ($this->getAssigneeUser() != false) {
 			return $this->_assigneeUser->displayName;
-		}else{
+		} else {
 			return '';
 		}
 	}
 
-	public function okToExport(array $selectedFilters) : bool{
+	public function okToExport(array $selectedFilters): bool {
 		$okToExport = parent::okToExport($selectedFilters);
-		if (in_array($this->libraryId, $selectedFilters['libraries'])){
+		if (in_array($this->libraryId, $selectedFilters['libraries'])) {
 			$okToExport = true;
 		}
 		return $okToExport;
 	}
 
-	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
-	{
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset ($return['libraryId']);
 		unset ($return['createdBy']);
@@ -334,8 +349,7 @@ class MaterialsRequest extends DataObject
 		return $return;
 	}
 
-	public function getLinksForJSON(): array
-	{
+	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 		//library
 		$allLibraries = Library::getLibraryListAsObjects(false);
@@ -346,71 +360,70 @@ class MaterialsRequest extends DataObject
 		//created  by
 		$user = new User();
 		$user->id = $this->createdBy;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$links['createdBy'] = $user->cat_username;
 		}
 		//assigned to
 		$user = new User();
 		$user->id = $this->assignedTo;
-		if ($user->find(true)){
+		if ($user->find(true)) {
 			$links['assignedTo'] = $user->cat_username;
 		}
 		//Status
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->libraryId = $this->libraryId;
 		$materialsRequestStatus->id = $this->status;
-		if ($materialsRequestStatus->find(true)){
+		if ($materialsRequestStatus->find(true)) {
 			$links['status'] = $materialsRequestStatus->description;
 		}
 
 		return $links;
 	}
 
-	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
-	{
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
 
-		if (isset($jsonData['library'])){
+		if (isset($jsonData['library'])) {
 			$allLibraries = Library::getLibraryListAsObjects(false);
 			$subdomain = $jsonData['library'];
-			if (array_key_exists($subdomain, $mappings['libraries'])){
+			if (array_key_exists($subdomain, $mappings['libraries'])) {
 				$subdomain = $mappings['libraries'][$subdomain];
 			}
-			foreach ($allLibraries as $tmpLibrary){
-				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
+			foreach ($allLibraries as $tmpLibrary) {
+				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain) {
 					$this->libraryId = $tmpLibrary->libraryId;
 					break;
 				}
 			}
 		}
-		if (isset($jsonData['createdBy'])){
+		if (isset($jsonData['createdBy'])) {
 			$username = $jsonData['createdBy'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->createdBy = $user->id;
 			}
 		}
-		if (isset($jsonData['assignedTo'])){
+		if (isset($jsonData['assignedTo'])) {
 			$username = $jsonData['assignedTo'];
 			$user = new User();
 			$user->cat_username = $username;
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				$this->assignedTo = $user->id;
 			}
 		}
-		if (isset($jsonData['status'])){
+		if (isset($jsonData['status'])) {
 			$status = $jsonData['status'];
 			$requestStatus = new MaterialsRequestStatus();
 			$requestStatus->libraryId = $this->libraryId;
 			$requestStatus->description = $status;
-			if ($requestStatus->find(true)){
+			if ($requestStatus->find(true)) {
 				$this->status = $requestStatus->id;
 			}
 		}
 	}
 
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
 		return $result;
 	}

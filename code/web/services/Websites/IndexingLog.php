@@ -4,35 +4,30 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
 
-class Websites_IndexingLog extends Admin_IndexingLog
-{
-	function getIndexLogEntryObject(): BaseLogEntry
-	{
+class Websites_IndexingLog extends Admin_IndexingLog {
+	function getIndexLogEntryObject(): BaseLogEntry {
 		return new WebsiteIndexLogEntry();
 	}
 
-	function getTemplateName() : string
-	{
+	function getTemplateName(): string {
 		return 'websiteIndexLog.tpl';
 	}
 
-	function getTitle() : string
-	{
+	function getTitle(): string {
 		return 'Website Indexing Log';
 	}
 
-	function getModule() : string{
+	function getModule(): string {
 		return 'Websites';
 	}
 
-	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
-		if ($indexingObject instanceof WebsiteIndexLogEntry){
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
+		if ($indexingObject instanceof WebsiteIndexLogEntry) {
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
@@ -40,8 +35,7 @@ class Websites_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'web_indexer';
 	}
 }

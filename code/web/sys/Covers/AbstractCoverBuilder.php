@@ -1,8 +1,7 @@
 <?php
 
 
-abstract class AbstractCoverBuilder
-{
+abstract class AbstractCoverBuilder {
 	protected $imageWidth = 280; //Pixels
 	protected $imageHeight = 400; // Pixels
 
@@ -10,8 +9,7 @@ abstract class AbstractCoverBuilder
 
 	protected $backgroundColor;
 
-	public function __construct($invertColors = false)
-	{
+	public function __construct($invertColors = false) {
 		global $interface;
 		if ($interface == null) {
 			//Need to initialize the interface to get access to the themes
@@ -30,22 +28,22 @@ abstract class AbstractCoverBuilder
 						$this->titleFont = $fontFile;
 					}
 				}
-				if ($invertColors){
+				if ($invertColors) {
 					if (empty($this->backgroundColor) && !$theme->secondaryBackgroundColorDefault) {
 						$colors = sscanf($theme->secondaryBackgroundColor, "#%02x%02x%02x");
 						$this->backgroundColor = [
 							'r' => $colors[0],
 							'g' => $colors[1],
-							'b' => $colors[2]
+							'b' => $colors[2],
 						];
 					}
-				}else {
+				} else {
 					if (empty($this->backgroundColor) && !$theme->primaryBackgroundColorDefault) {
 						$colors = sscanf($theme->primaryBackgroundColor, "#%02x%02x%02x");
 						$this->backgroundColor = [
 							'r' => $colors[0],
 							'g' => $colors[1],
-							'b' => $colors[2]
+							'b' => $colors[2],
 						];
 					}
 				}
@@ -65,8 +63,7 @@ abstract class AbstractCoverBuilder
 	 */
 	public abstract function getCover($title, $filename, $props = null);
 
-	protected function setBackgroundColors($title)
-	{
+	protected function setBackgroundColors($title) {
 		if (isset($this->backgroundColor)) {
 			return;
 		}
@@ -80,15 +77,10 @@ abstract class AbstractCoverBuilder
 		$color_seed = (int)_map(_clip($counts, 2, 80), 2, 80, 10, 360);
 
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
-		$this->backgroundColor = ColorUtils::colorHSLToRGB(
-			($color_seed + $color_distance) % 360,
-			$base_saturation,
-			$base_brightness
-		);
+		$this->backgroundColor = ColorUtils::colorHSLToRGB(($color_seed + $color_distance) % 360, $base_saturation, $base_brightness);
 	}
 
-	protected function drawText($imageCanvas, $title, $textColor, $y = -1, $textHeight = -1, $maxTextLength = 60)
-	{
+	protected function drawText($imageCanvas, $title, $textColor, $y = -1, $textHeight = -1, $maxTextLength = 60) {
 		$title_font_size = $this->imageWidth * 0.09;
 
 		$x = 17;
@@ -102,7 +94,11 @@ abstract class AbstractCoverBuilder
 
 		$title = StringUtils::trimStringToLengthAtWordBoundary($title, $maxTextLength, true);
 		/** @noinspection PhpUnusedLocalVariableInspection */
-		list($totalHeight, $lines, $font_size) = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $textHeight);
+		[
+			$totalHeight,
+			$lines,
+			$font_size,
+		] = wrapTextForDisplay($this->titleFont, $title, $title_font_size, $title_font_size * .15, $width, $textHeight);
 		addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $lines, $font_size, $font_size * .15, $x, $y, $this->imageWidth - 30, $textColor);
 	}
 }

@@ -18,7 +18,7 @@ class SSOSettings extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-		$list = array();
+		$list = [];
 
 		$object = new SSOSetting();
 		$object->orderBy($this->getSort());

@@ -9,9 +9,9 @@ class MillenniumHolds {
 	}
 
 	protected function _getHoldResult($holdResultPage) {
-		$hold_result = array();
+		$hold_result = [];
 		//Get rid of header and footer information and just get the main content
-		$matches = array();
+		$matches = [];
 
 		$numMatches = preg_match('/<td.*?class="pageMainArea">(.*)?<\/td>/s', $holdResultPage, $matches);
 		//For Encore theme, try with some divs
@@ -30,7 +30,10 @@ class MillenniumHolds {
 			$cleanResponse = trim(strip_tags($cleanResponse));
 
 			if (strpos($cleanResponse, "\n") > 0) {
-				list($book, $reason) = explode("\n", $cleanResponse);
+				[
+					$book,
+					$reason,
+				] = explode("\n", $cleanResponse);
 			} else {
 				$book = $cleanResponse;
 				$reason = '';
@@ -43,12 +46,12 @@ class MillenniumHolds {
 				if (!isset($reason) || strlen($reason) == 0) {
 					$hold_result['message'] = translate([
 						'text' => "Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account.",
-						'isPublicFacing' => true
+						'isPublicFacing' => true,
 					]);
 				} else {
 					$hold_result['message'] = $reason;
 				}
-			} else if (!isset($reason) || strlen($reason) == 0) {
+			} elseif (!isset($reason) || strlen($reason) == 0) {
 				//Didn't get a reason back.  This really shouldn't happen.
 				$hold_result['success'] = false;
 				$hold_result['message'] = 'Did not receive a response from the circulation system.  Please try again in a few minutes.';
@@ -61,14 +64,14 @@ class MillenniumHolds {
 			if ($itemMatches > 0) {
 				//Get information about the items that are available for holds
 				preg_match_all('/<tr\\s+class="bibItemsEntry">.*?<input type="radio" name="radio" value="(.*?)".*?>.*?<td.*?>(.*?)<\/td>.*?<td.*?>(.*?)<\/td>.*?<td.*?>(.*?)<\/td>.*?<\/tr>/s', $holdResultPage, $itemInfo, PREG_PATTERN_ORDER);
-				$items = array();
+				$items = [];
 				for ($i = 0; $i < count($itemInfo[0]); $i++) {
-					$items[] = array(
+					$items[] = [
 						'itemNumber' => $itemInfo[1][$i],
 						'location' => trim(str_replace('&nbsp;', '', $itemInfo[2][$i])),
 						'callNumber' => trim(str_replace('&nbsp;', '', $itemInfo[3][$i])),
 						'status' => trim(str_replace('&nbsp;', '', $itemInfo[4][$i])),
-					);
+					];
 				}
 				$hold_result['items'] = $items;
 				if (count($items) > 0) {
@@ -113,7 +116,7 @@ class MillenniumHolds {
 		$scope = $this->driver->getDefaultScope();
 
 		if (!isset($xNum)) {
-			$xNum = is_array($cancelId) ? $cancelId : array($cancelId);
+			$xNum = is_array($cancelId) ? $cancelId : [$cancelId];
 		}
 
 		$location = new Location();
@@ -134,15 +137,18 @@ class MillenniumHolds {
 		$holds = $this->getHolds($patron, $indexingProfile);
 		$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 
-		$postVariables = array(
+		$postVariables = [
 			'updateholdssome' => 'TRUE',
 			'currentsortorder' => 'current_pickup',
-		);
+		];
 
 		$titles = [];
 		foreach ($xNum as $tmpXnumInfo) {
 			if (strpos($tmpXnumInfo, '~') !== false) {
-				list($tmpBib, $tmpXnum) = explode('~', $tmpXnumInfo);
+				[
+					$tmpBib,
+					$tmpXnum,
+				] = explode('~', $tmpXnumInfo);
 			} else {
 				$tmpBib = $tmpXnumInfo;
 				$tmpXnum = '';
@@ -204,9 +210,9 @@ class MillenniumHolds {
 		$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 		//Finally, check to see if the update was successful.
 		if ($type == 'cancel' || $type == 'recall') {
-			$failure_messages = array();
+			$failure_messages = [];
 			foreach ($xNum as $tmpXnumInfo) {
-				list($tmpBib) = explode('~', $tmpXnumInfo);
+				[$tmpBib] = explode('~', $tmpXnumInfo);
 				foreach ($combined_holds as $hold) {
 					$tmpCancelId = strstr($hold->cancelId, '~', true); // get the cancel id without the position component
 					if ($tmpBib == $hold->shortId || $tmpBib == $tmpCancelId) { // this hold failed (item still listed as on hold)
@@ -233,9 +239,9 @@ class MillenniumHolds {
 				// TODO Collect errors here.
 				$success = true;
 			} elseif ($freezeValue == 'on') {
-				$failure_messages = array();
+				$failure_messages = [];
 				foreach ($xNum as $tmpXnumInfo) {
-					list($tmpBib) = explode('~', $tmpXnumInfo);
+					[$tmpBib] = explode('~', $tmpXnumInfo);
 					foreach ($combined_holds as $hold) {
 						if ($tmpBib == $hold->shortId) { // this hold failed (item still on hold)
 							$title = (array_key_exists($tmpBib, $titles) && $titles[$tmpBib] != '') ? $titles[$tmpBib] : 'an item';
@@ -244,7 +250,7 @@ class MillenniumHolds {
 								$failure_messages[$tmpXnumInfo] = translate([
 									'text' => "The hold for %1% could not be frozen.  Please try again later or see your librarian.",
 									1 => $title,
-									'isPublicFacing' => true
+									'isPublicFacing' => true,
 								]);
 								// use original id as index so that javascript functions can pick out failed cancels
 							}
@@ -276,17 +282,17 @@ class MillenniumHolds {
 		$isPlural = count($xNum) > 1;
 		if ($type == 'cancel' || $type == 'recall') {
 			if ($success) { // All were successful
-				return array(
+				return [
 					'title' => $titles,
 					'success' => true,
-					'message' => 'Your hold' . ($isPlural ? 's were' : ' was') . ' cancelled successfully.'
-				);
+					'message' => 'Your hold' . ($isPlural ? 's were' : ' was') . ' cancelled successfully.',
+				];
 			} else { // at least one failure
-				return array(
+				return [
 					'title' => $titles,
 					'success' => false,
-					'message' => $failure_messages
-				);
+					'message' => $failure_messages,
+				];
 			}
 		} elseif ($type == 'update') {
 			// Thaw Hold
@@ -296,14 +302,14 @@ class MillenniumHolds {
 				} else {
 					$message = 'Your holds was thawed successfully.';
 				}
-				return array(
+				return [
 					'title' => $titles,
 					'success' => true,
 					'message' => translate([
 						'text' => $message,
-						'isPublicFacing' => true
-					])
-				);
+						'isPublicFacing' => true,
+					]),
+				];
 			} elseif ($freezeValue == 'on') {
 				//TODO check for error messages
 				if ($success) { // All were successful
@@ -312,20 +318,20 @@ class MillenniumHolds {
 					} else {
 						$message = 'Your holds was frozen successfully.';
 					}
-					return array(
+					return [
 						'title' => $titles,
 						'success' => true,
 						'message' => translate([
 							'text' => $message,
-							'isPublicFacing' => true
-						])
-					);
+							'isPublicFacing' => true,
+						]),
+					];
 				} else { // at least one failure
-					return array(
+					return [
 						'title' => $titles,
 						'success' => false,
-						'message' => $failure_messages
-					);
+						'message' => $failure_messages,
+					];
 				}
 			} elseif ($freezeValue == '') {
 				// Change Pick-up Location
@@ -335,14 +341,14 @@ class MillenniumHolds {
 				} else {
 					$message = 'Your holds was updated successfully.';
 				}
-				return array(
+				return [
 					'title' => $titles,
 					'success' => true,
 					'message' => translate([
 						'text' => $message,
-						'isPublicFacing' => true
-					])
-				);
+						'isPublicFacing' => true,
+					]),
+				];
 			}
 
 		} else {
@@ -351,14 +357,14 @@ class MillenniumHolds {
 			} else {
 				$message = 'Your holds was updated successfully.';
 			}
-			return array(
+			return [
 				'title' => $titles,
 				'success' => true,
 				'message' => translate([
 					'text' => $message,
-					'isPublicFacing' => true
-				])
-			);
+					'isPublicFacing' => true,
+				]),
+			];
 		}
 		return null;
 	}
@@ -372,26 +378,26 @@ class MillenniumHolds {
 	public function parseHoldsPage($pageContents, $patron, $indexingProfile) {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 
-		$availableHolds = array();
-		$unavailableHolds = array();
-		$holds = array(
+		$availableHolds = [];
+		$unavailableHolds = [];
+		$holds = [
 			'available' => $availableHolds,
-			'unavailable' => $unavailableHolds
-		);
+			'unavailable' => $unavailableHolds,
+		];
 
 		//Fix presentation error for notice when freezing a hold has failed
 		$pageContents = str_replace('<em>This hold can not be frozen.</em></tr>', '<em>This hold can not be frozen.</em></td></tr>', $pageContents);
 
 		//Get the headers from the table
 		preg_match_all('/<th\\s+(?:.*?)class="patFuncHeaders">\\s*([\\w\\s]*?)\\s*<\/th>/si', $pageContents, $result, PREG_SET_ORDER);
-		$sKeys = array();
+		$sKeys = [];
 		for ($matchi = 0; $matchi < count($result); $matchi++) {
 			$sKeys[] = $result[$matchi][1];
 		}
 
 		//Get the rows for the table
 		preg_match_all('/<tr\\s+class="patFuncEntry(?: on_ice)?">(.*?)<\/tr>/si', $pageContents, $result, PREG_SET_ORDER);
-		$sRows = array();
+		$sRows = [];
 		for ($matchi = 0; $matchi < count($result); $matchi++) {
 			$sRows[] = $result[$matchi][1];
 		}
@@ -400,7 +406,7 @@ class MillenniumHolds {
 
 		foreach ($sRows as $sRow) {
 			preg_match_all('/<t[dh].*?>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
-			$sCols = array();
+			$sCols = [];
 			for ($matchi = 0; $matchi < count($result); $matchi++) {
 				$sCols[] = $result[$matchi][1];
 			}
@@ -421,7 +427,7 @@ class MillenniumHolds {
 
 				if ($sKeys[$i] == "CANCEL") { //Only check Cancel key, not Cancel if not filled by
 					//Extract the id from the checkbox
-					$matches = array();
+					$matches = [];
 					$numMatches = preg_match_all('/.*?cancel(.*?)x(\\d\\d).*/s', $sCols[$i], $matches);
 					if ($numMatches > 0) {
 						$curHold->cancelable = true;
@@ -457,7 +463,7 @@ class MillenniumHolds {
 				} elseif (stripos($sKeys[$i], "PICKUP LOCATION") > -1) {
 
 					//Extract the current location for the hold if possible
-					$matches = array();
+					$matches = [];
 					if (preg_match('/<select\\s+name=loc(.*?)x(\\d\\d).*?<option\\s+value="([a-z0-9+ ]{1,5})"\\s+selected="selected">.*/s', $sCols[$i], $matches)) {
 						$curHold->pickupLocationName = $matches[1];
 						$curPickupBranch = new Location();
@@ -512,13 +518,13 @@ class MillenniumHolds {
 						#PK-778 - Don't attempt to show status for anything other than ready for pickup since Millennium/Sierra statuses are confusing
 						$curHold->status = "Pending";
 					}
-					$matches = array();
+					$matches = [];
 				} elseif (stripos($sKeys[$i], "CANCEL IF NOT FILLED BY") > -1) {
 					$extractedDate = strip_tags($sCols[$i]);
 					$extractedDate = date_create_from_format('m-j-y', $extractedDate);
 					$curHold->automaticCancellationDate = $extractedDate ? $extractedDate->getTimestamp() : null;
 				} elseif (stripos($sKeys[$i], "FREEZE") > -1) {
-					$matches = array();
+					$matches = [];
 					$curHold->frozen = false;
 					if (preg_match('/<input.*name="freeze(.*?)"\\s*(\\w*)\\s*\/>/', $sCols[$i], $matches)) {
 						$curHold->canFreeze = true;
@@ -642,10 +648,10 @@ class MillenniumHolds {
 
 		$bib = substr(str_replace('.b', 'b', $bib1), 0, -1);
 		if (strlen($bib) == 0) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'A valid record id was not provided. Please try again.'
-			);
+				'message' => 'A valid record id was not provided. Please try again.',
+			];
 		}
 
 		//Get the title of the book.
@@ -673,19 +679,23 @@ class MillenniumHolds {
 			}
 		}
 
-		list($Month, $Day, $Year) = explode("/", $date);
+		[
+			$Month,
+			$Day,
+			$Year,
+		] = explode("/", $date);
 
 		//Make sure to connect via the driver so cookies will be correct
 		$this->driver->curlWrapper->curl_connect();
 
 		$loginResult = $this->driver->_curl_login($patron);
 		if (!$loginResult) {
-			return array(
+			return [
 				'title' => $title,
 				'bib' => $bib1,
 				'success' => false,
-				'message' => 'Unable to login to the circulation system to place your hold.'
-			);
+				'message' => 'Unable to login to the circulation system to place your hold.',
+			];
 		}
 
 		$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
@@ -757,10 +767,10 @@ class MillenniumHolds {
 
 		$bib = substr(str_replace('.b', 'b', $bib1), 0, -1);
 		if (strlen($bib) == 0) {
-			return array(
+			return [
 				'success' => false,
-				'message' => 'A valid record id was not provided. Please try again.'
-			);
+				'message' => 'A valid record id was not provided. Please try again.',
+			];
 		}
 
 		//Get the title of the book.
@@ -789,7 +799,11 @@ class MillenniumHolds {
 			}
 		}
 
-		list($Month, $Day, $Year) = explode("/", $date);
+		[
+			$Month,
+			$Day,
+			$Year,
+		] = explode("/", $date);
 
 		//Make sure to connect via the driver so cookies will be correct
 		$this->driver->curlWrapper->curl_connect();

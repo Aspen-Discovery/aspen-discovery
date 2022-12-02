@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/sys/Grouping/StatusInformation.php';
 
-class Grouping_Variation
-{
+class Grouping_Variation {
 	public $id;
 	public $databaseId;
 	public $label;
@@ -27,25 +26,30 @@ class Grouping_Variation
 	 * Grouping_Variation constructor.
 	 * @param Grouping_Record|array $record
 	 */
-	public function __construct($record)
-	{
-		if (is_array($record)){
+	public function __construct($record) {
+		if (is_array($record)) {
 			$this->isEcontent = $record['eContentSource'] != null;
 			$this->econtentSource = $record['eContentSource'];
-			$this->language = $record['language'] ==  null ? 'Unknown' : $record['language'];
+			$this->language = $record['language'] == null ? 'Unknown' : $record['language'];
 			$this->databaseId = $record['id'];
-		}else {
+		} else {
 			$this->isEcontent = $record->isEContent();
 			$this->econtentSource = $record->getEContentSource();
 			$this->language = $record->language;
 		}
 		$this->label = $this->econtentSource;
 		if ($this->language != 'English' || !$this->isEcontent) {
-			$this->label = trim(translate(['text'=>$this->econtentSource,'isPublicFacing'=>true]) . ' ' . translate(['text'=>$this->language,'isPublicFacing'=>true]));
+			$this->label = trim(translate([
+					'text' => $this->econtentSource,
+					'isPublicFacing' => true,
+				]) . ' ' . translate([
+					'text' => $this->language,
+					'isPublicFacing' => true,
+				]));
 		}
 		$this->id = trim($this->econtentSource . ' ' . $this->language);
 		$this->_statusInformation = new Grouping_StatusInformation();
-		if (!is_array($record)){
+		if (!is_array($record)) {
 			$this->addRecord($record);
 		}
 	}
@@ -53,13 +57,11 @@ class Grouping_Variation
 	/**
 	 * @return Grouping_Record[]
 	 */
-	public function getRecords()
-	{
+	public function getRecords() {
 		return $this->_records;
 	}
 
-	public function isValidForRecord(Grouping_Record $record)
-	{
+	public function isValidForRecord(Grouping_Record $record) {
 		if ($record->isEContent() != $this->isEcontent) {
 			return false;
 		}
@@ -72,31 +74,27 @@ class Grouping_Variation
 		return true;
 	}
 
-	public function addRecord(Grouping_Record $record)
-	{
+	public function addRecord(Grouping_Record $record) {
 		$this->_records[] = $record;
 		$this->_statusInformation->updateStatus($record->getStatusInformation());
 	}
 
-	public function getNumRelatedRecords(): int
-	{
+	public function getNumRelatedRecords(): int {
 		return count($this->_records);
 	}
 
-	public function getRelatedRecords()
-	{
+	public function getRelatedRecords() {
 		return $this->_records;
 	}
 
-	public function setSortedRelatedRecords($relatedRecords){
+	public function setSortedRelatedRecords($relatedRecords) {
 		$this->_records = $relatedRecords;
 	}
 
 	/**
 	 * @return Grouping_StatusInformation
 	 */
-	public function getStatusInformation(): Grouping_StatusInformation
-	{
+	public function getStatusInformation(): Grouping_StatusInformation {
 		return $this->_statusInformation;
 	}
 
@@ -105,13 +103,12 @@ class Grouping_Variation
 	/**
 	 * @return array
 	 */
-	public function getActions(): array
-	{
+	public function getActions(): array {
 		global $timer;
 		if ($this->_actions == null) {
 			if ($this->getNumRelatedRecords() == 0) {
 				$this->_actions = [];
-			} else if ($this->getNumRelatedRecords() == 1) {
+			} elseif ($this->getNumRelatedRecords() == 1) {
 				$firstRecord = $this->getFirstRecord();
 				$this->_actions = $firstRecord->getActions();
 			} else {
@@ -129,7 +126,7 @@ class Grouping_Variation
 						}
 					}
 					if ($promptForAlternateEdition) {
-						$alteredActions = array();
+						$alteredActions = [];
 						foreach ($bestRecord->getActions() as $action) {
 							$action['onclick'] = str_replace('Record.showPlaceHold(', 'Record.showPlaceHoldEditions(', $action['onclick']);
 							$alteredActions[] = $action;
@@ -151,12 +148,12 @@ class Grouping_Variation
 				foreach ($this->_records as $relatedRecord) {
 					$actions = $relatedRecord->getActions();
 					foreach ($actions as $action) {
-						if ($action['type'] == 'download_pdf'){
+						if ($action['type'] == 'download_pdf') {
 							$numDownloadablePDFs += 1;
 							if ($numDownloadablePDFs == 1) {
 								$downloadPdfAction = $action;
 							}
-						}elseif ($action['type'] == 'download_supplemental_file'){
+						} elseif ($action['type'] == 'download_supplemental_file') {
 							$numDownloadableSupplementalFiles += 1;
 							if ($numDownloadableSupplementalFiles == 1) {
 								$downloadSupplementalFileAction = $action;
@@ -164,53 +161,62 @@ class Grouping_Variation
 						}
 					}
 				}
-				if (($downloadPdfAction > 0) || ($numDownloadableSupplementalFiles > 0)){
+				if (($downloadPdfAction > 0) || ($numDownloadableSupplementalFiles > 0)) {
 					//Remove the action for downloading pdf & supplemental files if they exist
 					foreach ($this->_actions as $key => $action) {
-						if ($action['type'] == 'download_pdf' || $action['type'] == 'view_pdf' || $action['type'] == 'download_supplemental_file'){
+						if ($action['type'] == 'download_pdf' || $action['type'] == 'view_pdf' || $action['type'] == 'download_supplemental_file') {
 							unset($this->_actions[$key]);
 						}
 					}
 					if ($numDownloadablePDFs == 1) {
 						//Add the existing action
 						$this->_actions[] = $downloadPdfAction;
-					}elseif ($numDownloadablePDFs > 1) {
+					} elseif ($numDownloadablePDFs > 1) {
 						//Create a new action to allow the patron to select the correct pdf
 						$driver = $bestRecord->getDriver();
 						if ($driver == null) {
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
-						$this->_actions[] = array(
-							'title' => translate(['text'=>'View PDF','isPublicFacing'=>true]),
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'View PDF',
+								'isPublicFacing' => true,
+							]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileToView('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
-							'type' => 'view_pdfs'
-						);
-						$this->_actions[] = array(
-							'title' => translate(['text'=>'Download PDF','isPublicFacing'=>true]),
+							'type' => 'view_pdfs',
+						];
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'Download PDF',
+								'isPublicFacing' => true,
+							]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
-							'type' => 'download_pdfs'
-						);
+							'type' => 'download_pdfs',
+						];
 					}
 					if ($numDownloadableSupplementalFiles == 1) {
 						//Add the existing action
 						$this->_actions[] = $downloadSupplementalFileAction;
-					}elseif ($numDownloadableSupplementalFiles > 1) {
+					} elseif ($numDownloadableSupplementalFiles > 1) {
 						//Create a new action to allow the patron to select the correct supplemental file
 						$driver = $bestRecord->getDriver();
 						if ($driver == null) {
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
-						$this->_actions[] = array(
-							'title' => translate(['text'=>'Download Supplemental File','isPublicFacing'=>true]),
+						$this->_actions[] = [
+							'title' => translate([
+								'text' => 'Download Supplemental File',
+								'isPublicFacing' => true,
+							]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordSupplementalFile');",
 							'requireLogin' => false,
-							'type' => 'download_supplemental_file'
-						);
+							'type' => 'download_supplemental_file',
+						];
 					}
 				}
 			}
@@ -224,8 +230,7 @@ class Grouping_Variation
 	/**
 	 * @return string
 	 */
-	public function getUrl(): string
-	{
+	public function getUrl(): string {
 		if ($this->getNumRelatedRecords() == 1) {
 			$firstRecord = $this->getFirstRecord();
 			return $firstRecord->getUrl();
@@ -234,8 +239,7 @@ class Grouping_Variation
 		}
 	}
 
-	public function getFirstRecord(): Grouping_Record
-	{
+	public function getFirstRecord(): Grouping_Record {
 		return reset($this->_records);
 	}
 
@@ -244,8 +248,7 @@ class Grouping_Variation
 	/**
 	 * @return array
 	 */
-	function getItemSummary()
-	{
+	function getItemSummary() {
 		if ($this->_itemSummary == null) {
 			global $timer;
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
@@ -261,8 +264,9 @@ class Grouping_Variation
 	}
 
 	protected $_itemsDisplayedByDefault = null;
-	function getItemsDisplayedByDefault(){
-		if ($this->_itemsDisplayedByDefault == null){
+
+	function getItemsDisplayedByDefault() {
+		if ($this->_itemsDisplayedByDefault == null) {
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemsDisplayedByDefault = [];
 			foreach ($this->_records as $record) {
@@ -274,29 +278,25 @@ class Grouping_Variation
 		return $this->_itemsDisplayedByDefault;
 	}
 
-	public function getCopies()
-	{
+	public function getCopies() {
 		return $this->_statusInformation->getCopies();
 	}
 
 	/**
 	 * @return bool
 	 */
-	function isHideByDefault(): bool
-	{
+	function isHideByDefault(): bool {
 		return $this->_hideByDefault;
 	}
 
 	/**
 	 * @param bool $hideByDefault
 	 */
-	function setHideByDefault(bool $hideByDefault): void
-	{
+	function setHideByDefault(bool $hideByDefault): void {
 		$this->_hideByDefault = $hideByDefault;
 	}
 
-	function isEContent()
-	{
+	function isEContent() {
 		return $this->isEcontent;
 	}
 }
