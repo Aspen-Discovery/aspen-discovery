@@ -8,8 +8,7 @@
  */
 require_once ROOT_DIR . '/Drivers/AbstractDriver.php';
 
-abstract class AbstractIlsDriver extends AbstractDriver
-{
+abstract class AbstractIlsDriver extends AbstractDriver {
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
 	protected $webServiceURL;
@@ -17,8 +16,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
-	public function __construct($accountProfile)
-	{
+	public function __construct($accountProfile) {
 		$this->accountProfile = $accountProfile;
 	}
 
@@ -46,28 +44,27 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 */
 	abstract function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
 
-	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) : array;
+	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate): array;
 
-	abstract function thawHold(User $patron, $recordId, $itemToThawId) : array;
+	abstract function thawHold(User $patron, $recordId, $itemToThawId): array;
 
-	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array;
+	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation): array;
 
 	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade);
 
-	function updateHomeLibrary(User $patron, string $homeLibraryCode){
+	function updateHomeLibrary(User $patron, string $homeLibraryCode) {
 		return [
 			'success' => false,
-			'messages' => ['Cannot update home library with this ILS.']
+			'messages' => ['Cannot update home library with this ILS.'],
 		];
 	}
 
-	public abstract function getFines(User $patron, $includeMessages = false) : array;
+	public abstract function getFines(User $patron, $includeMessages = false): array;
 
 	/**
 	 * @return IndexingProfile|null
 	 */
-	public function getIndexingProfile() : ?IndexingProfile
-	{
+	public function getIndexingProfile(): ?IndexingProfile {
 		global $indexingProfiles;
 		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
 			/** @var IndexingProfile $indexingProfile */
@@ -77,8 +74,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		}
 	}
 
-	public function getWebServiceURL()
-	{
+	public function getWebServiceURL() {
 		if (empty($this->webServiceURL)) {
 			$webServiceURL = null;
 			if (!empty($this->accountProfile->patronApiUrl)) {
@@ -92,8 +88,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return $this->webServiceURL;
 	}
 
-	public function getVendorOpacUrl()
-	{
+	public function getVendorOpacUrl() {
 		global $configArray;
 
 		if ($this->accountProfile && $this->accountProfile->vendorOpacUrl) {
@@ -108,8 +103,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return $host;
 	}
 
-	function showOutstandingFines()
-	{
+	function showOutstandingFines() {
 		return false;
 	}
 
@@ -121,59 +115,53 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * - emailAspenResetLink - A link to reset the pin is emailed to the user.  Reset happens within Aspen.
 	 * @return string
 	 */
-	function getForgotPasswordType()
-	{
+	function getForgotPasswordType() {
 		return 'none';
 	}
 
-	function getEmailResetPinTemplate()
-	{
+	function getEmailResetPinTemplate() {
 		return 'overrideInDriver';
 	}
 
-	function processEmailResetPinForm()
-	{
+	function processEmailResetPinForm() {
 		return [
 			'success' => false,
 			'error' => 'This functionality is not available in the ILS.',
 		];
 	}
 
-	function selfRegisterViaSSO($ssoUser) : array {
+	function selfRegisterViaSSO($ssoUser): array {
 		return [
 			'success' => false,
 		];
 	}
 
-	function selfRegister() : array
-	{
+	function selfRegister(): array {
 		return [
 			'success' => false,
 		];
 	}
 
-	function getSelfRegistrationFields()
-	{
+	function getSelfRegistrationFields() {
 		return [];
 	}
 
-	function hasUsernameField()
-	{
+	function hasUsernameField() {
 		return false;
 	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin)
-	{
-		return ['success' => false, 'message' => 'Can not update PINs, this ILS does not support updating PINs'];
+	function updatePin(User $patron, string $oldPin, string $newPin) {
+		return [
+			'success' => false,
+			'message' => 'Can not update PINs, this ILS does not support updating PINs',
+		];
 	}
 
-	function hasMaterialsRequestSupport()
-	{
+	function hasMaterialsRequestSupport() {
 		return false;
 	}
 
-	function getNewMaterialsRequestForm(User $user)
-	{
+	function getNewMaterialsRequestForm(User $user) {
 		return 'not supported';
 	}
 
@@ -181,24 +169,26 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $user
 	 * @return string[]
 	 */
-	function processMaterialsRequestForm(User $user)
-	{
-		return ['success' => false, 'message' => 'Not Implemented'];
+	function processMaterialsRequestForm(User $user) {
+		return [
+			'success' => false,
+			'message' => 'Not Implemented',
+		];
 	}
 
-	function getMaterialsRequests(User $user)
-	{
+	function getMaterialsRequests(User $user) {
 		return [];
 	}
 
-	function getMaterialsRequestsPage(User $user)
-	{
+	function getMaterialsRequestsPage(User $user) {
 		return 'not supported';
 	}
 
-	function deleteMaterialsRequests(User $patron)
-	{
-		return ['success' => false, 'message' => 'Not Implemented'];
+	function deleteMaterialsRequests(User $patron) {
+		return [
+			'success' => false,
+			'message' => 'Not Implemented',
+		];
 	}
 
 	/**
@@ -207,25 +197,22 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $user
 	 * @return string|null
 	 */
-	function getPatronUpdateForm(User $user)
-	{
+	function getPatronUpdateForm(User $user) {
 		return null;
 	}
 
-	function getNumMaterialsRequests(User $user)
-	{
+	function getNumMaterialsRequests(User $user) {
 		return 0;
 	}
 
-	function importListsFromIls(User $patron)
-	{
-		return array(
+	function importListsFromIls(User $patron) {
+		return [
 			'success' => false,
-			'errors' => array('Importing Lists has not been implemented for this ILS.'));
+			'errors' => ['Importing Lists has not been implemented for this ILS.'],
+		];
 	}
 
-	public function getAccountSummary(User $patron) : AccountSummary
-	{
+	public function getAccountSummary(User $patron): AccountSummary {
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
 		$summary->userId = $patron->id;
@@ -237,8 +224,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	/**
 	 * @return bool
 	 */
-	public function showMessagingSettings() : bool
-	{
+	public function showMessagingSettings(): bool {
 		return false;
 	}
 
@@ -246,76 +232,69 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $patron
 	 * @return string|null
 	 */
-	public function getMessagingSettingsTemplate(User $patron) : ?string
-	{
+	public function getMessagingSettingsTemplate(User $patron): ?string {
 		return null;
 	}
 
-	public function processMessagingSettingsForm(User $patron) : array
-	{
+	public function processMessagingSettingsForm(User $patron): array {
 		return [
 			'success' => false,
-			'message' => 'Notification Settings are not implemented for this ILS'
+			'message' => 'Notification Settings are not implemented for this ILS',
 		];
 	}
 
-	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
-	{
-		return array(
-			'success' => false,
-			'message' => 'Volume level holds have not been implemented for this ILS.');
-	}
-
-	public function completeFinePayment(User $patron, UserPayment $payment)
-	{
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'Volume level holds have not been implemented for this ILS.',
 		];
 	}
 
-	public function patronEligibleForHolds(User $patron)
-	{
+	public function completeFinePayment(User $patron, UserPayment $payment) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS',
+		];
+	}
+
+	public function patronEligibleForHolds(User $patron) {
 		return [
 			'isEligible' => true,
 			'message' => '',
 			'fineLimitReached' => false,
 			'maxPhysicalCheckoutsReached' => false,
-			'expiredPatronWhoCannotPlaceHolds' => false
+			'expiredPatronWhoCannotPlaceHolds' => false,
 		];
 	}
 
-	public function getShowAutoRenewSwitch(User $patron)
-	{
+	public function getShowAutoRenewSwitch(User $patron) {
 		return false;
 	}
 
-	public function isAutoRenewalEnabledForUser(User $patron)
-	{
+	public function isAutoRenewalEnabledForUser(User $patron) {
 		return false;
 	}
 
-	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
-	{
+	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
-	function getPasswordRecoveryTemplate(){
+	function getPasswordRecoveryTemplate() {
 		return null;
 	}
 
-	function processPasswordRecovery(){
+	function processPasswordRecovery() {
 		return null;
 	}
 
-	function getEmailResetPinResultsTemplate(){
+	function getEmailResetPinResultsTemplate() {
 		return null;
 	}
 
-	function getPasswordPinValidationRules(){
+	function getPasswordPinValidationRules() {
 		global $library;
 		return [
 			'minLength' => $library->minPinLength,
@@ -324,25 +303,22 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	public function hasEditableUsername()
-	{
+	public function hasEditableUsername() {
 		return false;
 	}
 
-	public function getEditableUsername(User $user)
-	{
+	public function getEditableUsername(User $user) {
 		return null;
 	}
 
-	public function updateEditableUsername(User $patron, string $username) : array
-	{
+	public function updateEditableUsername(User $patron, string $username): array {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
-	public function logout(User $user){
+	public function logout(User $user) {
 		//Nothing by default
 	}
 
@@ -359,13 +335,11 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 *
 	 * @param User $user
 	 */
-	public function loadContactInformation(User $user)
-	{
+	public function loadContactInformation(User $user) {
 		return;
 	}
 
-	public function getILSMessages(User $user)
-	{
+	public function getILSMessages(User $user) {
 		return [];
 	}
 
@@ -373,7 +347,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function confirmHold(User $patron, $recordId, $confirmationId) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
@@ -384,56 +358,56 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function getPluginStatus(string $pluginName) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function getCurbsidePickupSettings($locationCode) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function hasCurbsidePickups($patron) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function getPatronCurbsidePickups($patron) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function newCurbsidePickup($patron, $location, $time, $note) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function cancelCurbsidePickup($patron, $pickupId) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function checkInCurbsidePickup($patron, $pickupId) {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
 	public function getAllCurbsidePickups() {
 		return [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'This functionality has not been implemented for this ILS',
 		];
 	}
 
@@ -441,49 +415,46 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param string $patronBarcode
 	 * @return bool|User
 	 */
-	public function findNewUser($patronBarcode){
+	public function findNewUser($patronBarcode) {
 		return false;
 	}
 
-	public function hasIssueSummaries(){
+	public function hasIssueSummaries() {
 		return false;
 	}
 
-	public function isPromptForHoldNotifications() : bool
-	{
+	public function isPromptForHoldNotifications(): bool {
 		return false;
 	}
 
-	public function getHoldNotificationTemplate(User $user) : ?string
-	{
+	public function getHoldNotificationTemplate(User $user): ?string {
 		return null;
 	}
 
-	function validateUniqueId(User $user){
+	function validateUniqueId(User $user) {
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 	}
 
-	public function getPatronIDChanges($searchPatronID) : ?array
-	{
+	public function getPatronIDChanges($searchPatronID): ?array {
 		return null;
 	}
 
-	public function showHoldNotificationPreferences() : bool {
+	public function showHoldNotificationPreferences(): bool {
 		return false;
 	}
 
-	public function getHoldNotificationPreferencesTemplate(User $user) : ?string {
+	public function getHoldNotificationPreferencesTemplate(User $user): ?string {
 		return null;
 	}
 
-	public function processHoldNotificationPreferencesForm(User $user) : array {
+	public function processHoldNotificationPreferencesForm(User $user): array {
 		return [
 			'success' => false,
-			'message' => 'Hold Notification Preferences are not implemented for this ILS'
+			'message' => 'Hold Notification Preferences are not implemented for this ILS',
 		];
 	}
 
-	public function showHoldPosition() : bool {
+	public function showHoldPosition(): bool {
 		return false;
 	}
 
@@ -493,7 +464,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 *
 	 * @return false
 	 */
-	public function alwaysPlaceVolumeHoldWhenVolumesArePresent() : bool {
+	public function alwaysPlaceVolumeHoldWhenVolumesArePresent(): bool {
 		return false;
 	}
 
@@ -502,7 +473,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 *
 	 * @return bool
 	 */
-	public function showResetUsernameLink() : bool {
+	public function showResetUsernameLink(): bool {
 		return false;
 	}
 
@@ -511,15 +482,15 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 *
 	 * @return array
 	 */
-	public function getUsernameValidationRules() : array {
+	public function getUsernameValidationRules(): array {
 		return [
 			'minLength' => 4,
 			'maxLength' => 50,
-			'additionalRequirements' => ''
+			'additionalRequirements' => '',
 		];
 	}
 
-	public function showPreferredNameInProfile() : bool {
+	public function showPreferredNameInProfile(): bool {
 		return false;
 	}
 }

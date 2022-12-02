@@ -1,22 +1,22 @@
 <?php
 
 
-abstract class AbstractDriver
-{
-	public abstract function hasNativeReadingHistory() : bool;
+abstract class AbstractDriver {
+	public abstract function hasNativeReadingHistory(): bool;
 
-	public function performsReadingHistoryUpdatesOfILS()
-	{
+	public function performsReadingHistoryUpdatesOfILS() {
 		return false;
 	}
 
-	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
-	{
-		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
+	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
+		return [
+			'historyActive' => false,
+			'titles' => [],
+			'numTitles' => 0,
+		];
 	}
 
-	public function doReadingHistoryAction(User $patron, $action, $selectedTitles)
-	{
+	public function doReadingHistoryAction(User $patron, $action, $selectedTitles) {
 		return;
 	}
 
@@ -30,12 +30,12 @@ abstract class AbstractDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public abstract function getCheckouts(User $patron) : array;
+	public abstract function getCheckouts(User $patron): array;
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public abstract function hasFastRenewAll() : bool;
+	public abstract function hasFastRenewAll(): bool;
 
 	/**
 	 * Renew all titles currently checked out to the user
@@ -56,8 +56,7 @@ abstract class AbstractDriver
 	 */
 	abstract function renewCheckout(User $patron, $recordId, $itemId = null, $itemIndex = null);
 
-	public function hasHolds()
-	{
+	public function hasHolds() {
 		return true;
 	}
 
@@ -71,7 +70,7 @@ abstract class AbstractDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public abstract function getHolds(User $patron) : array;
+	public abstract function getHolds(User $patron): array;
 
 	/**
 	 * Place Hold
@@ -97,6 +96,6 @@ abstract class AbstractDriver
 	 * @param boolean $isIll If the hold is an ILL hold
 	 * @return  array
 	 */
-	abstract function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false) : array;
+	abstract function cancelHold(User $patron, $recordId, $cancelId = null, $isIll = false): array;
 
 }

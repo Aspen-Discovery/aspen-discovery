@@ -1,24 +1,23 @@
 <?php
 
 require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
-class CloudLibraryDriver extends AbstractEContentDriver
-{
+
+class CloudLibraryDriver extends AbstractEContentDriver {
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
-	public function initCurlWrapper()
-	{
+	public function initCurlWrapper() {
 		$this->curlWrapper = new CurlWrapper();
 		$this->curlWrapper->timeout = 20;
 		$this->curlWrapper->connectTimeout = 4;
 	}
 
-	public function hasNativeReadingHistory() : bool
-	{
+	public function hasNativeReadingHistory(): bool {
 		return false;
 	}
 
 	private $checkouts = [];
+
 	/**
 	 * Get Patron Checkouts
 	 *
@@ -29,9 +28,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $patron) : array
-	{
-		if (isset($this->checkouts[$patron->id])){
+	public function getCheckouts(User $patron): array {
+		if (isset($this->checkouts[$patron->id])) {
 			return $this->checkouts[$patron->id];
 		}
 
@@ -39,7 +37,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		$checkouts = [];
 		$settings = $this->getSettings($patron);
-		if ($settings == false){
+		if ($settings == false) {
 			return $checkouts;
 		}
 
@@ -58,9 +56,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				try {
 					$timeDiff = $checkout->dueDate - time();
 					//Checkouts cannot be renewed 3 days before the title is due
-					if ($timeDiff < (3*24*60*60)){
+					if ($timeDiff < (3 * 24 * 60 * 60)) {
 						$checkout->canRenew = true;
-					}else{
+					} else {
 						$checkout->canRenew = false;
 					}
 				} catch (Exception $e) {
@@ -72,8 +70,14 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout->updateFromRecordDriver($recordDriver);
 					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($patron);
 				} else {
-					$checkout->title = translate(['text' => 'Unknown cloudLibrary Title', 'isPublicFacing' => true]);
-					$checkout->format = translate(['Unknown - cloudLibrary', 'isPublicFacing' => true]);
+					$checkout->title = translate([
+						'text' => 'Unknown cloudLibrary Title',
+						'isPublicFacing' => true,
+					]);
+					$checkout->format = translate([
+						'Unknown - cloudLibrary',
+						'isPublicFacing' => true,
+					]);
 				}
 
 				$checkout->userId = $patron->id;
@@ -88,8 +92,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll() : bool
-	{
+	public function hasFastRenewAll(): bool {
 		return false;
 	}
 
@@ -99,8 +102,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll(User $patron)
-	{
+	public function renewAll(User $patron) {
 		return false;
 	}
 
@@ -111,8 +113,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $recordId   string
 	 * @return mixed
 	 */
-	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
-	{
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null) {
 		return $this->checkOutTitle($patron, $recordId, true);
 	}
 
@@ -123,57 +124,98 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $recordId   string
 	 * @return array
 	 */
-	public function returnCheckout($patron, $recordId)
-	{
-		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
+	public function returnCheckout($patron, $recordId) {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkin";
-		$requestBody =
-			"<CheckinRequest>
+		$requestBody = "<CheckinRequest>
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</CheckinRequest>";
 		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
 		$responseCode = $this->curlWrapper->getResponseCode();
-        ExternalRequestLogEntry::logRequest('cloudLibrary.returnCheckout', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
-		if ($responseCode == '200'){
+		ExternalRequestLogEntry::logRequest('cloudLibrary.returnCheckout', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
+		if ($responseCode == '200') {
 			$result['success'] = true;
-			$result['message'] = translate(['text' => "Your title was returned successfully.", 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => "Your title was returned successfully.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Title returned', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text' => 'Your title was returned successfully.', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Title returned',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Your title was returned successfully.',
+				'isPublicFacing' => true,
+			]);
 
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$patron->forceReloadOfCheckouts();
-		}else if ($responseCode == '400'){
-			$result['message'] = translate(['text' => "Bad Request returning checkout.", 'isPublicFacing'=>true]);
+		} elseif ($responseCode == '400') {
+			$result['message'] = translate([
+				'text' => "Bad Request returning checkout.",
+				'isPublicFacing' => true,
+			]);
 			global $configArray;
-			if (IPAddress::showDebuggingInformation()){
+			if (IPAddress::showDebuggingInformation()) {
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text' => 'Bad Request returning checkout.', 'isPublicFacing'=>true]);
-		}else if ($responseCode == '403'){
-			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to return title',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Bad Request returning checkout.',
+				'isPublicFacing' => true,
+			]);
+		} elseif ($responseCode == '403') {
+			$result['message'] = translate([
+				'text' => "Unable to authenticate.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text' => 'Unable to authenticate.', 'isPublicFacing'=>true]);
-		}else if ($responseCode == '404'){
-			$result['message'] = translate(['text' => "Checkout was not found.", 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to return title',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Unable to authenticate.',
+				'isPublicFacing' => true,
+			]);
+		} elseif ($responseCode == '404') {
+			$result['message'] = translate([
+				'text' => "Checkout was not found.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text' => 'Checkout was not found.', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to return title',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Checkout was not found.',
+				'isPublicFacing' => true,
+			]);
 		}
 		return $result;
 	}
 
 	private $holds = [];
+
 	/**
 	 * Get Patron Holds
 	 *
@@ -184,21 +226,20 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($patron) : array
-	{
-		if (isset($this->holds[$patron->id])){
+	public function getHolds($patron): array {
+		if (isset($this->holds[$patron->id])) {
 			return $this->holds[$patron->id];
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 
-		$holds = array(
-			'available' => array(),
-			'unavailable' => array()
-		);
+		$holds = [
+			'available' => [],
+			'unavailable' => [],
+		];
 
 		$settings = $this->getSettings($patron);
-		if ($settings == false){
+		if ($settings == false) {
 			return $holds;
 		}
 		$circulation = $this->getPatronCirculation($patron);
@@ -244,44 +285,69 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
-	{
-		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
 		$patronEligibleForHolds = $patron->eligibleForHolds();
-		if ($patronEligibleForHolds['fineLimitReached']){
-			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=> true]);
+		if ($patronEligibleForHolds['fineLimitReached']) {
+			$result['message'] = translate([
+				'text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.',
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Fine limit reached', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Fine limit reached',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.',
+				'isPublicFacing' => true,
+			]);
 
 			return $result;
 		}
 
 		$apiPath = "/cirrus/library/{$settings->libraryId}/placehold?password=$password";
-		$requestBody =
-			"<PlaceHoldRequest>
+		$requestBody = "<PlaceHoldRequest>
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</PlaceHoldRequest>";
 		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.placeHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, ['password' => $password]);
-        $responseCode = $this->curlWrapper->getResponseCode();
-		if ($responseCode == '201'){
+		ExternalRequestLogEntry::logRequest('cloudLibrary.placeHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, ['password' => $password]);
+		$responseCode = $this->curlWrapper->getResponseCode();
+		if ($responseCode == '201') {
 			$this->trackUserUsageOfCloudLibrary($patron);
 			$this->trackRecordHold($recordId);
 
 			$result['success'] = true;
-			$result['message'] = "<p class='alert alert-success'>" . translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]) . "</p>";
+			$result['message'] = "<p class='alert alert-success'>" . translate([
+					'text' => "Your hold was placed successfully.",
+					'isPublicFacing' => true,
+				]) . "</p>";
 			$result['hasWhileYouWait'] = false;
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Hold Placed Successfully', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing'=> true]);
-			$result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Hold Placed Successfully',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Your hold was placed successfully.',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['action'] = translate([
+				'text' => 'Go to Holds',
+				'isPublicFacing' => true,
+			]);
 
 			//Get the grouped work for the record
 			global $library;
@@ -297,7 +363,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					global $interface;
 					if (count($whileYouWaitTitles) > 0) {
 						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-						$result['message'] .= '<h3>' . translate(['text' => 'While You Wait', 'isPublicFacing'=>true]) . '</h3>';
+						$result['message'] .= '<h3>' . translate([
+								'text' => 'While You Wait',
+								'isPublicFacing' => true,
+							]) . '</h3>';
 						$result['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
 						$result['hasWhileYouWait'] = true;
 					}
@@ -306,37 +375,73 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$patron->forceReloadOfHolds();
-		}else if ($responseCode == '405'){
-			$result['message'] = translate(['text' => "Bad Request placing hold.", 'isPublicFacing'=>true]);
+		} elseif ($responseCode == '405') {
+			$result['message'] = translate([
+				'text' => "Bad Request placing hold.",
+				'isPublicFacing' => true,
+			]);
 			global $configArray;
-			if (IPAddress::showDebuggingInformation()){
+			if (IPAddress::showDebuggingInformation()) {
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Bad Request placing hold.', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to place hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Bad Request placing hold.',
+				'isPublicFacing' => true,
+			]);
 
-		}else if ($responseCode == '403'){
-			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Unable to authenticate.', 'isPublicFacing'=> true]);
-
-		}else if ($responseCode == '404'){
-			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
-
-			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Item was not found.', 'isPublicFacing'=> true]);
-
-		}else if ($responseCode == '404'){
-			$result['message'] = translate(['text'=>'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=>true]);
+		} elseif ($responseCode == '403') {
+			$result['message'] = translate([
+				'text' => "Unable to authenticate.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to place hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Unable to authenticate.',
+				'isPublicFacing' => true,
+			]);
+
+		} elseif ($responseCode == '404') {
+			$result['message'] = translate([
+				'text' => "Item was not found.",
+				'isPublicFacing' => true,
+			]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate([
+				'text' => 'Unable to place hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Item was not found.',
+				'isPublicFacing' => true,
+			]);
+
+		} elseif ($responseCode == '404') {
+			$result['message'] = translate([
+				'text' => 'Could not place hold.  Already on hold or the item can be checked out',
+				'isPublicFacing' => true,
+			]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate([
+				'text' => 'Unable to place hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Could not place hold.  Already on hold or the item can be checked out',
+				'isPublicFacing' => true,
+			]);
 		}
 		return $result;
 	}
@@ -348,61 +453,103 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
-	{
-		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false): array {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/cancelhold";
-		$requestBody =
-			"<CancelHoldRequest>
+		$requestBody = "<CancelHoldRequest>
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</CancelHoldRequest>";
 		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.cancelHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
+		ExternalRequestLogEntry::logRequest('cloudLibrary.cancelHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
 		$responseCode = $this->curlWrapper->getResponseCode();
-		if ($responseCode == '200'){
+		if ($responseCode == '200') {
 			$result['success'] = true;
-			$result['message'] = translate(['text' => "Your hold was cancelled successfully.", 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => "Your hold was cancelled successfully.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Hold cancelled',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Your hold was cancelled successfully.',
+				'isPublicFacing' => true,
+			]);
 
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$patron->forceReloadOfHolds();
-		}else if ($responseCode == '400'){
-			$result['message'] = translate(['text' => "Bad Request cancelling hold.", 'isPublicFacing'=>true]);
-			if (IPAddress::showDebuggingInformation()){
+		} elseif ($responseCode == '400') {
+			$result['message'] = translate([
+				'text' => "Bad Request cancelling hold.",
+				'isPublicFacing' => true,
+			]);
+			if (IPAddress::showDebuggingInformation()) {
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Bad Request cancelling hold.', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to cancel hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Bad Request cancelling hold.',
+				'isPublicFacing' => true,
+			]);
 
-		}else if ($responseCode == '403'){
-			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
+		} elseif ($responseCode == '403') {
+			$result['message'] = translate([
+				'text' => "Unable to authenticate.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Unable to authenticate.', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to cancel hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Unable to authenticate.',
+				'isPublicFacing' => true,
+			]);
 
-		}else if ($responseCode == '404'){
-			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
+		} elseif ($responseCode == '404') {
+			$result['message'] = translate([
+				'text' => "Item was not found.",
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
-			$result['api']['message'] = translate(['text' => 'Item was not found.', 'isPublicFacing'=> true]);
+			$result['api']['title'] = translate([
+				'text' => 'Unable to cancel hold',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Item was not found.',
+				'isPublicFacing' => true,
+			]);
 
 		}
 		return $result;
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
-	{
-		list($existingId, $summary) = $user->getCachedAccountSummary('cloud_library');
+	public function getAccountSummary(User $user): AccountSummary {
+		[
+			$existingId,
+			$summary,
+		] = $user->getCachedAccountSummary('cloud_library');
 
 		if ($summary === null || isset($_REQUEST['reload'])) {
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
@@ -423,7 +570,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			if ($existingId != null) {
 				$summary->id = $existingId;
 				$summary->update();
-			}else{
+			} else {
 				$summary->insert();
 			}
 		}
@@ -437,58 +584,98 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param bool $fromRenew
 	 * @return array
 	 */
-	public function checkOutTitle($patron, $titleId, $fromRenew = false)
-	{
-		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
+	public function checkOutTitle($patron, $titleId, $fromRenew = false) {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
 
 		// Result for API or app use
-		$result['api']['title'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
-		$result['api']['message'] = translate(['text'=>'Unable to checkout title at this time. Please try again later.', 'isPublicFacing'=>true]);
+		$result['api']['title'] = translate([
+			'text' => 'Unknown Error',
+			'isPublicFacing' => true,
+		]);
+		$result['api']['message'] = translate([
+			'text' => 'Unable to checkout title at this time. Please try again later.',
+			'isPublicFacing' => true,
+		]);
 
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
-		if (!$patron->eligibleForHolds()){
-			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=>true]);
+		if (!$patron->eligibleForHolds()) {
+			$result['message'] = translate([
+				'text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.',
+				'isPublicFacing' => true,
+			]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Fine limit reached', 'isPublicFacing'=>true]);
-			$result['api']['message'] = translate(['text'=>'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate([
+				'text' => 'Fine limit reached',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.',
+				'isPublicFacing' => true,
+			]);
 			return $result;
 		}
 
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkout?password=$password";
-		$requestBody =
-			"<CheckoutRequest>
+		$requestBody = "<CheckoutRequest>
 			<ItemId>{$titleId}</ItemId>
 			<PatronId>{$patronId}</PatronId>
 		</CheckoutRequest>";
 		$checkoutResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.checkoutTitle', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $checkoutResponse, ['password' => $password]);
-		if ($checkoutResponse != null){
+		ExternalRequestLogEntry::logRequest('cloudLibrary.checkoutTitle', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $checkoutResponse, ['password' => $password]);
+		if ($checkoutResponse != null) {
 			$checkoutXml = simplexml_load_string($checkoutResponse);
-			if (isset($checkoutXml->Error)){
+			if (isset($checkoutXml->Error)) {
 				$result['message'] = $checkoutXml->Error->Message;
-			}else {
+			} else {
 				$this->trackUserUsageOfCloudLibrary($patron);
 				$this->trackRecordCheckout($titleId);
 				$patron->lastReadingHistoryUpdate = 0;
 				$patron->update();
 
 				$result['success'] = true;
-				if ($fromRenew){
-					$result['message'] = translate(['text' => 'Your title was renewed successfully.', 'isPublicFacing'=>true]);
+				if ($fromRenew) {
+					$result['message'] = translate([
+						'text' => 'Your title was renewed successfully.',
+						'isPublicFacing' => true,
+					]);
 
 					// Result for API or app use
-					$result['api']['title'] = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
-					$result['api']['message'] = translate(['text'=>'Your title was renewed successfully.', 'isPublicFacing'=>true]);
-				}else {
-					$result['message'] = translate(['text' => 'Your title was checked out successfully. You can read or listen to the title from your account.', 'isPublicFacing'=>true]);
+					$result['api']['title'] = translate([
+						'text' => 'Renewed title',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Your title was renewed successfully.',
+						'isPublicFacing' => true,
+					]);
+				} else {
+					$result['message'] = translate([
+						'text' => 'Your title was checked out successfully. You can read or listen to the title from your account.',
+						'isPublicFacing' => true,
+					]);
 
 					// Result for API or app use
-					$result['api']['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
-					$result['api']['message'] = translate(['text'=>'Your title was checked out successfully. You can read or listen to the title from your account.', 'isPublicFacing'=>true]);
-					$result['api']['action'] = translate(['text' => 'Go to Checkouts', 'isPublicFacing'=>true]);
+					$result['api']['title'] = translate([
+						'text' => 'Checked out title',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Your title was checked out successfully. You can read or listen to the title from your account.',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['action'] = translate([
+						'text' => 'Go to Checkouts',
+						'isPublicFacing' => true,
+					]);
 				}
 
 				$patron->clearCachedAccountSummaryForSource('cloud_library');
@@ -498,17 +685,16 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		return $result;
 	}
 
-	private function getPatronCirculation(User $user)
-	{
+	private function getPatronCirculation(User $user) {
 		$settings = $this->getSettings($user);
 		if ($settings != false) {
 			$patronId = str_replace(' ', '', $user->getBarcode());
 			$password = $user->getPasswordOrPin();
 			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-            ExternalRequestLogEntry::logRequest('cloudLibrary.getPatronCirculation', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $circulationInfo, ['password' => $password]);
+			ExternalRequestLogEntry::logRequest('cloudLibrary.getPatronCirculation', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $circulationInfo, ['password' => $password]);
 			return simplexml_load_string($circulationInfo);
-		}else{
+		} else {
 			return null;
 		}
 	}
@@ -517,20 +703,20 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param User|null $user
 	 * @return CloudLibrarySetting|false
 	 */
-	private function getSettings(User $user = null){
+	private function getSettings(User $user = null) {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$activeLibrary = null;
-		if ($user != null){
+		if ($user != null) {
 			$activeLibrary = $user->getHomeLibrary();
 		}
-		if ($activeLibrary == null){
+		if ($activeLibrary == null) {
 			global $library;
 			$activeLibrary = $library;
 		}
 		$scopes = $activeLibrary->getCloudLibraryScopes();
-		if (count($scopes) > 0){
-			foreach ($scopes as $libraryScope){
+		if (count($scopes) > 0) {
+			foreach ($scopes as $libraryScope) {
 				$scope = new CloudLibraryScope();
 				$scope->id = $libraryScope->scopeId;
 				if ($scope->find(true)) {
@@ -541,8 +727,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		return false;
 	}
 
-	private function callCloudLibraryUrl(CloudLibrarySetting $settings, string $apiPath, $method = 'GET', $requestBody = null)
-	{
+	private function callCloudLibraryUrl(CloudLibrarySetting $settings, string $apiPath, $method = 'GET', $requestBody = null) {
 		$nowUtcDate = gmdate('D, d M Y H:i:s T');
 		$dataToSign = $nowUtcDate . "\n" . $method . "\n" . $apiPath;
 		$signature = base64_encode(hash_hmac("sha256", $dataToSign, $settings->accountKey, true));
@@ -552,20 +737,19 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			"3mcl-Authorization: 3MCLAUTH {$settings->accountId}:$signature",
 			'3mcl-APIVersion: 3.0',
 			'Content-Type: application/xml',
-			'Accept: application/xml'
+			'Accept: application/xml',
 		];
 
 		//Can't reuse the curl wrapper so make sure it is initialized on each call
 		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
-        return $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
+		return $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
 	}
 
 	/**
 	 * @param $user
 	 */
-	public function trackUserUsageOfCloudLibrary($user): void
-	{
+	public function trackUserUsageOfCloudLibrary($user): void {
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
 		$userUsage = new UserCloudLibraryUsage();
 		$userUsage->userId = $user->id;
@@ -584,8 +768,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/**
 	 * @param string $recordId
 	 */
-	function trackRecordCheckout($recordId): void
-	{
+	function trackRecordCheckout($recordId): void {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryRecordUsage.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 		$recordUsage = new CloudLibraryRecordUsage();
@@ -611,14 +794,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/**
 	 * @param string $recordId
 	 */
-	function trackRecordHold($recordId): void
-	{
+	function trackRecordHold($recordId): void {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryRecordUsage.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 		$recordUsage = new CloudLibraryRecordUsage();
 		$product = new CloudLibraryProduct();
 		$product->cloudLibraryId = $recordId;
-		if ($product->find(true)){
+		if ($product->find(true)) {
 			global $aspenUsage;
 			$recordUsage->instance = $aspenUsage->instance;
 			$recordUsage->cloudLibraryId = $product->id;
@@ -635,20 +817,20 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}
 	}
 
-	function checkAuthentication(User $user){
+	function checkAuthentication(User $user) {
 		$settings = $this->getSettings($user);
-		if ($settings == false){
+		if ($settings == false) {
 			return false;
 		}
 		$patronId = str_replace(' ', '', $user->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
 		$authenticationResponse = $this->callCloudLibraryUrl($settings, $apiPath);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $user->getPasswordOrPin()]);
+		ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $user->getPasswordOrPin()]);
 		/** @var SimpleXMLElement $authentication */
 		$authentication = simplexml_load_string($authenticationResponse);
-		if ($authentication->result == 'SUCCESS'){
+		if ($authentication->result == 'SUCCESS') {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -658,8 +840,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $holdFromCloudLibrary
 	 * @return Hold
 	 */
-	private function loadCloudLibraryHoldInfo(User $user, $holdFromCloudLibrary): Hold
-	{
+	private function loadCloudLibraryHoldInfo(User $user, $holdFromCloudLibrary): Hold {
 		$hold = new Hold();
 		$hold->type = 'cloud_library';
 		$hold->source = 'cloud_library';
@@ -668,7 +849,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$hold->recordId = (string)$holdFromCloudLibrary->ItemId;
 		$hold->createDate = strtotime($holdFromCloudLibrary->EventStartDateInUTC);
 		$hold->userId = $user->id;
-		if (isset($holdFromCloudLibrary->Position)){
+		if (isset($holdFromCloudLibrary->Position)) {
 			$hold->position = (int)$holdFromCloudLibrary->Position;
 		}
 
@@ -676,8 +857,14 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if ($recordDriver->isValid()) {
 			$hold->updateFromRecordDriver($recordDriver);
 		} else {
-			$hold->title = translate(['text' => 'Unknown cloudLibrary Title', 'isPublicFacing'=>true]);
-			$hold->format = translate(['Unknown - cloudLibrary', 'isPublicFacing'=>true]);
+			$hold->title = translate([
+				'text' => 'Unknown cloudLibrary Title',
+				'isPublicFacing' => true,
+			]);
+			$hold->format = translate([
+				'Unknown - cloudLibrary',
+				'isPublicFacing' => true,
+			]);
 		}
 		return $hold;
 	}
@@ -688,36 +875,35 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *
 	 * @return null|string
 	 */
-	public function getItemStatus($itemId, $patron){
+	public function getItemStatus($itemId, $patron) {
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
 		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.getItemStatus', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $itemStatusInfo, []);
-		if ($this->curlWrapper->getResponseCode() == 200){
+		ExternalRequestLogEntry::logRequest('cloudLibrary.getItemStatus', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $itemStatusInfo, []);
+		if ($this->curlWrapper->getResponseCode() == 200) {
 			$itemStatus = simplexml_load_string($itemStatusInfo);
 			$this->curlWrapper = new CurlWrapper();
 			return (string)$itemStatus->DocumentStatus->status;
-		}else if ($this->curlWrapper->getResponseCode() == 403){
+		} elseif ($this->curlWrapper->getResponseCode() == 403) {
 			$errorMessage = simplexml_load_string($itemStatusInfo);
 			return (string)$errorMessage->Message;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	public function redirectToCloudLibrary(User $patron, CloudLibraryRecordDriver $recordDriver)
-	{
+	public function redirectToCloudLibrary(User $patron, CloudLibraryRecordDriver $recordDriver) {
 		$settings = $this->getSettings($patron);
 		$userInterfaceUrl = $settings->userInterfaceUrl;
-		if (substr($userInterfaceUrl, -1) == '/'){
+		if (substr($userInterfaceUrl, -1) == '/') {
 			$userInterfaceUrl = substr($userInterfaceUrl, 0, -1);
 		}
 
 		//Setup the default redirection paths
-		if ($recordDriver->getPrimaryFormat() == 'MP3'){
+		if ($recordDriver->getPrimaryFormat() == 'MP3') {
 			$redirectUrl = $userInterfaceUrl . '/AudioPlayer/' . $recordDriver->getId();
-		}else{
+		} else {
 			$redirectUrl = $userInterfaceUrl . '/EPubRead/' . $recordDriver->getId();
 		}
 
@@ -728,25 +914,25 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			'password' => $patron->getPasswordOrPin(),
 		];
 		$curlWrapper = new CurlWrapper();
-		$headers  = array(
+		$headers = [
 			'Content-Type: application/x-www-form-urlencoded',
-		);
+		];
 		$curlWrapper->addCustomHeaders($headers, false);
 		$response = $curlWrapper->curlPostPage($loginUrl, $postParams, [CURLOPT_HEADER => true]);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.redirectToCloudLibrary', 'POST', $loginUrl, $curlWrapper->getHeaders(), '', $curlWrapper->getResponseCode(), $response, ['password' => $patron->getPasswordOrPin()]);
-        if ($response){
+		ExternalRequestLogEntry::logRequest('cloudLibrary.redirectToCloudLibrary', 'POST', $loginUrl, $curlWrapper->getHeaders(), '', $curlWrapper->getResponseCode(), $response, ['password' => $patron->getPasswordOrPin()]);
+		if ($response) {
 			preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response, $matches);
-			$cookies = array();
-			foreach($matches[1] as $item) {
+			$cookies = [];
+			foreach ($matches[1] as $item) {
 				parse_str($item, $cookie);
 				$cookies = array_merge($cookies, $cookie);
 			}
-			foreach ($cookies as $name => $value){
-				if (strpos($name, 'sessionid_') === 0){
-					if ($recordDriver->getPrimaryFormat() == 'MP3'){
+			foreach ($cookies as $name => $value) {
+				if (strpos($name, 'sessionid_') === 0) {
+					if ($recordDriver->getPrimaryFormat() == 'MP3') {
 						//TODO: Need a new URL from CloudLibrary for audio books
 						$redirectUrl = "$userInterfaceUrl/audiobooks/{$recordDriver->getId()}?auth_cookie={$value}";
-					}else{
+					} else {
 						$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
 					}
 

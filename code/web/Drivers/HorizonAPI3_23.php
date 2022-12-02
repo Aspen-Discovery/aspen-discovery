@@ -1,8 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
-abstract class HorizonAPI3_23 extends HorizonAPI
-{
+
+abstract class HorizonAPI3_23 extends HorizonAPI {
 	private function getBaseWebServiceUrl() {
 		if (!empty($this->accountProfile->patronApiUrl)) {
 			$webServiceURL = $this->accountProfile->patronApiUrl;
@@ -14,29 +14,35 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		}
 
 		$urlParts = parse_url($webServiceURL);
-		$baseWebServiceUrl = $urlParts['scheme']. '://'. $urlParts['host']. (!empty($urlParts['port']) ? ':'. $urlParts['port'] : '');
+		$baseWebServiceUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . (!empty($urlParts['port']) ? ':' . $urlParts['port'] : '');
 
 		return $baseWebServiceUrl;
 	}
 
-    /**
-     * @param User $patron
-     * @param string $oldPin
-     * @param string $newPin
-     * @return string[] a message to the user letting them know what happened
-     */
-	function updatePin(User $patron, string $oldPin, string $newPin){
+	/**
+	 * @param User $patron
+	 * @param string $oldPin
+	 * @param string $newPin
+	 * @return string[] a message to the user letting them know what happened
+	 */
+	function updatePin(User $patron, string $oldPin, string $newPin) {
 		//Log the user in
-		list($userValid, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-		if (!$userValid){
-			return ['success' => false, 'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
+		[
+			$userValid,
+			$sessionToken,
+		] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		if (!$userValid) {
+			return [
+				'success' => false,
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again',
+			];
 		}
 
 		$updatePinUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
-		$jsonParameters = array(
+		$jsonParameters = [
 			'currentPin' => $oldPin,
 			'newPin' => $newPin,
-		);
+		];
 		$updatePinResponse = $this->getWebServiceResponseUpdated($updatePinUrl, $jsonParameters, $sessionToken);
 		if (isset($updatePinResponse['messageList'])) {
 			$errors = '';
@@ -44,38 +50,47 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				$errors .= $errorMessage['message'] . ';';
 			}
 			global $logger;
-			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, Logger::LOG_ERROR);
-			return ['success' => false, 'message' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'];
-		} elseif (!empty($updatePinResponse['sessionToken'])){
+			$logger->log('WCPL Driver error updating user\'s Pin :' . $errors, Logger::LOG_ERROR);
+			return [
+				'success' => false,
+				'message' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.',
+			];
+		} elseif (!empty($updatePinResponse['sessionToken'])) {
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
 			$patron->cat_password = $newPin;
 			$patron->update();
-			return ['success' => true, 'message' => "Your pin number was updated successfully."];
-		}else{
-			return ['success' => false, 'message' => "Sorry, we could not update your pin number. Please try again later."];
+			return [
+				'success' => true,
+				'message' => "Your pin number was updated successfully.",
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => "Sorry, we could not update your pin number. Please try again later.",
+			];
 		}
 	}
 
-    /**
-     * @param User $user
-     * @param string $newPin
-     * @param null|string $resetToken
-     * @return array
-     */
-	function resetPin($user, $newPin, $resetToken=null){
+	/**
+	 * @param User $user
+	 * @param string $newPin
+	 * @param null|string $resetToken
+	 * @return array
+	 */
+	function resetPin($user, $newPin, $resetToken = null) {
 		if (empty($resetToken)) {
 			global $logger;
 			$logger->log('No Reset Token passed to resetPin function', Logger::LOG_ERROR);
-			return array(
-				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
-			);
+			return [
+				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later',
+			];
 		}
 
 		$changeMyPinAPIUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
-		$jsonParameters = array(
+		$jsonParameters = [
 			'resetPinToken' => $resetToken,
 			'newPin' => $newPin,
-		);
+		];
 		$changeMyPinResponse = $this->getWebServiceResponseUpdated($changeMyPinAPIUrl, $jsonParameters);
 		if (isset($changeMyPinResponse['messageList'])) {
 			$errors = '';
@@ -83,34 +98,32 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				$errors .= $errorMessage['message'] . ';';
 			}
 			global $logger;
-			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, Logger::LOG_ERROR);
-			return array(
-				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
-			);
-		} elseif (!empty($changeMyPinResponse['sessionToken'])){
+			$logger->log('WCPL Driver error updating user\'s Pin :' . $errors, Logger::LOG_ERROR);
+			return [
+				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.',
+			];
+		} elseif (!empty($changeMyPinResponse['sessionToken'])) {
 			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Aspen Discovery user
 				$user->cat_password = $newPin;
 				$user->update();
 			}
-			return array(
+			return [
 				'success' => true,
-			);
+			];
 //			return "Your pin number was updated successfully.";
-		}else{
-			return array(
-				'error' => "Sorry, we could not update your pin number. Please try again later."
-			);
+		} else {
+			return [
+				'error' => "Sorry, we could not update your pin number. Please try again later.",
+			];
 		}
 	}
 
-	function getEmailResetPinResultsTemplate()
-	{
+	function getEmailResetPinResultsTemplate() {
 		return 'emailResetPinResults.tpl';
 	}
 
 	// Newer Horizon API version
-	function processEmailResetPinForm()
-	{
+	function processEmailResetPinForm() {
 		$barcode = $_REQUEST['barcode'];
 
 		$patron = new User;
@@ -121,20 +134,23 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 			// If possible, check if Horizon has an email address for the patron
 			if (!empty($patron->cat_password)) {
-				list($userValid, $sessionToken) = $this->loginViaWebService($barcode, $patron->cat_password);
+				[
+					$userValid,
+					$sessionToken,
+				] = $this->loginViaWebService($barcode, $patron->cat_password);
 				if ($userValid) {
 					// Yay! We were able to login with the pin Aspen Discovery has!
 
 					//Now check for an email address
-					$lookupMyAccountInfoResponse = $this->getWebServiceResponse( $configArray['Catalog']['webServiceUrl']  . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
+					$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
 					if ($lookupMyAccountInfoResponse) {
-						if (isset($lookupMyAccountInfoResponse->AddressInfo)){
-							if (empty($lookupMyAccountInfoResponse->AddressInfo->email)){
+						if (isset($lookupMyAccountInfoResponse->AddressInfo)) {
+							if (empty($lookupMyAccountInfoResponse->AddressInfo->email)) {
 								// return an error message because horizon doesn't have an email.
-								return array(
+								return [
 									'success' => false,
-									'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
-								);
+									'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.',
+								];
 							}
 						}
 					}
@@ -143,23 +159,23 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 			// email the pin to the user
 			$resetPinAPIUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/resetMyPin';
-			$jsonPOST       = array(
+			$jsonPOST = [
 				'login' => $barcode,
-				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>' . (empty($userID) ?  '' : '&uid=' . $userID)
-			);
+				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>' . (empty($userID) ? '' : '&uid=' . $userID),
+			];
 
 			$resetPinResponse = $this->getWebServiceResponseUpdated($resetPinAPIUrl, $jsonPOST);
 			// Reset Pin Response is empty JSON on success.
 
-			if ($resetPinResponse === array() && !isset($resetPinResponse['messageList'])) {
-				return array(
+			if ($resetPinResponse === [] && !isset($resetPinResponse['messageList'])) {
+				return [
 					'success' => true,
-				);
+				];
 			} else {
-				$result = array(
+				$result = [
 					'success' => false,
-					'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
-				);
+					'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin.",
+				];
 				if (isset($resetPinResponse['messageList'])) {
 					$errors = '';
 					foreach ($resetPinResponse['messageList'] as $errorMessage) {
@@ -172,12 +188,11 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			}
 
 
-
 		} else {
-			return array(
+			return [
 				'success' => false,
-				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
-			);
+				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.',
+			];
 		}
 	}
 
@@ -186,17 +201,17 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	 *  Handles API calls to the newer Horizon APIs.
 	 *
 	 * @param $url
-	 * @param array $post  POST variables get encoded as JSON
+	 * @param array $post POST variables get encoded as JSON
 	 * @return bool|mixed|SimpleXMLElement
 	 */
-	public function getWebServiceResponseUpdated($url, $post = array(), $sessionToken = ''){
+	public function getWebServiceResponseUpdated($url, $post = [], $sessionToken = '') {
 		global $configArray;
-		$requestHeaders = array(
+		$requestHeaders = [
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
 			'x-sirs-clientId: ' . $configArray['Catalog']['clientId'],
-		);
+		];
 
 		if (!empty($sessionToken)) {
 			$requestHeaders[] = "x-sirs-sessionToken: $sessionToken";
@@ -220,7 +235,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 		curl_close($ch);
 
-		if ($curlResponse !== false && $curlResponse !== 'false'){
+		if ($curlResponse !== false && $curlResponse !== 'false') {
 			$response = json_decode($curlResponse, true);
 			if (json_last_error() == JSON_ERROR_NONE) {
 				return $response;
@@ -231,20 +246,18 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			}
 
 
-		}else{
+		} else {
 			global $logger;
 			$logger->log('Curl problem in getWebServiceResponseUpdated', Logger::LOG_WARNING);
 			return false;
 		}
 	}
 
-	function getForgotPasswordType()
-	{
+	function getForgotPasswordType() {
 		return 'emailResetLink';
 	}
 
-	function getEmailResetPinTemplate()
-	{
+	function getEmailResetPinTemplate() {
 		return 'sirsiROAEmailResetPinLink.tpl';
 	}
 }
