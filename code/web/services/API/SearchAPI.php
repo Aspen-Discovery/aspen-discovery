@@ -1780,15 +1780,18 @@ class SearchAPI extends Action {
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
 						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
-							$categoryResponse = [
-								'key' => $categoryInformation->textId,
-								'title' => $categoryInformation->label,
-								'source' => $categoryInformation->source,
-								'isHidden' => $categoryInformation->isDismissed($appUser),
-								'records' => $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12),
-							];
-							$numCategoriesProcessed++;
-							$formattedCategories[] = $categoryResponse;
+							$records = $this->getAppBrowseCategoryResults($categoryInformation->textId, null, 12)
+								if(count($records) > 0) {
+									$categoryResponse = [
+										'key' => $categoryInformation->textId,
+										'title' => $categoryInformation->label,
+										'source' => $categoryInformation->source,
+										'isHidden' => $categoryInformation->isDismissed($appUser),
+										'records' => $records,
+									];
+									$numCategoriesProcessed++;
+									$formattedCategories[] = $categoryResponse;
+								}
 						}
 						if ($includeSubCategories) {
 							if (count($subCategories) > 0) {
