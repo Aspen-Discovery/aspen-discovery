@@ -14,16 +14,16 @@ set_time_limit(-1);
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/migration/';
 
-if (!file_exists($exportPath)){
+if (!file_exists($exportPath)) {
 	echo("Could not find migration path " . $exportPath . "\n");
-}else{
+} else {
 	$patronIdMap = $exportPath . 'patron_map.csv';
-	if (!file_exists($patronIdMap)){
+	if (!file_exists($patronIdMap)) {
 		echo("Could not find patron id map " . $patronIdMap);
-	}else{
+	} else {
 		//Set the username field for all rows to old- value
 		global $aspen_db;
-		$aspen_db->query("UPDATE user set username = CONCAT('old-', username) WHERE username NOT LIKE 'old-%'" );
+		$aspen_db->query("UPDATE user set username = CONCAT('old-', username) WHERE username NOT LIKE 'old-%'");
 
 		$patronIdMapFHnd = fopen($patronIdMap, 'r');
 		$rowsProcessed = 0;
@@ -34,14 +34,14 @@ if (!file_exists($exportPath)){
 				//Remove the check digit
 				$oldValue = substr($oldValue, 0, strlen($oldValue) - 1);
 				$newValue = $patronMapRow[1];
-				$aspen_db->query("UPDATE user set username = '$newValue' where username = 'old-{$oldValue}'" );
+				$aspen_db->query("UPDATE user set username = '$newValue' where username = 'old-{$oldValue}'");
 				$rowsProcessed++;
 			}
 		}
-		echo ("Processed $rowsProcessed patrons");
+		echo("Processed $rowsProcessed patrons");
 		fclose($patronIdMapFHnd);
 
 		//Remove the old- designation so things like aspen_admin still work
-		$aspen_db->query("UPDATE user set username = replace(username, 'old-', '') WHERE username LIKE 'old-%'" );
+		$aspen_db->query("UPDATE user set username = replace(username, 'old-', '') WHERE username LIKE 'old-%'");
 	}
 }
