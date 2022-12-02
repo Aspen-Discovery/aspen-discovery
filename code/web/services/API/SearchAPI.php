@@ -1470,7 +1470,7 @@ class SearchAPI extends Action {
 									'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
 									'source' => 'SavedSearch',
 									'sourceId' => $obj->id,
-									'isHidden' => $obj->isDismissed(),
+									'isHidden' => $obj->isDismissed($appUser),
 								];
 								$formattedCategories[] = $categoryResponse;
 							}
@@ -1491,7 +1491,7 @@ class SearchAPI extends Action {
 											'title' => $categoryInformation->label . ': ' . $obj->title,
 											'source' => 'List',
 											'sourceId' => $obj->id,
-											'isHidden' => $obj->isDismissed(),
+											'isHidden' => $obj->isDismissed($appUser),
 										];
 										$formattedCategories[] = $categoryResponse;
 									}

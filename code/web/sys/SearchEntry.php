@@ -185,13 +185,18 @@ class SearchEntry extends DataObject
 		}
 	}
 
-	public function isDismissed() {
+	public function isDismissed($appUser = null): bool {
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn() || $appUser != null) {
+			if (is_null($appUser)) {
+				$user = UserAccount::getActiveUserObj();
+			} else {
+				$user = $appUser;
+			}
 			$savedSearchDismissal = new BrowseCategoryDismissal();
-			$savedSearchDismissal->browseCategoryId = "system_saved_searches_" . $this->id;
-			$savedSearchDismissal->userId = UserAccount::getActiveUserId();
-			if($savedSearchDismissal->find(true)) {
+			$savedSearchDismissal->browseCategoryId = 'system_saved_searches_' . $this->id;
+			$savedSearchDismissal->userId = $user->id;
+			if ($savedSearchDismissal->find(true)) {
 				return true;
 			}
 		}
