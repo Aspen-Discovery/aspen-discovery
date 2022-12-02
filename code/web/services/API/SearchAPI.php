@@ -1773,7 +1773,7 @@ class SearchAPI extends Action {
 						}
 					} else {
 						$subCategories = $categoryInformation->getSubCategories();
-						if (count($subCategories) == 0) {
+						if (count($subCategories) == 0 && !$categoryInformation->isDismissed($appUser)) {
 							$categoryResponse = [
 								'key' => $categoryInformation->textId,
 								'title' => $categoryInformation->label,
