@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
 require_once(ROOT_DIR . "/PHPExcel.php");
 
-class MaterialsRequest_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class MaterialsRequest_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 		$userHomeLibrary = Library::getPatronHomeLibrary();
 		if (is_null($userHomeLibrary)) {
@@ -20,15 +18,19 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		$locations->libraryId = $userHomeLibrary->libraryId;
 		$locations->find();
 		$locationsForLibrary = [];
-		$locationsForLibrary['']['displayLabel'] = translate(['text' => 'All', 'isAdminFacing' => true, 'inAttribute' => true]);
-		while ($locations->fetch()){
+		$locationsForLibrary['']['displayLabel'] = translate([
+			'text' => 'All',
+			'isAdminFacing' => true,
+			'inAttribute' => true,
+		]);
+		while ($locations->fetch()) {
 			$locationsForLibrary[$locations->locationId]['id'] = $locations->locationId;
 			$locationsForLibrary[$locations->locationId]['displayLabel'] = $locations->displayName;
 		}
 
-		if (!empty($_REQUEST['location'])){
+		if (!empty($_REQUEST['location'])) {
 			$locationId = $_REQUEST['location'];
-		}else{
+		} else {
 			$locationId = '';
 		}
 		$interface->assign('selectedLocation', $locationId);
@@ -40,10 +42,10 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		$statuses = new MaterialsRequestStatus();
 		$statuses->libraryId = $userHomeLibrary->libraryId;
 		$statuses->find();
-		while($statuses->fetch()) {
+		while ($statuses->fetch()) {
 			$allStatuses[$statuses->id]['id'] = $statuses->id;
 			$allStatuses[$statuses->id]['label'] = $statuses->description;
-			if($locationId !== '') {
+			if ($locationId !== '') {
 				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($locationId, $this->thisMonth, $this->thisYear, $statuses);
 				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($locationId, $this->lastMonth, $this->lastMonthYear, $statuses);
 				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($locationId, null, $this->thisYear, $statuses);
@@ -61,19 +63,18 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		$interface->assign('allStats', $allStatuses);
 
 		//Check to see if we are exporting to Excel
-		if (isset($_REQUEST['exportToExcel'])){
+		if (isset($_REQUEST['exportToExcel'])) {
 			$this->exportToExcel();
 		}
 
 		$this->display('dashboard.tpl', 'Materials Request Dashboard');
 	}
 
-	public function getStats($location, $month, $year, $status)
-	{
-		if(is_array($location)) {
+	public function getStats($location, $month, $year, $status) {
+		if (is_array($location)) {
 			$allStats = 0;
-			foreach($location as $loc) {
-				if($loc['displayLabel'] != "All") {
+			foreach ($location as $loc) {
+				if ($loc['displayLabel'] != "All") {
 					$stats = new MaterialsRequestUsage();
 					$stats->locationId = $loc['id'];
 					if ($month != null) {
@@ -82,14 +83,14 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 					if ($year != null) {
 						$stats->year = $year;
 					}
-					if($status != null) {
+					if ($status != null) {
 						$stats->statusId = $status->id;
 					}
 
 					$stats->selectAdd(null);
 					$stats->selectAdd('SUM(numUsed) as numUsed');
 
-					if ($stats->find(true)){
+					if ($stats->find(true)) {
 						$allStats += $stats->numUsed != null ? intval($stats->numUsed) : "0";
 					}
 				}
@@ -97,7 +98,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 			return $allStats;
 		} else {
 			$stats = new MaterialsRequestUsage();
-			if (!empty($location)){
+			if (!empty($location)) {
 				$stats->locationId = $location;
 			}
 			if ($month != null) {
@@ -107,37 +108,36 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 				$stats->year = $year;
 			}
 
-			if($status != null) {
+			if ($status != null) {
 				$stats->statusId = $status->id;
 			}
 
 			$stats->selectAdd(null);
 			$stats->selectAdd('SUM(numUsed) as numUsed');
 
-			if ($stats->find(true)){
+			if ($stats->find(true)) {
 				return $stats->numUsed != null ? $stats->numUsed : "0";
-			}else{
+			} else {
 				return 0;
 			}
 		}
 	}
 
-	public function getAllPeriods()
-	{
+	public function getAllPeriods() {
 		$usage = new MaterialsRequestUsage();
 		$usage->selectAdd(null);
 		$usage->selectAdd('DISTINCT year, month');
 		$usage->find();
 
 		$stats = [];
-		while($usage->fetch()) {
+		while ($usage->fetch()) {
 			$stats[$usage->month . '-' . $usage->year]['year'] = $usage->year;
 			$stats[$usage->month . '-' . $usage->year]['month'] = $usage->month;
 		}
 		return $stats;
 	}
 
-	function exportToExcel(){
+	function exportToExcel() {
 		global $configArray;
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
@@ -147,11 +147,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		$periods = $this->getAllPeriods();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])
-			->setLastModifiedBy($configArray['Site']['title'])
-			->setTitle("Materials Request Dashboard Report")
-			->setSubject("Materials Request")
-			->setCategory("Materials Request Dashboard Report");
+		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])->setLastModifiedBy($configArray['Site']['title'])->setTitle("Materials Request Dashboard Report")->setSubject("Materials Request")->setCategory("Materials Request Dashboard Report");
 
 		// Add some data
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -159,7 +155,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		$activeSheet->setCellValue('A1', 'Materials Request Dashboard Report');
 		$activeSheet->setCellValue('A3', 'Date');
 
-		if($location !== '' && $location !== null) {
+		if ($location !== '' && $location !== null) {
 			$thisStatus = new MaterialsRequestStatus();
 			$thisStatus->libraryId = $location;
 			$thisStatus->find();
@@ -170,7 +166,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 				$curRow = 4;
 				$labelCell = $alphas[$currentAlpha] . '3';
 				$activeSheet->setCellValue($labelCell, $thisStatus->description);
-				foreach($periods as $period) {
+				foreach ($periods as $period) {
 					$materialsRequestUsage = new MaterialsRequestUsage();
 					$materialsRequestUsage->groupBy('year, month');
 					$materialsRequestUsage->selectAdd();
@@ -183,7 +179,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 					$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
 					$materialsRequestUsage->orderBy('year, month');
 
-					if($materialsRequestUsage->find(true)) {
+					if ($materialsRequestUsage->find(true)) {
 						$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
 						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
 						$curRow++;
@@ -219,7 +215,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 					$curRow = 4;
 					$labelCell = $alphas[$currentAlpha] . '3';
 					$activeSheet->setCellValue($labelCell, $thisStatus->description);
-					foreach($periods as $period) {
+					foreach ($periods as $period) {
 						$materialsRequestUsage = new MaterialsRequestUsage();
 						$materialsRequestUsage->groupBy('year, month');
 						$materialsRequestUsage->selectAdd();
@@ -231,7 +227,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 						$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
 						$materialsRequestUsage->orderBy('year, month');
 
-						if($materialsRequestUsage->find(true)) {
+						if ($materialsRequestUsage->find(true)) {
 							$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
 							$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
 							$curRow++;
@@ -260,8 +256,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		exit;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#materialsrequest', 'Materials Request');
@@ -269,13 +264,14 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'materials_request';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

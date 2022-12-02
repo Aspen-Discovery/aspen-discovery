@@ -1,9 +1,9 @@
 <?php
 
-class WebBuilder_WebResource extends Action{
+class WebBuilder_WebResource extends Action {
 	private $webResource;
-	function launch()
-	{
+
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
@@ -14,16 +14,16 @@ class WebBuilder_WebResource extends Action{
 		disableErrorHandler();
 		try {
 			$resourceDriver = new WebResourceRecordDriver('WebResource:' . $id);
-		}catch (Exception $e) {
+		} catch (Exception $e) {
 			//Resource has not been indexed yet
 		}
 		enableErrorHandler();
 		$this->webResource = new WebResource();
 		$this->webResource->id = $id;
-		if (!$this->webResource->find(true)){
+		if (!$this->webResource->find(true)) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -40,12 +40,14 @@ class WebBuilder_WebResource extends Action{
 		$this->display('webResource.tpl', $this->webResource->name, '', false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', $this->webResource->name, true);
-		if (UserAccount::userHasPermission(['Administer All Web Resources', 'Administer Library Web Resources'])){
+		if (UserAccount::userHasPermission([
+			'Administer All Web Resources',
+			'Administer Library Web Resources',
+		])) {
 			$breadcrumbs[] = new Breadcrumb('/WebBuilder/WebResources?id=' . $this->webResource->id . '&objectAction=edit', 'Edit', true);
 		}
 		return $breadcrumbs;

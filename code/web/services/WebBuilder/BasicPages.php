@@ -2,39 +2,33 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 
-class WebBuilder_BasicPages extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class WebBuilder_BasicPages extends ObjectEditor {
+	function getObjectType(): string {
 		return 'BasicPage';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'BasicPages';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'WebBuilder';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'Basic Web Builder Pages';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new BasicPage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingObjects = true;
-		if (!UserAccount::userHasPermission('Administer All Basic Pages')){
+		if (!UserAccount::userHasPermission('Administer All Basic Pages')) {
 			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryBasicPage', 'basicPageId');
 		}
-		$objectList = array();
+		$objectList = [];
 		if ($userHasExistingObjects) {
 			$object->find();
 			while ($object->fetch()) {
@@ -43,49 +37,43 @@ class WebBuilder_BasicPages extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'title asc';
 	}
-	function getObjectStructure() : array
-	{
+
+	function getObjectStructure(): array {
 		return BasicPage::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		$objectActions = [];
-		if (!empty($existingObject) && $existingObject instanceof BasicPage && !empty($existingObject->id)){
+		if (!empty($existingObject) && $existingObject instanceof BasicPage && !empty($existingObject->id)) {
 			$objectActions[] = [
 				'text' => 'View',
-				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/BasicPage?id='.$existingObject->id: $existingObject->urlAlias,
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/BasicPage?id=' . $existingObject->id : $existingObject->urlAlias,
 			];
 		}
 		return $objectActions;
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return 'https://help.aspendiscovery.org/help/webbuilder/pages';
 	}
 
-	function getInitializationJs() : string
-	{
+	function getInitializationJs(): string {
 		return 'AspenDiscovery.WebBuilder.updateWebBuilderFields()';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
@@ -93,13 +81,14 @@ class WebBuilder_BasicPages extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['Administer All Basic Pages', 'Administer Library Basic Pages']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Basic Pages',
+			'Administer Library Basic Pages',
+		]);
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
 }

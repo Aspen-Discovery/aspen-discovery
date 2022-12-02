@@ -1,5 +1,5 @@
 <?php
-define ('ROOT_DIR', __DIR__);
+define('ROOT_DIR', __DIR__);
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Interface.php';
@@ -31,7 +31,7 @@ $configArray = readConfig();
 
 if (isset($_SERVER['SERVER_NAME'])) {
 	$aspenUsage->instance = $_SERVER['SERVER_NAME'];
-}else{
+} else {
 	$aspenUsage->instance = 'aspen_internal';
 }
 
@@ -60,7 +60,7 @@ ob_start();
 initMemcache();
 initDatabase();
 
-if ($aspenUsage->instance != 'aspen_internal'){
+if ($aspenUsage->instance != 'aspen_internal') {
 	$isValidServerName = true;
 	//Validate that we are getting a valid, non-spoofed name.
 	if (!empty($_SERVER['SERVER_NAME'])) {
@@ -86,7 +86,7 @@ if ($aspenUsage->instance != 'aspen_internal'){
 		http_response_code(404);
 		if (IPAddress::showDebuggingInformation()) {
 			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host $aspenUsage->instance, valid instances are " . implode(', ', $validServerNames) . "</body></html>");
-		}else{
+		} else {
 			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host</body></html>");
 		}
 		die();
@@ -99,15 +99,15 @@ if (IPAddress::logTimingInformation()) {
 }
 $timer->logTime("Initial configuration");
 
-try{
+try {
 	$aspenUsage->find(true);
-}catch (Exception $e){
+} catch (Exception $e) {
 	//Table has not been created yet, ignore it
 }
 
-try{
+try {
 	$usageByIPAddress->find(true);
-}catch (Exception $e){
+} catch (Exception $e) {
 	//Table has not been created yet, ignore it
 }
 $usageByIPAddress->lastRequest = time();
@@ -118,13 +118,13 @@ requireSystemLibraries();
 initLocale();
 
 //Check to see if we should be blocking based on the IP address
-if (IPAddress::isClientIpBlocked()){
+if (IPAddress::isClientIpBlocked()) {
 	$aspenUsage->blockedRequests++;
 	$aspenUsage->update();
 	try {
 		$usageByIPAddress->numBlockedRequests++;
 		$usageByIPAddress->update();
-	}catch (Exception $e){
+	} catch (Exception $e) {
 		//Ignore this, the class has not been created yet
 	}
 
@@ -146,7 +146,7 @@ try {
 	while ($aspenModule->fetch()) {
 		$enabledModules[$aspenModule->name] = clone $aspenModule;
 	}
-}catch (Exception $e){
+} catch (Exception $e) {
 	//Modules are not installed yet
 }
 
@@ -155,36 +155,35 @@ loadLibraryAndLocation();
 
 $timer->logTime('Bootstrap done');
 
-function initMemcache(){
+function initMemcache() {
 	//Connect to memcache
 	global $memCache;
 
-    require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';
+	require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';
 	$memCache = new Memcache();
 }
 
-function initDatabase(){
+function initDatabase() {
 	global $configArray;
-	/** @var PDO */
-	global $aspen_db;
+	/** @var PDO */ global $aspen_db;
 
-	try{
-        $aspen_db = new PDO($configArray['Database']['database_dsn'],$configArray['Database']['database_user'],$configArray['Database']['database_password']);
-        $aspen_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	try {
+		$aspen_db = new PDO($configArray['Database']['database_dsn'], $configArray['Database']['database_user'], $configArray['Database']['database_password']);
+		$aspen_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$aspen_db->exec("SET NAMES utf8mb4");
-    } catch (PDOException $e) {
-	    global $serverName;
-	    echo("Server name: $serverName<br>\r\n");
-	    if ($configArray['System']['debug']) {
-		    echo("Could not connect to database {$configArray['Database']['database_dsn']}, define database connection information in config.pwd.ini<br>\r\n");
-	    }else{
-		    echo("Could not connect to database");
-	    }
-	    die();
-    }
+	} catch (PDOException $e) {
+		global $serverName;
+		echo("Server name: $serverName<br>\r\n");
+		if ($configArray['System']['debug']) {
+			echo("Could not connect to database {$configArray['Database']['database_dsn']}, define database connection information in config.pwd.ini<br>\r\n");
+		} else {
+			echo("Could not connect to database");
+		}
+		die();
+	}
 }
 
-function requireSystemLibraries(){
+function requireSystemLibraries() {
 	// Require System Libraries
 	require_once ROOT_DIR . '/sys/UserAccount.php';
 	require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
@@ -196,16 +195,18 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 }
 
-function initLocale(){
+function initLocale() {
 	global $configArray;
 	// Try to set the locale to UTF-8, but fail back to the exact string from the config
 	// file if this doesn't work -- different systems may vary in their behavior here.
-	setlocale(LC_MONETARY, array($configArray['Site']['locale'] . ".UTF-8",
-	$configArray['Site']['locale']));
+	setlocale(LC_MONETARY, [
+		$configArray['Site']['locale'] . ".UTF-8",
+		$configArray['Site']['locale'],
+	]);
 	date_default_timezone_set($configArray['Site']['timezone']);
 }
 
-function loadLibraryAndLocation(){
+function loadLibraryAndLocation() {
 	global $timer;
 	global $librarySingleton;
 	global $locationSingleton;
@@ -222,10 +223,10 @@ function loadLibraryAndLocation(){
 	$timer->logTime('Got active ip address');
 
 	$branch = $locationSingleton->getBranchLocationCode();
-	if (!isset($_COOKIE['branch']) || $branch != $_COOKIE['branch']){
-		if ($branch == ''){
+	if (!isset($_COOKIE['branch']) || $branch != $_COOKIE['branch']) {
+		if ($branch == '') {
 			setcookie('branch', $branch, time() - 1000, '/');
-		}else{
+		} else {
 			setcookie('branch', $branch, 0, '/');
 		}
 	}
@@ -246,23 +247,23 @@ function loadLibraryAndLocation(){
 	$timer->logTime('Updated config for scoping');
 }
 
-function disableErrorHandler(){
+function disableErrorHandler() {
 	global $errorHandlingEnabled;
 	$errorHandlingEnabled--;
 }
-function enableErrorHandler(){
+
+function enableErrorHandler() {
 	global $errorHandlingEnabled;
 	$errorHandlingEnabled++;
 }
 
-function array_remove_by_value($array, $value){
-	return array_values(array_diff($array, array($value)));
+function array_remove_by_value($array, $value) {
+	return array_values(array_diff($array, [$value]));
 }
 
-function getValidServerNames() : array{
+function getValidServerNames(): array {
 	//Don't cache for now since server names get long
-	/* Memcache $memCache */
-	//global $memCache;
+	/* Memcache $memCache */ //global $memCache;
 	//$validServerNames = $memCache->get('validServerNames');
 	$validServerNames = null;
 	if (empty($validServerNames) || isset($_REQUEST['reload'])) {
@@ -272,7 +273,7 @@ function getValidServerNames() : array{
 		$mainServer = $instanceName;
 		$mainServerBase = null;
 		$isTestServer = !$configArray['Site']['isProduction'];
-		if (strpos($mainServer, '.') != strrpos($mainServer, '.')){
+		if (strpos($mainServer, '.') != strrpos($mainServer, '.')) {
 			$mainServerBase = substr($mainServer, strpos($mainServer, '.') + 1);
 		}
 		$validServerNames = [$instanceName];
@@ -286,12 +287,12 @@ function getValidServerNames() : array{
 			}
 			$validServerNames[] = "$subdomain.$mainServer";
 			$validServerNames[] = "$subdomain.aspendiscovery.org";
-			if ($mainServerBase != null){
+			if ($mainServerBase != null) {
 				$validServerNames[] = "$subdomain.$mainServerBase";
 			}
-			if ($isTestServer){
+			if ($isTestServer) {
 				$validServerNames[] = "{$subdomain}t.$mainServer";
-				if ($mainServerBase != null){
+				if ($mainServerBase != null) {
 					$validServerNames[] = "{$subdomain}t.$mainServerBase";
 				}
 			}
@@ -301,13 +302,13 @@ function getValidServerNames() : array{
 		foreach ($locationUrls as $code => $locationUrl) {
 			$validServerNames[] = "$code.$mainServer";
 			$validServerNames[] = "$code.aspendiscovery.org";
-			if ($mainServerBase != null){
+			if ($mainServerBase != null) {
 				$validServerNames[] = "$code.$mainServerBase";
 			}
-			if ($isTestServer){
+			if ($isTestServer) {
 				$validServerNames[] = "{$code}t.$mainServer";
 				$validServerNames[] = "{$code}x.$mainServer";
-				if ($mainServerBase != null){
+				if ($mainServerBase != null) {
 					$validServerNames[] = "{$code}t.$mainServerBase";
 				}
 			}
@@ -318,12 +319,12 @@ function getValidServerNames() : array{
 			if (!empty($subdomain)) {
 				$validServerNames[] = "$subdomain.$mainServer";
 				$validServerNames[] = "$subdomain.aspendiscovery.org";
-				if ($mainServerBase != null){
+				if ($mainServerBase != null) {
 					$validServerNames[] = "$subdomain.$mainServerBase";
 				}
-				if ($isTestServer){
+				if ($isTestServer) {
 					$validServerNames[] = "{$subdomain}t.$mainServer";
-					if ($mainServerBase != null){
+					if ($mainServerBase != null) {
 						$validServerNames[] = "{$subdomain}t.$mainServerBase";
 					}
 				}

@@ -1,13 +1,12 @@
 <?php
 
 
-class GroupedWork_DownloadPDF
-{
+class GroupedWork_DownloadPDF {
 	/** @var MarcRecordDriver $recordDriver */
 	private $recordDriver;
 	private $title;
-	function launch()
-	{
+
+	function launch() {
 		$id = strip_tags($_REQUEST['id']);
 		$fileId = $_REQUEST['fileId'];
 
@@ -17,20 +16,20 @@ class GroupedWork_DownloadPDF
 		$groupedWork->permanent_id = $id;
 		if (!$groupedWork->find(true)) {
 			AspenError::raiseError(new AspenError("Invalid record ({$id}) while downloading file"));
-		}else{
+		} else {
 			require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$recordFile = new RecordFile();
 			$recordFile->fileId = $fileId;
-			if ($recordFile->find(true)){
+			if ($recordFile->find(true)) {
 				$fileUpload = new FileUpload();
 				$fileUpload->id = $fileId;
-				if ($fileUpload->find(true)){
+				if ($fileUpload->find(true)) {
 					if (file_exists($fileUpload->fullPath)) {
 						$this->recordDriver = RecordDriverFactory::initRecordDriverById($recordFile->type . ':' . $recordFile->identifier);
-						if ($this->recordDriver->getIndexingProfile() != null){
+						if ($this->recordDriver->getIndexingProfile() != null) {
 							//Record the usage of the PDF
-							if (UserAccount::isLoggedIn()){
+							if (UserAccount::isLoggedIn()) {
 								require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 								$userUsage = new UserILSUsage();
 								$userUsage->userId = UserAccount::getActiveUserId();
@@ -93,17 +92,16 @@ class GroupedWork_DownloadPDF
 					} else {
 						AspenError::raiseError(new AspenError("File ($fileId) does not exist for record ({$id})"));
 					}
-				}else{
+				} else {
 					AspenError::raiseError(new AspenError("File ($fileId) not found for record ({$id})"));
 				}
-			}else{
+			} else {
 				AspenError::raiseError(new AspenError("Invalid file($fileId) specified for record ({$id})"));
 			}
 		}
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		if (!empty($this->recordDriver)) {
 			$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);

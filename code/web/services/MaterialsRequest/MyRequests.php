@@ -5,27 +5,24 @@ require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class MaterialsRequest_MyRequests extends MyAccount
-{
+class MaterialsRequest_MyRequests extends MyAccount {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
 
 		$showOpen = true;
-		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests'){
-			$showOpen  = false;
+		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests') {
+			$showOpen = false;
 		}
 		$interface->assign('showOpen', $showOpen);
 
 		$homeLibrary = Library::getPatronHomeLibrary();
-		if (is_null($homeLibrary)){
-			/** Admin User */
-			global $library;
+		if (is_null($homeLibrary)) {
+			/** Admin User */ global $library;
 			$homeLibrary = $library;
 		}
 
-		$maxActiveRequests  = isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
+		$maxActiveRequests = isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
 		$maxRequestsPerYear = isset($homeLibrary) ? $homeLibrary->maxRequestsPerYear : 60;
 		$interface->assign('maxActiveRequests', $maxActiveRequests);
 		$interface->assign('maxRequestsPerYear', $maxRequestsPerYear);
@@ -37,8 +34,8 @@ class MaterialsRequest_MyRequests extends MyAccount
 		$interface->assign('defaultStatus', $defaultStatus->id);
 
 		//Get a list of all materials requests for the user
-		$allRequests = array();
-		if (UserAccount::isLoggedIn()){
+		$allRequests = [];
+		if (UserAccount::isLoggedIn()) {
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
 			$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
@@ -68,7 +65,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 			$materialsRequests->orderBy('title, dateCreated');
 
 			$statusQuery = new MaterialsRequestStatus();
-			if ($showOpen){
+			if ($showOpen) {
 				$statusQuery->libraryId = $homeLibrary->libraryId;
 				$statusQuery->isOpen = 1;
 			}
@@ -76,13 +73,13 @@ class MaterialsRequest_MyRequests extends MyAccount
 			$materialsRequests->selectAdd();
 			$materialsRequests->selectAdd('materials_request.*, description as statusLabel');
 			$materialsRequests->find();
-			while ($materialsRequests->fetch()){
-				if (array_key_exists($materialsRequests->format, $formats)){
+			while ($materialsRequests->fetch()) {
+				if (array_key_exists($materialsRequests->format, $formats)) {
 					$materialsRequests->format = $formats[$materialsRequests->format];
 				}
 				$allRequests[] = clone $materialsRequests;
 			}
-		}else{
+		} else {
 			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
 			exit;
 		}
@@ -91,8 +88,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 		$this->display('myMaterialRequests.tpl', 'My Materials Requests');
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/MyRequests', 'My Materials Requests');

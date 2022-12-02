@@ -7,10 +7,8 @@ require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
 require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 
-class OpenArchives_Dashboard extends Admin_Dashboard
-{
-	function launch()
-	{
+class OpenArchives_Dashboard extends Admin_Dashboard {
+	function launch() {
 		global $interface;
 
 		$instanceName = $this->loadInstanceInformation('OpenArchivesRecordUsage');
@@ -62,10 +60,9 @@ class OpenArchives_Dashboard extends Admin_Dashboard
 	 * @param int[] $collectionsToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($instanceName, $month, $year, $collectionsToGetStatsFor): array
-	{
+	public function getUserStats($instanceName, $month, $year, $collectionsToGetStatsFor): array {
 		$userUsage = new UserOpenArchivesUsage();
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$userUsage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -100,12 +97,11 @@ class OpenArchives_Dashboard extends Admin_Dashboard
 	 * @param int[] $collectionsToGetStatsFor
 	 * @return int[]
 	 */
-	public function getRecordStats($instanceName, $month, $year, $collectionsToGetStatsFor): array
-	{
+	public function getRecordStats($instanceName, $month, $year, $collectionsToGetStatsFor): array {
 		$usage = new OpenArchivesRecordUsage();
 		$recordInfo = new OpenArchivesRecord();
 		$usage->joinAdd($recordInfo, 'INNER', 'record', 'openArchivesRecordId', 'id');
-		if (!empty($instanceName)){
+		if (!empty($instanceName)) {
 			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
@@ -129,14 +125,14 @@ class OpenArchives_Dashboard extends Admin_Dashboard
 			'numRecordViewed' => 0,
 			'numViews' => 0,
 			'numRecordsUsed' => 0,
-			'numClicks' => 0
+			'numClicks' => 0,
 		];
 		foreach ($collectionsToGetStatsFor as $collectionId => $collectionName) {
 			$usageStats[$collectionId] = [
 				'numRecordViewed' => 0,
 				'numViews' => 0,
 				'numRecordsUsed' => 0,
-				'numClicks' => 0
+				'numClicks' => 0,
 			];
 		}
 		while ($usage->fetch()) {
@@ -145,7 +141,7 @@ class OpenArchives_Dashboard extends Admin_Dashboard
 				'numRecordViewed' => $usage->numRecordViewed,
 				'numViews' => $usage->numViews,
 				'numRecordsUsed' => $usage->numRecordsUsed,
-				'numClicks' => $usage->numClicks
+				'numClicks' => $usage->numClicks,
 			];
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[-1]['numRecordViewed'] += $usage->numRecordViewed;
@@ -159,8 +155,7 @@ class OpenArchives_Dashboard extends Admin_Dashboard
 		return $usageStats;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
@@ -168,13 +163,14 @@ class OpenArchives_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'open_archives';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View System Reports',
+			'View Dashboards',
+		]);
 	}
 }

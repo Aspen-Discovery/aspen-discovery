@@ -1,9 +1,8 @@
 <?php
 require_once ROOT_DIR . '/services/Greenhouse/UserMerger.php';
-class MergeDuplicateBarcodes extends UserMerger
-{
-	function launch()
-	{
+
+class MergeDuplicateBarcodes extends UserMerger {
+	function launch() {
 		parent::launch();
 		global $interface;
 
@@ -14,11 +13,10 @@ class MergeDuplicateBarcodes extends UserMerger
 
 		$interface->assign('setupErrors', $this->setupErrors);
 
-		$this->display('mergeDuplicateBarcodes.tpl', 'Merge Duplicate Barcodes',false);
+		$this->display('mergeDuplicateBarcodes.tpl', 'Merge Duplicate Barcodes', false);
 	}
 
-	function getBreadcrumbs(): array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('', 'Merge Duplicate Barcodes');
@@ -26,8 +24,7 @@ class MergeDuplicateBarcodes extends UserMerger
 		return $breadcrumbs;
 	}
 
-	function mergeUsersWithDuplicateBarcodes()
-	{
+	function mergeUsersWithDuplicateBarcodes() {
 		//Get a list of all barcodes that have more than one user for them
 		global $aspen_db;
 		global $interface;
@@ -35,40 +32,40 @@ class MergeDuplicateBarcodes extends UserMerger
 		$result = $aspen_db->query('select cat_username, count(*) as numUsers from user where cat_username != "" group by cat_username having numUsers > 1;');
 		$allBarcodesWithDuplicates = $result->fetchAll(PDO::FETCH_ASSOC);
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		foreach ($allBarcodesWithDuplicates as $index => &$row){
+		foreach ($allBarcodesWithDuplicates as $index => &$row) {
 			$user = new User();
 			$user->cat_username = $row['cat_username'];
 			/** @var User[] $allUsersForBarcode */
 			$allUsersForBarcode = $user->fetchAll();
 			$oldUser = null;
 			$newUser = null;
-			foreach ($allUsersForBarcode as $tmpUser){
-				if (isset($row['usernames'])){
+			foreach ($allUsersForBarcode as $tmpUser) {
+				if (isset($row['usernames'])) {
 					$row['usernames'] .= ", $tmpUser->username";
-				}else{
+				} else {
 					$row['usernames'] = $tmpUser->username;
 				}
 
 				$oldUser = clone($tmpUser);
 				$newUser = null;
 				$loginResult = $catalog->patronLogin($tmpUser->cat_username, $tmpUser->cat_password);
-				if ($loginResult instanceof User){
+				if ($loginResult instanceof User) {
 					//We got a good user
-					if ($loginResult->username != $tmpUser->username){
+					if ($loginResult->username != $tmpUser->username) {
 						//The internal ILS ID has changed
 						$newUser = $loginResult;
 					}
-				}else{
+				} else {
 					$loginResult = $catalog->findNewUser($tmpUser->cat_username);
-					if ($loginResult instanceof User){
-						if ($loginResult->username != $tmpUser->username){
+					if ($loginResult instanceof User) {
+						if ($loginResult->username != $tmpUser->username) {
 							//The internal ILS ID has changed
 							$newUser = $loginResult;
 						}
 					}
 				}
 
-				if ($oldUser != null && $newUser != null){
+				if ($oldUser != null && $newUser != null) {
 					$row['oldUser'] = $oldUser;
 					$row['oldUserId'] = $oldUser->username;
 					$row['newUser'] = $newUser;

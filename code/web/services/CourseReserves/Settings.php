@@ -4,73 +4,61 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/CourseReserves/CourseReservesIndexingSettings.php';
 
-class CourseReserves_Settings extends ObjectEditor
-{
-	function getObjectType() : string
-	{
+class CourseReserves_Settings extends ObjectEditor {
+	function getObjectType(): string {
 		return 'CourseReservesIndexingSettings';
 	}
 
-	function getToolName() : string
-	{
+	function getToolName(): string {
 		return 'Settings';
 	}
 
-	function getModule() : string
-	{
+	function getModule(): string {
 		return 'CourseReserves';
 	}
 
-	function getPageTitle() : string
-	{
+	function getPageTitle(): string {
 		return 'Course Reserves Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage) : array
-	{
+	function getAllObjects($page, $recordsPerPage): array {
 		$object = new CourseReservesIndexingSettings();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
-		$objectList = array();
+		$objectList = [];
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getDefaultSort() : string
-	{
+
+	function getDefaultSort(): string {
 		return 'id asc';
 	}
 
-	function getObjectStructure() : array
-	{
+	function getObjectStructure(): array {
 		return CourseReservesIndexingSettings::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn() : string
-	{
+	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
 
-	function getIdKeyColumn() : string
-	{
+	function getIdKeyColumn(): string {
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject) : array
-	{
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
-	function getInstructions() : string
-	{
+	function getInstructions(): string {
 		return '';
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#course_reserves', 'Course Reserves');
@@ -78,16 +66,15 @@ class CourseReserves_Settings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'course_reserves';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Course Reserves');
 	}
-	function canAddNew(){
+
+	function canAddNew() {
 		return $this->getNumObjects() == 0;
 	}
 }

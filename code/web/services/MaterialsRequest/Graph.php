@@ -4,10 +4,8 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
 
-class MaterialsRequest_Graph extends Admin_Admin
-{
-	function launch()
-	{
+class MaterialsRequest_Graph extends Admin_Admin {
+	function launch() {
 		global $interface;
 		$title = 'Materials Request Usage Graph';
 		$status = $_REQUEST['status'];
@@ -20,7 +18,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 		$dataSeries = [];
 		$columnLabels = [];
 
-		if($location !== '') {
+		if ($location !== '') {
 			$thisStatus = new MaterialsRequestStatus();
 			$thisStatus->id = $status;
 			$thisStatus->libraryId = $location;
@@ -39,7 +37,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 			$dataSeries[$thisStatus->description] = [
 				'borderColor' => 'rgba(255, 99, 132, 1)',
 				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-				'data' => []
+				'data' => [],
 			];
 
 			//Collect results
@@ -63,12 +61,12 @@ class MaterialsRequest_Graph extends Admin_Admin
 			$locations = new Location();
 			$locations->libraryId = $userHomeLibrary->libraryId;
 			$locations->find();
-			while ($locations->fetch()){
+			while ($locations->fetch()) {
 				$thisStatus = new MaterialsRequestStatus();
 				$thisStatus->id = $status;
 				$thisStatus->libraryId = $locations->locationId;
 				$thisStatus->find();
-				while($thisStatus->fetch()) {
+				while ($thisStatus->fetch()) {
 					$title = 'Materials Request Usage Graph - ' . $thisStatus->description;
 					$materialsRequestUsage = new MaterialsRequestUsage();
 					$materialsRequestUsage->groupBy('year, month');
@@ -82,7 +80,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 					$dataSeries[$thisStatus->description] = [
 						'borderColor' => 'rgba(255, 99, 132, 1)',
 						'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
-						'data' => []
+						'data' => [],
 					];
 
 					//Collect results
@@ -103,29 +101,28 @@ class MaterialsRequest_Graph extends Admin_Admin
 		$interface->assign('graphTitle', $title);
 
 		//Check to see if we are exporting to Excel
-		if (isset($_REQUEST['exportToExcel'])){
+		if (isset($_REQUEST['exportToExcel'])) {
 			$this->exportToExcel();
 		}
 
 		$this->display('graph.tpl', $title);
 	}
 
-	public function getAllPeriods()
-	{
+	public function getAllPeriods() {
 		$usage = new MaterialsRequestUsage();
 		$usage->selectAdd(null);
 		$usage->selectAdd('DISTINCT year, month');
 		$usage->find();
 
 		$stats = [];
-		while($usage->fetch()) {
+		while ($usage->fetch()) {
 			$stats[$usage->month . '-' . $usage->year]['year'] = $usage->year;
 			$stats[$usage->month . '-' . $usage->year]['month'] = $usage->month;
 		}
 		return $stats;
 	}
 
-	function exportToExcel(){
+	function exportToExcel() {
 		global $configArray;
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
@@ -136,11 +133,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 		$periods = $this->getAllPeriods();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])
-			->setLastModifiedBy($configArray['Site']['title'])
-			->setTitle("Materials Request Dashboard Report")
-			->setSubject("Materials Request")
-			->setCategory("Materials Request Dashboard Report");
+		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])->setLastModifiedBy($configArray['Site']['title'])->setTitle("Materials Request Dashboard Report")->setSubject("Materials Request")->setCategory("Materials Request Dashboard Report");
 
 		// Add some data
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -148,19 +141,19 @@ class MaterialsRequest_Graph extends Admin_Admin
 		$activeSheet->setCellValue('A1', 'Materials Request Dashboard Report');
 		$activeSheet->setCellValue('A3', 'Date');
 
-		if($location !== '' && $location !== null) {
+		if ($location !== '' && $location !== null) {
 			$thisStatus = new MaterialsRequestStatus();
 			$thisStatus->id = $status;
 			$thisStatus->libraryId = $location;
 			$currentAlpha = 0;
 			$alphas = range('B', 'Z');
 			$curCol = 1;
-			if($thisStatus->find(true)) {
+			if ($thisStatus->find(true)) {
 				$curRow = 4;
 				$labelCell = $alphas[$currentAlpha] . '3';
 				$activeSheet->setCellValue($labelCell, $thisStatus->description);
 
-				foreach($periods as $period) {
+				foreach ($periods as $period) {
 					$materialsRequestUsage = new MaterialsRequestUsage();
 					$materialsRequestUsage->groupBy('year, month');
 					$materialsRequestUsage->selectAdd();
@@ -173,7 +166,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 					$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
 					$materialsRequestUsage->orderBy('year, month');
 
-					if($materialsRequestUsage->find(true)) {
+					if ($materialsRequestUsage->find(true)) {
 						$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
 						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
 						$curRow++;
@@ -200,12 +193,12 @@ class MaterialsRequest_Graph extends Admin_Admin
 				$currentAlpha = 0;
 				$alphas = range('B', 'Z');
 				$curCol = 1;
-				if($thisStatus->find(true)) {
+				if ($thisStatus->find(true)) {
 					$curRow = 4;
 					$labelCell = $alphas[$currentAlpha] . '3';
 					$activeSheet->setCellValue($labelCell, $thisStatus->description);
 
-					foreach($periods as $period) {
+					foreach ($periods as $period) {
 						$materialsRequestUsage = new MaterialsRequestUsage();
 						$materialsRequestUsage->groupBy('year, month');
 						$materialsRequestUsage->selectAdd();
@@ -217,7 +210,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 						$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
 						$materialsRequestUsage->orderBy('year, month');
 
-						if($materialsRequestUsage->find(true)) {
+						if ($materialsRequestUsage->find(true)) {
 							$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
 							$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
 							$curRow++;
@@ -243,8 +236,7 @@ class MaterialsRequest_Graph extends Admin_Admin
 		exit;
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#materialsrequest', 'Materials Request');
@@ -253,13 +245,14 @@ class MaterialsRequest_Graph extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'materials_request';
 	}
 
-	function canView() : bool
-	{
-		return UserAccount::userHasPermission(['View Dashboards', 'View System Reports']);
+	function canView(): bool {
+		return UserAccount::userHasPermission([
+			'View Dashboards',
+			'View System Reports',
+		]);
 	}
 }

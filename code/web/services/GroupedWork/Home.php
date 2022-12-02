@@ -1,7 +1,8 @@
 <?php
 
-require_once ROOT_DIR  . '/Action.php';
-class GroupedWork_Home extends Action{
+require_once ROOT_DIR . '/Action.php';
+
+class GroupedWork_Home extends Action {
 	/** @var GroupedWorkDriver $recordDriver */
 	private $recordDriver;
 	private $lastSearch;
@@ -16,42 +17,42 @@ class GroupedWork_Home extends Action{
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$this->recordDriver = new GroupedWorkDriver($id);
 		$hasValidRecord = false;
-		if (!$this->recordDriver->isValid){
+		if (!$this->recordDriver->isValid) {
 			//Check to see if the ID was generated prior to the language enhancements and if so try to find the correct grouped work based on the language.
-			if (strlen($id) == 36){
+			if (strlen($id) == 36) {
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				$groupedWork = new GroupedWork();
 				$groupedWork->permanent_id = $id . '-eng';
-				if ($groupedWork->find(true)){
+				if ($groupedWork->find(true)) {
 					$this->recordDriver = new GroupedWorkDriver($id . '-eng');
-					if ($this->recordDriver->isValid){
+					if ($this->recordDriver->isValid) {
 						$hasValidRecord = true;
 						$id = $id . '-eng';
 						header("Location: /GroupedWork/$id");
 					}
 				}
-				if (!$hasValidRecord){
+				if (!$hasValidRecord) {
 					//Check other languages and get the first
 					$groupedWork = new GroupedWork();
 					global $aspen_db;
 					$groupedWork->whereAdd('permanent_id like ' . $aspen_db->quote($id . '-%'));
 					$groupedWork->find();
-					while ($groupedWork->fetch()){
+					while ($groupedWork->fetch()) {
 						$id = $groupedWork->permanent_id;
 						$this->recordDriver = new GroupedWorkDriver($id);
-						if ($this->recordDriver->isValid){
+						if ($this->recordDriver->isValid) {
 							$hasValidRecord = true;
 							header("Location: /GroupedWork/$id");
 						}
 					}
 				}
 			}
-		}else{
+		} else {
 			$hasValidRecord = true;
 		}
-		if (!$hasValidRecord){
+		if (!$hasValidRecord) {
 			$interface->assign('id', $id);
-			$logger->log("Did not find a record for id {$id} in solr." , Logger::LOG_DEBUG);
+			$logger->log("Did not find a record for id {$id} in solr.", Logger::LOG_DEBUG);
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
@@ -103,13 +104,12 @@ class GroupedWork_Home extends Action{
 		$timer->logTime('Loaded semantic data');
 
 		// Display Page
-		$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
+		$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		if (!empty($this->lastSearch)){
+		if (!empty($this->lastSearch)) {
 			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Catalog Search Results');
 		}
 		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getTitle(), false);

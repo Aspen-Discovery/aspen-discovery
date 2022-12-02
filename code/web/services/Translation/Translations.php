@@ -2,21 +2,18 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Translation_Translations extends Admin_Admin
-{
+class Translation_Translations extends Admin_Admin {
 
-	function launch()
-	{
+	function launch() {
 		global $interface;
-		/** @var Translator $translator */
-		global $translator;
+		/** @var Translator $translator */ global $translator;
 		global $activeLanguage;
 		$translationModeActive = $translator->translationModeActive();
 		$interface->assign('translationModeActive', $translationModeActive);
 
-		if (isset($_REQUEST['exportAllTranslations'])){
+		if (isset($_REQUEST['exportAllTranslations'])) {
 			$this->exportAllTranslations();
-		}elseif (isset($_REQUEST['exportForBulkTranslation'])){
+		} elseif (isset($_REQUEST['exportForBulkTranslation'])) {
 			$this->exportForBulkTranslation();
 		}
 
@@ -37,23 +34,23 @@ class Translation_Translations extends Admin_Admin
 		if (!isset($_REQUEST['showAllTranslations'])) {
 			$translation->whereAdd('(translated = 0 OR needsReview = 1)');
 			$interface->assign('showAllTranslations', false);
-		}else{
+		} else {
 			$interface->assign('showAllTranslations', true);
 		}
 
-		if (!empty($_REQUEST['filterTerm'])){
+		if (!empty($_REQUEST['filterTerm'])) {
 			$filterTerm = $_REQUEST['filterTerm'];
 			$translation->whereAdd("LOWER(term.term) LIKE LOWER(" . $translation->escape('%' . $filterTerm . '%') . ')');
 			$interface->assign('filterTerm', $filterTerm);
-		}else{
+		} else {
 			$interface->assign('filterTerm', '');
 		}
 
-		if (!empty($_REQUEST['filterTranslation'])){
+		if (!empty($_REQUEST['filterTranslation'])) {
 			$filterTranslation = $_REQUEST['filterTranslation'];
 			$translation->whereAdd("LOWER(translation) LIKE LOWER(" . $translation->escape('%' . $filterTranslation . '%') . ')');
 			$interface->assign('filterTranslation', $filterTranslation);
-		}else{
+		} else {
 			$interface->assign('filterTranslation', '');
 		}
 
@@ -72,25 +69,25 @@ class Translation_Translations extends Admin_Admin
 
 		$allTerms = [];
 		$translation->find();
-		while ($translation->fetch()){
+		while ($translation->fetch()) {
 			$allTerms[] = clone $translation;
 		}
 		$interface->assign('allTerms', $allTerms);
 
-		$options = array('totalItems' => $total,
-			'fileName'   => "/Translation/Translations?page=%d". (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
-			'perPage'    => $pageSize,
-		);
+		$options = [
+			'totalItems' => $total,
+			'fileName' => "/Translation/Translations?page=%d" . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			'perPage' => $pageSize,
+		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('translations.tpl', 'Translations');
 	}
 
-	private function exportAllTranslations()
-	{
+	private function exportAllTranslations() {
 		set_time_limit(0);
-		ini_set('memory_limit','1G');
+		ini_set('memory_limit', '1G');
 		header('Content-type: application/csv');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -102,7 +99,7 @@ class Translation_Translations extends Admin_Admin
 		$validLanguage->find();
 		$validLanguages = [];
 		echo('"Term"');
-		while ($validLanguage->fetch()){
+		while ($validLanguage->fetch()) {
 			$validLanguages[$validLanguage->code] = $validLanguage->id;
 			echo(",\"{$validLanguage->code}\"");
 		}
@@ -111,16 +108,16 @@ class Translation_Translations extends Admin_Admin
 		$term = new TranslationTerm();
 		$term->orderBy('term');
 		$term->find();
-		while ($term->fetch()){
-			echo('"' . str_replace('"', '\"',$term->term) . '"');
-			foreach ($validLanguages as $languageId){
+		while ($term->fetch()) {
+			echo('"' . str_replace('"', '\"', $term->term) . '"');
+			foreach ($validLanguages as $languageId) {
 				echo ",";
 				$translation = new Translation();
 				$translation->termId = $term->id;
 				$translation->languageId = $languageId;
-				if ($translation->find(true)){
-					if ($translation->translated || $languageId == 1){
-						echo('"' . str_replace('"', '\"',$translation->translation) . '"');
+				if ($translation->find(true)) {
+					if ($translation->translated || $languageId == 1) {
+						echo('"' . str_replace('"', '\"', $translation->translation) . '"');
 					}
 				}
 				$translation->__destruct();
@@ -133,7 +130,7 @@ class Translation_Translations extends Admin_Admin
 		exit();
 	}
 
-	private function exportForBulkTranslation(){
+	private function exportForBulkTranslation() {
 		set_time_limit(0);
 		header('Content-type: application/txt');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -151,17 +148,17 @@ class Translation_Translations extends Admin_Admin
 		$term = new TranslationTerm();
 		$term->orderBy('id');
 		$term->find();
-		while ($term->fetch()){
+		while ($term->fetch()) {
 			//Look to see if we have translated it into the active language
 			$translation = new Translation();
 			$translation->termId = $term->id;
 			$translation->languageId = $activeLanguage->id;
 			$writeTerm = false;
-			if ($translation->find(true)){
-				if (!$translation->translated){
+			if ($translation->find(true)) {
+				if (!$translation->translated) {
 					$writeTerm = true;
 				}
-			}else{
+			} else {
 				$writeTerm = true;
 			}
 			$translation->__destruct();
@@ -169,7 +166,7 @@ class Translation_Translations extends Admin_Admin
 			if ($writeTerm) {
 				$termToWrite = $term->getDefaultText();
 
-				if (!empty($termToWrite) && !is_numeric($termToWrite)){
+				if (!empty($termToWrite) && !is_numeric($termToWrite)) {
 					echo("{$term->id}| {$termToWrite}\r\n");
 				}
 			}
@@ -179,8 +176,7 @@ class Translation_Translations extends Admin_Admin
 		exit();
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
@@ -189,13 +185,11 @@ class Translation_Translations extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection() : string
-	{
+	function getActiveAdminSection(): string {
 		return 'translations';
 	}
 
-	function canView() : bool
-	{
+	function canView(): bool {
 		return UserAccount::userHasPermission('Translate Aspen');
 	}
 }

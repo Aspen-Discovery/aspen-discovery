@@ -1,7 +1,6 @@
 <?php
 
-class CatalogConnection
-{
+class CatalogConnection {
 	/**
 	 * A boolean value that defines whether a connection has been successfully
 	 * made.
@@ -11,7 +10,7 @@ class CatalogConnection
 	 */
 	public $status = false;
 
-	/** @var AccountProfile  */
+	/** @var AccountProfile */
 	public $accountProfile;
 
 	/**
@@ -33,8 +32,7 @@ class CatalogConnection
 	 *
 	 * @access public
 	 */
-	public function __construct($driver, $accountProfile)
-	{
+	public function __construct($driver, $accountProfile) {
 		$path = ROOT_DIR . "/Drivers/{$driver}.php";
 		if (is_readable($path) && $driver != 'AbstractIlsDriver') {
 			/** @noinspection PhpIncludeInspection */
@@ -65,8 +63,7 @@ class CatalogConnection
 	 * and values; on failure, false.
 	 * @access public
 	 */
-	public function checkFunction($function)
-	{
+	public function checkFunction($function) {
 		// Extract the configuration from the driver if available:
 		$functionConfig = method_exists($this->driver, 'getConfig') ? $this->driver->getConfig($function) : false;
 
@@ -94,11 +91,10 @@ class CatalogConnection
 	 * @return User|null     User object or null if the user cannot be logged in
 	 * @access public
 	 */
-	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
-	{
+	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
 		global $offlineMode;
 
-		$barcodesToTest = array();
+		$barcodesToTest = [];
 		$barcodesToTest[$username] = $username;
 		$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
 		//Special processing to allow users to login with short barcodes
@@ -116,13 +112,13 @@ class CatalogConnection
 		$user = null;
 		foreach ($barcodesToTest as $barcode) {
 			$user = $this->getUserFromDatabase($barcode, $password, $username);
-			if ($user != null){
+			if ($user != null) {
 				break;
 			}
 		}
 
 		if ($offlineMode) {
-			if ($user == null){
+			if ($user == null) {
 				return null;
 			}
 		} else {
@@ -130,10 +126,10 @@ class CatalogConnection
 				//If we have a valid patron, only revalidate every 15 minutes
 				if ($user->lastLoginValidation < (time() - 15 * 60)) {
 					$doPatronLogin = true;
-				}else{
+				} else {
 					$doPatronLogin = false;
 				}
-			}else{
+			} else {
 				$doPatronLogin = true;
 			}
 			if ($doPatronLogin || isset($_REQUEST['reload'])) {
@@ -143,7 +139,7 @@ class CatalogConnection
 					try {
 						$user->lastLoginValidation = time();
 						$user->update();
-					}catch (Exception $e){
+					} catch (Exception $e) {
 						//This happens before database update
 					}
 				}
@@ -151,11 +147,13 @@ class CatalogConnection
 		}
 
 		if ($user && !($user instanceof AspenError)) {
-			if ($parentAccount) $user->setParentUser($parentAccount); // only set when the parent account is passed.
+			if ($parentAccount) {
+				$user->setParentUser($parentAccount);
+			} // only set when the parent account is passed.
 
 			//Record stats to show the user logged in
 			$indexingProfile = $this->accountProfile->getIndexingProfile();
-			if ($indexingProfile != null){
+			if ($indexingProfile != null) {
 				require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 				$userUsage = new UserILSUsage();
 				$userUsage->userId = $user->id;
@@ -176,15 +174,14 @@ class CatalogConnection
 	 * @param string $patronBarcode
 	 * @return bool|User
 	 */
-	public function findNewUser(string $patronBarcode){
+	public function findNewUser(string $patronBarcode) {
 		return $this->driver->findNewUser($patronBarcode);
 	}
 
 	/**
 	 * @param User $user
 	 */
-	public function updateUserWithAdditionalRuntimeInformation($user)
-	{
+	public function updateUserWithAdditionalRuntimeInformation($user) {
 		global $timer;
 		$timer->logTime("Starting to Update Additional Runtime information for user " . $user->id);
 
@@ -213,8 +210,7 @@ class CatalogConnection
 	 * @param $nameFromIls   string
 	 * @return boolean
 	 */
-	private function areNamesSimilar($nameFromUser, $nameFromIls)
-	{
+	private function areNamesSimilar($nameFromUser, $nameFromIls) {
 		$fullName = str_replace(",", " ", $nameFromIls);
 		$fullName = str_replace(";", " ", $fullName);
 		$fullName = str_replace(";", "'", $fullName);
@@ -246,8 +242,7 @@ class CatalogConnection
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts(User $user) : array
-	{
+	public function getCheckouts(User $user): array {
 		return $this->driver->getCheckouts($user);
 	}
 
@@ -263,11 +258,10 @@ class CatalogConnection
 	 * otherwise.
 	 * @access public
 	 */
-	public function getFines(User $patron, bool $includeMessages = false) : array
-	{
+	public function getFines(User $patron, bool $includeMessages = false): array {
 		$fines = $this->driver->getFines($patron, $includeMessages);
-		foreach ($fines as &$fine){
-			if (!array_key_exists('canPayFine', $fine)){
+		foreach ($fines as &$fine) {
+			if (!array_key_exists('canPayFine', $fine)) {
 				$fine['canPayFine'] = true;
 			}
 		}
@@ -289,14 +283,17 @@ class CatalogConnection
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false)
-	{
+	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
 		global $timer;
 		global $offlineMode;
 		$timer->logTime("Starting to load reading history");
 
 		//Get reading history from the database unless we specifically want to load from the driver.
-		$result = array('historyActive' => $patron->trackReadingHistory, 'titles' => array(), 'numTitles' => 0);
+		$result = [
+			'historyActive' => $patron->trackReadingHistory,
+			'titles' => [],
+			'numTitles' => 0,
+		];
 		if (!$patron->trackReadingHistory) {
 			return $result;
 		}
@@ -358,13 +355,13 @@ class CatalogConnection
 		$readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
 		if ($sortOption == "checkedOut") {
 			$readingHistoryDB->orderBy('checkedOut DESC, MAX(checkOutDate) DESC, title ASC');
-		} else if ($sortOption == "returned") {
+		} elseif ($sortOption == "returned") {
 			$readingHistoryDB->orderBy('checkInDate DESC, title ASC');
-		} else if ($sortOption == "title") {
+		} elseif ($sortOption == "title") {
 			$readingHistoryDB->orderBy('title ASC, MAX(checkOutDate) DESC');
-		} else if ($sortOption == "author") {
+		} elseif ($sortOption == "author") {
 			$readingHistoryDB->orderBy('author ASC, title ASC, MAX(checkOutDate) DESC');
-		} else if ($sortOption == "format") {
+		} elseif ($sortOption == "format") {
 			$readingHistoryDB->orderBy('format ASC, title ASC, MAX(checkOutDate) DESC');
 		}
 		$readingHistoryDB->groupBy(['groupedWorkPermanentId']);
@@ -378,7 +375,7 @@ class CatalogConnection
 			$firstIndex = 0;
 		}
 		$readingHistoryDB->find();
-		$readingHistoryTitles = array();
+		$readingHistoryTitles = [];
 
 		while ($readingHistoryDB->fetch()) {
 			$historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport);
@@ -387,7 +384,11 @@ class CatalogConnection
 		}
 		$timer->logTime("Loaded " . count($readingHistoryTitles) . " titles from the reading history");
 
-		return array('historyActive' => $patron->trackReadingHistory, 'titles' => $readingHistoryTitles, 'numTitles' => $numTitles);
+		return [
+			'historyActive' => $patron->trackReadingHistory,
+			'titles' => $readingHistoryTitles,
+			'numTitles' => $numTitles,
+		];
 	}
 
 	/**
@@ -402,11 +403,13 @@ class CatalogConnection
 	 * @param array $selectedTitles The titles to do the action on if applicable
 	 * @return array success and message are the array keys
 	 */
-	function doReadingHistoryAction($patron, $action, $selectedTitles)
-	{
+	function doReadingHistoryAction($patron, $action, $selectedTitles) {
 		$result = [
 			'success' => false,
-			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
 		];
 		if ($action == 'deleteMarked') {
 			//Remove titles from database (do not remove from ILS)
@@ -434,7 +437,11 @@ class CatalogConnection
 				}
 			}
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'Deleted %1% entries from Reading History.',
+				1 => $numDeleted,
+				'isPublicFacing' => true,
+			]);
 		} elseif ($action == 'deleteAll') {
 			//Remove all titles from database (do not remove from ILS)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -445,7 +452,10 @@ class CatalogConnection
 				$readingHistoryDB->update();
 			}
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'Deleted all entries from Reading History.', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'Deleted all entries from Reading History.',
+				'isPublicFacing' => true,
+			]);
 		} elseif ($action == 'optOut') {
 			//Delete the reading history (permanently this time since we are opting out)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -460,14 +470,20 @@ class CatalogConnection
 			//$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'You have been opted out of tracking Reading History', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'You have been opted out of tracking Reading History',
+				'isPublicFacing' => true,
+			]);
 		} elseif ($action == 'optIn') {
 			//Opt in within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = true;
 			$patron->update();
 
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'You have been opted out in to tracking Reading History', 'isPublicFacing'=>true]);
+			$result['message'] = translate([
+				'text' => 'You have been opted out in to tracking Reading History',
+				'isPublicFacing' => true,
+			]);
 		}
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
 			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
@@ -482,7 +498,7 @@ class CatalogConnection
 	 *
 	 * @return array
 	 */
-	function deleteReadingHistoryEntryByTitleAuthor($patron, $title, $author){
+	function deleteReadingHistoryEntryByTitleAuthor($patron, $title, $author) {
 		$numDeleted = 0;
 
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -499,7 +515,11 @@ class CatalogConnection
 		}
 
 		$result['success'] = true;
-		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
+		$result['message'] = translate([
+			'text' => 'Deleted %1% entries from Reading History.',
+			1 => $numDeleted,
+			'isPublicFacing' => true,
+		]);
 
 		return $result;
 	}
@@ -515,8 +535,7 @@ class CatalogConnection
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user) : array
-	{
+	public function getHolds($user): array {
 		return $this->driver->getHolds($user);
 	}
 
@@ -533,8 +552,7 @@ class CatalogConnection
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
-	{
+	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
 		$result = $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate);
 		if ($result['success'] == true) {
 			$indexingProfileId = $this->driver->getIndexingProfile()->id;
@@ -586,13 +604,11 @@ class CatalogConnection
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
-	{
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 	}
 
-	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false) : array
-	{
+	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false): array {
 		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade);
 	}
 
@@ -601,13 +617,12 @@ class CatalogConnection
 	 * @param string $homeLibraryCode
 	 * @return array
 	 */
-	function updateHomeLibrary($user, $homeLibraryCode)
-	{
+	function updateHomeLibrary($user, $homeLibraryCode) {
 		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);
-		if ($result['success']){
+		if ($result['success']) {
 			$location = new Location();
 			$location->code = $homeLibraryCode;
-			if ($location->find(true)){
+			if ($location->find(true)) {
 				$user->homeLocationId = $location->locationId;
 				$user->_homeLocationCode = $homeLibraryCode;
 				$user->_homeLocation = $location;
@@ -617,14 +632,13 @@ class CatalogConnection
 		return $result;
 	}
 
-	function selfRegister($viaSSO = false, $ssoUser = []) : array
-	{
-		if(!$viaSSO) {
+	function selfRegister($viaSSO = false, $ssoUser = []): array {
+		if (!$viaSSO) {
 			$result = $this->driver->selfRegister();
 		} else {
 			$result = $this->driver->selfRegisterViaSSO($ssoUser);
 		}
-		if ($result['success'] == true){
+		if ($result['success'] == true) {
 			//Track usage by the user
 			require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 			$userUsage = new UserILSUsage();
@@ -655,17 +669,18 @@ class CatalogConnection
 	 * @return mixed             Varies by method (false if undefined method)
 	 * @access public
 	 */
-	public function __call($methodName, $params)
-	{
-		$method = array($this->driver, $methodName);
+	public function __call($methodName, $params) {
+		$method = [
+			$this->driver,
+			$methodName,
+		];
 		if (is_callable($method)) {
 			return call_user_func_array($method, $params);
 		}
 		return false;
 	}
 
-	public function getSelfRegistrationFields()
-	{
+	public function getSelfRegistrationFields() {
 		return $this->driver->getSelfRegistrationFields();
 	}
 
@@ -674,9 +689,8 @@ class CatalogConnection
 	 * @param bool $forExport True if this is being used while exporting to Excel
 	 * @return mixed
 	 */
-	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false)
-	{
-		$historyEntry = array();
+	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false) {
+		$historyEntry = [];
 
 		$historyEntry['title'] = $readingHistoryDB->title;
 		$historyEntry['author'] = $readingHistoryDB->author;
@@ -712,11 +726,10 @@ class CatalogConnection
 	/**
 	 * @param User $patron
 	 */
-	public function updateReadingHistoryBasedOnCurrentCheckouts($patron)
-	{
+	public function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
 		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
 		$curTime = time();
-		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])){
+		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])) {
 			return;
 		}
 
@@ -728,7 +741,7 @@ class CatalogConnection
 		$readingHistoryDB->whereAdd('checkInDate IS NULL');
 		$readingHistoryDB->find();
 
-		$activeHistoryTitles = array();
+		$activeHistoryTitles = [];
 		global $logger;
 		while ($readingHistoryDB->fetch()) {
 			$historyEntry = [];
@@ -737,13 +750,13 @@ class CatalogConnection
 			$historyEntry['ids'] = [];
 			$historyEntry['ids'][] = $readingHistoryDB->id;
 			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
-			if (array_key_exists($key, $activeHistoryTitles)){
-				if (IPAddress::showDebuggingInformation()){
+			if (array_key_exists($key, $activeHistoryTitles)) {
+				if (IPAddress::showDebuggingInformation()) {
 					$logger->log("Adding {$readingHistoryDB->id} to active history entry $key.", Logger::LOG_ERROR);
 				}
 				$activeHistoryTitles[$key]['ids'][] = $readingHistoryDB->id;
-			}else{
-				if (IPAddress::showDebuggingInformation()){
+			} else {
+				if (IPAddress::showDebuggingInformation()) {
 					$logger->log("Adding new record $key, {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
 				}
 				$activeHistoryTitles[$key] = $historyEntry;
@@ -782,11 +795,11 @@ class CatalogConnection
 
 		//Anything that was still active is now checked in
 		global $logger;
-		if (IPAddress::showDebuggingInformation()){
+		if (IPAddress::showDebuggingInformation()) {
 			$logger->log("There are " . count($activeHistoryTitles) . " titles that have been checked in.", Logger::LOG_ERROR);
 		}
 		foreach ($activeHistoryTitles as $historyEntry) {
-			if (IPAddress::showDebuggingInformation()){
+			if (IPAddress::showDebuggingInformation()) {
 				$logger->log("There are " . count($historyEntry['ids']) . " ids for this history entry.", Logger::LOG_ERROR);
 			}
 			//Update even if deleted to make sure code is cleaned up correctly
@@ -796,10 +809,10 @@ class CatalogConnection
 				if ($historyEntryDB->find(true)) {
 					$historyEntryDB->checkInDate = time();
 					$numUpdates = $historyEntryDB->update();
-					if (IPAddress::showDebuggingInformation()){
+					if (IPAddress::showDebuggingInformation()) {
 						if ($numUpdates != 1) {
 							$logger->log("Could not update reading history entry $id", Logger::LOG_ERROR);
-						}else{
+						} else {
 							$logger->log("Marked $id as checked in.", Logger::LOG_ERROR);
 						}
 					}
@@ -812,53 +825,47 @@ class CatalogConnection
 		$patron->update();
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false) : array
-	{
+	function cancelHold($patron, $recordId, $cancelId = null, $isIll = false): array {
 		return $this->driver->cancelHold($patron, $recordId, $cancelId, $isIll);
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) : array
-	{
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate): array {
 		return $this->driver->freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) : array
-	{
+	function thawHold($patron, $recordId, $itemToThawId): array {
 		return $this->driver->thawHold($patron, $recordId, $itemToThawId);
 	}
 
-	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) : array
-	{
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation): array {
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 	}
 
-	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
-	{
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null) {
 		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
-	public function renewAll(User $patron)
-	{
+	public function renewAll(User $patron) {
 		if ($this->driver->hasFastRenewAll()) {
 			return $this->driver->renewAll($patron);
 		} else {
 			//Get all list of all transactions
 			$currentTransactions = $this->driver->getCheckouts($patron);
-			$renewResult = array(
+			$renewResult = [
 				'success' => true,
-				'message' => array(),
+				'message' => [],
 				'Renewed' => 0,
-				'NotRenewed' => 0
-			);
+				'NotRenewed' => 0,
+			];
 			$renewResult['Total'] = count($currentTransactions);
 			$numRenewals = 0;
-			$failure_messages = array();
+			$failure_messages = [];
 			foreach ($currentTransactions as $transaction) {
 				$curResult = $this->renewCheckout($patron, $transaction->recordId, $transaction->renewIndicator, null);
 				if ($curResult['success']) {
 					$numRenewals++;
 				} else {
-					if ($curResult['message'] == 'The item could not be renewed'){
+					if ($curResult['message'] == 'The item could not be renewed') {
 						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 						$failure_messages[] = StringUtils::removeTrailingPunctuation($transaction->title) . ' could not be renewed';
 					}
@@ -876,13 +883,11 @@ class CatalogConnection
 		}
 	}
 
-	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
-	{
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
 
-	public function importListsFromIls($patron)
-	{
+	public function importListsFromIls($patron) {
 		return $this->driver->importListsFromIls($patron);
 	}
 
@@ -893,13 +898,11 @@ class CatalogConnection
 	 * @param string $newPin
 	 * @return string[] a message to the user letting them know what happened
 	 */
-	function updatePin(User $user, string $oldPin, string $newPin)
-	{
+	function updatePin(User $user, string $oldPin, string $newPin) {
 		return $this->driver->updatePin($user, $oldPin, $newPin);
 	}
 
-	function showOutstandingFines()
-	{
+	function showOutstandingFines() {
 		return $this->driver->showOutstandingFines();
 	}
 
@@ -911,157 +914,196 @@ class CatalogConnection
 	 * - emailAspenResetLink - A link to reset the pin is emailed to the user.  Reset happens within Aspen.
 	 * @return string
 	 */
-	function getForgotPasswordType()
-	{
+	function getForgotPasswordType() {
 		if ($this->driver == null) {
 			return null;
 		}
 		return $this->driver->getForgotPasswordType();
 	}
 
-	public function getEmailResetPinTemplate()
-	{
+	public function getEmailResetPinTemplate() {
 		global $interface;
 		global $library;
 
 		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Name'));
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 
-		if (isset($_REQUEST['email'])){
+		if (isset($_REQUEST['email'])) {
 			$interface->assign('email', $_REQUEST['email']);
 		}
-		if (isset($_REQUEST['barcode'])){
+		if (isset($_REQUEST['barcode'])) {
 			$interface->assign('barcode', $_REQUEST['barcode']);
 		}
-		if (isset($_REQUEST['username'])){
+		if (isset($_REQUEST['username'])) {
 			$interface->assign('username', $_REQUEST['username']);
 		}
-		if (isset($_REQUEST['resendEmail'])){
+		if (isset($_REQUEST['resendEmail'])) {
 			$interface->assign('resendEmail', $_REQUEST['resendEmail']);
 		}
 
-		if ($this->getForgotPasswordType() == 'emailAspenResetLink'){
+		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
 			return 'aspenEmailResetPinLink.tpl';
-		}else{
+		} else {
 			return $this->driver->getEmailResetPinTemplate();
 		}
 	}
 
-	function processEmailResetPinForm()
-	{
+	function processEmailResetPinForm() {
 		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
-			$result = array(
+			$result = [
 				'success' => false,
-				'error' => translate(['text' => "Unknown error sending password reset.", 'isPublicFacing'=>true])
-			);
+				'error' => translate([
+					'text' => "Unknown error sending password reset.",
+					'isPublicFacing' => true,
+				]),
+			];
 
 			//Get the user from the driver
-			if (empty($_REQUEST['reset_username'])){
-				$result['error'] = translate(['text' => "Barcode not provided. You must provide a barcode to use password reset.", 'isPublicFacing'=>true]);
-			}else{
+			if (empty($_REQUEST['reset_username'])) {
+				$result['error'] = translate([
+					'text' => "Barcode not provided. You must provide a barcode to use password reset.",
+					'isPublicFacing' => true,
+				]);
+			} else {
 				$barcode = $_REQUEST['reset_username'];
 				$userToResetPin = new User();
 				$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
 				$userToResetPin->$barcodeProperty = $barcode;
-				if (!$userToResetPin->find(true)){
+				if (!$userToResetPin->find(true)) {
 					$userToResetPin = $this->driver->findNewUser($barcode);
 				}
-				if ($userToResetPin == false){
-					$result['error'] = translate(['text' => "Could not find a patron with that barcode, please contact the library.", 'isPublicFacing'=>true]);
-				}else{
-					if (empty($userToResetPin->email)){
-						$result['error'] = translate(['text' => "That account does not have an email associated with it, please contact the library.", 'isPublicFacing'=>true]);
-					}else{
+				if ($userToResetPin == false) {
+					$result['error'] = translate([
+						'text' => "Could not find a patron with that barcode, please contact the library.",
+						'isPublicFacing' => true,
+					]);
+				} else {
+					if (empty($userToResetPin->email)) {
+						$result['error'] = translate([
+							'text' => "That account does not have an email associated with it, please contact the library.",
+							'isPublicFacing' => true,
+						]);
+					} else {
 						require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
 						$pinResetToken = new PinResetToken();
 						$pinResetToken->userId = $userToResetPin->id;
 						$pinResetToken->generateToken();
 						$pinResetToken->dateIssued = time();
-						if ($pinResetToken->insert()){
+						if ($pinResetToken->insert()) {
 							require_once ROOT_DIR . '/sys/Email/Mailer.php';
 							$mailer = new Mailer();
 
 							global $configArray;
 							$resetUrl = $configArray['Site']['url'] . '/MyAccount/CompletePinReset?token=' . $pinResetToken->token;
-							$subject = translate(['text' => 'Reset PIN', 'isPublicFacing'=> true]);
-							$body = translate(['text' => 'Hi %1%,', 1 => $userToResetPin->firstname, 'isPublicFacing'=> true]);
-							$body .= "\r\n" . translate(['text' => 'It looks like you forgot your PIN. Click on the link or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link.', 'isPublicFacing'=> true]);
+							$subject = translate([
+								'text' => 'Reset PIN',
+								'isPublicFacing' => true,
+							]);
+							$body = translate([
+								'text' => 'Hi %1%,',
+								1 => $userToResetPin->firstname,
+								'isPublicFacing' => true,
+							]);
+							$body .= "\r\n" . translate([
+									'text' => 'It looks like you forgot your PIN. Click on the link or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link.',
+									'isPublicFacing' => true,
+								]);
 							$body .= "\r\n\r\n" . $resetUrl;
-							$body .= "\r\n" . translate(['text' => 'You can also paste the following code into the page where you generated the reset.', 'isPublicFacing'=> true]);
+							$body .= "\r\n" . translate([
+									'text' => 'You can also paste the following code into the page where you generated the reset.',
+									'isPublicFacing' => true,
+								]);
 							$body .= "\r\n\r\n" . $pinResetToken->token;
 
-							$htmlBody = "<html></html><table><tr><td>" . translate(['text' => 'Hi %1%,', 1 => $userToResetPin->firstname, 'isPublicFacing'=> true]) . '<br/>';
-							$htmlBody .= translate(['text' => 'It looks like you forgot your PIN. Click on the button or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link', 'isPublicFacing'=> true, 1 => $userToResetPin->firstname]) . "</td>";
-							$htmlBody .= "<tr><td style='text-align: center'><a href='{$resetUrl}'>" . translate(['text' => 'CREATE NEW PIN', 'isPublicFacing'=> true]) . '</a></td></tr>';
+							$htmlBody = "<html></html><table><tr><td>" . translate([
+									'text' => 'Hi %1%,',
+									1 => $userToResetPin->firstname,
+									'isPublicFacing' => true,
+								]) . '<br/>';
+							$htmlBody .= translate([
+									'text' => 'It looks like you forgot your PIN. Click on the button or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link',
+									'isPublicFacing' => true,
+									1 => $userToResetPin->firstname,
+								]) . "</td>";
+							$htmlBody .= "<tr><td style='text-align: center'><a href='{$resetUrl}'>" . translate([
+									'text' => 'CREATE NEW PIN',
+									'isPublicFacing' => true,
+								]) . '</a></td></tr>';
 							$htmlBody .= '<tr><td></td></tr>';
-							$htmlBody .= "<tr><td style='text-align: center'>" . translate(['text' => 'Reset Token', 'isPublicFacing'=> true]) . '</tr>';
+							$htmlBody .= "<tr><td style='text-align: center'>" . translate([
+									'text' => 'Reset Token',
+									'isPublicFacing' => true,
+								]) . '</tr>';
 							$htmlBody .= "<tr><td style='text-align: center'>" . $pinResetToken->token . '</td></tr>';
 							$htmlBody .= '</table></html>';
 
 
-							if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)){
+							if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)) {
 								$result['success'] = true;
-								$result['message'] = translate(['text' => "The email with your PIN reset link was sent. Please click on the link within that email or enter the code below.", 'isPublicFacing'=>true]);
-							}else{
-								$result['error'] = translate(['text' => "The email with your PIN reset link could not be sent, please contact the library.", 'isPublicFacing'=>true]);
+								$result['message'] = translate([
+									'text' => "The email with your PIN reset link was sent. Please click on the link within that email or enter the code below.",
+									'isPublicFacing' => true,
+								]);
+							} else {
+								$result['error'] = translate([
+									'text' => "The email with your PIN reset link could not be sent, please contact the library.",
+									'isPublicFacing' => true,
+								]);
 							}
-						}else{
-							$result['error'] = translate(['text' => "Could not generate PIN reset token.", 'isPublicFacing'=>true]);
+						} else {
+							$result['error'] = translate([
+								'text' => "Could not generate PIN reset token.",
+								'isPublicFacing' => true,
+							]);
 						}
 					}
 				}
 			}
 
 			return $result;
-		}else{
+		} else {
 			return $this->driver->processEmailResetPinForm();
 		}
 	}
 
-	function hasMaterialsRequestSupport()
-	{
+	function hasMaterialsRequestSupport() {
 		return $this->driver->hasMaterialsRequestSupport();
 	}
 
-	function getNewMaterialsRequestForm(User $user)
-	{
+	function getNewMaterialsRequestForm(User $user) {
 		return $this->driver->getNewMaterialsRequestForm($user);
 	}
 
-	function processMaterialsRequestForm($user)
-	{
+	function processMaterialsRequestForm($user) {
 		return $this->driver->processMaterialsRequestForm($user);
 	}
 
-	function getNumMaterialsRequests(User $user): int
-	{
+	function getNumMaterialsRequests(User $user): int {
 		return $this->driver->getNumMaterialsRequests($user);
 	}
 
 	/** @noinspection PhpUnused */
-	function getMaterialsRequests(User $user)
-	{
+	function getMaterialsRequests(User $user) {
 		return $this->driver->getMaterialsRequests($user);
 	}
 
-	function getMaterialsRequestsPage(User $user)
-	{
+	function getMaterialsRequestsPage(User $user) {
 		return $this->driver->getMaterialsRequestsPage($user);
 	}
 
-	function deleteMaterialsRequests(User $user)
-	{
+	function deleteMaterialsRequests(User $user) {
 		return $this->driver->deleteMaterialsRequests($user);
 	}
 
-	function getPatronUpdateForm(User $user)
-	{
+	function getPatronUpdateForm(User $user) {
 		return $this->driver->getPatronUpdateForm($user);
 	}
 
-	public function getAccountSummary(User $user)
-	{
-		list($existingId, $summary) = $user->getCachedAccountSummary('ils');
+	public function getAccountSummary(User $user) {
+		[
+			$existingId,
+			$summary,
+		] = $user->getCachedAccountSummary('ils');
 
 		if ($summary === null || isset($_REQUEST['reload'])) {
 			$summary = $this->driver->getAccountSummary($user);
@@ -1075,8 +1117,7 @@ class CatalogConnection
 	/**
 	 * @return bool
 	 */
-	public function showMessagingSettings() : bool
-	{
+	public function showMessagingSettings(): bool {
 		if ($this->driver == null) {
 			return false;
 		}
@@ -1087,72 +1128,62 @@ class CatalogConnection
 	 * @param User $user
 	 * @return string
 	 */
-	public function getMessagingSettingsTemplate(User $user) : ?string
-	{
+	public function getMessagingSettingsTemplate(User $user): ?string {
 		return $this->driver->getMessagingSettingsTemplate($user);
 	}
 
-	public function processMessagingSettingsForm(User $user) : array
-	{
+	public function processMessagingSettingsForm(User $user): array {
 		return $this->driver->processMessagingSettingsForm($user);
 	}
 
-	public function completeFinePayment(User $patron, UserPayment $payment)
-	{
+	public function completeFinePayment(User $patron, UserPayment $payment) {
 		$result = $this->driver->completeFinePayment($patron, $payment);
 		$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
 		return $result;
 	}
 
-	public function patronEligibleForHolds(User $patron)
-	{
-		if (empty($this->driver)){
+	public function patronEligibleForHolds(User $patron) {
+		if (empty($this->driver)) {
 			return false;
 		}
 		return $this->driver->patronEligibleForHolds($patron);
 	}
 
-	public function getShowAutoRenewSwitch(User $patron)
-	{
-		if (empty($this->driver)){
+	public function getShowAutoRenewSwitch(User $patron) {
+		if (empty($this->driver)) {
 			return false;
 		}
 		return $this->driver->getShowAutoRenewSwitch($patron);
 	}
 
-	public function isAutoRenewalEnabledForUser(User $patron)
-	{
-		if (empty($this->driver)){
+	public function isAutoRenewalEnabledForUser(User $patron) {
+		if (empty($this->driver)) {
 			return false;
 		}
 		return $this->driver->isAutoRenewalEnabledForUser($patron);
 	}
 
-	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
-	{
+	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal) {
 		return $this->driver->updateAutoRenewal($patron, $allowAutoRenewal);
 	}
 
-	public function getPasswordRecoveryTemplate()
-	{
+	public function getPasswordRecoveryTemplate() {
 		return $this->driver->getPasswordRecoveryTemplate();
 	}
 
-	public function processPasswordRecovery()
-	{
+	public function processPasswordRecovery() {
 		return $this->driver->processPasswordRecovery();
 	}
 
-	public function getEmailResetPinResultsTemplate()
-	{
+	public function getEmailResetPinResultsTemplate() {
 		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
 			return 'aspenEmailResetPinResults.tpl';
-		}else{
+		} else {
 			return $this->driver->getEmailResetPinResultsTemplate();
 		}
 	}
 
-	function getPasswordPinValidationRules(){
+	function getPasswordPinValidationRules() {
 		return $this->driver->getPasswordPinValidationRules();
 	}
 
@@ -1162,8 +1193,7 @@ class CatalogConnection
 	 * @param string|null $username
 	 * @return User|null
 	 */
-	protected function getUserFromDatabase($barcode, $password, $username)
-	{
+	protected function getUserFromDatabase($barcode, $password, $username) {
 		global $timer;
 		global $logger;
 		$user = new User();
@@ -1193,23 +1223,19 @@ class CatalogConnection
 		return $user;
 	}
 
-	public function hasEditableUsername()
-	{
+	public function hasEditableUsername() {
 		return $this->driver->hasEditableUsername();
 	}
 
-	public function getEditableUsername(User $user)
-	{
+	public function getEditableUsername(User $user) {
 		return $this->driver->getEditableUsername($user);
 	}
 
-	public function updateEditableUsername(User $user, string $username) : array
-	{
+	public function updateEditableUsername(User $user, string $username): array {
 		return $this->driver->updateEditableUsername($user, $username);
 	}
 
-	public function logout(User $user)
-	{
+	public function logout(User $user) {
 		$this->driver->logout($user);
 		$user->lastLoginValidation = 0;
 		$user->update();
@@ -1219,8 +1245,8 @@ class CatalogConnection
 		return $this->driver->getHoldsReportData($location);
 	}
 
-	public function getStudentReportData($location,$showOverdueOnly,$date) {
-		return $this->driver->getStudentReportData($location,$showOverdueOnly,$date);
+	public function getStudentReportData($location, $showOverdueOnly, $date) {
+		return $this->driver->getStudentReportData($location, $showOverdueOnly, $date);
 	}
 
 	/**
@@ -1228,18 +1254,15 @@ class CatalogConnection
 	 *
 	 * @param User $user
 	 */
-	public function loadContactInformation(User $user)
-	{
+	public function loadContactInformation(User $user) {
 		$this->driver->loadContactInformation($user);
 	}
 
-	public function getILSMessages(User $user)
-	{
+	public function getILSMessages(User $user) {
 		return $this->driver->getILSMessages($user);
 	}
 
-	public function confirmHold(User $user, $recordId, $confirmationId)
-	{
+	public function confirmHold(User $user, $recordId, $confirmationId) {
 		return $this->driver->confirmHold($user, $recordId, $confirmationId);
 	}
 
@@ -1251,52 +1274,43 @@ class CatalogConnection
 		return $this->driver->getPluginStatus($pluginName);
 	}
 
-	public function getCurbsidePickupSettings($locationCode)
-	{
+	public function getCurbsidePickupSettings($locationCode) {
 		return $this->driver->getCurbsidePickupSettings($locationCode);
 	}
 
-	public function hasCurbsidePickups($user)
-	{
+	public function hasCurbsidePickups($user) {
 		return $this->driver->hasCurbsidePickups($user);
 	}
 
-	public function getPatronCurbsidePickups($user)
-	{
+	public function getPatronCurbsidePickups($user) {
 		return $this->driver->getPatronCurbsidePickups($user);
 	}
 
-	public function newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote)
-	{
+	public function newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote) {
 		return $this->driver->newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote);
 	}
 
-	public function cancelCurbsidePickup($user, $pickupId)
-	{
+	public function cancelCurbsidePickup($user, $pickupId) {
 		return $this->driver->cancelCurbsidePickup($user, $pickupId);
 	}
 
-	public function checkInCurbsidePickup($user, $pickupId)
-	{
+	public function checkInCurbsidePickup($user, $pickupId) {
 		return $this->driver->checkInCurbsidePickup($user, $pickupId);
 	}
 
-	public function getAllCurbsidePickups()
-	{
+	public function getAllCurbsidePickups() {
 		return $this->driver->getAllCurbsidePickups();
 	}
 
-	public function isPromptForHoldNotifications() : bool
-	{
+	public function isPromptForHoldNotifications(): bool {
 		return $this->driver->isPromptForHoldNotifications();
 	}
 
-	public function getHoldNotificationTemplate(User $user) : ?string
-	{
+	public function getHoldNotificationTemplate(User $user): ?string {
 		return $this->driver->getHoldNotificationTemplate($user);
 	}
 
-	public function validateUniqueId(User $user){
+	public function validateUniqueId(User $user) {
 		$this->driver->validateUniqueId($user);
 	}
 
@@ -1304,24 +1318,23 @@ class CatalogConnection
 		return $this->driver->lmsToSso();
 	}
 
-	public function getPatronIDChanges($searchPatronID): ?array
-	{
+	public function getPatronIDChanges($searchPatronID): ?array {
 		return $this->driver->getPatronIDChanges($searchPatronID);
 	}
 
-	public function showHoldNotificationPreferences() : bool{
+	public function showHoldNotificationPreferences(): bool {
 		return $this->driver->showHoldNotificationPreferences();
 	}
 
-	public function getHoldNotificationPreferencesTemplate(User $user) : ?string {
+	public function getHoldNotificationPreferencesTemplate(User $user): ?string {
 		return $this->driver->getHoldNotificationPreferencesTemplate($user);
 	}
 
-	public function processHoldNotificationPreferencesForm(User $user) : array {
+	public function processHoldNotificationPreferencesForm(User $user): array {
 		return $this->driver->processHoldNotificationPreferencesForm($user);
 	}
 
-	public function showHoldPosition() :bool {
+	public function showHoldPosition(): bool {
 		return $this->driver->showHoldPosition();
 	}
 
@@ -1330,15 +1343,15 @@ class CatalogConnection
 	 *
 	 * @return bool
 	 */
-	public function showResetUsernameLink() : bool {
+	public function showResetUsernameLink(): bool {
 		return $this->driver->showResetUsernameLink();
 	}
 
-	public function getUsernameValidationRules() : array {
+	public function getUsernameValidationRules(): array {
 		return $this->driver->getUsernameValidationRules();
 	}
 
-	public function showPreferredNameInProfile() : bool {
+	public function showPreferredNameInProfile(): bool {
 		return $this->driver->showPreferredNameInProfile();
 	}
 }

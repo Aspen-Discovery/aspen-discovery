@@ -3,27 +3,27 @@ require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
-class CloudLibrary_Home extends GroupedWorkSubRecordHomeAction{
+class CloudLibrary_Home extends GroupedWorkSubRecordHomeAction {
 
-	function launch(){
+	function launch() {
 		global $interface;
 
-		if (!$this->recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()) {
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
-		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
+		if (is_null($groupedWork) || !$groupedWork->isValid()) {  // initRecordDriverById itself does a validity check and returns null if not.
 			$interface->assign('invalidWork', true);
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
-		}else{
+		} else {
 			$interface->assign('recordDriver', $this->recordDriver);
 			$interface->assign('groupedWorkDriver', $this->recordDriver->getGroupedWorkDriver());
 
 			//Load status summary
-            $holdingsSummary = $this->recordDriver->getStatusSummary();
+			$holdingsSummary = $this->recordDriver->getStatusSummary();
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Get actions
@@ -66,7 +66,7 @@ class CloudLibrary_Home extends GroupedWorkSubRecordHomeAction{
 		}
 	}
 
-	function loadRecordDriver($id){
+	function loadRecordDriver($id) {
 		$this->recordDriver = new CloudLibraryRecordDriver($id);
 	}
 }

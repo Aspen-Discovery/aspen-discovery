@@ -5,10 +5,8 @@ require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class OpenArchives_Results extends ResultsAction
-{
-	function launch()
-	{
+class OpenArchives_Results extends ResultsAction {
+	function launch() {
 		global $interface;
 		global $timer;
 		global $aspenUsage;
@@ -52,7 +50,7 @@ class OpenArchives_Results extends ResultsAction
 			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
 			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
-		}elseif ($result instanceof AspenError) {
+		} elseif ($result instanceof AspenError) {
 			/** @var AspenError $result */
 			AspenError::raiseError($result->getMessage());
 		}
@@ -113,8 +111,7 @@ class OpenArchives_Results extends ResultsAction
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
-					AspenError::raiseError(new AspenError('Unable to process query<br>' .
-						'Solr Returned: ' . print_r($error, true)));
+					AspenError::raiseError(new AspenError('Unable to process query<br>' . 'Solr Returned: ' . print_r($error, true)));
 				}
 			}
 
@@ -145,9 +142,11 @@ class OpenArchives_Results extends ResultsAction
 				$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 				// Process Paging
 				$link = $searchObject->renderLinkPageTemplate();
-				$options = array('totalItems' => $summary['resultTotal'],
+				$options = [
+					'totalItems' => $summary['resultTotal'],
 					'fileName' => $link,
-					'perPage' => $summary['perPage']);
+					'perPage' => $summary['perPage'],
+				];
 				$pager = new Pager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
 			}
@@ -181,8 +180,7 @@ class OpenArchives_Results extends ResultsAction
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Archive Search Results', $sidebar);
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		return parent::getResultsBreadcrumbs('History & Archives Search');
 	}
 }

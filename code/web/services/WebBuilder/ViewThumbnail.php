@@ -1,8 +1,7 @@
 <?php
 
-class WebBuilder_ViewThumbnail extends Action{
-	function launch()
-	{
+class WebBuilder_ViewThumbnail extends Action {
+	function launch() {
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
@@ -11,10 +10,10 @@ class WebBuilder_ViewThumbnail extends Action{
 		require_once ROOT_DIR . '/sys/File/FileUpload.php';
 		$uploadedFile = new FileUpload();
 		$uploadedFile->id = $id;
-		if (!$uploadedFile->find(true)){
+		if (!$uploadedFile->find(true)) {
 			global $interface;
-			$interface->assign('module','Error');
-			$interface->assign('action','Handle404');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
@@ -26,18 +25,18 @@ class WebBuilder_ViewThumbnail extends Action{
 		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
 		$fullPath = $uploadedFile->thumbFullPath;
 
-		if ($extension != 'svg'){
+		if ($extension != 'svg') {
 			$fullPath = $uploadedFile->thumbFullPath;
-		}else{
+		} else {
 			$fullPath = $uploadedFile->fullSizePath;
 		}
 
-		if ($file = @fopen($fullPath, 'r')){
+		if ($file = @fopen($fullPath, 'r')) {
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);
 			$size = intval(sprintf("%u", filesize($fullPath)));
 
-			if($extension == 'svg'){
+			if ($extension == 'svg') {
 				header('Content-Type: image/svg+xml');
 			} else {
 				header('Content-Type: image/jpg');
@@ -62,19 +61,17 @@ class WebBuilder_ViewThumbnail extends Action{
 			}
 
 			die();
-		}
-		else{
+		} else {
 			AspenError::raiseError(new AspenError("File $id does not exist"));
 		}
 
 	}
 
-	function getBreadcrumbs() : array
-	{
+	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', $this->uploadedFile->title, true);
-		if (UserAccount::userHasPermission('Administer All Web Content')){
+		if (UserAccount::userHasPermission('Administer All Web Content')) {
 			$breadcrumbs[] = new Breadcrumb('/WebBuilder/PDFs?id=' . $this->uploadedFile->id . '&objectAction=edit', 'Edit', true);
 		}
 		return $breadcrumbs;
