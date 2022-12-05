@@ -53,7 +53,7 @@ class Admin_GroupedWorkFacets extends ObjectEditor {
 	}
 
 	function getInstructions(): string {
-		return 'https://help.aspendiscovery.org/help/catalog/groupedworks';
+		return 'https://help.aspendiscovery.org/help/catalog/facets';
 	}
 
 	function getBreadcrumbs(): array {
