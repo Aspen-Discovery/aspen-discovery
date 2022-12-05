@@ -441,9 +441,13 @@ class UserAPI extends Action {
 			$userData->expireClose = $accountSummary->isExpirationClose();
 			$userData->expired = $accountSummary->isExpired();
 
+			$userData->numLinkedAccounts = 0;
+			$userData->numLinkedUsers = 0;
+			$userData->numLinkedViewers = 0;
 
 			if ($linkedUsers && $user->getLinkedUsers() != null) {
-				foreach ($user->getLinkedUsers() as $linkedUser) {
+				$linkedAccounts = $user->getLinkedUsers();
+				foreach ($linkedAccounts as $linkedUser) {
 					$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
 					$userData->finesVal += (int)$linkedUserSummary->totalFines;
 					$userData->numHoldsIls = (int)$linkedUserSummary->getNumHolds();
@@ -456,6 +460,15 @@ class UserAPI extends Action {
 					$numHoldsAvailable += ($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
 					$numOverdue += (int)$linkedUserSummary->numOverdue;
 				}
+				$userData->numLinkedUsers = count($linkedAccounts);
+
+				require_once ROOT_DIR . '/sys/Account/UserLink.php';
+				$userLink = new UserLink();
+				$userLink->linkedAccountId = $user->id;
+				$userLink->find();
+				$userData->numLinkedViewers = (int)$userLink->count();
+				$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
+
 			}
 
 			global $activeLanguage;
