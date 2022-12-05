@@ -4,7 +4,7 @@
 *.key
 *.mobileprovision
 *.orig.*
-*.swp.*
+*.swp.
 /.idea/*
 
 # macOS
