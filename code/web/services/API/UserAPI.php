@@ -3890,7 +3890,11 @@ class UserAPI extends Action {
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
 					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['barcodeStyle'] = $linkedAccount->getHomeLibrary()->libraryCardBarcodeStyle;
 					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
+					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
+					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
+					$account[$linkedAccount->id]['cat_username'] = $linkedAccount->cat_username;
 				}
 				return [
 					'success' => true,
