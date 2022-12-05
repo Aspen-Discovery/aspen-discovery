@@ -1,54 +1,59 @@
-import React, {Component} from "react";
-import {loadingSpinner} from "../../../components/loadingSpinner";
-import {userContext} from "../../../context/user";
+import { Component } from "react";
+
+import { loadingSpinner } from "../../../components/loadingSpinner";
+import { userContext } from "../../../context/user";
 
 export default class LoadSavedSearch extends Component {
-	constructor(props, context) {
-		super(props, context);
-		this.state = {
-			isLoading: true,
-			hasError: false,
-			error: null,
-		};
-	}
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      isLoading: true,
+      hasError: false,
+      error: null,
+    };
+  }
 
-	componentDidMount = () => {
-		const { route } = this.props;
-		const libraryUrl = this.context.library.baseUrl;
-		const id = route.params?.search ?? 0;
-		const title = route.params?.name ?? '';
+  componentDidMount = () => {
+    const { route } = this.props;
+    const libraryUrl = this.context.library.baseUrl;
+    const id = route.params?.search ?? 0;
+    const title = route.params?.name ?? "";
 
-		console.log(route.params);
+    console.log(route.params);
 
-		this.setState({
-			isLoading: false,
-		})
+    this.setState({
+      isLoading: false,
+    });
 
-		this.openSavedSearch(id, title, libraryUrl);
-	};
+    this.openSavedSearch(id, title, libraryUrl);
+  };
 
-	componentWillUnmount() {
+  componentWillUnmount() {}
 
-	}
+  openSavedSearch = (id, title, url) => {
+    this.props.navigation.push("AccountScreenTab", {
+      screen: "SavedSearch",
+      params: { id, title, libraryUrl: url },
+    });
+  };
 
-	openSavedSearch = (id, title, url) => {
-		this.props.navigation.push("AccountScreenTab", {screen: 'SavedSearch', params: { id: id, title: title, libraryUrl: url }});
-	}
+  static contextType = userContext;
 
-	static contextType = userContext;
+  render() {
+    const { route } = this.props;
+    const url = this.context.library.baseUrl;
+    const id = route.params?.search ?? 0;
+    const title = route.params?.name ?? "";
 
-	render() {
-		const { route } = this.props;
-		const url = this.context.library.baseUrl;
-		const id = route.params?.search ?? 0;
-		const title = route.params?.name ?? '';
+    if (this.state.isLoading) {
+      return loadingSpinner();
+    } else {
+      this.props.navigation.navigate("AccountScreenTab", {
+        screen: "SavedSearch",
+        params: { id, title, libraryUrl: url },
+      });
+    }
 
-		if(this.state.isLoading) {
-			return (loadingSpinner());
-		} else {
-			this.props.navigation.navigate("AccountScreenTab", {screen: 'SavedSearch', params: { id: id, title: title, libraryUrl: url }});
-		}
-
-		return null;
-	}
+    return null;
+  }
 }

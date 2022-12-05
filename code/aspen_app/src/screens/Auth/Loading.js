@@ -1,251 +1,211 @@
-import React, {Component} from "react";
-import {Center, Heading, Spinner, VStack} from "native-base";
+import React, { Component } from 'react';
+import { create } from 'apisauce';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Center, Heading, Spinner, VStack } from 'native-base';
+import _ from 'lodash';
+import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { formatBrowseCategories, LIBRARY } from '../../util/loadLibrary';
+import { GLOBALS } from '../../util/globals';
+import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from "expo-constants";
-import _ from "lodash";
-import {create} from 'apisauce';
-import {userContext} from "../../context/user";
-import {createAuthTokens, getHeaders, postData} from "../../util/apiAuth";
-import {GLOBALS} from "../../util/globals";
-import {formatDiscoveryVersion, getBrowseCategories, getLanguages, getVdxForm, LIBRARY} from "../../util/loadLibrary";
-import {getILSMessages, getPatronBrowseCategories, PATRON} from "../../util/loadPatron";
+import { getBrowseCategoryListForUser } from '../../util/loadPatron';
 
-class LoadingScreen extends Component {
-	constructor() {
-		super();
-		this.state = {
-			isLoading: true,
-			userToken: null,
-			user: [],
-			library: [],
-			location: [],
-			browseCategories: [],
-			pushToken: null,
-		};
-		this.context = {
-			user: [],
-			library: [],
-			location: [],
-			browseCategories: [],
-			pushToken: null,
-		}
-	}
+export const LoadingScreen = () => {
+     const navigation = useNavigation();
+     const [loading, setLoading] = React.useState(true);
+     const { user, updateUser, resetUser } = React.useContext(UserContext);
+     const { library, updateLibrary, resetLibrary } = React.useContext(LibrarySystemContext);
+     const { location, updateLocation, updateScope, resetLocation } = React.useContext(LibraryBranchContext);
+     const { category, list, updateBrowseCategories, updateBrowseCategoryList, resetBrowseCategories } = React.useContext(BrowseCategoryContext);
 
-	componentDidMount = async () => {
-		let userToken;
-		let libraryUrl;
-		let libraryId;
-		let librarySolrScope;
-		let locationId;
-		let libName;
-		try {
-			userToken = await AsyncStorage.getItem('@userToken');
-			//userProfile = await AsyncStorage.getItem('@patronProfile');
-			this.setState({
-				userToken: userToken,
-			})
-		} catch (e) {
-			console.log(e);
-		}
+     useFocusEffect(
+          React.useCallback(() => {
+               if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category)) {
+                    setLoading(false);
+               } else {
+                    const unsubscribe = async () => {
+                         await reloadPatronBrowseCategories().then((result) => {
+                              updateBrowseCategories(result);
+                         });
+                         await reloadUserProfile().then((result) => {
+                              updateUser(result);
+                         });
+                         await reloadLibrarySystem().then((result) => {
+                              updateLibrary(result);
+                         });
+                         await reloadLibraryBranch().then((result) => {
+                              updateLocation(result);
+                         });
+                         await getBrowseCategoryListForUser().then((result) => {
+                              updateBrowseCategoryList(result);
+                         });
 
-		if(userToken) {
-			try {
-				libraryUrl = await AsyncStorage.getItem('@pathUrl');
-				libName = await AsyncStorage.getItem('@libName');
-				libraryId = await AsyncStorage.getItem('@libraryId');
-				librarySolrScope = await AsyncStorage.getItem('@solrScope');
-				locationId = await AsyncStorage.getItem('@locationId');
-			} catch (e) {
-				console.log(e);
-			}
+                         await AsyncStorage.getItem('@solrScope').then((result) => {
+                              updateScope(result);
+                         });
+                         setLoading(false);
+                    };
+                    unsubscribe().then(() => {
+                         return () => unsubscribe();
+                    });
+               }
+          }, [])
+     );
 
-			LIBRARY.url = libraryUrl;
-			PATRON.scope = librarySolrScope;
+     if (!loading) {
+          navigation.navigate('Drawer', {
+               user: user,
+               library: library,
+               location: location,
+          });
+     }
 
-			if (libraryUrl) {
-				//console.log("Connecting to " + libName + " using " + libraryUrl);
+     return (
+          <Center flex={1} px="3">
+               <VStack space={5} alignItems="center">
+                    <Spinner size="lg" />
+                    <Heading color="primary.500" fontSize="md">
+                         Dusting the shelves...
+                    </Heading>
+               </VStack>
+          </Center>
+     );
+};
 
-				let postBody = await postData();
-				const api = create({
-					baseURL: LIBRARY.url + '/API',
-					timeout: GLOBALS.timeoutAverage,
-					headers: getHeaders(true),
-					auth: createAuthTokens()
-				});
+/* class LoadingScreenB extends Component {
+ constructor() {
+ super();
+ this.state = {
+ isLoading: true,
+ category: this?.context?.category ?? [],
+ user: this?.props?.route?.userContext?.user ?? [],
+ };
+ }
 
-				//const patronProfile = await AsyncStorage.getItem('@patronProfile');
-				if (_.isEmpty(this.state.user)) {
-					//console.log("fetching getPatronProfile...");
-					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true&checkIfValid=false', postBody);
-					if (response.ok) {
-						let data = [];
-						if (response.data.result.profile) {
-							data = response.data.result.profile;
-							this.setState({user: data});
-							this.context.user = data;
+ componentDidMount() {
+ if (this.state.category) {
+ console.log(this.state.category);
+ }
+ }
 
-							PATRON.language = data.interfaceLanguage;
-							PATRON.listLastUsed = data.lastListUsed;
-							PATRON.fines = data.fines;
-							PATRON.promptForOverdriveEmail = data.promptForOverdriveEmail;
-							PATRON.rememberHoldPickupLocation = data.rememberHoldPickupLocation;
-							PATRON.num.checkedOut = data.numCheckedOut;
-							PATRON.num.holds = data.numHolds;
-							PATRON.num.lists = data.numLists;
-							PATRON.num.overdue = data.numOverdue;
-							PATRON.num.ready = data.numHoldsAvailable;
-							PATRON.num.savedSearches = data.numSavedSearches;
-							PATRON.num.updatedSearches = data.numSavedSearchesNew;
+ componentDidUpdate(prevProps, prevState) {
+ if (prevState.category !== this.context.category) {
+ if (prevState.user !== this?.props?.route?.userContext?.user) {
+ this.props.navigation.navigate('Drawer');
+ }
+ }
+ }
 
-							await getILSMessages(LIBRARY.url);
-							await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
-							console.log("patron loaded into context");
-						}
-					}
-				} //end user check
+ render() {
+ return (
+ <Center flex={1} px="3">
+ <VStack space={5} alignItems="center">
+ <Spinner size="lg" />
+ <Heading color="primary.500" fontSize="md">
+ Dusting the shelves...
+ </Heading>
+ </VStack>
+ </Center>
+ );
+ }
+ } */
 
-				await getLanguages(LIBRARY.url);
+async function reloadLibrarySystem() {
+     let libraryId;
 
-				if (libraryId) {
-					const api = create({
-						baseURL: LIBRARY.url + '/API',
-						timeout: GLOBALS.timeoutAverage,
-						headers: getHeaders(),
-						auth: createAuthTokens()
-					});
+     try {
+          libraryId = await AsyncStorage.getItem('@libraryId');
+     } catch (e) {
+          console.log(e);
+     }
+     const discovery = create({
+          baseURL: LIBRARY.url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               id: libraryId,
+          },
+     });
+     const response = await discovery.get('/SystemAPI?method=getLibraryInfo');
+     if (response.ok) {
+          if (response.data.result) {
+               return response.data.result.library;
+          }
+     }
 
-					if (_.isEmpty(this.state.library)) {
-						const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
-						if (response.ok) {
-							let data = [];
-							if (response.data.result.library) {
-								data = response.data.result.library;
-								this.setState({library: data});
-								this.context.library = data;
-								await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
-								console.log("library loaded into context");
-							}
-						}
-					}
-				} //end library check
+     return [];
+}
 
-				if(locationId && librarySolrScope) {
-					const api = create({
-						baseURL: libraryUrl + '/API',
-						timeout: GLOBALS.timeoutAverage,
-						headers: getHeaders(),
-						auth: createAuthTokens()
-					});
+async function reloadLibraryBranch() {
+     let scope, locationId;
+     try {
+          scope = await AsyncStorage.getItem('@solrScope');
+          locationId = await AsyncStorage.getItem('@locationId');
+     } catch (e) {
+          console.log(e);
+     }
 
-					//const locationProfile = await AsyncStorage.getItem('@locationInfo');
-					if(_.isEmpty(this.state.location)) {
-						const response = await api.get('/SystemAPI?method=getLocationInfo', {id: locationId, library: librarySolrScope, version: Constants.manifest.version});
-						if(response.ok) {
-							let data = [];
-							if(response.data.result.location) {
-								data = response.data.result.location;
-								this.setState({location: data});
-								this.context.location = data;
+     const discovery = create({
+          baseURL: LIBRARY.url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               id: locationId,
+               library: scope,
+               version: GLOBALS.appVersion,
+          },
+     });
+     const response = await discovery.get('/SystemAPI?method=getLocationInfo');
+     if (response.ok) {
+          if (response.data.result) {
+               return response.data.result.location;
+          }
+     }
+     return [];
+}
 
-								// fetch vdx form fields if vdx is set up for location
-								if(typeof data.vdxFormId !== "undefined" && !_.isNull(data.vdxFormId)) {
-									try {
-										const vdxFormFields = await AsyncStorage.getItem('@vdxFormFields');
-										if(vdxFormFields === null) {
-											await getVdxForm(libraryUrl, data.vdxFormId);
-										}
-									} catch(e) {
-										console.log(e);
-									}
-								}
+async function reloadUserProfile() {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: LIBRARY.url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               linkedUsers: true,
+               checkIfValid: false,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=getPatronProfile', postBody);
+     if (response.ok) {
+          if (response.data.result) {
+               return response.data.result.profile;
+          }
+     }
+     return [];
+}
 
-								await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
-								console.log("location loaded into context");
-							}
-						}
-					}
-				}// end location check
-
-				let discoveryVersion;
-				if (this.state.library.discoveryVersion) {
-					LIBRARY.version = formatDiscoveryVersion(this.state.library.discoveryVersion)
-					discoveryVersion = formatDiscoveryVersion(this.state.library.discoveryVersion);
-				} else {
-					discoveryVersion = "22.06.00";
-				} // end discovery version check
-
-
-				if (discoveryVersion >= "22.07.00") {
-					await getBrowseCategories(libraryUrl, discoveryVersion, 5).then(response => {
-						this.setState({
-							browseCategories: response,
-						});
-						this.context.browseCategories = response;
-						console.log("browse categories loaded into context");
-					})
-				} else if(discoveryVersion >= "22.05.00") {
-					await getBrowseCategories(libraryUrl, discoveryVersion).then(response => {
-						this.setState({
-							browseCategories: response,
-						});
-						this.context.browseCategories = response;
-						console.log("browse categories loaded into context");
-					})
-				} else {
-					const user = this.state;
-					await getPatronBrowseCategories(libraryUrl, user.id).then(response => {
-						this.setState({
-							browseCategories: response,
-						});
-						this.context.browseCategories = response;
-						console.log("browse categories loaded into context");
-					})
-				}
-
-
-			} //end if libraryUrl
-
-			this.setState({
-				isLoading: false,
-			})
-		}
-
-		if (!this.state.isLoading) {
-			this.props.navigation.navigate('Tabs');
-		}
-	}
-
-	checkContext = () => {
-		this.setState({
-			isLoading: false,
-		})
-	}
-
-	static contextType = userContext;
-
-	render() {
-		const user = this.state.user;
-		const location = this.state.location;
-		const library = this.state.library;
-		const browseCategories = this.state.browseCategories;
-
-		if(_.isEmpty(user) || _.isEmpty(location) || _.isEmpty(library) || _.isEmpty(browseCategories)) {
-			return (
-				<Center flex={1} px="3">
-					<VStack space={5} alignItems="center">
-						<Spinner size="lg" />
-						<Heading color="primary.500" fontSize="md">
-							Dusting the shelves...
-						</Heading>
-					</VStack>
-				</Center>
-			)
-		} else {
-			this.props.navigation.navigate('Tabs');
-		}
-
-		return null;
-	}
+async function reloadPatronBrowseCategories() {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: LIBRARY.url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               maxCategories: 5,
+               LiDARequest: true,
+          },
+     });
+     const response = await discovery.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
+     if (response.ok) {
+          if (response.data.result) {
+               return formatBrowseCategories(response.data.result);
+          }
+     }
+     return [];
 }
 
 export default LoadingScreen;
