@@ -59,6 +59,7 @@ export class DrawerContent extends Component {
                     ready: this.context.user.numHoldsAvailable ?? 0,
                     savedSearches: this.context.user.numSavedSearches ?? 0,
                     updatedSearches: this.context.user.numSavedSearchesNew ?? 0,
+                    linkedAccounts: this.context.user.numLinkedAccounts ?? 0,
                },
           };
           this._isMounted = false;
@@ -232,7 +233,7 @@ export class DrawerContent extends Component {
 
      render() {
           const { messages, fines } = this.state;
-          const { checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches } = this.state.num;
+          const { checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches, linkedAccounts } = this.state.num;
           const user = this.context.user;
 
           let library = JSON.parse(this.props.libraryContext);
@@ -417,6 +418,13 @@ export class DrawerContent extends Component {
                                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
                                                        <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
                                                   </HStack>
+                                                  {linkedAccounts > 0 ? (
+                                                       <Container>
+                                                            <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+                                                                 ({linkedAccounts})
+                                                            </Badge>
+                                                       </Container>
+                                                  ) : null}
                                              </Pressable>
                                         ) : null}
                                         <Pressable

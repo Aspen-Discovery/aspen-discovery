@@ -63,6 +63,12 @@ class NotificationSetting extends DataObject {
 						'label' => 'Custom Alerts',
 						'description' => 'Whether or not to send custom notifications.',
 					],
+					'notifyAccount' => [
+						'property' => 'notifyAccount',
+						'type' => 'checkbox',
+						'label' => 'Account Alerts',
+						'description' => 'Whether or not to send notifications for account alerts.',
+					],
 				],
 			],
 			'libraries' => [
