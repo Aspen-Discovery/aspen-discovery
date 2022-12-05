@@ -772,6 +772,7 @@ class ItemAPI extends Action {
 							'hasItemsWithoutVolumes' => $hasItemsWithoutVolumes,
 							'majorityOfItemsHaveVolumes' => $majorityOfItemsHaveVolumes,
 							'volumes' => $recordVolumes,
+							'copyDetails' => $relatedRecord->getItemSummary(),
 						];
 						$records[] = $record;
 						$itemData['language'] = $relatedRecord->language;

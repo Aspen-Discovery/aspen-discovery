@@ -1711,6 +1711,7 @@ class SearchAPI extends Action {
 								'listId' => $categoryInformation->sourceListId,
 								'isHidden' => $categoryInformation->isDismissed($appUser),
 								'records' => [],
+								'lists' => [],
 							];
 
 							require_once(ROOT_DIR . '/sys/UserLists/UserList.php');
@@ -1739,12 +1740,16 @@ class SearchAPI extends Action {
 										}
 									}
 								} while ($listEntry->fetch() && $count < 12);
-								$formattedCategories[] = $categoryResponse;
-								$numCategoriesProcessed++;
-								if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
-									break;
+
+								if (count($categoryResponse['lists']) != 0 || count($categoryResponse['records']) != 0) {
+									$formattedCategories[] = $categoryResponse;
+									$numCategoriesProcessed++;
+									if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
+										break;
+									}
 								}
 							}
+
 						}
 
 					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
