@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center } from 'native-base';
-import React, { PureComponent } from 'react';
+import React from 'react';
 import _ from 'lodash';
 
 // custom components and helper files
@@ -11,11 +11,11 @@ import { loadingSpinner } from '../../components/loadingSpinner';
 import { userContext } from '../../context/user';
 import { translate } from '../../translations/translations';
 import { dismissBrowseCategory } from '../../util/accountActions';
-import { formatDiscoveryVersion, getBrowseCategories, getPickupLocations, LIBRARY, reloadBrowseCategories, UpdateBrowseCategoryContext, updatePatronBrowseCategories } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, getBrowseCategories, getPickupLocations, reloadBrowseCategories, UpdateBrowseCategoryContext, updatePatronBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getCheckedOutItems, getHolds, getILSMessages, getPatronBrowseCategories, getProfile, reloadHolds, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import BrowseCategory from './BrowseCategory';
 import DisplayBrowseCategory from './Category';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 
 export const DiscoverHomeScreen = () => {
@@ -23,7 +23,6 @@ export const DiscoverHomeScreen = () => {
      const navigation = useNavigation();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { location, version } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
@@ -95,15 +94,14 @@ export const DiscoverHomeScreen = () => {
           );
      };
 
-     const renderRecord = (data) => {
-          //console.log(data);
+     const renderRecord = (data, url, version, index) => {
           const item = data.item;
           let type = 'grouped_work';
           if (!_.isUndefined(item.source)) {
                type = item.source;
           }
 
-          const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
+          const imageUrl = url + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
 
           let isNew = false;
           if (typeof item.isNew !== 'undefined') {
@@ -114,7 +112,7 @@ export const DiscoverHomeScreen = () => {
                <Pressable
                     ml={1}
                     mr={3}
-                    onPress={() => onPressItem(item.id, type, item.title_display)}
+                    onPress={() => onPressItem(item.id, type, item.title_display, version)}
                     width={{
                          base: 100,
                          lg: 200,
@@ -123,7 +121,7 @@ export const DiscoverHomeScreen = () => {
                          base: 125,
                          lg: 250,
                     }}>
-                    {library.version >= '22.08.00' && isNew ? (
+                    {version >= '22.08.00' && isNew ? (
                          <Container zIndex={1}>
                               <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{ fontSize: 9 }}>
                                    {translate('general.new')}
@@ -146,10 +144,8 @@ export const DiscoverHomeScreen = () => {
           );
      };
 
-     const onPressItem = (key, type, title) => {
-          console.log(type);
-          console.log(library.version);
-          if (library.version >= '22.07.00') {
+     const onPressItem = (key, type, title, version) => {
+          if (version >= '22.07.00') {
                if (type === 'List') {
                     navigation.navigate('SearchByList', {
                          id: key,
@@ -246,8 +242,6 @@ export const DiscoverHomeScreen = () => {
           }
      };
 
-     const loadAllCategories = () => {};
-
      const handleOnPressCategory = (label, key, source) => {
           let screen = 'SearchByCategory';
           if (source === 'List') {
@@ -269,15 +263,13 @@ export const DiscoverHomeScreen = () => {
           return loadingSpinner();
      }
 
-     const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion);
-
      return (
           <ScrollView>
                <Box safeArea={5}>
                     {category.map((item, index) => {
                          return <DisplayBrowseCategory key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
                     })}
-                    <ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
+                    <ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
                </Box>
           </ScrollView>
      );
@@ -688,7 +680,9 @@ const ButtonOptions = (props) => {
      const [refreshing, setRefreshing] = React.useState(false);
      const { onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories } = props;
 
-     if (discoveryVersion >= '22.07.00') {
+     const version = formatDiscoveryVersion(discoveryVersion);
+
+     if (version >= '22.07.00') {
           return (
                <Box>
                     {!loadAll ? (
