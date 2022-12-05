@@ -1,258 +1,246 @@
-import React, {Component} from 'react';
-import {Box, Button, Center, FlatList, FormControl, HStack, Icon, Input, Text} from 'native-base';
+import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {MaterialIcons} from '@expo/vector-icons';
 import _ from 'lodash';
+import { Box, Button, Center, FlatList, FormControl, HStack, Icon, Input, Text } from 'native-base';
+import React, { Component } from 'react';
+import { SafeAreaView } from 'react-native';
 
-// custom components and helper files
-import {translate} from '../../translations/translations';
-import {loadingSpinner} from '../../components/loadingSpinner';
-import {userContext} from '../../context/user';
-import {SafeAreaView} from 'react-native';
-import {getDefaultFacets} from '../../util/search';
-import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
+import { loadingSpinner } from '../../components/loadingSpinner';
+import { userContext } from '../../context/user';
+import { translate } from '../../translations/translations';
+import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
+import { getDefaultFacets } from '../../util/search';
 
 export default class Search extends Component {
-	static contextType = userContext;
+     static contextType = userContext;
 
-	constructor() {
-		super();
-		this.state = {
-			isLoading: true,
-			searchTerm: '',
-			showRecentSearches: false,
-			recentSearches: {},
-		};
-		this._isMounted = false;
-		this._getRecentSearches = this._getRecentSearches.bind(this);
-	}
+     constructor() {
+          super();
+          this.state = {
+               isLoading: true,
+               searchTerm: '',
+               showRecentSearches: false,
+               recentSearches: {},
+               user: [],
+               library: [],
+               location: [],
+          };
+          this._isMounted = false;
+          this._getRecentSearches = this._getRecentSearches.bind(this);
+     }
 
-	componentDidMount = async () => {
-		this._isMounted = true;
+     componentDidMount = async () => {
+          this._isMounted = true;
 
-		let discoveryVersion = '22.10.00';
-		if (typeof this.context.library !== 'undefined') {
-			if (this.context.library.discoveryVersion) {
-				discoveryVersion = formatDiscoveryVersion(this.context.library.discoveryVersion);
-			}
-		}
+          const userContext = JSON.parse(this.props.route.params.userContext);
+          const libraryContext = JSON.parse(this.props.route.params.libraryContext);
+          const locationContext = JSON.parse(this.props.route.params.locationContext);
 
-		if (LIBRARY.version >= '22.11.00') {
-			this._isMounted && await getDefaultFacets();
-		}
+          this.setState({
+               isLoading: false,
+               user: userContext.user,
+               library: libraryContext.library,
+               location: locationContext.location,
+          });
 
-		this.setState({
-			isLoading: false,
-			discoveryVersion: discoveryVersion,
-		});
+          let discoveryVersion = '22.10.00';
+          if (typeof this.state.library !== 'undefined') {
+               if (this.state.library.discoveryVersion) {
+                    discoveryVersion = formatDiscoveryVersion(this.state.library.discoveryVersion);
+               }
+          }
 
-		this._isMounted && await this._getRecentSearches();
+          if (LIBRARY.version >= '22.11.00') {
+               this._isMounted && (await getDefaultFacets());
+          }
 
-	};
+          this.setState({
+               isLoading: false,
+               discoveryVersion,
+          });
 
-	componentWillUnmount() {
-		this._isMounted = false;
-	}
+          this._isMounted && (await this._getRecentSearches());
+     };
 
-	initiateSearch = async () => {
-		const {searchTerm} = this.state;
-		const {navigation} = this.props;
-		navigation.navigate('SearchResults', {
-			term: searchTerm,
-			libraryUrl: this.context.library.baseUrl,
-			discoveryVersion: this.state.discoveryVersion,
-		});
-		await this._addRecentSearch(searchTerm).then(res => {
-			this.clearText();
-		});
-	};
+     componentWillUnmount() {
+          this._isMounted = false;
+     }
 
-	renderItem = (item, libraryUrl) => {
-		const {navigation} = this.props;
-		return (
-				<Button
-						mb={3}
-						onPress={() =>
-								navigation.navigate('SearchResults', {
-									term: item.searchTerm,
-									libraryUrl: this.context.library.baseUrl,
-									discoveryVersion: this.state.discoveryVersion,
-								})
-						}
-				>
-					{item.label}
-				</Button>
-		);
-	};
+     initiateSearch = async () => {
+          const { searchTerm } = this.state;
+          const { navigation } = this.props;
+          navigation.navigate('SearchResults', {
+               term: searchTerm,
+               userContext: this.state.user,
+               libraryContext: this.state.library,
+          });
+          await this._addRecentSearch(searchTerm).then((res) => {
+               this.clearText();
+          });
+     };
 
-	_getCurrentParams = async () => {
-		try {
-			const searchParams = await AsyncStorage.getItem('@searchParams');
-			return searchParams != null ? JSON.parse(searchParams) : null;
-		} catch (e) {
-			console.log(e);
-		}
-	};
+     renderItem = (item, libraryUrl) => {
+          const { navigation } = this.props;
+          return (
+               <Button
+                    mb={3}
+                    onPress={() =>
+                         navigation.navigate('SearchResults', {
+                              term: item.searchTerm,
+                              userContext: this.state.user,
+                              libraryContext: this.state.library,
+                         })
+                    }>
+                    {item.label}
+               </Button>
+          );
+     };
 
-	_recentSearchItem = (search) => {
-		const {navigation} = this.props;
-		return (
-				<HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
-					<Button
-							size="sm"
-							onPress={() =>
-									navigation.navigate('SearchResults', {
-										term: search,
-										libraryUrl: this.context.library.baseUrl,
-									})
-							}
-					>
-						{search}
-					</Button>
-					<Button variant="ghost" onPress={() => this._removeRecentSearch(search)} startIcon={<Icon as={MaterialIcons} name="close" size="sm" mr={-1} mt={.5}/>}>Remove</Button>
-				</HStack>
-		);
-	};
+     _getCurrentParams = async () => {
+          try {
+               const searchParams = await AsyncStorage.getItem('@searchParams');
+               return searchParams != null ? JSON.parse(searchParams) : null;
+          } catch (e) {
+               console.log(e);
+          }
+     };
 
-	_recentSearchFooter = () => {
-		return (
-				<Button onPress={() => this._clearRecentSearches()}>Remove all</Button>
-		);
-	};
+     _recentSearchItem = (search) => {
+          const { navigation } = this.props;
+          return (
+               <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
+                    <Button
+                         size="sm"
+                         onPress={() =>
+                              navigation.navigate('SearchResults', {
+                                   term: search,
+                                   userContext: this.state.user,
+                                   libraryContext: this.state.library,
+                              })
+                         }>
+                         {search}
+                    </Button>
+                    <Button variant="ghost" onPress={() => this._removeRecentSearch(search)} startIcon={<Icon as={MaterialIcons} name="close" size="sm" mr={-1} mt={0.5} />}>
+                         Remove
+                    </Button>
+               </HStack>
+          );
+     };
 
-	clearText = () => {
-		this.setState({searchTerm: ''});
-	};
+     _recentSearchFooter = () => {
+          return <Button onPress={() => this._clearRecentSearches()}>Remove all</Button>;
+     };
 
-	_getRecentSearches = async () => {
-		try {
-			const recentSearches = await AsyncStorage.getItem('@recentSearches');
-			this.setState({
-				recentSearches: JSON.parse(recentSearches),
-			});
-			return recentSearches != null ? JSON.parse(recentSearches) : null;
-		} catch (e) {
-			console.log(e);
-		}
-	};
+     clearText = () => {
+          this.setState({ searchTerm: '' });
+     };
 
-	_createRecentSearches = async (searchTerm) => {
-		try {
-			let searches = [];
-			let search = {
-				[searchTerm]: searchTerm,
-			};
-			searches.push(searchTerm);
-			await AsyncStorage.setItem('@recentSearches', JSON.stringify(searches));
-		} catch (e) {
-			console.log(e);
-		}
-	};
+     _getRecentSearches = async () => {
+          try {
+               const recentSearches = await AsyncStorage.getItem('@recentSearches');
+               this.setState({
+                    recentSearches: JSON.parse(recentSearches),
+               });
+               return recentSearches != null ? JSON.parse(recentSearches) : null;
+          } catch (e) {
+               console.log(e);
+          }
+     };
 
-	_addRecentSearch = async (searchTerm) => {
-		let storage = await this._getRecentSearches().then(async response => {
-			if (response) {
-				let search = {
-					[searchTerm]: searchTerm,
-				};
-				response.push(searchTerm);
-				try {
-					await AsyncStorage.setItem('@recentSearches', JSON.stringify(response));
-				} catch (e) {
-					console.log(e);
-				}
-			} else {
-				await this._createRecentSearches(searchTerm);
-			}
-		});
-	};
+     _createRecentSearches = async (searchTerm) => {
+          try {
+               const searches = [];
+               const search = {
+                    [searchTerm]: searchTerm,
+               };
+               searches.push(searchTerm);
+               await AsyncStorage.setItem('@recentSearches', JSON.stringify(searches));
+          } catch (e) {
+               console.log(e);
+          }
+     };
 
-	_removeRecentSearch = async (needle) => {
-		let storage = await this._getRecentSearches().then(async response => {
-			if (response) {
-				let haystack = response;
-				if (haystack.includes(needle)) {
-					_.pull(haystack, needle);
-					try {
-						await AsyncStorage.setItem('@recentSearches', JSON.stringify(haystack));
-					} catch (e) {
-						console.log(e);
-					}
-				}
-			}
-		});
+     _addRecentSearch = async (searchTerm) => {
+          const storage = await this._getRecentSearches().then(async (response) => {
+               if (response) {
+                    const search = {
+                         [searchTerm]: searchTerm,
+                    };
+                    response.push(searchTerm);
+                    try {
+                         await AsyncStorage.setItem('@recentSearches', JSON.stringify(response));
+                    } catch (e) {
+                         console.log(e);
+                    }
+               } else {
+                    await this._createRecentSearches(searchTerm);
+               }
+          });
+     };
 
-		await this._getRecentSearches();
-	};
+     _removeRecentSearch = async (needle) => {
+          const storage = await this._getRecentSearches().then(async (response) => {
+               if (response) {
+                    const haystack = response;
+                    if (haystack.includes(needle)) {
+                         _.pull(haystack, needle);
+                         try {
+                              await AsyncStorage.setItem('@recentSearches', JSON.stringify(haystack));
+                         } catch (e) {
+                              console.log(e);
+                         }
+                    }
+               }
+          });
 
-	_clearRecentSearches = async () => {
-		await AsyncStorage.removeItem('@recentSearches');
-		await this._getRecentSearches();
-	};
+          await this._getRecentSearches();
+     };
 
-	render() {
-		const user = this.context.user;
-		const location = this.context.location;
-		const library = this.context.library;
+     _clearRecentSearches = async () => {
+          await AsyncStorage.removeItem('@recentSearches');
+          await this._getRecentSearches();
+     };
 
-		const quickSearchNum = _.size(library.quickSearches);
-		const recentSearchNum = _.size(this.state.recentSearches);
+     render() {
+          const library = this.state.library;
 
-		if (this.state.isLoading) {
-			return (loadingSpinner());
-		}
+          const quickSearchNum = _.size(library.quickSearches);
+          const recentSearchNum = _.size(this.state.recentSearches);
 
-		return (
-				<SafeAreaView>
-					<Box safeArea={5}>
-						<FormControl>
-							<Input
-									variant="filled"
-									autoCapitalize="none"
-									onChangeText={(searchTerm) => this.setState({searchTerm, libraryUrl: library.baseUrl})}
-									status="info"
-									placeholder={translate('search.title')}
-									clearButtonMode="always"
-									onSubmitEditing={this.initiateSearch}
-									value={this.state.searchTerm}
-									size="xl"
-							/>
-						</FormControl>
+          if (this.state.isLoading) {
+               return loadingSpinner();
+          }
 
-						{quickSearchNum > 0 ?
-								(
-										<Box>
-											<Center>
-												<Text mt={8} mb={2} fontSize="xl" bold>
-													{translate('search.quick_search_title')}
-												</Text>
-											</Center>
-											<FlatList
-													data={_.sortBy(library.quickSearches, ['weight', 'label'])}
-													renderItem={({item}) => this.renderItem(item, library.baseUrl)}
-											/>
-										</Box>
-								)
-								: null}
+          return (
+               <SafeAreaView>
+                    <Box safeArea={5}>
+                         <FormControl>
+                              <Input variant="filled" autoCapitalize="none" onChangeText={(searchTerm) => this.setState({ searchTerm, libraryUrl: library.baseUrl })} status="info" placeholder={translate('search.title')} clearButtonMode="always" onSubmitEditing={this.initiateSearch} value={this.state.searchTerm} size="xl" />
+                         </FormControl>
 
-						{this.state.showRecentSearches && recentSearchNum > 0 ?
-								(
-										<Box>
-											<Center>
-												<Text mt={8} mb={2} fontSize="xl" bold>
-													Recent Searches
-												</Text>
-											</Center>
-											<FlatList
-													data={this.state.recentSearches}
-													renderItem={({item}) => this._recentSearchItem(item)}
-													ListFooterComponent={this._recentSearchFooter}
-											/>
-										</Box>
-								)
-								: null}
-					</Box>
-				</SafeAreaView>
-		);
-	}
+                         {quickSearchNum > 0 ? (
+                              <Box>
+                                   <Center>
+                                        <Text mt={8} mb={2} fontSize="xl" bold>
+                                             {translate('search.quick_search_title')}
+                                        </Text>
+                                   </Center>
+                                   <FlatList data={_.sortBy(library.quickSearches, ['weight', 'label'])} keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => this.renderItem(item, library.baseUrl)} />
+                              </Box>
+                         ) : null}
+
+                         {this.state.showRecentSearches && recentSearchNum > 0 ? (
+                              <Box>
+                                   <Center>
+                                        <Text mt={8} mb={2} fontSize="xl" bold>
+                                             Recent Searches
+                                        </Text>
+                                   </Center>
+                                   <FlatList data={this.state.recentSearches} renderItem={({ item }) => this._recentSearchItem(item)} keyExtractor={(item, index) => index.toString()} ListFooterComponent={this._recentSearchFooter} />
+                              </Box>
+                         ) : null}
+                    </Box>
+               </SafeAreaView>
+          );
+     }
 }
