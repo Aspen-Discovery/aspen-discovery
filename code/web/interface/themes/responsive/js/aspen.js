@@ -5892,8 +5892,9 @@ AspenDiscovery.Account = (function () {
 		//CALL FOR HITTING ACCEPT ON POPUP - GOES TO TOGGLEACCOUNTLINKING AJAX
 		toggleAccountLinkingAccept: function() {
 			var url = Globals.path + "/MyAccount/AJAX?method=toggleAccountLinking";
+			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function (data) {
-				AspenDiscovery.showMessage(data.title, data.message, data.success, data.success);
+				AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons, data.success);
 			});
 			return false;
 		},
@@ -5914,7 +5915,7 @@ AspenDiscovery.Account = (function () {
 		},
 
 		redirectPinReset: function() {
-			window.location.href = Globals.path + "/MyAccount/RequestPinReset";
+			window.location.href = Globals.path + "/MyAccount/ResetPinPage";
 		},
 
 		renewTitle: function (patronId, recordId, renewIndicator) {
