@@ -708,7 +708,7 @@ class User extends DataObject {
 		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
 		$userMessage->userId = $userId;
 		$userMessage->isDismissed = "0";
-		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page";
+		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 		$userMessage->update();
 
 		//Force a reload of data
@@ -736,7 +736,7 @@ class User extends DataObject {
 				$userMessage->messageType = 'linked_acct_notify_disabled_' . $this->id;
 				$userMessage->userId = $userLink->primaryAccountId;
 				$userMessage->isDismissed = "0";
-				$userMessage->message = "An account you were previously linked to, $this->displayName, has disabled account linking. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+				$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 				$userMessage->update();
 			}
 			$userMessage = new UserMessage();
