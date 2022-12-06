@@ -147,6 +147,9 @@ public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 	}
 	public void incDeleted(){
 		numDeleted++;
+		if (numDeleted % 1000 == 0){
+			this.saveResults();
+		}
 	}
 	public void incUpdated(){
 		numUpdated++;
