@@ -19,7 +19,7 @@ import { GLOBALS } from './src/util/globals';
 
 import { enableScreens } from 'react-native-screens';
 import { getPatronBrowseCategories } from './src/util/loadPatron';
-import { getBrowseCategories } from './src/util/loadLibrary';
+import { getBrowseCategories, reloadBrowseCategories } from './src/util/loadLibrary';
 
 enableScreens();
 
@@ -194,7 +194,13 @@ export default class AppContainer extends Component {
                     }
 
                     if (_.isEmpty(this.state.browseCategories)) {
-                         if (discoveryVersion >= '22.07.00') {
+                         if (discoveryVersion >= '22.12.00') {
+                              await reloadBrowseCategories(5, libraryUrl).then((response) => {
+                                   this.setState({
+                                        browseCategories: response,
+                                   });
+                              });
+                         } else if (discoveryVersion >= '22.07.00') {
                               await getBrowseCategories(libraryUrl, discoveryVersion, 5).then((response) => {
                                    this.setState({
                                         browseCategories: response,

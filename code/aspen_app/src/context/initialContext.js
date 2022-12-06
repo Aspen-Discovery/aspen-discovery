@@ -178,6 +178,7 @@ export const UserProvider = ({ children }) => {
 export const BrowseCategoryProvider = ({ children }) => {
      const [category, setCategories] = useState();
      const [list, setCategoryList] = useState();
+     const [maxNum, setMaxCategories] = useState();
 
      const updateBrowseCategories = (data) => {
           setCategories(data);
@@ -187,6 +188,11 @@ export const BrowseCategoryProvider = ({ children }) => {
      const updateBrowseCategoryList = (data) => {
           setCategoryList(data);
           console.log('updated list in BrowseCategoryContext');
+     };
+
+     const updateMaxCategories = (data) => {
+          setMaxCategories(data);
+          console.log('updated max categories in BrowseCategoryContext');
      };
 
      const resetBrowseCategories = () => {
@@ -200,8 +206,10 @@ export const BrowseCategoryProvider = ({ children }) => {
                value={{
                     category,
                     list,
+                    maxNum,
                     updateBrowseCategories,
                     updateBrowseCategoryList,
+                    updateMaxCategories,
                     resetBrowseCategories,
                }}>
                {children}

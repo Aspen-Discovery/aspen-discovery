@@ -18,12 +18,14 @@ import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 
+let maxCategories = 5;
+
 export const DiscoverHomeScreen = () => {
      const [loading, setLoading] = React.useState(true);
      const navigation = useNavigation();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { category, updateBrowseCategories, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
+     const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
 
@@ -33,19 +35,16 @@ export const DiscoverHomeScreen = () => {
           React.useCallback(() => {
                const update = async () => {
                     setLoading(true);
-                    if (unlimited) {
-                         await reloadBrowseCategories(null, library.baseUrl).then((result) => {
-                              if (category !== result) {
-                                   updateBrowseCategories(result);
-                              }
-                         });
-                    } else {
-                         await reloadBrowseCategories(5, library.baseUrl).then((result) => {
-                              if (category !== result) {
-                                   updateBrowseCategories(result);
-                              }
-                         });
-                    }
+
+                    await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+                         if (maxCategories === 9999) {
+                              setUnlimitedCategories(true);
+                         }
+
+                         if (category !== result) {
+                              updateBrowseCategories(result);
+                         }
+                    });
 
                     setLoading(false);
 
@@ -203,22 +202,17 @@ export const DiscoverHomeScreen = () => {
 
      const onRefreshCategories = async () => {
           setLoading(true);
-          let results;
-          if (unlimited) {
-               results = await reloadBrowseCategories(null, library.baseUrl);
-          } else {
-               results = await reloadBrowseCategories(5, library.baseUrl);
-          }
-          updateBrowseCategories(results);
-          setLoading(false);
+          await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+               updateBrowseCategories(result);
+               setLoading(false);
+          });
      };
 
-     const onLoadAllCategories = async () => {
-          setLoading(true);
-          const results = await reloadBrowseCategories(null, library.baseUrl);
-          updateBrowseCategories(results);
-          setLoading(false);
+     const onLoadAllCategories = () => {
+          maxCategories = 9999;
+          updateMaxCategories(9999);
           setUnlimitedCategories(true);
+          onRefreshCategories();
      };
 
      const onPressSettings = (url, patronId) => {

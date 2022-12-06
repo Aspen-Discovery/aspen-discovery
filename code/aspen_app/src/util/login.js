@@ -179,7 +179,7 @@ export async function getBrowseCategories(data, user, pass) {
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               maxCategories: 10,
+               maxCategories: 5,
                LiDARequest: true,
           },
      });
