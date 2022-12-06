@@ -529,6 +529,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	//Suppress all marc records for eContent that can be loaded via API
 	protected boolean isBibSuppressed(Record record, String identifier) {
+		//Check to see if the bib is an authority
+		if (record.getLeader().getTypeOfRecord() == 'z'){
+			updateRecordSuppression(true, new StringBuilder().append("Suppressed because leader indicates it's an authority"), identifier);
+			return true;
+		}
 		if (suppressRecordsWithUrlsMatching != null) {
 			Set<String> urls = MarcUtil.getFieldList(record, "856u");
 			for (String url : urls) {
