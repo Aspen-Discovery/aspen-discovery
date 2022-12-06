@@ -1509,9 +1509,8 @@ class SearchAPI extends Action {
 							'source' => $categoryInformation->source,
 							'sourceId' => $categoryInformation->sourceListId,
 							'isHidden' => $categoryInformation->isDismissed($appUser),
-							'records' => [],
-							'lists' => [],
 						];
+						$count = 0;
 						require_once(ROOT_DIR . '/sys/UserLists/UserList.php');
 						require_once(ROOT_DIR . '/sys/UserLists/UserListEntry.php');
 						$list = new UserList();
@@ -1520,21 +1519,16 @@ class SearchAPI extends Action {
 							$listEntry = new UserListEntry();
 							$listEntry->listId = $list->id;
 							$listEntry->find();
-							$count = 0;
 							do {
 								if ($listEntry->source == 'Lists') {
 									$count++;
-									$categoryResponse['lists'] = $count;
-								} else {
-									if ($listEntry->sourceId) {
-										$count++;
-										$categoryResponse['records'] = $count;
-									}
+								} elseif ($listEntry->sourceId) {
+									$count++;
 								}
-							} while ($listEntry->fetch() && $count < 5);
+							} while ($listEntry->fetch() && $count < 1);
 						}
 
-						if ($categoryResponse['lists'] != 0 || $categoryResponse['records'] != 0) {
+						if ($count != 0) {
 							$formattedCategories[] = $categoryResponse;
 						}
 					} elseif ($categoryInformation->textId == ('system_recommended_for_you')) {
