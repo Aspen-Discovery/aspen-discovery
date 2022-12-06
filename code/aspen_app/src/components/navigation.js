@@ -73,39 +73,39 @@ export function App() {
      };
 
      const [state, dispatch] = React.useReducer(
-          (prevState, action) => {
-               switch (action.type) {
-                    case 'RESTORE_TOKEN':
-                         return {
-                              ...prevState,
-                              userToken: action.token,
-                              isLoading: false,
-                         };
-                    case 'SIGN_IN':
-                         return {
-                              ...prevState,
-                              isSignout: false,
-                              userToken: action.token,
-                              data: action.data,
-                              library: action.library,
-                         };
-                    case 'SIGN_OUT':
-                         return {
-                              ...prevState,
-                              isSignout: true,
-                              userToken: null,
-                              data: [],
-                              library: [],
-                         };
-               }
-          },
-          {
-               isLoading: true,
-               isSignout: false,
-               userToken: null,
-               data: [],
-               library: [],
-          }
+         (prevState, action) => {
+              switch (action.type) {
+                   case 'RESTORE_TOKEN':
+                        return {
+                             ...prevState,
+                             userToken: action.token,
+                             isLoading: false,
+                        };
+                   case 'SIGN_IN':
+                        return {
+                             ...prevState,
+                             isSignout: false,
+                             userToken: action.token,
+                             data: action.data,
+                             library: action.library,
+                        };
+                   case 'SIGN_OUT':
+                        return {
+                             ...prevState,
+                             isSignout: true,
+                             userToken: null,
+                             data: [],
+                             library: [],
+                        };
+              }
+         },
+         {
+              isLoading: true,
+              isSignout: false,
+              userToken: null,
+              data: [],
+              library: [],
+         }
      );
 
      React.useEffect(() => {
@@ -159,14 +159,14 @@ export function App() {
                                    console.log('Connection failed, logging out.');
                                    userToken = null;
                                    await RemoveData().then((res) => {
-                                        dispatch({ type: 'SIGN_OUT' });
+                                        dispatch({type: 'SIGN_OUT'});
                                    });
                               }
                          });
                     } else {
                          console.log('No cached library url, logging out.');
                          await RemoveData().then((res) => {
-                              dispatch({ type: 'SIGN_OUT' });
+                              dispatch({type: 'SIGN_OUT'});
                          });
                     }
                } else {
@@ -181,253 +181,249 @@ export function App() {
      }, []);
 
      const authContext = React.useMemo(
-          () => ({
-               signIn: async (data) => {
-                    let userToken;
-                    const patronsLibrary = data.patronsLibrary;
+         () => ({
+              signIn: async (data) => {
+                   let userToken;
+                   const patronsLibrary = data.patronsLibrary;
 
-                    try {
-                         const postBody = new FormData();
-                         postBody.append('username', data.valueUser);
-                         postBody.append('password', data.valueSecret);
-                         const api = create({
-                              baseURL: data.libraryUrl + '/API',
-                              timeout: 5000,
-                              headers: getHeaders(true),
-                              auth: createAuthTokens(),
-                         });
-                         const response = await api.post('/UserAPI?method=validateAccount', postBody);
-                         //console.log(response);
-                         if (response.ok) {
-                              let result = false;
-                              if (response.data.result) {
-                                   result = response.data.result;
-                              }
-                              if (result) {
-                                   result = result.success;
-                                   if (result['id'] != null) {
-                                        let patronName = result.firstname;
-                                        // if patronName is in all uppercase, force it to sentence-case
-                                        if (patronName === patronName.toUpperCase()) {
-                                             patronName = patronName.toLowerCase();
-                                             patronName = patronName.split(' ');
-                                             for (let i = 0; i < patronName.length; i++) {
-                                                  patronName[i] = patronName[i].charAt(0).toUpperCase() + patronName[i].slice(1);
-                                             }
-                                             patronName = patronName.join(' ');
-                                        }
-                                        userToken = JSON.stringify(result.firstname + ' ' + result.lastname);
-                                        console.log('Valid user: ' + userToken);
+                   try {
+                        const postBody = new FormData();
+                        postBody.append('username', data.valueUser);
+                        postBody.append('password', data.valueSecret);
+                        const api = create({
+                             baseURL: data.libraryUrl + '/API',
+                             timeout: 5000,
+                             headers: getHeaders(true),
+                             auth: createAuthTokens(),
+                        });
+                        const response = await api.post('/UserAPI?method=validateAccount', postBody);
+                        //console.log(response);
+                        if (response.ok) {
+                             let result = false;
+                             if (response.data.result) {
+                                  result = response.data.result;
+                             }
+                             if (result) {
+                                  result = result.success;
+                                  if (result['id'] != null) {
+                                       let patronName = result.firstname;
+                                       // if patronName is in all uppercase, force it to sentence-case
+                                       if (patronName === patronName.toUpperCase()) {
+                                            patronName = patronName.toLowerCase();
+                                            patronName = patronName.split(' ');
+                                            for (let i = 0; i < patronName.length; i++) {
+                                                 patronName[i] = patronName[i].charAt(0).toUpperCase() + patronName[i].slice(1);
+                                            }
+                                            patronName = patronName.join(' ');
+                                       }
+                                       userToken = JSON.stringify(result.firstname + ' ' + result.lastname);
+                                       console.log('Valid user: ' + userToken);
 
-                                        // update global variables for later
-                                        GLOBALS.solrScope = patronsLibrary['solrScope'];
-                                        GLOBALS.lastSeen = Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version;
-                                        LIBRARY.url = data.libraryUrl;
-                                        LIBRARY.name = patronsLibrary['name'];
-                                        if (patronsLibrary['version']) {
-                                             LIBRARY.version = formatDiscoveryVersion(patronsLibrary['version']);
-                                        }
-                                        LIBRARY.favicon = patronsLibrary['favicon'];
-                                        PATRON.userToken = userToken;
-                                        PATRON.scope = patronsLibrary['solrScope'];
-                                        PATRON.library = patronsLibrary['libraryId'];
-                                        PATRON.location = patronsLibrary['locationId'];
+                                       // update global variables for later
+                                       GLOBALS.solrScope = patronsLibrary['solrScope'];
+                                       GLOBALS.lastSeen = Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version;
+                                       LIBRARY.url = data.libraryUrl;
+                                       LIBRARY.name = patronsLibrary['name'];
+                                       if (patronsLibrary['version']) {
+                                            LIBRARY.version = formatDiscoveryVersion(patronsLibrary['version']);
+                                       }
+                                       LIBRARY.favicon = patronsLibrary['favicon'];
+                                       PATRON.userToken = userToken;
+                                       PATRON.scope = patronsLibrary['solrScope'];
+                                       PATRON.library = patronsLibrary['libraryId'];
+                                       PATRON.location = patronsLibrary['locationId'];
 
-                                        try {
-                                             await AsyncStorage.setItem('@userToken', userToken);
-                                             await SecureStore.setItemAsync('userKey', data.valueUser);
-                                             await SecureStore.setItemAsync('secretKey', data.valueSecret);
-                                             //await SecureStore.setItemAsync('userToken', userToken);
-                                             // save variables in the Secure Store to access later on
-                                             await SecureStore.setItemAsync('patronName', patronName);
-                                             await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
-                                             await AsyncStorage.setItem('@libraryId', patronsLibrary['libraryId']);
-                                             await SecureStore.setItemAsync('libraryName', patronsLibrary['name']);
-                                             await SecureStore.setItemAsync('locationId', patronsLibrary['locationId']);
-                                             await AsyncStorage.setItem('@locationId', patronsLibrary['locationId']);
-                                             await SecureStore.setItemAsync('solrScope', patronsLibrary['solrScope']);
+                                       try {
+                                            await AsyncStorage.setItem('@userToken', userToken);
+                                            await SecureStore.setItemAsync('userKey', data.valueUser);
+                                            await SecureStore.setItemAsync('secretKey', data.valueSecret);
+                                            // save variables in the Secure Store to access later on
+                                            await SecureStore.setItemAsync('patronName', patronName);
+                                            await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
+                                            await AsyncStorage.setItem('@libraryId', patronsLibrary['libraryId']);
+                                            await SecureStore.setItemAsync('libraryName', patronsLibrary['name']);
+                                            await SecureStore.setItemAsync('locationId', patronsLibrary['locationId']);
+                                            await AsyncStorage.setItem('@locationId', patronsLibrary['locationId']);
+                                            await SecureStore.setItemAsync('solrScope', patronsLibrary['solrScope']);
 
-                                             await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
-                                             await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
-                                             await SecureStore.setItemAsync('pathUrl', data.libraryUrl);
-                                             //await SecureStore.setItemAsync("logo", patronsLibrary['theme']['logo']);
-                                             //await SecureStore.setItemAsync("favicon", patronsLibrary['theme']['favicon']);
-                                             //await SecureStore.setItemAsync("discoveryVersion", patronsLibrary['version']);
-                                             await AsyncStorage.setItem('@lastStoredVersion', Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version);
-                                             await AsyncStorage.setItem('@patronLibrary', JSON.stringify(patronsLibrary));
+                                            await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
+                                            await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
+                                            await SecureStore.setItemAsync('pathUrl', data.libraryUrl);
+                                            await AsyncStorage.setItem('@lastStoredVersion', Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version);
+                                            await AsyncStorage.setItem('@patronLibrary', JSON.stringify(patronsLibrary));
 
-                                             dispatch({
-                                                  type: 'SIGN_IN',
-                                                  token: userToken,
-                                                  user: data,
-                                                  library: patronsLibrary,
-                                             });
-                                        } catch (e) {
-                                             console.log('Unable to log in user.');
-                                             console.log(e);
-                                        }
-                                   } else {
-                                        console.log('Invalid user. Unable to store data.');
-                                        popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), 'error');
-                                        console.log(response);
-                                   }
-                              } else {
-                                   console.log('Unable to validate user account. ');
-                                   popAlert(translate('error.no_server_connection'), "We're unable to validate your account at this time.", 'warning');
-                                   console.log(response);
-                              }
-                         } else {
-                              popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
-                              console.log(response);
-                         }
-                    } catch (error) {
-                         popAlert(translate('login.unable_to_login'), translate('login.not_enough_data'), 'error');
-                         console.log(error);
-                    }
-               },
-               signOut: async () => {
-                    await RemoveData().then((res) => {
-                         dispatch({ type: 'SIGN_OUT' });
-                    });
-                    console.log('Session ended.');
-               },
-          }),
-          []
+                                            dispatch({
+                                                 type: 'SIGN_IN',
+                                                 token: userToken,
+                                                 user: data,
+                                                 library: patronsLibrary,
+                                            });
+                                       } catch (e) {
+                                            console.log('Unable to log in user.');
+                                            console.log(e);
+                                       }
+                                  } else {
+                                       console.log('Invalid user. Unable to store data.');
+                                       popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), 'error');
+                                       console.log(response);
+                                  }
+                             } else {
+                                  console.log('Unable to validate user account. ');
+                                  popAlert(translate('error.no_server_connection'), "We're unable to validate your account at this time.", 'warning');
+                                  console.log(response);
+                             }
+                        } else {
+                             popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+                             console.log(response);
+                        }
+                   } catch (error) {
+                        popAlert(translate('login.unable_to_login'), translate('login.not_enough_data'), 'error');
+                        console.log(error);
+                   }
+              },
+              signOut: async () => {
+                   await RemoveData().then((res) => {
+                        dispatch({type: 'SIGN_OUT'});
+                   });
+                   console.log('Session ended.');
+              },
+         }),
+         []
      );
 
      if (state.isLoading) {
           // We haven't finished checking for the token yet
-          return <SplashScreen />;
+          return <SplashScreen/>;
      }
 
      return (
-          <AuthContext.Provider value={authContext}>
-               <NavigationContainer
-                    theme={navigationTheme}
-                    ref={navigationRef}
-                    fallback={<Spinner />}
-                    linking={{
-                         prefixes: prefix,
-                         config: {
-                              screens: {
-                                   Login: 'user/login',
-                                   Drawer: {
-                                        screens: {
-                                             Tabs: {
-                                                  screens: {
-                                                       AccountScreenTab: {
-                                                            screens: {
-                                                                 SavedSearches: 'user/saved_searches',
-                                                                 LoadSavedSearch: 'user/saved_search',
-                                                                 Lists: 'user/lists',
-                                                                 List: 'user/list',
-                                                                 LinkedAccounts: 'user/linked_accounts',
-                                                                 Holds: 'user/holds',
-                                                                 CheckedOut: 'user/checkouts',
-                                                                 Preferences: 'user/preferences',
-                                                                 ProfileScreen: 'user',
-                                                            },
-                                                       },
-                                                       LibraryCardTab: {
-                                                            screens: {
-                                                                 LibraryCard: 'user/library_card',
-                                                            },
-                                                       },
-                                                       SearchTab: {
-                                                            screens: {
-                                                                 SearchResults: 'search',
-                                                            },
-                                                       },
-                                                       HomeTab: {
-                                                            screens: {
-                                                                 HomeScreen: 'home',
-                                                                 GroupedWorkScreen: 'search/grouped_work',
-                                                                 SearchByCategory: 'search/browse_category',
-                                                                 SearchByAuthor: 'search/author',
-                                                                 SearchByList: 'search/list',
-                                                            },
-                                                       },
-                                                  },
-                                             },
-                                        },
-                                   },
-                              },
-                         },
-                         async getInitialURL() {
-                              let url = await Linking.getInitialURL();
+         <AuthContext.Provider value={authContext}>
+              <LibrarySystemProvider>
+                   <LibraryBranchProvider>
+                        <UserProvider>
+                             <CheckoutsProvider>
+                                  <HoldsProvider>
+                                       <BrowseCategoryProvider>
+                                            <NavigationContainer
+                                                theme={navigationTheme}
+                                                ref={navigationRef}
+                                                fallback={<Spinner/>}
+                                                linking={{
+                                                     prefixes: prefix,
+                                                     config: {
+                                                          screens: {
+                                                               Login: 'user/login',
+                                                               Drawer: {
+                                                                    screens: {
+                                                                         Tabs: {
+                                                                              screens: {
+                                                                                   AccountScreenTab: {
+                                                                                        screens: {
+                                                                                             SavedSearches: 'user/saved_searches',
+                                                                                             LoadSavedSearch: 'user/saved_search',
+                                                                                             Lists: 'user/lists',
+                                                                                             List: 'user/list',
+                                                                                             LinkedAccounts: 'user/linked_accounts',
+                                                                                             Holds: 'user/holds',
+                                                                                             CheckedOut: 'user/checkouts',
+                                                                                             Preferences: 'user/preferences',
+                                                                                             ProfileScreen: 'user',
+                                                                                        },
+                                                                                   },
+                                                                                   LibraryCardTab: {
+                                                                                        screens: {
+                                                                                             LibraryCard: 'user/library_card',
+                                                                                        },
+                                                                                   },
+                                                                                   SearchTab: {
+                                                                                        screens: {
+                                                                                             SearchResults: 'search',
+                                                                                        },
+                                                                                   },
+                                                                                   HomeTab: {
+                                                                                        screens: {
+                                                                                             HomeScreen: 'home',
+                                                                                             GroupedWorkScreen: 'search/grouped_work',
+                                                                                             SearchByCategory: 'search/browse_category',
+                                                                                             SearchByAuthor: 'search/author',
+                                                                                             SearchByList: 'search/list',
+                                                                                        },
+                                                                                   },
+                                                                              },
+                                                                         },
+                                                                    },
+                                                               },
+                                                          },
+                                                     },
+                                                     async getInitialURL() {
+                                                          let url = await Linking.getInitialURL();
 
-                              if (url != null) {
-                                   url = decodeURIComponent(url).replace(/\+/g, ' ');
-                                   url = url.replace('aspen-lida://', prefix);
-                                   return url;
-                              }
+                                                          if (url != null) {
+                                                               url = decodeURIComponent(url).replace(/\+/g, ' ');
+                                                               url = url.replace('aspen-lida://', prefix);
+                                                               return url;
+                                                          }
 
-                              const response = await Notifications.getLastNotificationResponseAsync();
-                              url = decodeURIComponent(response?.notification.request.content.data.url).replace(/\+/g, ' ');
-                              url = url.replace('aspen-lida://', prefix);
-                              return url;
-                         },
-                         subscribe(listener) {
-                              const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
-                                   listener(url);
-                              });
-                              const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-                                   const url = response.notification.request.content.data.url;
-                                   listener(url);
-                              });
+                                                          const response = await Notifications.getLastNotificationResponseAsync();
+                                                          url = decodeURIComponent(response?.notification.request.content.data.url).replace(/\+/g, ' ');
+                                                          url = url.replace('aspen-lida://', prefix);
+                                                          return url;
+                                                     },
+                                                     subscribe(listener) {
+                                                          const linkingSubscription = Linking.addEventListener('url', ({url}) => {
+                                                               listener(url);
+                                                          });
+                                                          const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+                                                               const url = response.notification.request.content.data.url;
+                                                               listener(url);
+                                                          });
 
-                              return () => {
-                                   subscription.remove();
-                                   linkingSubscription.remove();
-                              };
-                         },
-                    }}>
-                    <LibrarySystemProvider>
-                         <LibraryBranchProvider>
-                              <UserProvider>
-                                   <CheckoutsProvider>
-                                        <HoldsProvider>
-                                             <BrowseCategoryProvider>
-                                                  <Stack.Navigator
-                                                       screenOptions={{
-                                                            headerShown: false,
-                                                       }}
-                                                       name="Root">
-                                                       {state.userToken === null ? (
-                                                            // No token found, user isn't signed in
-                                                            <Stack.Screen
-                                                                 name="Login"
-                                                                 component={Login}
-                                                                 options={{
-                                                                      headerShown: false,
-                                                                      animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-                                                                 }}
-                                                            />
-                                                       ) : (
-                                                            // User is signed in
-                                                            <Stack.Screen
-                                                                 name="Launch"
-                                                                 component={LaunchStackNavigator}
-                                                                 options={{
-                                                                      animationEnabled: false,
-                                                                      header: () => null,
-                                                                 }}
-                                                            />
-                                                       )}
-                                                  </Stack.Navigator>
-                                             </BrowseCategoryProvider>
-                                        </HoldsProvider>
-                                   </CheckoutsProvider>
-                              </UserProvider>
-                         </LibraryBranchProvider>
-                    </LibrarySystemProvider>
-               </NavigationContainer>
-          </AuthContext.Provider>
+                                                          return () => {
+                                                               subscription.remove();
+                                                               linkingSubscription.remove();
+                                                          };
+                                                     },
+                                                }}>
+                                                 <Stack.Navigator
+                                                     screenOptions={{
+                                                          headerShown: false,
+                                                     }}
+                                                     name="Root">
+                                                      {state.userToken === null ? (
+                                                          // No token found, user isn't signed in
+                                                          <Stack.Screen
+                                                              name="Login"
+                                                              component={Login}
+                                                              options={{
+                                                                   headerShown: false,
+                                                                   animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                                                              }}
+                                                          />
+                                                      ) : (
+                                                          // User is signed in
+                                                          <Stack.Screen
+                                                              name="Launch"
+                                                              component={LaunchStackNavigator}
+                                                              options={{
+                                                                   animationEnabled: false,
+                                                                   header: () => null,
+                                                              }}
+                                                          />
+                                                      )}
+                                                 </Stack.Navigator>
+                                            </NavigationContainer>
+                                       </BrowseCategoryProvider>
+                                  </HoldsProvider>
+                             </CheckoutsProvider>
+                        </UserProvider>
+                   </LibraryBranchProvider>
+              </LibrarySystemProvider>
+         </AuthContext.Provider>
      );
 }
 
 async function getPermissions() {
-     const { status } = await Location.requestForegroundPermissionsAsync();
+     const {status} = await Location.requestForegroundPermissionsAsync();
 
      if (status !== 'granted') {
           await SecureStore.setItemAsync('latitude', '0');
