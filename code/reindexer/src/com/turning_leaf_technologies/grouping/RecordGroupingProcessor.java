@@ -847,7 +847,7 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
-		if (lookupAuthorAuthoritiesInDB && (originalAuthor != null && originalAuthor.length() > 0)) {
+		if (lookupAuthorAuthoritiesInDB && originalAuthor.length() > 0) {
 			try {
 				getAuthorAuthorityIdStmt.setString(1, originalAuthor);
 				ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
@@ -866,7 +866,7 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeTitle(String originalTitle) {
-		if (originalTitle != null && originalTitle.length() > 0) {
+		if (originalTitle.length() > 0) {
 			if (lookupTitleAuthoritiesInDB) {
 				try {
 					getTitleAuthorityStmt.setString(1, originalTitle);

@@ -54,10 +54,10 @@ class GroupedWork implements Cloneable {
 			StringBuilder permanentId;
 			try {
 				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
+				String fullTitle = getAuthoritativeTitle();
 				if (fullTitle.length() == 0){
 					idGenerator.update("--null--".getBytes());
 				}else{
-					String fullTitle = getAuthoritativeTitle();
 					idGenerator.update(fullTitle.getBytes());
 				}
 
@@ -65,6 +65,10 @@ class GroupedWork implements Cloneable {
 					idGenerator.update("--null--".getBytes());
 				}else{
 					String authoritativeAuthor = getAuthoritativeAuthor();
+					//TODO: Delete this if block
+					if (!authoritativeAuthor.equals(this.author)){
+						logger.debug("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
+					}
 					idGenerator.update(authoritativeAuthor.getBytes());
 				}
 				if (groupingCategory.equals("")){
