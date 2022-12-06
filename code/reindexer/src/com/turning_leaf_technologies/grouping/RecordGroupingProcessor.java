@@ -847,7 +847,7 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
-		if (lookupAuthorAuthoritiesInDB) {
+		if (lookupAuthorAuthoritiesInDB && (originalAuthor != null && originalAuthor.length() > 0)) {
 			try {
 				getAuthorAuthorityIdStmt.setString(1, originalAuthor);
 				ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
@@ -866,20 +866,22 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeTitle(String originalTitle) {
-		if (lookupTitleAuthoritiesInDB) {
-			try {
-				getTitleAuthorityStmt.setString(1, originalTitle);
-				ResultSet authorityRS = getTitleAuthorityStmt.executeQuery();
-				if (authorityRS.next()) {
-					return authorityRS.getString("authoritativeName");
+		if (originalTitle != null && originalTitle.length() > 0) {
+			if (lookupTitleAuthoritiesInDB) {
+				try {
+					getTitleAuthorityStmt.setString(1, originalTitle);
+					ResultSet authorityRS = getTitleAuthorityStmt.executeQuery();
+					if (authorityRS.next()) {
+						return authorityRS.getString("authoritativeName");
+					}
+				} catch (SQLException e) {
+					logEntry.incErrors("Error getting authoritative title", e);
 				}
-			} catch (SQLException e) {
-				logEntry.incErrors("Error getting authoritative title", e);
-			}
-		}else{
-			String authority = titleAuthorities.get(originalTitle);
-			if (authority != null){
-				return authority;
+			} else {
+				String authority = titleAuthorities.get(originalTitle);
+				if (authority != null) {
+					return authority;
+				}
 			}
 		}
 		return originalTitle;
