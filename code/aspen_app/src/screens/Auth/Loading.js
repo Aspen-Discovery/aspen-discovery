@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { create } from 'apisauce';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Center, Heading, Spinner, VStack } from 'native-base';
@@ -24,7 +24,8 @@ export const LoadingScreen = () => {
                     setLoading(false);
                } else {
                     const unsubscribe = async () => {
-                         await reloadPatronBrowseCategories(maxNum).then((result) => {
+                         updateMaxCategories(5);
+                         await reloadPatronBrowseCategories(5).then((result) => {
                               updateBrowseCategories(result);
                          });
                          await reloadUserProfile().then((result) => {
