@@ -3531,7 +3531,7 @@ class Koha extends AbstractIlsDriver {
 			$postParams = [
 				'userid' => $ssoUser['cat_username'],
 				'cardnumber' => $ssoUser['cat_username'],
-				'firstname' => $ssoUser['lastname'],
+				'firstname' => $ssoUser['firstname'],
 				'surname' => $ssoUser['lastname'],
 				'email' => $ssoUser['email'],
 				'address' => 'UNKNOWN',
