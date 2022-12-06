@@ -3,13 +3,72 @@ import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import _ from 'lodash';
 
+export const ThemeContext = React.createContext({
+     theme: [],
+     updateTheme: () => {},
+     resetTheme: () => {},
+});
 export const DiscoveryContext = React.createContext();
-export const UserContext = React.createContext();
-export const LibrarySystemContext = React.createContext();
-export const LibraryBranchContext = React.createContext();
-export const BrowseCategoryContext = React.createContext();
-export const CheckoutsContext = React.createContext();
-export const HoldsContext = React.createContext();
+export const UserContext = React.createContext({
+     updateUser: () => {},
+     user: [],
+     updateLinkedAccounts: () => {},
+     accounts: [],
+     updateLists: () => {},
+     lists: [],
+     updateLanguage: () => {},
+     language: [],
+     updatePickupLocations: () => {},
+     locations: [],
+     resetUser: () => {},
+});
+export const LibrarySystemContext = React.createContext({
+     updateLibrary: () => {},
+     library: [],
+     version: '',
+     url: '',
+     resetLibrary: () => {},
+});
+export const LibraryBranchContext = React.createContext({
+     updateLocation: () => {},
+     location: [],
+     resetLocation: () => {},
+     scope: '',
+     updateScope: () => {},
+});
+export const BrowseCategoryContext = React.createContext({
+     updateBrowseCategories: () => {},
+     category: [],
+     updateBrowseCategoryList: () => {},
+     list: [],
+     updateMaxCategories: () => {},
+     maxNum: 5,
+     resetBrowseCategories: () => {},
+});
+export const CheckoutsContext = React.createContext({
+     updateCheckouts: () => {},
+     checkouts: [],
+     resetCheckouts: () => {},
+});
+export const HoldsContext = React.createContext({
+     updateHolds: () => {},
+     holds: [],
+     resetHolds: () => {},
+});
+
+export const ThemeProvider = ({ children }) => {
+     const [theme, setTheme] = useState([]);
+
+     const updateTheme = (data) => {
+          setTheme(data);
+     };
+
+     const resetTheme = () => {
+          setTheme([]);
+     };
+
+     return <ThemeContext.Provider value={{ theme, updateTheme, resetTheme }}>{children}</ThemeContext.Provider>;
+};
 
 export const DiscoveryProvider = ({ children }) => {
      const [version, setVersion] = useState();
