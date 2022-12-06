@@ -10,8 +10,8 @@ import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
 import { getAppSettings, getLibraryInfo } from '../util/loadLibrary';
 
-export const ThemeData = () => {
-     const [value, setValue] = useState([]);
+export async function getThemeData() {
+     let theme = [];
      const discovery = create({
           baseURL: GLOBALS.url + '/API',
           timeout: GLOBALS.timeoutFast,
@@ -21,26 +21,19 @@ export const ThemeData = () => {
                id: GLOBALS.themeId,
           },
      });
-     discovery
-          .get('/SystemAPI?method=getThemeInfo')
-          .then((response) => {
-               let theme = [];
-               if (!_.isUndefined(response.data.result.theme)) {
-                    const result = response.data.result.theme;
-                    const COLOR_SCHEMES = [result.primaryBackgroundColor, result.secondaryBackgroundColor, result.tertiaryBackgroundColor];
-                    theme = COLOR_SCHEMES.map(generateSwatches);
-               } else {
-                    const COLOR_SCHEMES = ['#3dbdd6', '#9acf87', '#c1adcc'];
-                    theme = COLOR_SCHEMES.map(generateSwatches);
-               }
-               setValue(theme);
-          })
-          .catch((err) => {
-               console.log(err);
-          });
-
-     return value;
-};
+     const response = await discovery.get('/SystemAPI?method=getThemeInfo');
+     if (response.ok) {
+          if (!_.isUndefined(response.data.result.theme)) {
+               const result = response.data.result.theme;
+               const COLOR_SCHEMES = [result.primaryBackgroundColor, result.secondaryBackgroundColor, result.tertiaryBackgroundColor];
+               theme = COLOR_SCHEMES.map(generateSwatches);
+          } else {
+               const COLOR_SCHEMES = ['#3dbdd6', '#9acf87', '#c1adcc'];
+               theme = COLOR_SCHEMES.map(generateSwatches);
+          }
+     }
+     return theme;
+}
 
 const getThemeId = () => {
      const [value, setValue] = useState();
