@@ -100,7 +100,7 @@ export const DiscoverHomeScreen = () => {
                type = item.source;
           }
 
-          const imageUrl = url + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
+          const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
 
           let isNew = false;
           if (typeof item.isNew !== 'undefined') {
