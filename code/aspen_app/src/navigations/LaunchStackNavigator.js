@@ -18,7 +18,7 @@ const LaunchStackNavigator = () => {
                                                   <HoldsContext.Consumer>
                                                        {(holds) => (
                                                             <BrowseCategoryContext.Consumer>
-                                                                 {(category, list) => (
+                                                                 {(category, list, maxNum, updateMaxCategories) => (
                                                                       <Stack.Navigator
                                                                            initialRouteName="LoadingScreen"
                                                                            screenOptions={{
@@ -47,6 +47,8 @@ const LaunchStackNavigator = () => {
                                                                                      browseCategoriesContext: {
                                                                                           category,
                                                                                           list,
+                                                                                          maxNum,
+                                                                                          updateMaxCategories,
                                                                                      },
                                                                                      checkoutsContext: checkouts,
                                                                                      holdsContext: holds,

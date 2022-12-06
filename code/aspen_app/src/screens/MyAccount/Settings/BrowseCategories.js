@@ -14,6 +14,7 @@ export const Settings_BrowseCategories = () => {
           React.useCallback(() => {
                const update = async () => {
                     await getBrowseCategoryListForUser(library.baseUrl).then((result) => {
+                         console.log(result);
                          if (list !== result) {
                               updateBrowseCategoryList(result);
                          }
@@ -117,7 +118,7 @@ const DisplayCategory = (data) => {
      const [toggled, setToggle] = React.useState(!category.isHidden);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { library } = React.useContext(LibrarySystemContext);
-     const { list, updateBrowseCategoryList, updateBrowseCategories } = React.useContext(BrowseCategoryContext);
+     const { updateBrowseCategoryList, updateBrowseCategories, maxNum } = React.useContext(BrowseCategoryContext);
 
      const updateToggle = async (category) => {
           const key = category['key'] ?? category['sourceId'];
@@ -126,7 +127,7 @@ const DisplayCategory = (data) => {
                await getBrowseCategoryListForUser(library.baseUrl).then((result) => {
                     updateBrowseCategoryList(result);
                });
-               await reloadBrowseCategories(6, library.baseUrl).then((result) => {
+               await reloadBrowseCategories(maxNum, library.baseUrl).then((result) => {
                     updateBrowseCategories(result);
                });
           });

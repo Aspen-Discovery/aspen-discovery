@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
-import _ from 'lodash';
+import _, { max } from 'lodash';
 import React from 'react';
 
 // custom components and helper files
@@ -434,7 +434,7 @@ export const UpdateBrowseCategoryContext = (maxCat = 6) => {
      return categories;
 };
 
-export async function updatePatronBrowseCategories(maxCat = 6) {
+export async function updatePatronBrowseCategories(maxCat) {
      const postBody = await postData();
      const discovery = create({
           baseURL: LIBRARY.url + '/API',
@@ -540,18 +540,20 @@ export function formatBrowseCategories(payload) {
      return categories;
 }
 
-export async function reloadBrowseCategories(maxCat = null, url = null) {
+export async function reloadBrowseCategories(maxCat, url = null) {
+     let maxCategories = maxCat ?? 5;
+     console.log('maxCategories: ' + maxCategories);
      const postBody = await postData();
      let discovery;
      let baseUrl = url ?? LIBRARY.url;
-     if (maxCat) {
+     if (maxCategories !== '9999') {
           discovery = create({
                baseURL: baseUrl + '/API',
                timeout: GLOBALS.timeoutAverage,
                headers: getHeaders(true),
                auth: createAuthTokens(),
                params: {
-                    maxCategories: maxCat,
+                    maxCategories: maxCategories,
                     LiDARequest: true,
                },
           });
@@ -568,7 +570,6 @@ export async function reloadBrowseCategories(maxCat = null, url = null) {
      }
      const response = await discovery.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
 
-     //console.log(response.data.result);
      if (response.ok) {
           if (response.data.result) {
                return formatBrowseCategories(response.data.result);
