@@ -70,7 +70,7 @@ then
           else
             APP_ENV=$site eas build --platform $osPlatform --profile $channel --no-wait
           fi
-          node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js --instance=$slug
+          node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js --instance=$site
           sed -i'.bak' "s/$site/{{APP_ENV}}/g" eas.json
       done
 else
