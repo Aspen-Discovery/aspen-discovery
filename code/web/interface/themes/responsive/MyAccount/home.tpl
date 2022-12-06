@@ -13,6 +13,24 @@
 
 			{if $showUserCirculationModules}
 			<h1>{translate text='Your Account' isPublicFacing=true}</h1>
+			{if $user->getViewers()|@count!=0}
+				<div>
+					<p>Your account is linked to by&nbsp;
+						{foreach from=$user->getViewers() item=tmpUser name=viewer}
+							{if $user->getViewers()|@count == 1}
+								{$tmpUser->getNameAndLibraryLabel()}.
+							{/if}
+							{if $user->getViewers()|@count == 2}
+								{if $smarty.foreach.viewer.last} and {$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}{/if}
+							{/if}
+							{if $user->getViewers()|@count > 2}
+								{if $smarty.foreach.viewer.last}and {$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}, {/if}
+							{/if}
+						{/foreach}
+						<a href="/MyAccount/LinkedAccounts">Learn more about Linked Accounts</a>.
+					</p>
+				</div>
+			{/if}
 			{if $userHasCatalogConnection}
 				<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
 				{if $offline}
