@@ -12,6 +12,7 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.*;
@@ -256,7 +257,7 @@ public class KohaExportMain {
 									authorAuthorityId = getAuthorIdRS.getLong("id");
 								}else {
 									addAuthorStmt.setLong(1, curTime);
-									addAuthorStmt.setString(2, author);
+									addAuthorStmt.setString(2, AspenStringUtils.trimTo(512, author));
 									addAuthorStmt.executeUpdate();
 									ResultSet generatedIds = addAuthorStmt.getGeneratedKeys();
 									if (generatedIds.next()) {
@@ -267,7 +268,7 @@ public class KohaExportMain {
 								if (authorAuthorityId != 0) {
 									for (String alternativeName : alternativeNames) {
 										addAlternativeNameStmt.setLong(1, authorAuthorityId);
-										addAlternativeNameStmt.setString(2, alternativeName);
+										addAlternativeNameStmt.setString(2, AspenStringUtils.trimTo(512, alternativeName));
 										addAlternativeNameStmt.executeUpdate();
 									}
 								}else{

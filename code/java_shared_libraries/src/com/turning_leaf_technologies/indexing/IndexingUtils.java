@@ -663,6 +663,7 @@ public class IndexingUtils {
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
 					if (line.matches(".*" + indexerName + "\\.jar " + serverName)){
+						logger.warn(line);
 						numInstancesRunning++;
 					}
 				}
@@ -678,7 +679,8 @@ public class IndexingUtils {
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
-					if (line.matches(".*" + indexerName + "\\.jar " + serverName)){
+					if (line.matches(".*" + indexerName + "\\.jar " + serverName) && !line.contains("/bin/sh -c") && !line.contains("runuser")){
+						logger.warn(line);
 						numInstancesRunning++;
 					}
 				}
@@ -687,7 +689,12 @@ public class IndexingUtils {
 				logger.error("Error checking to see if the " + indexerName + " indexer is running", e);
 			}
 		}
-		return numInstancesRunning > 1;
+		if (numInstancesRunning > 1) {
+			logger.error("Found " + numInstancesRunning + " instances of " + indexerName + " running");
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	public static boolean isNightlyIndexRunning(Ini configIni, String serverName, Logger logger) {
