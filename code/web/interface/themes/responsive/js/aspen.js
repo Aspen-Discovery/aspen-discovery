@@ -8678,6 +8678,14 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowsourceCourseReserveId").hide();
 			}
 		},
+		updateGroupedWorkDisplayFields: function() {
+			var showSearchTools = $('#showSearchTools');
+			if(showSearchTools.is(":checked")) {
+				$("#propertyRowshowSearchToolsAtTop").show();
+			}else {
+				$("#propertyRowshowSearchToolsAtTop").hide();
+			}
+		},
 		updateIndexingProfileFields: function () {
 			var audienceType = $('#determineAudienceBySelect').val();
 			if (audienceType === '3') {
