@@ -663,6 +663,7 @@ public class IndexingUtils {
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
 					if (line.matches(".*" + indexerName + "\\.jar " + serverName)){
+						logger.warn(line);
 						numInstancesRunning++;
 					}
 				}
@@ -679,6 +680,7 @@ public class IndexingUtils {
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
 					if (line.matches(".*" + indexerName + "\\.jar " + serverName)){
+						logger.warn(line);
 						numInstancesRunning++;
 					}
 				}
