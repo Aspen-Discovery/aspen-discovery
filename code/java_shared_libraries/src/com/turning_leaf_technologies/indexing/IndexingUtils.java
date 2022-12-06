@@ -687,7 +687,12 @@ public class IndexingUtils {
 				logger.error("Error checking to see if the " + indexerName + " indexer is running", e);
 			}
 		}
-		return numInstancesRunning > 1;
+		if (numInstancesRunning > 1) {
+			logger.error("Found " + numInstancesRunning + " instances of " + indexerName + " running");
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	public static boolean isNightlyIndexRunning(Ini configIni, String serverName, Logger logger) {
