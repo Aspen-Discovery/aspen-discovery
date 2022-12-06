@@ -59,7 +59,7 @@ const DisplayBrowseCategory = (props) => {
                                                   {translate('general.hide')}
                                              </Button>
                                         </HStack>
-                                        <FlatList horizontal data={newArr} keyExtractor={(item, index) => index.toString()} renderItem={(item, index) => renderRecords(item, user, libraryUrl, discoveryVersion, index)} initialNumToRender={5} ListFooterComponent={loadMore(categoryLabel, categoryKey, libraryUrl, categorySource, recordCount, discoveryVersion)} extra={categoryList} />
+                                        <FlatList horizontal data={newArr} keyExtractor={(item, index) => index.toString()} renderItem={(item, index) => renderRecords(item, library.baseUrl, library.version, index)} initialNumToRender={5} ListFooterComponent={loadMore(categoryLabel, categoryKey, libraryUrl, categorySource, recordCount, discoveryVersion)} extra={categoryList} />
                                    </View>
                               </SafeAreaView>
                          )}
