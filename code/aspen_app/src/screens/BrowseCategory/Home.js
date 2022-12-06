@@ -21,252 +21,251 @@ import { getLists } from '../../util/api/list';
 let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
-     const [loading, setLoading] = React.useState(true);
-     const navigation = useNavigation();
-     const { user } = React.useContext(UserContext);
-     const { library } = React.useContext(LibrarySystemContext);
-     const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
-     const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
-     const { holds, updateHolds } = React.useContext(HoldsContext);
+    const [loading, setLoading] = React.useState(true);
+    const navigation = useNavigation();
+    const {user} = React.useContext(UserContext);
+    const {library} = React.useContext(LibrarySystemContext);
+    const {category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories} = React.useContext(BrowseCategoryContext);
+    const {checkouts, updateCheckouts} = React.useContext(CheckoutsContext);
+    const {holds, updateHolds} = React.useContext(HoldsContext);
 
-     const [unlimited, setUnlimitedCategories] = React.useState(false);
+    const [unlimited, setUnlimitedCategories] = React.useState(false);
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    setLoading(true);
+    useFocusEffect(
+        React.useCallback(() => {
+            const update = async () => {
+                await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+                    if (maxCategories === 9999) {
+                        setUnlimitedCategories(true);
+                    }
 
-                    await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
-                         if (maxCategories === 9999) {
-                              setUnlimitedCategories(true);
-                         }
+                    if (category !== result) {
+                        setLoading(true);
+                        updateBrowseCategories(result);
+                        setLoading(false);
+                    }
+                });
 
-                         if (category !== result) {
-                              updateBrowseCategories(result);
-                         }
-                    });
+                reloadHolds(library.baseUrl).then((result) => {
+                    if (holds !== result) {
+                        updateHolds(result);
+                    }
+                });
 
-                    setLoading(false);
+                getCheckedOutItems(library.baseUrl).then((result) => {
+                    if (checkouts !== result) {
+                        updateCheckouts(result);
+                    }
+                });
 
-                    reloadHolds(library.baseUrl).then((result) => {
-                         if (holds !== result) {
-                              updateHolds(result);
-                         }
-                    });
+                getILSMessages(library.baseUrl);
+                getLists(library.baseUrl);
+                getPickupLocations(library.baseUrl);
+                console.log('updated patron things');
+            };
+            update().then(() => {
+                return () => update();
+            });
+        }, [])
+    );
 
-                    getCheckedOutItems(library.baseUrl).then((result) => {
-                         if (checkouts !== result) {
-                              updateCheckouts(result);
-                         }
-                    });
+    const renderHeader = (title, key, user, url) => {
+        return (
+            <Box>
+                <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
+                    <Text
+                        maxWidth="80%"
+                        bold
+                        mb={1}
+                        fontSize={{
+                            base: 'lg',
+                            lg: '2xl',
+                        }}>
+                        {title}
+                    </Text>
+                    <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => onHideCategory(url, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>
+                        {translate('general.hide')}
+                    </Button>
+                </HStack>
+            </Box>
+        );
+    };
 
-                    getILSMessages(library.baseUrl);
-                    getLists(library.baseUrl);
-                    getPickupLocations(library.baseUrl);
-                    console.log('updated patron things');
-               };
-               update().then(() => {
-                    return () => update();
-               });
-          }, [])
-     );
+    const renderRecord = (data, url, version, index) => {
+        const item = data.item;
+        let type = 'grouped_work';
+        if (!_.isUndefined(item.source)) {
+            type = item.source;
+        }
 
-     const renderHeader = (title, key, user, url) => {
-          return (
-               <Box>
-                    <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
-                         <Text
-                              maxWidth="80%"
-                              bold
-                              mb={1}
-                              fontSize={{
-                                   base: 'lg',
-                                   lg: '2xl',
-                              }}>
-                              {title}
-                         </Text>
-                         <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => onHideCategory(url, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                              {translate('general.hide')}
-                         </Button>
-                    </HStack>
-               </Box>
-          );
-     };
+        const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
 
-     const renderRecord = (data, url, version, index) => {
-          const item = data.item;
-          let type = 'grouped_work';
-          if (!_.isUndefined(item.source)) {
-               type = item.source;
-          }
+        let isNew = false;
+        if (typeof item.isNew !== 'undefined') {
+            isNew = item.isNew;
+        }
 
-          const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
-
-          let isNew = false;
-          if (typeof item.isNew !== 'undefined') {
-               isNew = item.isNew;
-          }
-
-          return (
-               <Pressable
-                    ml={1}
-                    mr={3}
-                    onPress={() => onPressItem(item.id, type, item.title_display, version)}
-                    width={{
-                         base: 100,
-                         lg: 200,
+        return (
+            <Pressable
+                ml={1}
+                mr={3}
+                onPress={() => onPressItem(item.id, type, item.title_display, version)}
+                width={{
+                    base: 100,
+                    lg: 200,
+                }}
+                height={{
+                    base: 125,
+                    lg: 250,
+                }}>
+                {version >= '22.08.00' && isNew ? (
+                    <Container zIndex={1}>
+                        <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{fontSize: 9}}>
+                            {translate('general.new')}
+                        </Badge>
+                    </Container>
+                ) : null}
+                <CachedImage
+                    cacheKey={item.id}
+                    alt={item.title_display}
+                    source={{
+                        uri: `${imageUrl}`,
+                        expiresIn: 86400,
                     }}
-                    height={{
-                         base: 125,
-                         lg: 250,
-                    }}>
-                    {version >= '22.08.00' && isNew ? (
-                         <Container zIndex={1}>
-                              <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{ fontSize: 9 }}>
-                                   {translate('general.new')}
-                              </Badge>
-                         </Container>
-                    ) : null}
-                    <CachedImage
-                         cacheKey={item.id}
-                         alt={item.title_display}
-                         source={{
-                              uri: `${imageUrl}`,
-                              expiresIn: 86400,
-                         }}
-                         style={{
-                              width: '100%',
-                              height: '100%',
-                         }}
-                    />
-               </Pressable>
-          );
-     };
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                    }}
+                />
+            </Pressable>
+        );
+    };
 
-     const onPressItem = (key, type, title, version) => {
-          if (version >= '22.07.00') {
-               if (type === 'List') {
-                    navigation.navigate('SearchByList', {
-                         id: key,
-                         url: library.baseUrl,
-                         title: title,
-                         userContext: user,
-                         libraryContext: library,
-                    });
-               } else if (type === 'SavedSearch') {
-                    navigation.navigate('SearchBySavedSearch', {
-                         id: key,
-                         url: library.baseUrl,
-                         title: title,
-                         userContext: user,
-                         libraryContext: library,
-                    });
-               } else {
-                    navigation.navigate('HomeTab', {
-                         screen: 'GroupedWorkScreen',
-                         params: {
-                              id: key,
-                              url: library.baseUrl,
-                              title: title,
-                              userContext: user,
-                              libraryContext: library,
-                         },
-                    });
-               }
-          } else {
-               navigation.navigate('HomeTab', {
+    const onPressItem = (key, type, title, version) => {
+        if (version >= '22.07.00') {
+            if (type === 'List') {
+                navigation.navigate('SearchByList', {
+                    id: key,
+                    url: library.baseUrl,
+                    title: title,
+                    userContext: user,
+                    libraryContext: library,
+                });
+            } else if (type === 'SavedSearch') {
+                navigation.navigate('SearchBySavedSearch', {
+                    id: key,
+                    url: library.baseUrl,
+                    title: title,
+                    userContext: user,
+                    libraryContext: library,
+                });
+            } else {
+                navigation.navigate('HomeTab', {
                     screen: 'GroupedWorkScreen',
                     params: {
-                         id: key,
-                         url: library.baseUrl,
-                         title: title,
-                         userContext: user,
-                         libraryContext: library,
+                        id: key,
+                        url: library.baseUrl,
+                        title: title,
+                        userContext: user,
+                        libraryContext: library,
                     },
-               });
-          }
-     };
+                });
+            }
+        } else {
+            navigation.navigate('HomeTab', {
+                screen: 'GroupedWorkScreen',
+                params: {
+                    id: key,
+                    url: library.baseUrl,
+                    title: title,
+                    userContext: user,
+                    libraryContext: library,
+                },
+            });
+        }
+    };
 
-     const renderLoadMore = () => {};
+    const renderLoadMore = () => {
+    };
 
-     const onHideCategory = async (url, category) => {
-          setLoading(true);
-          await updateBrowseCategoryStatus(category).then(async (response) => {
-               await onRefreshCategories();
-               await getBrowseCategoryListForUser().then((result) => {
-                    updateBrowseCategoryList(result);
-                    setLoading(false);
-               });
-          });
-     };
+    const onHideCategory = async (url, category) => {
+        setLoading(true);
+        await updateBrowseCategoryStatus(category).then(async (response) => {
+            await onRefreshCategories();
+            await getBrowseCategoryListForUser().then((result) => {
+                updateBrowseCategoryList(result);
+                setLoading(false);
+            });
+        });
+    };
 
-     const onRefreshCategories = async () => {
-          setLoading(true);
-          await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
-               updateBrowseCategories(result);
-               setLoading(false);
-          });
-     };
+    const onRefreshCategories = async () => {
+        setLoading(true);
+        await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+            updateBrowseCategories(result);
+            setLoading(false);
+        });
+    };
 
-     const onLoadAllCategories = () => {
-          maxCategories = 9999;
-          updateMaxCategories(9999);
-          setUnlimitedCategories(true);
-          onRefreshCategories();
-     };
+    const onLoadAllCategories = () => {
+        maxCategories = 9999;
+        updateMaxCategories(9999);
+        setUnlimitedCategories(true);
+        onRefreshCategories();
+    };
 
-     const onPressSettings = (url, patronId) => {
-          const version = formatDiscoveryVersion(library.discoveryVersion);
-          if (version >= '22.12.00') {
-               navigation.navigate('AccountScreenTab', {
-                    screen: 'SettingsBrowseCategories',
-                    params: {
-                         url,
-                         patronId,
-                    },
-               });
-          } else {
-               navigation.navigate('AccountScreenTab', {
-                    screen: 'SettingsHomeScreen',
-                    params: {
-                         url,
-                         patronId,
-                    },
-               });
-          }
-     };
+    const onPressSettings = (url, patronId) => {
+        const version = formatDiscoveryVersion(library.discoveryVersion);
+        if (version >= '22.12.00') {
+            navigation.navigate('AccountScreenTab', {
+                screen: 'SettingsBrowseCategories',
+                params: {
+                    url,
+                    patronId,
+                },
+            });
+        } else {
+            navigation.navigate('AccountScreenTab', {
+                screen: 'SettingsHomeScreen',
+                params: {
+                    url,
+                    patronId,
+                },
+            });
+        }
+    };
 
-     const handleOnPressCategory = (label, key, source) => {
-          let screen = 'SearchByCategory';
-          if (source === 'List') {
-               screen = 'SearchByList';
-          } else if (source === 'SavedSearch') {
-               screen = 'SearchBySavedSearch';
-          }
+    const handleOnPressCategory = (label, key, source) => {
+        let screen = 'SearchByCategory';
+        if (source === 'List') {
+            screen = 'SearchByList';
+        } else if (source === 'SavedSearch') {
+            screen = 'SearchBySavedSearch';
+        }
 
-          navigation.navigate(screen, {
-               title: label,
-               id: key,
-               url: library.baseUrl,
-               libraryContext: library,
-               userContext: user,
-          });
-     };
+        navigation.navigate(screen, {
+            title: label,
+            id: key,
+            url: library.baseUrl,
+            libraryContext: library,
+            userContext: user,
+        });
+    };
 
-     if (loading === true) {
-          return loadingSpinner();
-     }
+    if (loading === true) {
+        return loadingSpinner();
+    }
 
-     return (
-          <ScrollView>
-               <Box safeArea={5}>
-                    {category.map((item, index) => {
-                         return <DisplayBrowseCategory key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
-                    })}
-                    <ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
-               </Box>
-          </ScrollView>
-     );
+    return (
+        <ScrollView>
+            <Box safeArea={5}>
+                {category.map((item, index) => {
+                    return <DisplayBrowseCategory key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category}/>;
+                })}
+                <ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories}/>
+            </Box>
+        </ScrollView>
+    );
 };
 
 /* export class BrowseCategoryHome extends PureComponent {
@@ -670,81 +669,81 @@ export const DiscoverHomeScreen = () => {
  }; */
 
 const ButtonOptions = (props) => {
-     const [loading, setLoading] = React.useState(false);
-     const [refreshing, setRefreshing] = React.useState(false);
-     const { onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories } = props;
+    const [loading, setLoading] = React.useState(false);
+    const [refreshing, setRefreshing] = React.useState(false);
+    const {onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories} = props;
 
-     const version = formatDiscoveryVersion(discoveryVersion);
+    const version = formatDiscoveryVersion(discoveryVersion);
 
-     if (version >= '22.07.00') {
-          return (
-               <Box>
-                    {!loadAll ? (
-                         <Button
-                              isLoading={loading}
-                              size="md"
-                              colorScheme="primary"
-                              onPress={() => {
-                                   setLoading(true);
-                                   onLoadAllCategories(libraryUrl, patronId);
-                                   setTimeout(function () {
-                                        setLoading(false);
-                                   }, 5000);
-                              }}
-                              startIcon={<Icon as={MaterialIcons} name="schedule" size="sm" />}>
-                              {translate('browse_category.load_all_categories')}
-                         </Button>
-                    ) : null}
+    if (version >= '22.07.00') {
+        return (
+            <Box>
+                {!loadAll ? (
                     <Button
-                         size="md"
-                         mt="3"
-                         colorScheme="primary"
-                         onPress={() => {
-                              onPressSettings(libraryUrl, patronId);
-                         }}
-                         startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                         {translate('browse_category.manage_categories')}
+                        isLoading={loading}
+                        size="md"
+                        colorScheme="primary"
+                        onPress={() => {
+                            setLoading(true);
+                            onLoadAllCategories(libraryUrl, patronId);
+                            setTimeout(function () {
+                                setLoading(false);
+                            }, 5000);
+                        }}
+                        startIcon={<Icon as={MaterialIcons} name="schedule" size="sm"/>}>
+                        {translate('browse_category.load_all_categories')}
                     </Button>
-                    <Button
-                         isLoading={refreshing}
-                         size="md"
-                         mt="3"
-                         colorScheme="primary"
-                         onPress={() => {
-                              setRefreshing(true);
-                              onRefreshCategories();
-                              setTimeout(function () {
-                                   setRefreshing(false);
-                              });
-                         }}
-                         startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                         {translate('browse_category.refresh_categories')}
-                    </Button>
-               </Box>
-          );
-     }
-
-     return (
-          <Box>
-               <Button
-                    size="md"
-                    colorScheme="primary"
-                    onPress={() => {
-                         onPressSettings(libraryUrl, patronId);
-                    }}
-                    startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                    {translate('browse_category.manage_categories')}
-               </Button>
-               <Button
+                ) : null}
+                <Button
                     size="md"
                     mt="3"
                     colorScheme="primary"
                     onPress={() => {
-                         onRefreshCategories(libraryUrl);
+                        onPressSettings(libraryUrl, patronId);
                     }}
-                    startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
+                    startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>
+                    {translate('browse_category.manage_categories')}
+                </Button>
+                <Button
+                    isLoading={refreshing}
+                    size="md"
+                    mt="3"
+                    colorScheme="primary"
+                    onPress={() => {
+                        setRefreshing(true);
+                        onRefreshCategories();
+                        setTimeout(function () {
+                            setRefreshing(false);
+                        });
+                    }}
+                    startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>
                     {translate('browse_category.refresh_categories')}
-               </Button>
-          </Box>
-     );
+                </Button>
+            </Box>
+        );
+    }
+
+    return (
+        <Box>
+            <Button
+                size="md"
+                colorScheme="primary"
+                onPress={() => {
+                    onPressSettings(libraryUrl, patronId);
+                }}
+                startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>
+                {translate('browse_category.manage_categories')}
+            </Button>
+            <Button
+                size="md"
+                mt="3"
+                colorScheme="primary"
+                onPress={() => {
+                    onRefreshCategories(libraryUrl);
+                }}
+                startIcon={<Icon as={MaterialIcons} name="refresh" size="sm"/>}>
+                {translate('browse_category.refresh_categories')}
+            </Button>
+        </Box>
+    );
 };
