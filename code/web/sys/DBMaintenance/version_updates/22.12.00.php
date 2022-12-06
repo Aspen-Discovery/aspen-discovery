@@ -221,6 +221,14 @@ function getUpdates22_12_00(): array {
 			],
 		],
 		//greenhouse_rt_base_url
+		'author_authorities_index' => [
+			'title' => 'Author Authorities Index',
+			'description' => 'Add a new index for author authorities',
+			'sql' => [
+				'ALTER TABLE author_authority_alternative ADD INDEX(normalized)',
+			],
+		],
+		//author_authorities_index
 
 		//kirstien
 		'add_oauth_logout' => [

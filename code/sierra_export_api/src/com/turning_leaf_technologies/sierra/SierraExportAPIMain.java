@@ -993,7 +993,7 @@ public class SierraExportAPIMain {
 				return false;
 			}
 		}catch (Exception e){
-			logEntry.incErrors("Error in updateMarcAndRegroupRecordId processing bib from Sierra API", e);
+			logEntry.incErrors("Error in updateMarcAndRegroupRecordId processing bib " + id + " from Sierra API", e);
 			return false;
 		}
 		return true;
@@ -1150,79 +1150,17 @@ public class SierraExportAPIMain {
 
 	private static void updateMarcAndRegroupRecordIds(SierraInstanceInformation sierraInstanceInformation, String ids, ArrayList<String> idArray) {
 		try {
-//			JSONObject marcResults = null;
-//			if (allowFastExportMethod) {
-//				//Don't log errors since we get regular errors if we exceed the export rate.
-//				logger.debug("Loading marc records with fast method " + apiBaseUrl + "/bibs/marc?id=" + ids);
-//				marcResults = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/marc?id=" + ids, false);
-//			}
-//			if (marcResults != null && marcResults.has("file")){
-//				logger.debug("Got results with fast method");
-//				ArrayList<String> processedIds = new ArrayList<>();
-//				String dataFileUrl = marcResults.getString("file");
-//				String marcData = getMarcFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, dataFileUrl, false);
-//				if (marcData != null) {
-//					logger.debug("Got marc record file");
-//					//REad the MARC records from the Sierra API, should be UTF8, but not 100% sure
-//					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "UTF8");
-//					while (marcReader.hasNext()) {
-//						try {
-//							Record marcRecord = marcReader.next();
-//							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
-//							logEntry.setCurrentId(identifier.getIdentifier());
-//							//noinspection unused
-//							GroupedWorkIndexer.MarcStatus status = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
-//
-//							//Set up the grouped work for the record.  This will take care of either adding it to the proper grouped work
-//							//or creating a new grouped work
-//							String groupedWorkId = groupSierraRecord(marcRecord);
-//							if (groupedWorkId == null) {
-//								logger.warn(identifier.getIdentifier() + " was suppressed");
-//							} else {
-//								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-//							}
-//							String shortId = identifier.getIdentifier().substring(2, identifier.getIdentifier().length() - 1);
-//							processedIds.add(shortId);
-//							logEntry.incUpdated();
-//							logger.debug("Processed " + identifier.getIdentifier());
-//						} catch (MarcException mre) {
-//							logger.info("Error loading marc record from file, will load manually");
-//						} catch (Exception e) {
-//							logEntry.incErrors("Error reading marc record from file", e);
-//						}
-//					}
-//					for (String id : idArray){
-//						if (!processedIds.contains(id)){
-//							if (updateMarcAndRegroupRecordId(sierraInstanceInformation, id)) {
-//								logger.debug("Processed " + id);
-//								logEntry.incUpdated();
-//							}else{
-//								//Don't fail the entire process.  We will just reprocess next time the export runs
-//								logEntry.incErrors("Processing " + id + " failed");
-//								//allPass = false;
-//							}
-//						}
-//					}
-//				}else{
-//					logger.warn("Did not get MARC record for file");
-//				}
-//
-//			}else{
-//				logger.debug("No results with fast method available, loading with slow method");
-				//Don't need this message since it will happen regularly.
-				//logger.info("Error exporting marc records for " + ids + " marc results did not have a file");
-				for (String id : idArray) {
-					logger.debug("starting to process " + id);
-					if (!updateMarcAndRegroupRecordId(sierraInstanceInformation, id)){
-						//Don't fail the entire process.  We will just reprocess next time the export runs
-						logEntry.incErrors("Processing " + id + " failed");
-						//allPass = false;
-					}else{
-						logEntry.incUpdated();
-					}
+			for (String id : idArray) {
+				logger.debug("starting to process " + id);
+				if (!updateMarcAndRegroupRecordId(sierraInstanceInformation, id)){
+					//Don't fail the entire process.  We will just reprocess next time the export runs
+					logEntry.incErrors("Processing " + id + " failed");
+					//allPass = false;
+				}else{
+					logEntry.incUpdated();
 				}
-				logger.debug("finished processing " + idArray.size() + " records with the slow method");
-//			}
+			}
+			logger.debug("finished processing " + idArray.size() + " records with the slow method");
 		}catch (Exception e){
 			logger.error("Error processing newly created bibs", e);
 		}

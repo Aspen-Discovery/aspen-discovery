@@ -55,20 +55,20 @@ class GroupedWork implements Cloneable {
 			try {
 				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
 				String fullTitle = getAuthoritativeTitle();
-				if (fullTitle.equals("")){
+				if (fullTitle.length() == 0){
 					idGenerator.update("--null--".getBytes());
 				}else{
 					idGenerator.update(fullTitle.getBytes());
 				}
 
-				String authoritativeAuthor = getAuthoritativeAuthor();
-				//TODO: Delete this if block
-				if (!authoritativeAuthor.equals(this.author)){
-					logger.warn("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
-				}
-				if (author.equals("")){
+				if (author.length() == 0){
 					idGenerator.update("--null--".getBytes());
 				}else{
+					String authoritativeAuthor = getAuthoritativeAuthor();
+					//TODO: Delete this if block
+					if (!authoritativeAuthor.equals(this.author)){
+						logger.debug("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
+					}
 					idGenerator.update(authoritativeAuthor.getBytes());
 				}
 				if (groupingCategory.equals("")){

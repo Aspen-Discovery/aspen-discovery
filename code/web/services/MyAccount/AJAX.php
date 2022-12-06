@@ -351,17 +351,39 @@ class MyAccount_AJAX extends JSON_Action {
 			} else {
 				if ($user->disableAccountLinking == 0) {
 					$success = $user->accountLinkingToggle();
-					$result = [
-						'success' => $success,
-						'title' => translate([
-							'text' => 'Linking Disabled',
-							'isPublicFacing' => true,
-						]),
-						'message' => translate([
-							'text' => 'Account linking has been disabled',
-							'isPublicFacing' => true,
-						]),
-					];
+					global $librarySingleton;
+					// Get Library Settings from the home library of the current user-account being displayed
+					$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
+					if ($patronHomeLibrary->allowPinReset == 1) {
+						$result = [
+							'success' => $success,
+							'title' => translate([
+								'text' => 'Linking Disabled',
+								'isPublicFacing' => true,
+							]),
+							'message' => translate([
+								'text' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Would you like to change your password?',
+								'isPublicFacing' => true,
+							]),
+							'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.redirectPinReset(); return false;'>" . translate([
+									'text' => "Request PIN Change",
+									'isPublicFacing' => true,
+								]) . "</span>",
+						];
+					} else {
+						$result = [
+							'success' => $success,
+							'title' => translate([
+								'text' => 'Linking Disabled',
+								'isAdminFacing' => 'true',
+							]),
+							'message' => translate([
+								'text' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+								'isPublicFacing' => true,
+							]),
+						];
+
+					}
 				} else {
 					$result = [
 						'success' => false,
