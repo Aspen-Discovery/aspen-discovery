@@ -268,7 +268,7 @@ public class KohaExportMain {
 								if (authorAuthorityId != 0) {
 									for (String alternativeName : alternativeNames) {
 										addAlternativeNameStmt.setLong(1, authorAuthorityId);
-										addAlternativeNameStmt.setString(2, alternativeName);
+										addAlternativeNameStmt.setString(2, AspenStringUtils.trimTo(512, alternativeName));
 										addAlternativeNameStmt.executeUpdate();
 									}
 								}else{
