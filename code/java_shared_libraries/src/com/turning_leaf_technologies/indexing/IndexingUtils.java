@@ -679,7 +679,7 @@ public class IndexingUtils {
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
 					//logger.info(line);
-					if (line.matches(".*" + indexerName + "\\.jar " + serverName) && !line.contains("/bin/sh -c")){
+					if (line.matches(".*" + indexerName + "\\.jar " + serverName) && !line.contains("/bin/sh -c") && !line.contains("runuser")){
 						logger.warn(line);
 						numInstancesRunning++;
 					}
