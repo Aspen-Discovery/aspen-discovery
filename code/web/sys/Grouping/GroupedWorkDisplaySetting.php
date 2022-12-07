@@ -181,8 +181,9 @@ class GroupedWorkDisplaySetting extends DataObject {
 							'showSearchTools' => [
 								'property' => 'showSearchTools',
 								'type' => 'checkbox',
-								'label' => 'Show Search Tools',
+								'label' => 'Enable Search Tools',
 								'description' => 'Turn on to activate search tools (save search, export to excel, rss feed, etc).',
+								'onchange' => 'return AspenDiscovery.Admin.updateGroupedWorkDisplayFields();',
 								'hideInLists' => true,
 							],
 							'showSearchToolsAtTop' => [
