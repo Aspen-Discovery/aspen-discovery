@@ -724,9 +724,9 @@ class UserAccount {
 			global $interface;
 			$interface->assign('loggedIn', false);
 
-			global $logger;
-			$logger->log('Finished updating session as part of softLogout, will write on shutdown', Logger::LOG_DEBUG);
-			$logger->log(print_r($_SESSION, true), Logger::LOG_DEBUG);
+			//global $logger;
+			//$logger->log('Finished updating session as part of softLogout, will write on shutdown', Logger::LOG_DEBUG);
+			//$logger->log(print_r($_SESSION, true), Logger::LOG_DEBUG);
 		}
 	}
 
