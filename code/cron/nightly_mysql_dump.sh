@@ -35,11 +35,7 @@ if [[ $# -eq 0 ]]; then
 else
 ASPENSERVER=$1
 
-if [[ $# -eq 2 ]]; then
-	DBNAME=$2
-else
-	DBNAME="aspen"
-fi
+DBNAME=${2:-aspen}
 echo "Dumping $DBNAME database"
 
 #-------------------------------------------------------------------------
@@ -58,8 +54,19 @@ fi
 echo "Dumping to $DUMPFOLDER"
 
 DATABASES="$DBNAME"
-DUMPOPT1="--defaults-file=/etc/my.cnf --events"
-DUMPOPT2="--defaults-file=/etc/my.cnf --events --single-transaction"
+
+DEF=/etc/my.cnf
+if [ ! -e "$DEF" ]
+then
+  DEF=/etc/mysql/mariadb.conf.d/60-aspen.cnf
+  if [ ! -e "$DEF" ]
+  then
+    echo "Defaults file not found!"
+    exit 1
+  fi
+fi
+DUMPOPT1="--defaults-file=$DEF --events"
+DUMPOPT2="--defaults-file=$DEF --events --single-transaction"
 
 #-------------------------------------------------------------------------
 # main loop
