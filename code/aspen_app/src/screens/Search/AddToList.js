@@ -8,7 +8,8 @@ import Modal from 'react-native-modal';
 import { translate } from '../../translations/translations';
 import { PATRON } from '../../util/loadPatron';
 import { addTitlesToList, createListFromTitle, getLists } from '../../util/api/list';
-import { LibrarySystemContext } from '../../context/initialContext';
+import { LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { refreshProfile } from '../../util/api/user';
 
 export const AddToList = (props) => {
      const item = props.itemId;
@@ -17,6 +18,7 @@ export const AddToList = (props) => {
      const [screen, setScreen] = React.useState('add-new');
      const [loading, setLoading] = React.useState(false);
      const { library } = React.useContext(LibrarySystemContext);
+     const { updateUser } = React.useContext(UserContext);
      const lists = PATRON.lists;
      const [listId, setListId] = useState();
      const [description, saveDescription] = useState();
@@ -30,12 +32,15 @@ export const AddToList = (props) => {
           }
      };
 
-     const updateLastListUsed = (id) => {
+     const updateLastListUsed = async (id) => {
           getLists(library.baseUrl).then((result) => {
                console.log('updated patron.lists');
                PATRON.lists = result;
                PATRON.listLastUsed = id;
                setListId(id);
+          });
+          await refreshProfile(library.baseUrl).then((result) => {
+               updateUser(result);
           });
      };
 
@@ -184,8 +189,7 @@ export const AddToList = (props) => {
                                                        onPress={() => {
                                                             setLoading(true);
                                                             addTitlesToList(listId, item, library.baseUrl).then((res) => {
-                                                                 PATRON.listLastUsed = listId;
-                                                                 setListId(listId);
+                                                                 updateLastListUsed(listId);
                                                                  setLoading(false);
                                                                  setOpen(false);
                                                             });
@@ -296,10 +300,7 @@ export const AddToList = (props) => {
                                                   onPress={() => {
                                                        setLoading(true);
                                                        createListFromTitle(title, description, isPublic, item, library.baseUrl).then((res) => {
-                                                            console.log(res.listId);
                                                             updateLastListUsed(res.listId);
-                                                            PATRON.listLastUsed = res.listId;
-                                                            setListId(res.listId);
                                                             setOpen(false);
                                                             setLoading(false);
                                                             setScreen('add-new');

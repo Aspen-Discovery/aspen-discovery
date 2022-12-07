@@ -238,8 +238,8 @@
 						</div>
 					</div>
 				</div>
+				{/if}
 			</div>
-			{/if}
 
 			{if $allowMasqueradeMode && !$masqueradeMode}
 				{if $canMasquerade}
