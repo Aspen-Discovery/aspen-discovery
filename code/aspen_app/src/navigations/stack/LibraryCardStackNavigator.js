@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 
-import { MyLibraryCardTemp } from '../../screens/MyAccount/MyLibraryCard';
+import { MyLibraryCard } from '../../screens/MyAccount/MyLibraryCard';
 import { translate } from '../../translations/translations';
 import { LibrarySystemContext } from '../../context/initialContext';
 
@@ -16,7 +16,7 @@ const LibraryCardStackNavigator = () => {
                }}>
                <Stack.Screen
                     name="LibraryCard"
-                    component={MyLibraryCardTemp}
+                    component={MyLibraryCard}
                     options={{ title: translate('user_profile.library_card') }}
                     initialParams={{
                          libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
