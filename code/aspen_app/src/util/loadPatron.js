@@ -99,10 +99,11 @@ export async function reloadProfile() {
      }
 }
 
-export async function getILSMessages() {
+export async function getILSMessages(url) {
+     let baseUrl = url ?? LIBRARY.url;
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: baseUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -110,7 +111,6 @@ export async function getILSMessages() {
      const response = await api.post('/UserAPI?method=getILSMessages', postBody);
      if (response.ok) {
           let messages = [];
-
           if (response.data.result.messages) {
                messages = response.data.result.messages;
                PATRON.messages = messages;

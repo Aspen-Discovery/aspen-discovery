@@ -413,7 +413,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>" . translate([
+			'modalButtons' => "<span class='tool btn btn-primary' id = 'AddAccountSubmit' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>" . translate([
 					'text' => "Add Account",
 					'isPublicFacing' => true,
 				]) . "</span>",
