@@ -22,7 +22,7 @@
 			{* Show Fine Alert when the user has no linked accounts *}
 			{if count($userFines) == 1 && $profile->_fines}
 				<div class="alert alert-info">
-					{translate text="Your account has <strong>%1%</strong> in fines." 1=$profile->_fines isPublicFacing=true}
+					{translate text="Your account has <strong>%1%</strong> in fines." 1=$profile->_fines inAttribute=true isPublicFacing=true}
 				</div>
 			{/if}
 
