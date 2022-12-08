@@ -36,13 +36,13 @@ class BrowseCategoryGroupEntry extends DataObject {
 			$browseCategories->find();
 			$browseCategoryList = [];
 			while ($browseCategories->fetch()) {
-				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})";
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})". " - $browseCategories->id";
 			}
 		} elseif (UserAccount::userHasPermission('Administer All Browse Categories')) {
 			$browseCategories->find();
 			$browseCategoryList = [];
 			while ($browseCategories->fetch()) {
-				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})";
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})". " - $browseCategories->id";
 			}
 		}
 		return [
