@@ -61,7 +61,13 @@ class UserAPI extends Action {
 					'setNotificationPreference',
 					'getNotificationPreferences',
 					'updateBrowseCategoryStatus',
-					'removeViewerAccount'
+					'removeViewerAccount',
+					'getPatronReadingHistory',
+					'updatePatronReadingHistory',
+					'optIntoReadingHistory',
+					'optOutOfReadingHistory',
+					'deleteAllFromReadingHistory',
+					'deleteSelectedFromReadingHistory'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
