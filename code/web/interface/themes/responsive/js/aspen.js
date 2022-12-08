@@ -12290,6 +12290,7 @@ AspenDiscovery.Record = (function(){
 			var requestTitleButton = $('#requestTitleButton');
 			requestTitleButton.prop('disabled', true);
 			requestTitleButton.addClass('disabled');
+
 			document.querySelector('.fa-spinner').classList.remove('hidden');
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
@@ -12330,12 +12331,17 @@ AspenDiscovery.Record = (function(){
 			}
 			params = this.loadHoldNotificationOptions(params);
 
+			$("#placeHoldForm").hide();
+			$("#placingHoldMessage").show();
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
 						var requestTitleButton = $('#requestTitleButton');
 						requestTitleButton.prop('disabled', false);
 						requestTitleButton.removeClass('disabled');
+
+						$("#placeHoldForm").show();
+						$("#placingHoldMessage").hide();
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else if (data.needsIllRequest){
@@ -12395,6 +12401,11 @@ AspenDiscovery.Record = (function(){
 		},
 
 		placeVolumeHold: function(){
+			var requestTitleButton = $('#requestTitleButton');
+			requestTitleButton.prop('disabled', true);
+			requestTitleButton.addClass('disabled');
+			document.querySelector('.fa-spinner').classList.remove('hidden');
+
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
 			var module = $('#module').val();
@@ -12429,12 +12440,18 @@ AspenDiscovery.Record = (function(){
 				}
 			}
 			params = this.loadHoldNotificationOptions(params);
+
+			$("#placeHoldForm").hide();
+			$("#placingHoldMessage").show();
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
 						var requestTitleButton = $('#requestTitleButton');
 						requestTitleButton.prop('disabled', false);
 						requestTitleButton.removeClass('disabled');
+
+						$("#placeHoldForm").show();
+						$("#placingHoldMessage").hide();
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else if (data.needsIllRequest){
