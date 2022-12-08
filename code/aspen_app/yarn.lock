@@ -5212,6 +5212,13 @@ expo-asset@~8.6.1:
     path-browserify "^1.0.0"
     url-parse "^1.5.9"
 
+expo-brightness@~10.3.0:
+  version "10.3.0"
+  resolved "https://registry.yarnpkg.com/expo-brightness/-/expo-brightness-10.3.0.tgz#ecd0d47fac18e5a09b92ad9bd4f6f250a4b1b5d3"
+  integrity sha512-aAA4lZCxXs5GwAOAOFVErpKYPUI0Hfcb3mg7FxC1nYmeSmaL1gs4HW5ZZKiAa6blismSJIDjSEk2UchbMAnNhw==
+  dependencies:
+    "@expo/config-plugins" "~5.0.0"
+
 expo-cached-image@47.0.0:
   version "47.0.0"
   resolved "https://registry.yarnpkg.com/expo-cached-image/-/expo-cached-image-47.0.0.tgz#bc616145186e1cb41a26d4a6976058f4c9fdcfd4"
@@ -5400,6 +5407,13 @@ expo-random@~12.3.0:
   integrity sha512-q+AsTfGNT+Q+fb2sRrYtRkI3g5tV4H0kuYXM186aueILGO/vLn/YYFa7xFZj1IZ8LJZg2h96JDPDpsqHfRG2mQ==
   dependencies:
     base64-js "^1.3.0"
+
+expo-screen-orientation@~4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-4.3.0.tgz#8504e10ae978c44c31fe891d1c0e058dadae4eba"
+  integrity sha512-jMLjkhft5aJSkdoKjb1HiLlf73gpsfI54L//uPvPuuwsPq3FMHwAnkDesY8XIZdZqw+exrK/SMbDAEryMJ45kg==
+  dependencies:
+    "@expo/config-plugins" "~5.0.0"
 
 expo-secure-store@~11.3.0:
   version "11.3.0"
@@ -8829,6 +8843,11 @@ react-native-ratings@^8.1.0:
   integrity sha512-+QOJ4G3NjVkI1D+tk4EGx1dCvVfbD2nQdkrj9cXrcAoEiwmbep4z4bZbCKmWMpQ5h2dqbxABU8/eBnbDmvAc3g==
   dependencies:
     lodash "^4.17.15"
+
+react-native-reanimated-carousel@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/react-native-reanimated-carousel/-/react-native-reanimated-carousel-3.1.5.tgz#9737071fb06137632bd3dc7e92e75eeaf7de17a2"
+  integrity sha512-s3+Qoaajpic6u4npfqLHZeIDG8G1jbBSf5fCf0gRioWCiSNw8+1kzvfU9kB5knY10XCYTksMZ0eJfi8EqEvWEw==
 
 react-native-reanimated@~2.9.1:
   version "2.9.1"

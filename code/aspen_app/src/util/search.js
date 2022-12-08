@@ -79,9 +79,10 @@ export async function getDefaultFacets(url, limit = 5) {
      }
 }
 
-export async function getSearchResults(searchTerm, pageSize = 25, page) {
+export async function getSearchResults(searchTerm, pageSize = 25, page, url) {
+     let baseUrl = url ?? LIBRARY.url;
      const discovery = create({
-          baseURL: LIBRARY.url,
+          baseURL: baseUrl,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
