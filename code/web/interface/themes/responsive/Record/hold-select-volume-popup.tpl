@@ -117,9 +117,14 @@
 					<div id="volumeSelection" class="form-group" {if !$majorityOfItemsHaveVolumes}style="display: none" {/if}>
 						<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume" isPublicFacing=true}">
 							{foreach from=$volumes item=volume}
-								<option value="{$volume->volumeId}">{$volume->displayLabel}</option>
+								<option value="{$volume->volumeId}">{$volume->displayLabel} {if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()}*{/if}</option>
 							{/foreach}
 						</select>
+						{if $alwaysPlaceVolumeHoldWhenVolumesArePresent}
+							<span id="subdomainHelpBlock" class="help-block" style="margin-top:0">
+								<small class="text-warning"><i class="fas fa-exclamation-triangle"></i>{translate text="Volumes marked with a * have titles owned by this library." isPublicFacing=true}</small>
+							</span>
+						{/if}
 					</div>
 
 					{if $showHoldCancelDate == 1}

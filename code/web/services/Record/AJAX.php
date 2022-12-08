@@ -508,8 +508,8 @@ class Record_AJAX extends Action {
 					$numItemsWithoutVolumes++;
 				} else {
 					if ($item->libraryOwned || $item->locallyOwned) {
-						if (array_key_exists($item->volume, $volumeData)) {
-							$volumeData[$item->volume]->setHasLocalItems(true);
+						if (array_key_exists($item->volumeId, $volumeData)) {
+							$volumeData[$item->volumeId]->setHasLocalItems(true);
 						}
 					}
 					$numItemsWithVolumes++;
@@ -526,7 +526,7 @@ class Record_AJAX extends Action {
 			if ($numItemsWithoutVolumes > 0 && $alwaysPlaceVolumeHoldWhenVolumesArePresent) {
 				$blankVolume = new IlsVolumeInfo();
 				$blankVolume->displayLabel = translate([
-					'text' => '*',
+					'text' => 'Untitled Volume',
 					'isPublicFacing' => true,
 				]);
 				$blankVolume->volumeId = '';
@@ -534,10 +534,10 @@ class Record_AJAX extends Action {
 				$blankVolume->relatedItems = '';
 				$blankVolume->setHasLocalItems(false);
 				foreach ($relatedRecord->getItems() as $item) {
-					if ($item->libraryOwned || $item->locallyOwned) {
-						$blankVolume->setHasLocalItems(true);
-					}
-					if (empty($item->volume)) {
+					if (empty($item->volumeId)) {
+						if ($item->libraryOwned || $item->locallyOwned) {
+							$blankVolume->setHasLocalItems(true);
+						}
 						$blankVolume->relatedItems .= $item->itemId . '|';
 					}
 				}
