@@ -290,6 +290,21 @@ function getUpdates22_12_00(): array {
 			],
 		],
 		//user_message_addendum
+		'records_to_exclude_increase_length_to_400' => [
+			'title' => 'Increase the length of records to exclude',
+			'description' => 'Make records to exclude fields longer',
+			'sql' => [
+				"ALTER TABLE library_records_owned CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_owned CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(400) NOT NULL DEFAULT ''",
+			],
+		],
+		//records_to_exclude_increase_length_to_400
 
 		//other
 	];
