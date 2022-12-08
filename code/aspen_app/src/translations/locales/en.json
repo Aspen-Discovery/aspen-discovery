@@ -39,7 +39,10 @@
     "updating": "Updating",
     "reset": "Reset",
     "reset_all": "Reset All",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "previous": "Previous",
+    "next": "Next",
+    "loading": "Loading..."
   },
   "login": {
     "select_your_library": "Select Your Library",
