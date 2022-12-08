@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import moment from 'moment';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Center, Flex, Image, Text, Box, Badge, View } from 'native-base';
+import { Center, Flex, Image, Text, Box, useColorModeValue, useContrastText, useToken, Pressable, Button } from 'native-base';
 import React, { Component } from 'react';
 import Barcode from 'react-native-barcode-expo';
 import Carousel from 'react-native-reanimated-carousel';
@@ -101,8 +101,8 @@ export const MyLibraryCard = () => {
                const update = async () => {
                     await getLinkedAccounts(library.baseUrl).then((result) => {
                          if (accounts !== result) {
-                              //updateLinkedAccounts(result);
-                              //updateCards();
+                              updateLinkedAccounts(result);
+                              updateCards();
                          }
                          setLoading(false);
                     });
@@ -242,15 +242,17 @@ const CreateLibraryCard = (data) => {
 };
 
 const CardCarousel = (data) => {
+     const [currentIndex, setCurrentIndex] = React.useState(0);
      const cards = _.sortBy(data.cards, ['key']);
      const isVertical = data.orientation;
      const screenWidth = Dimensions.get('window').width;
      const progressValue = useSharedValue(0);
+     const ref = React.useRef();
 
      let baseOptions = {
           vertical: false,
           width: screenWidth,
-          height: screenWidth * 2.5,
+          height: screenWidth * 0.9,
      };
 
      if (isVertical) {
@@ -263,7 +265,7 @@ const CardCarousel = (data) => {
 
      const PaginationItem = (props) => {
           const { animValue, index, length, card, isRotate } = props;
-          const width = 80;
+          const width = 100;
 
           const animStyle = useAnimatedStyle(() => {
                let inputRange = [index - 1, index, index + 1];
@@ -284,49 +286,46 @@ const CardCarousel = (data) => {
           }, [animValue, index, length]);
 
           return (
-               <View
-                    style={{
-                         width,
-                         height: width * 1.5,
-                         overflow: 'hidden',
-                         transform: [
-                              {
-                                   rotateZ: isRotate ? '90deg' : '0deg',
-                              },
-                         ],
+               <Button
+                    size="xs"
+                    mr={1}
+                    mb={1}
+                    colorScheme="tertiary"
+                    variant={index === currentIndex ? 'solid' : 'outline'}
+                    onPress={() => {
+                         ref.current.scrollTo({ index: index, animated: true });
                     }}>
-                    <Animated.View
-                         style={[
-                              {
-                                   backgroundColor: 'black',
-                                   flex: 1,
-                              },
-                              animStyle,
-                         ]}
-                    />
-                    <Badge>{card.displayName}</Badge>
-               </View>
+                    {card.displayName}
+               </Button>
           );
      };
 
      if (_.size(cards) === 1) {
           const card = cards[0];
           return (
-               <Box justifyContent="center" alignItems="center" flex={1} px={3} alignContent="center">
+               <Box
+                    p={5}
+                    flex={1}
+                    alignItems="center"
+                    style={{
+                         transform: [{ scale: 0.8 }],
+                    }}>
                     <CreateLibraryCard key={0} card={card} />
                </Box>
           );
      }
 
      return (
-          <Box alignItems="center" flex={1} px={3}>
+          <Box alignItems="center" px={3}>
                <Carousel
                     {...baseOptions}
+                    ref={ref}
                     pagingEnabled={true}
                     snapEnabled={true}
                     autoPlay={false}
                     mode="parallax"
                     onProgressChange={(_, absoluteProgress) => (progressValue.value = absoluteProgress)}
+                    onSnapToItem={(index) => setCurrentIndex(index)}
                     modeConfig={{
                          parallaxScrollingScale: 0.9,
                          parallaxScrollingOffset: 50,
@@ -335,11 +334,11 @@ const CardCarousel = (data) => {
                     renderItem={({ item, index }) => <CreateLibraryCard key={index} card={item} />}
                />
                {!!progressValue && (
-                    <View>
+                    <Box flexDirection="row" flexWrap="wrap" alignContent="center" alignSelf="center" maxWidth="100%" justifyContent="center">
                          {cards.map((card, index) => {
                               return <PaginationItem card={card} animValue={progressValue} index={index} key={index} isRotate={isVertical} length={cards.length} />;
                          })}
-                    </View>
+                    </Box>
                )}
           </Box>
      );
