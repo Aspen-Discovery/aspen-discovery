@@ -7,6 +7,7 @@ import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/nativ
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { clearListTitles, deleteList, editList, getListDetails, getLists } from '../../../util/api/list';
 import { reloadProfile } from '../../../util/api/user';
+import { translate } from '../../../translations/translations';
 
 const EditList = (props) => {
      const { data, listId } = props;
@@ -40,7 +41,7 @@ const EditList = (props) => {
           <Center>
                <Button.Group size="sm" justifyContent="center" pb={5}>
                     <Button onPress={() => setShowModal(true)} leftIcon={<Icon as={MaterialIcons} name="edit" size="xs" />}>
-                         Edit
+                         {translate('general.edit')}
                     </Button>
                     <DeleteList listId={listId} />
                </Button.Group>
@@ -48,19 +49,21 @@ const EditList = (props) => {
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
-                              <Heading size="sm">Edit {data.title}</Heading>
+                              <Heading size="sm">
+                                   {translate('general.edit')} {data.title}
+                              </Heading>
                          </Modal.Header>
                          <Modal.Body>
                               <FormControl pb={5}>
-                                   <FormControl.Label>Name</FormControl.Label>
+                                   <FormControl.Label>{translate('general.title')}</FormControl.Label>
                                    <Input id="title" defaultValue={data.title} autoComplete="off" onChangeText={(text) => setTitle(text)} />
                               </FormControl>
                               <FormControl pb={5}>
-                                   <FormControl.Label>Description</FormControl.Label>
+                                   <FormControl.Label>{translate('general.description')}</FormControl.Label>
                                    <TextArea id="description" defaultValue={data.description} autoComplete="off" onChangeText={(text) => setDescription(text)} />
                               </FormControl>
                               <FormControl>
-                                   <FormControl.Label>Access</FormControl.Label>
+                                   <FormControl.Label>{translate('general.access')}</FormControl.Label>
                                    <Radio.Group
                                         value={isPublic}
                                         onChange={(nextValue) => {
@@ -68,10 +71,10 @@ const EditList = (props) => {
                                         }}>
                                         <Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px">
                                              <Radio value={false} my={1}>
-                                                  Private
+                                                  {translate('general.private')}
                                              </Radio>
                                              <Radio value={true} my={1}>
-                                                  Public
+                                                  {translate('general.public')}
                                              </Radio>
                                         </Stack>
                                    </Radio.Group>
@@ -80,11 +83,11 @@ const EditList = (props) => {
                          <Modal.Footer>
                               <Button.Group>
                                    <Button variant="outline" onPress={() => setShowModal(false)}>
-                                        Cancel
+                                        {translate('general.cancel')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText="Saving..."
+                                        isLoadingText={translate('general.saving')}
                                         onPress={() => {
                                              setLoading(true);
                                              editList(data.id, title, description, isPublic, library.baseUrl).then((r) => {
@@ -95,7 +98,7 @@ const EditList = (props) => {
                                                   setShowModal(false);
                                              });
                                         }}>
-                                        Save
+                                        {translate('general.save')}
                                    </Button>
                               </Button.Group>
                          </Modal.Footer>

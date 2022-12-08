@@ -51,8 +51,8 @@ export default class GroupedWork extends Component {
 
      authorSearch = (author, libraryUrl) => {
           const { navigation } = this.props;
-          navigation.navigate('HomeTab', {
-               screen: 'SearchByAuthor',
+          navigation.navigate('SearchTab', {
+               screen: 'SearchResults',
                params: {
                     term: author,
                     libraryUrl: libraryUrl,

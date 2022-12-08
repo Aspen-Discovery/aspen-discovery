@@ -2428,7 +2428,7 @@ class User extends DataObject {
 				]);
 				$userMessage->action1 = "return AspenDiscovery.Account.allowAccountLink()";
 				$userMessage->action2Title = translate([
-					'text' => "No",
+					'text' => "Manage Linked Accounts",
 					'isPublicFacing' => true,
 				]);
 				$userMessage->action2 = "return AspenDiscovery.Account.redirectLinkedAccounts()";

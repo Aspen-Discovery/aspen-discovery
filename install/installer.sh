@@ -78,6 +78,7 @@ echo -e "ServerSignature Off \nServerTokens Prod" >> /etc/httpd/conf/httpd.conf
 # configure mod evasive
 yum install mod_evasive -y
 cp mod_evasive.conf /etc/httpd/conf.d/mod_evasive.conf
+mdir /var/log/mod_evasive
 
 #configure mod security
 yum install mod_security -y

@@ -1,7 +1,4 @@
 <div class="col-xs-12">
-	{if $title}
-		<h1>{$title}</h1>
-	{/if}
 	{foreach from=$rows item=row}
 		{if $row->colorScheme == 'default'}
 			{assign var="rowBackgroundColor" value='default'}

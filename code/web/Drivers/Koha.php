@@ -3530,7 +3530,8 @@ class Koha extends AbstractIlsDriver {
 			$apiUrl = $this->getWebServiceURL() . '/api/v1/patrons';
 			$postParams = [
 				'userid' => $ssoUser['cat_username'],
-				'firstname' => $ssoUser['lastname'],
+				'cardnumber' => $ssoUser['cat_username'],
+				'firstname' => $ssoUser['firstname'],
 				'surname' => $ssoUser['lastname'],
 				'email' => $ssoUser['email'],
 				'address' => 'UNKNOWN',

@@ -1,20 +1,20 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { CommonActions } from '@react-navigation/native';
+import {MaterialIcons} from '@expo/vector-icons';
+import {CommonActions} from '@react-navigation/native';
 import _ from 'lodash';
-import { Badge, Box, Button, Center, Container, Heading, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList } from 'native-base';
+import {Badge, Box, Button, Center, Container, Heading, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList} from 'native-base';
 import * as React from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import {SafeAreaView, ScrollView} from 'react-native';
 
 // custom components and helper files
-import { loadError } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { translate } from '../../translations/translations';
-import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
-import { getSearchResults, resetSearchGlobals, SEARCH, searchResults } from '../../util/search';
-import { AddToList } from './AddToList';
-import { getLists } from '../../util/api/list';
-import { PATRON } from '../../util/loadPatron';
-import { LibrarySystemContext } from '../../context/initialContext';
+import {loadError} from '../../components/loadError';
+import {loadingSpinner} from '../../components/loadingSpinner';
+import {translate} from '../../translations/translations';
+import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
+import {getSearchResults, resetSearchGlobals, SEARCH, searchResults} from '../../util/search';
+import {AddToList} from './AddToList';
+import {getLists} from '../../util/api/list';
+import {PATRON} from '../../util/loadPatron';
+import {LibrarySystemContext} from '../../context/initialContext';
 
 export default class Results extends React.Component {
      constructor(props) {
@@ -56,7 +56,7 @@ export default class Results extends React.Component {
 
      componentDidMount = async () => {
           this._isMounted = true;
-          const { navigation } = this.props;
+          const {navigation} = this.props;
           const routes = navigation.getState()?.routes;
 
           const discovery = formatDiscoveryVersion(this.context.library.discoveryVersion);
@@ -66,8 +66,10 @@ export default class Results extends React.Component {
                version: discovery,
           });
           const prevRoute = routes[routes.length - 2];
-          if (prevRoute['name'] === 'SearchScreen') {
-               resetSearchGlobals();
+          if (!_.isUndefined(prevRoute)) {
+               if (prevRoute['name'] === 'SearchScreen') {
+                    resetSearchGlobals();
+               }
           }
 
           if (this._isMounted) {
@@ -88,7 +90,7 @@ export default class Results extends React.Component {
      };
 
      async componentDidUpdate(prevProps, prevState) {
-          if (prevProps.route.params?.pendingParams !== this.props.route.params?.pendingParams) {
+          if ((prevProps.route.params?.pendingParams !== this.props.route.params?.pendingParams) || (prevProps.route.params?.term !== this.props.route.params?.term)) {
                if (this.state.version >= '22.11.00') {
                     this.setState({
                          isLoading: true,
@@ -109,6 +111,7 @@ export default class Results extends React.Component {
                     await this.startSearch(true, false);
                }
           }
+
      }
 
      componentWillUnmount() {
@@ -139,7 +142,7 @@ export default class Results extends React.Component {
 
      // search function for discovery 22.11.x or newer
      startSearch = async (isUpdated = false, freshSearch = true) => {
-          const { route } = this.props;
+          const {route} = this.props;
           const givenSearch = route.params?.term ?? '%20';
           let page = this.state.page;
           if (isUpdated) {
@@ -225,8 +228,8 @@ export default class Results extends React.Component {
 
      // search function for discovery 22.10.x or earlier
      _fetchResults = async () => {
-          const { page } = this.state;
-          const { route } = this.props;
+          const {page} = this.state;
+          const {route} = this.props;
           const givenSearch = route.params?.term ?? '%20';
           const libraryUrl = this.context.library.baseUrl;
           const searchTerm = givenSearch.replace(/" "/g, '%20');
@@ -277,127 +280,127 @@ export default class Results extends React.Component {
      _handleLoadMore = () => {
           if (this._isMounted) {
                this.setState(
-                    (prevState, nextProps) => ({
-                         page: prevState.page + 1,
-                         isLoadingMore: true,
-                    }),
-                    () => {
-                         if (LIBRARY.version >= '22.11.00') {
-                              this.startSearch(false, false);
-                         } else {
-                              this._fetchResults();
-                         }
-                    }
+                   (prevState, nextProps) => ({
+                        page: prevState.page + 1,
+                        isLoadingMore: true,
+                   }),
+                   () => {
+                        if (LIBRARY.version >= '22.11.00') {
+                             this.startSearch(false, false);
+                        } else {
+                             this._fetchResults();
+                        }
+                   }
                );
           }
      };
 
      renderItem = (item, library) => {
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library, item.title)}>
-                    <HStack space={3}>
-                         <VStack>
-                              <Image
-                                   source={{ uri: item.image }}
-                                   alt={item.title}
-                                   borderRadius="md"
-                                   size={{
-                                        base: '90px',
-                                        lg: '120px',
-                                   }}
-                              />
-                              <Badge
-                                   mt={1}
-                                   _text={{
-                                        fontSize: 10,
-                                        color: 'coolGray.600',
-                                   }}
-                                   bgColor="warmGray.200"
-                                   _dark={{
-                                        bgColor: 'coolGray.900',
-                                        _text: { color: 'warmGray.400' },
-                                   }}>
-                                   {item.language}
-                              </Badge>
-                              <AddToList itemId={item.key} btnStyle="sm" />
-                         </VStack>
-                         <VStack w="65%">
-                              <Text
-                                   _dark={{ color: 'warmGray.50' }}
-                                   color="coolGray.800"
-                                   bold
-                                   fontSize={{
-                                        base: 'md',
-                                        lg: 'lg',
-                                   }}>
-                                   {item.title}
-                              </Text>
-                              {item.author ? (
-                                   <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                        {translate('grouped_work.by')} {item.author}
-                                   </Text>
-                              ) : null}
-                              <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                                   {item.itemList.map((item, i) => {
-                                        return (
-                                             <Badge key={i} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                                  {item.name}
-                                             </Badge>
-                                        );
-                                   })}
-                              </Stack>
-                         </VStack>
-                    </HStack>
-               </Pressable>
+              <Pressable borderBottomWidth="1" _dark={{borderColor: 'gray.600'}} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key, library, item.title)}>
+                   <HStack space={3}>
+                        <VStack>
+                             <Image
+                                 source={{uri: item.image}}
+                                 alt={item.title}
+                                 borderRadius="md"
+                                 size={{
+                                      base: '90px',
+                                      lg: '120px',
+                                 }}
+                             />
+                             <Badge
+                                 mt={1}
+                                 _text={{
+                                      fontSize: 10,
+                                      color: 'coolGray.600',
+                                 }}
+                                 bgColor="warmGray.200"
+                                 _dark={{
+                                      bgColor: 'coolGray.900',
+                                      _text: {color: 'warmGray.400'},
+                                 }}>
+                                  {item.language}
+                             </Badge>
+                             <AddToList itemId={item.key} btnStyle="sm"/>
+                        </VStack>
+                        <VStack w="65%">
+                             <Text
+                                 _dark={{color: 'warmGray.50'}}
+                                 color="coolGray.800"
+                                 bold
+                                 fontSize={{
+                                      base: 'md',
+                                      lg: 'lg',
+                                 }}>
+                                  {item.title}
+                             </Text>
+                             {item.author ? (
+                                 <Text _dark={{color: 'warmGray.50'}} color="coolGray.800">
+                                      {translate('grouped_work.by')} {item.author}
+                                 </Text>
+                             ) : null}
+                             <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                                  {item.itemList.map((item, i) => {
+                                       return (
+                                           <Badge key={i} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{fontSize: 12}}>
+                                                {item.name}
+                                           </Badge>
+                                       );
+                                  })}
+                             </Stack>
+                        </VStack>
+                   </HStack>
+              </Pressable>
           );
      };
 
      // handles the on press action
      onPressItem = (item, library, title) => {
-          const { navigation, route } = this.props;
+          const {navigation, route} = this.props;
           const libraryUrl = library.baseUrl;
           navigation.dispatch(
-               CommonActions.navigate('SearchTab', {
-                    screen: 'GroupedWork',
-                    params: {
-                         id: item,
-                         title: title,
-                         url: libraryUrl,
-                         libraryContext: library,
-                    },
-               })
+              CommonActions.navigate('SearchTab', {
+                   screen: 'GroupedWork',
+                   params: {
+                        id: item,
+                        title: title,
+                        url: libraryUrl,
+                        libraryContext: library,
+                   },
+              })
           );
      };
 
      // this one shouldn't probably ever load with the catches in the render, but just in case
      _listEmptyComponent = () => {
-          const { navigation, route } = this.props;
+          const {navigation, route} = this.props;
           return (
-               <Center flex={1}>
-                    <Heading pt={5}>{translate('search.no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">
-                         {route.params?.term}
-                    </Text>
-                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                         {translate('search.new_search_button')}
-                    </Button>
-               </Center>
+              <Center flex={1}>
+                   <Heading pt={5}>{translate('search.no_results')}</Heading>
+                   <Text bold w="75%" textAlign="center">
+                        {route.params?.term}
+                   </Text>
+                   <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                        {translate('search.new_search_button')}
+                   </Button>
+              </Center>
           );
      };
 
      _listHeaderComponent = () => {
           const numResults = _.toInteger(this.state.totalResults);
-          let resultsLabel = translate('filters.results', { num: numResults });
+          let resultsLabel = translate('filters.results', {num: numResults});
           if (numResults === 1) {
-               resultsLabel = translate('filters.result', { num: numResults });
+               resultsLabel = translate('filters.result', {num: numResults});
           }
           if (numResults > 0) {
                return (
-                    <Box bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200">
-                         <Container m={2}>
-                              <Text>{resultsLabel}</Text>
-                         </Container>
-                    </Box>
+                   <Box bgColor="coolGray.100" borderBottomWidth="1" _dark={{borderColor: 'gray.600', bg: 'coolGray.700'}} borderColor="coolGray.200">
+                        <Container m={2}>
+                             <Text>{resultsLabel}</Text>
+                        </Container>
+                   </Box>
                );
           } else {
                return null;
@@ -414,12 +417,12 @@ export default class Results extends React.Component {
      filterBar = () => {
           if (LIBRARY.version >= '22.11.00') {
                return (
-                    <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap">
-                         <ScrollView horizontal>
-                              {this.filterBarHeader()}
-                              {this.filterBarButton()}
-                         </ScrollView>
-                    </Box>
+                   <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{borderColor: 'gray.600', bg: 'coolGray.700'}} borderColor="coolGray.200" flexWrap="nowrap">
+                        <ScrollView horizontal>
+                             {this.filterBarHeader()}
+                             {this.filterBarButton()}
+                        </ScrollView>
+                   </Box>
                );
           }
           return null;
@@ -427,21 +430,21 @@ export default class Results extends React.Component {
 
      filterBarHeader = () => {
           return (
-               <Button
-                    size="sm"
-                    leftIcon={<Icon as={MaterialIcons} name="tune" size="sm" />}
-                    variant="solid"
-                    mr={1}
-                    onPress={() => {
-                         this.props.navigation.push('modal', {
-                              screen: 'Filters',
-                              params: {
-                                   pendingUpdates: [],
-                              },
-                         });
-                    }}>
-                    {translate('filters.title')}
-               </Button>
+              <Button
+                  size="sm"
+                  leftIcon={<Icon as={MaterialIcons} name="tune" size="sm"/>}
+                  variant="solid"
+                  mr={1}
+                  onPress={() => {
+                       this.props.navigation.push('modal', {
+                            screen: 'Filters',
+                            params: {
+                                 pendingUpdates: [],
+                            },
+                       });
+                  }}>
+                   {translate('filters.title')}
+              </Button>
           );
      };
 
@@ -455,64 +458,64 @@ export default class Results extends React.Component {
           });
           if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 2 && _.size(sort) > 1)) {
                return (
-                    <Button.Group size="sm" space={1} vertical variant="outline">
-                         {_.map(appliedFacets, function (item, index, collection) {
-                              const cluster = _.filter(SEARCH.availableFacets.data, ['field', item[0]['field']]);
-                              let labels = '';
-                              _.forEach(item, function (value, key) {
-                                   let label = value['display'];
-                                   if (value['display'] === 'year desc,title asc') {
-                                        label = 'Publication Year Desc';
-                                   } else if (value['display'] === 'relevance') {
-                                        label = 'Best Match';
-                                   } else if (value['display'] === 'author asc,title asc') {
-                                        label = 'Author';
-                                   } else if (value['display'] === 'title') {
-                                        label = 'Title';
-                                   } else if (value['display'] === 'days_since_added asc') {
-                                        label = 'Date Purchased Desc';
-                                   } else if (value['display'] === 'sort_callnumber') {
-                                        label = 'Call Number';
-                                   } else if (value['display'] === 'sort_popularity') {
-                                        label = 'Total Checkouts';
-                                   } else if (value['display'] === 'sort_rating') {
-                                        label = 'User Rating';
-                                   } else if (value['display'] === 'total_holds desc') {
-                                        label = 'Number of Holds';
-                                   } else {
-                                        // do nothing
-                                   }
-                                   if (labels.length === 0) {
-                                        labels = labels.concat(_.toString(label));
-                                   } else {
-                                        labels = labels.concat(', ', _.toString(label));
-                                   }
-                              });
-                              const label = _.truncate(index + ': ' + labels);
-                              return (
-                                   <Button
-                                        key={index}
-                                        onPress={() => {
-                                             navigation.push('modal', {
-                                                  screen: 'Facet',
-                                                  params: {
-                                                       data: item,
-                                                       navigation,
-                                                       defaultValues: [],
-                                                       key: item[0]['field'],
-                                                       term: searchTerm,
-                                                       title: cluster[0]['label'],
-                                                       facets: item[0]['facets'],
-                                                       pendingUpdates: [],
-                                                       extra: cluster[0],
-                                                  },
-                                             });
-                                        }}>
-                                        {label}
-                                   </Button>
-                              );
-                         })}
-                    </Button.Group>
+                   <Button.Group size="sm" space={1} vertical variant="outline">
+                        {_.map(appliedFacets, function (item, index, collection) {
+                             const cluster = _.filter(SEARCH.availableFacets.data, ['field', item[0]['field']]);
+                             let labels = '';
+                             _.forEach(item, function (value, key) {
+                                  let label = value['display'];
+                                  if (value['display'] === 'year desc,title asc') {
+                                       label = 'Publication Year Desc';
+                                  } else if (value['display'] === 'relevance') {
+                                       label = 'Best Match';
+                                  } else if (value['display'] === 'author asc,title asc') {
+                                       label = 'Author';
+                                  } else if (value['display'] === 'title') {
+                                       label = 'Title';
+                                  } else if (value['display'] === 'days_since_added asc') {
+                                       label = 'Date Purchased Desc';
+                                  } else if (value['display'] === 'sort_callnumber') {
+                                       label = 'Call Number';
+                                  } else if (value['display'] === 'sort_popularity') {
+                                       label = 'Total Checkouts';
+                                  } else if (value['display'] === 'sort_rating') {
+                                       label = 'User Rating';
+                                  } else if (value['display'] === 'total_holds desc') {
+                                       label = 'Number of Holds';
+                                  } else {
+                                       // do nothing
+                                  }
+                                  if (labels.length === 0) {
+                                       labels = labels.concat(_.toString(label));
+                                  } else {
+                                       labels = labels.concat(', ', _.toString(label));
+                                  }
+                             });
+                             const label = _.truncate(index + ': ' + labels);
+                             return (
+                                 <Button
+                                     key={index}
+                                     onPress={() => {
+                                          navigation.push('modal', {
+                                               screen: 'Facet',
+                                               params: {
+                                                    data: item,
+                                                    navigation,
+                                                    defaultValues: [],
+                                                    key: item[0]['field'],
+                                                    term: searchTerm,
+                                                    title: cluster[0]['label'],
+                                                    facets: item[0]['facets'],
+                                                    pendingUpdates: [],
+                                                    extra: cluster[0],
+                                               },
+                                          });
+                                     }}>
+                                      {label}
+                                 </Button>
+                             );
+                        })}
+                   </Button.Group>
                );
           } else {
                //return null;
@@ -523,46 +526,46 @@ export default class Results extends React.Component {
      filterBarDefaults = () => {
           const defaults = SEARCH.defaultFacets;
           return (
-               <Button.Group size="sm" space={1} vertical variant="outline">
-                    {defaults.map((obj, index) => {
-                         return (
-                              <Button
-                                   key={index}
-                                   variant="outline"
-                                   onPress={() => {
-                                        this.props.navigation.push('modal', {
-                                             screen: 'Facet',
-                                             params: {
-                                                  navigation: this.props.navigation,
-                                                  key: obj['field'],
-                                                  term: this.state.query,
-                                                  title: obj['label'],
-                                                  facets: SEARCH.availableFacets.data[obj['label']].facets,
-                                                  pendingUpdates: [],
-                                                  extra: obj,
-                                             },
-                                        });
-                                   }}>
-                                   {obj['label']}
-                              </Button>
-                         );
-                    })}
-               </Button.Group>
+              <Button.Group size="sm" space={1} vertical variant="outline">
+                   {defaults.map((obj, index) => {
+                        return (
+                            <Button
+                                key={index}
+                                variant="outline"
+                                onPress={() => {
+                                     this.props.navigation.push('modal', {
+                                          screen: 'Facet',
+                                          params: {
+                                               navigation: this.props.navigation,
+                                               key: obj['field'],
+                                               term: this.state.query,
+                                               title: obj['label'],
+                                               facets: SEARCH.availableFacets.data[obj['label']].facets,
+                                               pendingUpdates: [],
+                                               extra: obj,
+                                          },
+                                     });
+                                }}>
+                                 {obj['label']}
+                            </Button>
+                        );
+                   })}
+              </Button.Group>
           );
      };
 
      render() {
           //console.log(this.state.data);
-          const { navigation, route } = this.props;
+          const {navigation, route} = this.props;
           const library = this.context.library;
 
           let searchTerm = this.props.route.params?.term;
           searchTerm = searchTerm.replace(/" "/g, '%20');
 
           const numResults = _.toInteger(this.state.totalResults);
-          let resultsLabel = translate('filters.results', { num: numResults });
+          let resultsLabel = translate('filters.results', {num: numResults});
           if (numResults === 1) {
-               resultsLabel = translate('filters.result', { num: numResults });
+               resultsLabel = translate('filters.result', {num: numResults});
           }
 
           if (this.state.isLoading) {
@@ -575,35 +578,35 @@ export default class Results extends React.Component {
 
           if (this.state.hasError && this.state.dataMessage) {
                return (
-                    <Center flex={1}>
-                         <Heading pt={5}>{translate('search.no_results')}</Heading>
-                         <Text bold w="75%" textAlign="center">
-                              {route.params?.term}
-                         </Text>
-                         <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              {translate('search.new_search_button')}
-                         </Button>
-                    </Center>
+                   <Center flex={1}>
+                        <Heading pt={5}>{translate('search.no_results')}</Heading>
+                        <Text bold w="75%" textAlign="center">
+                             {route.params?.term}
+                        </Text>
+                        <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                             {translate('search.new_search_button')}
+                        </Button>
+                   </Center>
                );
           }
 
           return (
-               <SafeAreaView style={{ flex: 1 }}>
-                    <Box ref={this.locRef} flex={1}>
-                         {this.filterBar()}
-                         <FlatList
-                              data={this.state.data}
-                              ListHeaderComponent={this._listHeaderComponent()}
-                              ListEmptyComponent={this._listEmptyComponent()}
-                              renderItem={({ item }) => this.renderItem(item, library)}
-                              keyExtractor={(item, index) => index.toString()}
-                              ListFooterComponent={this._renderFooter}
-                              onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
-                              onEndReachedThreshold={0.5}
-                              initialNumToRender={25}
-                         />
-                    </Box>
-               </SafeAreaView>
+              <SafeAreaView style={{flex: 1}}>
+                   <Box ref={this.locRef} flex={1}>
+                        {this.filterBar()}
+                        <FlatList
+                            data={this.state.data}
+                            ListHeaderComponent={this._listHeaderComponent()}
+                            ListEmptyComponent={this._listEmptyComponent()}
+                            renderItem={({item}) => this.renderItem(item, library)}
+                            keyExtractor={(item, index) => index.toString()}
+                            ListFooterComponent={this._renderFooter}
+                            onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
+                            onEndReachedThreshold={0.5}
+                            initialNumToRender={25}
+                        />
+                   </Box>
+              </SafeAreaView>
           );
      }
 }
