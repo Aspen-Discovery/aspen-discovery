@@ -115,18 +115,20 @@ export const MyLibraryCard = () => {
 
      const updateCards = () => {
           if (!_.isEmpty(accounts)) {
-               let count = 0;
-               accounts.forEach((account) => {
-                    count = count + 1;
-                    cards.push({
-                         key: count,
-                         displayName: account.displayName,
-                         cat_username: account.cat_username,
-                         expired: account.expired,
-                         expires: account.expires,
-                         barcodeStyle: account.barcodeStyle,
+               if (_.size(accounts) > 1) {
+                    let count = 0;
+                    accounts.forEach((account) => {
+                         count = count + 1;
+                         cards.push({
+                              key: count,
+                              displayName: account.displayName,
+                              cat_username: account.cat_username,
+                              expired: account.expired,
+                              expires: account.expires,
+                              barcodeStyle: account.barcodeStyle,
+                         });
                     });
-               });
+               }
           }
      };
 
