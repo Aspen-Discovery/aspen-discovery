@@ -61,6 +61,7 @@ class UserAPI extends Action {
 					'setNotificationPreference',
 					'getNotificationPreferences',
 					'updateBrowseCategoryStatus',
+					'removeViewerAccount'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -4080,6 +4081,41 @@ class UserAPI extends Action {
 					]),
 					'message' => translate([
 						'text' => 'Sorry, we could remove that account.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function removeViewerLink() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$accountToRemove = $_REQUEST['idToRemove'];
+			if ($user->removeManagingAccount($accountToRemove)) {
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Accounts no longer linked',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Successfully removed linked account.',
 						'isPublicFacing' => true,
 					]),
 				];
