@@ -25,7 +25,14 @@ function getUpdates23_01_00(): array
 		//add_account_alerts_notification
 
 		//kodi
-
+		'user_browse_add_home' => [
+			'title' => 'Add New Browse Categories to Home',
+			'description' => 'Store user selection for adding browse categories to home page',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN browseAddToHome TINYINT(1) DEFAULT 1',
+			],
+		],
+		//user_browse_add_home
 		//other
 	];
 }

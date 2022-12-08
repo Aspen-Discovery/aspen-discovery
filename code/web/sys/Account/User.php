@@ -59,6 +59,7 @@ class User extends DataObject {
 	public $pickupLocationId;
 
 	public $lastListUsed;
+	public $browseAddToHome;
 
 	public $lastLoginValidation;
 
