@@ -2985,6 +2985,9 @@ class UserAPI extends Action {
 	 * <code>
 	 * {"result":{
 	 *   "success":true,
+	 *   "totalResults":46,
+	 *   "page_current":1,
+	 *   "page_total":2,
 	 *   "readingHistory":[
 	 *     {"recordId":"597608",
 	 *      "checkout":"2011-03-18",
@@ -3028,10 +3031,25 @@ class UserAPI extends Action {
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-				$readingHistory = $user->getReadingHistory();
+				$page = $_REQUEST['page'] ?? 1;
+				$pageSize = $_REQUEST['pageSize'] ?? 25;
+				$sort = $_REQUEST['sort_by'] ?? 'checkedOut';
+				$readingHistory = $user->getReadingHistory($page, $pageSize, $sort);
+
+				$options = [
+					'totalItems' => $readingHistory['numTitles'],
+					'perPage' => $pageSize,
+					'append' => false,
+					'sort' => $sort,
+				];
+				$pager = new Pager($options);
 
 				return [
 					'success' => true,
+					'totalResults' => $pager->getTotalItems(),
+					'page_current' => (int)$pager->getCurrentPage(),
+					'page_total' => (int)$pager->getTotalPages(),
+					'sort' => $sort,
 					'readingHistory' => $readingHistory['titles'],
 				];
 			} else {
