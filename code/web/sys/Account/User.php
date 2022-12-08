@@ -1759,23 +1759,23 @@ class User extends DataObject {
 
 	function updateAltLocationForHold($pickupBranch) {
 		if ($this->_homeLocationCode != $pickupBranch) {
-			global $logger;
-			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", Logger::LOG_NOTICE);
+			//global $logger;
+			//$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", Logger::LOG_NOTICE);
 			$location = new Location();
 			$location->code = $pickupBranch;
 			if ($location->find(true)) {
-				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", Logger::LOG_NOTICE);
+				//$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", Logger::LOG_NOTICE);
 				if ($this->myLocation1Id == 0) {
-					$logger->log("Alternate location 1 is blank updating that", Logger::LOG_NOTICE);
+					//$logger->log("Alternate location 1 is blank updating that", Logger::LOG_NOTICE);
 					$this->myLocation1Id = $location->locationId;
 					$this->update();
 				} elseif ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id) {
-					$logger->log("Alternate location 2 is blank updating that", Logger::LOG_NOTICE);
+					//$logger->log("Alternate location 2 is blank updating that", Logger::LOG_NOTICE);
 					$this->myLocation2Id = $location->locationId;
 					$this->update();
 				}
 			} else {
-				$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
+				//$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
 			}
 		}
 	}
