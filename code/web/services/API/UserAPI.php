@@ -61,6 +61,13 @@ class UserAPI extends Action {
 					'setNotificationPreference',
 					'getNotificationPreferences',
 					'updateBrowseCategoryStatus',
+					'removeViewerAccount',
+					'getPatronReadingHistory',
+					'updatePatronReadingHistory',
+					'optIntoReadingHistory',
+					'optOutOfReadingHistory',
+					'deleteAllFromReadingHistory',
+					'deleteSelectedFromReadingHistory'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -2984,6 +2991,9 @@ class UserAPI extends Action {
 	 * <code>
 	 * {"result":{
 	 *   "success":true,
+	 *   "totalResults":46,
+	 *   "page_current":1,
+	 *   "page_total":2,
 	 *   "readingHistory":[
 	 *     {"recordId":"597608",
 	 *      "checkout":"2011-03-18",
@@ -3027,10 +3037,25 @@ class UserAPI extends Action {
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-				$readingHistory = $user->getReadingHistory();
+				$page = $_REQUEST['page'] ?? 1;
+				$pageSize = $_REQUEST['pageSize'] ?? 25;
+				$sort = $_REQUEST['sort_by'] ?? 'checkedOut';
+				$readingHistory = $user->getReadingHistory($page, $pageSize, $sort);
+
+				$options = [
+					'totalItems' => $readingHistory['numTitles'],
+					'perPage' => $pageSize,
+					'append' => false,
+					'sort' => $sort,
+				];
+				$pager = new Pager($options);
 
 				return [
 					'success' => true,
+					'totalResults' => $pager->getTotalItems(),
+					'page_current' => (int)$pager->getCurrentPage(),
+					'page_total' => (int)$pager->getTotalPages(),
+					'sort' => $sort,
 					'readingHistory' => $readingHistory['titles'],
 				];
 			} else {
@@ -4080,6 +4105,41 @@ class UserAPI extends Action {
 					]),
 					'message' => translate([
 						'text' => 'Sorry, we could remove that account.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function removeViewerLink() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$accountToRemove = $_REQUEST['idToRemove'];
+			if ($user->removeManagingAccount($accountToRemove)) {
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Accounts no longer linked',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Successfully removed linked account.',
 						'isPublicFacing' => true,
 					]),
 				];
