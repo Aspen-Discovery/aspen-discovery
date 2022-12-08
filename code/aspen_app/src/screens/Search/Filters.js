@@ -4,8 +4,6 @@ import React, { Component } from 'react';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
 
 // custom components and helper files
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { userContext } from '../../context/user';
 import { translate } from '../../translations/translations';
 import { buildParamsForUrl, SEARCH } from '../../util/search';
 import { UnsavedChangesExit } from './UnsavedChanges';
@@ -28,9 +26,9 @@ export const FiltersScreen = () => {
           });
      }
 
-     const renderFilter = (label) => {
+     const renderFilter = (label, index) => {
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" py="5" onPress={() => openCluster(label)}>
+               <Pressable key={index} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" py="5" onPress={() => openCluster(label)}>
                     <VStack alignContent="center">
                          <HStack justifyContent="space-between" align="center">
                               <Text bold>{label}</Text>
@@ -190,7 +188,7 @@ export const FiltersScreen = () => {
      return (
           <View style={{ flex: 1 }}>
                <ScrollView>
-                    <Box safeArea={5}>{facets.map((item, index, array) => renderFilter(item))}</Box>
+                    <Box safeArea={5}>{facets.map((item, index, array) => renderFilter(item, index))}</Box>
                </ScrollView>
                {actionButtons()}
           </View>

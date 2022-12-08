@@ -11,6 +11,7 @@ import Results from '../../screens/Search/Results';
 import { translate } from '../../translations/translations';
 import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import Search from '../../screens/Search/Search';
+import { SearchResults } from '../../screens/Search/SearchResults';
 
 enableScreens();
 
@@ -38,7 +39,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                />
                <Stack.Screen
                     name="SearchResults"
-                    component={Results}
+                    component={SearchResults}
                     options={({ route }) => ({
                          title: translate('search.search_results_title') + route.params.term,
                          params: {
@@ -51,7 +52,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                     component={FilterModal}
                     options={{
                          headerShown: false,
-                         presentation: 'card',
+                         presentation: 'modal',
                     }}
                />
                <Stack.Screen
