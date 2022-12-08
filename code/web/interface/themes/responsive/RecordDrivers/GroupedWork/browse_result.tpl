@@ -7,7 +7,7 @@
 		<div class="browse-list grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
 				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
-				<div>{if $isNew}<span class="new-result-badge">{translate text="New!" isPublicFacing=true}</span><br/>{/if}<strong>{$summTitle}</strong><br>{$vSummAuthor}</div>
+				<div>{if $isNew}<span class="new-result-badge">{translate text="New!" isPublicFacing=true}</span><br/>{/if}<strong>{$summTitle|truncate:40}</strong><br>{$vSummAuthor|truncate:40}</div>
 			</a>
 		</div>
 
