@@ -7,9 +7,9 @@
 					<div class="myAccountLink">
 						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:#c62828; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
-								{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency isPublicFacing=true}
+								{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency inAttribute=true isPublicFacing=true}
 							{else}
-								{translate text="Your account has %1% in fines." 1=$ilsSummary->totalFines|formatCurrency isPublicFacing=true}
+								{translate text="Your account has %1% in fines." 1=$ilsSummary->totalFines|formatCurrency inAttribute=true isPublicFacing=true}
 							{/if}
 						</a>
 					</div>
