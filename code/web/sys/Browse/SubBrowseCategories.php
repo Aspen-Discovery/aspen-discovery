@@ -63,14 +63,14 @@ class SubBrowseCategories extends DataObject {
 			$browseCategories->find();
 
 			while ($browseCategories->fetch()) {
-				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')' . " - $browseCategories->id";
 			}
 
 		} elseif (UserAccount::userHasPermission('Administer All Browse Categories')) {
 			$browseCategories->find();
 
 			while ($browseCategories->fetch()) {
-				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')' . " - $browseCategories->id";
 			}
 		}
 		return $browseCategoryList;
