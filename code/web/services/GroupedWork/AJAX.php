@@ -521,7 +521,8 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	private function clearMySuggestionsBrowseCategoryCache() {
-		// Reset any cached suggestion browse category for the user /** @var Memcache $memCache */ global $memCache;
+		// Reset any cached suggestion browse category for the user
+		global $memCache;
 		global $solrScope;
 		foreach ([
 					 '0',
