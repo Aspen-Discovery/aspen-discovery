@@ -661,9 +661,9 @@ class SirsiDynixROA extends HorizonAPI {
 
 
 	protected function loginViaWebService($username, $password) {
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		global $library;
-		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$username}_" . session_id();
 		$session = $memCache->get($memCacheKey);
 		if ($session != false) {
 			[
@@ -722,7 +722,7 @@ class SirsiDynixROA extends HorizonAPI {
 	protected function staffLoginViaWebService($username, $password) {
 		global $memCache;
 		global $library;
-		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$username}_" . session_id();
 		$session = $memCache->get($memCacheKey);
 		if ($session) {
 			[
@@ -2165,9 +2165,9 @@ class SirsiDynixROA extends HorizonAPI {
 	}
 
 	public function logout(User $user) {
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		global $library;
-		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}_" . session_id();
 		$memCache->delete($memCacheKey);
 	}
 
