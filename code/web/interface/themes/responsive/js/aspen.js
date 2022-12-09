@@ -5912,6 +5912,12 @@ AspenDiscovery.Account = (function () {
 
 		redirectLinkedAccounts: function() {
 			window.location.href = Globals.path + "/MyAccount/LinkedAccounts";
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "allowAccountLink" //dismisses "confirm_linked_accts" message but we won't display "link accepted" message
+			};
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
 		redirectPinReset: function() {
@@ -12290,6 +12296,7 @@ AspenDiscovery.Record = (function(){
 			var requestTitleButton = $('#requestTitleButton');
 			requestTitleButton.prop('disabled', true);
 			requestTitleButton.addClass('disabled');
+
 			document.querySelector('.fa-spinner').classList.remove('hidden');
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
@@ -12330,12 +12337,17 @@ AspenDiscovery.Record = (function(){
 			}
 			params = this.loadHoldNotificationOptions(params);
 
+			$("#placeHoldForm").hide();
+			$("#placingHoldMessage").show();
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
 						var requestTitleButton = $('#requestTitleButton');
 						requestTitleButton.prop('disabled', false);
 						requestTitleButton.removeClass('disabled');
+
+						$("#placeHoldForm").show();
+						$("#placingHoldMessage").hide();
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else if (data.needsIllRequest){
@@ -12395,6 +12407,11 @@ AspenDiscovery.Record = (function(){
 		},
 
 		placeVolumeHold: function(){
+			var requestTitleButton = $('#requestTitleButton');
+			requestTitleButton.prop('disabled', true);
+			requestTitleButton.addClass('disabled');
+			document.querySelector('.fa-spinner').classList.remove('hidden');
+
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
 			var module = $('#module').val();
@@ -12429,12 +12446,18 @@ AspenDiscovery.Record = (function(){
 				}
 			}
 			params = this.loadHoldNotificationOptions(params);
+
+			$("#placeHoldForm").hide();
+			$("#placingHoldMessage").show();
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
 						var requestTitleButton = $('#requestTitleButton');
 						requestTitleButton.prop('disabled', false);
 						requestTitleButton.removeClass('disabled');
+
+						$("#placeHoldForm").show();
+						$("#placingHoldMessage").hide();
 						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else if (data.needsIllRequest){

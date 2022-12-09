@@ -650,6 +650,12 @@ AspenDiscovery.Account = (function () {
 
 		redirectLinkedAccounts: function() {
 			window.location.href = Globals.path + "/MyAccount/LinkedAccounts";
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "allowAccountLink" //dismisses "confirm_linked_accts" message but we won't display "link accepted" message
+			};
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
 		redirectPinReset: function() {
