@@ -395,7 +395,9 @@ abstract class HorizonROA extends AbstractIlsDriver {
 				return $user;
 			} else {
 				if (isset($lookupMyAccountInfoResponse->messageList[0]->code) && $lookupMyAccountInfoResponse->messageList[0]->code == 'sessionTimedOut') {
-					//If it was just a session timeout, just clear out the session /** @var Memcache $memCache */ global $memCache;
+					//If it was just a session timeout, just clear out the session
+					/** @var Memcache $memCache */
+					global $memCache;
 					$memCacheKey = "horizon_ROA_session_token_info_$username";
 					$memCache->delete($memCacheKey);
 				} else {
