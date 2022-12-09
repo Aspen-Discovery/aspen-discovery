@@ -1510,7 +1510,27 @@ class SearchAPI extends Action {
 							'sourceId' => $categoryInformation->sourceListId,
 							'isHidden' => $categoryInformation->isDismissed($appUser),
 						];
-						$formattedCategories[] = $categoryResponse;
+						$count = 0;
+						require_once(ROOT_DIR . '/sys/UserLists/UserList.php');
+						require_once(ROOT_DIR . '/sys/UserLists/UserListEntry.php');
+						$list = new UserList();
+						$list->id = $categoryInformation->sourceListId;
+						if ($list->find(true)) {
+							$listEntry = new UserListEntry();
+							$listEntry->listId = $list->id;
+							$listEntry->find();
+							do {
+								if ($listEntry->source == 'Lists') {
+									$count++;
+								} elseif ($listEntry->sourceId) {
+									$count++;
+								}
+							} while ($listEntry->fetch() && $count < 1);
+						}
+
+						if ($count != 0) {
+							$formattedCategories[] = $categoryResponse;
+						}
 					} elseif ($categoryInformation->textId == ('system_recommended_for_you')) {
 						if (empty($appUser) && UserAccount::isLoggedIn()) {
 							$appUser = UserAccount::getActiveUserObj();
@@ -1777,6 +1797,7 @@ class SearchAPI extends Action {
 									];
 								}
 							}
+							$formattedCategories[] = $categoryResponse;
 							$numCategoriesProcessed++;
 							if ($maxCategories > 0 && $numCategoriesProcessed >= $maxCategories) {
 								break;

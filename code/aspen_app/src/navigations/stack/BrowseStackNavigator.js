@@ -61,16 +61,6 @@ const BrowseStackNavigator = () => {
                     })}
                />
                <Stack.Screen
-                    name="SearchByAuthor"
-                    component={Results}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.term,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
-               <Stack.Screen
                     name="SearchByList"
                     component={SearchByList}
                     options={({ route }) => ({

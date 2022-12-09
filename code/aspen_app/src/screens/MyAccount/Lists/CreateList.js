@@ -5,54 +5,62 @@ import React, { useState } from 'react';
 import { popAlert } from '../../../components/loadError';
 import { createList, getLists } from '../../../util/api/list';
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { translate } from '../../../translations/translations';
+import { reloadProfile } from '../../../util/api/user';
 
 const CreateList = () => {
+     const { updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { lists, updateLists } = React.useContext(UserContext);
+     const { updateLists } = React.useContext(UserContext);
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
 
      const [title, setTitle] = React.useState('');
      const [description, setDescription] = React.useState('');
-     const [access, setAccess] = React.useState(false);
+     const [isPublic, setPublic] = React.useState(false);
+
+     const toggle = () => {
+          setShowModal(!showModal);
+          setTitle('');
+          setDescription('');
+          setPublic(false);
+          setLoading(false);
+     };
 
      return (
           <Center>
-               <Button onPress={() => setShowModal(true)} size="sm" leftIcon={<Icon as={MaterialIcons} name="add" size="xs" mr="-1" />}>
-                    Create a New List
+               <Button onPress={toggle} size="sm" leftIcon={<Icon as={MaterialIcons} name="add" size="xs" mr="-1" />}>
+                    {translate('lists.create_new_list')}
                </Button>
-               <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full" avoidKeyboard>
+               <Modal isOpen={showModal} onClose={toggle} size="full" avoidKeyboard>
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
-                              <Heading size="md">Create a New List</Heading>
+                              <Heading size="md">{translate('lists.create_new_list')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
                               <FormControl pb={5}>
-                                   <FormControl.Label>Title</FormControl.Label>
-                                   <Input id="title" onChangeText={(text) => setTitle(text)} returnKeyType="next" />
+                                   <FormControl.Label>{translate('general.title')}</FormControl.Label>
+                                   <Input id="title" onChangeText={(text) => setTitle(text)} returnKeyType="next" defaultValue={title} />
                               </FormControl>
                               <FormControl pb={5}>
-                                   <FormControl.Label>Description</FormControl.Label>
-                                   <TextArea id="description" onChangeText={(text) => setDescription(text)} returnKeyType="next" />
+                                   <FormControl.Label>{translate('general.description')}</FormControl.Label>
+                                   <TextArea id="description" onChangeText={(text) => setDescription(text)} defaultValue={description} returnKeyType="next" />
                               </FormControl>
                               <FormControl>
-                                   <FormControl.Label>Access</FormControl.Label>
-                                   <Radio.Group defaultValue="1">
-                                        <Stack
-                                             direction="row"
-                                             alignItems="center"
-                                             space={4}
-                                             w="75%"
-                                             maxW="300px"
-                                             onChange={(nextValue) => {
-                                                  setAccess(nextValue);
-                                             }}>
-                                             <Radio value="1" my={1}>
-                                                  Private
+                                   <FormControl.Label>{translate('general.access')}</FormControl.Label>
+                                   <Radio.Group
+                                        name="access"
+                                        value={isPublic}
+                                        onChange={(nextValue) => {
+                                             setPublic(nextValue);
+                                        }}>
+                                        <Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px">
+                                             <Radio value={false} my={1}>
+                                                  {translate('general.private')}
                                              </Radio>
-                                             <Radio value="0" my={1}>
-                                                  Public
+                                             <Radio value={true} my={1}>
+                                                  {translate('general.public')}
                                              </Radio>
                                         </Stack>
                                    </Radio.Group>
@@ -60,30 +68,30 @@ const CreateList = () => {
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group>
-                                   <Button variant="outline" onPress={() => setShowModal(false)}>
-                                        Cancel
+                                   <Button variant="outline" onPress={toggle}>
+                                        {translate('general.cancel')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText="Creating List..."
+                                        isLoadingText={translate('lists.creating_list')}
                                         onPress={async () => {
                                              setLoading(true);
-                                             await createList(title, description, access, library.baseUrl).then(async (res) => {
+                                             await createList(title, description, isPublic, library.baseUrl).then(async (res) => {
                                                   let status = 'success';
                                                   if (!res.success) {
                                                        status = 'danger';
                                                   }
-                                                  await getLists(library.baseUrl).then((result) => {
-                                                       if (lists !== result) {
-                                                            updateLists(result);
-                                                       }
+                                                  await reloadProfile(library.baseUrl).then((result) => {
+                                                       updateUser(result);
                                                   });
-                                                  setLoading(false);
-                                                  popAlert('List created', res.message, status);
-                                                  setShowModal(false);
+                                                  await getLists(library.baseUrl).then((result) => {
+                                                       updateLists(result);
+                                                  });
+                                                  toggle();
+                                                  popAlert(translate('lists.list_created'), res.message, status);
                                              });
                                         }}>
-                                        Create List
+                                        {translate('lists.create_list')}
                                    </Button>
                               </Button.Group>
                          </Modal.Footer>

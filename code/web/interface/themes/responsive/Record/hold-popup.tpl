@@ -170,6 +170,9 @@
 				</div>
 			</fieldset>
 		</form>
+		<div id="placingHoldMessage" class="alert alert-info" style="display: none">
+			{translate text="Placing your hold, this may take a minute." isPublicFacing=true}
+		</div>
 	{/if}
 </div>
 {/strip}

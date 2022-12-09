@@ -7,7 +7,7 @@ import _ from 'lodash';
 import React from 'react';
 import { create } from 'apisauce';
 
-const endpoint = ENDPOINT.user;
+const endpoint = ENDPOINT.list;
 
 /**
  * Returns array of basic details about a given user list
@@ -76,11 +76,12 @@ export async function createList(title, description, isPublic = false, url) {
           params: {
                title,
                description,
-               access,
+               isPublic,
           },
      });
      const response = await discovery.post(`${endpoint.url}createList`, postBody);
      if (response.ok) {
+          console.log(response.config);
           if (response.data.result.listId) {
                PATRON.listLastUsed = response.data.result.listId;
           }

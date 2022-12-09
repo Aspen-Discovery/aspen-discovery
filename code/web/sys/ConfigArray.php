@@ -326,7 +326,9 @@ function updateConfigForScoping($configArray) {
 					$Location->find();
 					if ($Location->getNumResults() == 1) {
 						$Location->fetch();
-						//We found a location for the subdomain, get the library. /** @var Library $librarySingleton */ global $librarySingleton;
+						//We found a location for the subdomain, get the library.
+
+						global $librarySingleton;
 						$library = $librarySingleton->getLibraryForLocation($Location->locationId);
 						$locationSingleton->setActiveLocation(clone $Location);
 						$timer->logTime("found the location and library based on subdomain");

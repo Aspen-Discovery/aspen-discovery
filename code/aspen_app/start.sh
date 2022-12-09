@@ -33,7 +33,7 @@ elif [[ $serverOption == 'production' ]]
 then
   APP_ENV=$site npx expo start --no-dev --minify
 else
-    APP_ENV=$site npx expo start
+    APP_ENV=$site npx expo start --clear
   fi
 node /usr/local/aspen-discovery/code/aspen_app/app-configs/restoreConfig.js --instance=$site --env=none
 sed -i'.bak' "s/$site/{{APP_ENV}}/g" eas.json

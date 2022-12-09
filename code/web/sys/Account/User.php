@@ -728,7 +728,7 @@ class User extends DataObject {
 		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
 		$userMessage->userId = $userId;
 		$userMessage->isDismissed = "0";
-		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page";
+		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 		$userMessage->update();
 
 		//Force a reload of data
@@ -756,7 +756,7 @@ class User extends DataObject {
 				$userMessage->messageType = 'linked_acct_notify_disabled_' . $this->id;
 				$userMessage->userId = $userLink->primaryAccountId;
 				$userMessage->isDismissed = "0";
-				$userMessage->message = "An account you were previously linked to, $this->displayName, has disabled account linking. To learn more about linked accounts, please visit /MyAccount/LinkedAccounts";
+				$userMessage->message = "An account you were previously linked to, $this->displayName, has disabled account linking. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 				$userMessage->update();
 			}
 			$userMessage = new UserMessage();
@@ -1779,23 +1779,23 @@ class User extends DataObject {
 
 	function updateAltLocationForHold($pickupBranch) {
 		if ($this->_homeLocationCode != $pickupBranch) {
-			global $logger;
-			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", Logger::LOG_NOTICE);
+			//global $logger;
+			//$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", Logger::LOG_NOTICE);
 			$location = new Location();
 			$location->code = $pickupBranch;
 			if ($location->find(true)) {
-				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", Logger::LOG_NOTICE);
+				//$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", Logger::LOG_NOTICE);
 				if ($this->myLocation1Id == 0) {
-					$logger->log("Alternate location 1 is blank updating that", Logger::LOG_NOTICE);
+					//$logger->log("Alternate location 1 is blank updating that", Logger::LOG_NOTICE);
 					$this->myLocation1Id = $location->locationId;
 					$this->update();
 				} elseif ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id) {
-					$logger->log("Alternate location 2 is blank updating that", Logger::LOG_NOTICE);
+					//$logger->log("Alternate location 2 is blank updating that", Logger::LOG_NOTICE);
 					$this->myLocation2Id = $location->locationId;
 					$this->update();
 				}
 			} else {
-				$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
+				//$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
 			}
 		}
 	}
@@ -2448,7 +2448,7 @@ class User extends DataObject {
 				]);
 				$userMessage->action1 = "return AspenDiscovery.Account.allowAccountLink()";
 				$userMessage->action2Title = translate([
-					'text' => "No",
+					'text' => "Manage Linked Accounts",
 					'isPublicFacing' => true,
 				]);
 				$userMessage->action2 = "return AspenDiscovery.Account.redirectLinkedAccounts()";

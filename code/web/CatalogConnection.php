@@ -124,10 +124,16 @@ class CatalogConnection {
 		} else {
 			if ($user != null) {
 				//If we have a valid patron, only revalidate every 15 minutes
-				if ($user->lastLoginValidation < (time() - 15 * 60)) {
+				//Make sure the password is correct though
+				if ($user->lastLoginValidation < (time() - 15 * 60) /* && ($user->cat_password == $password) */) {
 					$doPatronLogin = true;
 				} else {
-					$doPatronLogin = false;
+					//If the password is the same, we're still ok
+					if ($user->cat_password == $password) {
+						$doPatronLogin = false;
+					} else {
+						$doPatronLogin = true;
+					}
 				}
 			} else {
 				$doPatronLogin = true;
@@ -1206,14 +1212,19 @@ class CatalogConnection {
 			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
 				//We load the account based on the barcode make sure the pin matches
 				$userValid = $password != null && $user->cat_password == $password;
+				if (!$userValid) {
+					$timer->logTime("offline patron login failed due to invalid password");
+					$logger->log("offline patron login failed due to invalid password", Logger::LOG_NOTICE);
+					$user = null;
+				}
 			} else {
 				//We still load based on barcode, make sure the username is similar
 				$userValid = $this->areNamesSimilar($username, $user->cat_username);
-			}
-			if (!$userValid) {
-				$timer->logTime("offline patron login failed due to invalid name");
-				$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
-				$user = null;
+				if (!$userValid) {
+					$timer->logTime("offline patron login failed due to invalid name");
+					$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
+					$user = null;
+				}
 			}
 		} else {
 			$timer->logTime("Loading patron from database failed because we haven't seen this user before");

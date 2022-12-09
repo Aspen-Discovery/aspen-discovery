@@ -5,9 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="462f110b-0ab5-4484-914b-dcf4b0ee07c5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/mysql_connector_java_8_0_15.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../course_reserves_indexer/course_reserves_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../course_reserves_indexer/course_reserves_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../evergreen_export/evergreen_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../evergreen_export/evergreen_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../evolve_export/evolve_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../evolve_export/evolve_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/marc4j/MarcPermissiveStreamReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/marc4j/MarcPermissiveStreamReader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -372,12 +393,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>557</line>
+          <line>560</line>
           <option name="timeStamp" value="745" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>412</line>
+          <line>415</line>
           <option name="timeStamp" value="809" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -392,7 +413,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>481</line>
+          <line>484</line>
           <option name="timeStamp" value="830" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -422,38 +443,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>674</line>
-          <option name="timeStamp" value="881" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>706</line>
+          <line>743</line>
           <option name="timeStamp" value="882" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>711</line>
+          <line>748</line>
           <option name="timeStamp" value="883" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>714</line>
+          <line>751</line>
           <option name="timeStamp" value="884" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>717</line>
+          <line>754</line>
           <option name="timeStamp" value="885" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>693</line>
+          <line>696</line>
           <option name="timeStamp" value="886" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>666</line>
-          <option name="timeStamp" value="887" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java</url>
@@ -497,7 +508,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>371</line>
+          <line>374</line>
           <option name="timeStamp" value="923" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -528,7 +539,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>395</line>
+          <line>398</line>
           <option name="timeStamp" value="966" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -544,28 +555,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>299</line>
+          <line>302</line>
           <option name="timeStamp" value="974" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>367</line>
+          <line>370</line>
           <option name="timeStamp" value="979" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>354</line>
+          <line>357</line>
           <option name="timeStamp" value="983" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>363</line>
+          <line>366</line>
           <option name="timeStamp" value="985" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>306</line>
-          <option name="timeStamp" value="986" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
@@ -574,33 +580,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>341</line>
+          <line>344</line>
           <option name="timeStamp" value="988" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>467</line>
+          <line>470</line>
           <option name="timeStamp" value="989" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>463</line>
+          <line>466</line>
           <option name="timeStamp" value="990" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
           <line>680</line>
           <option name="timeStamp" value="991" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>294</line>
-          <option name="timeStamp" value="1005" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
-          <line>290</line>
-          <option name="timeStamp" value="1007" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java</url>
@@ -651,6 +647,41 @@
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
           <line>480</line>
           <option name="timeStamp" value="1029" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java</url>
+          <line>851</line>
+          <option name="timeStamp" value="1053" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java</url>
+          <line>1067</line>
+          <option name="timeStamp" value="1063" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java</url>
+          <line>1275</line>
+          <option name="timeStamp" value="1064" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
+          <line>707</line>
+          <option name="timeStamp" value="1069" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
+          <line>706</line>
+          <option name="timeStamp" value="1071" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
+          <line>717</line>
+          <option name="timeStamp" value="1072" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evolve_export/src/org/aspendiscovery/evolve_export/EvolveExportMain.java</url>
+          <line>730</line>
+          <option name="timeStamp" value="1073" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

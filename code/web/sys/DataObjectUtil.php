@@ -505,37 +505,40 @@ class DataObjectUtil {
 						foreach ($subStructure as $subProperty) {
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
-							if (in_array($subProperty['type'], [
-								'text',
-								'enum',
-								'integer',
-								'numeric',
-								'textarea',
-								'html',
-								'markdown',
-								'javascript',
-								'multiSelect',
-								'regularExpression',
-								'multilineRegularExpression',
-							])) {
-								$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
-							} elseif (in_array($subProperty['type'], ['checkbox'])) {
-								$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);
-							} elseif ($subProperty['type'] == 'date') {
-								if (strlen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00') {
-									$subObject->setProperty($subPropertyName, null, $subProperty);
-								} else {
-									$dateParts = date_parse($_REQUEST[$requestKey][$id]);
-									$time = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'];
-									$subObject->setProperty($subPropertyName, $time, $subProperty);
+							$hideInLists = array_key_exists('hideInLists', $subProperty) ? $subProperty['hideInLists'] : false;
+							if (!$hideInLists) {
+								if (in_array($subProperty['type'], [
+									'text',
+									'enum',
+									'integer',
+									'numeric',
+									'textarea',
+									'html',
+									'markdown',
+									'javascript',
+									'multiSelect',
+									'regularExpression',
+									'multilineRegularExpression',
+								])) {
+									$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
+								} elseif (in_array($subProperty['type'], ['checkbox'])) {
+									$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);
+								} elseif ($subProperty['type'] == 'date') {
+									if (strlen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00') {
+										$subObject->setProperty($subPropertyName, null, $subProperty);
+									} else {
+										$dateParts = date_parse($_REQUEST[$requestKey][$id]);
+										$time = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'];
+										$subObject->setProperty($subPropertyName, $time, $subProperty);
+									}
+								} elseif (!in_array($subProperty['type'], [
+									'label',
+									'foreignKey',
+									'oneToMany',
+								])) {
+									//echo("Invalid Property Type " . $subProperty['type']);
+									$logger->log("Invalid Property Type " . $subProperty['type'], Logger::LOG_DEBUG);
 								}
-							} elseif (!in_array($subProperty['type'], [
-								'label',
-								'foreignKey',
-								'oneToMany',
-							])) {
-								//echo("Invalid Property Type " . $subProperty['type']);
-								$logger->log("Invalid Property Type " . $subProperty['type'], Logger::LOG_DEBUG);
 							}
 						}
 					}

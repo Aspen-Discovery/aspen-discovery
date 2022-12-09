@@ -9,6 +9,7 @@ import { userContext } from '../../context/user';
 import { translate } from '../../translations/translations';
 import { listofListSearchResults } from '../../util/search';
 import AddToList from './AddToList';
+import _ from 'lodash';
 
 export default class SearchByList extends Component {
      static contextType = userContext;
@@ -34,8 +35,6 @@ export default class SearchByList extends Component {
           const givenList = route.params?.id ?? '';
           const libraryContext = route.params?.libraryContext ?? [];
           const libraryUrl = libraryContext.baseUrl;
-
-          const params = this.props.route.params;
 
           this.setState({
                isLoading: false,
@@ -73,6 +72,9 @@ export default class SearchByList extends Component {
           const libraryUrl = libraryContext.baseUrl;
 
           await listofListSearchResults(givenListId, 25, 1, libraryUrl).then((response) => {
+               if (_.isNull(route.params?.title)) {
+                    this.props.navigation.setOptions({ title: translate('search.search_results_title') + response.title });
+               }
                this.setState({
                     list: Object.values(response.items),
                     id: response.id,
@@ -101,19 +103,21 @@ export default class SearchByList extends Component {
                                         lg: '120px',
                                    }}
                               />
-                              <Badge
-                                   mt={1}
-                                   _text={{
-                                        fontSize: 10,
-                                        color: 'coolGray.600',
-                                   }}
-                                   bgColor="warmGray.200"
-                                   _dark={{
-                                        bgColor: 'coolGray.900',
-                                        _text: { color: 'warmGray.400' },
-                                   }}>
-                                   {item.language}
-                              </Badge>
+                              {item.language ? (
+                                   <Badge
+                                        mt={1}
+                                        _text={{
+                                             fontSize: 10,
+                                             color: 'coolGray.600',
+                                        }}
+                                        bgColor="warmGray.200"
+                                        _dark={{
+                                             bgColor: 'coolGray.900',
+                                             _text: { color: 'warmGray.400' },
+                                        }}>
+                                        {item.language}
+                                   </Badge>
+                              ) : null}
                               <AddToList itemId={item.id} btnStyle="sm" />
                          </VStack>
                          <VStack w="65%">

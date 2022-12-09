@@ -91,8 +91,6 @@ class Location extends DataObject {
 		$includeAllLibraryBranchesInFacets;
 	public /** @noinspection PhpUnused */
 		$additionalLocationsToShowAvailabilityFor;
-//	public /** @noinspection PhpUnused */ $includeAllRecordsInShelvingFacets;
-//	public /** @noinspection PhpUnused */ $includeAllRecordsInDateAddedFacets;
 	public /** @noinspection PhpUnused */
 		$includeLibraryRecordsToInclude;
 

@@ -2424,6 +2424,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					$sorter = function ($a, $b) {
 						return strcasecmp($a['library'], $b['library']);
 					};
+					global $interface;
+					$interface->assign('localMarcHoldings', $localMarcHoldings);
+					$interface->assign('otherMarcHoldings', $marcHoldings);
 					uasort($marcHoldings, $sorter);
 					uasort($localMarcHoldings, $sorter);
 					$marcHoldings = $localMarcHoldings + $marcHoldings;

@@ -508,8 +508,8 @@ class Record_AJAX extends Action {
 					$numItemsWithoutVolumes++;
 				} else {
 					if ($item->libraryOwned || $item->locallyOwned) {
-						if (array_key_exists($item->volume, $volumeData)) {
-							$volumeData[$item->volume]->setHasLocalItems(true);
+						if (array_key_exists($item->volumeId, $volumeData)) {
+							$volumeData[$item->volumeId]->setHasLocalItems(true);
 						}
 					}
 					$numItemsWithVolumes++;
@@ -526,7 +526,7 @@ class Record_AJAX extends Action {
 			if ($numItemsWithoutVolumes > 0 && $alwaysPlaceVolumeHoldWhenVolumesArePresent) {
 				$blankVolume = new IlsVolumeInfo();
 				$blankVolume->displayLabel = translate([
-					'text' => '*',
+					'text' => 'Untitled Volume',
 					'isPublicFacing' => true,
 				]);
 				$blankVolume->volumeId = '';
@@ -534,10 +534,10 @@ class Record_AJAX extends Action {
 				$blankVolume->relatedItems = '';
 				$blankVolume->setHasLocalItems(false);
 				foreach ($relatedRecord->getItems() as $item) {
-					if ($item->libraryOwned || $item->locallyOwned) {
-						$blankVolume->setHasLocalItems(true);
-					}
-					if (empty($item->volume)) {
+					if (empty($item->volumeId)) {
+						if ($item->libraryOwned || $item->locallyOwned) {
+							$blankVolume->setHasLocalItems(true);
+						}
 						$blankVolume->relatedItems .= $item->itemId . '|';
 					}
 				}
@@ -575,7 +575,7 @@ class Record_AJAX extends Action {
 			$results = [
 				'title' => 'Select a volume to place a hold on',
 				'modalBody' => $interface->fetch('Record/hold-select-volume-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . translate([
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . "<i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
 						'text' => 'Place Hold',
 						'isPublicFacing' => true,
 					]) . '</a>',

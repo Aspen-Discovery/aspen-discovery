@@ -13,6 +13,8 @@ class SirsiDynixROA extends HorizonAPI {
 		global $logger;
 		global $library;
 		global $locationSingleton;
+		global $timer;
+		$timer->logTime("Starting to call symphony $requestType API");
 		$physicalLocation = $locationSingleton->getPhysicalLocation();
 
 		if (empty($workingLibraryId)) {
@@ -72,7 +74,9 @@ class SirsiDynixROA extends HorizonAPI {
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
 
+		$timer->logTime("Finished calling symphony $requestType API");
 		ExternalRequestLogEntry::logRequest('symphony.' . $requestType, $customRequest, $url, $headers, json_encode($params), curl_getinfo($ch)['http_code'], $json, $dataToSanitize);
+
 		if ($json !== false && $json !== 'false') {
 			curl_close($ch);
 			return json_decode($json);
@@ -657,9 +661,9 @@ class SirsiDynixROA extends HorizonAPI {
 
 
 	protected function loginViaWebService($username, $password) {
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		global $library;
-		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$username}_" . session_id();
 		$session = $memCache->get($memCacheKey);
 		if ($session != false) {
 			[
@@ -716,9 +720,9 @@ class SirsiDynixROA extends HorizonAPI {
 	}
 
 	protected function staffLoginViaWebService($username, $password) {
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		global $library;
-		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$username}_" . session_id();
 		$session = $memCache->get($memCacheKey);
 		if ($session) {
 			[
@@ -765,6 +769,8 @@ class SirsiDynixROA extends HorizonAPI {
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
 			}
+			global $timer;
+			$timer->logTime("logged in with staff user");
 		}
 		return $session;
 	}
@@ -1062,6 +1068,8 @@ class SirsiDynixROA extends HorizonAPI {
 		} else {
 			$title = $record->getTitle();
 		}
+		global $timer;
+		$timer->logTime("Loaded record driver");
 
 		if ($type == 'cancel' || $type == 'recall' || $type == 'update') {
 			$result = $this->updateHold($patron, $recordId, $type/*, $title*/);
@@ -1256,6 +1264,8 @@ class SirsiDynixROA extends HorizonAPI {
 				,
 				$sessionToken,
 			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			global $timer;
+			$timer->logTime("Created session token");
 			return $sessionToken;
 		}
 	}
@@ -2155,9 +2165,9 @@ class SirsiDynixROA extends HorizonAPI {
 	}
 
 	public function logout(User $user) {
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		global $library;
-		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}_" . session_id();
 		$memCache->delete($memCacheKey);
 	}
 

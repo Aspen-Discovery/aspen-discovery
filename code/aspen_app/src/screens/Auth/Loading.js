@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { create } from 'apisauce';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Center, Heading, Spinner, VStack } from 'native-base';
@@ -16,7 +16,7 @@ export const LoadingScreen = () => {
      const { user, updateUser, resetUser } = React.useContext(UserContext);
      const { library, updateLibrary, resetLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, resetLocation } = React.useContext(LibraryBranchContext);
-     const { category, list, updateBrowseCategories, updateBrowseCategoryList, resetBrowseCategories } = React.useContext(BrowseCategoryContext);
+     const { category, list, updateBrowseCategories, updateBrowseCategoryList, resetBrowseCategories, maxNum, updateMaxCategories } = React.useContext(BrowseCategoryContext);
 
      useFocusEffect(
           React.useCallback(() => {
@@ -24,7 +24,8 @@ export const LoadingScreen = () => {
                     setLoading(false);
                } else {
                     const unsubscribe = async () => {
-                         await reloadPatronBrowseCategories().then((result) => {
+                         updateMaxCategories(5);
+                         await reloadPatronBrowseCategories(5).then((result) => {
                               updateBrowseCategories(result);
                          });
                          await reloadUserProfile().then((result) => {
@@ -187,7 +188,7 @@ async function reloadUserProfile() {
      return [];
 }
 
-async function reloadPatronBrowseCategories() {
+async function reloadPatronBrowseCategories(maxNum) {
      const postBody = await postData();
      const discovery = create({
           baseURL: LIBRARY.url + '/API',
@@ -195,7 +196,7 @@ async function reloadPatronBrowseCategories() {
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               maxCategories: 5,
+               maxCategories: maxNum,
                LiDARequest: true,
           },
      });

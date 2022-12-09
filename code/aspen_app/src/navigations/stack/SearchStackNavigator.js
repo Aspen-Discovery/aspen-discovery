@@ -12,6 +12,9 @@ import { translate } from '../../translations/translations';
 import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import Search from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
+import SearchByCategory from '../../screens/Search/SearchByCategory';
+import SearchByList from '../../screens/Search/SearchByList';
+import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 
 enableScreens();
 
@@ -45,6 +48,43 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          params: {
                               pendingParams: [],
                          },
+                    })}
+               />
+               <Stack.Screen
+                    name="SearchByCategory"
+                    component={SearchByCategory}
+                    options={({ route }) => ({
+                         title: translate('search.search_results_title') + route.params.title,
+                    })}
+               />
+               <Stack.Screen
+                    name="SearchByList"
+                    component={SearchByList}
+                    options={({ route }) => ({
+                         title: translate('search.search_results_title') + route.params.title,
+                         libraryContext: React.useContext(LibrarySystemContext),
+                         locationContext: React.useContext(LibraryBranchContext),
+                         userContext: React.useContext(UserContext),
+                    })}
+               />
+               <Stack.Screen
+                    name="ListResults"
+                    component={SearchByList}
+                    options={({ route }) => ({
+                         title: translate('search.search_results_title') + route.params.title,
+                         libraryContext: React.useContext(LibrarySystemContext),
+                         locationContext: React.useContext(LibraryBranchContext),
+                         userContext: React.useContext(UserContext),
+                    })}
+               />
+               <Stack.Screen
+                    name="SearchBySavedSearch"
+                    component={SearchBySavedSearch}
+                    options={({ route }) => ({
+                         title: translate('search.search_results_title') + route.params.title,
+                         libraryContext: React.useContext(LibrarySystemContext),
+                         locationContext: React.useContext(LibraryBranchContext),
+                         userContext: React.useContext(UserContext),
                     })}
                />
                <Stack.Screen

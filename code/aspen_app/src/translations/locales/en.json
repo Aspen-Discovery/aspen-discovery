@@ -43,6 +43,9 @@
     "previous": "Previous",
     "next": "Next",
     "loading": "Loading..."
+    "save": "Save",
+    "saving": "Saving...",
+    "edit": "Edit"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -184,6 +187,8 @@
     "create_list": "Create List",
     "create_new_list": "Create a new list",
     "create_new_list_item": "Create a new list from item",
+    "creating_list": "Creating List...",
+    "list_created": "List created",
     "no_lists_yet": "You have no lists yet",
     "save_to_list": "Save to List",
     "num_items_on_list": "{{num}} items"

@@ -373,7 +373,7 @@ class UserAccount {
 					AspenError::raiseError("Error validating saved session for user $activeUserId, the user was not found in the database.");
 				}
 			} else {
-				$logger->log("Found cached user {$userData->id}", Logger::LOG_DEBUG);
+				//$logger->log("Found cached user {$userData->id}", Logger::LOG_DEBUG);
 			}
 			UserAccount::$isLoggedIn = true;
 
@@ -530,7 +530,7 @@ class UserAccount {
 				global $serverName;
 				global $configArray;
 				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, $configArray['Caching']['user']);
-				$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
+				//$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
 
 				$validUsers[] = $tempUser;
 				if ($primaryUser == null) {
@@ -631,11 +631,11 @@ class UserAccount {
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					/** @var Memcache $memCache */ global $memCache;
+					global $memCache;
 					global $serverName;
 					global $configArray;
 					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
-					$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
+					//$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
 					if ($validatedViaSSO) {
 						$_SESSION['loggedInViaCAS'] = true;
 					}
@@ -724,9 +724,9 @@ class UserAccount {
 			global $interface;
 			$interface->assign('loggedIn', false);
 
-			global $logger;
-			$logger->log('Finished updating session as part of softLogout, will write on shutdown', Logger::LOG_DEBUG);
-			$logger->log(print_r($_SESSION, true), Logger::LOG_DEBUG);
+			//global $logger;
+			//$logger->log('Finished updating session as part of softLogout, will write on shutdown', Logger::LOG_DEBUG);
+			//$logger->log(print_r($_SESSION, true), Logger::LOG_DEBUG);
 		}
 	}
 
