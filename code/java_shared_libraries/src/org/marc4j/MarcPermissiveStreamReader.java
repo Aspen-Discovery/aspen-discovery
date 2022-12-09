@@ -777,8 +777,18 @@ public class MarcPermissiveStreamReader implements MarcReader {
                 // one byte too short.
                 if ((directoryLength - offsetToFT) % 12 == 11 && tag.charAt(1) != '0') {
                     final String tagA = "0" + dirEntry.substring(0, 2);
-                    final int lengthA = Integer.parseInt(dirEntry.substring(2, 6));
-                    final int offsetA = Integer.parseInt(dirEntry.substring(6, 11));
+                    int lengthA;
+                    try {
+                        lengthA = Integer.parseInt(dirEntry.substring(2, 6));
+                    } catch (NumberFormatException nfe) {
+                        throw new MarcException("Leader position 2-6 was not an integer");
+                    }
+                    int offsetA;
+                    try {
+                        offsetA = Integer.parseInt(dirEntry.substring(6, 11));
+                    } catch (NumberFormatException nfe) {
+                        throw new MarcException("Leader position 6-11 was not an integer");
+                    }
                     if (recordBuf[directoryLength] == Constants.FT && recordBuf[directoryLength + lengthA] == Constants.FT) {
                         record.addError("n/a", "n/a", MarcError.MAJOR_ERROR,
                                 "Directory length is not a multiple of 12 bytes long.  Prepending a zero and trying to continue.");

@@ -3,6 +3,7 @@ package org.aspendiscovery.evolve_export;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -289,6 +290,8 @@ public class EvolveExportMain {
 				JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
 				JSONObject firstResponse = loginResponseData.getJSONObject(0);
 				String accessToken = firstResponse.getString("LoginToken");
+
+				numProcessed += checkForDeletedBibs(accessToken);
 
 				//Get a list of holdings that have changed from the last update time
 				String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
@@ -692,6 +695,40 @@ public class EvolveExportMain {
 		}
 
 		return totalChanges;
+	}
+
+	private static int checkForDeletedBibs(String accessToken) {
+		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+		GroupedWorkIndexer indexer = getGroupedWorkIndexer();
+		recordGroupingProcessor.loadExistingTitles(logEntry);
+		int recordsDeleted = 0;
+
+		String allBibsUrl = baseUrl + "/Holding/Token=" + accessToken + "%7CALLHOLDINGS=Yes";
+		WebServiceResponse allBibsResponse = NetworkUtils.getURL(allBibsUrl, logger);
+		if (allBibsResponse.isSuccess()) {
+			JSONArray allBibsResponseData = allBibsResponse.getJSONResponseAsArray();
+			for (int i = 0; i < allBibsResponseData.length(); i++) {
+				JSONObject curBib = allBibsResponseData.getJSONObject(i);
+				if (!curBib.isNull("ID")){
+					String id = curBib.getString("ID");
+					getRecordGroupingProcessor().removeExistingRecord(id);
+				}
+			}
+
+			HashMap<String, IlsTitle> remainingRecords = recordGroupingProcessor.getExistingRecords();
+			for (String idToDelete : remainingRecords.keySet()) {
+				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), idToDelete);
+				if (result.reindexWork) {
+					indexer.processGroupedWork(result.permanentId);
+				} else if (result.deleteWork) {
+					//Delete the work from solr and the database
+					indexer.deleteRecord(result.permanentId);
+				}
+				logEntry.incDeleted();
+				recordsDeleted++;
+			}
+		}
+		return recordsDeleted;
 	}
 
 	/**
