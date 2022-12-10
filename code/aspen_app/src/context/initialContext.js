@@ -171,9 +171,11 @@ export const LibraryBranchProvider = ({ children }) => {
 export const UserProvider = ({ children }) => {
      const [user, setUser] = useState();
      const [accounts, setLinkedAccounts] = useState();
+     const [viewers, setLinkedViewerAccounts] = useState();
      const [lists, setLists] = useState();
      const [language, setLanguage] = useState();
      const [locations, setPickupLocations] = useState();
+     const [readingHistory, setReadingHistory] = useState();
 
      const updateUser = (data) => {
           if (_.isUndefined(data)) {
@@ -204,6 +206,11 @@ export const UserProvider = ({ children }) => {
           console.log('updated linked accounts in UserContext');
      };
 
+     const updateLinkedViewerAccounts = (data) => {
+          setLinkedViewerAccounts(data);
+          console.log('updated linked viewer accounts in UserContext');
+     };
+
      const updateLanguage = (data) => {
           setLanguage(data);
           console.log('updated language in UserContext');
@@ -212,6 +219,11 @@ export const UserProvider = ({ children }) => {
      const updatePickupLocations = (data) => {
           setPickupLocations(data);
           console.log('updated pickup locations in UserContext');
+     };
+
+     const updateReadingHistory = (data) => {
+          setReadingHistory(data);
+          console.log('updated reading history in UserContext');
      };
 
      return (
@@ -224,10 +236,14 @@ export const UserProvider = ({ children }) => {
                     updateLists,
                     accounts,
                     updateLinkedAccounts,
+                    viewers,
+                    updateLinkedViewerAccounts,
                     language,
                     updateLanguage,
                     locations,
                     updatePickupLocations,
+                    readingHistory,
+                    updateReadingHistory,
                }}>
                {children}
           </UserContext.Provider>

@@ -8,6 +8,8 @@ import { create } from 'apisauce';
 import { PATRON } from '../loadPatron';
 import { popAlert } from '../../components/loadError';
 import { LIBRARY } from '../loadLibrary';
+import { SEARCH } from '../search';
+import axios from 'axios';
 
 const endpoint = ENDPOINT.user;
 
@@ -222,25 +224,6 @@ export async function getViewerAccounts(url) {
 }
 
 /**
- * Return barcodes for a user's linked accounts
- * @param {string} url
- **/
-export async function getLinkedAccountBarcodes(url) {
-     const postBody = await postData();
-     const discovery = create({
-          baseURL: url,
-          timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
-          auth: createAuthTokens(),
-     });
-     const response = await discovery.post(`${endpoint.url}getLinkedAccountBarcodes`, postBody);
-     if (response.ok) {
-          //
-     }
-     return false;
-}
-
-/**
  * Add an account that the user wants to create a link to
  * @param {array} patronToAdd
  * @param {string} url
@@ -340,4 +323,96 @@ export async function saveLanguage(code, url) {
           console.log(response);
           return false;
      }
+}
+
+/** *******************************************************************
+ * Reading History
+ ******************************************************************* **/
+export async function getReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url) {
+     const { data } = await axios.get('/UserAPI?method=getPatronReadingHistory', {
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(false),
+          auth: createAuthTokens(),
+          params: {
+               pageSize: pageSize,
+               page: page,
+               sort_by: sort,
+          },
+     });
+
+     let morePages = true;
+     if (data.result?.page_current === data.result?.page_total) {
+          morePages = false;
+     }
+
+     return {
+          history: data.result?.readingHistory,
+          totalResults: data.result?.totalResults ?? 0,
+          curPage: data.result?.page_current ?? 0,
+          totalPages: data.result?.page_total ?? 0,
+          hasMore: morePages,
+          sort: data.result?.sort ?? 'checkedOut',
+          message: data.data?.message ?? null,
+     };
+}
+
+export async function optIntoReadingHistory(url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post(`${endpoint.url}optIntoReadingHistory`, postBody);
+     if (response.ok) {
+          //
+     }
+     return false;
+}
+
+export async function optOutOfReadingHistory(url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post(`${endpoint.url}optOutOfReadingHistory`, postBody);
+     if (response.ok) {
+          //
+     }
+     return false;
+}
+
+export async function deleteAllReadingHistory(url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post(`${endpoint.url}deleteAllFromReadingHistory`, postBody);
+     if (response.ok) {
+          //
+     }
+     return false;
+}
+
+export async function deleteSelectedReadingHistory(item, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post(`${endpoint.url}deleteSelectedFromReadingHistory`, postBody);
+     if (response.ok) {
+          //
+     }
+     return false;
 }

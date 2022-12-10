@@ -10,13 +10,14 @@ import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSear
 import MySavedSearches from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
 import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
-import LinkedAccounts from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
+import LinkedAccounts, { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
 import Settings_Notifications from '../../screens/MyAccount/Settings/Notifications';
 import Preferences from '../../screens/MyAccount/Settings/Preferences';
 import { translate } from '../../translations/translations';
 import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles';
 import { MyHolds } from '../../screens/MyAccount/TitlesOnHold';
+import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
 
 const AccountStackNavigator = () => {
      const Stack = createNativeStackNavigator();
@@ -27,8 +28,8 @@ const AccountStackNavigator = () => {
                     headerShown: true,
                     headerBackTitleVisible: false,
                }}>
-               <Stack.Screen name="Preferences" component={Preferences} options={{ title: 'Preferences' }} />
-               <Stack.Screen name="ProfileScreen" component={Profile} options={{ title: 'Profile' }} />
+               <Stack.Screen name="Preferences" component={Preferences} options={{ title: translate('user_profile.preferences') }} />
+               <Stack.Screen name="ProfileScreen" component={Profile} options={{ title: translate('user_profile.profile') }} />
                <Stack.Screen name="SettingsHomeScreen" component={Settings_HomeScreen} options={{ title: translate('user_profile.home_screen_settings') }} />
                <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: translate('user_profile.home_screen_settings') }} />
                <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: translate('user_profile.notification_settings') }} />
@@ -56,7 +57,7 @@ const AccountStackNavigator = () => {
                          title: translate('grouped_work.title'),
                     })}
                />
-               <Stack.Screen name="LinkedAccounts" component={LinkedAccounts} options={{ title: 'Linked Accounts' }} />
+               <Stack.Screen name="LinkedAccounts" component={MyLinkedAccounts} options={{ title: translate('linked_accounts.title') }} />
                <Stack.Screen
                     name="Lists"
                     component={MyLists}
@@ -68,7 +69,8 @@ const AccountStackNavigator = () => {
                     }}
                />
                <Stack.Screen name="List" component={MyList} options={({ route }) => ({ title: route.params.title })} />
-               <Stack.Screen name="SavedSearches" component={MySavedSearches} options={{ title: 'Saved Searches' }} />
+               <Stack.Screen name="ReadingHistory" component={MyReadingHistory} options={{ title: translate('reading_history.title') }} />
+               <Stack.Screen name="SavedSearches" component={MySavedSearches} options={{ title: translate('saved_searches.title') }} />
                <Stack.Screen name="SavedSearch" component={SavedSearchScreen} options={({ route }) => ({ title: route.params.title })} />
                <Stack.Screen
                     name="ItemDetails"
@@ -81,7 +83,5 @@ const AccountStackNavigator = () => {
           </Stack.Navigator>
      );
 };
-
-const AddToListStack = () => {};
 
 export default AccountStackNavigator;
