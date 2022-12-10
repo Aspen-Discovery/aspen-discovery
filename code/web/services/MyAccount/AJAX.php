@@ -4849,8 +4849,8 @@ class MyAccount_AJAX extends JSON_Action {
 					'AllowSwipe' => false,
 					'AllowCCPayment' => true,
 					'AllowACHPayment' => false,
-					'ReturnURL' => $configArray['Site']['url'] . "/MyAccount/InvoiceCloudCompleted?payment=" . $payment->id,
-					'PostBackURL' => $configArray['Site']['url'] . "/InvoiceCloud/Complete",
+					'ReturnURL' => $configArray['Site']['url'] . "/InvoiceCloud/Complete?payment=" . $payment->id,
+					'PostBackURL' => $configArray['Site']['url'] . "/InvoiceCloud/Process",
 					'BillerReference' => $payment->id,
 					'ViewMode' => 0,
 				];
