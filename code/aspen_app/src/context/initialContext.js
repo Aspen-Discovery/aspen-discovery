@@ -67,7 +67,16 @@ export const ThemeProvider = ({ children }) => {
           setTheme([]);
      };
 
-     return <ThemeContext.Provider value={{ theme, updateTheme, resetTheme }}>{children}</ThemeContext.Provider>;
+     return (
+          <ThemeContext.Provider
+               value={{
+                    theme,
+                    updateTheme,
+                    resetTheme,
+               }}>
+               {children}
+          </ThemeContext.Provider>
+     );
 };
 
 export const DiscoveryProvider = ({ children }) => {
@@ -176,11 +185,7 @@ export const UserProvider = ({ children }) => {
      const [locations, setPickupLocations] = useState();
 
      const updateUser = (data) => {
-          if (_.isUndefined(data)) {
-               console.log(data);
-          }
           setUser(data);
-          console.log(data);
           PATRON.listLastUsed = data.lastListUsed ?? null;
           PATRON.num.holds = data.numHolds;
           console.log('updated UserContext');
