@@ -181,7 +181,7 @@ export const UserProvider = ({ children }) => {
           }
           setUser(data);
           console.log(data);
-          PATRON.listLastUsed = data.listLastUsed ?? null;
+          PATRON.listLastUsed = data.lastListUsed ?? null;
           PATRON.num.holds = data.numHolds;
           console.log('updated UserContext');
      };
