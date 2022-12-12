@@ -1065,8 +1065,8 @@ class Sierra extends Millennium {
 		$primaryName = reset($patronInfo->names);
 		if (strpos($primaryName, ',') !== false) {
 			[
-				$firstName,
 				$lastName,
+				$firstName,
 			] = explode(',', $primaryName, 2);
 		} else {
 			$lastName = $primaryName;
