@@ -6,7 +6,7 @@ class LocationCombinedResultSection extends CombinedResultSection {
 	public $__table = 'location_combined_results_section';    // table name
 	public $locationId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
@@ -19,7 +19,7 @@ class LocationCombinedResultSection extends CombinedResultSection {
 			$locationList[$location->locationId] = $location->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
+		$structure = parent::getObjectStructure($context);
 		$structure['locationId'] = [
 			'property' => 'locationId',
 			'type' => 'enum',

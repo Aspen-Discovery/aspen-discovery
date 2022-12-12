@@ -47,8 +47,8 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return BrowseCategoryGroup::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return BrowseCategoryGroup::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -7,7 +7,7 @@ class OMDBSetting extends DataObject {
 	public $apiKey;
 	public $fetchCoversWithoutDates;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -36,7 +36,7 @@ class OMDBSetting extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$result = parent::update();
 		if (in_array('fetchCoversWithoutDates', $this->_changedFields)) {
 			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';

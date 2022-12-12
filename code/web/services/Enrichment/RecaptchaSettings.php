@@ -38,8 +38,8 @@ class Enrichment_RecaptchaSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return RecaptchaSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return RecaptchaSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

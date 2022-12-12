@@ -36,8 +36,8 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 		return 'weight asc';
 	}
 
-	function getObjectStructure(): array {
-		return CollectionSpotlightList::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CollectionSpotlightList::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -10,7 +10,7 @@ class VdxHoldGroup extends DataObject {
 	protected $_locations;
 	protected $_locationCodes;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$locationList = Location::getLocationList(false);
 
 		return [
@@ -52,7 +52,7 @@ class VdxHoldGroup extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
@@ -60,7 +60,7 @@ class VdxHoldGroup extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLocations();

@@ -1,9 +1,9 @@
 <?php
 
-class TaskPartnerLink extends DataObject {
-	public $__table = 'development_task_partner_link';
+class TaskDeveloperLink extends DataObject {
+	public $__table = 'development_task_developer_link';
 	public $id;
-	public $partnerId;
+	public $userId;
 	public $taskId;
 
 	static function getObjectStructure($context = ''): array {
@@ -15,14 +15,12 @@ class TaskPartnerLink extends DataObject {
 			$taskList[$task->id] = $task->name;
 		}
 
-		$partnerList = [];
-		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
-		$partner = new AspenSite();
-		$partner->siteType = 0;
-		$partner->orderBy('name asc');
-		$partner->find();
-		while ($partner->fetch()) {
-			$partnerList[$partner->id] = $partner->name;
+		$userList = [];
+		$user = new User();
+		$user->source = 'development';
+		$user->find();
+		while ($user->fetch()) {
+			$userList[$user->id] = $user->displayName;
 		}
 
 		return [
@@ -32,12 +30,12 @@ class TaskPartnerLink extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id',
 			],
-			'partnerId' => [
-				'property' => 'partnerId',
+			'userId' => [
+				'property' => 'userId',
 				'type' => 'enum',
-				'values' => $partnerList,
-				'label' => 'Partner',
-				'description' => 'The partner who requested the task',
+				'values' => $userList,
+				'label' => 'Developer',
+				'description' => 'A developer working on this task',
 				'required' => true,
 			],
 			'taskId' => [
@@ -45,7 +43,7 @@ class TaskPartnerLink extends DataObject {
 				'type' => 'enum',
 				'values' => $taskList,
 				'label' => 'Task',
-				'description' => 'The task related to the partner',
+				'description' => 'The task being developed',
 				'required' => true,
 			],
 		];

@@ -62,8 +62,8 @@ class Admin_Administrators extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return User::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return User::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

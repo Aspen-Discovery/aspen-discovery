@@ -9,9 +9,9 @@ class AspenRelease extends DataObject {
 	public $_relatedTasks;
 	public $_totalStoryPoints;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
-		$developmentTaskStructure = DevelopmentTask::getObjectStructure();
+		$developmentTaskStructure = DevelopmentTask::getObjectStructure($context);
 		unset($developmentTaskStructure['releaseId']);
 		return [
 			'id' => [
@@ -94,7 +94,7 @@ class AspenRelease extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();
@@ -102,7 +102,7 @@ class AspenRelease extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();

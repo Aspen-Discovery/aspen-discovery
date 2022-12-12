@@ -48,7 +48,7 @@ class BlockPatronAccountLink extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) {
 			$this->setLastError("Could not find a user for the blocked barcode that was provided");
@@ -66,7 +66,7 @@ class BlockPatronAccountLink extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) {
 			$this->setLastError("Could not find a user for the blocked barcode that was provided");
@@ -101,7 +101,7 @@ class BlockPatronAccountLink extends DataObject {
 		return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			[
 				'property' => 'id',

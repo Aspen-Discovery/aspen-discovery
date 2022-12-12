@@ -41,8 +41,8 @@ class Admin_DonationsSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return DonationsSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return DonationsSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

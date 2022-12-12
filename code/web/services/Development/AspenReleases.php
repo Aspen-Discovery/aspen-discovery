@@ -37,8 +37,8 @@ class Development_AspenReleases extends ObjectEditor {
 		return 'id';
 	}
 
-	function getObjectStructure(): array {
-		return AspenRelease::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AspenRelease::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

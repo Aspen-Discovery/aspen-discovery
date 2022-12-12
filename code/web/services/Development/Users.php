@@ -1,27 +1,27 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
 
-class Greenhouse_Sites extends ObjectEditor {
+class Development_Users extends ObjectEditor {
 	function getObjectType(): string {
-		return 'AspenSite';
+		return 'User';
 	}
 
 	function getToolName(): string {
-		return 'Sites';
+		return 'Users';
 	}
 
 	function getModule(): string {
-		return 'Greenhouse';
+		return 'Development';
 	}
 
 	function getPageTitle(): string {
-		return 'Aspen Sites';
+		return 'Development Users';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-		$object = new AspenSite();
+		$object = new User();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
@@ -34,11 +34,12 @@ class Greenhouse_Sites extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'name asc';
+		return 'id desc';
 	}
 
-	function getObjectStructure($context = ''): array {
-		return AspenSite::getObjectStructure($context);
+	function applyFilters(DataObject $object) {
+		$object->source = 'development';
+		parent::applyFilters($object);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -68,12 +69,12 @@ class Greenhouse_Sites extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
+		$breadcrumbs[] = new Breadcrumb('/Development/Users', 'Users');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'greenhouse';
+		return 'development';
 	}
 
 	function canView(): bool {
@@ -85,7 +86,15 @@ class Greenhouse_Sites extends ObjectEditor {
 		return false;
 	}
 
-	protected function getDefaultRecordsPerPage() {
-		return 100;
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true) {
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
+
+	public function getContext(): string {
+		return 'development';
+	}
+
+	function getObjectStructure($context = ''): array {
+		return User::getObjectStructure($context);
 	}
 }

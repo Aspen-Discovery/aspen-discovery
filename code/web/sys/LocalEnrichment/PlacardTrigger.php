@@ -8,7 +8,7 @@ class PlacardTrigger extends DataObject {
 	public $triggerWord;
 	public $exactMatch;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

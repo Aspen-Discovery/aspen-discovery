@@ -9,7 +9,7 @@ class DonationEarmark extends DataObject {
 	public $weight;
 	public $label;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

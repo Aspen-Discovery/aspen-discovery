@@ -26,7 +26,7 @@ class SideLoadScope extends DataObject {
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$validSideLoads = [];
 		$sideLoad = new SideLoad();
 		$sideLoad->orderBy('name');
@@ -35,10 +35,10 @@ class SideLoadScope extends DataObject {
 			$validSideLoads[$sideLoad->id] = $sideLoad->name;
 		}
 
-		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure();
+		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure($context);
 		unset($librarySideLoadScopeStructure['sideLoadScopeId']);
 
-		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
+		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure($context);
 		unset($locationSideLoadScopeStructure['sideLoadScopeId']);
 
 		return [
@@ -210,7 +210,7 @@ class SideLoadScope extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -219,7 +219,7 @@ class SideLoadScope extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

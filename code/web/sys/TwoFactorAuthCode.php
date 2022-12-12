@@ -12,7 +12,7 @@ class TwoFactorAuthCode extends DataObject {
 	public $dateSent;
 	public $status;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		return [
 			'id' => [
 				'property' => 'id',

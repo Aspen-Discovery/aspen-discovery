@@ -7,7 +7,7 @@ class BadWord extends DataObject {
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

@@ -38,8 +38,8 @@ class Development_Partners extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		$structure = AspenSite::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		$structure = AspenSite::getObjectStructure($context);
 		foreach ($structure as $propertyName => $property) {
 			if (!in_array($property['property'], [
 				'id',

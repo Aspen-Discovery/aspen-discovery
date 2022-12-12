@@ -63,7 +63,7 @@ class UserList extends DataObject {
 		// this puts items with no set weight towards the end of the list
 	];
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -118,7 +118,7 @@ class UserList extends DataObject {
 		return parent::insert();
 	}
 
-	function update() {
+	function update($context = '') {
 		if ($this->created == 0) {
 			$this->created = time();
 		}

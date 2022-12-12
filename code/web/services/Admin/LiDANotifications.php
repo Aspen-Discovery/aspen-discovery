@@ -65,8 +65,8 @@ class Admin_LiDANotifications extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return LiDANotification::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return LiDANotification::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

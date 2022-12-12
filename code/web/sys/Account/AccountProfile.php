@@ -36,7 +36,7 @@ class AccountProfile extends DataObject {
 	/** @var bool|IndexingProfile|null */
 	private $_indexingProfile = false;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -303,7 +303,7 @@ class AccountProfile extends DataObject {
 		];
 	}
 
-	function insert() {
+	function insert($context = '') {
 		global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);
@@ -313,7 +313,7 @@ class AccountProfile extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	function update() {
+	function update($context = '') {
 		global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);

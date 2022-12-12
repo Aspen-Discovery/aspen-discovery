@@ -37,8 +37,8 @@ class Admin_PTypes extends ObjectEditor {
 		return 'pType asc';
 	}
 
-	function getObjectStructure(): array {
-		return PType::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return PType::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -50,8 +50,8 @@ class TwoFactorAuth extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return TwoFactorAuthSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return TwoFactorAuthSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

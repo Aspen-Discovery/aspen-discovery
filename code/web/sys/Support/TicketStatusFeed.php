@@ -6,7 +6,7 @@ class TicketStatusFeed extends DataObject {
 	public $name;
 	public $rssFeed;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

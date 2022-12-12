@@ -36,8 +36,8 @@ class Admin_RedwoodUserContributions extends ObjectEditor {
 		return 'dateContributed desc';
 	}
 
-	function getObjectStructure(): array {
-		return UserContribution::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return UserContribution::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

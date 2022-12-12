@@ -24,7 +24,7 @@ class EBSCOhostDatabase extends DataObject {
 		];
 	}
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		return [
 			'id' => [
 				'property' => 'id',

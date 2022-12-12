@@ -41,8 +41,8 @@ class Admin_BrowseCategories extends ObjectEditor {
 		return 'label asc';
 	}
 
-	function getObjectStructure(): array {
-		return BrowseCategory::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return BrowseCategory::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

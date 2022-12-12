@@ -24,7 +24,7 @@ class Session extends DataObject {
 	/* the code above is auto generated do not remove the tag below */
 	###END_AUTOCODE
 
-	function update() {
+	function update($context = '') {
 		if ($this->data == null) {
 			$this->data = '';
 		}
@@ -36,7 +36,7 @@ class Session extends DataObject {
 		return $ret;
 	}
 
-	function insert() {
+	function insert($context = '') {
 		if ($this->data == null) {
 			$this->data = '';
 		}

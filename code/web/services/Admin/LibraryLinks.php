@@ -46,8 +46,8 @@ class Admin_LibraryLinks extends ObjectEditor {
 		return 'weight asc';
 	}
 
-	function getObjectStructure(): array {
-		$structure = LibraryLink::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		$structure = LibraryLink::getObjectStructure($context);
 		unset ($structure['weight']);
 		return $structure;
 	}

@@ -37,8 +37,8 @@ class Greenhouse_Settings extends ObjectEditor {
 		return 'id';
 	}
 
-	function getObjectStructure(): array {
-		return GreenhouseSettings::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GreenhouseSettings::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

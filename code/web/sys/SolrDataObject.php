@@ -6,9 +6,9 @@ abstract class SolrDataObject extends DataObject {
 	/**
 	 * Return an array describing the structure of the object fields, etc.
 	 */
-	abstract static function getObjectStructure();
+	abstract static function getObjectStructure($context = '');
 
-	function update() {
+	function update($context = '') {
 		return $this->updateDetailed(true);
 	}
 
@@ -45,7 +45,7 @@ abstract class SolrDataObject extends DataObject {
 		}
 	}
 
-	function insert() {
+	function insert($context = '') {
 		return $this->insertDetailed(true);
 	}
 

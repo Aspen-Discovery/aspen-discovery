@@ -21,8 +21,8 @@ class PortalRow extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
-		$portalCellStructure = PortalCell::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$portalCellStructure = PortalCell::getObjectStructure($context);
 
 		$colorOptions = [
 			'default' => 'default',
@@ -130,7 +130,7 @@ class PortalRow extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		//Updates to properly update settings based on the ILS
 		$ret = parent::update();
 		if ($ret !== FALSE) {
@@ -145,7 +145,7 @@ class PortalRow extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';

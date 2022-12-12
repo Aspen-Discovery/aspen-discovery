@@ -8,7 +8,7 @@ class FileUpload extends DataObject {
 	public $thumbFullPath;
 	public $type;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

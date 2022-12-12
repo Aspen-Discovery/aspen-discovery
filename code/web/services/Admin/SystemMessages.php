@@ -62,8 +62,8 @@ class Admin_SystemMessages extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function getObjectStructure(): array {
-		return SystemMessage::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SystemMessage::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

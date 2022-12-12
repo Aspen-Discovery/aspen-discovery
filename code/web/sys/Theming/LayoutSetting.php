@@ -18,7 +18,7 @@ class LayoutSetting extends DataObject {
 	public $dismissPlacardButtonIcon;
 	public $contrastRatio;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$contrastOptions = [
 			'4.50' => '4.5 (Default, WCAG 2.0 AA compliance)',
 			'7.00' => '7.0 (WCAG 2.1 AAA compliance)',

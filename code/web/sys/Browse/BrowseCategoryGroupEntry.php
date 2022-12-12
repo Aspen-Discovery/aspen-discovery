@@ -16,7 +16,7 @@ class BrowseCategoryGroupEntry extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Load Groups for lookup values
 		$groups = new BrowseCategoryGroup();
 		$groups->orderBy('name');

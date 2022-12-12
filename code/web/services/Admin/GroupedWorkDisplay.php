@@ -42,8 +42,8 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return GroupedWorkDisplaySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GroupedWorkDisplaySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

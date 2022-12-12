@@ -11,7 +11,7 @@ class Axis360Scope extends DataObject {
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$axis360Settings = [];
 		$axis360Setting = new Axis360Setting();
 		$axis360Setting->find();
@@ -112,7 +112,7 @@ class Axis360Scope extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -121,7 +121,7 @@ class Axis360Scope extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

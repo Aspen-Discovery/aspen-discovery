@@ -8,8 +8,8 @@ class GroupedWorkFacetGroup extends DataObject {
 
 	public $_facets;
 
-	static function getObjectStructure(): array {
-		$facetSettingStructure = GroupedWorkFacet::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$facetSettingStructure = GroupedWorkFacet::getObjectStructure($context);
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['facetGroupId']);
 		unset($facetSettingStructure['showAsDropDown']);
@@ -241,7 +241,7 @@ class GroupedWorkFacetGroup extends DataObject {
 		$this->update();
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveFacets();
@@ -249,7 +249,7 @@ class GroupedWorkFacetGroup extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveFacets();

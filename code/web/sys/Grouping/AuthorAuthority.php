@@ -10,8 +10,8 @@ class AuthorAuthority extends DataObject {
 	public $dateAdded;
 	private $_alternatives;
 
-	public static function getObjectStructure(): array {
-		$alternativesStructure = AuthorAuthorityAlternative::getObjectStructure();
+	public static function getObjectStructure($context = ''): array {
+		$alternativesStructure = AuthorAuthorityAlternative::getObjectStructure($context);
 		return [
 			'id' => [
 				'property' => 'id',
@@ -96,7 +96,7 @@ class AuthorAuthority extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveAlternates();
@@ -109,7 +109,7 @@ class AuthorAuthority extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$this->dateAdded = time();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {

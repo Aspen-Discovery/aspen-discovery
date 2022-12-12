@@ -7,7 +7,7 @@ class NovelistSetting extends DataObject {
 	public $profile;
 	public $pwd;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

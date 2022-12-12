@@ -176,17 +176,17 @@ class IndexingProfile extends DataObject {
 	private $_statusMap;
 	private $_formatMap;
 
-	static function getObjectStructure(): array {
-		$translationMapStructure = TranslationMap::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$translationMapStructure = TranslationMap::getObjectStructure($context);
 		unset($translationMapStructure['indexingProfileId']);
 
-		$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
+		$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure($context);
 		unset($sierraMappingStructure['indexingProfileId']);
 
-		$statusMapStructure = StatusMapValue::getObjectStructure();
+		$statusMapStructure = StatusMapValue::getObjectStructure($context);
 		unset($statusMapStructure['indexingProfileId']);
 
-		$formatMapStructure = FormatMapValue::getObjectStructure();
+		$formatMapStructure = FormatMapValue::getObjectStructure($context);
 		unset($formatMapStructure['indexingProfileId']);
 
 		$structure = [
@@ -1092,7 +1092,7 @@ class IndexingProfile extends DataObject {
 				'keyThis' => 'id',
 				'keyOther' => 'indexingProfileId',
 				'subObjectType' => 'TimeToReshelve',
-				'structure' => TimeToReshelve::getObjectStructure(),
+				'structure' => TimeToReshelve::getObjectStructure($context),
 				'sortable' => true,
 				'storeDb' => true,
 				'allowEdit' => true,
@@ -1228,7 +1228,7 @@ class IndexingProfile extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret === FALSE) {
 			global $logger;
@@ -1249,7 +1249,7 @@ class IndexingProfile extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret === FALSE) {
 			global $logger;

@@ -7,7 +7,7 @@ class NonGroupedRecord extends DataObject {
 	public $recordId;
 	public $notes;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		global $indexingProfiles;
 		global $sideLoadSettings;
 		$availableSources = [];

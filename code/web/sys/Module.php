@@ -13,7 +13,7 @@ class Module extends DataObject {
 	public $settingsClassPath;
 	public $settingsClassName;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

@@ -38,8 +38,8 @@ class OverDrive_Scopes extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return OverDriveScope::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return OverDriveScope::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -12,7 +12,7 @@ class StaffMember extends DataObject {
 	public $photo;
 	public $description;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Staff Members'));
 		return [
 			'id' => [

@@ -11,7 +11,7 @@ class CourseReservesIndexingSettings extends DataObject {
 	/** @var CourseReserveLibraryMapValue[] */
 	public $_libraryMappings;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -49,7 +49,7 @@ class CourseReservesIndexingSettings extends DataObject {
 				'keyThis' => 'id',
 				'keyOther' => 'settingId',
 				'subObjectType' => 'CourseReserveLibraryMapValue',
-				'structure' => CourseReserveLibraryMapValue::getObjectStructure(),
+				'structure' => CourseReserveLibraryMapValue::getObjectStructure($context),
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => false,
@@ -93,7 +93,7 @@ class CourseReservesIndexingSettings extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret === FALSE) {
 			return $ret;
@@ -108,7 +108,7 @@ class CourseReservesIndexingSettings extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret === FALSE) {
 			return $ret;

@@ -70,20 +70,20 @@ class SideLoad extends DataObject {
 
 	private $_scopes;
 
-	static function getObjectStructure(): array {
-		$translationMapStructure = TranslationMap::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$translationMapStructure = TranslationMap::getObjectStructure($context);
 		unset($translationMapStructure['indexingProfileId']);
 
-		$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
+		$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure($context);
 		unset($sierraMappingStructure['indexingProfileId']);
 
-		$statusMapStructure = StatusMapValue::getObjectStructure();
+		$statusMapStructure = StatusMapValue::getObjectStructure($context);
 		unset($statusMapStructure['indexingProfileId']);
 
-		$formatMapStructure = FormatMapValue::getObjectStructure();
+		$formatMapStructure = FormatMapValue::getObjectStructure($context);
 		unset($formatMapStructure['indexingProfileId']);
 
-		$sideLoadScopeStructure = SideLoadScope::getObjectStructure();
+		$sideLoadScopeStructure = SideLoadScope::getObjectStructure($context);
 		unset($sideLoadScopeStructure['sideLoadId']);
 
 		global $serverName;
@@ -454,7 +454,7 @@ class SideLoad extends DataObject {
 		];
 	}
 
-	public function update() {
+	public function update($context = '') {
 		if (in_array('deletedRecordsIds', $this->_changedFields)) {
 			$this->runFullUpdate = true;
 		}
@@ -475,7 +475,7 @@ class SideLoad extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (!file_exists($this->marcPath)) {

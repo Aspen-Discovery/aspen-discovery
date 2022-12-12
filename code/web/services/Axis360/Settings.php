@@ -38,8 +38,8 @@ class Axis360_Settings extends ObjectEditor {
 		return 'userInterfaceUrl asc';
 	}
 
-	function getObjectStructure(): array {
-		return Axis360Setting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Axis360Setting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

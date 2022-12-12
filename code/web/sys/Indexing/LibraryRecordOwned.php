@@ -6,7 +6,7 @@ class LibraryRecordOwned extends RecordOwned {
 	public $__table = 'library_records_owned';    // table name
 	public $libraryId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')) {
@@ -19,7 +19,7 @@ class LibraryRecordOwned extends RecordOwned {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
+		$structure = parent::getObjectStructure($context);
 		$structure['libraryId'] = [
 			'property' => 'libraryId',
 			'type' => 'enum',

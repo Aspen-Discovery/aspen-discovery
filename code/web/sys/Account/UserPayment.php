@@ -20,7 +20,7 @@ class UserPayment extends DataObject {
 	public $transactionType;
 	public $aciToken;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		return [
 			'id' => [
 				'property' => 'id',

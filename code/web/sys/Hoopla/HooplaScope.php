@@ -53,7 +53,7 @@ class HooplaScope extends DataObject {
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$hooplaSettings = [];
 		$hooplaSetting = new HooplaSetting();
 		$hooplaSetting->find();
@@ -330,7 +330,7 @@ class HooplaScope extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -339,7 +339,7 @@ class HooplaScope extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

@@ -16,8 +16,8 @@ class CloudLibrarySetting extends DataObject {
 
 	private $_scopes;
 
-	public static function getObjectStructure(): array {
-		$cloudLibraryScopeStructure = CloudLibraryScope::getObjectStructure();
+	public static function getObjectStructure($context = ''): array {
+		$cloudLibraryScopeStructure = CloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['settingId']);
 		return [
 			'id' => [
@@ -102,7 +102,7 @@ class CloudLibrarySetting extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
@@ -110,7 +110,7 @@ class CloudLibrarySetting extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (empty($this->_scopes)) {

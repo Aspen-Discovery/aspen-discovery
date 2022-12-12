@@ -33,8 +33,8 @@ class AspenLiDA_NotificationsReport extends ObjectEditor {
 		return 'id desc';
 	}
 
-	function getObjectStructure(): array {
-		return UserNotification::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return UserNotification::getObjectStructure($context);
 	}
 
 	function getIdKeyColumn(): string {

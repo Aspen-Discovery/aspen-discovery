@@ -14,7 +14,7 @@ class DonationReceipt extends DataObject {
 	public $isPatronCancel;
 	public $libraryId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 
 		return [
 			'id' => [

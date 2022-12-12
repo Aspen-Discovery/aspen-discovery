@@ -131,7 +131,7 @@ class BrowseCategory extends BaseBrowsable {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
@@ -154,7 +154,7 @@ class BrowseCategory extends BaseBrowsable {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
@@ -207,7 +207,7 @@ class BrowseCategory extends BaseBrowsable {
 		}
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
@@ -216,7 +216,7 @@ class BrowseCategory extends BaseBrowsable {
 		$sourceCourseReserves = CourseReserve::getSourceListsForBrowsingAndCarousels();
 
 		// Get Structure for Sub-categories
-		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();
+		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure($context);
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
 		$browseCategorySources = BaseBrowsable::getBrowseSources();

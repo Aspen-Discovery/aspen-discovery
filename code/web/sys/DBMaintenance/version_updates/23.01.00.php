@@ -13,6 +13,25 @@ function getUpdates23_01_00(): array
 		], //sample*/
 
 		//mark
+		'users_to_tasks' => [
+			'title' => 'Development - Link Users To Tasks',
+			'description' => 'Development - Link Users To Tasks',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS development_task_developer_link (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT(11), 
+					taskId INT(11), 
+					UNIQUE INDEX (userId, taskId)
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS development_task_qa_link (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT(11), 
+					taskId INT(11), 
+					UNIQUE INDEX (userId, taskId)
+				) ENGINE INNODB',
+			],
+		],
+		//development_partners_to_tasks
 
 		//kirstien
 		'add_account_alerts_notification' => [

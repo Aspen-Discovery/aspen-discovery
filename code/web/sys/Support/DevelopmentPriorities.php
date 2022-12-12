@@ -7,7 +7,7 @@ class DevelopmentPriorities extends DataObject {
 	public $priority2;
 	public $priority3;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 		$supportConnections = new RequestTrackerConnection();
 		$activeTickets = [];

@@ -10,7 +10,7 @@ class Variable extends DataObject {
 		return ['id'];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

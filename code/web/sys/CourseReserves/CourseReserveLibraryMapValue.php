@@ -12,7 +12,7 @@ class CourseReserveLibraryMapValue extends DataObject {
 		return "$this->value => $this->translation";
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

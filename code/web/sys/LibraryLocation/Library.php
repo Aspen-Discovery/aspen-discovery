@@ -399,41 +399,41 @@ class Library extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		// get the structure for the library system's holidays
-		$holidaysStructure = Holiday::getObjectStructure();
+		$holidaysStructure = Holiday::getObjectStructure($context);
 
 		// we don't want to make the libraryId property editable
 		// because it is associated with this library system only
 		unset($holidaysStructure['libraryId']);
 
-		$libraryLinksStructure = LibraryLink::getObjectStructure();
+		$libraryLinksStructure = LibraryLink::getObjectStructure($context);
 		unset($libraryLinksStructure['weight']);
 		unset($libraryLinksStructure['libraryId']);
 
-		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure();
+		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure($context);
 		unset($libraryRecordOwnedStructure['libraryId']);
 
-		$libraryRecordToIncludeStructure = LibraryRecordToInclude::getObjectStructure();
+		$libraryRecordToIncludeStructure = LibraryRecordToInclude::getObjectStructure($context);
 		unset($libraryRecordToIncludeStructure['libraryId']);
 		unset($libraryRecordToIncludeStructure['weight']);
 
-		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure();
+		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure($context);
 		unset($librarySideLoadScopeStructure['libraryId']);
 
-		$manageMaterialsRequestFieldsToDisplayStructure = MaterialsRequestFieldsToDisplay::getObjectStructure();
+		$manageMaterialsRequestFieldsToDisplayStructure = MaterialsRequestFieldsToDisplay::getObjectStructure($context);
 		unset($manageMaterialsRequestFieldsToDisplayStructure['libraryId']); //needed?
 		unset($manageMaterialsRequestFieldsToDisplayStructure['weight']);
 
-		$materialsRequestFormatsStructure = MaterialsRequestFormats::getObjectStructure();
+		$materialsRequestFormatsStructure = MaterialsRequestFormats::getObjectStructure($context);
 		unset($materialsRequestFormatsStructure['libraryId']); //needed?
 		unset($materialsRequestFormatsStructure['weight']);
 
-		$materialsRequestFormFieldsStructure = MaterialsRequestFormFields::getObjectStructure();
+		$materialsRequestFormFieldsStructure = MaterialsRequestFormFields::getObjectStructure($context);
 		unset($materialsRequestFormFieldsStructure['libraryId']); //needed?
 		unset($materialsRequestFormFieldsStructure['weight']);
 
-		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure();
+		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
 
@@ -623,7 +623,7 @@ class Library extends DataObject {
 			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
 		}
 
-		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
+		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['libraryId']);
 
 		$barcodeTypes = [
@@ -3511,7 +3511,7 @@ class Library extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		//Updates to properly update settings based on the ILS
 		global $configArray;
 		$ils = $configArray['Catalog']['ils'];
@@ -3582,7 +3582,7 @@ class Library extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();

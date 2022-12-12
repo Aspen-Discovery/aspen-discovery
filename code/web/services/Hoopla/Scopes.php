@@ -38,8 +38,8 @@ class Hoopla_Scopes extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return HooplaScope::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return HooplaScope::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

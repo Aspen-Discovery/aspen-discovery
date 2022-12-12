@@ -18,7 +18,7 @@ class LMLibraryCalendarSetting extends DataObject {
 
 	private $_libraries;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer LibraryMarket LibraryCalendar Settings'));
 
 		return [
@@ -89,7 +89,7 @@ class LMLibraryCalendarSetting extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -102,7 +102,7 @@ class LMLibraryCalendarSetting extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

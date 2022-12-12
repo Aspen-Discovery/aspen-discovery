@@ -42,8 +42,8 @@ class OpenArchives_Collections extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return OpenArchivesCollection::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return OpenArchivesCollection::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -32,7 +32,7 @@ class Obituary extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			[
 				'property' => 'obituaryId',
@@ -99,7 +99,7 @@ class Obituary extends DataObject {
 		];
 	}
 
-	function insert() {
+	function insert($context = '') {
 		$ret = parent::insert();
 		//Load the person this is for, and update solr
 		if ($this->personId) {
@@ -112,7 +112,7 @@ class Obituary extends DataObject {
 		return $ret;
 	}
 
-	function update() {
+	function update($context = '') {
 		$ret = parent::update();
 		//Load the person this is for, and update solr
 		if ($this->personId) {

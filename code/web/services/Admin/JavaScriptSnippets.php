@@ -62,8 +62,8 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return JavaScriptSnippet::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return JavaScriptSnippet::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

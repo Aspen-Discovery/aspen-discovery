@@ -12,7 +12,7 @@ class GoogleApiSetting extends DataObject {
 	public $googleBooksKey;
 	public $googleMapsKey;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

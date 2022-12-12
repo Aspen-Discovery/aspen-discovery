@@ -9,7 +9,7 @@ class VdxSetting extends DataObject {
 	public $patronKey;
 	public $reqVerifySource;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

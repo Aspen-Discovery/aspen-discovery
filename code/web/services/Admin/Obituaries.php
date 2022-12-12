@@ -34,8 +34,8 @@ class Admin_Obituaries extends ObjectEditor {
 		return 'date asc';
 	}
 
-	function getObjectStructure(): array {
-		return Obituary::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Obituary::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

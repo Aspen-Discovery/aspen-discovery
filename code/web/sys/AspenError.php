@@ -65,7 +65,7 @@ class AspenError extends DataObject {
 		}
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

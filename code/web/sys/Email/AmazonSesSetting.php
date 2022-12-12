@@ -25,7 +25,7 @@ class AmazonSesSetting extends DataObject {
 		return ['accessKeySecret'];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$regions = [
 			'us-east-2' => 'US East (Ohio)',
 			'us-east-1' => 'US East (N. Virginia)',

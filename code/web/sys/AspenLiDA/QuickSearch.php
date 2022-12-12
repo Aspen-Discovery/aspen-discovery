@@ -10,7 +10,7 @@ class QuickSearch extends DataObject {
 	public $label;
 	public $quickSearchSettingId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

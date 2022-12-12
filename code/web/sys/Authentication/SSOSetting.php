@@ -56,9 +56,9 @@ class SSOSetting extends DataObject {
 	private $_libraries;
 	private $_dataMapping;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-		$fieldMapping = SSOMapping::getObjectStructure();
+		$fieldMapping = SSOMapping::getObjectStructure($context);
 
 		$services = [
 			'oauth' => 'OAuth 2.0',
@@ -508,7 +508,7 @@ class SSOSetting extends DataObject {
 		return $this->_dataMapping;
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -549,7 +549,7 @@ class SSOSetting extends DataObject {
 		}
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

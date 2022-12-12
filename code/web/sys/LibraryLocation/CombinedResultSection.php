@@ -8,7 +8,7 @@ abstract class CombinedResultSection extends DataObject {
 	public $source;
 	public $numberOfResultsToShow;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		global $configArray;
 		global $enabledModules;
 		global $library;

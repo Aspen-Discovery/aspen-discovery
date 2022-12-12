@@ -34,8 +34,8 @@ class Admin_Hosting extends ObjectEditor {
 		return 'host asc';
 	}
 
-	function getObjectStructure(): array {
-		return HostInformation::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return HostInformation::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

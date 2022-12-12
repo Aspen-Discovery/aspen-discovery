@@ -187,12 +187,12 @@ class Checkout extends CircEntry {
 		}
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$this->performPreSaveChecks();
 		return parent::insert();
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$this->performPreSaveChecks();
 		return parent::update();
 	}

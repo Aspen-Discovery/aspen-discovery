@@ -9,7 +9,7 @@ class HideSubjectFacet extends DataObject {
 	public $subjectNormalized;
 	public $dateAdded;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -42,13 +42,13 @@ class HideSubjectFacet extends DataObject {
 		];
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$this->dateAdded = time();
 		$this->subjectNormalized = $this->normalizeSubject($this->subjectTerm);
 		return parent::insert();
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$this->subjectNormalized = $this->normalizeSubject($this->subjectTerm);
 		return parent::update();
 	}

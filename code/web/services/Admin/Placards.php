@@ -62,8 +62,8 @@ class Admin_Placards extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function getObjectStructure(): array {
-		return Placard::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Placard::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -40,8 +40,8 @@ class ILS_CurbsidePickupSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return CurbsidePickupSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CurbsidePickupSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

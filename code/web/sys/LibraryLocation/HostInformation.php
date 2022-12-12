@@ -9,7 +9,7 @@ class HostInformation extends DataObject {
 	public $locationId;
 	public $defaultPath;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Host Information'));
 		$locationList = [
 			-1,

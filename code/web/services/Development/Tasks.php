@@ -37,8 +37,8 @@ class Development_Tasks extends ObjectEditor {
 		return 'id desc';
 	}
 
-	function getObjectStructure(): array {
-		return DevelopmentTask::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return DevelopmentTask::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

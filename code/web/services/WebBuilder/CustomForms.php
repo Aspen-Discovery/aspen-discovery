@@ -42,8 +42,8 @@ class WebBuilder_CustomForms extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function getObjectStructure(): array {
-		return CustomForm::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CustomForm::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

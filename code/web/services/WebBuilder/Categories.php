@@ -36,8 +36,8 @@ class WebBuilder_Categories extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return WebBuilderCategory::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WebBuilderCategory::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

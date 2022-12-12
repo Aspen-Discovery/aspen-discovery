@@ -48,8 +48,8 @@ class WebBuilder_PortalPages extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function getObjectStructure(): array {
-		return PortalPage::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return PortalPage::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -6,7 +6,7 @@ class EpicPartnerLink extends DataObject {
 	public $partnerId;
 	public $epicId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$epicList = [];
 		require_once ROOT_DIR . '/sys/Development/DevelopmentEpic.php';
 		$epic = new DevelopmentEpic();

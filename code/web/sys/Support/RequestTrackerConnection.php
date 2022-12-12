@@ -6,7 +6,7 @@ class RequestTrackerConnection extends DataObject {
 	public $baseUrl;
 	public $activeTicketFeed;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		return [
 			'id' => [
 				'property' => 'id',

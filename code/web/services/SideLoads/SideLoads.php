@@ -76,8 +76,8 @@ class SideLoads_SideLoads extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return SideLoad::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SideLoad::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

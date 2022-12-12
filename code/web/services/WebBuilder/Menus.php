@@ -52,8 +52,8 @@ class WebBuilder_Menus extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return WebBuilderMenu::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WebBuilderMenu::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

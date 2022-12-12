@@ -12,7 +12,7 @@ class BrandedAppSetting extends DataObject {
 	public $showFavicons;
 	public $logoNotification;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 
 		return [
 			'id' => [

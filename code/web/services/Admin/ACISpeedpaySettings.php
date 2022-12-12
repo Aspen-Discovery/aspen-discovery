@@ -37,8 +37,8 @@ class Admin_ACISpeedpaySettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return ACISpeedpaySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return ACISpeedpaySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

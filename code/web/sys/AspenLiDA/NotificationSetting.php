@@ -13,7 +13,7 @@ class NotificationSetting extends DataObject {
 
 	private $_libraries;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$sendToOptions = [
 			0 => 'None (disabled)',
 			1 => 'Only Staff Users',
@@ -111,7 +111,7 @@ class NotificationSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -119,7 +119,7 @@ class NotificationSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

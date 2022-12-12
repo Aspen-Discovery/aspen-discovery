@@ -11,7 +11,7 @@ class Language extends DataObject {
 	public $facetValue;
 	public $displayToTranslatorsOnly;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

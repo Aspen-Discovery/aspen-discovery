@@ -34,8 +34,8 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 		return 'source asc';
 	}
 
-	function getObjectStructure(): array {
-		return NonGroupedRecord::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return NonGroupedRecord::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

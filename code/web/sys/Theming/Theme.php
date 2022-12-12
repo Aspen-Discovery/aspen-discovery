@@ -407,7 +407,7 @@ class Theme extends DataObject {
 	private $_libraries;
 	private $_locations;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 
@@ -2047,7 +2047,7 @@ class Theme extends DataObject {
 		return $validationResults;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
@@ -2058,7 +2058,7 @@ class Theme extends DataObject {
 		return $ret;
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
 		$ret = parent::update();

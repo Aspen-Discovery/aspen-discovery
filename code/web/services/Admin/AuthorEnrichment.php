@@ -34,8 +34,8 @@ class Admin_AuthorEnrichment extends ObjectEditor {
 		return 'authorName asc';
 	}
 
-	function getObjectStructure(): array {
-		return AuthorEnrichment::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AuthorEnrichment::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

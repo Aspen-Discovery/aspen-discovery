@@ -17,7 +17,7 @@ class SubBrowseCategories extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$browseCategoryList = self::listBrowseCategories();
 		return [
 			'id' => [

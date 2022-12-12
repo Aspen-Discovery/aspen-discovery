@@ -37,8 +37,8 @@ class Development_Sprints extends ObjectEditor {
 		return 'startDate';
 	}
 
-	function getObjectStructure(): array {
-		return DevelopmentSprint::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return DevelopmentSprint::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

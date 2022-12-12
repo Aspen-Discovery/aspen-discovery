@@ -25,7 +25,7 @@ class BasicPage extends DB_LibraryLinkedObject {
 	private $_allowAccess;
 	private $_allowableHomeLocations;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Basic Pages'));
 		$locationsList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Basic Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
@@ -146,7 +146,7 @@ class BasicPage extends DB_LibraryLinkedObject {
 		return $parsedown->parse($this->contents);
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$this->lastUpdate = time();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
@@ -159,7 +159,7 @@ class BasicPage extends DB_LibraryLinkedObject {
 		return $ret;
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$this->lastUpdate = time();
 		$ret = parent::update();
 		if ($ret !== FALSE) {

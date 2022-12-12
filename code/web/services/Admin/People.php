@@ -34,9 +34,9 @@ class Admin_People extends ObjectEditor {
 		return 'lastName asc';
 	}
 
-	function getObjectStructure(): array {
+	function getObjectStructure($context = ''): array {
 		$person = new Person();
-		return $person->getObjectStructure();
+		return $person->getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

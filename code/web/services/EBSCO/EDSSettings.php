@@ -38,8 +38,8 @@ class EBSCO_EDSSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return EDSSettings::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return EDSSettings::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

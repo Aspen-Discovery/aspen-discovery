@@ -33,8 +33,8 @@ class Admin_AuthorAuthorities extends ObjectEditor {
 		return 'author asc';
 	}
 
-	function getObjectStructure(): array {
-		return AuthorAuthority::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AuthorAuthority::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

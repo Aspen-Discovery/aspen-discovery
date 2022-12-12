@@ -12,7 +12,7 @@ class GroupedWorkTestSearch extends DataObject {
 	public $status;
 	public $notes;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchIndexes = $searchObject->getSearchIndexes();
 		return [
@@ -138,7 +138,7 @@ class GroupedWorkTestSearch extends DataObject {
 		$this->update();
 	}
 
-	public function update() {
+	public function update($context = '') {
 		if (!empty($this->_changedFields) && (in_array('searchIndex', $this->_changedFields) || in_array('searchTerm', $this->_changedFields) || in_array('expectedGroupedWorks', $this->_changedFields) || in_array('unexpectedGroupedWorks', $this->_changedFields))) {
 			$this->status = 0;
 			$this->notes = '';

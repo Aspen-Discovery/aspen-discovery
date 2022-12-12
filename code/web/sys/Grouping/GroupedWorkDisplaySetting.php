@@ -106,7 +106,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	private $_libraries;
 	private $_locations;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 
@@ -118,7 +118,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 			$facetGroups[$facetGroup->id] = $facetGroup->name;
 		}
 
-		$moreDetailsStructure = GroupedWorkMoreDetails::getObjectStructure();
+		$moreDetailsStructure = GroupedWorkMoreDetails::getObjectStructure($context);
 		unset($moreDetailsStructure['weight']);
 		unset($moreDetailsStructure['groupedWorkSettingsId']);
 
@@ -611,7 +611,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		if (isset($this->showInSearchResultsMainDetails) && is_array($this->showInSearchResultsMainDetails)) {
 			// convert array to string before storing in database
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
@@ -636,7 +636,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		if (isset($this->showInSearchResultsMainDetails) && is_array($this->showInSearchResultsMainDetails)) {
 			// convert array to string before storing in database
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);

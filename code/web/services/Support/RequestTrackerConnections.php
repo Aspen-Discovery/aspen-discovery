@@ -36,8 +36,8 @@ class RequestTrackerConnections extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return RequestTrackerConnection::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return RequestTrackerConnection::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

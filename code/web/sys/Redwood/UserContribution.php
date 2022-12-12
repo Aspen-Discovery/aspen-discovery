@@ -20,7 +20,7 @@ class UserContribution extends DataObject {
 	public $requireShareAlike;
 	public $dateContributed;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$structure = [
 			[
 				'property' => 'title',
@@ -103,7 +103,7 @@ class UserContribution extends DataObject {
 		return $structure;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		global $user;
 		$this->dateContributed = time();
 		$this->userId = $user->id;

@@ -21,17 +21,17 @@ class DonationsSetting extends DataObject {
 
 	private $_libraries;
 
-	static function getObjectStructure(): array {
-		$donationsValuesStructure = DonationValue::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$donationsValuesStructure = DonationValue::getObjectStructure($context);
 		unset($donationsValuesStructure['donationSettingId']);
 
-		$donationsFormFieldsStructure = DonationFormFields::getObjectStructure();
+		$donationsFormFieldsStructure = DonationFormFields::getObjectStructure($context);
 		unset($donationsFormFieldsStructure['donationSettingId']);
 
-		$donationsEarmarksStructure = DonationEarmark::getObjectStructure();
+		$donationsEarmarksStructure = DonationEarmark::getObjectStructure($context);
 		unset($donationsEarmarksStructure['donationSettingId']);
 
-		$donationsDedicationTypesStructure = DonationDedicationType::getObjectStructure();
+		$donationsDedicationTypesStructure = DonationDedicationType::getObjectStructure($context);
 		unset($donationsDedicationTypesStructure['donationSettingId']);
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
@@ -192,7 +192,7 @@ class DonationsSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -204,7 +204,7 @@ class DonationsSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

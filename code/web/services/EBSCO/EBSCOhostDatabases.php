@@ -38,8 +38,8 @@ class EBSCO_EBSCOhostDatabases extends ObjectEditor {
 		return 'displayName asc';
 	}
 
-	function getObjectStructure(): array {
-		return EBSCOhostDatabase::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return EBSCOhostDatabase::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

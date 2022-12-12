@@ -32,7 +32,7 @@ class CustomFormField extends DataObject {
 		'6' => 'url',
 	];
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

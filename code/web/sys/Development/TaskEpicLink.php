@@ -9,7 +9,7 @@ class TaskEpicLink extends DataObject {
 
 	private $_task;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$taskList = [];
 		require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
 		$task = new DevelopmentTask();

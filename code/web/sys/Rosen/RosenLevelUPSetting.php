@@ -11,7 +11,7 @@ class RosenLevelUPSetting extends DataObject {
 	public $lu_multi_district_name;
 	public $lu_school_name;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

@@ -33,8 +33,8 @@ class Admin_eCommerceReport extends ObjectEditor {
 		return 'transactionDate desc';
 	}
 
-	function getObjectStructure(): array {
-		return UserPayment::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return UserPayment::getObjectStructure($context);
 	}
 
 	function getIdKeyColumn(): string {

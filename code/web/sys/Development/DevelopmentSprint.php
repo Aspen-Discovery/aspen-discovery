@@ -12,9 +12,9 @@ class DevelopmentSprint extends DataObject {
 	public $_totalStoryPoints;
 
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		require_once ROOT_DIR . '/sys/Development/TaskSprintLink.php';
-		$taskSprintLinkStructure = TaskSprintLink::getObjectStructure();
+		$taskSprintLinkStructure = TaskSprintLink::getObjectStructure($context);
 		unset($taskSprintLinkStructure['sprintId']);
 
 		return [
@@ -105,7 +105,7 @@ class DevelopmentSprint extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();
@@ -113,7 +113,7 @@ class DevelopmentSprint extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();

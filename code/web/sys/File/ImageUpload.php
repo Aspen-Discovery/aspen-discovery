@@ -21,7 +21,7 @@ class ImageUpload extends DataObject {
 	static $mediumSize = 400;
 	static $smallSize = 200;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		global $serverName;
 		return [
 			'id' => [
@@ -149,12 +149,12 @@ class ImageUpload extends DataObject {
 		return '/WebBuilder/ViewImage?size=' . $size . '&id=' . $this->id;
 	}
 
-	function insert() {
+	function insert($context = '') {
 		$this->generateDerivatives();
 		return parent::insert();
 	}
 
-	function update() {
+	function update($context = '') {
 		$this->generateDerivatives();
 		return parent::update();
 	}

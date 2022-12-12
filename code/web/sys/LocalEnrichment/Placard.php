@@ -30,8 +30,8 @@ class Placard extends DB_LibraryLocationLinkedObject {
 		return ['title'];
 	}
 
-	static function getObjectStructure(): array {
-		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$placardTriggerStructure = PlacardTrigger::getObjectStructure($context);
 		unset($placardTriggerStructure['placardId']);
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Placards'));
@@ -222,7 +222,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -233,7 +233,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

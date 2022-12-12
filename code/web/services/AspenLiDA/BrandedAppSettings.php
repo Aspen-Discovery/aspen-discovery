@@ -39,8 +39,8 @@ class AspenLiDA_BrandedAppSettings extends ObjectEditor {
 		return 'slugName asc';
 	}
 
-	function getObjectStructure(): array {
-		return BrandedAppSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return BrandedAppSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

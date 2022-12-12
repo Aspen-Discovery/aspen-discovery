@@ -294,6 +294,7 @@ class User extends DataObject {
 				}
 
 				$escapedId = $this->escape($this->id);
+				/** @noinspection SqlResolve */
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()) {
 					$this->_roles[$role->roleId] = clone $role;
@@ -785,7 +786,7 @@ class User extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	function update() {
+	function update($context = '') {
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
@@ -799,14 +800,19 @@ class User extends DataObject {
 		return $result;
 	}
 
-	function insert() {
-		//set default values as needed
-		if (!isset($this->homeLocationId)) {
+	function insert($context = '') {
+		if ($context == 'development') {
+			$this->source = 'development';
 			$this->homeLocationId = 0;
-			global $logger;
-			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
+			$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+		} else {
+			if (!isset($this->homeLocationId)) {
+				$this->homeLocationId = 0;
+				global $logger;
+				$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
+			}
+			$this->pickupLocationId = $this->homeLocationId;
 		}
-		$this->pickupLocationId = $this->homeLocationId;
 		if (!isset($this->myLocation1Id)) {
 			$this->myLocation1Id = 0;
 		}
@@ -816,14 +822,18 @@ class User extends DataObject {
 		if (!isset($this->bypassAutoLogout)) {
 			$this->bypassAutoLogout = 0;
 		}
-
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
 		$this->fixFieldLengths();
-		parent::insert();
-		$this->saveRoles();
+
+		//set default values as needed
+		$ret = parent::insert();
+		if ($context != 'development') {
+			$this->saveRoles();
+		}
 		$this->clearCache();
+		return $ret;
 	}
 
 	function hasRole($roleName) {
@@ -831,7 +841,7 @@ class User extends DataObject {
 		return in_array($roleName, $myRoles);
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$roleList = Role::getLookup();
@@ -842,6 +852,19 @@ class User extends DataObject {
 				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id of the in the system',
+			],
+			'username' => [
+				'property' => 'username',
+				'type' => 'text',
+				'label' => 'Username',
+				'description' => 'The username for the user.',
+			],
+			'password' => [
+				'property' => 'password',
+				'type' => 'storedPassword',
+				'label' => 'Password',
+				'description' => 'The password for the user.',
+				'hideInLists' => true
 			],
 			'firstname' => [
 				'property' => 'firstname',
@@ -854,6 +877,12 @@ class User extends DataObject {
 				'type' => 'label',
 				'label' => 'Last Name',
 				'description' => 'The last name of the user.',
+			],
+			'email' => [
+				'property' => 'email',
+				'type' => 'email',
+				'label' => 'Email Address',
+				'description' => 'The email for the user.',
 			],
 			'homeLibraryName' => [
 				'property' => 'homeLibraryName',
@@ -886,6 +915,19 @@ class User extends DataObject {
 			'label' => 'Roles',
 			'description' => 'A list of roles that the user has.',
 		];
+
+		if ($context == '') {
+			unset($structure['username']);
+			unset($structure['password']);
+			unset($structure['email']);
+		} elseif ($context == 'development') {
+			$structure['firstname']['type'] = 'text';
+			$structure['lastname']['type'] = 'text';
+			unset($structure['homeLibraryName']);
+			unset($structure['homeLocation']);
+			unset($structure['barcode']);
+			unset($structure['roles']);
+		}
 
 		return $structure;
 	}
@@ -1234,7 +1276,7 @@ class User extends DataObject {
 			if ($this->isValidForEContentSource('overdrive')) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$overDriveCheckedOutItems = $driver->getCheckouts($this, false);
+				$overDriveCheckedOutItems = $driver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
 				$timer->logTime("Loaded transactions from overdrive. {$this->id}");
 				if ($source == 'all' || $source == 'overdrive') {
@@ -1349,7 +1391,7 @@ class User extends DataObject {
 		$holdsToReturn = [
 			'available' => [],
 			'unavailable' => [],
-		];;
+		];
 		if ($reloadHoldInformation) {
 			//When we reload holds, we will fetch from all sources so they can be cached.
 
@@ -1360,9 +1402,6 @@ class User extends DataObject {
 			global $offlineMode;
 			if ($this->hasIlsConnection() && !$offlineMode) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
-				if ($ilsHolds instanceof AspenError) {
-					$ilsHolds = [];
-				}
 				$allHolds = $ilsHolds;
 				if ($source == 'all' || $source == 'ils') {
 					$holdsToReturn = $ilsHolds;
@@ -1889,7 +1928,7 @@ class User extends DataObject {
 			'message' => 'Error modifying hold.',
 		];
 
-		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allHolds = $user->getHolds();
 		$allUnavailableHolds = $allHolds['unavailable'];
 		$success = 0;
 		$failed = 0;
@@ -1923,15 +1962,6 @@ class User extends DataObject {
 						if ($tmpResult['success']) {
 							$success++;
 						}
-
-					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else/** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
-						//Can't freeze cloud library holds
-//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-//						$driver = new CloudLibraryDriver();
-//						$tmpResult = $driver->freezeHold($user, $recordId);
-//						if ($tmpResult['success']) {
-//							$success++;
-//						}
 					} else {
 						$failed++;
 						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
@@ -1992,7 +2022,7 @@ class User extends DataObject {
 			'message' => 'Error modifying hold.',
 		];
 
-		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allHolds = $user->getHolds();
 		$allUnavailableHolds = $allHolds['unavailable'];
 		$success = 0;
 		$failed = 0;
@@ -2121,7 +2151,7 @@ class User extends DataObject {
 		if ($renewLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $user) {
-					$linkedResults = $user->renewAll(false);
+					$linkedResults = $user->renewAll();
 					//Merge results
 					$renewAllResults['Renewed'] += $linkedResults['Renewed'];
 					$renewAllResults['NotRenewed'] += $linkedResults['NotRenewed'];

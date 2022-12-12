@@ -22,7 +22,7 @@ class PType extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$roles = [];
 		$roles[-1] = 'None';
 		$role = new Role();

@@ -13,7 +13,7 @@ class TranslationMap extends DataObject {
 	/** @var TranslationMapValue[] */
 	private $_translationMapValues;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$indexingProfiles = [];
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();
@@ -62,7 +62,7 @@ class TranslationMap extends DataObject {
 				'keyThis' => 'id',
 				'keyOther' => 'translationMapId',
 				'subObjectType' => 'TranslationMapValue',
-				'structure' => TranslationMapValue::getObjectStructure(),
+				'structure' => TranslationMapValue::getObjectStructure($context),
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => false,
@@ -108,7 +108,7 @@ class TranslationMap extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret === FALSE) {
 			return $ret;
@@ -123,7 +123,7 @@ class TranslationMap extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret === FALSE) {
 			return $ret;

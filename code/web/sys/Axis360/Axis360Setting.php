@@ -16,8 +16,8 @@ class Axis360Setting extends DataObject {
 
 	private $_scopes;
 
-	public static function getObjectStructure(): array {
-		$axis360ScopeStructure = Axis360Scope::getObjectStructure();
+	public static function getObjectStructure($context = ''): array {
+		$axis360ScopeStructure = Axis360Scope::getObjectStructure($context);
 		unset($axis360ScopeStructure['settingId']);
 
 		return [
@@ -104,7 +104,7 @@ class Axis360Setting extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
@@ -112,7 +112,7 @@ class Axis360Setting extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (empty($this->_scopes)) {

@@ -37,8 +37,8 @@ class QuipuECardSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return QuipuECardSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return QuipuECardSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

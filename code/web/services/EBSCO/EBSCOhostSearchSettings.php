@@ -39,8 +39,8 @@ class EBSCO_EBSCOhostSearchSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return EBSCOhostSearchSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return EBSCOhostSearchSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
