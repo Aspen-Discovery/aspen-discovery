@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
-import _ from 'lodash';
 
 export const ThemeContext = React.createContext({
      theme: [],
