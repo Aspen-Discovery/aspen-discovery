@@ -410,7 +410,7 @@ export async function getLinkedAccounts(url = null) {
                accounts = response.data.result.linkedAccounts;
                PATRON.linkedAccounts = accounts;
           }
-          return accounts;
+          return _.values(accounts);
      } else {
           console.log(response);
      }
@@ -432,6 +432,8 @@ export async function getViewers() {
           } catch (e) {
                console.log(e);
           }
+
+          return _.values(viewers);
           //console.log("Viewer accounts saved")
      } else {
           console.log(response);

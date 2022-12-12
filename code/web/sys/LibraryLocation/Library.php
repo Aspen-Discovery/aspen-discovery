@@ -118,6 +118,7 @@ class Library extends DataObject {
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
+	public $invoiceCloudSettingId;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -396,6 +397,7 @@ class Library extends DataObject {
 			'worldPaySettingId',
 			'payPalSettingId',
 			'ebscohostSearchSettingId',
+			'invoiceCloudSettingId'
 		];
 	}
 
@@ -546,6 +548,16 @@ class Library extends DataObject {
 		$aciSpeedpaySettings[-1] = 'none';
 		while ($aciSpeedpaySetting->fetch()) {
 			$aciSpeedpaySettings[$aciSpeedpaySetting->id] = $aciSpeedpaySetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/InvoiceCloudSetting.php';
+		$invoiceCloudSetting = new InvoiceCloudSetting();
+		$invoiceCloudSetting->orderBy('name');
+		$invoiceCloudSettings = [];
+		$invoiceCloudSetting->find();
+		$invoiceCloudSettings[-1] = 'none';
+		while ($invoiceCloudSetting->fetch()) {
+			$invoiceCloudSettings[$invoiceCloudSetting->id] = $invoiceCloudSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2095,13 +2107,14 @@ class Library extends DataObject {
 						'values' => [
 							0 => 'No Payment',
 							1 => 'Link to ILS',
-							4 => 'Comprise SMARTPAY',
-							7 => 'FIS WorldPay',
-							3 => 'MSB',
 							2 => 'PayPal',
+							3 => 'MSB',
+							4 => 'Comprise SMARTPAY',
 							5 => 'ProPay',
 							6 => 'Xpress-pay',
+							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
+							9 => 'InvoiceCloud'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2213,6 +2226,15 @@ class Library extends DataObject {
 						'values' => $aciSpeedpaySettings,
 						'label' => 'ACI Speedpay Settings',
 						'description' => 'The ACI Speedpay settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'invoiceCloudSettingId' => [
+						'property' => 'invoiceCloudSettingId',
+						'type' => 'enum',
+						'values' => $invoiceCloudSettings,
+						'label' => 'InvoiceCloud Settings',
+						'description' => 'The InvoiceCloud settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],

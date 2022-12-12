@@ -1360,6 +1360,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'ACI') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'InvoiceCloud') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -1450,6 +1452,14 @@ AspenDiscovery.Account = (function () {
 		},
 		handleACIError: function (error) {
 			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, false);
+		},
+		createInvoiceCloudOrder: function (finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'InvoiceCloud', transactionType, null);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
 		},
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
