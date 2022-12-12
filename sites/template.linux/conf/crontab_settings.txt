@@ -68,3 +68,18 @@
 # Refresh SAML SSO metadata #
 #############################
 00 05  * * * www-data php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php {sitename}
+
+#########################
+# Fetch Notification Receipts #
+#########################
+0 11 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php {sitename}
+
+#########################
+# Update Saved Searches #
+#########################
+0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php {sitename}
+
+#########################
+# Send Custom LiDA Notifications #
+#########################
+*/15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php {sitename}
