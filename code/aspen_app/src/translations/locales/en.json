@@ -21,6 +21,7 @@
     "contact": "Contact",
     "new": "New!",
     "delete": "Delete",
+    "delete_all": "Delete All",
     "cancel": "Cancel",
     "canceling": "Canceling",
     "public": "Public",
@@ -42,10 +43,11 @@
     "unknown": "Unknown",
     "previous": "Previous",
     "next": "Next",
-    "loading": "Loading..."
+    "loading": "Loading...",
     "save": "Save",
     "saving": "Saving...",
-    "edit": "Edit"
+    "edit": "Edit",
+    "adding": "Adding..."
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -111,12 +113,16 @@
     "notification_settings": "Notification Settings",
     "allow_notifications": "Allow Notifications"
   },
+  "saved_searches": {
+    "title": "Saved Searches"
+  },
   "linked_accounts": {
     "title": "Linked Accounts",
     "account_to_manage": "Account to Manage",
     "username": "Library Card Number",
     "password": "PIN/Password",
     "add": "Add Account",
+    "add_an_account": "Add an Account",
     "select_an_account": "Select an account to place hold for",
     "checkout_to_account": "Checkout to account",
     "place_hold_for_account": "Place hold for account",
@@ -235,6 +241,14 @@
     "unsaved_changes_body_exit": "If you leave now, your changes won't be saved.",
     "update_filters": "Save",
     "continue_anyway": "Discard"
+  },
+  "reading_history": {
+    "title": "Reading History",
+    "disclaimer": "The library takes seriously the privacy of your library records. Therefore, we do not keep track of what you borrow after you return it. However, our automated system has a feature called \"My Reading History\" that allows you to track items you check out. Participation in the feature is entirely voluntary. You may start or stop using it, as well as delete any or all entries in \"My Reading History\" at any time. If you choose to start recording \"My Reading History,\" you agree to allow our automated system to store this data. The library staff does not have access to your \"My Reading History\", however, it is subject to all applicable local, state, and federal laws, and under those laws, could be examined by law enforcement authorities without your permission. If this is of concern to you, you should not use the \"My Reading History\" feature.",
+    "opt_in": "Start Recording My Reading History",
+    "opt_out": "Stop Recording My Reading History",
+    "opt_out_warning": "Opting out of reading history will also delete your entire reading history irreversibly.",
+    "empty": "You do not have any items in your reading list."
   },
   "error": {
     "title": "Error",

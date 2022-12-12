@@ -42,6 +42,23 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//add_account_alerts_notification
+		'add_invoiceCloud' => [
+			'title' => 'Add eCommerce vendor InvoiceCloud',
+			'description' => 'Create InvoiceCloud settings table, update available permissions',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS invoice_cloud_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					apiKey VARCHAR(500) NOT NULL,
+					invoiceTypeId INT(10),
+					ccServiceFee VARCHAR(50)
+				) ENGINE INNODB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer InvoiceCloud', '', 10, 'Controls if the user can change InvoiceCloud settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer InvoiceCloud'))",
+				'ALTER TABLE library ADD COLUMN invoiceCloudSettingId INT(11) DEFAULT -1',
+			],
+		],
+		//add_invoiceCloud
 
 		//kodi
 		'user_browse_add_home' => [

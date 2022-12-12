@@ -448,6 +448,8 @@ class UserAPI extends Action {
 			$userData->expireClose = $accountSummary->isExpirationClose();
 			$userData->expired = $accountSummary->isExpired();
 
+			$accountSummary->setReadingHistory($user->getReadingHistorySize());
+			
 			$userData->numLinkedAccounts = 0;
 			$userData->numLinkedUsers = 0;
 			$userData->numLinkedViewers = 0;

@@ -765,22 +765,47 @@ export async function addLinkedAccount(username, password) {
      }
 }
 
-export async function removeLinkedAccount(id, libraryUrl) {
+export async function removeLinkedAccount(id, url) {
+     let baseUrl = url ?? LIBRARY.url;
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: baseUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
      const response = await api.post('/UserAPI?method=removeAccountLink&idToRemove=' + id, postBody);
      if (response.ok) {
-          //await getLinkedAccounts();
           if (response.data.result.success) {
                popAlert(response.data.result.title, response.data.result.message, 'success');
           } else {
                popAlert(response.data.result.title, response.data.result.message, 'error');
           }
+          return response.data?.result;
+     } else {
+          const problem = problemCodeMap(response.problem);
+          popToast(problem.title, problem.message, 'warning');
+          console.log(response);
+     }
+}
+
+export async function removeLinkedViewerAccount(id, url) {
+     let baseUrl = url ?? LIBRARY.url;
+     const postBody = await postData();
+     const api = create({
+          baseURL: baseUrl + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await api.post('/UserAPI?method=removeViewerAccount&idToRemove=' + id, postBody);
+     if (response.ok) {
+          if (response.data.result.success) {
+               popAlert(response.data.result.title, response.data.result.message, 'success');
+          } else {
+               popAlert(response.data.result.title, response.data.result.message, 'error');
+          }
+          return response.data?.result;
      } else {
           const problem = problemCodeMap(response.problem);
           popToast(problem.title, problem.message, 'warning');

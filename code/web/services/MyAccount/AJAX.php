@@ -4759,6 +4759,134 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function createInvoiceCloudOrder(): array {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('InvoiceCloud');
+		} else {
+			$result = $this->createGenericOrder('InvoiceCloud');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)) {
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
+			/** @var Library $paymentLibrary */ /** @var Library $userLibrary */ /** @var UserPayment $payment */ /** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+			require_once ROOT_DIR . '/sys/ECommerce/InvoiceCloudSetting.php';
+			$invoiceCloudSetting = new InvoiceCloudSetting();
+			$invoiceCloudSetting->id = $paymentLibrary->invoiceCloudSettingId;
+			if ($invoiceCloudSetting->find(true)) {
+				$authRequest = new CurlWrapper();
+				$authorization = $invoiceCloudSetting->apiKey;
+				$authorization = 'Basic ' . base64_encode($authorization);
+				$authRequest->addCustomHeaders([
+					'Content-Type: application/json',
+					'Authorization: ' . $authorization,
+				], true);
+
+				$url = 'https://www.invoicecloud.com/api/v1/biller/status';
+				$authResponse = $authRequest->curlGetPage($url);
+				$authResponse = json_decode($authResponse);
+				if (!$authResponse->Active) {
+					return [
+						'success' => false,
+						'message' => 'Unable to create your order in InvoiceCloud. Library has an inactive account.'
+					];
+				}
+
+				$now = time();
+				$token = 'B' . $patron->getBarcode() . 'T' . $now;
+				$createInvoice = new StdClass();
+				$createInvoice->InvoiceNumber = $token;
+				$createInvoice->TypeID = intval($invoiceCloudSetting->invoiceTypeId);
+				$createInvoice->BalanceDue = $payment->totalPaid;
+				$createInvoice->CCServiceFee = $invoiceCloudSetting->ccServiceFee;
+				$createInvoice->ACHServiceFee = $invoiceCloudSetting->ccServiceFee;
+				$createInvoice->DueDate = date('m/d/Y');
+				$createInvoice->InvoiceDate = date('m/d/Y');
+
+				$createCustomer = new StdClass();
+				$createCustomer->AccountNumber = $patron->getBarcode();
+				$createCustomer->Name = $patron->firstname . ' ' . $patron->lastname;
+				$createCustomer->EmailAddress = $patron->email;
+				$createCustomer->Invoices = [$createInvoice];
+
+				$postParams = [
+					'CreateCustomerRecord' => true,
+					'Customers' => [
+						$createCustomer
+					],
+					'AllowSwipe' => false,
+					'AllowCCPayment' => true,
+					'AllowACHPayment' => false,
+					'ReturnURL' => $configArray['Site']['url'] . "/InvoiceCloud/Complete?payment=" . $payment->id,
+					'PostBackURL' => $configArray['Site']['url'] . "/InvoiceCloud/Process",
+					'BillerReference' => $payment->id,
+					'ViewMode' => 0,
+				];
+
+				$paymentRequest = new CurlWrapper();
+				$paymentRequest->addCustomHeaders([
+					'Content-Type: application/json',
+					'Authorization: ' . $authorization,
+				], true);
+
+				$url = 'https://www.invoicecloud.com/cloudpaymentsapi/v2';
+				$paymentResponse = $paymentRequest->curlPostBodyData($url, $postParams);
+				$paymentResponse = json_decode($paymentResponse);
+				if ($paymentResponse->Message != 'SUCCESS') {
+					return [
+						'success' => false,
+						'message' => 'Unable to create your order in InvoiceCloud. ' . $paymentResponse->Message
+					];
+				}
+				$paymentRequestUrl = $paymentResponse->Data->CloudPaymentURL;
+
+				return [
+					'success' => true,
+					'message' => 'Redirecting to payment processor',
+					'paymentRequestUrl' => $paymentRequestUrl,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'InvoiceCloud was not properly configured for the library.',
+				];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function dismissBrowseCategory() {
 		$patronId = $_REQUEST['patronId'];
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
