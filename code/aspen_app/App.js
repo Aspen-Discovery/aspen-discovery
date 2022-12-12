@@ -20,6 +20,7 @@ import { GLOBALS } from './src/util/globals';
 import { enableScreens } from 'react-native-screens';
 import { getPatronBrowseCategories } from './src/util/loadPatron';
 import { getBrowseCategories, reloadBrowseCategories } from './src/util/loadLibrary';
+import { SplashScreen } from './src/screens/Auth/Splash';
 
 enableScreens();
 
@@ -43,7 +44,6 @@ export default class AppContainer extends Component {
                hasLoaded: false,
           };
           this.aspenTheme = null;
-          //this.login();
      }
 
      componentDidMount = async () => {
@@ -62,172 +62,7 @@ export default class AppContainer extends Component {
                     console.log('Theme previously saved.');
                }
           });
-
-          this.interval = setInterval(async () => {
-               let count = 0;
-               let userToken;
-
-               try {
-                    userToken = await AsyncStorage.getItem('@userToken');
-                    //userToken = await SecureStore.getItemAsync("userToken");
-               } catch (e) {
-                    console.log(e);
-               }
-
-               //console.log(userToken);
-
-               if (userToken) {
-                    //console.log("USER TOKEN FOUND");
-                    if (_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
-                         //console.log("Trying to run async login...");
-                         //await this.login(userToken);
-                    }
-               }
-          }, 5000);
-
-          return () => clearInterval(this.interval);
      };
-
-     componentWillUnmount() {
-          clearInterval(this.interval);
-     }
-
-     async login(userToken) {
-          //console.log("Running login function with user token: " + userToken);
-          if (userToken) {
-               let libraryUrl;
-               let libraryId;
-               let librarySolrScope;
-               let locationId;
-               let libName;
-               try {
-                    libraryUrl = await AsyncStorage.getItem('@pathUrl');
-                    libName = await AsyncStorage.getItem('@libName');
-                    libraryId = await AsyncStorage.getItem('@libraryId');
-                    librarySolrScope = await AsyncStorage.getItem('@solrScope');
-                    locationId = await AsyncStorage.getItem('@locationId');
-               } catch (e) {
-                    console.log(e);
-               }
-
-               if (libraryUrl) {
-                    //console.log("Connecting to " + libName + " using " + libraryUrl);
-                    let postBody = await postData();
-                    const api = create({
-                         baseURL: libraryUrl + '/API',
-                         timeout: GLOBALS.timeoutAverage,
-                         headers: getHeaders(true),
-                         auth: createAuthTokens(),
-                    });
-
-                    //const patronProfile = await AsyncStorage.getItem('@patronProfile');
-                    if (_.isEmpty(this.state.user)) {
-                         //console.log("fetching getPatronProfile...");
-                         const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
-                         if (response.ok) {
-                              let data = [];
-                              if (response.data.result.profile) {
-                                   data = response.data.result.profile;
-                                   this.setState({ user: data });
-                                   await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
-                                   //console.log("patron loaded into context");
-                              }
-                         }
-                    }
-
-                    if (libraryId) {
-                         const api = create({
-                              baseURL: libraryUrl + '/API',
-                              timeout: GLOBALS.timeoutAverage,
-                              headers: getHeaders(),
-                              auth: createAuthTokens(),
-                         });
-
-                         //const libraryProfile = await AsyncStorage.getItem('@libraryInfo');
-                         if (_.isEmpty(this.state.library)) {
-                              //console.log("fetching getLibraryInfo...");
-                              const response = await api.get('/SystemAPI?method=getLibraryInfo', { id: libraryId });
-                              if (response.ok) {
-                                   let data = [];
-                                   if (response.data.result.library) {
-                                        data = response.data.result.library;
-                                        this.setState({ library: data });
-                                        //await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
-                                        //console.log("library loaded into context");
-                                   }
-                              }
-                         }
-                    }
-
-                    if (locationId && librarySolrScope) {
-                         const api = create({
-                              baseURL: libraryUrl + '/API',
-                              timeout: GLOBALS.timeoutAverage,
-                              headers: getHeaders(),
-                              auth: createAuthTokens(),
-                         });
-
-                         //const locationProfile = await AsyncStorage.getItem('@locationInfo');
-                         if (_.isEmpty(this.state.location)) {
-                              const response = await api.get('/SystemAPI?method=getLocationInfo', {
-                                   id: locationId,
-                                   library: librarySolrScope,
-                                   version: Constants.manifest.version,
-                              });
-                              if (response.ok) {
-                                   let data = [];
-                                   if (response.data.result.location) {
-                                        data = response.data.result.location;
-                                        this.setState({ location: data });
-                                   }
-                              }
-                         }
-                    }
-
-                    let discoveryVersion;
-                    if (this.state.library.discoveryVersion) {
-                         let version = this.state.library.discoveryVersion;
-                         version = version.split(' ');
-                         discoveryVersion = version[0];
-                    } else {
-                         discoveryVersion = '22.06.00';
-                    }
-
-                    if (_.isEmpty(this.state.browseCategories)) {
-                         if (discoveryVersion >= '22.12.00') {
-                              await reloadBrowseCategories(5, libraryUrl).then((response) => {
-                                   this.setState({
-                                        browseCategories: response,
-                                   });
-                              });
-                         } else if (discoveryVersion >= '22.07.00') {
-                              await getBrowseCategories(libraryUrl, discoveryVersion, 5).then((response) => {
-                                   this.setState({
-                                        browseCategories: response,
-                                   });
-                              });
-                         } else if (discoveryVersion >= '22.05.00') {
-                              await getBrowseCategories(libraryUrl, discoveryVersion).then((response) => {
-                                   this.setState({
-                                        browseCategories: response,
-                                   });
-                              });
-                         } else {
-                              const user = this.state;
-                              await getPatronBrowseCategories(libraryUrl, user.id).then((response) => {
-                                   this.setState({
-                                        browseCategories: response,
-                                   });
-                              });
-                         }
-                    }
-
-                    //await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
-                    await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
-                    await AsyncStorage.setItem('@locationInfo', JSON.stringify(this.state.location));
-               }
-          }
-     }
 
      render() {
           const user = this.state.user;
@@ -270,11 +105,7 @@ export default class AppContainer extends Component {
                                    <Sentry.Native.TouchEventBoundary>
                                         <NativeBaseProvider>
                                              <StatusBar barStyle="dark-content" />
-                                             <Center flex={1}>
-                                                  <HStack>
-                                                       <Spinner size="lg" accessibilityLabel="Loading..." />
-                                                  </HStack>
-                                             </Center>
+                                             <SplashScreen />
                                         </NativeBaseProvider>
                                    </Sentry.Native.TouchEventBoundary>
                               </SSRProvider>
