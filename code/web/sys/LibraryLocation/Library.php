@@ -194,6 +194,7 @@ class Library extends DataObject {
 	public $allowNameUpdates;
 	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
+	public $cityStateField;
 	public $allowPatronPhoneNumberUpdates;
 	public $useAllCapsWhenUpdatingProfile;
 	public $requireNumericPhoneNumbersWhenUpdatingProfile;
@@ -1521,7 +1522,7 @@ class Library extends DataObject {
 							'bypassReviewQueueWhenUpdatingProfile' => [
 								'property' => 'bypassReviewQueueWhenUpdatingProfile',
 								'type' => 'checkbox',
-								'label' => 'Bypass Review Queue Updating Profile',
+								'label' => 'Bypass Review Queue Updating Profile (Koha only)',
 								'description' => 'Whether or not the Koha review queue for patron modifications is bypassed when updates are submitted',
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1558,6 +1559,19 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Notice Type in Profile',
 								'description' => 'Whether or not patrons should be able to change how they receive notices in their profile.',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'cityStateField' => [
+								'property' => 'cityStateField',
+								'type' => 'enum',
+								'values' => [
+									0 => 'CITY / STATE field',
+									1 => 'CITY and STATE fields',
+								],
+								'label' => 'City / State Field (Symphony Only)',
+								'description' => 'The field to load and update city and state from (symphony only).',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],

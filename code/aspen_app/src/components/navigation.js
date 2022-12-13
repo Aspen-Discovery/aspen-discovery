@@ -122,27 +122,21 @@ export function App() {
      );
 
      React.useEffect(() => {
-          const timer = setInterval(async () => {
+          const bootstrapAsync = async () => {
                if (!__DEV__) {
-                    const update = await Updates.checkForUpdateAsync();
-                    if (update.isAvailable) {
-                         try {
-                              await Updates.fetchUpdateAsync().then(async (r) => {
-                                   await Updates.reloadAsync();
-                              });
-                         } catch (e) {
-                              console.log(e);
+                    try {
+                         console.log('Checking for EAS Updates...');
+                         const update = await Updates.checkForUpdateAsync();
+                         if (update.isAvailable) {
+                              console.log('Installing EAS Updates...');
+                              await Updates.fetchUpdateAsync();
+                              await Updates.reloadAsync()
                          }
+                    } catch (e) {
+                         console.log(e);
                     }
                }
-          }, 15000);
-          return () => {
-               clearInterval(timer);
-          };
-     }, []);
 
-     React.useEffect(() => {
-          const bootstrapAsync = async () => {
                await getPermissions();
 
                console.log('Checking existing session...');

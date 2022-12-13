@@ -421,7 +421,7 @@ export function formatDiscoveryVersion(payload) {
                return result[0];
           }
      } catch (e) {
-          console.log(payload[0]);
+          console.log(payload);
           console.log(e);
      }
      return payload;
