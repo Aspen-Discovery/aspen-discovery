@@ -10,6 +10,8 @@ import { translate } from '../../translations/translations';
 import { listofListSearchResults } from '../../util/search';
 import AddToList from './AddToList';
 import _ from 'lodash';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { getCleanTitle } from '../../helpers/item';
 
 export default class SearchByList extends Component {
      static contextType = userContext;
@@ -161,28 +163,18 @@ export default class SearchByList extends Component {
 
           if (item) {
                if (recordtype === 'list') {
-                    navigation.dispatch(
-                         CommonActions.navigate({
-                              name: 'ListResults',
-                              params: {
-                                   id: item,
-                                   title: title,
-                                   libraryUrl,
-                              },
-                         })
-                    );
+                    navigateStack('SearchTab', 'ListResults', {
+                         id: item,
+                         title: title,
+                         libraryUrl,
+                    });
                } else {
-                    navigation.dispatch(
-                         CommonActions.navigate({
-                              name: 'GroupedWorkScreen',
-                              params: {
-                                   id: item,
-                                   title: title,
-                                   url: libraryUrl,
-                                   libraryContext: library,
-                              },
-                         })
-                    );
+                    navigateStack('SearchTab', 'ListResultItem', {
+                         id: item,
+                         title: getCleanTitle(title),
+                         url: libraryUrl,
+                         libraryContext: library,
+                    });
                }
           } else {
                console.log('no list id found');
