@@ -10,6 +10,8 @@ import EditList from './EditList';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { LibrarySystemContext } from '../../../context/initialContext';
 import { getListTitles, removeTitlesFromList } from '../../../util/api/list';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getCleanTitle } from '../../../helpers/item';
 
 export const MyList = () => {
      const providedList = useRoute().params.details;
@@ -34,19 +36,17 @@ export const MyList = () => {
           }, [])
      );
 
-     const handleOpenItem = (id) => {
-          navigation.navigate('AccountScreenTab', {
-               screen: 'GroupedWork',
-               params: {
-                    id: id,
-                    url: library.baseUrl,
-               },
+     const handleOpenItem = (id, title) => {
+          navigateStack('AccountScreenTab', 'ListItem', {
+               id: id,
+               url: library.baseUrl,
+               title: getCleanTitle(title),
           });
      };
 
      const renderItem = (item) => {
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id)}>
+               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id, item.title)}>
                     <HStack space={3} justifyContent="flex-start" alignItems="flex-start">
                          <VStack w="25%">
                               <Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
