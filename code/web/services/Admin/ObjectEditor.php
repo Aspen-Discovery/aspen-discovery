@@ -717,7 +717,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	function applyFilters(DataObject $object) {
-		$filterFields = $this->getFilterFields($object::getObjectStructure($context));
+		$filterFields = $this->getFilterFields($object::getObjectStructure($this->getContext()));
 		$appliedFilters = $this->getAppliedFilters($filterFields);
 		foreach ($appliedFilters as $fieldName => $filter) {
 			$this->applyFilter($object, $fieldName, $filter);
