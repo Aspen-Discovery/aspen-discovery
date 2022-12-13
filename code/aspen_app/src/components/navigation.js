@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { create } from 'apisauce';
 import Constants from 'expo-constants';
@@ -16,7 +16,6 @@ import { enableScreens } from 'react-native-screens';
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
 
-import { navigationRef } from '../helpers/RootNavigator';
 import Login from '../screens/Auth/Login';
 import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
@@ -30,6 +29,7 @@ import { BrowseCategoryProvider, CheckoutsProvider, HoldsProvider, LibraryBranch
 import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
+import { useFlipper } from '@react-navigation/devtools';
 
 const prefix = Linking.createURL('/');
 
@@ -53,7 +53,7 @@ console.log(iOSDist);
 
 Sentry.init({
      dsn: Constants.manifest2?.extra?.expoClient?.extra?.sentryDSN ?? Constants.manifest.extra.sentryDSN,
-     enableInExpoDevelopment: true,
+     enableInExpoDevelopment: false,
      enableAutoSessionTracking: true,
      sessionTrackingIntervalMillis: 10000,
      debug: true,
@@ -69,6 +69,9 @@ Sentry.init({
 });
 
 export function App() {
+     const navigationRef = useNavigationContainerRef();
+     useFlipper(navigationRef);
+
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -326,15 +329,16 @@ export function App() {
                                                                                 screens: {
                                                                                      AccountScreenTab: {
                                                                                           screens: {
-                                                                                               SavedSearches: 'user/saved_searches',
+                                                                                               MySavedSearches: 'user/saved_searches',
                                                                                                LoadSavedSearch: 'user/saved_search',
-                                                                                               Lists: 'user/lists',
-                                                                                               List: 'user/list',
+                                                                                               MyLists: 'user/lists',
+                                                                                               MyList: 'user/list',
                                                                                                LinkedAccounts: 'user/linked_accounts',
-                                                                                               Holds: 'user/holds',
-                                                                                               CheckedOut: 'user/checkouts',
-                                                                                               Preferences: 'user/preferences',
-                                                                                               ProfileScreen: 'user',
+                                                                                               MyHolds: 'user/holds',
+                                                                                               MyCheckouts: 'user/checkouts',
+                                                                                               MyPreferences: 'user/preferences',
+                                                                                               MyProfile: 'user',
+                                                                                               MyReadingHistory: 'user/reading_history',
                                                                                           },
                                                                                      },
                                                                                      LibraryCardTab: {
@@ -345,15 +349,15 @@ export function App() {
                                                                                      SearchTab: {
                                                                                           screens: {
                                                                                                SearchResults: 'search',
+                                                                                               SearchByCategory: 'search/browse_category',
+                                                                                               SearchByAuthor: 'search/author',
+                                                                                               SearchByList: 'search/list',
                                                                                           },
                                                                                      },
                                                                                      HomeTab: {
                                                                                           screens: {
                                                                                                HomeScreen: 'home',
                                                                                                GroupedWorkScreen: 'search/grouped_work',
-                                                                                               SearchByCategory: 'search/browse_category',
-                                                                                               SearchByAuthor: 'search/author',
-                                                                                               SearchByList: 'search/list',
                                                                                           },
                                                                                      },
                                                                                 },
