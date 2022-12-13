@@ -81,7 +81,7 @@ else
   sed -i'.bak' "s/{{APP_ENV}}/$slug/g" eas.json
   if [[ $otaUpdate == 'yes' ]]
   then
-    APP_ENV=$site eas update --branch $branchName --message "$comment" --platform $osPlatform
+    APP_ENV=$slug eas update --branch $branchName --message "$comment" --platform $osPlatform
   else
     #APP_ENV=$slug eas build --profile development --platform ios
     APP_ENV=$slug npx expo prebuild
