@@ -34,7 +34,7 @@ class TaskQALink extends DataObject {
 				'property' => 'userId',
 				'type' => 'enum',
 				'values' => $userList,
-				'label' => 'Developer',
+				'label' => 'Q/A Analyst',
 				'description' => 'A Q/A Analyst working on this task',
 				'required' => true,
 			],

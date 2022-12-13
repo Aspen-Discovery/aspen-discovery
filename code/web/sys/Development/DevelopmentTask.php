@@ -499,7 +499,7 @@ class DevelopmentTask extends DataObject {
 		}
 	}
 
-	public function saveAssignedQAs() {
+	public function saveAssignedQA() {
 		if (isset ($this->_assignedQA) && is_array($this->_assignedQA)) {
 			$this->saveOneToManyOptions($this->_assignedQA, 'taskId');
 			unset($this->_assignedQA);
