@@ -1909,12 +1909,23 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	private $seriesData;
 
 	public function getSeries($allowReload = true) {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+
 		if (empty($this->seriesData)) {
-			//Get a list of isbns from the record
+			//Get a list of isbns from the record and existing display info if any
 			$relatedIsbns = $this->getISBNs();
 			$novelist = NovelistFactory::getNovelist();
 			$novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
-			if ($novelistData != null && !empty($novelistData->seriesTitle)) {
+			$existingDisplayInfo = new GroupedWorkDisplayInfo();
+			$existingDisplayInfo->permanent_id = $this->getPermanentId();
+			//prefer use of grouped work series display info if any
+			if ($existingDisplayInfo->find(true) && (!empty($existingDisplayInfo->seriesDisplayOrder) || !empty($existingDisplayInfo->seriesName)) ) {
+				$this->seriesData = [
+					'seriesTitle' => $existingDisplayInfo->seriesName,
+					'volume' => $existingDisplayInfo->seriesDisplayOrder,
+					'fromNovelist' => false,
+				];
+			} else if ($novelistData != null && !empty($novelistData->seriesTitle)) {
 				$this->seriesData = [
 					'seriesTitle' => $novelistData->seriesTitle,
 					'volume' => $novelistData->volume,
