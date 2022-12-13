@@ -63,6 +63,7 @@ export default function TabNavigator() {
                     component={SearchStackNavigator}
                     options={{
                          tabBarLabel: translate('navigation.search'),
+                         unmountOnBlur: true,
                     }}
                />
                <Tab.Screen
@@ -77,6 +78,7 @@ export default function TabNavigator() {
                     component={DrawerNavigator}
                     options={{
                          tabBarLabel: translate('navigation.account'),
+                         //tabBarBadge: 3,
                     }}
                     listeners={({ navigation }) => ({
                          tabPress: (e) => {
