@@ -24,7 +24,7 @@ class MyAccount_ContactInformation extends MyAccount {
 
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
-			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
+			$patronHomeLibrary = $user->getHomeLibrary(true);
 			if ($patronHomeLibrary == null) {
 				$canUpdateContactInfo = false;
 				$canUpdateAddress = false;

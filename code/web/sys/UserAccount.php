@@ -322,7 +322,7 @@ class UserAccount {
 	public static function getLoggedInUser() {
 		if (UserAccount::$isLoggedIn != null) {
 			if (UserAccount::$isLoggedIn) {
-				if (!is_null(UserAccount::$primaryUserData)) {
+				if (!is_null(UserAccount::$primaryUserData) && !isset($_REQUEST['reload'])) {
 					return UserAccount::$primaryUserData;
 				}
 			} else {

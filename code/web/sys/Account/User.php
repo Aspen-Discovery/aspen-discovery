@@ -1124,8 +1124,8 @@ class User extends DataObject {
 	/**
 	 * @return Library|null
 	 */
-	function getHomeLibrary() {
-		if ($this->_homeLibrary == null) {
+	function getHomeLibrary($forceReload = false) {
+		if ($this->_homeLibrary == null || $forceReload) {
 			$this->_homeLibrary = Library::getPatronHomeLibrary($this);
 		}
 		return $this->_homeLibrary;
