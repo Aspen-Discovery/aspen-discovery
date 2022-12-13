@@ -131,7 +131,7 @@ export function App() {
      );
 
      React.useEffect(() => {
-          const bootstrapAsync = async () => {
+          const timer = setInterval(async () => {
                if (!__DEV__) {
                     const update = await Updates.checkForUpdateAsync();
                     if (update.isAvailable) {
@@ -147,7 +147,14 @@ export function App() {
                          }
                     }
                }
+          }, 15000);
+          return () => {
+               clearInterval(timer);
+          };
+     }, []);
 
+     React.useEffect(() => {
+          const bootstrapAsync = async () => {
                await getPermissions();
 
                console.log('Checking existing session...');
