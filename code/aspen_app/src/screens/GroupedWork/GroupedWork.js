@@ -16,6 +16,7 @@ import { getGroupedWork, getItemDetails } from '../../util/recordActions';
 import Manifestation from './Manifestation';
 import { GetOverDriveSettings } from './OverDriveSettings';
 import AddToList from '../Search/AddToList';
+import { navigateStack } from '../../helpers/RootNavigator';
 
 export default class GroupedWork extends Component {
      static contextType = userContext;
@@ -50,22 +51,18 @@ export default class GroupedWork extends Component {
      }
 
      authorSearch = (author, libraryUrl) => {
-          const { navigation } = this.props;
-          navigation.navigate('SearchTab', {
-               screen: 'SearchResults',
-               params: {
-                    term: author,
-                    libraryUrl: libraryUrl,
-               },
+          navigateStack('SearchTab', 'SearchResults', {
+               term: author,
+               libraryUrl: libraryUrl,
           });
      };
 
      openCheckouts = () => {
-          this.props.navigation.navigate('CheckedOut');
+          navigateStack('AccountScreenTab', 'MyCheckouts');
      };
 
      openHolds = () => {
-          this.props.navigation.navigate('Holds');
+          navigateStack('AccountScreenTab', 'MyHolds');
      };
 
      componentDidMount = async () => {
