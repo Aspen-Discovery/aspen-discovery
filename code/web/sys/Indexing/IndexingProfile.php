@@ -950,7 +950,7 @@ class IndexingProfile extends DataObject {
 			'orderSection' => [
 				'property' => 'orderSection',
 				'type' => 'section',
-				'label' => 'Order Record Fields',
+				'label' => 'Order Record Fields (Sierra Only, not frequently used)',
 				'hideInLists' => true,
 				'properties' => [
 					'orderTag' => [

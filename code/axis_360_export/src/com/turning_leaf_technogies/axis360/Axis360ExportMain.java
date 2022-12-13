@@ -58,7 +58,7 @@ public class Axis360ExportMain {
 
 			final int[] numChanges = {0};
 			//Process each setting in order.
-			ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(10);
+			ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 			int numSettingsAdded = 0;
 			for(Axis360Setting setting : settings) {
 				try {

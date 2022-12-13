@@ -13,7 +13,7 @@ import { BrowseCategoryContext } from '../context/initialContext';
 import { RemoveData } from './logout';
 
 export const LIBRARY = {
-     url: 'https://aspen-test.bywatersolutions.com',
+     url: '',
      name: '',
      favicon: '',
      languages: [],
@@ -414,9 +414,17 @@ export async function getVdxForm(libraryUrl, id) {
 }
 
 export function formatDiscoveryVersion(payload) {
-     const result = payload.split(' ');
-     LIBRARY.version = result[0];
-     return result[0];
+     try {
+          const result = payload.split(' ');
+          if (_.isObject(result)) {
+               LIBRARY.version = result[0];
+               return result[0];
+          }
+     } catch (e) {
+          console.log(payload);
+          console.log(e);
+     }
+     return payload;
 }
 
 export const UpdateBrowseCategoryContext = (maxCat = 6) => {

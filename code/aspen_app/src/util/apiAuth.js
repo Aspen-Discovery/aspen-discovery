@@ -91,7 +91,10 @@ export function getHeaders(isPost = false) {
  * Generate a random pairing of current keys
  **/
 function makeNewSecret() {
-     const tokens = [API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5];
+     let tokens = [API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5];
+     if (!__DEV__) {
+          tokens = [process.env.API_KEY_1, process.env.API_KEY_2, process.env.API_KEY_3, process.env.API_KEY_4, process.env.API_KEY_5];
+     }
      const thisKey = _.sample(_.shuffle(tokens));
      return base64.encode(thisKey);
 }

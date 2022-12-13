@@ -137,6 +137,8 @@ class SirsiDynixROA extends HorizonAPI {
 					$user->cat_password = $lookupMyAccountInfoResponse->fields->pin;
 				}
 
+				global $library;
+
 				$Address1 = "";
 				$City = "";
 				$State = "";
@@ -159,6 +161,12 @@ class SirsiDynixROA extends HorizonAPI {
 						switch ($fields->code->key) {
 							case 'STREET' :
 								$Address1 = $fields->data;
+								break;
+							case 'CITY' :
+								$City = $fields->data;
+								break;
+							case 'STATE' :
+								$State = $fields->data;
 								break;
 							case 'CITY/STATE' :
 								$cityState = $fields->data;
@@ -544,16 +552,18 @@ class SirsiDynixROA extends HorizonAPI {
 				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
-			if (isset($_REQUEST['city'])) {
-				$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
+			if ($library->cityStateField == 1) {
+				if (isset($_REQUEST['city'])) {
+					$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
 
-			if (isset($_REQUEST['state'])) {
-				$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
-
-			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				if (isset($_REQUEST['state'])) {
+					$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
+			} else {
+				if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+					$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
 			}
 
 			if (isset($_REQUEST['zip'])) {
@@ -2019,6 +2029,7 @@ class SirsiDynixROA extends HorizonAPI {
 			'success' => false,
 			'messages' => [],
 		];
+		$homeLibrary = $patron->getHomeLibrary();
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
@@ -2054,20 +2065,22 @@ class SirsiDynixROA extends HorizonAPI {
 								$patron->_address1 = $_REQUEST['address1'];
 							}
 
-							if (isset($_REQUEST['city'])) {
-								$this->setPatronUpdateFieldBySearch('CITY', $_REQUEST['city'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->_city = $_REQUEST['city'];
-							}
+							if ($homeLibrary->cityStateField == 1) {
+								if (isset($_REQUEST['city'])) {
+									$this->setPatronUpdateFieldBySearch('CITY', $_REQUEST['city'], $updatePatronInfoParameters, $preferredAddress);
+									$patron->_city = $_REQUEST['city'];
+								}
 
-							if (isset($_REQUEST['state'])) {
-								$this->setPatronUpdateFieldBySearch('STATE', $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->_state = $_REQUEST['state'];
-							}
-
-							if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-								$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->_city = $_REQUEST['city'];
-								$patron->_state = $_REQUEST['state'];
+								if (isset($_REQUEST['state'])) {
+									$this->setPatronUpdateFieldBySearch('STATE', $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+									$patron->_state = $_REQUEST['state'];
+								}
+							} else {
+								if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+									$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+									$patron->_city = $_REQUEST['city'];
+									$patron->_state = $_REQUEST['state'];
+								}
 							}
 
 							if (isset($_REQUEST['zip'])) {
@@ -2272,6 +2285,7 @@ class SirsiDynixROA extends HorizonAPI {
 		$State = "";
 		$Zip = "";
 
+		$homeLibrary = $user->getHomeLibrary();
 		if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
 			$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
 			// Used by My Account Profile to update Contact Info
