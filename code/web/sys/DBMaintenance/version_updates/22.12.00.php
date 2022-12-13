@@ -229,6 +229,14 @@ function getUpdates22_12_00(): array {
 			],
 		],
 		//author_authorities_index
+		'library_CityStateField' => [
+			'title' => 'Library - City State Field',
+			'description' => 'Determine how to load city and state ',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN cityStateField TINYINT DEFAULT 0',
+			],
+		],
+		//library_CityStateField
 
 		//kirstien
 		'add_oauth_logout' => [

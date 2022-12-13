@@ -1,5 +1,5 @@
 #!/bin/sh
-#Updates a site to a new version
+#Updates a site to a new version. This script is intended to be run as root
 if [ -z "$1" ]
   then
     echo "Please provide the server name to update as the first argument."
