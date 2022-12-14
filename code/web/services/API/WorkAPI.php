@@ -69,13 +69,21 @@ class WorkAPI extends Action {
 
 	/** @noinspection PhpUnused */
 	function getGroupedWork(): array {
+
+		if (!isset($_REQUEST['id'])) {
+			return [
+				'success' => false,
+				'message' => 'Grouped work id not provided'
+			];
+		}
 		//Load basic information
 		$this->id = $_GET['id'];
-		$itemData['id'] = $this->id;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkDriver = new GroupedWorkDriver($this->id);
 		if ($groupedWorkDriver->isValid()) {
+			$itemData['success'] = true;
+			$itemData['id'] = $this->id;
 			$itemData['title'] = $groupedWorkDriver->getShortTitle();
 			$itemData['subtitle'] = $groupedWorkDriver->getSubtitle();
 			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
@@ -107,10 +115,12 @@ class WorkAPI extends Action {
 
 			}
 
-
+			return $itemData;
 		}
-
-		return $itemData;
+		return [
+			'success' => false,
+			'message' => 'Grouped work id not valid'
+		];
 	}
 
 	function getRatingData($permanentId = null) {
