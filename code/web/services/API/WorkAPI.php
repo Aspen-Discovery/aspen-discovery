@@ -68,7 +68,6 @@ class WorkAPI extends Action {
 
 	/** @noinspection PhpUnused */
 	function getGroupedWork(): array {
-
 		if (!isset($_REQUEST['id'])) {
 			return [
 				'success' => false,
@@ -77,7 +76,6 @@ class WorkAPI extends Action {
 		}
 		//Load basic information
 		$this->id = $_GET['id'];
-
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkDriver = new GroupedWorkDriver($this->id);
 		if ($groupedWorkDriver->isValid()) {
