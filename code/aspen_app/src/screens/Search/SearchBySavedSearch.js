@@ -12,6 +12,8 @@ import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
 import { LibrarySystemContext, UserContext } from '../../context/initialContext';
 import DrawerContent from '../../navigations/drawer/DrawerContent';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { getCleanTitle } from '../../helpers/item';
 
 export default class SearchBySavedSearch extends Component {
      constructor() {
@@ -206,32 +208,25 @@ export default class SearchBySavedSearch extends Component {
      };
 
      /*	getFormats = (data) => {
-	let formats = [];
+  let formats = [];
 
-	data.map((item) => {
-	let thisFormat = item.split("#");
-	thisFormat = thisFormat[thisFormat.length - 1];
-	formats.push(thisFormat);
-	});
+  data.map((item) => {
+  let thisFormat = item.split("#");
+  thisFormat = thisFormat[thisFormat.length - 1];
+  formats.push(thisFormat);
+  });
 
-	formats = _.uniq(formats);
-	return formats;
-	}*/
+  formats = _.uniq(formats);
+  return formats;
+  }*/
 
      // handles the on press action
      onPressItem = (item, library, title) => {
-          const { navigation, route } = this.props;
-          const libraryUrl = library.baseUrl;
-          navigation.dispatch(
-               CommonActions.navigate({
-                    name: 'GroupedWorkScreen',
-                    params: {
-                         id: item,
-                         title: title,
-                         url: libraryUrl,
-                    },
-               })
-          );
+          navigateStack('SearchTab', 'SavedSearchResultItem', {
+               id: item,
+               title: getCleanTitle(title),
+               url: library.baseUrl,
+          });
      };
 
      // this one shouldn't probably ever load with the catches in the render, but just in case

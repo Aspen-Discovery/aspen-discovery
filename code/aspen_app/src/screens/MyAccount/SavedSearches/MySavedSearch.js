@@ -12,6 +12,8 @@ import { getSavedSearchTitles } from '../../../util/loadPatron';
 import AddToList from '../../Search/AddToList';
 import { LibrarySystemContext } from '../../../context/initialContext';
 import SearchBySavedSearch from '../../Search/SearchBySavedSearch';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getCleanTitle } from '../../../helpers/item';
 
 class MySavedSearch extends React.PureComponent {
      constructor(props, context) {
@@ -75,7 +77,7 @@ class MySavedSearch extends React.PureComponent {
                isNew = item.isNew;
           }
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, libraryContext.baseUrl)}>
+               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, libraryContext.baseUrl, item.title)}>
                     <HStack space={3} justifyContent="flex-start" alignItems="flex-start">
                          <VStack>
                               {isNew ? (
@@ -148,13 +150,11 @@ class MySavedSearch extends React.PureComponent {
           return formats;
      };
 
-     openItem = (id, libraryUrl) => {
-          this.props.navigation.navigate('AccountScreenTab', {
-               screen: 'GroupedWork',
-               params: {
-                    id: id,
-                    url: libraryUrl,
-               },
+     openItem = (id, libraryUrl, title) => {
+          navigateStack('AccountScreenTab', 'SavedSearchItem', {
+               id: id,
+               url: libraryUrl,
+               title: getCleanTitle(title),
           });
      };
 

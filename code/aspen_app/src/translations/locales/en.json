@@ -146,7 +146,8 @@
     "access_online": "Access Online at {{source}}",
     "read_online": "Read Online at {{source}}",
     "listen_online": "Listen Online at {{source}}",
-    "watch_online": "Watch Online at {{source}}"
+    "watch_online": "Watch Online at {{source}}",
+    "reload": "Reload Checkouts"
   },
   "holds": {
     "title": "Titles On Hold",

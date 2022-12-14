@@ -17,6 +17,8 @@ import { createAuthTokens, getHeaders } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import axios from 'axios';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { getCleanTitle } from '../../helpers/item';
+import { navigateStack } from '../../helpers/RootNavigator';
 
 export const SearchResults = () => {
      const [page, setPage] = React.useState(1);
@@ -29,7 +31,10 @@ export const SearchResults = () => {
 
      const params = useRoute().params.pendingParams ?? [];
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params], () => fetchSearchResults(term, page, scope, url), { keepPreviousData: true, staleTime: 1000 });
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params], () => fetchSearchResults(term, page, scope, url), {
+          keepPreviousData: true,
+          staleTime: 1000,
+     });
 
      const Header = () => {
           const num = _.toInteger(data?.totalResults);
@@ -99,18 +104,14 @@ export const SearchResults = () => {
 
 const DisplayResult = (data) => {
      const item = data.data;
-     const navigation = useNavigation();
      const { library } = React.useContext(LibrarySystemContext);
 
      const handlePressItem = () => {
-          navigation.navigate('SearchTab', {
-               screen: 'GroupedWork',
-               params: {
-                    id: item.key,
-                    title: item.title,
-                    url: library.baseUrl,
-                    libraryContext: library,
-               },
+          navigateStack('SearchTab', 'ResultItem', {
+               d: item.key,
+               title: getCleanTitle(item.title),
+               url: library.baseUrl,
+               libraryContext: library,
           });
      };
 

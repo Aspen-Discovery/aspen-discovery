@@ -257,7 +257,7 @@ export default class Login extends Component {
                          </Center>
                          <Center>
                               <Text mt={5} fontSize="xs" color="coolGray.600">
-                                   {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel}]
+                                   {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel ?? "Development"}]
                               </Text>
                          </Center>
                     </KeyboardAvoidingView>

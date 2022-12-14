@@ -14,6 +14,8 @@ import CreateList from './CreateList';
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getLists } from '../../../util/api/list';
 import { getPickupLocations } from '../../../util/loadLibrary';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getCleanTitle } from '../../../helpers/item';
 
 export const MyLists = () => {
      const navigation = useNavigation();
@@ -38,14 +40,11 @@ export const MyLists = () => {
      );
 
      const handleOpenList = (item) => {
-          navigation.navigate('AccountScreenTab', {
-               screen: 'List',
-               params: {
-                    id: item.id,
-                    details: item,
-                    title: item.title,
-                    libraryUrl: library.baseUrl,
-               },
+          navigateStack('AccountScreenTab', 'MyList', {
+               id: item.id,
+               details: item,
+               title: title,
+               libraryUrl: library.baseUrl,
           });
      };
 

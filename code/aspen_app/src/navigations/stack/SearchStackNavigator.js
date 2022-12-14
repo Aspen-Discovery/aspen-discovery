@@ -28,78 +28,108 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                     headerBackTitleVisible: false,
                }}
                id="SearchNavigator">
-               <Stack.Screen
-                    name="SearchScreen"
-                    component={Search}
-                    options={{
-                         title: translate('search.title'),
-                    }}
-                    initialParams={{
-                         libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
-                         locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
-                         userContext: JSON.stringify(React.useContext(UserContext)),
-                    }}
-               />
-               <Stack.Screen
-                    name="SearchResults"
-                    component={SearchResults}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.term,
-                         params: {
-                              pendingParams: [],
-                         },
-                    })}
-               />
-               <Stack.Screen
-                    name="SearchByCategory"
-                    component={SearchByCategory}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                    })}
-               />
-               <Stack.Screen
-                    name="SearchByList"
-                    component={SearchByList}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
-               <Stack.Screen
-                    name="ListResults"
-                    component={SearchByList}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
-               <Stack.Screen
-                    name="SearchBySavedSearch"
-                    component={SearchBySavedSearch}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
+               <Stack.Group>
+                    <Stack.Screen
+                         name="SearchScreen"
+                         component={Search}
+                         options={{
+                              title: translate('search.title'),
+                         }}
+                         initialParams={{
+                              libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
+                              locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
+                              userContext: JSON.stringify(React.useContext(UserContext)),
+                         }}
+                    />
+                    <Stack.Screen
+                         name="SearchResults"
+                         component={SearchResults}
+                         options={({ route }) => ({
+                              title: translate('search.search_results_title') + route.params.term,
+                              params: {
+                                   pendingParams: [],
+                              },
+                         })}
+                    />
+                    <Stack.Screen
+                         name="ResultItem"
+                         component={GroupedWork}
+                         options={({ route }) => ({
+                              title: route.params.title ?? translate('grouped_work.title'),
+                         })}
+                    />
+               </Stack.Group>
+               <Stack.Group>
+                    <Stack.Screen
+                         name="SearchByCategory"
+                         component={SearchByCategory}
+                         options={({ route }) => ({
+                              title: translate('search.search_results_title') + route.params.title,
+                         })}
+                    />
+                    <Stack.Screen
+                         name="CategoryResultItem"
+                         component={GroupedWork}
+                         options={({ route }) => ({
+                              title: route.params.title ?? translate('grouped_work.title'),
+                         })}
+                    />
+               </Stack.Group>
+
+               <Stack.Group>
+                    <Stack.Screen
+                         name="SearchByList"
+                         component={SearchByList}
+                         options={({ route }) => ({
+                              title: translate('search.search_results_title') + route.params.title,
+                              libraryContext: React.useContext(LibrarySystemContext),
+                              locationContext: React.useContext(LibraryBranchContext),
+                              userContext: React.useContext(UserContext),
+                         })}
+                    />
+                    <Stack.Screen
+                         name="ListResults"
+                         component={SearchByList}
+                         options={({ route }) => ({
+                              title: translate('search.search_results_title') + route.params.title,
+                              libraryContext: React.useContext(LibrarySystemContext),
+                              locationContext: React.useContext(LibraryBranchContext),
+                              userContext: React.useContext(UserContext),
+                         })}
+                    />
+                    <Stack.Screen
+                         name="ListResultItem"
+                         component={GroupedWork}
+                         options={({ route }) => ({
+                              title: route.params.title ?? translate('grouped_work.title'),
+                         })}
+                    />
+               </Stack.Group>
+               <Stack.Group>
+                    <Stack.Screen
+                         name="SearchBySavedSearch"
+                         component={SearchBySavedSearch}
+                         options={({ route }) => ({
+                              title: translate('search.search_results_title') + route.params.title,
+                              libraryContext: React.useContext(LibrarySystemContext),
+                              locationContext: React.useContext(LibraryBranchContext),
+                              userContext: React.useContext(UserContext),
+                         })}
+                    />
+                    <Stack.Screen
+                         name="SavedSearchResultItem"
+                         component={GroupedWork}
+                         options={({ route }) => ({
+                              title: route.params.title ?? translate('grouped_work.title'),
+                         })}
+                    />
+               </Stack.Group>
                <Stack.Screen
                     name="modal"
                     component={FilterModal}
                     options={{
                          headerShown: false,
                          presentation: 'modal',
-                    }}
-               />
-               <Stack.Screen
-                    name="GroupedWork"
-                    component={GroupedWork}
-                    options={{
-                         title: translate('grouped_work.title'),
                     }}
                />
           </Stack.Navigator>
