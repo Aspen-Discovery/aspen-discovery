@@ -1,27 +1,116 @@
 <?php
 
 class WorkAPI extends Action {
+	/** @var  AbstractIlsDriver */
+	protected $catalog;
+
+	public $id;
+
+	/**
+	 * @var MarcRecordDriver|IndexRecordDriver
+	 * marc record in File_Marc object
+	 */
+	protected $recordDriver;
+
+	public $record;
+
+	public $isbn;
+	public $issn;
+	public $upc;
+
+	/** @var  Solr $db */
+	public $db;
+
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		//Make sure the user can access the API based on the IP address
-		if ($method != 'getRatingData' && !IPAddress::allowAPIAccessForClientIP()) {
+
+		header('Content-type: application/json');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if ($this->grantTokenAccess()) {
+				if (in_array($method, [
+					'getGroupedWork',
+					'getRatingData',
+					'updateRating'
+				])) {
+					header('Cache-Control: max-age=10800');
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('WorkAPI', $method);
+					$output = json_encode($this->$method());
+				} else {
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					$output = json_encode(['error' => 'invalid_method']);
+				}
+			} else {
+				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(['error' => 'unauthorized_access']);
+			}
+			ExternalRequestLogEntry::logRequest('WorkAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
+			echo $output;
+		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+			if ($method != 'getRatingData' && method_exists($this, $method)) {
+				if (method_exists($this, $method)) {
+					$output = json_encode(['result' => $this->$method()]);
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('WorkAPI', $method);
+				} else {
+					$output = json_encode(['error' => "invalid_method '$method'"]);
+				}
+
+				echo $output;
+			}
+		} else {
 			$this->forbidAPIAccess();
 		}
-
-		if (method_exists($this, $method)) {
-			$output = json_encode(['result' => $this->$method()]);
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('WorkAPI', $method);
-		} else {
-			$output = json_encode(['error' => "invalid_method '$method'"]);
-		}
-
-		echo $output;
 	}
 
 	/** @noinspection PhpUnused */
-	function getGroupedWork() {
-		// placeholder for moving getAppGroupedWork from Item API
+	function getGroupedWork(): array {
+		//Load basic information
+		$this->id = $_GET['id'];
+		$itemData['id'] = $this->id;
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($this->id);
+		if ($groupedWorkDriver->isValid()) {
+			$itemData['title'] = $groupedWorkDriver->getShortTitle();
+			$itemData['subtitle'] = $groupedWorkDriver->getSubtitle();
+			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
+			$itemData['description'] = strip_tags($groupedWorkDriver->getDescriptionFast());
+			if ($itemData['description'] == '') {
+				$itemData['description'] = 'Description Not Provided';
+			}
+			$language = $groupedWorkDriver->getLanguage();
+			$itemData['language'] = $language[0] ?? $language;
+			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
+
+			$itemData['series'] = $groupedWorkDriver->getIndexedSeries();
+
+			$formats = $groupedWorkDriver->getFormatsArray();
+			$itemData['formats'] = [];
+
+			foreach ($formats as $format) {
+				$itemData['formats'][$format] = [];
+				$relatedManifestation = null;
+				foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
+					if ($relatedManifestation->format == $format) {
+						break;
+					}
+				}
+				$itemData['formats'][$format]['label'] = $format;
+				$itemData['formats'][$format]['category'] = $relatedManifestation->formatCategory;
+				$itemData['formats'][$format]['actions'] = $relatedManifestation->getActions();
+				$itemData['formats'][$format]['isAvailable'] = $relatedManifestation->isAvailable();
+
+			}
+
+
+		}
+
+		return $itemData;
 	}
 
 	function getRatingData($permanentId = null) {
