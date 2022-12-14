@@ -13,6 +13,8 @@ import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewO
 import { getCheckedOutItems, reloadCheckedOutItems } from '../../../util/loadPatron';
 import { CheckoutsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { refreshProfile } from '../../../util/api/user';
+import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
+import { navigateStack } from '../../../helpers/RootNavigator';
 
 export const MyCheckouts = () => {
      const { user, updateUser } = React.useContext(UserContext);
@@ -45,7 +47,6 @@ export const MyCheckouts = () => {
      if (!_.isUndefined(user.numCheckedOut)) {
           numCheckedOut = user.numCheckedOut;
      }
-     console.log(user);
 
      const noCheckouts = () => {
           return (
@@ -111,7 +112,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {translate('holds.reload_holds')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );
@@ -125,7 +126,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {translate('holds.reload_holds')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );
@@ -161,10 +162,9 @@ const Checkout = (props) => {
      };
 
      const openGroupedWork = (item, title) => {
-          const displayTitle = getTitle(title);
-          navigation.navigate('GroupedWork', {
+          navigateStack('AccountScreenTab', 'MyCheckout', {
                id: item,
-               title: displayTitle,
+               title: getCleanTitle(title),
                url: library.baseUrl,
                userContext: user,
                libraryContext: library,
@@ -352,128 +352,4 @@ const Checkout = (props) => {
                </Actionsheet>
           </Pressable>
      );
-};
-
-const isOverdue = (props) => {
-     if (props.overdue) {
-          return (
-               <Text>
-                    <Badge colorScheme="danger" rounded="4px" mt={-0.5}>
-                         {translate('checkouts.overdue')}
-                    </Badge>
-               </Text>
-          );
-     } else {
-          return null;
-     }
-};
-
-const getTitle = (title) => {
-     if (title) {
-          let displayTitle = title;
-          const countSlash = displayTitle.split('/').length - 1;
-          if (countSlash > 0) {
-               displayTitle = displayTitle.substring(0, displayTitle.lastIndexOf('/'));
-          }
-          return (
-               <Text
-                    bold
-                    mb={1}
-                    fontSize={{
-                         base: 'sm',
-                         lg: 'lg',
-                    }}>
-                    {displayTitle}
-               </Text>
-          );
-     } else {
-          return null;
-     }
-};
-
-const getAuthor = (author) => {
-     if (author) {
-          let displayAuthor = author;
-          const countComma = displayAuthor.split(',').length - 1;
-          if (countComma > 1) {
-               displayAuthor = displayAuthor.substring(0, displayAuthor.lastIndexOf(','));
-          }
-
-          return (
-               <Text
-                    fontSize={{
-                         base: 'xs',
-                         lg: 'sm',
-                    }}>
-                    <Text bold>{translate('grouped_work.author')}:</Text> {displayAuthor}
-               </Text>
-          );
-     }
-     return null;
-};
-
-const getFormat = (format) => {
-     if (format !== 'Unknown') {
-          return (
-               <Text
-                    fontSize={{
-                         base: 'xs',
-                         lg: 'sm',
-                    }}>
-                    <Text bold>{translate('grouped_work.format')}:</Text> {format}
-               </Text>
-          );
-     } else {
-          return null;
-     }
-};
-
-const getCheckedOutTo = (props) => {
-     const { user } = React.useContext(UserContext);
-     const [checkedOutTo, setCheckedOutTo] = React.useState();
-     if (user.id !== checkedOutTo) {
-          return (
-               <Text
-                    fontSize={{
-                         base: 'xs',
-                         lg: 'sm',
-                    }}>
-                    <Text bold>Checked Out To:</Text> {props}
-               </Text>
-          );
-     } else {
-          return null;
-     }
-};
-
-const getDueDate = (date) => {
-     const dueDate = moment.unix(date);
-     const itemDueOn = moment(dueDate).format('MMM D, YYYY');
-     return (
-          <Text
-               fontSize={{
-                    base: 'xs',
-                    lg: 'sm',
-               }}>
-               <Text bold>{translate('checkouts.due')}:</Text> {itemDueOn}
-          </Text>
-     );
-};
-
-const willAutoRenew = (props) => {
-     if (props.autoRenew === 1) {
-          return (
-               <Box mt={1} p={0.5} bgColor="muted.100">
-                    <Text
-                         fontSize={{
-                              base: 'xs',
-                              lg: 'sm',
-                         }}>
-                         <Text bold>{translate('checkouts.auto_renew')}:</Text> {props.renewalDate}
-                    </Text>
-               </Box>
-          );
-     } else {
-          return null;
-     }
 };

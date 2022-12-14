@@ -1,5 +1,7 @@
 import { CommonActions, createNavigationContainerRef } from '@react-navigation/native';
 
+import React from 'react';
+
 export const navigationRef = createNavigationContainerRef();
 
 export const navigate = (name, params) => {

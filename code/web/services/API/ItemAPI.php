@@ -38,6 +38,9 @@ class ItemAPI extends Action {
 				if (in_array($method, [
 					'getAppGroupedWork',
 					'getItemDetails',
+					'getManifestation',
+					'getVariation',
+					'getRecords'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -907,12 +910,9 @@ class ItemAPI extends Action {
 
 	function getItemDetails() {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-
 		$groupedWorkId = $_REQUEST['recordId'];
 		$format = $_REQUEST['format'];
-
 		$recordDriver = new GroupedWorkDriver($groupedWorkId);
-
 		$relatedManifestation = null;
 		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
 			if ($relatedManifestation->format == $format) {
@@ -923,4 +923,100 @@ class ItemAPI extends Action {
 		return $relatedManifestation->getItemSummary();
 	}
 
+	function getManifestation() {
+		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
+			return [
+				'success' => false,
+				'message' => 'Grouped work id or format not provided'
+			];
+		}
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkId = $_REQUEST['id'];
+		$format = $_REQUEST['format'];
+		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+		$relatedManifestation = null;
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+
+		return [
+			'success' => true,
+			'id' => $groupedWorkId,
+			'format' => $format,
+			'manifestation' => $relatedManifestation->getItemSummary(),
+		];
+	}
+
+	function getVariation() {
+		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
+			return [
+				'success' => false,
+				'message' => 'Grouped work id or format not provided'
+			];
+		}
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkId = $_REQUEST['id'];
+		$format = $_REQUEST['format'];
+		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+		$relatedManifestation = null;
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+
+		return [
+			'success' => true,
+			'id' => $groupedWorkId,
+			'format' => $format,
+			'variation' => $relatedManifestation->getVariationInformation(),
+		];
+	}
+
+	function getRecords() {
+		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
+			return [
+				'success' => false,
+				'message' => 'Grouped work id or format not provided'
+			];
+		}
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkId = $_REQUEST['id'];
+		$format = $_REQUEST['format'];
+		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+		$relatedManifestation = null;
+		$relatedVariation = null;
+		$relatedRecord = null;
+		$records = [];
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+		foreach ($relatedManifestation->getVariationInformation() as $relatedVariation) {
+			if ($relatedVariation->manifestation->format == $format) {
+				break;
+			}
+		}
+		foreach ($relatedVariation->getRecords() as $relatedRecord) {
+			$records['id'] = $relatedRecord->id;
+			$records['dbId'] = $relatedRecord->databaseId;
+			$records['format'] = $relatedRecord->format;
+			$records['edition'] = $relatedRecord->edition;
+			$records['publisher'] = $relatedRecord->publisher;
+			$records['publicationDate'] = $relatedRecord->publicationDate;
+			$records['physical'] = $relatedRecord->physical;
+			$records['closedCaptioned'] = $relatedRecord->closedCaptioned;
+			$records['isAvailable'] = $relatedRecord->isAvailable();
+		}
+
+		return [
+			'success' => true,
+			'id' => $groupedWorkId,
+			'format' => $format,
+			'records' => $records,
+		];
+	}
 }

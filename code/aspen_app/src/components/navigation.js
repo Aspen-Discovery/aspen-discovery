@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { create } from 'apisauce';
 import Constants from 'expo-constants';
@@ -16,7 +16,6 @@ import { enableScreens } from 'react-native-screens';
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
 
-import { navigationRef } from '../helpers/RootNavigator';
 import Login from '../screens/Auth/Login';
 import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
@@ -30,6 +29,7 @@ import { BrowseCategoryProvider, CheckoutsProvider, HoldsProvider, LibraryBranch
 import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
+import { navigationRef } from '../helpers/RootNavigator';
 
 const prefix = Linking.createURL('/');
 
@@ -40,27 +40,33 @@ const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation(
 
 export const AuthContext = React.createContext();
 
-const iOSRelease = Constants.manifest2?.extra?.expoClient?.ios?.bundleIdentifier ?? Constants.manifest?.ios?.bundleIdentifier;
-const androidRelease = Constants.manifest2?.extra?.expoClient?.android?.package ?? Constants.manifest?.android?.package;
-const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest?.ios?.buildNumber;
-const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest?.android?.versionCode;
+const iOSRelease = Constants.manifest2?.extra?.expoClient?.ios?.bundleIdentifier ?? Constants.manifest.ios.bundleIdentifier;
+const androidRelease = Constants.manifest2?.extra?.expoClient?.android?.package ?? Constants.manifest.android.package;
+const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest.ios.buildNumber;
+const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest.android.versionCode;
 const version = Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version;
 
 console.log(iOSRelease);
 console.log(iOSDist);
 
+let releaseCode = Platform.OS === 'android' ? androidRelease + '@' + version + '+' + androidDist : iOSRelease + '@' + version + '+' + iOSDist;
+releaseCode = releaseCode.toString();
+
+let distribution = Platform.OS === 'android' ? androidDist : iOSDist;
+distribution = distribution.toString();
+
 //info.yavapai.catalog@22.12.00+62
 
 Sentry.init({
      dsn: Constants.manifest2?.extra?.expoClient?.extra?.sentryDSN ?? Constants.manifest.extra.sentryDSN,
-     enableInExpoDevelopment: true,
+     enableInExpoDevelopment: false,
      enableAutoSessionTracking: true,
      sessionTrackingIntervalMillis: 10000,
      debug: true,
      tracesSampleRate: 0.25,
      environment: Updates.channel ?? Updates.releaseChannel,
-     release: Platform.OS === 'android' ? androidRelease + '@' + version + '+' + androidDist : iOSRelease + '@' + version + '+' + iOSDist,
-     dist: Platform.OS === 'android' ? androidDist : iOSDist,
+     release: releaseCode,
+     dist: distribution,
      integrations: [
           new Sentry.Native.ReactNativeTracing({
                routingInstrumentation,
@@ -69,6 +75,7 @@ Sentry.init({
 });
 
 export function App() {
+
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -122,21 +129,30 @@ export function App() {
      );
 
      React.useEffect(() => {
-          const bootstrapAsync = async () => {
+          const timer = setInterval(async () => {
                if (!__DEV__) {
-                    try {
-                         console.log('Checking for EAS Updates...');
-                         const update = await Updates.checkForUpdateAsync();
-                         if (update.isAvailable) {
-                              console.log('Installing EAS Updates...');
-                              await Updates.fetchUpdateAsync();
-                              await Updates.reloadAsync()
+                    const update = await Updates.checkForUpdateAsync();
+                    if (update.isAvailable) {
+                         console.log('Found an update from Updates Listener...');
+                         try {
+                              console.log('Downloading update...');
+                              await Updates.fetchUpdateAsync().then(async (r) => {
+                                   console.log('Updating app...');
+                                   await Updates.reloadAsync();
+                              });
+                         } catch (e) {
+                              console.log(e);
                          }
-                    } catch (e) {
-                         console.log(e);
                     }
                }
+          }, 15000);
+          return () => {
+               clearInterval(timer);
+          };
+     }, []);
 
+     React.useEffect(() => {
+          const bootstrapAsync = async () => {
                await getPermissions();
 
                console.log('Checking existing session...');
@@ -326,15 +342,16 @@ export function App() {
                                                                                 screens: {
                                                                                      AccountScreenTab: {
                                                                                           screens: {
-                                                                                               SavedSearches: 'user/saved_searches',
+                                                                                               MySavedSearches: 'user/saved_searches',
                                                                                                LoadSavedSearch: 'user/saved_search',
-                                                                                               Lists: 'user/lists',
-                                                                                               List: 'user/list',
+                                                                                               MyLists: 'user/lists',
+                                                                                               MyList: 'user/list',
                                                                                                LinkedAccounts: 'user/linked_accounts',
-                                                                                               Holds: 'user/holds',
-                                                                                               CheckedOut: 'user/checkouts',
-                                                                                               Preferences: 'user/preferences',
-                                                                                               ProfileScreen: 'user',
+                                                                                               MyHolds: 'user/holds',
+                                                                                               MyCheckouts: 'user/checkouts',
+                                                                                               MyPreferences: 'user/preferences',
+                                                                                               MyProfile: 'user',
+                                                                                               MyReadingHistory: 'user/reading_history',
                                                                                           },
                                                                                      },
                                                                                      LibraryCardTab: {
@@ -345,15 +362,15 @@ export function App() {
                                                                                      SearchTab: {
                                                                                           screens: {
                                                                                                SearchResults: 'search',
+                                                                                               SearchByCategory: 'search/browse_category',
+                                                                                               SearchByAuthor: 'search/author',
+                                                                                               SearchByList: 'search/list',
                                                                                           },
                                                                                      },
                                                                                      HomeTab: {
                                                                                           screens: {
                                                                                                HomeScreen: 'home',
                                                                                                GroupedWorkScreen: 'search/grouped_work',
-                                                                                               SearchByCategory: 'search/browse_category',
-                                                                                               SearchByAuthor: 'search/author',
-                                                                                               SearchByList: 'search/list',
                                                                                           },
                                                                                      },
                                                                                 },

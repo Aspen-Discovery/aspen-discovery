@@ -11,6 +11,8 @@ import { translate } from '../../translations/translations';
 import { categorySearchResults } from '../../util/search';
 import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { getCleanTitle } from '../../helpers/item';
 
 export default class SearchByCategory extends Component {
      constructor() {
@@ -120,10 +122,10 @@ export default class SearchByCategory extends Component {
           );
      };
 
-     renderItem = (item, library, user, lastListUsed) => {
-          const imageUrl = this.props.route.params.url + '/bookcover.php?id=' + item.id + '&size=medium&type=grouped_work';
+     renderItem = (item, url, user, lastListUsed) => {
+          const imageUrl = url + '/bookcover.php?id=' + item.id + '&size=medium&type=grouped_work';
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library)}>
+               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title)}>
                     <HStack space={3}>
                          <VStack>
                               <Image
@@ -183,18 +185,12 @@ export default class SearchByCategory extends Component {
      };
 
      // handles the on press action
-     onPressItem = (item, library) => {
-          const { navigation, route } = this.props;
-          const libraryUrl = library.baseUrl;
-          navigation.dispatch(
-               CommonActions.navigate({
-                    name: 'GroupedWorkScreen',
-                    params: {
-                         id: item,
-                         url: libraryUrl,
-                    },
-               })
-          );
+     onPressItem = (item, url, title) => {
+          navigateStack('SearchTab', 'CategoryResultItem', {
+               id: item,
+               url: url,
+               title: getCleanTitle(title),
+          });
      };
 
      // this one shouldn't probably ever load with the catches in the render, but just in case
@@ -226,7 +222,7 @@ export default class SearchByCategory extends Component {
           const { navigation, route } = this.props;
           const user = this.context.user;
           const location = this.context.location;
-          const library = this.context.library;
+          const library = route.params.libraryContext.baseUrl;
 
           if (this.state.isLoading) {
                return loadingSpinner();
