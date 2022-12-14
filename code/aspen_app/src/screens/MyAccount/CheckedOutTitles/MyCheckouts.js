@@ -112,7 +112,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {translate('holds.reload_holds')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );
@@ -126,7 +126,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {translate('holds.reload_holds')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );

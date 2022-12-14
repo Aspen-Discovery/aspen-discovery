@@ -6,8 +6,8 @@ import React from 'react';
 import { translate } from '../translations/translations';
 import { UserContext } from '../context/initialContext';
 
-export const isOverdue = (props) => {
-     if (props.overdue) {
+export const isOverdue = (overdue) => {
+     if (overdue) {
           return (
                <Text>
                     <Badge colorScheme="danger" rounded="4px" mt={-0.5}>
