@@ -2906,13 +2906,6 @@ class User extends DataObject {
 			'Administer All System Messages',
 			'Administer Library System Messages',
 		]);
-		$sections['local_enrichment']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
-			'Send Notifications to All Libraries',
-			'Send Notifications to All Locations',
-			'Send Notifications to Home Library',
-			'Send Notifications to Home Location',
-			'Send Notifications to Home Library Locations',
-		]);
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
@@ -3180,6 +3173,13 @@ class User extends DataObject {
 		} else {
 			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
 		}
+		$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
+			'Send Notifications to All Libraries',
+			'Send Notifications to All Locations',
+			'Send Notifications to Home Library',
+			'Send Notifications to Home Location',
+			'Send Notifications to Home Library Locations',
+		]);
 		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
