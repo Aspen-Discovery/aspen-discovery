@@ -1174,7 +1174,7 @@
     node-forge "^1.2.1"
     nullthrows "^1.1.1"
 
-"@expo/config-plugins@^5.0.0", "@expo/config-plugins@^5.0.4", "@expo/config-plugins@~5.0.1", "@expo/config-plugins@~5.0.3":
+"@expo/config-plugins@^5.0.4", "@expo/config-plugins@~5.0.1", "@expo/config-plugins@~5.0.3":
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/@expo/config-plugins/-/config-plugins-5.0.4.tgz#216fea6558fe66615af1370de55193f4181cb23e"
   integrity sha512-vzUcVpqOMs3h+hyRdhGwk+eGIOhXa5xYdd92yO17RMNHav3v/+ekMbs7XA2c3lepMO8Yd4/5hqmRw9ZTL6jGzg==
@@ -5268,15 +5268,6 @@ expo-cached-image@47.0.0:
   resolved "https://registry.yarnpkg.com/expo-cached-image/-/expo-cached-image-47.0.0.tgz#bc616145186e1cb41a26d4a6976058f4c9fdcfd4"
   integrity sha512-3j4OZauP5p1nDcRf73DXdhUkVi0NcytzsvToEmpyzLmJfTydUrDw3vLck+pO8TS8kPSCx/5OJ7Yf76wlvcE0VA==
 
-expo-community-flipper@^46.0.2:
-  version "46.0.2"
-  resolved "https://registry.yarnpkg.com/expo-community-flipper/-/expo-community-flipper-46.0.2.tgz#7fd278e0b0691224f63cd29577bbb16bc0c7fe03"
-  integrity sha512-Bcvfy1t364SSDwsZzuXpefSY+RkUClIyAscgFFlvdsTR/QGpcqpULU1J7CN+eZnSZRE97HA02fR5DiVBrleoPg==
-  dependencies:
-    "@expo/config-plugins" "^5.0.0"
-    semver "^7.3.7"
-    ts-dedent "^2.2.0"
-
 expo-constants@~13.2.0, expo-constants@~13.2.4:
   version "13.2.4"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-13.2.4.tgz#eab4a553f074b2c60ad7a158d3b82e3484a94606"
@@ -8788,14 +8779,6 @@ react-devtools-core@4.24.0:
     shell-quote "^1.6.1"
     ws "^7"
 
-react-devtools-core@^4.27.1:
-  version "4.27.1"
-  resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-4.27.1.tgz#167aa174383c65786cbb7e965a5b39c702f0a2d3"
-  integrity sha512-qXhcxxDWiFmFAOq48jts9YQYe1+wVoUXzJTlY4jbaATzyio6dd6CUGu3dXBhREeVgpZ+y4kg6vFJzIOZh6vY2w==
-  dependencies:
-    shell-quote "^1.6.1"
-    ws "^7"
-
 react-dom@18.0.0:
   version "18.0.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0.tgz#26b88534f8f1dbb80853e1eabe752f24100d8023"
@@ -8880,11 +8863,6 @@ react-native-elements@^4.0.0-rc.2:
   dependencies:
     "@rneui/base" "4.0.0-rc.2"
     "@rneui/themed" "4.0.0-rc.2"
-
-react-native-flipper@^0.176.1:
-  version "0.176.1"
-  resolved "https://registry.yarnpkg.com/react-native-flipper/-/react-native-flipper-0.176.1.tgz#fdf01e09160660d1c833d537909244965481275e"
-  integrity sha512-kioHzO9JzA2ReW9LfopIEUXeD6gDp3Mw6KjQbELvoLVIEMvCfGz59akezw4l/S8i6qkFVcnwh5c/7Z+L3nthQA==
 
 react-native-gesture-handler@~2.5.0:
   version "2.5.0"
@@ -10210,11 +10188,6 @@ traverse@~0.6.6:
   version "0.6.7"
   resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.7.tgz#46961cd2d57dd8706c36664acde06a248f1173fe"
   integrity sha512-/y956gpUo9ZNCb99YjxG7OaslxZWHfCHAUUfshwqOXmxUIvqLjVO581BT+gM59+QV9tFe6/CGG53tsA1Y7RSdg==
-
-ts-dedent@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/ts-dedent/-/ts-dedent-2.2.0.tgz#39e4bd297cd036292ae2394eb3412be63f563bb5"
-  integrity sha512-q5W7tVM71e2xjHZTlgfTDoPF/SmqKG5hddq9SzR49CH2hayqRKJtQ4mtRlSxKaJlR/+9rEM+mnBHf7I2/BQcpQ==
 
 ts-interface-checker@^0.1.9:
   version "0.1.13"

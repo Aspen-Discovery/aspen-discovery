@@ -29,7 +29,7 @@ import { BrowseCategoryProvider, CheckoutsProvider, HoldsProvider, LibraryBranch
 import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
-import { useFlipper } from '@react-navigation/devtools';
+import { navigationRef } from '../helpers/RootNavigator';
 
 const prefix = Linking.createURL('/');
 
@@ -75,8 +75,6 @@ Sentry.init({
 });
 
 export function App() {
-     const navigationRef = useNavigationContainerRef();
-     useFlipper(navigationRef);
 
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
@@ -135,11 +133,11 @@ export function App() {
                if (!__DEV__) {
                     const update = await Updates.checkForUpdateAsync();
                     if (update.isAvailable) {
-                         console.log("Found an update from Updates Listener...");
+                         console.log('Found an update from Updates Listener...');
                          try {
-                              console.log("Downloading update...");
-                              await Updates.fetchUpdateAsync().then(async r => {
-                                   console.log("Updating app...");
+                              console.log('Downloading update...');
+                              await Updates.fetchUpdateAsync().then(async (r) => {
+                                   console.log('Updating app...');
                                    await Updates.reloadAsync();
                               });
                          } catch (e) {
