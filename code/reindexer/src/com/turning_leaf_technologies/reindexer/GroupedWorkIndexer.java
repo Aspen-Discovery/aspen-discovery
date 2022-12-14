@@ -56,6 +56,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getUserRatingLinkStmt;
 	private PreparedStatement getUserNotInterestedLinkStmt;
 
+	private PreparedStatement forceReindexOfRecordStmt;
+
 	private final Connection dbConn;
 
 	static int availableAtBoostValue = 50;
@@ -217,6 +219,8 @@ public class GroupedWorkIndexer {
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where permanent_id = ? and indexAfter <= ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
+
+			forceReindexOfRecordStmt = dbConn.prepareStatement("INSERT INTO record_identifiers_to_reload (type, identifier, processed) VALUES (?, ?, 0)");
 
 			markIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
 			markIlsRecordAsRestoredStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 0, dateDeleted = null where source = ? and ilsId = ?");
@@ -2473,5 +2477,15 @@ public class GroupedWorkIndexer {
 			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessor;
+	}
+
+	public void forceRecordReindex(String source, String identifier) {
+		try {
+			forceReindexOfRecordStmt.setString(1, source);
+			forceReindexOfRecordStmt.setString(2, identifier);
+			forceReindexOfRecordStmt.executeUpdate();
+		}catch (Exception e) {
+			logEntry.incErrors("Error forcing record reindex", e);
+		}
 	}
 }
