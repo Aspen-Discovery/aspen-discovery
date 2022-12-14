@@ -4104,6 +4104,15 @@ class Koha extends AbstractIlsDriver {
 
 				if (!empty($_REQUEST['copyrightdate'])) {
 					$postFields['copyright_date'] = $_REQUEST['copyrightdate'];
+					if (!is_numeric($_REQUEST['copyrightdate'])) {
+						return [
+							'success' => false,
+							'message' => translate([
+								'text' => 'Please enter the copyright date as a 4-digit year.',
+								'isPublicFacing' => true,
+							]),
+						];
+					}
 				}
 
 				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions";
@@ -4123,11 +4132,17 @@ class Koha extends AbstractIlsDriver {
 						$jsonResponse = json_decode($response);
 						if ($jsonResponse) {
 							if (!empty($jsonResponse->error)) {
-								$result['message'] = $jsonResponse->error;
+								$result['message'] = translate([
+									'text' => $jsonResponse->error,
+									'isPublicFacing' => true,
+								]);
 							} else {
 								$result['message'] = '';
 								foreach ($jsonResponse->errors as $error) {
-									$result['message'] .= $error->message . '<br/>';
+									$result['message'] .= translate([
+											'text' => $error->message,
+											'isPublicFacing' => true,
+										]) . '<br/>';
 								}
 							}
 						} else {
