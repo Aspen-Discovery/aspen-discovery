@@ -32,8 +32,7 @@ class WorkAPI extends Action {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [
 					'getGroupedWork',
-					'getRatingData',
-					'updateRating'
+					'getRatingData'
 				])) {
 					header('Cache-Control: max-age=10800');
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
