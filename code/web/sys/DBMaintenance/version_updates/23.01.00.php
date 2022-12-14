@@ -31,7 +31,14 @@ function getUpdates23_01_00(): array
 				) ENGINE INNODB',
 			],
 		],
-		//development_partners_to_tasks
+		//users_to_tasks
+		'ptype_length' => [
+			'title' => 'PType length',
+			'description' => 'Increase the length of the PType column',
+			'sql' => [
+				"ALTER TABLE ptype CHANGE COLUMN pType pType VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL",
+			],
+		],
 
 		//kirstien
 		'add_account_alerts_notification' => [
