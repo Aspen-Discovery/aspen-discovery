@@ -53,7 +53,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			if (numUsersToUpdate > 0) {
 				BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
 
-				//Process all the threads, we will allow up to 20 concurrent threads to start
+				//Process all the threads, we will allow up to 8 concurrent threads to start
 				ThreadPoolExecutor executor = new ThreadPoolExecutor(4, 8, 5000, TimeUnit.MILLISECONDS, blockingQueue);
 
 				//Setup the ThreadGroup
