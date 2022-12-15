@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.concurrent.*;
 
 public class EvergreenExportMain {
 	private static Logger logger;
@@ -161,7 +162,7 @@ public class EvergreenExportMain {
 							numChanges = updateRecords();
 						}else{
 							MarcFactory marcFactory = MarcFactory.newInstance();
-							numChanges = updateBibFromEvergreen(singleWorkId, marcFactory);
+							numChanges = updateBibFromEvergreen(singleWorkId, marcFactory, true);
 						}
 					}
 				}else{
@@ -412,18 +413,22 @@ public class EvergreenExportMain {
 
 			for (Integer pTypeId : evergreenPTypes.keySet()){
 				String pTypeName = evergreenPTypes.get(pTypeId);
-				existingAspenPatronTypesStmt.setLong(1, pTypeId);
-				ResultSet existingAspenPatronTypesRS = existingAspenPatronTypesStmt.executeQuery();
-				if (!existingAspenPatronTypesRS.next()) {
-					addAspenPatronTypeStmt.setLong(1, pTypeId);
-					addAspenPatronTypeStmt.setString(2, pTypeName);
-					addAspenPatronTypeStmt.executeUpdate();
-				}else if (!existingAspenPatronTypesRS.getString("pType").equals(pTypeName)){
-					updateAspenPatronTypeStmt.setString(1, pTypeName);
-					updateAspenPatronTypeStmt.setLong(2, pTypeId);
-					updateAspenPatronTypeStmt.executeUpdate();
+				try {
+					existingAspenPatronTypesStmt.setLong(1, pTypeId);
+					ResultSet existingAspenPatronTypesRS = existingAspenPatronTypesStmt.executeQuery();
+					if (!existingAspenPatronTypesRS.next()) {
+						addAspenPatronTypeStmt.setLong(1, pTypeId);
+						addAspenPatronTypeStmt.setString(2, pTypeName);
+						addAspenPatronTypeStmt.executeUpdate();
+					} else if (!existingAspenPatronTypesRS.getString("pType").equals(pTypeName)) {
+						updateAspenPatronTypeStmt.setString(1, pTypeName);
+						updateAspenPatronTypeStmt.setLong(2, pTypeId);
+						updateAspenPatronTypeStmt.executeUpdate();
+					}
+					existingAspenPatronTypesRS.close();
+				} catch (Exception e) {
+					logger.error("Error updating patron type " + pTypeName + " from Evergreen", e);
 				}
-				existingAspenPatronTypesRS.close();
 			}
 		} catch (Exception e) {
 			logger.error("Error updating patron type information from Evergreen", e);
@@ -845,24 +850,57 @@ public class EvergreenExportMain {
 		}
 
 		//Read all files to see what has been changed
-		int numUpdates = 0;
+		final int[] numUpdates = {0};
 		logEntry.addNote("There are " + idsToProcess.size() + " records to process based on " + totalIdsInFiles + " ids in the changed ids files");
 		logEntry.addNote("Processing updated ids");
 		logEntry.saveResults();
 		MarcFactory marcFactory = MarcFactory.newInstance();
+
+		//Process all the threads, we will allow up to 10 concurrent threads to start
+		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+
 		for (String idToProcess : idsToProcess) {
-			updateBibFromEvergreen(idToProcess, marcFactory);
-			numUpdates++;
+			es.execute(() -> {
+				updateBibFromEvergreen(idToProcess, marcFactory, false);
+				numUpdates[0]++;
+			});
 		}
 
-		//After the file has been processed, delete it
+		es.shutdown();
+		while (true) {
+			try {
+				boolean terminated = es.awaitTermination(15, TimeUnit.SECONDS);
+				if (terminated){
+					break;
+				}
+			} catch (InterruptedException e) {
+				logEntry.incErrors("Error waiting for all bib record updates to finish", e);
+			}
+		}
+
+		// process all the bibs now to index them
+		int numWorksReindexed = 0;
+		for (String idToProcess : idsToProcess) {
+			Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), idToProcess, logEntry);
+			String groupedWorkId = groupEvergreenRecord(marcRecord);
+			if (groupedWorkId != null) {
+				//Reindex the record
+				getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+				logEntry.incUpdated();
+				numWorksReindexed++;
+			}
+		}
+
+		//After the files have been processed, delete them
 		for (File incrementalIdFile : incrementalIdFiles) {
-			if (!incrementalIdFile.delete()) {
+			//if (!incrementalIdFile.delete()) {
+			//Temporarily rename to processed so we can replay deletes as needed
+			if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
 				logEntry.incErrors("Could not delete incremental ids file " + incrementalIdFile + " after processing.");
 			}
 		}
 
-		return numUpdates;
+		return numUpdates[0];
 	}
 
 	private static int processAllIdsFileForAddsAndDeletes(File idsFile, Connection dbConn) {
@@ -934,7 +972,7 @@ public class EvergreenExportMain {
 			MarcFactory marcFactory = MarcFactory.newInstance();
 			int numAdded = 0;
 			for (String idToProcess : newIds) {
-				updateBibFromEvergreen(idToProcess, marcFactory);
+				updateBibFromEvergreen(idToProcess, marcFactory, true);
 				numAdded++;
 				if (numAdded >= 1000){
 					logEntry.addNote("Only processing the first 1000 new ids to ensure performance");
@@ -1342,15 +1380,15 @@ public class EvergreenExportMain {
 		return totalChanges;
 	}
 
-	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory) {
+	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, boolean reindexNow) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
 		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
-		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory);
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, reindexNow);
 		return response.numChanges;
 	}
 
-	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory) {
+	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, boolean reindexNow) {
 		logEntry.incProducts();
 
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
@@ -1517,15 +1555,22 @@ public class EvergreenExportMain {
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
 							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
-							}else {
-								logEntry.incUpdated();
 							}
 
-							//Regroup the record
-							String groupedWorkId = groupEvergreenRecord(marcRecord);
-							if (groupedWorkId != null) {
-								//Reindex the record
-								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+							if (reindexNow) {
+								if (saveMarcResult != GroupedWorkIndexer.MarcStatus.NEW){
+									logEntry.incUpdated();
+								}
+
+								//Regroup the record
+								String groupedWorkId = groupEvergreenRecord(marcRecord);
+								if (groupedWorkId != null) {
+									//Reindex the record
+									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+								}
+							} else {
+								//Mark this bib & grouped work as needing indexing later
+								getGroupedWorkIndexer().forceRecordReindex(indexingProfile.getName(), bibliographicRecordId.getIdentifier());
 							}
 						}else{
 							if (hasInvalidData){

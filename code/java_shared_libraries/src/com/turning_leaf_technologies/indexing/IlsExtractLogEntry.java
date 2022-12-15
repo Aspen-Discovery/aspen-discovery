@@ -153,6 +153,9 @@ public class IlsExtractLogEntry implements BaseIndexingLogEntry {
 	}
 	public void incUpdated(){
 		numUpdated++;
+		if (numUpdated % 1000 == 0){
+			this.saveResults();
+		}
 	}
 	public void incSkipped(){
 		numSkipped++;
