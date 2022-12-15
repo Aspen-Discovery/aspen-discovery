@@ -305,6 +305,9 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 			'uploaded_images' => [
 				'name' => 'Uploaded Images',
 			],
+			'side_load_marc_records' => [
+				'name' => 'Sideload Files',
+			],
 		];
 
 		if (isset($_REQUEST['submit'])) {
@@ -394,6 +397,8 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				if (in_array($element, $_REQUEST['enrichmentElement'])) {
 					if ($element == 'uploaded_images') {
 						$message = $this->importImages($message);
+					} else if ($element == 'side_load_marc_records') {
+						$message = $this->importSideLoadMarcRecords($message);
 					} else {
 						require_once $elementDefinition['classFile'];
 						$message = $this->importObjects($elementDefinition['className'], $elementDefinition['name'], $importPath . "$element.json", $mappings, $overrideExisting, $message);
@@ -495,7 +500,44 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 		return $message;
 	}
 
-	private function importImages($message) {
+	private function importSideLoadMarcRecords($message) : string {
+		global $configArray;
+		global $serverName;
+		$sideLoads = new SideLoad();
+		$sideLoads->find();
+		while ($sideLoads->fetch()) {
+			if (!empty($sideLoads->marcPath)) {
+				$sideLoadName = preg_replace('~[\W]~', '_', trim($sideLoads->name));
+				if (strlen($message) > 0) {
+					$message .= '<br/>';
+				}
+
+				$message .= "Importing Side Load $sideLoads->name to sideload_$sideLoadName.tar.gz";
+				if ($configArray['System']['operatingSystem'] == 'windows') {
+					$output = [];
+					if (file_exists("c:/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz")) {
+						exec("tar -xzf c:/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz $sideLoads->marcPath", $output);
+					}
+				} else {
+					$output = [];
+					if (file_exists("/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz")) {
+						exec("tar -xzf /data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz $sideLoads->marcPath", $output);
+						//$message .= "<br/><pre>cd $sideLoads->marcPath; tar -czf /data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz *</pre>";
+						//$message .= "<br/>Output" . implode("<br/>", $output);
+					}
+				}
+
+			}
+		}
+		if (strlen($message) > 0) {
+			$message .= '<br/>';
+		}
+		$message .= "Imported Side Load MARC records";
+
+		return $message;
+	}
+
+	private function importImages($message) : string {
 		global $configArray;
 		global $serverName;
 		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_images.tar.gz")) {
