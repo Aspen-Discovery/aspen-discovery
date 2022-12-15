@@ -37,8 +37,8 @@ class Admin_ProPaySettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return ProPaySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return ProPaySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

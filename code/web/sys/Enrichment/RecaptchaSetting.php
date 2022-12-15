@@ -7,7 +7,7 @@ class RecaptchaSetting extends DataObject {
 	public $publicKey;
 	public $privateKey;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

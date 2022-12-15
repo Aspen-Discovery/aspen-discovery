@@ -37,8 +37,8 @@ class Admin_SystemVariables extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return SystemVariables::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SystemVariables::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

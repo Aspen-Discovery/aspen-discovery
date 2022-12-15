@@ -14,7 +14,7 @@ class FormatMapValue extends DataObject {
 	public $holdType;
 	public $pickupAt;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$formatCategories = [
 			'Audio Books' => 'Audio Books',
 			'Books' => 'Books',

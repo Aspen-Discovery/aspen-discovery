@@ -118,6 +118,7 @@ class Library extends DataObject {
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
+	public $invoiceCloudSettingId;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -397,44 +398,45 @@ class Library extends DataObject {
 			'worldPaySettingId',
 			'payPalSettingId',
 			'ebscohostSearchSettingId',
+			'invoiceCloudSettingId'
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		// get the structure for the library system's holidays
-		$holidaysStructure = Holiday::getObjectStructure();
+		$holidaysStructure = Holiday::getObjectStructure($context);
 
 		// we don't want to make the libraryId property editable
 		// because it is associated with this library system only
 		unset($holidaysStructure['libraryId']);
 
-		$libraryLinksStructure = LibraryLink::getObjectStructure();
+		$libraryLinksStructure = LibraryLink::getObjectStructure($context);
 		unset($libraryLinksStructure['weight']);
 		unset($libraryLinksStructure['libraryId']);
 
-		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure();
+		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure($context);
 		unset($libraryRecordOwnedStructure['libraryId']);
 
-		$libraryRecordToIncludeStructure = LibraryRecordToInclude::getObjectStructure();
+		$libraryRecordToIncludeStructure = LibraryRecordToInclude::getObjectStructure($context);
 		unset($libraryRecordToIncludeStructure['libraryId']);
 		unset($libraryRecordToIncludeStructure['weight']);
 
-		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure();
+		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure($context);
 		unset($librarySideLoadScopeStructure['libraryId']);
 
-		$manageMaterialsRequestFieldsToDisplayStructure = MaterialsRequestFieldsToDisplay::getObjectStructure();
+		$manageMaterialsRequestFieldsToDisplayStructure = MaterialsRequestFieldsToDisplay::getObjectStructure($context);
 		unset($manageMaterialsRequestFieldsToDisplayStructure['libraryId']); //needed?
 		unset($manageMaterialsRequestFieldsToDisplayStructure['weight']);
 
-		$materialsRequestFormatsStructure = MaterialsRequestFormats::getObjectStructure();
+		$materialsRequestFormatsStructure = MaterialsRequestFormats::getObjectStructure($context);
 		unset($materialsRequestFormatsStructure['libraryId']); //needed?
 		unset($materialsRequestFormatsStructure['weight']);
 
-		$materialsRequestFormFieldsStructure = MaterialsRequestFormFields::getObjectStructure();
+		$materialsRequestFormFieldsStructure = MaterialsRequestFormFields::getObjectStructure($context);
 		unset($materialsRequestFormFieldsStructure['libraryId']); //needed?
 		unset($materialsRequestFormFieldsStructure['weight']);
 
-		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure();
+		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
 
@@ -549,6 +551,16 @@ class Library extends DataObject {
 			$aciSpeedpaySettings[$aciSpeedpaySetting->id] = $aciSpeedpaySetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/InvoiceCloudSetting.php';
+		$invoiceCloudSetting = new InvoiceCloudSetting();
+		$invoiceCloudSetting->orderBy('name');
+		$invoiceCloudSettings = [];
+		$invoiceCloudSetting->find();
+		$invoiceCloudSettings[-1] = 'none';
+		while ($invoiceCloudSetting->fetch()) {
+			$invoiceCloudSettings[$invoiceCloudSetting->id] = $invoiceCloudSetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -624,7 +636,7 @@ class Library extends DataObject {
 			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
 		}
 
-		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
+		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['libraryId']);
 
 		$barcodeTypes = [
@@ -2109,13 +2121,14 @@ class Library extends DataObject {
 						'values' => [
 							0 => 'No Payment',
 							1 => 'Link to ILS',
-							4 => 'Comprise SMARTPAY',
-							7 => 'FIS WorldPay',
-							3 => 'MSB',
 							2 => 'PayPal',
+							3 => 'MSB',
+							4 => 'Comprise SMARTPAY',
 							5 => 'ProPay',
 							6 => 'Xpress-pay',
+							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
+							9 => 'InvoiceCloud'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2227,6 +2240,15 @@ class Library extends DataObject {
 						'values' => $aciSpeedpaySettings,
 						'label' => 'ACI Speedpay Settings',
 						'description' => 'The ACI Speedpay settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'invoiceCloudSettingId' => [
+						'property' => 'invoiceCloudSettingId',
+						'type' => 'enum',
+						'values' => $invoiceCloudSettings,
+						'label' => 'InvoiceCloud Settings',
+						'description' => 'The InvoiceCloud settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
@@ -3525,7 +3547,7 @@ class Library extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		//Updates to properly update settings based on the ILS
 		global $configArray;
 		$ils = $configArray['Catalog']['ils'];
@@ -3596,7 +3618,7 @@ class Library extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();

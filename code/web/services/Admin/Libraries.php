@@ -42,8 +42,8 @@ class Admin_Libraries extends ObjectEditor {
 		return 'subdomain asc';
 	}
 
-	function getObjectStructure(): array {
-		$objectStructure = Library::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		$objectStructure = Library::getObjectStructure($context);
 		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			unset($objectStructure['isDefault']);
 		}

@@ -22,8 +22,8 @@ class CustomForm extends DataObject {
 		return ['requireLogin'];
 	}
 
-	static function getObjectStructure(): array {
-		$formFieldStructure = CustomFormField::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$formFieldStructure = CustomFormField::getObjectStructure($context);
 		unset ($formFieldStructure['weight']);
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Forms'));
 		return [
@@ -112,7 +112,7 @@ class CustomForm extends DataObject {
 		];
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -121,7 +121,7 @@ class CustomForm extends DataObject {
 		return $ret;
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

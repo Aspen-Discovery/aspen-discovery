@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import _ from 'lodash';
 import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 
@@ -110,11 +111,17 @@ export const LibrarySystemProvider = ({ children }) => {
      const [url, setUrl] = useState();
 
      const updateLibrary = (data) => {
-          const discovery = formatDiscoveryVersion(data.discoveryVersion);
-          setVersion(discovery);
-          console.log('updated version in LibrarySystemContext');
-          setUrl(data.baseUrl);
-          console.log('updated url in LibrarySystemContext');
+         if(!_.isUndefined(data.discoveryVersion)) {
+             const discovery = formatDiscoveryVersion(data.discoveryVersion);
+             setVersion(discovery);
+             console.log('updated version in LibrarySystemContext');
+         }
+
+         if(!_.isUndefined(data.baseUrl)) {
+             setUrl(data.baseUrl);
+             console.log('updated url in LibrarySystemContext');
+         }
+
           setLibrary(data);
           console.log('updated LibrarySystemContext');
      };
@@ -146,8 +153,15 @@ export const LibraryBranchProvider = ({ children }) => {
 
      const updateLocation = (data) => {
           setLocation(data);
-          BRANCH.vdxFormId = data.vdxFormId;
-          BRANCH.vdxLocation = data.vdxLocation;
+
+         if(!_.isUndefined(data.vdxFormId)) {
+             BRANCH.vdxFormId = data.vdxFormId;
+         }
+
+         if(!_.isUndefined(data.vdxLocation)) {
+             BRANCH.vdxLocation = data.vdxLocation;
+         }
+
           console.log('updated LibraryBranchContext');
      };
 
@@ -179,14 +193,23 @@ export const LibraryBranchProvider = ({ children }) => {
 export const UserProvider = ({ children }) => {
      const [user, setUser] = useState();
      const [accounts, setLinkedAccounts] = useState();
+     const [viewers, setLinkedViewerAccounts] = useState();
      const [lists, setLists] = useState();
      const [language, setLanguage] = useState();
      const [locations, setPickupLocations] = useState();
+     const [readingHistory, setReadingHistory] = useState();
 
      const updateUser = (data) => {
           setUser(data);
-          PATRON.listLastUsed = data.lastListUsed ?? null;
-          PATRON.num.holds = data.numHolds;
+
+         if(!_.isUndefined(data.lastListUsed)) {
+             PATRON.listLastUsed = data.lastListUsed
+         }
+
+         if(!_.isUndefined(data.numHolds)) {
+             PATRON.num.holds = data.numHolds;
+         }
+
           console.log('updated UserContext');
      };
 
@@ -208,6 +231,11 @@ export const UserProvider = ({ children }) => {
           console.log('updated linked accounts in UserContext');
      };
 
+     const updateLinkedViewerAccounts = (data) => {
+          setLinkedViewerAccounts(data);
+          console.log('updated linked viewer accounts in UserContext');
+     };
+
      const updateLanguage = (data) => {
           setLanguage(data);
           console.log('updated language in UserContext');
@@ -216,6 +244,11 @@ export const UserProvider = ({ children }) => {
      const updatePickupLocations = (data) => {
           setPickupLocations(data);
           console.log('updated pickup locations in UserContext');
+     };
+
+     const updateReadingHistory = (data) => {
+          setReadingHistory(data);
+          console.log('updated reading history in UserContext');
      };
 
      return (
@@ -228,10 +261,14 @@ export const UserProvider = ({ children }) => {
                     updateLists,
                     accounts,
                     updateLinkedAccounts,
+                    viewers,
+                    updateLinkedViewerAccounts,
                     language,
                     updateLanguage,
                     locations,
                     updatePickupLocations,
+                    readingHistory,
+                    updateReadingHistory,
                }}>
                {children}
           </UserContext.Provider>

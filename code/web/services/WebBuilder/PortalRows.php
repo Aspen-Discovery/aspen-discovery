@@ -46,8 +46,8 @@ class WebBuilder_PortalRows extends ObjectEditor {
 		return 'weight asc';
 	}
 
-	function getObjectStructure(): array {
-		return PortalRow::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return PortalRow::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

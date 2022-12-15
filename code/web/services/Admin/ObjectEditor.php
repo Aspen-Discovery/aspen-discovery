@@ -16,7 +16,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$user->update();
 		}
 
-		$structure = $this->getObjectStructure();
+		$structure = $this->getObjectStructure($this->getContext());
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canCopy', $this->canCopy());
@@ -102,7 +102,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	abstract function getObjectStructure(): array;
+	abstract function getObjectStructure($context = ''): array;
 
 	/**
 	 * The name of the column which defines this as unique
@@ -140,7 +140,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		//Check to see if we are getting default values from the
 		$validationResults = $this->updateFromUI($newObject, $structure);
 		if ($validationResults['validatedOk']) {
-			$ret = $newObject->insert();
+			$ret = $newObject->insert($this->getContext());
 			if (!$ret) {
 				global $logger;
 				if ($newObject->getLastError()) {
@@ -311,7 +311,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					$user = UserAccount::getActiveUserObj();
 					$validationResults = $this->updateFromUI($curObject, $structure);
 					if ($validationResults['validatedOk']) {
-						$ret = $curObject->update();
+						$ret = $curObject->update($this->getContext());
 						if ($ret === false) {
 							if ($curObject->getLastError()) {
 								$errorDescription = $curObject->getLastError();
@@ -442,7 +442,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	 * @param DataObject $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject) {
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
@@ -717,7 +717,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	function applyFilters(DataObject $object) {
-		$filterFields = $this->getFilterFields($object::getObjectStructure());
+		$filterFields = $this->getFilterFields($object::getObjectStructure($this->getContext()));
 		$appliedFilters = $this->getAppliedFilters($filterFields);
 		foreach ($appliedFilters as $fieldName => $filter) {
 			$this->applyFilter($object, $fieldName, $filter);
@@ -847,5 +847,9 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	protected function showHistoryLinks() {
 		return true;
+	}
+
+	public function getContext() : string {
+		return '';
 	}
 }

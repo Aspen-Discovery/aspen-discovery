@@ -6,7 +6,7 @@ class TaskPartnerLink extends DataObject {
 	public $partnerId;
 	public $taskId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$taskList = [];
 		require_once ROOT_DIR . '/sys/Development/DevelopmentTask.php';
 		$task = new DevelopmentTask();

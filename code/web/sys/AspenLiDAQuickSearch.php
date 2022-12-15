@@ -10,7 +10,7 @@ class AspenLiDAQuickSearch extends DataObject {
 	public $searchTerm;
 	public $label;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

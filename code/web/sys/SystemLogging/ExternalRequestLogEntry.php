@@ -13,7 +13,7 @@ class ExternalRequestLogEntry extends DataObject {
 	public $response;
 	public $requestTime;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

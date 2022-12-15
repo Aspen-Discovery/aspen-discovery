@@ -54,8 +54,8 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor {
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	function getObjectStructure(): array {
-		return BlockPatronAccountLink::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return BlockPatronAccountLink::getObjectStructure($context);
 	}
 
 	/**

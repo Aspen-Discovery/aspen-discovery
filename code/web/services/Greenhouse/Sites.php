@@ -37,8 +37,8 @@ class Greenhouse_Sites extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return AspenSite::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AspenSite::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

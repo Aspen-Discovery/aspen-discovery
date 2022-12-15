@@ -37,8 +37,8 @@ class Admin_WorldPaySettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return WorldPaySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WorldPaySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

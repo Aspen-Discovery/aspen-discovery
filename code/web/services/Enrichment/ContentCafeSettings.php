@@ -38,8 +38,8 @@ class Enrichment_ContentCafeSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return ContentCafeSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return ContentCafeSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

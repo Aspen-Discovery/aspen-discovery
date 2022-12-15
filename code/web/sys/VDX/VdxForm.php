@@ -18,7 +18,7 @@ class VdxForm extends DataObject {
 
 	protected $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All VDX Forms'));
 
 		return [
@@ -110,7 +110,7 @@ class VdxForm extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
@@ -118,7 +118,7 @@ class VdxForm extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLocations();

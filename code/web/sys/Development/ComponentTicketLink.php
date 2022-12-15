@@ -6,7 +6,7 @@ class ComponentTicketLink extends DataObject {
 	public $ticketId;
 	public $componentId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$componentList = [];
 		require_once ROOT_DIR . '/sys/Support/TicketComponentFeed.php';
 		$component = new TicketComponentFeed();

@@ -36,7 +36,7 @@ class LibraryLink extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
@@ -166,7 +166,7 @@ class LibraryLink extends DataObject {
 		];
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (empty($this->_allowAccess)) {
@@ -187,7 +187,7 @@ class LibraryLink extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveAccess();

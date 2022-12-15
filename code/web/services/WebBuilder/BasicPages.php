@@ -42,8 +42,8 @@ class WebBuilder_BasicPages extends ObjectEditor {
 		return 'title asc';
 	}
 
-	function getObjectStructure(): array {
-		return BasicPage::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return BasicPage::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

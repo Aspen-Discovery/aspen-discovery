@@ -54,8 +54,8 @@ class Greenhouse_TicketComponents extends ObjectEditor {
 		return $objectList;
 	}
 
-	function getObjectStructure(): array {
-		return TicketComponentFeed::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return TicketComponentFeed::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

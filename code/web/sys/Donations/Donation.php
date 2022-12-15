@@ -24,7 +24,7 @@ class Donation extends DataObject {
 	public $sendEmailToUser;
 	public $donationSettingId;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		return [
 			'id' => [
 				'property' => 'id',

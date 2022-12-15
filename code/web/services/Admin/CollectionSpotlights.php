@@ -43,8 +43,8 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return CollectionSpotlight::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CollectionSpotlight::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

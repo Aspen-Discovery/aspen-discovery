@@ -38,8 +38,8 @@ class Enrichment_ARSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return ARSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return ARSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

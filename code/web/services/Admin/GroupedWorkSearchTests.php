@@ -34,8 +34,8 @@ class Admin_GroupedWorkSearchTests extends ObjectEditor {
 		return 'searchTerm asc';
 	}
 
-	function getObjectStructure(): array {
-		return GroupedWorkTestSearch::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GroupedWorkTestSearch::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

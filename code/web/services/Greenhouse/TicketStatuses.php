@@ -54,8 +54,8 @@ class Greenhouse_TicketStatuses extends ObjectEditor {
 		return $objectList;
 	}
 
-	function getObjectStructure(): array {
-		return TicketStatusFeed::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return TicketStatusFeed::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

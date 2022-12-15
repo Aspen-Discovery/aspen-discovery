@@ -20,7 +20,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	protected $_locations;
 	protected $_preFormattedMessage;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
 		return [
@@ -172,7 +172,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -181,7 +181,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

@@ -24,7 +24,7 @@ class OpenArchivesCollection extends DataObject {
 	public $_libraries;
 	public $_locations;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Open Archives'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Open Archives'));
 
@@ -144,7 +144,7 @@ class OpenArchivesCollection extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$this->lastFetched = 0;
 		$ret = parent::update();
 		if ($ret !== FALSE) {
@@ -155,7 +155,7 @@ class OpenArchivesCollection extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

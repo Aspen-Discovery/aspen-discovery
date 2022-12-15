@@ -29,7 +29,7 @@ class DevelopmentTask extends DataObject {
 	public $_requestingPartners; //Can be multiple
 	public $_relatedComponents; //Can be multiple
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$taskTypes = [
 			0 => 'Not Set',
 			1 => 'Bug',
@@ -99,16 +99,25 @@ class DevelopmentTask extends DataObject {
 		];
 
 		require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
-		$taskTicketLink = TaskTicketLink::getObjectStructure();
+		$taskTicketLink = TaskTicketLink::getObjectStructure($context);
 		unset($taskTicketLink['taskId']);
 
 		require_once ROOT_DIR . '/sys/Development/TaskPartnerLink.php';
-		$taskPartnerLink = TaskPartnerLink::getObjectStructure();
+		$taskPartnerLink = TaskPartnerLink::getObjectStructure($context);
 		unset($taskPartnerLink['taskId']);
 
 		require_once ROOT_DIR . '/sys/Development/ComponentTaskLink.php';
-		$componentTaskLink = ComponentTaskLink::getObjectStructure();
+		$componentTaskLink = ComponentTaskLink::getObjectStructure($context);
 		unset($componentTaskLink['taskId']);
+
+		require_once ROOT_DIR . '/sys/Development/TaskDeveloperLink.php';
+		$developerLink = TaskDeveloperLink::getObjectStructure($context);
+		unset($developerLink['taskId']);
+
+		require_once ROOT_DIR . '/sys/Development/TaskQALink.php';
+		$qaLink = TaskQALink::getObjectStructure($context);
+		unset($qaLink['taskId']);
+
 
 		return [
 			'id' => [
@@ -140,7 +149,6 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Related Epic',
 				'description' => 'The epic related to the task (if any)',
 				'values' => $availableEpics,
-				'required' => true,
 				'canBatchUpdate' => true,
 			],
 			'dueDate' => [
@@ -176,6 +184,38 @@ class DevelopmentTask extends DataObject {
 				'keyOther' => 'taskId',
 				'subObjectType' => 'ComponentTaskLink',
 				'structure' => $componentTaskLink,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => [],
+				'hideInLists' => true,
+			],
+			'assignedDeveloper' => [
+				'property' => 'assignedDeveloper',
+				'type' => 'oneToMany',
+				'label' => 'Developer(s)',
+				'description' => 'The developer or developers working on this task',
+				'keyThis' => 'id',
+				'keyOther' => 'taskId',
+				'subObjectType' => 'TaskDeveloperLink',
+				'structure' => $developerLink,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => [],
+				'hideInLists' => true,
+			],
+			'assignedQA' => [
+				'property' => 'assignedQA',
+				'type' => 'oneToMany',
+				'label' => 'QA',
+				'description' => 'The QA Analyst(s) assigned for testing',
+				'keyThis' => 'id',
+				'keyOther' => 'taskId',
+				'subObjectType' => 'TaskQALink',
+				'structure' => $qaLink,
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => false,
@@ -328,6 +368,10 @@ class DevelopmentTask extends DataObject {
 			return $this->getRelatedComponents();
 		} elseif ($name == 'requestingPartners') {
 			return $this->getRequestingPartners();
+		} elseif ($name == 'assignedDeveloper') {
+			return $this->getAssignedDevelopers();
+		} elseif ($name == 'assignedQA') {
+			return $this->getAssignedQA();
 		} else {
 			return $this->_data[$name];
 		}
@@ -344,6 +388,10 @@ class DevelopmentTask extends DataObject {
 			$this->_relatedComponents = $value;
 		} elseif ($name == "requestingPartners") {
 			$this->_requestingPartners = $value;
+		} elseif ($name == "assignedDeveloper") {
+			$this->_assignedDeveloper = $value;
+		} elseif ($name == "assignedQA") {
+			$this->_assignedQA = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
@@ -352,7 +400,7 @@ class DevelopmentTask extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveRelatedEpic();
@@ -360,11 +408,13 @@ class DevelopmentTask extends DataObject {
 			$this->saveRelatedTickets();
 			$this->saveRelatedComponents();
 			$this->saveRequestingPartners();
+			$this->saveAssignedDevelopers();
+			$this->saveAssignedQA();
 		}
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveRelatedEpic();
@@ -372,6 +422,8 @@ class DevelopmentTask extends DataObject {
 			$this->saveRelatedTickets();
 			$this->saveRelatedComponents();
 			$this->saveRequestingPartners();
+			$this->saveAssignedDevelopers();
+			$this->saveAssignedQA();
 		}
 		return $ret;
 	}
@@ -439,6 +491,20 @@ class DevelopmentTask extends DataObject {
 		}
 	}
 
+	public function saveAssignedDevelopers() {
+		if (isset ($this->_assignedDeveloper) && is_array($this->_assignedDeveloper)) {
+			$this->saveOneToManyOptions($this->_assignedDeveloper, 'taskId');
+			unset($this->_assignedDeveloper);
+		}
+	}
+
+	public function saveAssignedQA() {
+		if (isset ($this->_assignedQA) && is_array($this->_assignedQA)) {
+			$this->saveOneToManyOptions($this->_assignedQA, 'taskId');
+			unset($this->_assignedQA);
+		}
+	}
+
 	/**
 	 * @return TaskTicketLink[]
 	 */
@@ -454,6 +520,14 @@ class DevelopmentTask extends DataObject {
 			}
 		}
 		return $this->_relatedTickets;
+	}
+
+	/**
+	 * @param TaskTicketLink[] $relatedTickets
+	 * @return void
+	 */
+	public function setRelatedTickets(array $relatedTickets) {
+		$this->_relatedTickets = $relatedTickets;
 	}
 
 	/**
@@ -474,6 +548,14 @@ class DevelopmentTask extends DataObject {
 	}
 
 	/**
+	 * @param ComponentTaskLink[] $relatedComponents
+	 * @return void
+	 */
+	public function setRelatedComponents(array $relatedComponents) {
+		$this->_relatedComponents = $relatedComponents;
+	}
+
+	/**
 	 * @return TaskPartnerLink[]
 	 */
 	private function getRequestingPartners(): ?array {
@@ -488,5 +570,47 @@ class DevelopmentTask extends DataObject {
 			}
 		}
 		return $this->_requestingPartners;
+	}
+
+	/**
+	 * @param TaskPartnerLink[] $requestingPartners
+	 * @return void
+	 */
+	public function setRequestingPartners(array $requestingPartners) {
+		$this->_requestingPartners = $requestingPartners;
+	}
+
+	/**
+	 * @return TaskDeveloperLink[]
+	 */
+	private function getAssignedDevelopers(): ?array {
+		if (!isset($this->_assignedDeveloper) && $this->id) {
+			require_once ROOT_DIR . '/sys/Development/TaskDeveloperLink.php';
+			$this->_assignedDeveloper = [];
+			$user = new TaskDeveloperLink();
+			$user->taskId = $this->id;
+			$user->find();
+			while ($user->fetch()) {
+				$this->_assignedDeveloper[$user->id] = clone($user);
+			}
+		}
+		return $this->_assignedDeveloper;
+	}
+
+	/**
+	 * @return TaskQALink[]
+	 */
+	private function getAssignedQA(): ?array {
+		if (!isset($this->_assignedQA) && $this->id) {
+			require_once ROOT_DIR . '/sys/Development/TaskQALink.php';
+			$this->_assignedQA = [];
+			$user = new TaskQALink();
+			$user->taskId = $this->id;
+			$user->find();
+			while ($user->fetch()) {
+				$this->_assignedQA[$user->id] = clone($user);
+			}
+		}
+		return $this->_assignedQA;
 	}
 }

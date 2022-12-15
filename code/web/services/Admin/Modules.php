@@ -37,8 +37,8 @@ class Admin_Modules extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return Module::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Module::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

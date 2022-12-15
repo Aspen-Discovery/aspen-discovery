@@ -10,7 +10,7 @@ class CustomFormSubmission extends DataObject {
 	public $dateSubmitted;
 	public $submission;
 
-	public function getObjectStructure(): array {
+	public function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

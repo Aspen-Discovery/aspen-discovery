@@ -40,8 +40,8 @@ class AspenLiDA_QuickSearchSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return QuickSearchSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return QuickSearchSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

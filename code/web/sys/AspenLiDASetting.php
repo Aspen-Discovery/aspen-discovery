@@ -12,7 +12,7 @@ class AspenLiDASetting extends DataObject {
 	public $privacyPolicy;
 	public $showFavicons;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 
 		$structure = [
 			'id' => [

@@ -38,8 +38,8 @@ class Enrichment_SyndeticsSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return SyndeticsSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SyndeticsSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

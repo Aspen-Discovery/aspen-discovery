@@ -38,8 +38,8 @@ class Translation_Languages extends ObjectEditor {
 		return 'displayName asc';
 	}
 
-	function getObjectStructure(): array {
-		return Language::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Language::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -65,8 +65,8 @@ class Admin_LiDANotifications extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return LiDANotification::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return LiDANotification::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -84,13 +84,13 @@ class Admin_LiDANotifications extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
 		$breadcrumbs[] = new Breadcrumb('/Admin/LiDANotifications', 'LiDA Notifications');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'local_enrichment';
+		return 'aspen_lida';
 	}
 
 	function canView(): bool {

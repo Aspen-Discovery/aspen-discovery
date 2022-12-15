@@ -39,8 +39,8 @@ class Admin_BadWords extends ObjectEditor {
 		return 'word asc';
 	}
 
-	function getObjectStructure(): array {
-		return BadWord::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return BadWord::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

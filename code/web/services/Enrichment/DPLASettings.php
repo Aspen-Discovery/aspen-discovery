@@ -38,8 +38,8 @@ class Enrichment_DPLASettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return DPLASetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return DPLASetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

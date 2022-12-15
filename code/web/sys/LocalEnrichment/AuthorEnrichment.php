@@ -7,7 +7,7 @@ class AuthorEnrichment extends DataObject {
 	public $hideWikipedia;
 	public $wikipediaUrl;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			[
 				'property' => 'id',

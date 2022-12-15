@@ -6,7 +6,7 @@ class NewYorkTimesSetting extends DataObject {
 	public $id;
 	public $booksApiKey;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

@@ -8,7 +8,7 @@ class SendGridSetting extends DataObject {
 	public $replyToAddress;
 	public $apiKey;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

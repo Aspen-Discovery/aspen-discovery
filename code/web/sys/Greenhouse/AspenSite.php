@@ -94,7 +94,7 @@ class AspenSite extends DataObject {
 		];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

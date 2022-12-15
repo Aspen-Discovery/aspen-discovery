@@ -36,8 +36,8 @@ class WebBuilder_Audiences extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return WebBuilderAudience::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WebBuilderAudience::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

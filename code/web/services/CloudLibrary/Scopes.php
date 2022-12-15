@@ -38,8 +38,8 @@ class CloudLibrary_Scopes extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return CloudLibraryScope::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CloudLibraryScope::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

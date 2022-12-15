@@ -28,8 +28,8 @@ class OverDriveSetting extends DataObject {
 		return ['clientSecret'];
 	}
 
-	public static function getObjectStructure(): array {
-		$overdriveScopeStructure = OverDriveScope::getObjectStructure();
+	public static function getObjectStructure($context = ''): array {
+		$overdriveScopeStructure = OverDriveScope::getObjectStructure($context);
 		unset($overdriveScopeStructure['settingId']);
 
 		$objectStructure = [
@@ -192,7 +192,7 @@ class OverDriveSetting extends DataObject {
 		return $this->url;
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
@@ -200,7 +200,7 @@ class OverDriveSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (empty($this->_scopes)) {

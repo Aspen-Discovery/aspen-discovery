@@ -13,8 +13,8 @@ class EBSCOhostSetting extends DataObject {
 
 	private $_searchSettings;
 
-	static function getObjectStructure(): array {
-		$ebscoHostSearchSettingStructure = EBSCOhostSearchSetting::getObjectStructure();
+	static function getObjectStructure($context = ''): array {
+		$ebscoHostSearchSettingStructure = EBSCOhostSearchSetting::getObjectStructure($context);
 
 		$structure = [
 			'id' => [
@@ -96,7 +96,7 @@ class EBSCOhostSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveSearchSettings();
@@ -104,7 +104,7 @@ class EBSCOhostSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (empty($this->_searchSettings)) {

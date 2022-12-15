@@ -69,8 +69,8 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return AmazonSesSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AmazonSesSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

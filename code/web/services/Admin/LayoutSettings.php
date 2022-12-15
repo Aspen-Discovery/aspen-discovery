@@ -43,8 +43,8 @@ class Admin_LayoutSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return LayoutSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return LayoutSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

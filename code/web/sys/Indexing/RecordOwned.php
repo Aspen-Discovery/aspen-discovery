@@ -12,7 +12,7 @@ class RecordOwned extends DataObject {
 	public /** @noinspection PhpUnused */
 		$subLocationsToExclude;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$indexingProfiles = [];
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();

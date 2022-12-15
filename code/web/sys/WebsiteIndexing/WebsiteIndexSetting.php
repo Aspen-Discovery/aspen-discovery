@@ -34,7 +34,7 @@ class WebsiteIndexSetting extends DataObject {
 		];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Website Indexing Settings'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Website Indexing Settings'));
 
@@ -173,7 +173,7 @@ class WebsiteIndexSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		if (substr($this->siteUrl, -1) == '/') {
 			$this->siteUrl = substr($this->siteUrl, 0, -1);
 		}
@@ -186,7 +186,7 @@ class WebsiteIndexSetting extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		if (substr($this->siteUrl, -1) == '/') {
 			$this->siteUrl = substr($this->siteUrl, 0, -1);
 		}

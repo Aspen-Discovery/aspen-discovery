@@ -54,8 +54,8 @@ class Greenhouse_TicketSeverities extends ObjectEditor {
 		return $objectList;
 	}
 
-	function getObjectStructure(): array {
-		return TicketSeverityFeed::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return TicketSeverityFeed::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

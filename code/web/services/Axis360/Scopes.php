@@ -38,8 +38,8 @@ class Axis360_Scopes extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return Axis360Scope::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Axis360Scope::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -55,8 +55,8 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor {
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	function getObjectStructure(): array {
-		return LMLibraryCalendarSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return LMLibraryCalendarSetting::getObjectStructure($context);
 	}
 
 	/**

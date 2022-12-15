@@ -36,8 +36,8 @@ class SSOSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return SSOSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SSOSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

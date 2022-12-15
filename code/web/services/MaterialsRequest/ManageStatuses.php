@@ -56,8 +56,8 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return MaterialsRequestStatus::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return MaterialsRequestStatus::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

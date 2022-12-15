@@ -6,7 +6,7 @@ class LibraryRecordToInclude extends RecordToInclude {
 	public $__table = 'library_records_to_include';    // table name
 	public $libraryId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')) {
@@ -18,7 +18,7 @@ class LibraryRecordToInclude extends RecordToInclude {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
+		$structure = parent::getObjectStructure($context);
 		$structure['libraryId'] = [
 			'property' => 'libraryId',
 			'type' => 'enum',

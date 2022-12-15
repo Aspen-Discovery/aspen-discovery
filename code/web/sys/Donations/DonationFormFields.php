@@ -19,7 +19,7 @@ class DonationFormFields extends DataObject {
 		'checkbox' => 'Checkbox (Yes/No)',
 	];
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

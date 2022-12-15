@@ -193,7 +193,7 @@ class Person extends SolrDataObject {
 		return $return;
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$structure = [
 			[
 				'property' => 'id',
@@ -711,7 +711,7 @@ class Person extends SolrDataObject {
 		}
 	}
 
-	function insert() {
+	function insert($context = '') {
 		//Set the dateAdded and who added the record
 		$this->dateAdded = time();
 		$this->addedBy = UserAccount::getActiveUserId();
@@ -726,7 +726,7 @@ class Person extends SolrDataObject {
 		return $ret;
 	}
 
-	function update() {
+	function update($context = '') {
 		$this->modifiedBy = UserAccount::getActiveUserId();
 		$this->lastModified = time();
 		$ret = parent::update();

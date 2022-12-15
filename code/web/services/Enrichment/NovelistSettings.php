@@ -38,8 +38,8 @@ class Enrichment_NovelistSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return NovelistSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return NovelistSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

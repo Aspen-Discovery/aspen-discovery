@@ -34,8 +34,8 @@ class Admin_IPAddresses extends ObjectEditor {
 		return 'ip asc';
 	}
 
-	function getObjectStructure(): array {
-		return IPAddress::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return IPAddress::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -63,7 +63,7 @@ class CollectionSpotlight extends DataObject {
 		return CollectionSpotlight::$_displayTypes[$typeName];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
 		$libraryList = [];
 		if (UserAccount::userHasPermission('Administer All Collection Spotlights')) {
@@ -79,7 +79,7 @@ class CollectionSpotlight extends DataObject {
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
 
-		$spotlightListStructure = CollectionSpotlightList::getObjectStructure();
+		$spotlightListStructure = CollectionSpotlightList::getObjectStructure($context);
 		unset($spotlightListStructure['searchTerm']);
 		unset($spotlightListStructure['defaultFilter']);
 		unset($spotlightListStructure['sourceListId']);
@@ -342,7 +342,7 @@ class CollectionSpotlight extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret === FALSE) {
 			return $ret;
@@ -357,7 +357,7 @@ class CollectionSpotlight extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret === FALSE) {
 			return $ret;

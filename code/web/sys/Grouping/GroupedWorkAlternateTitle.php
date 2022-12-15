@@ -10,7 +10,7 @@ class GroupedWorkAlternateTitle extends DataObject {
 	public $addedBy;
 	public $dateAdded;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -77,7 +77,7 @@ class GroupedWorkAlternateTitle extends DataObject {
 		return $this->_data[$name];
 	}
 
-	function insert() {
+	function insert($context = '') {
 		$ret = parent::insert();
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$relatedWork = new GroupedWork();
@@ -88,7 +88,7 @@ class GroupedWorkAlternateTitle extends DataObject {
 		return $ret;
 	}
 
-	function update() {
+	function update($context = '') {
 		$ret = parent::update();
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$relatedWork = new GroupedWork();

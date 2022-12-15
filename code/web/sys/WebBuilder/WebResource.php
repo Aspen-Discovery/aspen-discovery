@@ -39,7 +39,7 @@ class WebResource extends DB_LibraryLinkedObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Web Resources'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
@@ -173,7 +173,7 @@ class WebResource extends DB_LibraryLinkedObject {
 		return $parsedown->parse($this->description);
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$this->lastUpdate = time();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
@@ -184,7 +184,7 @@ class WebResource extends DB_LibraryLinkedObject {
 		return $ret;
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$this->lastUpdate = time();
 		$ret = parent::update();
 		if ($ret !== FALSE) {

@@ -39,8 +39,8 @@ class Websites_Settings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return WebsiteIndexSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WebsiteIndexSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

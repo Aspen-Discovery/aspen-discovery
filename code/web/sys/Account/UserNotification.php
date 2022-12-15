@@ -15,7 +15,7 @@ class UserNotification extends DataObject {
 	public $error;
 	public $message;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context) {
 		return [
 			'id' => [
 				'property' => 'id',

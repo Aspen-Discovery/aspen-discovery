@@ -65,8 +65,8 @@ class Websites_WebsitePages extends ObjectEditor {
 	/**
 	 * @inheritDoc
 	 */
-	function getObjectStructure(): array {
-		return WebsitePage::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WebsitePage::getObjectStructure($context);
 	}
 
 	/**

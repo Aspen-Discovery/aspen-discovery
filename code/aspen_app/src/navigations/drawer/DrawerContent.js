@@ -138,6 +138,7 @@ export const DrawerContent = () => {
                               <Holds />
                               <UserLists />
                               <SavedSearches />
+                              <ReadingHistory />
                          </VStack>
 
                          <VStack space="3">
@@ -214,7 +215,10 @@ const Checkouts = () => {
                py="2"
                rounded="md"
                onPress={() => {
-                    navigateStack('AccountScreenTab', 'CheckedOut', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('AccountScreenTab', 'MyCheckouts', {
+                         libraryUrl: library.baseUrl,
+                         hasPendingChanges: false,
+                    });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -247,7 +251,7 @@ const Holds = () => {
                py="3"
                rounded="md"
                onPress={() => {
-                    navigateStack('AccountScreenTab', 'Holds', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('AccountScreenTab', 'MyHolds', { libraryUrl: library.baseUrl, hasPendingChanges: false });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -280,7 +284,10 @@ const UserLists = () => {
                     py="3"
                     rounded="md"
                     onPress={() => {
-                         navigateStack('AccountScreenTab', 'Lists', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                         navigateStack('AccountScreenTab', 'MyLists', {
+                              libraryUrl: library.baseUrl,
+                              hasPendingChanges: false,
+                         });
                     }}>
                     <HStack space="1" alignItems="center">
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -300,7 +307,7 @@ const UserLists = () => {
                py="3"
                rounded="md"
                onPress={() => {
-                    navigateStack('AccountScreenTab', 'Lists', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('MyListsStack', 'MyLists', { libraryUrl: library.baseUrl, hasPendingChanges: false });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -324,7 +331,10 @@ const SavedSearches = () => {
                     py="3"
                     rounded="md"
                     onPress={() => {
-                         navigateStack('AccountScreenTab', 'SavedSearches', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                         navigateStack('AccountScreenTab', 'MySavedSearches', {
+                              libraryUrl: library.baseUrl,
+                              hasPendingChanges: false,
+                         });
                     }}>
                     <HStack space="1" alignItems="center">
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -350,6 +360,38 @@ const SavedSearches = () => {
      return null;
 };
 
+const ReadingHistory = () => {
+     const { user } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const version = formatDiscoveryVersion(library.discoveryVersion);
+
+     if (version >= '22.12.00') {
+          return (
+               <Pressable
+                    px="2"
+                    py="3"
+                    rounded="md"
+                    onPress={() => {
+                         navigateStack('AccountScreenTab', 'MyReadingHistory', {
+                              libraryUrl: library.baseUrl,
+                              hasPendingChanges: false,
+                         });
+                    }}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <VStack w="100%">
+                              <Text fontWeight="500">
+                                   {translate('reading_history.title')} <Text bold>(500)</Text>
+                              </Text>
+                         </VStack>
+                    </HStack>
+               </Pressable>
+          );
+     }
+
+     return null;
+};
+
 const UserProfile = () => {
      const { library } = React.useContext(LibrarySystemContext);
 
@@ -358,7 +400,10 @@ const UserProfile = () => {
                px="2"
                py="3"
                onPress={() => {
-                    navigateStack('AccountScreenTab', 'ProfileScreen', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('AccountScreenTab', 'MyProfile', {
+                         libraryUrl: library.baseUrl,
+                         hasPendingChanges: false,
+                    });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -375,7 +420,15 @@ const LinkedAccounts = () => {
 
      if (library.allowLinkedAccounts === '1') {
           return (
-               <Pressable px="2" py="2" onPress={() => navigateStack('AccountScreenTab', 'LinkedAccounts', { libraryUrl: library.baseUrl, hasPendingChanges: false })}>
+               <Pressable
+                    px="2"
+                    py="2"
+                    onPress={() =>
+                         navigateStack('AccountScreenTab', 'MyLinkedAccounts', {
+                              libraryUrl: library.baseUrl,
+                              hasPendingChanges: false,
+                         })
+                    }>
                     <HStack space="1" alignItems="center">
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
@@ -395,7 +448,10 @@ const UserPreferences = () => {
                px="2"
                py="3"
                onPress={() => {
-                    navigateStack('AccountScreenTab', 'Preferences', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('AccountScreenTab', 'MyPreferences', {
+                         libraryUrl: library.baseUrl,
+                         hasPendingChanges: false,
+                    });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -518,6 +574,7 @@ export class DrawerContentOld extends Component {
                     ready: this.context.user.numHoldsAvailable ?? 0,
                     savedSearches: this.context.user.numSavedSearches ?? 0,
                     updatedSearches: this.context.user.numSavedSearchesNew ?? 0,
+                    linkedAccounts: this.context.user.numLinkedAccounts ?? 0,
                },
           };
           this._isMounted = false;
@@ -690,8 +747,8 @@ export class DrawerContentOld extends Component {
      };
 
      render() {
-          const {messages, fines} = this.state;
-          const {checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches} = this.state.num;
+          const { messages, fines } = this.state;
+          const { checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches, linkedAccounts } = this.state.num;
           const user = this.context.user;
 
           let library = JSON.parse(this.props.libraryContext);
@@ -829,77 +886,84 @@ export class DrawerContentOld extends Component {
                                       </Pressable>
                                   )}
 
-                                  {discoveryVersion >= '22.08.00' ? (
-                                      <Pressable
-                                          px="2"
-                                          py="3"
-                                          rounded="md"
-                                          onPress={() => {
-                                               this.handleNavigation('AccountScreenTab', 'SavedSearches', LIBRARY.url);
-                                          }}>
-                                           <HStack space="1" alignItems="center">
-                                                <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                                <VStack w="100%">
-                                                     <Text fontWeight="500">
-                                                          {translate('user_profile.saved_searches')} {user ? <Text bold>({savedSearches})</Text> : null}
-                                                     </Text>
-                                                </VStack>
-                                           </HStack>
-                                           {updatedSearches > 0 ? (
-                                               <Container>
-                                                    <Badge colorScheme="warning" ml={10} rounded="4px" _text={{fontSize: 'xs'}}>
-                                                         {translate('user_profile.saved_searches_updated', {
-                                                              count: updatedSearches,
-                                                         })}
-                                                    </Badge>
-                                               </Container>
-                                           ) : null}
-                                      </Pressable>
-                                  ) : null}
-                             </VStack>
-                             <VStack space="3">
-                                  <VStack>
-                                       <Pressable
-                                           px="2"
-                                           py="3"
-                                           onPress={() => {
-                                                this.handleNavigation('AccountScreenTab', 'ProfileScreen', LIBRARY.url);
-                                           }}>
-                                            <HStack space="1" alignItems="center">
-                                                 <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                                 <Text fontWeight="500">{translate('user_profile.profile')}</Text>
-                                            </HStack>
-                                       </Pressable>
-                                       {library.allowLinkedAccounts === '1' ? (
-                                           <Pressable px="2" py="2" onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts', LIBRARY.url)}>
-                                                <HStack space="1" alignItems="center">
-                                                     <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                                     <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
-                                                </HStack>
-                                           </Pressable>
-                                       ) : null}
-                                       <Pressable
-                                           px="2"
-                                           py="3"
-                                           onPress={() => {
-                                                this.handleNavigation('AccountScreenTab', 'Preferences', LIBRARY.url);
-                                           }}>
-                                            <HStack space="1" alignItems="center">
-                                                 <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                                 <Text fontWeight="500">{translate('user_profile.preferences')}</Text>
-                                            </HStack>
-                                       </Pressable>
-                                  </VStack>
-                             </VStack>
-                        </VStack>
-                        <VStack space={3} alignItems="center">
-                             <HStack space={2}>
-                                  <LogOutButton/>
-                             </HStack>
-                             <UseColorMode/>
-                        </VStack>
-                   </VStack>
-              </DrawerContentScrollView>
+                                   {discoveryVersion >= '22.08.00' ? (
+                                        <Pressable
+                                             px="2"
+                                             py="3"
+                                             rounded="md"
+                                             onPress={() => {
+                                                  this.handleNavigation('AccountScreenTab', 'SavedSearches', LIBRARY.url);
+                                             }}>
+                                             <HStack space="1" alignItems="center">
+                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                                  <VStack w="100%">
+                                                       <Text fontWeight="500">
+                                                            {translate('user_profile.saved_searches')} {user ? <Text bold>({savedSearches})</Text> : null}
+                                                       </Text>
+                                                  </VStack>
+                                             </HStack>
+                                             {updatedSearches > 0 ? (
+                                                  <Container>
+                                                       <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+                                                            {translate('user_profile.saved_searches_updated', {
+                                                                 count: updatedSearches,
+                                                            })}
+                                                       </Badge>
+                                                  </Container>
+                                             ) : null}
+                                        </Pressable>
+                                   ) : null}
+                              </VStack>
+                              <VStack space="3">
+                                   <VStack>
+                                        <Pressable
+                                             px="2"
+                                             py="3"
+                                             onPress={() => {
+                                                  this.handleNavigation('AccountScreenTab', 'ProfileScreen', LIBRARY.url);
+                                             }}>
+                                             <HStack space="1" alignItems="center">
+                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                                  <Text fontWeight="500">{translate('user_profile.profile')}</Text>
+                                             </HStack>
+                                        </Pressable>
+                                        {library.allowLinkedAccounts === '1' ? (
+                                             <Pressable px="2" py="2" onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts', LIBRARY.url)}>
+                                                  <HStack space="1" alignItems="center">
+                                                       <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                                       <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
+                                                  </HStack>
+                                                  {linkedAccounts > 0 ? (
+                                                       <Container>
+                                                            <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+                                                                 ({linkedAccounts})
+                                                            </Badge>
+                                                       </Container>
+                                                  ) : null}
+                                             </Pressable>
+                                        ) : null}
+                                        <Pressable
+                                             px="2"
+                                             py="3"
+                                             onPress={() => {
+                                                  this.handleNavigation('AccountScreenTab', 'Preferences', LIBRARY.url);
+                                             }}>
+                                             <HStack space="1" alignItems="center">
+                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                                  <Text fontWeight="500">{translate('user_profile.preferences')}</Text>
+                                             </HStack>
+                                        </Pressable>
+                                   </VStack>
+                              </VStack>
+                         </VStack>
+                         <VStack space={3} alignItems="center">
+                              <HStack space={2}>
+                                   <LogOutButton />
+                              </HStack>
+                              <UseColorMode />
+                         </VStack>
+                    </VStack>
+               </DrawerContentScrollView>
           );
      }
 }*/

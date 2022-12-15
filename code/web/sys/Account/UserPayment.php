@@ -20,7 +20,7 @@ class UserPayment extends DataObject {
 	public $transactionType;
 	public $aciToken;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -558,6 +558,79 @@ class UserPayment extends DataObject {
 		];
 
 		return $result;
+	}
+
+	public static function completeInvoiceCloudPayment($payload): array {
+		$success = false;
+		$error = '';
+		$message = '';
+		if (empty($payload['BillerReference'])) {
+			$error = translate([
+				'text' => 'No Payment ID was provided, could not complete the payment',
+				'isPublicFacing' => true,
+			]);
+		} else {
+			$paymentId = $payload['BillerReference'];
+			$userPayment = new UserPayment();
+			$userPayment->id = $paymentId;
+			if ($userPayment->find(true)) {
+				if ($userPayment->error || $userPayment->completed || $userPayment->cancelled) {
+					$userPayment->error = true;
+					$userPayment->message .= translate([
+						'text' => 'This payment has already been completed.',
+						'isPublicFacing' => true
+					]);
+				} else {
+					$amountPaid = $payload['PaymentAmount'];
+					$transactionId = $payload['PaymentGUID'];
+					$paymentType = $payload['PaymentTypeID'];
+
+					require_once ROOT_DIR . '/sys/Donations/Donation.php';
+					$donation = new Donation();
+					$donation->paymentId = $userPayment->id;
+					if ($donation->find(true)) {
+						$success = true;
+						$message = translate([
+							'text' => 'Your donation payment has been completed.',
+							'isPublicFacing' => true
+						]);
+						$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+					} else {
+						$user = new User();
+						$user->id = $userPayment->userId;
+						if ($user->find(true)) {
+							$completePayment = $user->completeFinePayment($userPayment);
+							if ($completePayment['success']) {
+								$success = true;
+								$message = translate([
+									'text' => 'Your payment has been completed. ',
+									'isPublicFacing' => true,
+								]);
+								$userPayment->message .= "Payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+							} else {
+								$userPayment->error = true;
+								$userPayment->message .= $completePayment['message'];
+							}
+						} else {
+							$userPayment->error = true;
+							$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+						}
+					}
+				}
+			} else {
+				$error = translate([
+					'text' => 'Incorrect Payment ID provided',
+					'isPublicFacing' => true,
+				]);
+				global $logger;
+				$logger->log('Incorrect Payment ID provided from InvoiceCloud', Logger::LOG_ERROR);
+			}
+		}
+
+		return [
+			'success' => $success,
+			'message' => $success ? $message : $error,
+		];
 	}
 
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {

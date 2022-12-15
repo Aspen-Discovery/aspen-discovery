@@ -9,7 +9,7 @@ class SSOMapping extends DataObject {
 	public $responseField;
 	public $ssoSettingId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 
 		$aspen_fields = [
 			'user_id' => 'Username/Cardnumber',

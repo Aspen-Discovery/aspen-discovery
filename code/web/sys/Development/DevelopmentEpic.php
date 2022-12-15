@@ -21,7 +21,7 @@ class DevelopmentEpic extends DataObject {
 	public $_relatedComponents;
 	public $_totalStoryPoints;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$privateStatuses = [
 			0 => 'Under Consideration',
 			1 => 'Planned, Researching',
@@ -37,15 +37,15 @@ class DevelopmentEpic extends DataObject {
 		];
 
 		require_once ROOT_DIR . '/sys/Development/EpicPartnerLink.php';
-		$epicPartnerLink = EpicPartnerLink::getObjectStructure();
+		$epicPartnerLink = EpicPartnerLink::getObjectStructure($context);
 		unset($epicPartnerLink['epicId']);
 
 		require_once ROOT_DIR . '/sys/Development/TaskEpicLink.php';
-		$taskEpicLinkStructure = TaskEpicLink::getObjectStructure();
+		$taskEpicLinkStructure = TaskEpicLink::getObjectStructure($context);
 		unset($taskEpicLinkStructure['epicId']);
 
 		require_once ROOT_DIR . '/sys/Development/ComponentEpicLink.php';
-		$componentEpicLink = ComponentEpicLink::getObjectStructure();
+		$componentEpicLink = ComponentEpicLink::getObjectStructure($context);
 		unset($componentEpicLink['epicId']);
 
 		return [
@@ -209,7 +209,7 @@ class DevelopmentEpic extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();
@@ -219,7 +219,7 @@ class DevelopmentEpic extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveRelatedTasks();

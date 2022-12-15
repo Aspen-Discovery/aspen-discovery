@@ -42,8 +42,8 @@ class Admin_Themes extends ObjectEditor {
 		return 'themeName asc';
 	}
 
-	function getObjectStructure(): array {
-		return Theme::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Theme::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

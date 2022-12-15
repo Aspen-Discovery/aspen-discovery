@@ -26,7 +26,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 	protected $_locations;
 	protected $_ptypes;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Send Notifications to All Libraries'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Send Notifications to All Locations') || UserAccount::userHasPermission('Send Notifications to Home Library Locations'));
 		$ptypeList = PType::getPatronTypeList();
@@ -185,7 +185,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -195,7 +195,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

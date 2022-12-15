@@ -34,8 +34,8 @@ class Admin_ErrorReport extends ObjectEditor {
 		return 'timestamp desc';
 	}
 
-	function getObjectStructure(): array {
-		return AspenError::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AspenError::getObjectStructure($context);
 	}
 
 	function getIdKeyColumn(): string {

@@ -18,7 +18,7 @@ class ArchiveRequest extends DataObject {
 	public $pid;
 	public $dateRequested;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$structure = [
 			[
 				'property' => 'name',
@@ -135,7 +135,7 @@ class ArchiveRequest extends DataObject {
 		return $structure;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$this->dateRequested = time();
 		return parent::insert();
 	}

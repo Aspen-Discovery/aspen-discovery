@@ -41,8 +41,8 @@ class Admin_SendGridSettings extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return SendGridSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SendGridSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

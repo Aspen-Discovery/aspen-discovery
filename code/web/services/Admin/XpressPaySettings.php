@@ -37,8 +37,8 @@ class Admin_XpressPaySettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return XpressPaySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return XpressPaySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

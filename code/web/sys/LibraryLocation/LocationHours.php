@@ -30,7 +30,7 @@ class LocationHours extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		$location->find();

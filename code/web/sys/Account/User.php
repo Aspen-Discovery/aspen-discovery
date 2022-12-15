@@ -59,6 +59,7 @@ class User extends DataObject {
 	public $pickupLocationId;
 
 	public $lastListUsed;
+	public $browseAddToHome;
 
 	public $lastLoginValidation;
 
@@ -293,6 +294,7 @@ class User extends DataObject {
 				}
 
 				$escapedId = $this->escape($this->id);
+				/** @noinspection SqlResolve */
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()) {
 					$this->_roles[$role->roleId] = clone $role;
@@ -660,6 +662,25 @@ class User extends DataObject {
 			$result = $userLink->insert();
 			if (true == $result) {
 				$this->linkedUsers[] = clone($user);
+
+				if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+					$notificationToken = new UserNotificationToken();
+					$notificationToken->userId = $this->id;
+					$notificationToken->find();
+					while ($notificationToken->fetch()) {
+						$body = [
+							'to' => $notificationToken->pushToken,
+							'title' => 'New account link',
+							'body' => 'Your account at ' . $this->getHomeLocation()->displayName . ' was just linked to by ' . $user->displayName . ' - ' . $user->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
+							'categoryId' => 'accountAlert',
+							'channelId' => 'accountAlert',
+							'data' => ['url' => urlencode('aspen-lida://user/linked_accounts')],
+						];
+						$expoNotification = new ExpoNotification();
+						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+					}
+				}
+
 				return true;
 			}
 		}
@@ -765,7 +786,7 @@ class User extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	function update() {
+	function update($context = '') {
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
@@ -779,14 +800,19 @@ class User extends DataObject {
 		return $result;
 	}
 
-	function insert() {
-		//set default values as needed
-		if (!isset($this->homeLocationId)) {
+	function insert($context = '') {
+		if ($context == 'development') {
+			$this->source = 'development';
 			$this->homeLocationId = 0;
-			global $logger;
-			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
+			$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+		} else {
+			if (!isset($this->homeLocationId)) {
+				$this->homeLocationId = 0;
+				global $logger;
+				$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
+			}
+			$this->pickupLocationId = $this->homeLocationId;
 		}
-		$this->pickupLocationId = $this->homeLocationId;
 		if (!isset($this->myLocation1Id)) {
 			$this->myLocation1Id = 0;
 		}
@@ -796,14 +822,18 @@ class User extends DataObject {
 		if (!isset($this->bypassAutoLogout)) {
 			$this->bypassAutoLogout = 0;
 		}
-
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
 		$this->fixFieldLengths();
-		parent::insert();
-		$this->saveRoles();
+
+		//set default values as needed
+		$ret = parent::insert();
+		if ($context != 'development') {
+			$this->saveRoles();
+		}
 		$this->clearCache();
+		return $ret;
 	}
 
 	function hasRole($roleName) {
@@ -811,7 +841,7 @@ class User extends DataObject {
 		return in_array($roleName, $myRoles);
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$roleList = Role::getLookup();
@@ -822,6 +852,19 @@ class User extends DataObject {
 				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id of the in the system',
+			],
+			'username' => [
+				'property' => 'username',
+				'type' => 'text',
+				'label' => 'Username',
+				'description' => 'The username for the user.',
+			],
+			'password' => [
+				'property' => 'password',
+				'type' => 'storedPassword',
+				'label' => 'Password',
+				'description' => 'The password for the user.',
+				'hideInLists' => true
 			],
 			'firstname' => [
 				'property' => 'firstname',
@@ -834,6 +877,12 @@ class User extends DataObject {
 				'type' => 'label',
 				'label' => 'Last Name',
 				'description' => 'The last name of the user.',
+			],
+			'email' => [
+				'property' => 'email',
+				'type' => 'email',
+				'label' => 'Email Address',
+				'description' => 'The email for the user.',
 			],
 			'homeLibraryName' => [
 				'property' => 'homeLibraryName',
@@ -866,6 +915,19 @@ class User extends DataObject {
 			'label' => 'Roles',
 			'description' => 'A list of roles that the user has.',
 		];
+
+		if ($context == '') {
+			unset($structure['username']);
+			unset($structure['password']);
+			unset($structure['email']);
+		} elseif ($context == 'development') {
+			$structure['firstname']['type'] = 'text';
+			$structure['lastname']['type'] = 'text';
+			unset($structure['homeLibraryName']);
+			unset($structure['homeLocation']);
+			unset($structure['barcode']);
+			unset($structure['roles']);
+		}
 
 		return $structure;
 	}
@@ -1214,7 +1276,7 @@ class User extends DataObject {
 			if ($this->isValidForEContentSource('overdrive')) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$overDriveCheckedOutItems = $driver->getCheckouts($this, false);
+				$overDriveCheckedOutItems = $driver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
 				$timer->logTime("Loaded transactions from overdrive. {$this->id}");
 				if ($source == 'all' || $source == 'overdrive') {
@@ -1329,7 +1391,7 @@ class User extends DataObject {
 		$holdsToReturn = [
 			'available' => [],
 			'unavailable' => [],
-		];;
+		];
 		if ($reloadHoldInformation) {
 			//When we reload holds, we will fetch from all sources so they can be cached.
 
@@ -1340,9 +1402,6 @@ class User extends DataObject {
 			global $offlineMode;
 			if ($this->hasIlsConnection() && !$offlineMode) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
-				if ($ilsHolds instanceof AspenError) {
-					$ilsHolds = [];
-				}
 				$allHolds = $ilsHolds;
 				if ($source == 'all' || $source == 'ils') {
 					$holdsToReturn = $ilsHolds;
@@ -1869,7 +1928,7 @@ class User extends DataObject {
 			'message' => 'Error modifying hold.',
 		];
 
-		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allHolds = $user->getHolds();
 		$allUnavailableHolds = $allHolds['unavailable'];
 		$success = 0;
 		$failed = 0;
@@ -1903,15 +1962,6 @@ class User extends DataObject {
 						if ($tmpResult['success']) {
 							$success++;
 						}
-
-					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else/** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
-						//Can't freeze cloud library holds
-//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-//						$driver = new CloudLibraryDriver();
-//						$tmpResult = $driver->freezeHold($user, $recordId);
-//						if ($tmpResult['success']) {
-//							$success++;
-//						}
 					} else {
 						$failed++;
 						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
@@ -1972,7 +2022,7 @@ class User extends DataObject {
 			'message' => 'Error modifying hold.',
 		];
 
-		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allHolds = $user->getHolds();
 		$allUnavailableHolds = $allHolds['unavailable'];
 		$success = 0;
 		$failed = 0;
@@ -2101,7 +2151,7 @@ class User extends DataObject {
 		if ($renewLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $user) {
-					$linkedResults = $user->renewAll(false);
+					$linkedResults = $user->renewAll();
 					//Merge results
 					$renewAllResults['Renewed'] += $linkedResults['Renewed'];
 					$renewAllResults['NotRenewed'] += $linkedResults['NotRenewed'];
@@ -2856,13 +2906,6 @@ class User extends DataObject {
 			'Administer All System Messages',
 			'Administer Library System Messages',
 		]);
-		$sections['local_enrichment']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
-			'Send Notifications to All Libraries',
-			'Send Notifications to All Locations',
-			'Send Notifications to Home Library',
-			'Send Notifications to Home Location',
-			'Send Notifications to Home Library Locations',
-		]);
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
@@ -2894,6 +2937,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
 		$sections['ecommerce']->addAction(new AdminAction('ACI Speedpay Settings', 'Define Settings for ACI Speedpay.', '/Admin/ACISpeedpaySettings'), 'Administer ACI Speedpay');
+		$sections['ecommerce']->addAction(new AdminAction('InvoiceCloud Settings', 'Define Settings for InvoiceCloud.', '/Admin/InvoiceCloudSettings'), 'Administer InvoiceCloud');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
@@ -3129,6 +3173,13 @@ class User extends DataObject {
 		} else {
 			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
 		}
+		$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
+			'Send Notifications to All Libraries',
+			'Send Notifications to All Locations',
+			'Send Notifications to Home Library',
+			'Send Notifications to Home Location',
+			'Send Notifications to Home Library Locations',
+		]);
 		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
@@ -3499,7 +3550,7 @@ class User extends DataObject {
 		return $tokens;
 	}
 
-	public function getNotificationPreferencesByToken($token): array {
+	public function getNotificationPreferencesByToken($token) {
 		$preferences = [];
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$obj = new UserNotificationToken();
@@ -3511,7 +3562,7 @@ class User extends DataObject {
 		return $preferences;
 	}
 
-	public function getNotificationPreferencesByUser(): array {
+	public function getNotificationPreferencesByUser() {
 		$preferences = [];
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$obj = new UserNotificationToken();
@@ -3522,6 +3573,7 @@ class User extends DataObject {
 			$preference['token'] = $obj->pushToken;
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
+			$preference['notifyAccount'] = $obj->notifyAccount;
 
 			$preferences[] = $preference;
 		}

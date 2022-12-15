@@ -27,7 +27,7 @@ class OverDriveScope extends DataObject {
 		return ['clientSecret'];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$overdriveSettings = [];
 		$overdriveSetting = new OverDriveSetting();
 		$overdriveSetting->find();
@@ -206,7 +206,7 @@ class OverDriveScope extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -215,7 +215,7 @@ class OverDriveScope extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

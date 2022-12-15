@@ -259,7 +259,7 @@ abstract class DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		global $aspen_db;
 		if (!isset($aspen_db)) {
 			return false;
@@ -352,7 +352,7 @@ abstract class DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$primaryKey = $this->__primaryKey;
 		if (empty($this->$primaryKey) && $this->$primaryKey !== "0") {
 			$result = $this->insert();

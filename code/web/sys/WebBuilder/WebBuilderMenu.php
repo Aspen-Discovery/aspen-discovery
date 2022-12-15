@@ -16,7 +16,7 @@ class WebBuilderMenu extends DataObject {
 		return ['parentMenuId'];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$parentMenuItems = [];
 		$parentMenuItems[-1] = 'None';
 
@@ -92,7 +92,7 @@ class WebBuilderMenu extends DataObject {
 		return $childItems;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		global $library;
 		$this->libraryId = $library->libraryId;
 		return parent::insert();

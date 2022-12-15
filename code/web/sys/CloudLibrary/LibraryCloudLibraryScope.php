@@ -14,7 +14,7 @@ class LibraryCloudLibraryScope extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		$cloudLibraryScope = new CloudLibraryScope();
 		$cloudLibraryScope->orderBy('name');

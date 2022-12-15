@@ -33,8 +33,8 @@ class Admin_HideSubjectFacets extends ObjectEditor {
 		return 'subjectTerm asc';
 	}
 
-	function getObjectStructure(): array {
-		return HideSubjectFacet::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return HideSubjectFacet::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

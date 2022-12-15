@@ -19,7 +19,7 @@ class Role extends DataObject {
 		return ['roleId'];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$permissionsList = [];
 		return [
 			'roleId' => [

@@ -165,7 +165,7 @@ class WebBuilder_AJAX extends JSON_Action {
 			if (UserAccount::userHasPermission('Administer All Web Content')) {
 				if (!empty($_FILES)) {
 					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
-					$structure = ImageUpload::getObjectStructure();
+					$structure = ImageUpload::getObjectStructure('');
 					foreach ($_FILES as $file) {
 						$image = new ImageUpload();
 						$image->type = 'web_builder_image';
@@ -221,7 +221,7 @@ class WebBuilder_AJAX extends JSON_Action {
 			if (UserAccount::userHasPermission('Administer All Web Content')) {
 				if (!empty($_FILES)) {
 					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
-					$structure = ImageUpload::getObjectStructure();
+					$structure = ImageUpload::getObjectStructure('');
 					foreach ($_FILES as $file) {
 						$image = new ImageUpload();
 						$image->type = 'web_builder_image';
@@ -604,7 +604,7 @@ class WebBuilder_AJAX extends JSON_Action {
 					if ($portalCell->find(true)) {
 						global $interface;
 						$interface->assign('object', $portalCell);
-						$interface->assign('structure', PortalCell::getObjectStructure());
+						$interface->assign('structure', PortalCell::getObjectStructure(''));
 						$interface->assign('saveButtonText', 'Update');
 						$result['success'] = true;
 						$result['message'] = 'Display form';

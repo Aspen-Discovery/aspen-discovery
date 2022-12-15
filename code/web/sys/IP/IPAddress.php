@@ -33,7 +33,7 @@ class IPAddress extends DataObject {
 		return ['ip'];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Look lookup information for display in the user interface
 		$location = new Location();
 		$location->orderBy('displayName');
@@ -133,7 +133,7 @@ class IPAddress extends DataObject {
 		return $this->location;
 	}
 
-	function insert() {
+	function insert($context = '') {
 		$this->calcIpRange();
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
@@ -141,7 +141,7 @@ class IPAddress extends DataObject {
 		return parent::insert();
 	}
 
-	function update() {
+	function update($context = '') {
 		$this->calcIpRange();
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');

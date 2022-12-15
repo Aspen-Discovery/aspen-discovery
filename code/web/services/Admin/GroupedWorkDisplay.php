@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
 
@@ -41,8 +42,8 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return GroupedWorkDisplaySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GroupedWorkDisplaySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -84,6 +85,10 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		header("Location: /Admin/GroupedWorkDisplay?objectAction=edit&id=" . $groupedWorkSettingId);
+	}
+
+	function getInitializationJs(): string {
+		return 'AspenDiscovery.Admin.updateGroupedWorkDisplayFields();';
 	}
 
 	function getBreadcrumbs(): array {

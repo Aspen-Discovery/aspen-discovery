@@ -41,8 +41,8 @@ class Rosen_RosenLevelUPSettings extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return RosenLevelUPSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return RosenLevelUPSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

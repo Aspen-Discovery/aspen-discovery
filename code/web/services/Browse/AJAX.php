@@ -98,7 +98,7 @@ class Browse_AJAX extends Action {
 
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
-		$temp = SubBrowseCategories::getObjectStructure();
+		$temp = SubBrowseCategories::getObjectStructure('');
 		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
@@ -337,12 +337,20 @@ class Browse_AJAX extends Action {
 			$addToHomePageEnabled = isset($_REQUEST['addToHomePage']) ? $_REQUEST['addToHomePage'] == 'true' : false;
 			if ($library && !$addAsSubCategoryOf && $addToHomePageEnabled) { // Only add main browse categories to the library carousel
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
+				$user = UserAccount::getActiveUserObj();
+				$user->browseAddToHome = 1;
+				$user->update();
+
 				$libraryBrowseCategory = new BrowseCategoryGroupEntry();
 				$libraryBrowseCategory->browseCategoryGroupId = $activeBrowseCategoryGroup->id;
 				$libraryBrowseCategory->browseCategoryId = $browseCategory->id;
 				$libraryBrowseCategory->insert();
 				$successMessage = "The search was added to the homepage successfully.";
 			} else {
+				$user = UserAccount::getActiveUserObj();
+				$user->browseAddToHome = 0;
+				$user->update();
+
 				$successMessage = "We created a new browse category for you, you can add it to your home page within your Browse Category groups.";
 			}
 

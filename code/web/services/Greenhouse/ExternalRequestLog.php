@@ -37,8 +37,8 @@ class Greenhouse_ExternalRequestLog extends ObjectEditor {
 		return 'requestTime desc';
 	}
 
-	function getObjectStructure(): array {
-		return ExternalRequestLogEntry::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return ExternalRequestLogEntry::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

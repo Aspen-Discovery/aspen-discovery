@@ -16,7 +16,7 @@ class GroupedWorkMoreDetails extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 		$validSources = RecordInterface::getValidMoreDetailsSources();
 		return [

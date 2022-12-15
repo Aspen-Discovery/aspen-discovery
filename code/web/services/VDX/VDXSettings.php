@@ -38,8 +38,8 @@ class VDX_VDXSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return VDXSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return VDXSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

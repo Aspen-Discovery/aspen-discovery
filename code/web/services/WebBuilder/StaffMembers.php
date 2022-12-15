@@ -40,8 +40,8 @@ class WebBuilder_StaffMembers extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return StaffMember::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return StaffMember::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

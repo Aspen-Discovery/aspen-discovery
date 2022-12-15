@@ -40,8 +40,8 @@ class Admin_GroupedWorkFacets extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return GroupedWorkFacetGroup::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GroupedWorkFacetGroup::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

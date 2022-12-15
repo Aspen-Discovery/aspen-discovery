@@ -2740,9 +2740,9 @@ class SirsiDynixROA extends HorizonAPI {
 						//Convert from stdClass to associative array
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
 						if ($action == 'optOut') {
-							$updatePatronInfoParameters['keepCircHistory'] = 'NOHISTORY';
+							$updatePatronInfoParameters['fields']['keepCircHistory'] = 'NOHISTORY';
 						} elseif ($action == 'optIn') {
-							$updatePatronInfoParameters['keepCircHistory'] = 'ALLCHARGES';
+							$updatePatronInfoParameters['fields']['keepCircHistory'] = 'ALLCHARGES';
 						}
 
 						$updateAccountInfoResponse = $this->getWebServiceResponse('updateReadingHistory', $webServiceURL . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,preferredName,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');

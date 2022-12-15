@@ -47,7 +47,7 @@ class MaterialsRequestFormFields extends DataObject {
 	];
 
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

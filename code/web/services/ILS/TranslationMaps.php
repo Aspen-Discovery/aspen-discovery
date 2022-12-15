@@ -153,8 +153,8 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return TranslationMap::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return TranslationMap::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

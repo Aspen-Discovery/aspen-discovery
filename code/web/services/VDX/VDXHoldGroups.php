@@ -38,8 +38,8 @@ class VDX_VDXHoldGroups extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return VdxHoldGroup::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return VdxHoldGroup::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

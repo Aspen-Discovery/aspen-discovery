@@ -37,8 +37,8 @@ class Enrichment_OMDBSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return OMDBSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return OMDBSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

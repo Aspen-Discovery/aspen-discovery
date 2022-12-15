@@ -38,8 +38,8 @@ class Enrichment_NewYorkTimesSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return NewYorkTimesSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return NewYorkTimesSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

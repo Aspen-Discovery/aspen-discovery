@@ -33,8 +33,8 @@ class Admin_DonationsReport extends ObjectEditor {
 		return 'id desc';
 	}
 
-	function getObjectStructure(): array {
-		return Donation::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Donation::getObjectStructure($context);
 	}
 
 	function getIdKeyColumn(): string {

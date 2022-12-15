@@ -42,8 +42,8 @@ class WebBuilder_PDFs extends ObjectEditor {
 		return parent::updateFromUI($object, $structure);
 	}
 
-	function getObjectStructure(): array {
-		$objectStructure = FileUpload::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		$objectStructure = FileUpload::getObjectStructure($context);
 		unset($objectStructure['type']);
 		$fileProperty = $objectStructure['fullPath'];
 		global $serverName;

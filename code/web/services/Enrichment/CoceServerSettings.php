@@ -38,8 +38,8 @@ class Enrichment_CoceServerSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return CoceServerSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CoceServerSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

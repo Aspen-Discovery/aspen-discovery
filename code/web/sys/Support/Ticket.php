@@ -30,7 +30,7 @@ class Ticket extends DataObject {
 		];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		//Get a list of statuses
 		require_once ROOT_DIR . '/sys/Support/TicketStatusFeed.php';
 		$ticketStatusFeed = new TicketStatusFeed();
@@ -64,11 +64,11 @@ class Ticket extends DataObject {
 		$aspenSites[null] = 'None';
 
 		require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
-		$taskTicketLinkStructure = TaskTicketLink::getObjectStructure();
+		$taskTicketLinkStructure = TaskTicketLink::getObjectStructure($context);
 		unset($taskTicketLinkStructure['ticketId']);
 
 		require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
-		$componentTicketLink = ComponentTicketLink::getObjectStructure();
+		$componentTicketLink = ComponentTicketLink::getObjectStructure($context);
 		unset($componentTicketLink['ticketId']);
 
 		return [
@@ -231,6 +231,15 @@ class Ticket extends DataObject {
 					'target' => '_blank',
 				];
 			}
+
+			//Check to see if this is already part of a task.  If not, add a button to create a task from it.
+			if (count($existingObject->getRelatedTasks()) == 0) {
+				$objectActions[] = [
+					'text' => 'Create Task',
+					'url' => '/Development/Tasks?objectAction=createTaskFromTicket&ticketId=' . $existingObject->ticketId,
+				];
+			}
+
 		}
 		return $objectActions;
 	}
@@ -247,6 +256,12 @@ class Ticket extends DataObject {
 				'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $this->ticketId,
 				'target' => '_blank',
 			];
+			if (count($this->getRelatedTasks()) == 0) {
+				$objectActions[] = [
+					'text' => 'Create Task',
+					'url' => '/Development/Tasks?objectAction=createTaskFromTicket&ticketId=' . $this->id,
+				];
+			}
 		}
 		return $objectActions;
 	}
@@ -274,7 +289,7 @@ class Ticket extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveRelatedComponents();
@@ -283,7 +298,7 @@ class Ticket extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveRelatedComponents();

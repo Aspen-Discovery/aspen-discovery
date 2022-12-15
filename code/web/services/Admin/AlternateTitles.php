@@ -33,8 +33,8 @@ class Admin_AlternateTitles extends ObjectEditor {
 		return 'alternateTitle asc';
 	}
 
-	function getObjectStructure(): array {
-		return GroupedWorkAlternateTitle::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GroupedWorkAlternateTitle::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

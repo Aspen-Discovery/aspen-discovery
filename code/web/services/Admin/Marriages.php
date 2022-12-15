@@ -34,8 +34,8 @@ class Admin_Marriages extends ObjectEditor {
 		return 'marriageDate asc';
 	}
 
-	function getObjectStructure(): array {
-		return Marriage::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Marriage::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

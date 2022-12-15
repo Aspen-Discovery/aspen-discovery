@@ -37,8 +37,8 @@ class Development_Tasks extends ObjectEditor {
 		return 'id desc';
 	}
 
-	function getObjectStructure(): array {
-		return DevelopmentTask::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return DevelopmentTask::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -89,4 +89,58 @@ class Development_Tasks extends ObjectEditor {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 
+	function createTaskFromTicket() {
+		global $interface;
+		$interface->assign('instructions', $this->getInstructions());
+
+		$structure = $this->getObjectStructure('createTaskFromTicket');
+
+		//Update the structure with data from the ticket
+		require_once ROOT_DIR . '/sys/Support/Ticket.php';
+		$ticket = new Ticket();
+		$ticketId = $_REQUEST['ticketId'];
+		$ticket->id = $ticketId;
+		if ($ticket->find(true)) {
+			$newTask = new DevelopmentTask();
+			$newTask->name = $ticket->title;
+			$newTask->description = $ticket->description;
+			//Set the proper type
+			$ticketType = $ticket->queue;
+			if ($ticketType == 'Bugs') {
+				$newTask->taskType = 1;
+			} else if ($ticketType == 'Development') {
+				$newTask->taskType = 2;
+			} else if ($ticketType == 'Support') {
+				$newTask->taskType = 5;
+			}
+			//Link to the ticket
+			require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
+			$ticketTaskLink = new TaskTicketLink();
+			$ticketTaskLink->ticketId = $ticketId;
+			$newTask->setRelatedTickets([$ticketTaskLink]);
+
+			//Link to the partner
+			require_once ROOT_DIR . '/sys/Development/TaskPartnerLink.php';
+			if (!empty($ticket->requestingPartner)) {
+				$requestingPartnerLink = new TaskPartnerLink();
+				$requestingPartnerLink->partnerId = $ticket->requestingPartner;
+				$newTask->setRequestingPartners([$requestingPartnerLink]);
+			}
+
+			//Link to the appropriate components
+			require_once ROOT_DIR . '/sys/Development/ComponentTaskLink.php';
+
+
+			$interface->assign('object', $newTask);
+
+			//Check to see if the request should be multipart/form-data
+			$contentType = $this->getFormContentType($structure);
+			$interface->assign('contentType', $contentType);
+
+			$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newTask));
+			$interface->setTemplate('../Admin/objectEditor.tpl');
+		} else {
+			$interface->setTemplate('../Admin/invalidObject.tpl');
+		}
+	}
 }

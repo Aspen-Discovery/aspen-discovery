@@ -38,8 +38,8 @@ class CourseReserves_Settings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return CourseReservesIndexingSettings::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CourseReservesIndexingSettings::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -37,8 +37,8 @@ class Admin_PayPalSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return PayPalSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return PayPalSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

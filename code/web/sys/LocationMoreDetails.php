@@ -8,7 +8,7 @@ class LocationMoreDetails extends DataObject {
 	public $collapseByDefault;
 	public $weight;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
 		require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 		$validSources = RecordInterface::getValidMoreDetailsSources();

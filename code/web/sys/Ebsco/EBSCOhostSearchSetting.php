@@ -10,12 +10,12 @@ class EBSCOhostSearchSetting extends DataObject {
 	private $_locations;
 	private $_databases;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 
 		require_once ROOT_DIR . '/sys/Ebsco/EBSCOhostDatabase.php';
-		$databaseSearchStructure = EBSCOhostDatabase::getObjectStructure();
+		$databaseSearchStructure = EBSCOhostDatabase::getObjectStructure($context);
 
 		return [
 			'id' => [
@@ -133,7 +133,7 @@ class EBSCOhostSearchSetting extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -143,7 +143,7 @@ class EBSCOhostSearchSetting extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

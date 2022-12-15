@@ -45,8 +45,8 @@ class WebBuilder_PortalCells extends ObjectEditor {
 		return false;
 	}
 
-	function getObjectStructure(): array {
-		return PortalCell::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return PortalCell::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

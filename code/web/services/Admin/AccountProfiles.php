@@ -37,8 +37,8 @@ class Admin_AccountProfiles extends ObjectEditor {
 		return 'weight asc';
 	}
 
-	function getObjectStructure(): array {
-		return AccountProfile::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return AccountProfile::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

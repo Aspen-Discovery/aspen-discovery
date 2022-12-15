@@ -6,7 +6,7 @@ class DPLASetting extends DataObject {
 	public $id;
 	public $apiKey;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$structure = [
 			'id' => [
 				'property' => 'id',

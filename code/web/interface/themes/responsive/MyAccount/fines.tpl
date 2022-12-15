@@ -151,6 +151,8 @@
                                     {include file="MyAccount/worldPayPayments.tpl"}
                                 {elseif $finePaymentType == 8}
                                     {include file="MyAccount/ACISpeedpayPayments.tpl"}
+                                {elseif $finePaymentType == 9}
+                                    {include file="MyAccount/invoiceCloudPayments.tpl"}
 								{/if}
 							{else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>

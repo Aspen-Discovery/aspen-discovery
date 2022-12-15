@@ -7,7 +7,7 @@ class QuipuECardSetting extends DataObject {
 	public $server;
 	public $clientId;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

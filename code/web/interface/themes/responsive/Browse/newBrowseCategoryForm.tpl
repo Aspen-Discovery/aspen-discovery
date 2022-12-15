@@ -26,7 +26,7 @@
 			</div>
 			{/if}
 			<div class="form-group">
-				<label for="addToHomePage" class="control-label"><input type="checkbox" id="addToHomePage" name="addToHomePage" checked="checked">{translate text="Add to Home Page after creation (main categories only)" isAdminFacing=true}</label>
+				<label for="addToHomePage" class="control-label"><input type="checkbox" id="addToHomePage" name="addToHomePage" {if $user->browseAddToHome}checked="checked"{/if}>{translate text="Add to Home Page after creation (main categories only)" isAdminFacing=true}</label>
 			</div>
 		</div>
 	</form>

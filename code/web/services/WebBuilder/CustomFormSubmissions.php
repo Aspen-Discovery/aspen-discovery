@@ -39,8 +39,8 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return 'dateSubmitted desc';
 	}
 
-	function getObjectStructure(): array {
-		return CustomFormSubmission::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CustomFormSubmission::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

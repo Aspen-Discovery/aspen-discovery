@@ -13,7 +13,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 	protected $_libraries;
 	protected $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
 
@@ -72,7 +72,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -81,7 +81,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

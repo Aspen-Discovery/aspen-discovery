@@ -35,8 +35,8 @@ class Admin_Variables extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return Variable::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Variable::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

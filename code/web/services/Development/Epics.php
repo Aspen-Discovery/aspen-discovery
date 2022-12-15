@@ -37,8 +37,8 @@ class Development_Epics extends ObjectEditor {
 		return 'name';
 	}
 
-	function getObjectStructure(): array {
-		return DevelopmentEpic::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return DevelopmentEpic::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

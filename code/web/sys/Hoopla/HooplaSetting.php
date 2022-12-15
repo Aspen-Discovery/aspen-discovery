@@ -18,8 +18,8 @@ class HooplaSetting extends DataObject {
 
 	private $_scopes;
 
-	public static function getObjectStructure(): array {
-		$hooplaScopeStructure = HooplaScope::getObjectStructure();
+	public static function getObjectStructure($context = ''): array {
+		$hooplaScopeStructure = HooplaScope::getObjectStructure($context);
 		unset($hooplaScopeStructure['settingId']);
 
 		return [
@@ -112,7 +112,7 @@ class HooplaSetting extends DataObject {
 		return 'Library ' . $this->libraryId . ' (' . $this->apiUsername . ')';
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveScopes();
@@ -120,7 +120,7 @@ class HooplaSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (empty($this->_scopes)) {

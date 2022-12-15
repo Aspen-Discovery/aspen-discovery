@@ -11,7 +11,7 @@ class TwoFactorAuthSetting extends DataObject {
 	private $_libraries;
 	private $_ptypes;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$ptypeList = PType::getPatronTypeList();
 
@@ -115,7 +115,7 @@ class TwoFactorAuthSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -124,7 +124,7 @@ class TwoFactorAuthSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

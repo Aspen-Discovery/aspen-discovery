@@ -31,13 +31,13 @@ class PortalPage extends DB_LibraryLinkedObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 		$patronTypeList = PType::getPatronTypeList();
 
-		$portalRowStructure = PortalRow::getObjectStructure();
+		$portalRowStructure = PortalRow::getObjectStructure($context);
 		return [
 			'id' => [
 				'property' => 'id',
@@ -176,7 +176,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		//Updates to properly update settings based on the ILS
 		$this->lastUpdate = time();
 		$ret = parent::update();
@@ -196,7 +196,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$this->lastUpdate = time();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {

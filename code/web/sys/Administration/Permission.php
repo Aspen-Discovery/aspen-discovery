@@ -10,7 +10,7 @@ class Permission extends DataObject {
 	public $requiredModule;
 	public $description;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

@@ -10,7 +10,7 @@ class WebsitePage extends DataObject {
 	public $deleted;
 	public $deleteReason;
 
-	public static function getObjectStructure() {
+	public static function getObjectStructure($context = '') {
 		$websites = [];
 		$websiteSettings = new WebsiteIndexSetting();
 		$websiteSettings->orderBy('name');

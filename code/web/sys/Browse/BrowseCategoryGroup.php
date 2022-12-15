@@ -17,11 +17,11 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 	protected $_libraries;
 	protected $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 
-		$browseCategoryStructure = BrowseCategoryGroupEntry::getObjectStructure();
+		$browseCategoryStructure = BrowseCategoryGroupEntry::getObjectStructure($context);
 		unset($browseCategoryStructure['weight']);
 		unset($browseCategoryStructure['browseCategoryGroupId']);
 
@@ -183,7 +183,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		//Updates to properly update settings based on the ILS
 		$ret = parent::update();
 		if ($ret !== FALSE) {
@@ -200,7 +200,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

@@ -39,8 +39,8 @@ class Admin_LibraryFacetSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return LibraryFacetSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return LibraryFacetSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

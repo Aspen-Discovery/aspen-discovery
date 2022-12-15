@@ -38,8 +38,8 @@ class OverDrive_Settings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return OverDriveSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return OverDriveSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

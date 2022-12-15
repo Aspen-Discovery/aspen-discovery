@@ -26,7 +26,7 @@ class SystemVariables extends DataObject {
 	public $catalogStatus;
 	public $offlineMessage;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

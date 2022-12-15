@@ -42,8 +42,8 @@ class WebBuilder_WebResources extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return WebResource::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return WebResource::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

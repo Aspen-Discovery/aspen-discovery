@@ -17,7 +17,7 @@ class CloudLibraryScope extends DataObject {
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$cloudLibrarySettings = [];
 		$cloudLibrarySetting = new CloudLibrarySetting();
@@ -26,10 +26,10 @@ class CloudLibraryScope extends DataObject {
 			$cloudLibrarySettings[$cloudLibrarySetting->id] = (string)$cloudLibrarySetting;
 		}
 
-		$libraryCloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
+		$libraryCloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($libraryCloudLibraryScopeStructure['scopeId']);
 
-		$locationCloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure();
+		$locationCloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure($context);
 		unset($locationCloudLibraryScopeStructure['scopeId']);
 
 		return [
@@ -182,7 +182,7 @@ class CloudLibraryScope extends DataObject {
 	/**
 	 * @return int|bool
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -191,7 +191,7 @@ class CloudLibraryScope extends DataObject {
 		return $ret;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();

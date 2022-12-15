@@ -37,8 +37,8 @@ class Admin_CompriseSettings extends ObjectEditor {
 		return 'customerName asc';
 	}
 
-	function getObjectStructure(): array {
-		return CompriseSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CompriseSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

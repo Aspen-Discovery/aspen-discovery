@@ -37,8 +37,8 @@ class CloudLibrary_Settings extends ObjectEditor {
 		return 'userInterfaceUrl asc';
 	}
 
-	function getObjectStructure(): array {
-		return CloudLibrarySetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return CloudLibrarySetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

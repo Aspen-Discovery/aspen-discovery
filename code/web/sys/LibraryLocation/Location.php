@@ -144,7 +144,7 @@ class Location extends DataObject {
 		];
 	}
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
@@ -171,9 +171,9 @@ class Location extends DataObject {
 		}
 
 		// get the structure for the location's hours
-		$hoursStructure = LocationHours::getObjectStructure();
+		$hoursStructure = LocationHours::getObjectStructure($context);
 
-		$cloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure();
+		$cloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['locationId']);
 
 		// we don't want to make the locationId property editable
@@ -190,21 +190,21 @@ class Location extends DataObject {
 			$browseCategoryGroups[$browseCategoryGroup->id] = $browseCategoryGroup->name;
 		}
 
-		$locationMoreDetailsStructure = LocationMoreDetails::getObjectStructure();
+		$locationMoreDetailsStructure = LocationMoreDetails::getObjectStructure($context);
 		unset($locationMoreDetailsStructure['weight']);
 		unset($locationMoreDetailsStructure['locationId']);
 
-		$locationRecordOwnedStructure = LocationRecordOwned::getObjectStructure();
+		$locationRecordOwnedStructure = LocationRecordOwned::getObjectStructure($context);
 		unset($locationRecordOwnedStructure['locationId']);
 
-		$locationRecordToIncludeStructure = LocationRecordToInclude::getObjectStructure();
+		$locationRecordToIncludeStructure = LocationRecordToInclude::getObjectStructure($context);
 		unset($locationRecordToIncludeStructure['locationId']);
 		unset($locationRecordToIncludeStructure['weight']);
 
-		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
+		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure($context);
 		unset($locationSideLoadScopeStructure['locationId']);
 
-		$combinedResultsStructure = LocationCombinedResultSection::getObjectStructure();
+		$combinedResultsStructure = LocationCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['locationId']);
 		unset($combinedResultsStructure['weight']);
 
@@ -1736,7 +1736,7 @@ class Location extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHours();
@@ -1756,7 +1756,7 @@ class Location extends DataObject {
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveHours();

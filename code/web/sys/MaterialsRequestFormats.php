@@ -22,7 +22,7 @@ class MaterialsRequestFormats extends DataObject {
 	];
 
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
@@ -256,7 +256,7 @@ class MaterialsRequestFormats extends DataObject {
 		return $return;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		if (is_array($this->specialFields)) {
 			$this->specialFields = implode(',', $this->specialFields);
 		} else {
@@ -265,7 +265,7 @@ class MaterialsRequestFormats extends DataObject {
 		return parent::insert();
 	}
 
-	public function update() {
+	public function update($context = '') {
 		if (is_array($this->specialFields)) {
 			$this->specialFields = implode(',', $this->specialFields);
 		} else {

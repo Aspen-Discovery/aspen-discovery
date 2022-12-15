@@ -42,8 +42,8 @@ class WebBuilder_Images extends ObjectEditor {
 		return parent::updateFromUI($object, $structure);
 	}
 
-	function getObjectStructure(): array {
-		$objectStructure = ImageUpload::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		$objectStructure = ImageUpload::getObjectStructure($context);
 		unset($objectStructure['type']);
 		return $objectStructure;
 	}

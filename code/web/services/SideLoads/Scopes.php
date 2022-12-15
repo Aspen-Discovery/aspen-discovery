@@ -56,8 +56,8 @@ class SideLoads_Scopes extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return SideLoadScope::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SideLoadScope::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

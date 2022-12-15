@@ -11,7 +11,7 @@ class WebBuilderAudience extends DataObject {
 		return ['name'];
 	}
 
-	public static function getObjectStructure(): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',

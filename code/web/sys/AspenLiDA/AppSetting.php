@@ -9,7 +9,7 @@ class AppSetting extends DataObject {
 
 	private $_locations;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$releaseChannels = [
 			0 => 'Beta (Testing)',
 			1 => 'Production (Public)',
@@ -84,7 +84,7 @@ class AppSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
@@ -92,7 +92,7 @@ class AppSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLocations();

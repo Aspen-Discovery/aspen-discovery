@@ -38,8 +38,8 @@ class UserLists_Settings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return ListIndexingSettings::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return ListIndexingSettings::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

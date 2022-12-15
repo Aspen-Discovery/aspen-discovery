@@ -90,8 +90,8 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return IndexingProfile::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return IndexingProfile::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

@@ -39,8 +39,8 @@ class AspenLiDA_NotificationSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return NotificationSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return NotificationSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

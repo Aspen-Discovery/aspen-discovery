@@ -9,7 +9,7 @@ class CourseReserves_AJAX extends JSON_Action {
 
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
-		$temp = SubBrowseCategories::getObjectStructure();
+		$temp = SubBrowseCategories::getObjectStructure('');
 		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
 		// add default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)

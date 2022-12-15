@@ -4,7 +4,7 @@ class LocationRecordOwned extends RecordOwned {
 	public $__table = 'location_records_owned';    // table name
 	public $locationId;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Locations')) {
@@ -17,7 +17,7 @@ class LocationRecordOwned extends RecordOwned {
 			$locationList[$location->locationId] = $location->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
+		$structure = parent::getObjectStructure($context);
 		$structure['locationId'] = [
 			'property' => 'locationId',
 			'type' => 'enum',

@@ -38,8 +38,8 @@ class Hoopla_Settings extends ObjectEditor {
 		return 'apiUrl asc';
 	}
 
-	function getObjectStructure(): array {
-		return HooplaSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return HooplaSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

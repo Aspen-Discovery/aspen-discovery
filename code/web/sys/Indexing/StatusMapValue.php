@@ -11,7 +11,7 @@ class StatusMapValue extends DataObject {
 	public /** @noinspection PhpUnused */
 		$inLibraryUseOnly;
 
-	static function getObjectStructure(): array {
+	static function getObjectStructure($context = ''): array {
 		$groupedStatuses = [
 			'Currently Unavailable' => 'Currently Unavailable',
 			'On Order' => 'On Order',

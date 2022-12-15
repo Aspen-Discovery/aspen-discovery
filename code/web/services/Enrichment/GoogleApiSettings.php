@@ -38,8 +38,8 @@ class Enrichment_GoogleApiSettings extends ObjectEditor {
 		return 'id asc';
 	}
 
-	function getObjectStructure(): array {
-		return GoogleApiSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return GoogleApiSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

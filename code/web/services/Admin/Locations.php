@@ -46,8 +46,8 @@ class Admin_Locations extends ObjectEditor {
 		return 'displayName asc';
 	}
 
-	function getObjectStructure(): array {
-		return Location::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return Location::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

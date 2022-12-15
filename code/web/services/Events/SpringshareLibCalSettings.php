@@ -55,8 +55,8 @@ class Events_SpringshareLibCalSettings extends ObjectEditor {
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	function getObjectStructure(): array {
-		return SpringshareLibCalSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return SpringshareLibCalSetting::getObjectStructure($context);
 	}
 
 	/**

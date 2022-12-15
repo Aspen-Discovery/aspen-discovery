@@ -10,8 +10,8 @@ class QuickSearchSetting extends DataObject {
 
 	private $_libraries;
 
-	public static function getObjectStructure(): array {
-		$quickSearches = QuickSearch::getObjectStructure();
+	public static function getObjectStructure($context = ''): array {
+		$quickSearches = QuickSearch::getObjectStructure($context);
 		unset($quickSearches['libraryId']);
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
@@ -85,7 +85,7 @@ class QuickSearchSetting extends DataObject {
 		}
 	}
 
-	public function update() {
+	public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -94,7 +94,7 @@ class QuickSearchSetting extends DataObject {
 		return true;
 	}
 
-	public function insert() {
+	public function insert($context = '') {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
