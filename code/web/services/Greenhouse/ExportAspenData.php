@@ -457,7 +457,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 		$sideLoads->find();
 		while ($sideLoads->fetch()) {
 			if (!empty($sideLoads->marcPath)) {
-				$sideLoadName = preg_replace('/W', '_', trim($sideLoads->name));
+				$sideLoadName = preg_replace('[/W]', '_', trim($sideLoads->name));
 				if (strlen($message) > 0) {
 					$message .= '<br/>';
 				}
