@@ -457,7 +457,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 		$sideLoads->find();
 		while ($sideLoads->fetch()) {
 			if (!empty($sideLoads->marcPath)) {
-				$sideLoadName = $sideLoads->name;
+				$sideLoadName = preg_replace('[A-Za-z]', '_', trim($sideLoads->name));
 				if ($configArray['System']['operatingSystem'] == 'windows') {
 					$output = [];
 					exec("cd $sideLoads->marcPath; tar -czf c:/data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz $sideLoads->marcPath/*", $output);
@@ -465,9 +465,15 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 					$output = [];
 					exec("cd $sideLoads->marcPath; tar -czf /data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz *", $output);
 				}
+				if (strlen($message) > 0) {
+					$message .= '<br/>';
+				}
+				$message .= "Exported Side Load $sideLoads->name to sideload_$sideLoadName.tar.gz";
 			}
 		}
-
+		if (strlen($message) > 0) {
+			$message .= '<br/>';
+		}
 		$message .= "Exported Side Load MARC records";
 
 		return $message;
