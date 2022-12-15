@@ -67,7 +67,8 @@ class UserAPI extends Action {
 					'optIntoReadingHistory',
 					'optOutOfReadingHistory',
 					'deleteAllFromReadingHistory',
-					'deleteSelectedFromReadingHistory'
+					'deleteSelectedFromReadingHistory',
+					'getReadingHistorySortOptions'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -450,7 +451,7 @@ class UserAPI extends Action {
 
 			$accountSummary->setReadingHistory($user->getReadingHistorySize());
 			$userData->numReadingHistory = $accountSummary->getReadingHistory();
-		
+
 			$userData->numLinkedAccounts = 0;
 			$userData->numLinkedUsers = 0;
 			$userData->numLinkedViewers = 0;
@@ -3251,6 +3252,43 @@ class UserAPI extends Action {
 				'message' => 'Login unsuccessful',
 			];
 		}
+	}
+
+	function getReadingHistorySortOptions() {
+		return [
+			0 => [
+				'label' => translate([
+					'text' => 'Title',
+					'isPublicFacing' => true,
+				]),
+				'sort' => 'title',
+				'default' => false,
+			],
+			1 => [
+				'label' => translate([
+					'text' => 'Author',
+					'isPublicFacing' => true,
+				]),
+				'sort' => 'author',
+				'default' => false,
+			],
+			2 => [
+				'label' => translate([
+					'text' => 'Last Used',
+					'isPublicFacing' => true,
+				]),
+				'sort' => 'checkedOut',
+				'default' => true,
+			],
+			3 => [
+				'label' => translate([
+					'text' => 'Format',
+					'isPublicFacing' => true,
+				]),
+				'sort' => 'format',
+				'default' => false,
+			],
+		];
 	}
 
 	/**
