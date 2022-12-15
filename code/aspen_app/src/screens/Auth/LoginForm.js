@@ -74,6 +74,9 @@ export const GetLoginForm = (props) => {
                          onChangeText={(text) => onChangeValueSecret(text)}
                          onSubmitEditing={async (event) => {
                               setLoading(true);
+                             setTimeout(function () {
+                                 setLoading(false);
+                             }, 1500);
                               signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary });
                               const library = await getLibrarySystem({ patronsLibrary });
                               updateLibrary(library);
@@ -83,9 +86,7 @@ export const GetLoginForm = (props) => {
                               updateUser(user);
                               const categories = await getBrowseCategories({ patronsLibrary }, { valueUser }, { valueSecret });
                               updateBrowseCategories(categories);
-                              setTimeout(function () {
-                                   setLoading(false);
-                              }, 1500);
+
                          }}
                          required
                     />
@@ -100,6 +101,9 @@ export const GetLoginForm = (props) => {
                          isLoadingText="Logging in..."
                          onPress={async () => {
                               setLoading(true);
+                             setTimeout(function () {
+                                 setLoading(false);
+                             }, 1500);
                               signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary });
                               const library = await getLibrarySystem({ patronsLibrary });
                               updateLibrary(library);
@@ -109,9 +113,6 @@ export const GetLoginForm = (props) => {
                               updateUser(user);
                               const categories = await getBrowseCategories({ patronsLibrary }, { valueUser }, { valueSecret });
                               updateBrowseCategories(categories);
-                              setTimeout(function () {
-                                   setLoading(false);
-                              }, 1500);
                          }}>
                          {translate('general.login')}
                     </Button>

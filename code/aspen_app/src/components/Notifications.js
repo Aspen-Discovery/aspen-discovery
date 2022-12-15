@@ -283,10 +283,10 @@ async function createChannelsAndCategories() {
 }
 
 /** status/colorScheme options: success, error, info, warning **/
-export function showILSMessage(type, message) {
+export function showILSMessage(type, message, index = 0) {
 	const formattedMessage = stripHTML(message);
 	return (
-		<Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2}>
+		<Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2} key={index}>
 			<HStack
 				flexShrink={1}
 				space={2}

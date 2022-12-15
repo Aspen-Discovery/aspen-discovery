@@ -22,6 +22,11 @@ export const LoadingScreen = () => {
           React.useCallback(() => {
                if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category)) {
                     setLoading(false);
+                    navigation.navigate('Drawer', {
+                         user: user,
+                         library: library,
+                         location: location,
+                    });
                } else {
                     const unsubscribe = async () => {
                          updateMaxCategories(5);
@@ -44,7 +49,13 @@ export const LoadingScreen = () => {
                          await AsyncStorage.getItem('@solrScope').then((result) => {
                               updateScope(result);
                          });
+
                          setLoading(false);
+                         navigation.navigate('Drawer', {
+                              user: user,
+                              library: library,
+                              location: location,
+                         });
                     };
                     unsubscribe().then(() => {
                          return () => unsubscribe();
@@ -52,14 +63,6 @@ export const LoadingScreen = () => {
                }
           }, [])
      );
-
-     if (!loading) {
-          navigation.navigate('Drawer', {
-               user: user,
-               library: library,
-               location: location,
-          });
-     }
 
      return (
           <Center flex={1} px="3">

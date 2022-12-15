@@ -177,8 +177,9 @@ export async function saveTheme() {
           const tertiaryColors = ['tertiaryColors', JSON.stringify(response.colors.tertiary)];
 
           try {
-               await AsyncStorage.multiSet([primaryColors, secondaryColors, tertiaryColors]);
-               console.log('Essential colors stored in async storage in theme.js');
+               await AsyncStorage.multiSet([primaryColors, secondaryColors, tertiaryColors]).then(r => {
+                    console.log('Essential colors stored in async storage in theme.js');
+               });
           } catch (e) {
                //save error
                console.log('Unable to save essential colors to async storage in theme.js');
