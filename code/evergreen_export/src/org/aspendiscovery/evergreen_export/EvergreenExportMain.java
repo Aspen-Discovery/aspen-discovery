@@ -856,9 +856,6 @@ public class EvergreenExportMain {
 		logEntry.saveResults();
 		MarcFactory marcFactory = MarcFactory.newInstance();
 
-		//Get the bibs from
-		BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(idsToProcess.size());
-
 		//Process all the threads, we will allow up to 10 concurrent threads to start
 		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
@@ -881,9 +878,24 @@ public class EvergreenExportMain {
 			}
 		}
 
-		//After the file has been processed, delete it
+		// process all the bibs now to index them
+		int numWorksReindexed = 0;
+		for (String idToProcess : idsToProcess) {
+			Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), idToProcess, logEntry);
+			String groupedWorkId = groupEvergreenRecord(marcRecord);
+			if (groupedWorkId != null) {
+				//Reindex the record
+				getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+				logEntry.incUpdated();
+				numWorksReindexed++;
+			}
+		}
+
+		//After the files have been processed, delete them
 		for (File incrementalIdFile : incrementalIdFiles) {
-			if (!incrementalIdFile.delete()) {
+			//if (!incrementalIdFile.delete()) {
+			//Temporarily rename to processed so we can replay deletes as needed
+			if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
 				logEntry.incErrors("Could not delete incremental ids file " + incrementalIdFile + " after processing.");
 			}
 		}
@@ -960,7 +972,7 @@ public class EvergreenExportMain {
 			MarcFactory marcFactory = MarcFactory.newInstance();
 			int numAdded = 0;
 			for (String idToProcess : newIds) {
-				updateBibFromEvergreen(idToProcess, marcFactory, false);
+				updateBibFromEvergreen(idToProcess, marcFactory, true);
 				numAdded++;
 				if (numAdded >= 1000){
 					logEntry.addNote("Only processing the first 1000 new ids to ensure performance");
@@ -1543,11 +1555,13 @@ public class EvergreenExportMain {
 							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
 							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 								logEntry.incAdded();
-							}else {
-								logEntry.incUpdated();
 							}
 
 							if (reindexNow) {
+								if (saveMarcResult != GroupedWorkIndexer.MarcStatus.NEW){
+									logEntry.incUpdated();
+								}
+
 								//Regroup the record
 								String groupedWorkId = groupEvergreenRecord(marcRecord);
 								if (groupedWorkId != null) {
