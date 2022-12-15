@@ -149,7 +149,6 @@ class DevelopmentTask extends DataObject {
 				'label' => 'Related Epic',
 				'description' => 'The epic related to the task (if any)',
 				'values' => $availableEpics,
-				'required' => true,
 				'canBatchUpdate' => true,
 			],
 			'dueDate' => [
@@ -524,6 +523,14 @@ class DevelopmentTask extends DataObject {
 	}
 
 	/**
+	 * @param TaskTicketLink[] $relatedTickets
+	 * @return void
+	 */
+	public function setRelatedTickets(array $relatedTickets) {
+		$this->_relatedTickets = $relatedTickets;
+	}
+
+	/**
 	 * @return ComponentTaskLink[]
 	 */
 	private function getRelatedComponents(): ?array {
@@ -541,6 +548,14 @@ class DevelopmentTask extends DataObject {
 	}
 
 	/**
+	 * @param ComponentTaskLink[] $relatedComponents
+	 * @return void
+	 */
+	public function setRelatedComponents(array $relatedComponents) {
+		$this->_relatedComponents = $relatedComponents;
+	}
+
+	/**
 	 * @return TaskPartnerLink[]
 	 */
 	private function getRequestingPartners(): ?array {
@@ -555,6 +570,14 @@ class DevelopmentTask extends DataObject {
 			}
 		}
 		return $this->_requestingPartners;
+	}
+
+	/**
+	 * @param TaskPartnerLink[] $requestingPartners
+	 * @return void
+	 */
+	public function setRequestingPartners(array $requestingPartners) {
+		$this->_requestingPartners = $requestingPartners;
 	}
 
 	/**
