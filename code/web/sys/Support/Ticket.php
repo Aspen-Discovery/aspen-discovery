@@ -233,6 +233,12 @@ class Ticket extends DataObject {
 			}
 
 			//Check to see if this is already part of a task.  If not, add a button to create a task from it.
+			if (count($existingObject->getRelatedTasks()) == 0) {
+				$objectActions[] = [
+					'text' => 'Create Task',
+					'url' => '/Development/Tasks?objectAction=createTaskFromTicket&ticketId=' . $existingObject->ticketId,
+				];
+			}
 
 		}
 		return $objectActions;
@@ -250,6 +256,12 @@ class Ticket extends DataObject {
 				'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $this->ticketId,
 				'target' => '_blank',
 			];
+			if (count($this->getRelatedTasks()) == 0) {
+				$objectActions[] = [
+					'text' => 'Create Task',
+					'url' => '/Development/Tasks?objectAction=createTaskFromTicket&ticketId=' . $this->id,
+				];
+			}
 		}
 		return $objectActions;
 	}

@@ -442,7 +442,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	 * @param DataObject $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject) {
+	function getAdditionalObjectActions($existingObject): array {
 		return [];
 	}
 
