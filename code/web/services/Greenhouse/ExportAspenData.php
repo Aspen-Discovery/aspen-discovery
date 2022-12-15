@@ -458,17 +458,20 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 		while ($sideLoads->fetch()) {
 			if (!empty($sideLoads->marcPath)) {
 				$sideLoadName = preg_replace('[A-Za-z]', '_', trim($sideLoads->name));
+				if (strlen($message) > 0) {
+					$message .= '<br/>';
+				}
+				$message .= "Exporting Side Load $sideLoads->name to sideload_$sideLoadName.tar.gz";
 				if ($configArray['System']['operatingSystem'] == 'windows') {
 					$output = [];
 					exec("cd $sideLoads->marcPath; tar -czf c:/data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz $sideLoads->marcPath/*", $output);
 				} else {
 					$output = [];
 					exec("cd $sideLoads->marcPath; tar -czf /data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz *", $output);
+					$message .= "<br/><pre>cd $sideLoads->marcPath; tar -czf /data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz *</pre>";
+					$message .= "<br/>Output" . implode("<br/>", $output);
 				}
-				if (strlen($message) > 0) {
-					$message .= '<br/>';
-				}
-				$message .= "Exported Side Load $sideLoads->name to sideload_$sideLoadName.tar.gz";
+
 			}
 		}
 		if (strlen($message) > 0) {
