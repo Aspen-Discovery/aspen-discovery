@@ -37,8 +37,8 @@ class Admin_InvoiceCloudSettings extends ObjectEditor {
 		return 'name asc';
 	}
 
-	function getObjectStructure(): array {
-		return InvoiceCloudSetting::getObjectStructure();
+	function getObjectStructure($context = ''): array {
+		return InvoiceCloudSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {

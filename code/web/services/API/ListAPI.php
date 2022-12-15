@@ -409,7 +409,7 @@ class ListAPI extends Action {
 	 * @param integer $numTitlesToShow - the maximum number of titles that should be shown
 	 * @return array
 	 */
-	function getListTitles($listId = NULL, $numTitlesToShow = 25) {
+	function getListTitles($listId = NULL, $numTitlesToShow = 25, $page = 1) {
 		global $configArray;
 		if (!$listId) {
 			if (!isset($_REQUEST['id'])) {
@@ -435,6 +435,10 @@ class ListAPI extends Action {
 			$numTitlesToShow = $_REQUEST['numTitles'];
 		}
 
+		if (isset($_REQUEST['page'])) {
+			$page = $_REQUEST['page'];
+		}
+
 		if (!is_numeric($numTitlesToShow)) {
 			$numTitlesToShow = 25;
 		}
@@ -443,7 +447,7 @@ class ListAPI extends Action {
 			if (isset($listInfo)) {
 				$listId = $listInfo[1];
 			}
-			return $this->_getUserListTitles($listId, $numTitlesToShow, $user);
+			return $this->_getUserListTitles($listId, $numTitlesToShow, $user, $page);
 		} elseif (preg_match('/search:(?<searchID>.*)/', $listId, $searchInfo)) {
 			if (is_numeric($searchInfo[1])) {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
@@ -539,7 +543,7 @@ class ListAPI extends Action {
 		}
 	}
 
-	private function _getUserListTitles($listId, $numTitlesToShow, $user) {
+	private function _getUserListTitles($listId, $numTitlesToShow, $user, $page) {
 		global $configArray;
 		$listTitles = [];
 		//The list is a patron generated list
@@ -561,7 +565,19 @@ class ListAPI extends Action {
 				}
 			}
 
-			$titles = $list->getListRecords(0, $numTitlesToShow, false, 'summary');
+			$totalRecords = $list->numValidListItems();
+			$startRecord = ($page - 1) * $numTitlesToShow;
+			if ($startRecord < 0) {
+				$startRecord = 0;
+			}
+			$options = [
+				'totalItems' => $totalRecords,
+				'perPage' => $numTitlesToShow,
+				'append' => false,
+			];
+			$pager = new Pager($options);
+
+			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary');
 
 			$isLida = $this->checkIfLiDA();
 
@@ -598,6 +614,9 @@ class ListAPI extends Action {
 				'listTitle' => $list->title,
 				'listDescription' => $list->description,
 				'titles' => $listTitles,
+				'totalResults' => $pager->getTotalItems(),
+				'page_current' => (int)$pager->getCurrentPage(),
+				'page_total' => (int)$pager->getTotalPages(),
 			];
 		} else {
 			return [

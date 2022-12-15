@@ -3550,7 +3550,7 @@ class User extends DataObject {
 		return $tokens;
 	}
 
-	public function getNotificationPreferencesByToken($token): array {
+	public function getNotificationPreferencesByToken($token) {
 		$preferences = [];
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$obj = new UserNotificationToken();
@@ -3562,7 +3562,7 @@ class User extends DataObject {
 		return $preferences;
 	}
 
-	public function getNotificationPreferencesByUser(): array {
+	public function getNotificationPreferencesByUser() {
 		$preferences = [];
 		require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 		$obj = new UserNotificationToken();
@@ -3573,6 +3573,7 @@ class User extends DataObject {
 			$preference['token'] = $obj->pushToken;
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
+			$preference['notifyAccount'] = $obj->notifyAccount;
 
 			$preferences[] = $preference;
 		}
