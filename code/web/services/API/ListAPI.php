@@ -565,15 +565,14 @@ class ListAPI extends Action {
 				}
 			}
 
-			$pageSize = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 25;
 			$totalRecords = $list->numValidListItems();
-			$startRecord = ($page - 1) * $pageSize;
+			$startRecord = ($page - 1) * $numTitlesToShow;
 			if ($startRecord < 0) {
 				$startRecord = 0;
 			}
 			$options = [
 				'totalItems' => $totalRecords,
-				'perPage' => $pageSize,
+				'perPage' => $numTitlesToShow,
 				'append' => false,
 			];
 			$pager = new Pager($options);
