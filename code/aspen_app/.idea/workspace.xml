@@ -8,22 +8,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9a5f64f5-13b8-49ff-9316-5e5798ffbd47" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/screens/Auth/ForceLogout.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Notifications.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/navigations/drawer/DrawerContent.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/navigations/drawer/DrawerContent.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/screens/MyAccount/Lists/MyList.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/MyAccount/Lists/MyList.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/screens/MyAccount/ReadingHistory/ReadingHistory.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/MyAccount/ReadingHistory/ReadingHistory.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/screens/Search/SearchResults.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/Search/SearchResults.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/api/list.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/api/list.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/api/user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/api/user.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/globals.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/globals.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/watcherTasks.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/navigation.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/navigation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/initialContext.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/initialContext.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/navigations/LaunchStackNavigator.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/navigations/LaunchStackNavigator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/screens/Auth/Loading.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/Auth/Loading.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/apiAuth.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/apiAuth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/loadPatron.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/loadPatron.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Logger.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Logger.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/22.12.01.MD" beforeDir="false" afterPath="$PROJECT_DIR$/../web/release_notes/22.12.01.MD" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,8 +176,8 @@
     <list>
       <item itemvalue="Node.js.png Test Tool" />
       <item itemvalue="Shell Script.start - Aspen LiDA" />
-      <item itemvalue="Shell Script.updateEAS.sh" />
       <item itemvalue="Shell Script.updater - Aspen LiDA" />
+      <item itemvalue="Shell Script.updateEAS.sh" />
     </list>
     <recent_temporary>
       <list>

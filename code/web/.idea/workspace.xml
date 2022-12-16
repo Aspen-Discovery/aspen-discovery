@@ -8,13 +8,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="88b6e02c-5b03-400a-a04f-362e56769b7e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../aspen_app/src/screens/Auth/ForceLogout.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../aspen_app/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../aspen_app/src/components/navigation.js" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/src/components/navigation.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../aspen_app/src/context/initialContext.js" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/src/context/initialContext.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../aspen_app/src/navigations/LaunchStackNavigator.js" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/src/navigations/LaunchStackNavigator.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../aspen_app/src/screens/Auth/Loading.js" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/src/screens/Auth/Loading.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../aspen_app/src/util/apiAuth.js" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/src/util/apiAuth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../aspen_app/src/util/loadPatron.js" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/src/util/loadPatron.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/LibraryLocation/Location.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/LibraryLocation/Location.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/VDX/VdxForm.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/VDX/VdxForm.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/release_notes/22.12.01.MD" beforeDir="false" afterPath="$PROJECT_DIR$/release_notes/22.12.01.MD" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

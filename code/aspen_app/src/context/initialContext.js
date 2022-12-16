@@ -111,16 +111,16 @@ export const LibrarySystemProvider = ({ children }) => {
      const [url, setUrl] = useState();
 
      const updateLibrary = (data) => {
-         if(!_.isUndefined(data.discoveryVersion)) {
-             const discovery = formatDiscoveryVersion(data.discoveryVersion);
-             setVersion(discovery);
-             console.log('updated version in LibrarySystemContext');
-         }
+          if (!_.isUndefined(data.discoveryVersion)) {
+               const discovery = formatDiscoveryVersion(data.discoveryVersion);
+               setVersion(discovery);
+               console.log('updated version in LibrarySystemContext');
+          }
 
-         if(!_.isUndefined(data.baseUrl)) {
-             setUrl(data.baseUrl);
-             console.log('updated url in LibrarySystemContext');
-         }
+          if (!_.isUndefined(data.baseUrl)) {
+               setUrl(data.baseUrl);
+               console.log('updated url in LibrarySystemContext');
+          }
 
           setLibrary(data);
           console.log('updated LibrarySystemContext');
@@ -154,13 +154,13 @@ export const LibraryBranchProvider = ({ children }) => {
      const updateLocation = (data) => {
           setLocation(data);
 
-         if(!_.isUndefined(data.vdxFormId)) {
-             BRANCH.vdxFormId = data.vdxFormId;
-         }
+          if (!_.isUndefined(data.vdxFormId)) {
+               BRANCH.vdxFormId = data.vdxFormId;
+          }
 
-         if(!_.isUndefined(data.vdxLocation)) {
-             BRANCH.vdxLocation = data.vdxLocation;
-         }
+          if (!_.isUndefined(data.vdxLocation)) {
+               BRANCH.vdxLocation = data.vdxLocation;
+          }
 
           console.log('updated LibraryBranchContext');
      };
@@ -200,16 +200,16 @@ export const UserProvider = ({ children }) => {
      const [readingHistory, setReadingHistory] = useState();
 
      const updateUser = (data) => {
+          if (_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
+               console.log(data.lastListUsed);
+               PATRON.listLastUsed = data.lastListUsed;
+          }
+
+          if (_.isObject(data) && !_.isUndefined(data.numHolds)) {
+               PATRON.num.holds = data.numHolds;
+          }
+
           setUser(data);
-
-         if(!_.isUndefined(data.lastListUsed)) {
-             PATRON.listLastUsed = data.lastListUsed
-         }
-
-         if(!_.isUndefined(data.numHolds)) {
-             PATRON.num.holds = data.numHolds;
-         }
-
           console.log('updated UserContext');
      };
 
