@@ -51,8 +51,6 @@ export const MyLinkedAccounts = () => {
           return loadingSpinner();
      }
 
-     console.log(viewers);
-
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box flex={1} safeArea={5}>
