@@ -424,6 +424,17 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 						$validEnrichmentToImport[$element] = $elementDefinition['name'];
 					} elseif ($element == 'uploaded_images' && file_exists($importPath . 'uploaded_images.tar.gz')) {
 						$validEnrichmentToImport[$element] = $elementDefinition['name'];
+					} elseif ($element == 'side_load_marc_records') {
+						$isValid = false;
+						$uploadedSideLoads = scandir($importPath);
+						foreach ($uploadedSideLoads as $uploadedSideLoad) {
+							if (preg_match('~sideload_.*\.tar\.gz~', $uploadedSideLoad)){
+								$isValid = true;
+							}
+						}
+						if ($isValid) {
+							$validEnrichmentToImport[$element] = $elementDefinition['name'];
+						}
 					}
 				}
 			}
@@ -513,6 +524,11 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				}
 
 				$message .= "Importing Side Load $sideLoads->name to sideload_$sideLoadName.tar.gz";
+				if (!file_exists($sideLoads->marcPath)) {
+					mkdir($sideLoads->marcPath, 0774, true);
+					chgrp($sideLoads->marcPath, 'aspen_apache');
+					chmod($sideLoads->marcPath, 0775);
+				}
 				if ($configArray['System']['operatingSystem'] == 'windows') {
 					$output = [];
 					if (file_exists("c:/data/aspen-discovery/$serverName/import/sideload_$sideLoadName.tar.gz")) {
