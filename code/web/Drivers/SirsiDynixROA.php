@@ -1125,8 +1125,9 @@ class SirsiDynixROA extends HorizonAPI {
 				$holdData['holdType'] = 'TITLE';
 			}
 
-			//TODO: Look into holds for different ranges (Group/Library)
-			$holdData['holdRange'] = 'SYSTEM';
+			$userLibrary = $patron->getHomeLibrary();
+			$holdData['holdRange'] = $userLibrary->holdRange;
+			//$holdData['holdRange'] = 'SYSTEM';
 
 			if ($cancelIfNotFilledByDate) {
 				$holdData['fillByDate'] = date('Y-m-d', strtotime($cancelIfNotFilledByDate));
