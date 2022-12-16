@@ -157,14 +157,22 @@ export function App() {
                console.log('Checking existing session...');
                let userToken;
                let libraryUrl;
+               let userKey;
                try {
                     // Restore token stored in `AsyncStorage`
                     userToken = await AsyncStorage.getItem('@userToken');
                     libraryUrl = await AsyncStorage.getItem('@pathUrl');
+                    userKey = await SecureStore.getItemAsync('userKey');
                } catch (e) {
                     // Restoring token failed
                     console.log(e);
+                    dispatch({ type: 'SIGN_OUT' });
                }
+
+               if(!userKey) {
+                    dispatch({ type: 'SIGN_OUT' });
+               }
+
                if (!libraryUrl) {
                     libraryUrl = LIBRARY.url;
                }
