@@ -7,6 +7,9 @@ import React, { useEffect } from 'react';
 import base64 from 'react-native-base64';
 
 import { GLOBALS } from './globals';
+import {RemoveData} from './logout';
+import {navigateStack} from '../helpers/RootNavigator';
+import {ForceLogout} from '../screens/Auth/ForceLogout';
 
 // polyfill for base64 (required for authentication)
 if (!global.btoa) {
@@ -39,9 +42,7 @@ export async function postData() {
      } catch (e) {
           console.log('Unable to fetch user keys to make POST request.');
           console.log(e);
-          await AsyncStorage.removeItem('@userToken');
      }
-
      return content;
 }
 

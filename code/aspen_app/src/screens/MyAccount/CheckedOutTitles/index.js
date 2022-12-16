@@ -111,7 +111,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {translate('holds.reload_holds')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );
@@ -125,7 +125,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {translate('holds.reload_holds')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );
@@ -354,8 +354,8 @@ const Checkout = (props) => {
      );
 };
 
-const isOverdue = (props) => {
-     if (props.overdue) {
+const isOverdue = (overdue) => {
+     if (overdue) {
           return (
                <Text>
                     <Badge colorScheme="danger" rounded="4px" mt={-0.5}>

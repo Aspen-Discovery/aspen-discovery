@@ -9,10 +9,12 @@ import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBrowseCategoryListForUser } from '../../util/loadPatron';
+import {ForceLogout} from './ForceLogout';
 
 export const LoadingScreen = () => {
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(true);
+     const [hasError, setHasError] = React.useState(false);
      const { user, updateUser, resetUser } = React.useContext(UserContext);
      const { library, updateLibrary, resetLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, resetLocation } = React.useContext(LibraryBranchContext);
@@ -22,6 +24,11 @@ export const LoadingScreen = () => {
           React.useCallback(() => {
                if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category)) {
                     setLoading(false);
+                    navigation.navigate('Drawer', {
+                         user: user,
+                         library: library,
+                         location: location,
+                    });
                } else {
                     const unsubscribe = async () => {
                          updateMaxCategories(5);
@@ -29,6 +36,10 @@ export const LoadingScreen = () => {
                               updateBrowseCategories(result);
                          });
                          await reloadUserProfile().then((result) => {
+                              if(_.isUndefined(result) || _.isEmpty(result)) {
+                                   console.log(result);
+                                   setHasError(true);
+                              }
                               updateUser(result);
                          });
                          await reloadLibrarySystem().then((result) => {
@@ -53,7 +64,11 @@ export const LoadingScreen = () => {
           }, [])
      );
 
-     if (!loading) {
+     if(hasError) {
+          return <ForceLogout/>
+     }
+
+     if(!loading) {
           navigation.navigate('Drawer', {
                user: user,
                library: library,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import _ from 'lodash';
 import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 
@@ -110,11 +111,16 @@ export const LibrarySystemProvider = ({ children }) => {
      const [url, setUrl] = useState();
 
      const updateLibrary = (data) => {
-          const discovery = formatDiscoveryVersion(data.discoveryVersion);
-          setVersion(discovery);
-          console.log('updated version in LibrarySystemContext');
-          setUrl(data.baseUrl);
-          console.log('updated url in LibrarySystemContext');
+         if(!_.isUndefined(data.discoveryVersion)) {
+             const discovery = formatDiscoveryVersion(data.discoveryVersion);
+             setVersion(discovery);
+             console.log('updated version in LibrarySystemContext');
+         }
+
+         if(!_.isUndefined(data.baseUrl)) {
+             setUrl(data.baseUrl);
+             console.log('updated url in LibrarySystemContext');
+         }
           setLibrary(data);
           console.log('updated LibrarySystemContext');
      };
@@ -146,8 +152,13 @@ export const LibraryBranchProvider = ({ children }) => {
 
      const updateLocation = (data) => {
           setLocation(data);
-          BRANCH.vdxFormId = data.vdxFormId;
-          BRANCH.vdxLocation = data.vdxLocation;
+         if(!_.isUndefined(data.vdxFormId)) {
+             BRANCH.vdxFormId = data.vdxFormId;
+         }
+
+         if(!_.isUndefined(data.vdxLocation)) {
+             BRANCH.vdxLocation = data.vdxLocation;
+         }
           console.log('updated LibraryBranchContext');
      };
 
@@ -184,10 +195,20 @@ export const UserProvider = ({ children }) => {
      const [locations, setPickupLocations] = useState();
 
      const updateUser = (data) => {
-          setUser(data);
-          PATRON.listLastUsed = data.lastListUsed ?? null;
-          PATRON.num.holds = data.numHolds;
-          console.log('updated UserContext');
+         if(_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
+             console.log(data.lastListUsed);
+             PATRON.listLastUsed = data.lastListUsed
+         } else {
+             console.log("undefined");
+             console.log(data);
+         }
+
+         if(_.isObject(data) && !_.isUndefined(data.numHolds)) {
+             PATRON.num.holds = data.numHolds;
+         }
+
+         setUser(data);
+         console.log('updated UserContext');
      };
 
      const resetUser = () => {

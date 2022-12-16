@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { popAlert } from '../components/loadError';
-import { createAuthTokens, ENDPOINT, getHeaders, postData } from './apiAuth';
+import { createAuthTokens, getHeaders, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
 
@@ -38,8 +38,6 @@ export const PATRON = {
      lists: [],
      browseCategories: [],
 };
-
-const endpoint = ENDPOINT.user;
 
 export async function getProfile(reload = false) {
      const postBody = await postData();
@@ -490,7 +488,7 @@ export async function getBrowseCategoryListForUser(url = null) {
      const discovery = create({
           baseURL: baseUrl,
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
      const response = await discovery.post('/API/SearchAPI?method=getBrowseCategoryListForUser', postBody);
@@ -509,11 +507,11 @@ export async function updateBrowseCategoryStatus(id, url = null) {
      const discovery = create({
           baseURL: baseUrl,
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           params: { browseCategoryId: id },
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(endpoint.url + 'updateBrowseCategoryStatus', postBody);
+     const response = await discovery.post('/API/UserAPI?method=updateBrowseCategoryStatus', postBody);
      if (response.ok) {
           return response.data.result;
      } else {
