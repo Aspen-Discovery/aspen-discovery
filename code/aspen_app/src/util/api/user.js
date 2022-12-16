@@ -328,15 +328,23 @@ export async function saveLanguage(code, url) {
 /** *******************************************************************
  * Reading History
  ******************************************************************* **/
-export async function getReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url) {
-     const { data } = await axios.get('/UserAPI?method=getPatronReadingHistory', {
+/**
+ * Return the user's reading history
+ * @param {number} page
+ * @param {number} pageSize
+ * @param {string} sort
+ * @param {string} url
+ **/
+export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url) {
+     const postBody = await postData();
+     const { data } = await axios.post('/UserAPI?method=getPatronReadingHistory', postBody, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(false),
           auth: createAuthTokens(),
           params: {
-               pageSize: pageSize,
                page: page,
+               pageSize: pageSize,
                sort_by: sort,
           },
      });
@@ -347,7 +355,7 @@ export async function getReadingHistory(page = 1, pageSize = 25, sort = 'checked
      }
 
      return {
-          history: data.result?.readingHistory,
+          history: data.result?.readingHistory ?? [],
           totalResults: data.result?.totalResults ?? 0,
           curPage: data.result?.page_current ?? 0,
           totalPages: data.result?.page_total ?? 0,
@@ -357,6 +365,10 @@ export async function getReadingHistory(page = 1, pageSize = 25, sort = 'checked
      };
 }
 
+/**
+ * Enable reading history for the user
+ * @param {string} url
+ **/
 export async function optIntoReadingHistory(url) {
      const postBody = await postData();
      const discovery = create({
@@ -372,6 +384,10 @@ export async function optIntoReadingHistory(url) {
      return false;
 }
 
+/**
+ * Disable reading history for the user
+ * @param {string} url
+ **/
 export async function optOutOfReadingHistory(url) {
      const postBody = await postData();
      const discovery = create({
@@ -387,6 +403,10 @@ export async function optOutOfReadingHistory(url) {
      return false;
 }
 
+/**
+ * Delete all reading history for the user
+ * @param {string} url
+ **/
 export async function deleteAllReadingHistory(url) {
      const postBody = await postData();
      const discovery = create({
@@ -402,6 +422,11 @@ export async function deleteAllReadingHistory(url) {
      return false;
 }
 
+/**
+ * Delete selected reading history for the user
+ * @param {string} item
+ * @param {string} url
+ **/
 export async function deleteSelectedReadingHistory(item, url) {
      const postBody = await postData();
      const discovery = create({

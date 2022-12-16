@@ -3,19 +3,23 @@ import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
 
+const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest.ios.buildNumber;
+const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest.android.versionCode;
+const releaseChannel = Updates.channel ?? Updates.releaseChannel;
+
 export const GLOBALS = {
      timeoutAverage: 60000,
      timeoutSlow: 100000,
      timeoutFast: 30000,
      appVersion: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version,
-     appBuild: Application.nativeBuildVersion ?? (Platform.OS === 'android' ? Constants.manifest.android.versionCode : Constants.manifest.ios.buildNumber),
+     appBuild: Platform.OS === 'android' ? androidDist : iOSDist,
      appSessionId: Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId,
      appPatch: 0,
      showSelectLibrary: true,
      runGreenhouse: true,
      slug: Constants.manifest2?.extra?.expoClient?.slug ?? Constants.manifest.slug,
      url: Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl,
-     releaseChannel: Updates.channel ?? Updates.releaseChannel,
+     releaseChannel: __DEV__ ? 'DEV' : releaseChannel,
      language: 'en',
      lastSeen: null,
      prevLaunched: false,

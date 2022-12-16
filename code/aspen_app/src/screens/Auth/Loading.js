@@ -1,57 +1,88 @@
 import React from 'react';
-import { create } from 'apisauce';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Center, Heading, Spinner, VStack } from 'native-base';
+import {create} from 'apisauce';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {Center, Heading, Spinner, VStack} from 'native-base';
 import _ from 'lodash';
-import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { formatBrowseCategories, LIBRARY } from '../../util/loadLibrary';
-import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
+import {BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {formatBrowseCategories, LIBRARY} from '../../util/loadLibrary';
+import {GLOBALS} from '../../util/globals';
+import {createAuthTokens, getHeaders, postData} from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBrowseCategoryListForUser } from '../../util/loadPatron';
+import {getBrowseCategoryListForUser} from '../../util/loadPatron';
+import {ForceLogout} from './ForceLogout';
 
 export const LoadingScreen = () => {
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(true);
-     const { user, updateUser, resetUser } = React.useContext(UserContext);
-     const { library, updateLibrary, resetLibrary } = React.useContext(LibrarySystemContext);
-     const { location, updateLocation, updateScope, resetLocation } = React.useContext(LibraryBranchContext);
-     const { category, list, updateBrowseCategories, updateBrowseCategoryList, resetBrowseCategories, maxNum, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+     const [hasError, setHasError] = React.useState(false);
+     const {
+          user,
+          updateUser,
+          resetUser
+     } = React.useContext(UserContext);
+     const {
+          library,
+          updateLibrary,
+          resetLibrary
+     } = React.useContext(LibrarySystemContext);
+     const {
+          location,
+          updateLocation,
+          updateScope,
+          resetLocation
+     } = React.useContext(LibraryBranchContext);
+     const {
+          category,
+          list,
+          updateBrowseCategories,
+          updateBrowseCategoryList,
+          resetBrowseCategories,
+          maxNum,
+          updateMaxCategories
+     } = React.useContext(BrowseCategoryContext);
 
      useFocusEffect(
-          React.useCallback(() => {
-               if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category)) {
-                    setLoading(false);
-               } else {
-                    const unsubscribe = async () => {
-                         updateMaxCategories(5);
-                         await reloadPatronBrowseCategories(5).then((result) => {
-                              updateBrowseCategories(result);
-                         });
-                         await reloadUserProfile().then((result) => {
-                              updateUser(result);
-                         });
-                         await reloadLibrarySystem().then((result) => {
-                              updateLibrary(result);
-                         });
-                         await reloadLibraryBranch().then((result) => {
-                              updateLocation(result);
-                         });
-                         await getBrowseCategoryListForUser().then((result) => {
-                              updateBrowseCategoryList(result);
-                         });
+         React.useCallback(() => {
+              if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category)) {
+                   setLoading(false);
+              } else {
+                   const unsubscribe = async () => {
+                        updateMaxCategories(5);
+                        await reloadPatronBrowseCategories(5).then((result) => {
+                             updateBrowseCategories(result);
+                        });
+                        await reloadUserProfile().then((result) => {
+                             if (_.isUndefined(result) || _.isEmpty(result)) {
+                                  console.log(result);
+                                  setHasError(true);
+                             }
+                             updateUser(result);
+                        });
+                        await reloadLibrarySystem().then((result) => {
+                             updateLibrary(result);
+                        });
+                        await reloadLibraryBranch().then((result) => {
+                             updateLocation(result);
+                        });
+                        await getBrowseCategoryListForUser().then((result) => {
+                             updateBrowseCategoryList(result);
+                        });
 
-                         await AsyncStorage.getItem('@solrScope').then((result) => {
-                              updateScope(result);
-                         });
-                         setLoading(false);
-                    };
-                    unsubscribe().then(() => {
-                         return () => unsubscribe();
-                    });
-               }
-          }, [])
+                        await AsyncStorage.getItem('@solrScope').then((result) => {
+                             updateScope(result);
+                        });
+                        setLoading(false);
+                   };
+                   unsubscribe().then(() => {
+                        return () => unsubscribe();
+                   });
+              }
+         }, [])
      );
+
+     if (hasError) {
+          return <ForceLogout/>
+     }
 
      if (!loading) {
           navigation.navigate('Drawer', {
@@ -62,14 +93,14 @@ export const LoadingScreen = () => {
      }
 
      return (
-          <Center flex={1} px="3">
-               <VStack space={5} alignItems="center">
-                    <Spinner size="lg" />
-                    <Heading color="primary.500" fontSize="md">
-                         Dusting the shelves...
-                    </Heading>
-               </VStack>
-          </Center>
+         <Center flex={1} px="3">
+              <VStack space={5} alignItems="center">
+                   <Spinner size="lg"/>
+                   <Heading color="primary.500" fontSize="md">
+                        Dusting the shelves...
+                   </Heading>
+              </VStack>
+         </Center>
      );
 };
 
@@ -139,7 +170,8 @@ async function reloadLibrarySystem() {
 }
 
 async function reloadLibraryBranch() {
-     let scope, locationId;
+     let scope,
+         locationId;
      try {
           scope = await AsyncStorage.getItem('@solrScope');
           locationId = await AsyncStorage.getItem('@locationId');

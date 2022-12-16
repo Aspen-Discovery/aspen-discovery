@@ -196,18 +196,23 @@ export async function addTitlesToList(id, itemId, url) {
      }
 }
 
-export async function getListTitles(id, url) {
+export async function getListTitles(id, url, page, pageSize = 25, numTitles = 25) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
-          params: { id: id },
+          params: {
+               id: id,
+               page: page,
+               pageSize: pageSize,
+               numTitles: numTitles,
+          },
      });
      const response = await api.post('/ListAPI?method=getListTitles', postBody);
      if (response.ok) {
-          return response.data.result.titles;
+          return response.data.result;
      } else {
           console.log(response);
      }
