@@ -9,12 +9,10 @@ import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBrowseCategoryListForUser } from '../../util/loadPatron';
-import {ForceLogout} from './ForceLogout';
 
 export const LoadingScreen = () => {
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(true);
-     const [hasError, setHasError] = React.useState(false);
      const { user, updateUser, resetUser } = React.useContext(UserContext);
      const { library, updateLibrary, resetLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, resetLocation } = React.useContext(LibraryBranchContext);
@@ -31,10 +29,6 @@ export const LoadingScreen = () => {
                               updateBrowseCategories(result);
                          });
                          await reloadUserProfile().then((result) => {
-                              if(_.isUndefined(result) || _.isEmpty(result)) {
-                                   console.log(result);
-                                   setHasError(true);
-                              }
                               updateUser(result);
                          });
                          await reloadLibrarySystem().then((result) => {
@@ -59,11 +53,7 @@ export const LoadingScreen = () => {
           }, [])
      );
 
-     if(hasError) {
-          return <ForceLogout/>
-     }
-
-     if(!loading) {
+     if (!loading) {
           navigation.navigate('Drawer', {
                user: user,
                library: library,

@@ -16,6 +16,7 @@ import { getCleanTitle } from '../../../helpers/item';
 export const MyList = () => {
      const providedList = useRoute().params.details;
      const id = providedList.id;
+     const [page, setPage] = React.useState(1);
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(true);
      const { library } = React.useContext(LibrarySystemContext);
@@ -25,8 +26,8 @@ export const MyList = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getListTitles(id, library.baseUrl).then((result) => {
-                         setListTitles(result);
+                    await getListTitles(id, library.baseUrl, page, 25, 25).then((result) => {
+                         setListTitles(result.titles);
                     });
                     setLoading(false);
                };

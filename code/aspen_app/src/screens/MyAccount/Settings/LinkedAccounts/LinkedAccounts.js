@@ -1,5 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import _ from 'lodash';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { Box, Divider, HStack, Button, Text, Heading, FlatList } from 'native-base';

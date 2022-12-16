@@ -180,8 +180,11 @@ export async function getNotificationPreferences(libraryUrl, pushToken) {
      });
      const response = await api.post('/UserAPI?method=getNotificationPreferences', postBody);
      if (response.ok) {
-          //console.log(response);
-          await createChannelsAndCategories();
+          try {
+               await createChannelsAndCategories();
+          } catch (e) {
+               console.log(e);
+          }
           return response.data.result;
      } else {
           const problem = problemCodeMap(response.problem);
