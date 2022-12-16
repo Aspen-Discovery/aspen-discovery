@@ -19,5 +19,13 @@ function getUpdates22_12_01(): array {
 			],
 		],
 		//library_holdRange
+		'ptype_vdx_client_category' => [
+			'title' => 'PType - VDX Client Category',
+			'description' => 'Add VDX Client Category to PType settings',
+			'sql' => [
+				"ALTER TABLE ptype ADD COLUMN vdxClientCategory VARCHAR(10) DEFAULT ''",
+			],
+		],
+		//ptype_vdx_client_category
 	];
 }

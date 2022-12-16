@@ -307,7 +307,15 @@ class VdxDriver {
 		$vdxLocation = empty($userHomeLocation->vdxLocation) ? $userHomeLocation->code : $userHomeLocation->vdxLocation;
 
 		$body = "USERID=$patron->cat_username\r\n";
-		$body .= "ClientCategory=$patron->patronType\r\n";
+		$clientCategory = $patron->patronType;
+		$pType = new PType();
+		$pType->pType = $patron->patronType;
+		if ($pType->find(true)) {
+			if (!empty($pType->vdxClientCategory)) {
+				$clientCategory = $pType->vdxClientCategory;
+			}
+		}
+		$body .= "ClientCategory=$clientCategory\r\n";
 		$body .= "PatronKey=$settings->patronKey\r\n";
 		$body .= "ClientLocation=$vdxLocation\r\n";
 		$body .= "ExternalLocation=$vdxLocation\r\n";
