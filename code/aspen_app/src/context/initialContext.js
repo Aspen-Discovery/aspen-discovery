@@ -200,17 +200,17 @@ export const UserProvider = ({ children }) => {
      const [readingHistory, setReadingHistory] = useState();
 
      const updateUser = (data) => {
-          setUser(data);
-
-         if(!_.isUndefined(data.lastListUsed)) {
+         if(_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
+             console.log(data.lastListUsed);
              PATRON.listLastUsed = data.lastListUsed
          }
 
-         if(!_.isUndefined(data.numHolds)) {
+         if(_.isObject(data) && !_.isUndefined(data.numHolds)) {
              PATRON.num.holds = data.numHolds;
          }
 
-          console.log('updated UserContext');
+         setUser(data);
+         console.log('updated UserContext');
      };
 
      const resetUser = () => {

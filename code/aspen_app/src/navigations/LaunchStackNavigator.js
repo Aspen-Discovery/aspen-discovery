@@ -3,6 +3,7 @@ import React from 'react';
 import { LoadingScreen } from '../screens/Auth/Loading';
 import AccountDrawer from './drawer/DrawerNavigator';
 import { LibrarySystemContext, LibraryBranchContext, UserContext, BrowseCategoryContext, CheckoutsContext, HoldsContext } from '../context/initialContext';
+import Login from '../screens/Auth/Login';
 
 const LaunchStackNavigator = () => {
      const Stack = createNativeStackNavigator();
@@ -52,6 +53,14 @@ const LaunchStackNavigator = () => {
                                                                                      },
                                                                                      checkoutsContext: checkouts,
                                                                                      holdsContext: holds,
+                                                                                }}
+                                                                           />
+                                                                           <Stack.Screen
+                                                                                name="Login"
+                                                                                component={Login}
+                                                                                options={{
+                                                                                     headerShown: false,
+                                                                                     animationTypeForReplace: 'pop',
                                                                                 }}
                                                                            />
                                                                       </Stack.Navigator>

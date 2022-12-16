@@ -130,8 +130,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Shell Script.updater - Aspen LiDA" />
       <item itemvalue="Shell Script.start - Aspen LiDA" />
+      <item itemvalue="Shell Script.updater - Aspen LiDA" />
     </list>
     <recent_temporary>
       <list>
