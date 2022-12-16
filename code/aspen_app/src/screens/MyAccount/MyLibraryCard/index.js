@@ -50,6 +50,7 @@ export const MyLibraryCard = () => {
                         }
                         if (accounts !== result) {
                              const temp = Object.values(result);
+                             console.log(temp);
                              updateLinkedAccounts(Object.values(result));
                              if (_.size(temp) >= 1) {
                                   let count = 1;
@@ -156,6 +157,9 @@ export const MyLibraryCard = () => {
 
 const CreateLibraryCard = (data) => {
      const card = data.card;
+
+     console.log(card);
+
      const {library} = React.useContext(LibrarySystemContext);
 
      let barcodeStyle = null;
@@ -192,7 +196,7 @@ const CreateLibraryCard = (data) => {
           icon = library.logoApp;
      }
 
-     if (barcodeValue === 'UNKNOWN' || _.isNull(barcodeValue) || _.isNull(barcodeStyle)) {
+     if (barcodeValue === 'UNKNOWN' || _.isNull(barcodeValue) || card.barcodeStyle === 'none' || _.isNull(card.barcodeStyle)) {
           return (
               <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
                    <Center>
