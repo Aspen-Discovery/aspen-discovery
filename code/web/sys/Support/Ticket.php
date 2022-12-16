@@ -212,7 +212,7 @@ class Ticket extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
-				'hideInLists' => true,
+				'hideInLists' => false,
 			],
 		];
 	}
