@@ -340,7 +340,7 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
      const { data } = await axios.post('/UserAPI?method=getPatronReadingHistory', postBody, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(false),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                page: page,
@@ -379,7 +379,8 @@ export async function optIntoReadingHistory(url) {
      });
      const response = await discovery.post(`${endpoint.url}optIntoReadingHistory`, postBody);
      if (response.ok) {
-          //
+          console.log(response.data);
+          return true;
      }
      return false;
 }
@@ -398,7 +399,8 @@ export async function optOutOfReadingHistory(url) {
      });
      const response = await discovery.post(`${endpoint.url}optOutOfReadingHistory`, postBody);
      if (response.ok) {
-          //
+          console.log(response.data);
+          return true;
      }
      return false;
 }
@@ -434,10 +436,38 @@ export async function deleteSelectedReadingHistory(item, url) {
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
+          params: {
+               selected: {
+                    [item]: item,
+               },
+          },
      });
      const response = await discovery.post(`${endpoint.url}deleteSelectedFromReadingHistory`, postBody);
      if (response.ok) {
-          //
+          if (response.data.result?.success) {
+               return true;
+          }
+     }
+     return false;
+}
+
+/**
+ * Get list of available sort options for reading history
+ * @param {string} url
+ **/
+export async function getReadingHistorySortOptions(url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post(`${endpoint.url}getReadingHistorySortOptions`, postBody);
+     if (response.ok) {
+          if (response.data?.result) {
+               return response.data.result;
+          }
      }
      return false;
 }

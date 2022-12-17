@@ -1,22 +1,26 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Box, Divider, VStack, Button, Text, ScrollView, FlatList } from 'native-base';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React from 'react';
+import _ from 'lodash';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Box, VStack, Button, Text, ScrollView, FlatList, Pressable, HStack, Image, InfoIcon, Center, AlertDialog, Icon, Actionsheet, Alert, CheckIcon, FormControl, Select } from 'native-base';
+import { ListItem } from '@rneui/themed';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { translate } from '../../../translations/translations';
-import { DisplayMessage } from '../../../components/Notifications';
-import { fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile } from '../../../util/api/user';
+import { deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile } from '../../../util/api/user';
 import { SafeAreaView } from 'react-native';
+import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
+import { loadError } from '../../../components/loadError';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import AddToList from '../../Search/AddToList';
 
 export const MyReadingHistory = () => {
      const [page, setPage] = React.useState(1);
-     const [isLoading, setLoading] = React.useState(false);
+     const [sort, setSort] = React.useState('checkedOut');
      const { library } = React.useContext(LibrarySystemContext);
      const { user, updateUser, readingHistory, updateReadingHistory } = React.useContext(UserContext);
      const url = library.baseUrl;
-     const sort = 'checkedOut';
      const pageSize = 25;
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['readingHistory', url, page, pageSize, sort], () => fetchReadingHistory(page, pageSize, sort, url), {
@@ -24,30 +28,79 @@ export const MyReadingHistory = () => {
           staleTime: 1000,
      });
 
-     console.log(data);
-
      const optIn = async () => {
-          setLoading(true);
           await optIntoReadingHistory(library.baseUrl).then(() => {
                refreshProfile(library.baseUrl).then((result) => {
                     updateUser(result);
-                    setLoading(false);
                });
           });
      };
 
      const optOut = async () => {
-          setLoading(true);
           await optOutOfReadingHistory(library.baseUrl).then(() => {
                refreshProfile(library.baseUrl).then((result) => {
                     updateUser(result);
-                    setLoading(false);
                });
           });
      };
 
+     const deleteAll = async () => {
+          return true;
+     };
+
+     const [isOpen, setIsOpen] = React.useState(false);
+     const onClose = () => setIsOpen(false);
+     const cancelRef = React.useRef(null);
+
+     const [deleteAllIsOpen, setDeleteAllIsOpen] = React.useState(false);
+     const onCloseDeleteAll = () => setDeleteAllIsOpen(false);
+     const deleteAllCancelRef = React.useRef(null);
+
      const getDisclaimer = () => {
-          return <DisplayMessage type="info" message={translate('reading_history.disclaimer')} />;
+          const [expanded, setExpanded] = React.useState(false);
+          return (
+               <ListItem.Accordion
+                    containerStyle={{
+                         backgroundColor: 'transparent',
+                         paddingBottom: 2,
+                    }}
+                    content={
+                         <>
+                              <ListItem.Content
+                                   containerStyle={{
+                                        width: '100%',
+                                        padding: 0,
+                                   }}>
+                                   <Alert status="info" colorScheme="info" w="100%" p={1}>
+                                        <HStack flexShrink={1} space={2} alignItems="center">
+                                             <Alert.Icon />
+                                             <Text fontSize="xs" bold color="coolGray.800">
+                                                  {translate('reading_history.privacy_notice')}
+                                             </Text>
+                                        </HStack>
+                                   </Alert>
+                              </ListItem.Content>
+                         </>
+                    }
+                    isExpanded={expanded}
+                    onPress={() => {
+                         setExpanded(!expanded);
+                    }}>
+                    <ListItem
+                         key={0}
+                         borderBottom
+                         containerStyle={{
+                              backgroundColor: 'transparent',
+                              paddingTop: 1,
+                         }}>
+                         <ListItem.Content containerStyle={{ padding: 0 }}>
+                              <Text fontSize="xs" color="coolGray.600">
+                                   {translate('reading_history.disclaimer')}
+                              </Text>
+                         </ListItem.Content>
+                    </ListItem>
+               </ListItem.Accordion>
+          );
      };
 
      const getActionButtons = () => {
@@ -62,19 +115,68 @@ export const MyReadingHistory = () => {
                     }}
                     borderColor="coolGray.200"
                     flexWrap="nowrap">
-                    <VStack space={2}>
-                         <ScrollView horizontal>
+                    <ScrollView horizontal>
+                         <HStack space={2}>
+                              <FormControl w={150}>
+                                   <Select
+                                        name="sortBy"
+                                        selectedValue={sort}
+                                        accessibilityLabel="Select a Sort Method"
+                                        _selectedItem={{
+                                             bg: 'tertiary.300',
+                                             endIcon: <CheckIcon size="5" />,
+                                        }}
+                                        onValueChange={(itemValue) => setSort(itemValue)}>
+                                        <Select.Item label="Sort By Title" value="title" key={0} />
+                                        <Select.Item label="Sort By Author" value="author" key={1} />
+                                        <Select.Item label="Sort By Last Used" value="checkedOut" key={2} />
+                                        <Select.Item label="Sort By Format" value="format" key={3} />
+                                   </Select>
+                              </FormControl>
                               <Button.Group size="sm" variant="solid" colorScheme="danger">
-                                   <Button mr={1}>{translate('reading_history.opt_out')}</Button>
-                                   <Button mr={1}>{translate('general.delete_all')}</Button>
+                                   <Button onPress={() => setDeleteAllIsOpen(true)}>{translate('general.delete_all')}</Button>
+                                   <Button onPress={() => setIsOpen(true)}>{translate('reading_history.opt_out')}</Button>
                               </Button.Group>
-                         </ScrollView>
-                         <ScrollView horizontal>
-                              <Button mr={1} size="sm">
-                                   Sort By Last Used
-                              </Button>
-                         </ScrollView>
-                    </VStack>
+                         </HStack>
+                    </ScrollView>
+
+                    <Center>
+                         <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                              <AlertDialog.Content>
+                                   <AlertDialog.Header>{translate('reading_history.opt_out')}</AlertDialog.Header>
+                                   <AlertDialog.Body>{translate('reading_history.opt_out_warning')}</AlertDialog.Body>
+                                   <AlertDialog.Footer>
+                                        <Button.Group space={3}>
+                                             <Button colorScheme="muted" variant="outline" onPress={onClose}>
+                                                  {translate('general.close_window')}
+                                             </Button>
+                                             <Button colorScheme="danger" onPress={optOut} ref={cancelRef}>
+                                                  {translate('general.button_ok')}
+                                             </Button>
+                                        </Button.Group>
+                                   </AlertDialog.Footer>
+                              </AlertDialog.Content>
+                         </AlertDialog>
+                    </Center>
+
+                    <Center>
+                         <AlertDialog leastDestructiveRef={deleteAllCancelRef} isOpen={deleteAllIsOpen} onClose={onCloseDeleteAll}>
+                              <AlertDialog.Content>
+                                   <AlertDialog.Header>{translate('reading_history.delete_all')}</AlertDialog.Header>
+                                   <AlertDialog.Body>{translate('reading_history.delete_all_warning')}</AlertDialog.Body>
+                                   <AlertDialog.Footer>
+                                        <Button.Group space={3}>
+                                             <Button colorScheme="muted" variant="outline" onPress={onCloseDeleteAll}>
+                                                  {translate('general.close_window')}
+                                             </Button>
+                                             <Button colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
+                                                  {translate('general.button_ok')}
+                                             </Button>
+                                        </Button.Group>
+                                   </AlertDialog.Footer>
+                              </AlertDialog.Content>
+                         </AlertDialog>
+                    </Center>
                </Box>
           );
      };
@@ -120,32 +222,17 @@ export const MyReadingHistory = () => {
           );
      };
 
-     if (isLoading) {
-          return loadingSpinner();
-     }
-
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{getDisclaimer()}</Box>
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
-                         <Button>{translate('reading_history.opt_in')}</Button>
+                         <Box mb={3}>{getDisclaimer()}</Box>
+                         <Button onPress={optIn}>{translate('reading_history.opt_in')}</Button>
                     </Box>
                ) : (
                     <>
-                         <Box
-                              safeArea={2}
-                              bgColor="coolGray.100"
-                              borderBottomWidth="1"
-                              _dark={{
-                                   borderColor: 'gray.600',
-                                   bg: 'coolGray.700',
-                              }}
-                              borderColor="coolGray.200"
-                              flexWrap="nowrap">
-                              <ScrollView horizontal>{getActionButtons()}</ScrollView>
-                         </Box>
-                         <FlatList data={readingHistory} ListEmptyComponent={Empty} ListFooterComponent={Paging} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+                         {getActionButtons()}
+                         {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
                     </>
                )}
           </SafeAreaView>
@@ -153,20 +240,94 @@ export const MyReadingHistory = () => {
 };
 
 const Item = (data) => {
+     const queryClient = useQueryClient();
+     const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const navigation = useNavigation();
-     const item = data.item;
+     const item = data.data;
+
+     const [deleting, setDelete] = React.useState(false);
+     const [isOpen, setIsOpen] = React.useState(false);
+     const toggle = () => {
+          setIsOpen(!isOpen);
+     };
 
      const openGroupedWork = (item, title) => {
-          const displayTitle = getTitle(title);
-          navigation.navigate('GroupedWork', {
+          navigateStack('AccountScreenTab', 'ItemDetails', {
                id: item,
-               title: displayTitle,
+               title: getCleanTitle(title),
                url: library.baseUrl,
                userContext: user,
                libraryContext: library,
           });
      };
 
-     return null;
+     const deleteFromHistory = async (item) => {
+          await deleteSelectedReadingHistory(item, library.baseUrl).then(async (result) => {
+               if (result) {
+                    queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+                    await refreshProfile(library.baseUrl).then((result) => {
+                         updateUser(result);
+                    });
+               }
+          });
+     };
+
+     return (
+          <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
+               <HStack space={3} maxW="75%" justifyContent="flex-start" alignItems="flex-start">
+                    <VStack>
+                         <Image
+                              source={{ uri: library.baseUrl + item.coverUrl }}
+                              borderRadius="md"
+                              size={{
+                                   base: '90px',
+                                   lg: '120px',
+                              }}
+                              alt={item.title}
+                         />
+                         <AddToList itemId={item.permanentId} btnStyle="sm" />
+                    </VStack>
+                    <VStack>
+                         {getTitle(item.title)}
+                         {getAuthor(item.author)}
+                         {getFormat(item.format)}
+                    </VStack>
+               </HStack>
+               <Actionsheet isOpen={isOpen} onClose={toggle} size="full">
+                    <Actionsheet.Content>
+                         <Box w="100%" h={60} px={4} justifyContent="center">
+                              <Text
+                                   fontSize="18"
+                                   color="gray.500"
+                                   _dark={{
+                                        color: 'gray.300',
+                                   }}>
+                                   {getTitle(item.title)}
+                              </Text>
+                         </Box>
+                         <Actionsheet.Item
+                              onPress={() => {
+                                   openGroupedWork(item.permanentId, item.title);
+                                   toggle();
+                              }}
+                              startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
+                              {translate('grouped_work.view_item_details')}
+                         </Actionsheet.Item>
+                         <Actionsheet.Item
+                              isLoading={deleting}
+                              isLoadingText={translate('general.removing')}
+                              onPress={async () => {
+                                   setDelete(true);
+                                   await deleteFromHistory(item.permanentId).then((r) => {
+                                        setDelete(false);
+                                   });
+                                   toggle();
+                              }}
+                              startIcon={<Icon as={MaterialIcons} name="delete" color="trueGray.400" mr="1" size="6" />}>
+                              {translate('reading_history.delete')}
+                         </Actionsheet.Item>
+                    </Actionsheet.Content>
+               </Actionsheet>
+          </Pressable>
+     );
 };
