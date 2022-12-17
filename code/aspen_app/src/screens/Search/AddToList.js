@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { CloseIcon, VStack, Box, Button, Center, FormControl, HStack, Icon, Input, Radio, Select, Stack, Text, TextArea, Pressable } from 'native-base';
 import React, { useState } from 'react';
 import Modal from 'react-native-modal';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { translate } from '../../translations/translations';
 import { PATRON } from '../../util/loadPatron';
@@ -24,6 +25,7 @@ export const AddToList = (props) => {
      const [description, saveDescription] = useState();
      const [title, saveTitle] = useState();
      const [isPublic, saveIsPublic] = useState();
+     const queryClient = useQueryClient();
 
      const toggleModal = () => {
           setOpen(!open);
@@ -33,6 +35,7 @@ export const AddToList = (props) => {
      };
 
      const updateLastListUsed = async (id) => {
+          queryClient.invalidateQueries({ queryKey: ['myList', id] });
           getLists(library.baseUrl).then((result) => {
                console.log('updated patron.lists');
                PATRON.lists = result;

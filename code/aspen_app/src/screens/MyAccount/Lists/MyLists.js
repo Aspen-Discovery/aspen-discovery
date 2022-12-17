@@ -1,24 +1,18 @@
-import { CommonActions } from '@react-navigation/native';
 import moment from 'moment';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Badge, Box, Center, FlatList, HStack, Image, Pressable, Text, VStack } from 'native-base';
-import React, { Component } from 'react';
+import React from 'react';
 import { SafeAreaView } from 'react-native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { userContext } from '../../../context/user';
 import { translate } from '../../../translations/translations';
-import { getCheckedOutItems, getHolds, getILSMessages, PATRON } from '../../../util/loadPatron';
 import CreateList from './CreateList';
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getLists } from '../../../util/api/list';
-import { getPickupLocations } from '../../../util/loadLibrary';
 import { navigateStack } from '../../../helpers/RootNavigator';
-import { getCleanTitle } from '../../../helpers/item';
 
 export const MyLists = () => {
-     const navigation = useNavigation();
      const { library } = React.useContext(LibrarySystemContext);
      const { lists, updateLists } = React.useContext(UserContext);
      const [loading, setLoading] = React.useState(true);
@@ -43,7 +37,7 @@ export const MyLists = () => {
           navigateStack('AccountScreenTab', 'MyList', {
                id: item.id,
                details: item,
-               title: title,
+               title: item.title,
                libraryUrl: library.baseUrl,
           });
      };
