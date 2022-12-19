@@ -238,6 +238,22 @@ class VdxForm extends DataObject {
 			'required' => false,
 			'default' => ($marcRecordDriver != null ? $marcRecordDriver->getCleanISBN() : ''),
 		];
+		/** @var File_MARC_Control_Field $oclcNumber */
+		$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
+		if ($oclcNumber != null) {
+			$oclcNumberString = StringUtils::truncate($oclcNumber->getData(), 50);
+		}else{
+			$oclcNumberString = '';
+		}
+		$fields['oclcNumber'] = [
+			'property' => 'oclcNumber',
+			'type' => 'hidden',
+			'label' => 'OCLC Number',
+			'description' => 'The OCLC Number',
+			'maxLength' => 50,
+			'required' => false,
+			'default' => $oclcNumberString,
+		];
 		if ($this->showAcceptFee) {
 			$fields['feeInformationText'] = [
 				'property' => 'feeInformationText',

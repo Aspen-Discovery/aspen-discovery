@@ -134,20 +134,19 @@ export const LibrarySystemProvider = ({children}) => {
     const [version, setVersion] = useState();
     const [url, setUrl] = useState();
 
-    const updateLibrary = (data) => {
-        if (!_.isUndefined(data.discoveryVersion)) {
-            const discovery = formatDiscoveryVersion(data.discoveryVersion);
-            setVersion(discovery);
-            console.log('updated version in LibrarySystemContext');
-        }
+     const updateLibrary = (data) => {
+         if(!_.isUndefined(data.discoveryVersion)) {
+             const discovery = formatDiscoveryVersion(data.discoveryVersion);
+             setVersion(discovery);
+             console.log('updated version in LibrarySystemContext');
+         }
 
-        if (!_.isUndefined(data.baseUrl)) {
-            setUrl(data.baseUrl);
-            console.log('updated url in LibrarySystemContext');
-        }
-
-        setLibrary(data);
-        console.log('updated LibrarySystemContext');
+         if(!_.isUndefined(data.baseUrl)) {
+             setUrl(data.baseUrl);
+             console.log('updated url in LibrarySystemContext');
+         }
+          setLibrary(data);
+          console.log('updated LibrarySystemContext');
     };
 
     const resetLibrary = () => {

@@ -111,9 +111,9 @@ export const DrawerContent = () => {
      const displayILSMessages = () => {
           if (messages) {
                if (_.isArray(messages)) {
-                    return messages.map((obj) => {
+                    return messages.map((obj, index) => {
                          if (obj.message) {
-                              return showILSMessage(obj.messageStyle, obj.message);
+                              return showILSMessage(obj.messageStyle, obj.message, index);
                          }
                     });
                }
