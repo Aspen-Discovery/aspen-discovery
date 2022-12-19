@@ -54,7 +54,7 @@ class Development_Tasks extends ObjectEditor {
 	}
 
 	function canDelete() {
-		return false;
+		return true;
 	}
 
 	function getAdditionalObjectActions($existingObject): array {
@@ -89,6 +89,7 @@ class Development_Tasks extends ObjectEditor {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 
+	/** @noinspection PhpUnused */
 	function createTaskFromTicket() {
 		global $interface;
 		$interface->assign('instructions', $this->getInstructions());
@@ -129,6 +130,14 @@ class Development_Tasks extends ObjectEditor {
 
 			//Link to the appropriate components
 			require_once ROOT_DIR . '/sys/Development/ComponentTaskLink.php';
+			$components = $ticket->getRelatedComponents();
+			$relatedComponents = [];
+			foreach ($components as $component) {
+				$componentTaskLink = new ComponentTaskLink();
+				$componentTaskLink->componentId = $component->componentId;
+				$relatedComponents[] = $componentTaskLink;
+			}
+			$newTask->setRelatedComponents($relatedComponents);
 
 
 			$interface->assign('object', $newTask);

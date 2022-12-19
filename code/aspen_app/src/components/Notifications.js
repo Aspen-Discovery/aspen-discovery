@@ -180,8 +180,11 @@ export async function getNotificationPreferences(libraryUrl, pushToken) {
      });
      const response = await api.post('/UserAPI?method=getNotificationPreferences', postBody);
      if (response.ok) {
-          //console.log(response);
-          await createChannelsAndCategories();
+          try {
+               await createChannelsAndCategories();
+          } catch (e) {
+               console.log(e);
+          }
           return response.data.result;
      } else {
           const problem = problemCodeMap(response.problem);
@@ -291,20 +294,23 @@ async function createChannelsAndCategories() {
 }
 
 /** status/colorScheme options: success, error, info, warning **/
-export function showILSMessage(type, message) {
-     const formattedMessage = stripHTML(message);
-     return (
-          <Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2}>
-               <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
-                    <HStack flexShrink={1} space={2} alignItems="center">
-                         <Alert.Icon />
-                         <Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">
-                              {formattedMessage}
-                         </Text>
-                    </HStack>
-               </HStack>
-          </Alert>
-     );
+export function showILSMessage(type, message, index = 0) {
+	const formattedMessage = stripHTML(message);
+	return (
+		<Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2} key={index}>
+			<HStack
+				flexShrink={1}
+				space={2}
+				alignItems="center"
+				justifyContent="space-between"
+			>
+				<HStack flexShrink={1} space={2} alignItems="center">
+					<Alert.Icon/>
+					<Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">{formattedMessage}</Text>
+				</HStack>
+			</HStack>
+		</Alert>
+	);
 }
 
 /** status/colorScheme options: success, error, info, warning **/

@@ -47,7 +47,8 @@
     "save": "Save",
     "saving": "Saving...",
     "edit": "Edit",
-    "adding": "Adding..."
+    "adding": "Adding...",
+    "removing": "Removing..."
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -245,11 +246,17 @@
   },
   "reading_history": {
     "title": "Reading History",
+    "privacy_notice": "Privacy Notice",
     "disclaimer": "The library takes seriously the privacy of your library records. Therefore, we do not keep track of what you borrow after you return it. However, our automated system has a feature called \"My Reading History\" that allows you to track items you check out. Participation in the feature is entirely voluntary. You may start or stop using it, as well as delete any or all entries in \"My Reading History\" at any time. If you choose to start recording \"My Reading History,\" you agree to allow our automated system to store this data. The library staff does not have access to your \"My Reading History\", however, it is subject to all applicable local, state, and federal laws, and under those laws, could be examined by law enforcement authorities without your permission. If this is of concern to you, you should not use the \"My Reading History\" feature.",
     "opt_in": "Start Recording My Reading History",
     "opt_out": "Stop Recording My Reading History",
     "opt_out_warning": "Opting out of reading history will also delete your entire reading history irreversibly.",
-    "empty": "You do not have any items in your reading list."
+    "delete_all": "Delete All Reading History",
+    "delete_all_warning": "Your entire reading history will be irreversibly deleted.",
+    "delete_item": "This item will be irreversibly deleted from your reading history.",
+    "delete": "Delete Item From Reading History",
+    "empty": "You do not have any items in your reading list.",
+    "sort_by": "Sort By {{sort}}"
   },
   "error": {
     "title": "Error",

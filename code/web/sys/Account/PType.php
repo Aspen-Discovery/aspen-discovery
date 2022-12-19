@@ -12,6 +12,7 @@ class PType extends DataObject {
 	public $restrictMasquerade;
 	public $isStaff;
 	public $twoFactorAuthSettingId;
+	public $vdxClientCategory;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -96,6 +97,16 @@ class PType extends DataObject {
 				'label' => 'Two-factor authentication setting',
 				'description' => 'The unique id of the two-factor authentication setting tied to this patron type',
 				'default' => -1,
+			],
+			'vdxClientCategory' => [
+				'property' => 'vdxClientCategory',
+				'type' => 'text',
+				'values' => $twoFactorAuthSettings,
+				'label' => 'VDX Client Category',
+				'description' => 'The client category to be used when sending requests to VDX',
+				'maxLength' => 10,
+				'default' => '',
+				'hideInLists' => true,
 			],
 		];
 		if (!UserAccount::userHasPermission('Administer Permissions')) {

@@ -291,6 +291,9 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 			'uploaded_images' => [
 				'name' => 'Uploaded Images',
 			],
+			'side_load_marc_records' => [
+				'name' => 'Sideload Files',
+			],
 		];
 
 		if (isset($_REQUEST['submit'])) {
@@ -351,6 +354,8 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 						if (in_array($element, $_REQUEST['dataElement'])) {
 							if ($element == 'uploaded_images') {
 								$message = $this->exportImages($message);
+							} else if ($element == 'side_load_marc_records') {
+								$message = $this->exportSideLoadMarcRecords($message);
 							} else {
 								require_once $elementDefinition['classFile'];
 								$message = $this->exportObjects($elementDefinition['className'], $elementDefinition['name'], $exportPath . $element . '.json', $selectedFilters, $message);
@@ -445,7 +450,39 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 		return $message;
 	}
 
-	private function exportImages($message) {
+	private function exportSideLoadMarcRecords($message) : string {
+		global $configArray;
+		global $serverName;
+		$sideLoads = new SideLoad();
+		$sideLoads->find();
+		while ($sideLoads->fetch()) {
+			if (!empty($sideLoads->marcPath)) {
+				$sideLoadName = preg_replace('~[\W]~', '_', trim($sideLoads->name));
+				if (strlen($message) > 0) {
+					$message .= '<br/>';
+				}
+				$message .= "Exporting Side Load $sideLoads->name to sideload_$sideLoadName.tar.gz";
+				if ($configArray['System']['operatingSystem'] == 'windows') {
+					$output = [];
+					exec("cd $sideLoads->marcPath; tar -czf c:/data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz $sideLoads->marcPath/*", $output);
+				} else {
+					$output = [];
+					exec("cd $sideLoads->marcPath; tar -czf /data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz *", $output);
+					$message .= "<br/><pre>cd $sideLoads->marcPath; tar -czf /data/aspen-discovery/$serverName/export/sideload_$sideLoadName.tar.gz *</pre>";
+					$message .= "<br/>Output" . implode("<br/>", $output);
+				}
+
+			}
+		}
+		if (strlen($message) > 0) {
+			$message .= '<br/>';
+		}
+		$message .= "Exported Side Load MARC records";
+
+		return $message;
+	}
+
+	private function exportImages($message) : string {
 		global $configArray;
 		global $serverName;
 		//files directory
@@ -476,7 +513,6 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 			$message .= '<br/>';
 		}
 		$message .= "Exported Uploaded Files";
-
 
 		return $message;
 	}

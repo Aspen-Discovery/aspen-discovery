@@ -44,7 +44,14 @@ export const SearchResults = () => {
                     label = translate('filters.result', { num: num });
                }
                return (
-                    <Box bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200">
+                    <Box
+                         bgColor="coolGray.100"
+                         borderBottomWidth="1"
+                         _dark={{
+                              borderColor: 'gray.600',
+                              bg: 'coolGray.700',
+                         }}
+                         borderColor="coolGray.200">
                          <Container m={2}>
                               <Text>{label}</Text>
                          </Container>
@@ -57,7 +64,17 @@ export const SearchResults = () => {
 
      const Paging = () => {
           return (
-               <Box safeArea={2} bgColor="coolGray.100" borderTopWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap" alignItems="center">
+               <Box
+                    safeArea={2}
+                    bgColor="coolGray.100"
+                    borderTopWidth="1"
+                    _dark={{
+                         borderColor: 'gray.600',
+                         bg: 'coolGray.700',
+                    }}
+                    borderColor="coolGray.200"
+                    flexWrap="nowrap"
+                    alignItems="center">
                     <ScrollView horizontal>
                          <Button.Group size="sm">
                               <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
@@ -108,7 +125,7 @@ const DisplayResult = (data) => {
 
      const handlePressItem = () => {
           navigateStack('SearchTab', 'ResultItem', {
-               d: item.key,
+               id: item.key,
                title: getCleanTitle(item.title),
                url: library.baseUrl,
                libraryContext: library,
@@ -188,7 +205,16 @@ const FilterBar = () => {
 
      if (version >= '22.11.00') {
           return (
-               <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap">
+               <Box
+                    safeArea={2}
+                    bgColor="coolGray.100"
+                    borderBottomWidth="1"
+                    _dark={{
+                         borderColor: 'gray.600',
+                         bg: 'coolGray.700',
+                    }}
+                    borderColor="coolGray.200"
+                    flexWrap="nowrap">
                     <ScrollView horizontal>
                          <Button
                               size="sm"

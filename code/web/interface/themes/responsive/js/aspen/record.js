@@ -69,6 +69,7 @@ AspenDiscovery.Record = (function(){
 					author: $('#author').val(),
 					publisher: $('#publisher').val(),
 					isbn: $('#isbn').val(),
+					oclcNumber: $('#oclcNumber').val(),
 					maximumFeeAmount: $('#maximumFeeAmount').val(),
 					acceptFee: $('#acceptFee').prop('checked'),
 					pickupLocation: $('#pickupLocationSelect').val(),

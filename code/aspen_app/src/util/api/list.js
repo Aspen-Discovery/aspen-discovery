@@ -196,21 +196,53 @@ export async function addTitlesToList(id, itemId, url) {
      }
 }
 
-export async function getListTitles(id, url) {
+export async function getListTitles(id, url, page, pageSize = 25, numTitles = 25, sort = 'dateAdded') {
+     let morePages = false;
+     let totalResults = 0;
+     let curPage = page;
+     let totalPages = 0;
+     let titles = [];
+     let message = null;
+
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
-          params: { id: id },
+          params: {
+               id: id,
+               page: page,
+               pageSize: pageSize,
+               numTitles: numTitles,
+               sort_by: sort,
+          },
      });
      const response = await api.post('/ListAPI?method=getListTitles', postBody);
      if (response.ok) {
-          return response.data.result.titles;
+          const data = response.data;
+          morePages = true;
+          if (data.result?.page_current === data.result?.page_total) {
+               morePages = false;
+          }
+          titles = data.result?.titles ?? [];
+          totalResults = data.result?.totalResults ?? 0;
+          curPage = data.result?.page_current ?? 0;
+          totalPages = data.result?.page_total ?? 0;
+          message = data.result?.message ?? null;
      } else {
           console.log(response);
      }
+
+     return {
+          listTitles: titles,
+          totalResults: totalResults,
+          curPage: curPage,
+          totalPages: totalPages,
+          hasMore: morePages,
+          sort: sort,
+          message: message,
+     };
 }
 
 export async function removeTitlesFromList(listId, title, url) {

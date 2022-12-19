@@ -111,9 +111,9 @@ export const DrawerContent = () => {
      const displayILSMessages = () => {
           if (messages) {
                if (_.isArray(messages)) {
-                    return messages.map((obj) => {
+                    return messages.map((obj, index) => {
                          if (obj.message) {
-                              return showILSMessage(obj.messageStyle, obj.message);
+                              return showILSMessage(obj.messageStyle, obj.message, index);
                          }
                     });
                }
@@ -251,7 +251,10 @@ const Holds = () => {
                py="3"
                rounded="md"
                onPress={() => {
-                    navigateStack('AccountScreenTab', 'MyHolds', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('AccountScreenTab', 'MyHolds', {
+                         libraryUrl: library.baseUrl,
+                         hasPendingChanges: false,
+                    });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -307,7 +310,10 @@ const UserLists = () => {
                py="3"
                rounded="md"
                onPress={() => {
-                    navigateStack('MyListsStack', 'MyLists', { libraryUrl: library.baseUrl, hasPendingChanges: false });
+                    navigateStack('MyListsStack', 'MyLists', {
+                         libraryUrl: library.baseUrl,
+                         hasPendingChanges: false,
+                    });
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
@@ -381,7 +387,7 @@ const ReadingHistory = () => {
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">
                               <Text fontWeight="500">
-                                   {translate('reading_history.title')} <Text bold>(500)</Text>
+                                   {translate('reading_history.title')} <Text bold>({user.numReadingHistory ?? 0})</Text>
                               </Text>
                          </VStack>
                     </HStack>
@@ -550,420 +556,420 @@ const LanguageSwitcher = (props) => {
 };
 
 /*
-export class DrawerContentOld extends Component {
-     constructor(props, context) {
-          super(props, context);
-          this.state = {
-               isLoading: true,
-               displayLanguage: '',
-               user: this.context.user,
-               location: this.props.locationContext ?? [],
-               library: this.props.libraryContext ?? [],
-               messages: [],
-               languages: [],
-               languageDisplayLabel: 'English',
-               asyncLoaded: false,
-               notification: {},
-               fines: this.context.user.fines ?? 0,
-               language: 'en',
-               num: {
-                    checkedOut: this.context.user.numCheckedOut ?? 0,
-                    holds: this.context.user.numHolds ?? 0,
-                    lists: this.context.user.numLists ?? 0,
-                    overdue: this.context.user.numOverdue ?? 0,
-                    ready: this.context.user.numHoldsAvailable ?? 0,
-                    savedSearches: this.context.user.numSavedSearches ?? 0,
-                    updatedSearches: this.context.user.numSavedSearchesNew ?? 0,
-                    linkedAccounts: this.context.user.numLinkedAccounts ?? 0,
-               },
-          };
-          this._isMounted = false;
-     }
+ export class DrawerContentOld extends Component {
+ constructor(props, context) {
+ super(props, context);
+ this.state = {
+ isLoading: true,
+ displayLanguage: '',
+ user: this.context.user,
+ location: this.props.locationContext ?? [],
+ library: this.props.libraryContext ?? [],
+ messages: [],
+ languages: [],
+ languageDisplayLabel: 'English',
+ asyncLoaded: false,
+ notification: {},
+ fines: this.context.user.fines ?? 0,
+ language: 'en',
+ num: {
+ checkedOut: this.context.user.numCheckedOut ?? 0,
+ holds: this.context.user.numHolds ?? 0,
+ lists: this.context.user.numLists ?? 0,
+ overdue: this.context.user.numOverdue ?? 0,
+ ready: this.context.user.numHoldsAvailable ?? 0,
+ savedSearches: this.context.user.numSavedSearches ?? 0,
+ updatedSearches: this.context.user.numSavedSearchesNew ?? 0,
+ linkedAccounts: this.context.user.numLinkedAccounts ?? 0,
+ },
+ };
+ this._isMounted = false;
+ }
 
-     componentDidMount = async () => {
-          this._isMounted = true;
-          const languageDisplay = getLanguageDisplayName(PATRON.language);
+ componentDidMount = async () => {
+ this._isMounted = true;
+ const languageDisplay = getLanguageDisplayName(PATRON.language);
 
-          if (this._isMounted) {
-               this._getLastListUsed();
-          }
+ if (this._isMounted) {
+ this._getLastListUsed();
+ }
 
-          if (this.state.library) {
-               libraryUrl = this.state.library.baseUrl;
-          }
+ if (this.state.library) {
+ libraryUrl = this.state.library.baseUrl;
+ }
 
-          this.setState({
-               isLoading: false,
-               messages: PATRON.messages,
-               languageDisplayLabel: languageDisplay,
-          });
+ this.setState({
+ isLoading: false,
+ messages: PATRON.messages,
+ languageDisplayLabel: languageDisplay,
+ });
 
-          Notifications.addNotificationReceivedListener(this._handleNotification);
-          Notifications.addNotificationResponseReceivedListener(this._handleNotificationResponse);
+ Notifications.addNotificationReceivedListener(this._handleNotification);
+ Notifications.addNotificationResponseReceivedListener(this._handleNotificationResponse);
 
-          this.interval = setInterval(() => {
-               if (this._isMounted) {
-                    this.loadProfile();
-                    //this.loadLanguages();
-               }
-          }, GLOBALS.timeoutSlow);
+ this.interval = setInterval(() => {
+ if (this._isMounted) {
+ this.loadProfile();
+ //this.loadLanguages();
+ }
+ }, GLOBALS.timeoutSlow);
 
-          return () => {
-               clearInterval(this.interval);
-          };
-     };
+ return () => {
+ clearInterval(this.interval);
+ };
+ };
 
-     _handleNotification = (notification) => {
-          this.setState({notification});
-     };
+ _handleNotification = (notification) => {
+ this.setState({notification});
+ };
 
-     _handleNotificationResponse = async (response) => {
-          await this._addStoredNotification(response);
-          let url = decodeURIComponent(response.notification.request.content.data.url).replace(/\+/g, ' ');
-          url = url.concat('&results=[]');
-          url = url.replace('aspen-lida://', prefix);
+ _handleNotificationResponse = async (response) => {
+ await this._addStoredNotification(response);
+ let url = decodeURIComponent(response.notification.request.content.data.url).replace(/\+/g, ' ');
+ url = url.concat('&results=[]');
+ url = url.replace('aspen-lida://', prefix);
 
-          const supported = await Linking.canOpenURL(url);
-          if (supported) {
-               try {
-                    console.log('Opening url...');
-                    await Linking.openURL(url);
-               } catch (e) {
-                    console.log('Could not open url');
-                    console.log(e);
-               }
-          } else {
-               console.log('Could not open url');
-          }
-     };
+ const supported = await Linking.canOpenURL(url);
+ if (supported) {
+ try {
+ console.log('Opening url...');
+ await Linking.openURL(url);
+ } catch (e) {
+ console.log('Could not open url');
+ console.log(e);
+ }
+ } else {
+ console.log('Could not open url');
+ }
+ };
 
-     _getStoredNotifications = async () => {
-          try {
-               const notifications = await AsyncStorage.getItem('@notifications');
-               return notifications != null ? JSON.parse(notifications) : null;
-          } catch (e) {
-               console.log(e);
-          }
-     };
+ _getStoredNotifications = async () => {
+ try {
+ const notifications = await AsyncStorage.getItem('@notifications');
+ return notifications != null ? JSON.parse(notifications) : null;
+ } catch (e) {
+ console.log(e);
+ }
+ };
 
-     _createNotificationStorage = async (message) => {
-          try {
-               const array = [];
-               array.push(message);
-               const notification = JSON.stringify(array);
-               await AsyncStorage.setItem('@notifications', notification);
-          } catch (e) {
-               console.log(e);
-          }
-     };
+ _createNotificationStorage = async (message) => {
+ try {
+ const array = [];
+ array.push(message);
+ const notification = JSON.stringify(array);
+ await AsyncStorage.setItem('@notifications', notification);
+ } catch (e) {
+ console.log(e);
+ }
+ };
 
-     _addStoredNotification = async (message) => {
-          const storage = await this._getStoredNotifications().then(async (response) => {
-               if (response) {
-                    response.push(message);
-                    try {
-                         await AsyncStorage.setItem('@notifications', JSON.stringify(response));
-                    } catch (e) {
-                         console.log(e);
-                    }
-               } else {
-                    await this._createNotificationStorage(message);
-               }
-          });
-     };
+ _addStoredNotification = async (message) => {
+ const storage = await this._getStoredNotifications().then(async (response) => {
+ if (response) {
+ response.push(message);
+ try {
+ await AsyncStorage.setItem('@notifications', JSON.stringify(response));
+ } catch (e) {
+ console.log(e);
+ }
+ } else {
+ await this._createNotificationStorage(message);
+ }
+ });
+ };
 
-     _getLastListUsed = () => {
-          if (this.context.user) {
-               PATRON.listLastUsed = this.context.user.lastListUsed;
-          }
-     };
+ _getLastListUsed = () => {
+ if (this.context.user) {
+ PATRON.listLastUsed = this.context.user.lastListUsed;
+ }
+ };
 
-     componentWillUnmount() {
-          this._isMounted = false;
-          clearInterval(this.interval);
-     }
+ componentWillUnmount() {
+ this._isMounted = false;
+ clearInterval(this.interval);
+ }
 
-     componentDidUpdate(prevProps, prevState) {
-          if (prevState.messages !== PATRON.messages) {
-               this.setState({
-                    messages: PATRON.messages,
-               });
-          }
+ componentDidUpdate(prevProps, prevState) {
+ if (prevState.messages !== PATRON.messages) {
+ this.setState({
+ messages: PATRON.messages,
+ });
+ }
 
-          if (prevState.language !== PATRON.language) {
-               this.setState({
-                    language: PATRON.language,
-               });
-          }
-     }
+ if (prevState.language !== PATRON.language) {
+ this.setState({
+ language: PATRON.language,
+ });
+ }
+ }
 
-     handleNavigation = (stack, screen) => {
-          this.props.navigation.navigate(stack, {
-               screen,
-               params: {
-                    libraryUrl: libraryUrl,
-                    hasPendingChanges: false,
-               },
-          });
-     };
+ handleNavigation = (stack, screen) => {
+ this.props.navigation.navigate(stack, {
+ screen,
+ params: {
+ libraryUrl: libraryUrl,
+ hasPendingChanges: false,
+ },
+ });
+ };
 
-     loadProfile = async () => {
-          await refreshProfile(libraryUrl).then((response) => {
-               this.context.user = response;
-               this.setState({
-                    user: response,
-               });
-          });
-     };
+ loadProfile = async () => {
+ await refreshProfile(libraryUrl).then((response) => {
+ this.context.user = response;
+ this.setState({
+ user: response,
+ });
+ });
+ };
 
-     displayFinesMessage = () => {
-          if (!_.includes(this.state.fines, '0.00')) {
-               const message = 'Your accounts have ' + this.state.fines + ' in fines.';
-               return showILSMessage('warning', message);
-          }
-     };
+ displayFinesMessage = () => {
+ if (!_.includes(this.state.fines, '0.00')) {
+ const message = 'Your accounts have ' + this.state.fines + ' in fines.';
+ return showILSMessage('warning', message);
+ }
+ };
 
-     displayILSMessages = (messages) => {
-          if (_.isArray(messages) === true) {
-               return messages.map((item) => {
-                    if (item.message) {
-                         return showILSMessage(item.messageStyle, item.message);
-                    }
-               });
-          } else {
-               return null;
-          }
-     };
+ displayILSMessages = (messages) => {
+ if (_.isArray(messages) === true) {
+ return messages.map((item) => {
+ if (item.message) {
+ return showILSMessage(item.messageStyle, item.message);
+ }
+ });
+ } else {
+ return null;
+ }
+ };
 
-     handleRefreshProfile = async (libraryUrl) => {
-          await reloadProfile(libraryUrl).then((response) => {
-               this.context.user = response;
-          });
-          await getILSMessages(libraryUrl).then((response) => {
-               this.setState({
-                    messages: response,
-               });
-          });
-     };
+ handleRefreshProfile = async (libraryUrl) => {
+ await reloadProfile(libraryUrl).then((response) => {
+ this.context.user = response;
+ });
+ await getILSMessages(libraryUrl).then((response) => {
+ this.setState({
+ messages: response,
+ });
+ });
+ };
 
-     render() {
-          const { messages, fines } = this.state;
-          const { checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches, linkedAccounts } = this.state.num;
-          const user = this.context.user;
+ render() {
+ const { messages, fines } = this.state;
+ const { checkedOut, holds, overdue, ready, lists, savedSearches, updatedSearches, linkedAccounts } = this.state.num;
+ const user = this.context.user;
 
-          let library = JSON.parse(this.props.libraryContext);
-          library = library.library;
-          let discoveryVersion = LIBRARY.version;
-          let icon;
-          if (typeof library !== 'undefined') {
-               if (library.logoApp) {
-                    icon = library.logoApp;
-               } else if (library.favicon) {
-                    icon = library.favicon;
-               } else {
-                    icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Contants.manifest.ios.icon;
-               }
-          }
+ let library = JSON.parse(this.props.libraryContext);
+ library = library.library;
+ let discoveryVersion = LIBRARY.version;
+ let icon;
+ if (typeof library !== 'undefined') {
+ if (library.logoApp) {
+ icon = library.logoApp;
+ } else if (library.favicon) {
+ icon = library.favicon;
+ } else {
+ icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Contants.manifest.ios.icon;
+ }
+ }
 
-          return (
-              <DrawerContentScrollView>
-                   <VStack space="4" my="2" mx="1">
-                        <Box px="4">
-                             <HStack space={3} alignItems="center">
-                                  <Image source={{uri: icon}} fallbackSource={require('../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} rounded="8"/>
-                                  <Box>
-                                       {user && user.displayName ? (
-                                           <Text bold fontSize="14">
-                                                {user.displayName}
-                                           </Text>
-                                       ) : null}
+ return (
+ <DrawerContentScrollView>
+ <VStack space="4" my="2" mx="1">
+ <Box px="4">
+ <HStack space={3} alignItems="center">
+ <Image source={{uri: icon}} fallbackSource={require('../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} rounded="8"/>
+ <Box>
+ {user && user.displayName ? (
+ <Text bold fontSize="14">
+ {user.displayName}
+ </Text>
+ ) : null}
 
-                                       {library && library.displayName ? (
-                                           <Text fontSize="12" fontWeight="500">
-                                                {library.displayName}
-                                           </Text>
-                                       ) : null}
-                                       <HStack space={1} alignItems="center">
-                                            <Icon as={MaterialIcons} name="credit-card" size="xs"/>
-                                            {user ? (
-                                                <Text fontSize="12" fontWeight="500">
-                                                     {user.cat_username}
-                                                </Text>
-                                            ) : null}
-                                       </HStack>
-                                  </Box>
-                             </HStack>
-                        </Box>
+ {library && library.displayName ? (
+ <Text fontSize="12" fontWeight="500">
+ {library.displayName}
+ </Text>
+ ) : null}
+ <HStack space={1} alignItems="center">
+ <Icon as={MaterialIcons} name="credit-card" size="xs"/>
+ {user ? (
+ <Text fontSize="12" fontWeight="500">
+ {user.cat_username}
+ </Text>
+ ) : null}
+ </HStack>
+ </Box>
+ </HStack>
+ </Box>
 
-                        {fines ? this.displayFinesMessage() : null}
-                        {messages ? this.displayILSMessages(messages) : null}
+ {fines ? this.displayFinesMessage() : null}
+ {messages ? this.displayILSMessages(messages) : null}
 
-                        <Divider/>
+ <Divider/>
 
-                        <VStack divider={<Divider/>} space="4">
-                             <VStack>
-                                  <Pressable
-                                      px="2"
-                                      py="2"
-                                      rounded="md"
-                                      onPress={() => {
-                                           this.handleNavigation('AccountScreenTab', 'CheckedOut', libraryUrl);
-                                      }}>
-                                       <HStack space="1" alignItems="center">
-                                            <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                            <VStack w="100%">
-                                                 <Text fontWeight="500">
-                                                      {translate('checkouts.title')} {user ? <Text bold>({checkedOut})</Text> : null}
-                                                 </Text>
-                                            </VStack>
-                                       </HStack>
-                                       {overdue > 0 ? (
-                                           <Container>
-                                                <Badge colorScheme="error" ml={10} rounded="4px" _text={{fontSize: 'xs'}}>
-                                                     {translate('checkouts.overdue_summary', {
-                                                          count: overdue,
-                                                     })}
-                                                </Badge>
-                                           </Container>
-                                       ) : null}
-                                  </Pressable>
+ <VStack divider={<Divider/>} space="4">
+ <VStack>
+ <Pressable
+ px="2"
+ py="2"
+ rounded="md"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'CheckedOut', libraryUrl);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7"/>
+ <VStack w="100%">
+ <Text fontWeight="500">
+ {translate('checkouts.title')} {user ? <Text bold>({checkedOut})</Text> : null}
+ </Text>
+ </VStack>
+ </HStack>
+ {overdue > 0 ? (
+ <Container>
+ <Badge colorScheme="error" ml={10} rounded="4px" _text={{fontSize: 'xs'}}>
+ {translate('checkouts.overdue_summary', {
+ count: overdue,
+ })}
+ </Badge>
+ </Container>
+ ) : null}
+ </Pressable>
 
-                                  <Pressable
-                                      px="2"
-                                      py="3"
-                                      rounded="md"
-                                      onPress={() => {
-                                           this.handleNavigation('AccountScreenTab', 'Holds', LIBRARY.url);
-                                      }}>
-                                       <HStack space="1" alignItems="center">
-                                            <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                            <VStack w="100%">
-                                                 <Text fontWeight="500">
-                                                      {translate('holds.title')} {user ? <Text bold>({holds})</Text> : null}
-                                                 </Text>
-                                            </VStack>
-                                       </HStack>
-                                       {ready > 0 ? (
-                                           <Container>
-                                                <Badge colorScheme="success" ml={10} rounded="4px" _text={{fontSize: 'xs'}}>
-                                                     {translate('holds.ready_for_pickup', {count: ready})}
-                                                </Badge>
-                                           </Container>
-                                       ) : null}
-                                  </Pressable>
+ <Pressable
+ px="2"
+ py="3"
+ rounded="md"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'Holds', LIBRARY.url);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7"/>
+ <VStack w="100%">
+ <Text fontWeight="500">
+ {translate('holds.title')} {user ? <Text bold>({holds})</Text> : null}
+ </Text>
+ </VStack>
+ </HStack>
+ {ready > 0 ? (
+ <Container>
+ <Badge colorScheme="success" ml={10} rounded="4px" _text={{fontSize: 'xs'}}>
+ {translate('holds.ready_for_pickup', {count: ready})}
+ </Badge>
+ </Container>
+ ) : null}
+ </Pressable>
 
-                                  {discoveryVersion >= '22.08.00' ? (
-                                      <Pressable
-                                          px="2"
-                                          py="3"
-                                          rounded="md"
-                                          onPress={() => {
-                                               this.handleNavigation('AccountScreenTab', 'Lists', LIBRARY.url);
-                                          }}>
-                                           <HStack space="1" alignItems="center">
-                                                <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                                <VStack w="100%">
-                                                     <Text fontWeight="500">
-                                                          {translate('user_profile.my_lists')} {user ? <Text bold>({lists})</Text> : null}
-                                                     </Text>
-                                                </VStack>
-                                           </HStack>
-                                      </Pressable>
-                                  ) : (
-                                      <Pressable
-                                          px="2"
-                                          py="3"
-                                          rounded="md"
-                                          onPress={() => {
-                                               this.handleNavigation('AccountScreenTab', 'Lists', LIBRARY.url);
-                                          }}>
-                                           <HStack space="1" alignItems="center">
-                                                <Icon as={MaterialIcons} name="chevron-right" size="7"/>
-                                                <VStack w="100%">
-                                                     <Text fontWeight="500">{translate('user_profile.my_lists')}</Text>
-                                                </VStack>
-                                           </HStack>
-                                      </Pressable>
-                                  )}
+ {discoveryVersion >= '22.08.00' ? (
+ <Pressable
+ px="2"
+ py="3"
+ rounded="md"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'Lists', LIBRARY.url);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7"/>
+ <VStack w="100%">
+ <Text fontWeight="500">
+ {translate('user_profile.my_lists')} {user ? <Text bold>({lists})</Text> : null}
+ </Text>
+ </VStack>
+ </HStack>
+ </Pressable>
+ ) : (
+ <Pressable
+ px="2"
+ py="3"
+ rounded="md"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'Lists', LIBRARY.url);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7"/>
+ <VStack w="100%">
+ <Text fontWeight="500">{translate('user_profile.my_lists')}</Text>
+ </VStack>
+ </HStack>
+ </Pressable>
+ )}
 
-                                   {discoveryVersion >= '22.08.00' ? (
-                                        <Pressable
-                                             px="2"
-                                             py="3"
-                                             rounded="md"
-                                             onPress={() => {
-                                                  this.handleNavigation('AccountScreenTab', 'SavedSearches', LIBRARY.url);
-                                             }}>
-                                             <HStack space="1" alignItems="center">
-                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                                                  <VStack w="100%">
-                                                       <Text fontWeight="500">
-                                                            {translate('user_profile.saved_searches')} {user ? <Text bold>({savedSearches})</Text> : null}
-                                                       </Text>
-                                                  </VStack>
-                                             </HStack>
-                                             {updatedSearches > 0 ? (
-                                                  <Container>
-                                                       <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
-                                                            {translate('user_profile.saved_searches_updated', {
-                                                                 count: updatedSearches,
-                                                            })}
-                                                       </Badge>
-                                                  </Container>
-                                             ) : null}
-                                        </Pressable>
-                                   ) : null}
-                              </VStack>
-                              <VStack space="3">
-                                   <VStack>
-                                        <Pressable
-                                             px="2"
-                                             py="3"
-                                             onPress={() => {
-                                                  this.handleNavigation('AccountScreenTab', 'ProfileScreen', LIBRARY.url);
-                                             }}>
-                                             <HStack space="1" alignItems="center">
-                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                                                  <Text fontWeight="500">{translate('user_profile.profile')}</Text>
-                                             </HStack>
-                                        </Pressable>
-                                        {library.allowLinkedAccounts === '1' ? (
-                                             <Pressable px="2" py="2" onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts', LIBRARY.url)}>
-                                                  <HStack space="1" alignItems="center">
-                                                       <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                                                       <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
-                                                  </HStack>
-                                                  {linkedAccounts > 0 ? (
-                                                       <Container>
-                                                            <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
-                                                                 ({linkedAccounts})
-                                                            </Badge>
-                                                       </Container>
-                                                  ) : null}
-                                             </Pressable>
-                                        ) : null}
-                                        <Pressable
-                                             px="2"
-                                             py="3"
-                                             onPress={() => {
-                                                  this.handleNavigation('AccountScreenTab', 'Preferences', LIBRARY.url);
-                                             }}>
-                                             <HStack space="1" alignItems="center">
-                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                                                  <Text fontWeight="500">{translate('user_profile.preferences')}</Text>
-                                             </HStack>
-                                        </Pressable>
-                                   </VStack>
-                              </VStack>
-                         </VStack>
-                         <VStack space={3} alignItems="center">
-                              <HStack space={2}>
-                                   <LogOutButton />
-                              </HStack>
-                              <UseColorMode />
-                         </VStack>
-                    </VStack>
-               </DrawerContentScrollView>
-          );
-     }
-}*/
+ {discoveryVersion >= '22.08.00' ? (
+ <Pressable
+ px="2"
+ py="3"
+ rounded="md"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'SavedSearches', LIBRARY.url);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7" />
+ <VStack w="100%">
+ <Text fontWeight="500">
+ {translate('user_profile.saved_searches')} {user ? <Text bold>({savedSearches})</Text> : null}
+ </Text>
+ </VStack>
+ </HStack>
+ {updatedSearches > 0 ? (
+ <Container>
+ <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+ {translate('user_profile.saved_searches_updated', {
+ count: updatedSearches,
+ })}
+ </Badge>
+ </Container>
+ ) : null}
+ </Pressable>
+ ) : null}
+ </VStack>
+ <VStack space="3">
+ <VStack>
+ <Pressable
+ px="2"
+ py="3"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'ProfileScreen', LIBRARY.url);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7" />
+ <Text fontWeight="500">{translate('user_profile.profile')}</Text>
+ </HStack>
+ </Pressable>
+ {library.allowLinkedAccounts === '1' ? (
+ <Pressable px="2" py="2" onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts', LIBRARY.url)}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7" />
+ <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
+ </HStack>
+ {linkedAccounts > 0 ? (
+ <Container>
+ <Badge colorScheme="warning" ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+ ({linkedAccounts})
+ </Badge>
+ </Container>
+ ) : null}
+ </Pressable>
+ ) : null}
+ <Pressable
+ px="2"
+ py="3"
+ onPress={() => {
+ this.handleNavigation('AccountScreenTab', 'Preferences', LIBRARY.url);
+ }}>
+ <HStack space="1" alignItems="center">
+ <Icon as={MaterialIcons} name="chevron-right" size="7" />
+ <Text fontWeight="500">{translate('user_profile.preferences')}</Text>
+ </HStack>
+ </Pressable>
+ </VStack>
+ </VStack>
+ </VStack>
+ <VStack space={3} alignItems="center">
+ <HStack space={2}>
+ <LogOutButton />
+ </HStack>
+ <UseColorMode />
+ </VStack>
+ </VStack>
+ </DrawerContentScrollView>
+ );
+ }
+ }*/
