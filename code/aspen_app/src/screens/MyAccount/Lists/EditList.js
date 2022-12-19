@@ -38,8 +38,8 @@ const EditList = (props) => {
      );
 
      return (
-          <Center>
-               <Button.Group size="sm" justifyContent="center" pb={5}>
+          <>
+               <Button.Group size="sm" justifyContent="center">
                     <Button onPress={() => setShowModal(true)} leftIcon={<Icon as={MaterialIcons} name="edit" size="xs" />}>
                          {translate('general.edit')}
                     </Button>
@@ -104,7 +104,7 @@ const EditList = (props) => {
                          </Modal.Footer>
                     </Modal.Content>
                </Modal>
-          </Center>
+          </>
      );
 };
 

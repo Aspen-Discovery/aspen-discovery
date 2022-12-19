@@ -439,6 +439,11 @@ class ListAPI extends Action {
 			$page = $_REQUEST['page'];
 		}
 
+		$sort = null;
+		if(isset($_REQUEST['sort_by'])) {
+			$sort = $_REQUEST['sort_by'];
+		}
+
 		if (!is_numeric($numTitlesToShow)) {
 			$numTitlesToShow = 25;
 		}
@@ -447,7 +452,7 @@ class ListAPI extends Action {
 			if (isset($listInfo)) {
 				$listId = $listInfo[1];
 			}
-			return $this->_getUserListTitles($listId, $numTitlesToShow, $user, $page);
+			return $this->_getUserListTitles($listId, $numTitlesToShow, $user, $page, $sort);
 		} elseif (preg_match('/search:(?<searchID>.*)/', $listId, $searchInfo)) {
 			if (is_numeric($searchInfo[1])) {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
@@ -543,7 +548,7 @@ class ListAPI extends Action {
 		}
 	}
 
-	private function _getUserListTitles($listId, $numTitlesToShow, $user, $page) {
+	private function _getUserListTitles($listId, $numTitlesToShow, $user, $page, $sort) {
 		global $configArray;
 		$listTitles = [];
 		//The list is a patron generated list
@@ -577,7 +582,7 @@ class ListAPI extends Action {
 			];
 			$pager = new Pager($options);
 
-			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary');
+			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort);
 
 			$isLida = $this->checkIfLiDA();
 
@@ -613,6 +618,7 @@ class ListAPI extends Action {
 				'success' => true,
 				'listTitle' => $list->title,
 				'listDescription' => $list->description,
+				'defaultSort' => $list->defaultSort,
 				'titles' => $listTitles,
 				'totalResults' => $pager->getTotalItems(),
 				'page_current' => (int)$pager->getCurrentPage(),
