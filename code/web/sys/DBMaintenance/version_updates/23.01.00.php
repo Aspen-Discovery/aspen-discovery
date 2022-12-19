@@ -39,6 +39,15 @@ function getUpdates23_01_00(): array
 				"ALTER TABLE ptype CHANGE COLUMN pType pType VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL",
 			],
 		],
+		//ptype_length
+		'record_parents_index' => [
+			'title' => 'Record Parents Index',
+			'description' => 'Add an index to record_parents to improve index performance',
+			'sql' => [
+				"alter table record_parents add index parentRecordId(parentRecordId)",
+			],
+		],
+		//record_parents_index
 
 		//kirstien
 		'add_account_alerts_notification' => [
