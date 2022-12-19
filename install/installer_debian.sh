@@ -28,14 +28,12 @@ if ! test -f "$keyrings/sury.gpg" || ! test -f /etc/apt/sources.list.d/sury.list
 fi
 
 # Have to use versions for these or the highest version available from sury.org is used rather than the system verison.
-apt-get install -y "php${php_vers}-mcrypt" "php${php_vers}-gd" "php${php_vers}-curl" "php${php_vers}-mysql" "php${php_vers}-zip" "php${php_vers}-xml" "php${php_vers}-intl" "php${php_vers}-mbstring" "php${php_vers}-soap"
+apt-get install -y "php${php_vers}-mcrypt" "php${php_vers}-gd" "php${php_vers}-curl" "php${php_vers}-mysql" "php${php_vers}-zip" "php${php_vers}-xml" "php${php_vers}-intl" "php${php_vers}-mbstring" "php${php_vers}-soap" "php${php_vers}-pgsql" "php${php_vers}-ssh2"
 
 # - Change max_memory to 256M
 # - Increase max file size to 75M
 # - Increase max post size to 75M
 php_ini="/etc/php/${php_vers}/apache2/php.ini"
-# Necessary or surprise baggage from dragging around an old php.ini?
-#grep -q '^max_input_vars = 2000' "$php_ini" || sed -Ei 's/^;max_input_vars = [0-9]+/max_input_vars = 2000/' "$php_ini"
 grep -q '^memory_limit = 256M' "$php_ini" || sed -Ei 's/^memory_limit = [0-9]+M/memory_limit = 256M/' "$php_ini"
 grep -q '^post_max_size = 75M' "$php_ini" || sed -Ei 's/^post_max_size = [0-9]+M/post_max_size = 75M/' "$php_ini"
 grep -q '^upload_max_filesize = 75M' "$php_ini" || sed -Ei 's/^upload_max_filesize = [0-9]+M/upload_max_filesize = 75M/' "$php_ini"
@@ -68,5 +66,7 @@ mysql -e "$query"
 mysql -e "flush privileges"
 
 mysql_secure_installation
+
+dpkg-reconfigure tzdata
 
 ./setup_aspen_user_debian.sh
