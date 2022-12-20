@@ -26,6 +26,7 @@ class Greenhouse_TicketsByPartner extends Admin_Admin{
 			$ticket = new Ticket();
 			$ticket->requestingPartner = $aspenSite->id;
 			$ticket->groupBy('queue');
+			$ticket->whereAdd("status <> 'Closed'");
 			$ticket->selectAdd('');
 			$ticket->selectAdd('queue');
 			$ticket->selectAdd('count(*) as numTickets');

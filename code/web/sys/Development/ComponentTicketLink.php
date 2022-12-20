@@ -47,7 +47,7 @@ class ComponentTicketLink extends DataObject {
 				'property' => 'componentId',
 				'type' => 'enum',
 				'values' => $componentList,
-				'label' => 'Task',
+				'label' => 'Component',
 				'description' => 'The component related to the ticket',
 				'required' => true,
 			],

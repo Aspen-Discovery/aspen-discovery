@@ -27,6 +27,7 @@ class Greenhouse_TicketsByComponent extends Admin_Admin{
 			$ticketComponentLink->componentId = $components->id;
 
 			$ticket = new Ticket();
+			$ticket->whereAdd("status <> 'Closed'");
 			$ticket->joinAdd($ticketComponentLink, 'INNER', 'component', 'id', 'ticketId');
 			$ticket->groupBy('queue');
 			$ticket->selectAdd('');
