@@ -45,9 +45,14 @@ class WebBuilder_SubmitForm extends Action {
 
 				//Convert the form values to JSON
 				if ($this->form->includeIntroductoryTextInEmail) {
-					$htmlData = '<div>' . $this->form->introText . '</div>';
+					require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+					$parsedown = AspenParsedown::instance();
+					$parsedown->setBreaksEnabled(true);
+					$introText = $parsedown->parse($this->form->introText);
+					$htmlData = '<div>' . $introText . '</div>';
 				} else {
 					$htmlData = '';
+					$introText = '';
 				}
 				$htmlData .= $serializedData->getPrintableHtmlData($structure);
 
@@ -78,7 +83,7 @@ class WebBuilder_SubmitForm extends Action {
 					$interface->assign('htmlData', $htmlData);
 
 					$interface->assign('includeIntroductoryTextInEmail', $this->form->includeIntroductoryTextInEmail);
-					$interface->assign('introductoryText', $this->form->introText);
+					$interface->assign('introductoryText', $introText);
 
 					$emailBody = $interface->fetch('WebBuilder/customFormSubmissionEmail.tpl');
 					$emailResult = $mail->send($this->form->emailResultsTo, $this->form->title . ' Submission', null, null, $emailBody);
