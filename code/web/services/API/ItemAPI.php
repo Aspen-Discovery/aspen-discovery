@@ -951,6 +951,7 @@ class ItemAPI extends Action {
 	}
 
 	function getVariation() {
+		global $library;
 		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
 			return [
 				'success' => false,
@@ -984,7 +985,9 @@ class ItemAPI extends Action {
 				'numCopiesMessage' => $relatedManifestation->getStatusInformation()->getNumberOfCopiesMessage(),
 				'numHolds' => $relatedManifestation->getStatusInformation()->getNumHolds(),
 				'numOnOrder' => $relatedManifestation->getStatusInformation()->getOnOrderCopies(),
-				'isShowStatus' => $relatedManifestation->getStatusInformation()->isShowStatus()
+				'isShowStatus' => $relatedManifestation->getStatusInformation()->isShowStatus(),
+				'showGroupedHoldCopiesCount' => (int) $library->showGroupedHoldCopiesCount,
+				'showItsHere' => (int) $library->showItsHere
 			],
 			'variation' => $relatedManifestation->getVariationInformation(),
 			'actions' => $relatedManifestation->getActions(),
