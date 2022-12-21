@@ -983,7 +983,8 @@ class ItemAPI extends Action {
 				'hasLocalItem' => $relatedManifestation->getStatusInformation()->hasLocalItem(),
 				'numCopiesMessage' => $relatedManifestation->getStatusInformation()->getNumberOfCopiesMessage(),
 				'numHolds' => $relatedManifestation->getStatusInformation()->getNumHolds(),
-				'numOnOrder' => $relatedManifestation->getStatusInformation()->getOnOrderCopies()
+				'numOnOrder' => $relatedManifestation->getStatusInformation()->getOnOrderCopies(),
+				'isShowStatus' => $relatedManifestation->getStatusInformation()->isShowStatus()
 			],
 			'variation' => $relatedManifestation->getVariationInformation(),
 			'actions' => $relatedManifestation->getActions(),
