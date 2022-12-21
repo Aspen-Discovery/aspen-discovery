@@ -588,7 +588,7 @@ const OnHoldForYou = (props) => {
 };
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, libraryUrl, volumeId = null, holdType = null) {
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null) {
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];
@@ -608,10 +608,10 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
      //console.log(patronProfile);
 
      if (actionType.includes('checkout')) {
-          return await checkoutItem(libraryUrl, itemId, source, patronId);
+          return await checkoutItem(url, itemId, source, patronId);
      } else if (actionType.includes('hold')) {
           if (volumeId) {
-               return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch, volumeId, holdType, id);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id);
           } else if (_.isObject(patronProfile)) {
                if (!patronProfile.overdriveEmail && patronProfile.promptForOverdriveEmail === 1 && source === 'overdrive') {
                     const getPromptForOverdriveEmail = [];
@@ -624,10 +624,10 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
                     return getPromptForOverdriveEmail;
                }
           } else {
-               return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, null, holdType, id);
           }
      } else if (actionType.includes('sample')) {
-          return await overDriveSample(libraryUrl, formatId, itemId, sampleNumber);
+          return await overDriveSample(url, formatId, itemId, sampleNumber);
      }
 }
 
