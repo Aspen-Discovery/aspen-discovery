@@ -1,9 +1,8 @@
-import { create } from 'apisauce';
+import _ from 'lodash';
 import { GLOBALS } from '../globals';
-import { createAuthTokens, ENDPOINT, getHeaders } from '../apiAuth';
-
-const endpoint = ENDPOINT.search;
-//const endpoint = ENDPOINT.work;
+import { createAuthTokens, getHeaders } from '../apiAuth';
+import axios from 'axios';
+import { getManifestation } from './item';
 
 /** *******************************************************************
  * General
@@ -14,20 +13,23 @@ const endpoint = ENDPOINT.search;
  * @param {string} url
  **/
 export async function getGroupedWork(itemId, url) {
-     const discovery = create({
-          baseURL: url,
+     const { data } = await axios.get('/WorkAPI?method=getGroupedWork', {
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(),
           auth: createAuthTokens(),
           params: {
                id: itemId,
           },
      });
-     const response = await discovery.get(`${endpoint.url}getAppGroupedWork`);
-     if (response.ok) {
-          return response.data;
-     } else {
-          console.log(response);
-          return false;
-     }
+
+     const keys = _.keys(data.formats);
+     const firstFormat = _.first(keys);
+     const manifestation = await getManifestation(itemId, firstFormat, url);
+
+     return {
+          results: data,
+          format: firstFormat ?? '',
+          manifestation: manifestation ?? [],
+     };
 }
