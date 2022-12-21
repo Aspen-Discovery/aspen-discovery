@@ -44,7 +44,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 	//Skip the first row which is titles.
 	fgetcsv($listsfHnd);
-	while ($patronListRow = fgetcsv($listsfHnd, 0, '|')) {
+	while ($patronListRow = fgetcsv($listsfHnd, 0, ',')) {
 		$numImports++;
 
 		if (sizeof($patronListRow) != 10) {
@@ -58,7 +58,21 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		$listName = $patronListRow[3];
 		$listId = $patronListRow[4];
 		$myListOrder = $patronListRow[5];
-		$dateAddedToList = strtotime($patronListRow[6]);
+		$originalTime = $patronListRow[6];
+		$dateAddedToList = strtotime($originalTime);
+		if ($dateAddedToList == false) {
+			$firstDot = strpos($originalTime, '.');
+			$secondDot = strpos($originalTime, '.', $firstDot + 1);
+			$thirdDot = strpos($originalTime, '.', $secondDot + 1);
+			$timeWithHoursAndMinutes = substr($originalTime, 0, $thirdDot);
+			if (strpos($originalTime, 'AM')) {
+				$timeWithHoursAndMinutes .= ' AM';
+			} else {
+				$timeWithHoursAndMinutes .= ' PM';
+			}
+			$timeWithHoursAndMinutes = str_replace('.', ':', $timeWithHoursAndMinutes);
+			$dateAddedToList = strtotime($timeWithHoursAndMinutes);
+		}
 		$documentId = $patronListRow[7];
 		$title = $patronListRow[8];
 		$titleOrder = $patronListRow[9];
@@ -107,7 +121,10 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 				$listEntry->weight = $titleOrder + 1;
 				$listEntry->importedFrom = "Enterprise";
 				$listEntry->title = strlen($title) > 50 ? substr($title, 0, 50) : $title;
-				$listEntry->insert(false);
+				$ret = $listEntry->insert(false);
+				if ($ret != 1) {
+					echo("Error adding list entry");
+				}
 			}
 			$listEntry->__destruct();
 		}
