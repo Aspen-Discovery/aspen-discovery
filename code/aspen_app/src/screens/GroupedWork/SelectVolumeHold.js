@@ -14,7 +14,7 @@ const SelectVolumeHold = (props) => {
      const { updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
 
-     let typeOfHold = 'bib';
+     let typeOfHold = 'item';
      if (majorityOfItemsHaveVolumes) {
           typeOfHold = 'volume';
      }
@@ -48,7 +48,7 @@ const SelectVolumeHold = (props) => {
                                              setHoldType(nextValue);
                                         }}
                                         accessibilityLabel="">
-                                        <Radio value="bib" my={1} size="sm">
+                                        <Radio value="item" my={1} size="sm">
                                              {translate('grouped_work.first_available')}
                                         </Radio>
                                         <Radio value="volume" my={1} size="sm">
@@ -116,7 +116,7 @@ const SelectVolumeHold = (props) => {
                                         isLoadingText="Placing hold..."
                                         onPress={async () => {
                                              setLoading(true);
-                                             await completeAction(record, action, activeAccount, '', '', '', libraryUrl, volume, holdType).then(async (response) => {
+                                             await completeAction(record, action, activeAccount, '', '', '', library.baseUrl, volume, holdType).then(async (response) => {
                                                   updateProfile();
                                                   await refreshProfile(library.baseUrl).then((result) => {
                                                        updateUser(result);

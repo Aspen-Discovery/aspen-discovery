@@ -337,9 +337,8 @@ export async function saveLanguage(code, url) {
  **/
 export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url) {
      const postBody = await postData();
-     const { data } = await axios.post('/UserAPI?method=getPatronReadingHistory', postBody, {
+     const instance = axios.create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
@@ -349,6 +348,7 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
           },
      });
 
+     const { data } = await instance.post('/UserAPI?method=getPatronReadingHistory', postBody);
      let morePages = true;
      if (data.result?.page_current === data.result?.page_total) {
           morePages = false;
@@ -419,7 +419,10 @@ export async function deleteAllReadingHistory(url) {
      });
      const response = await discovery.post(`${endpoint.url}deleteAllFromReadingHistory`, postBody);
      if (response.ok) {
-          //
+          console.log(response.data);
+          if (response.data.result?.success) {
+               return true;
+          }
      }
      return false;
 }
@@ -437,9 +440,7 @@ export async function deleteSelectedReadingHistory(item, url) {
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
           params: {
-               selected: {
-                    [item]: item,
-               },
+               selected: [item],
           },
      });
      const response = await discovery.post(`${endpoint.url}deleteSelectedFromReadingHistory`, postBody);

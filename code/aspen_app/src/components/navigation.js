@@ -75,28 +75,6 @@ Sentry.init({
 });
 
 export function App() {
-     React.useEffect(() => {
-          console.log("Checking for updates...")
-          if (!__DEV__) {
-               const checkForUpdates = async () => {
-                    console.log("Checking for updates...");
-                    const update = await Updates.checkForUpdateAsync();
-                    if (update.isAvailable) {
-                         console.log("Found an update from Updates Listener...");
-                         try {
-                              console.log("Downloading update...");
-                              await Updates.fetchUpdateAsync().then(async r => {
-                                   console.log("Updating app...");
-                                   await Updates.reloadAsync();
-                              });
-                         } catch (e) {
-                              console.log(e);
-                         }
-                    }
-               }
-               checkForUpdates();
-          }
-     }, []);
 
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
@@ -149,6 +127,29 @@ export function App() {
                library: [],
           }
      );
+
+     React.useEffect(() => {
+          const timer = setInterval(async () => {
+               if (!__DEV__) {
+                    const update = await Updates.checkForUpdateAsync();
+                    if (update.isAvailable) {
+                         console.log('Found an update from Updates Listener...');
+                         try {
+                              console.log('Downloading update...');
+                              await Updates.fetchUpdateAsync().then(async (r) => {
+                                   console.log('Updating app...');
+                                   await Updates.reloadAsync();
+                              });
+                         } catch (e) {
+                              console.log(e);
+                         }
+                    }
+               }
+          }, 15000);
+          return () => {
+               clearInterval(timer);
+          };
+     }, []);
 
      React.useEffect(() => {
           const bootstrapAsync = async () => {

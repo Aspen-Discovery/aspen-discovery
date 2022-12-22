@@ -38,6 +38,7 @@ class ItemAPI extends Action {
 				if (in_array($method, [
 					'getAppGroupedWork',
 					'getItemDetails',
+					'getItemAvailability',
 					'getManifestation',
 					'getVariation',
 					'getRecords'
@@ -950,6 +951,7 @@ class ItemAPI extends Action {
 	}
 
 	function getVariation() {
+		global $library;
 		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
 			return [
 				'success' => false,
@@ -971,7 +973,24 @@ class ItemAPI extends Action {
 			'success' => true,
 			'id' => $groupedWorkId,
 			'format' => $format,
+			'statusIndicator' => [
+				'isAvailable' => $relatedManifestation->getStatusInformation()->isAvailable(),
+				'isEContent' => $relatedManifestation->getStatusInformation()->isEContent(),
+				'isAvailableOnline' => $relatedManifestation->getStatusInformation()->isAvailableOnline(),
+				'groupedStatus' => $relatedManifestation->getStatusInformation()->getGroupedStatus(),
+				'isAvailableHere' => $relatedManifestation->getStatusInformation()->isAvailableHere(),
+				'isAvailableLocally' => $relatedManifestation->getStatusInformation()->isAvailableLocally(),
+				'isAllLibraryUseOnly' => $relatedManifestation->getStatusInformation()->isAllLibraryUseOnly(),
+				'hasLocalItem' => $relatedManifestation->getStatusInformation()->hasLocalItem(),
+				'numCopiesMessage' => $relatedManifestation->getStatusInformation()->getNumberOfCopiesMessage(),
+				'numHolds' => $relatedManifestation->getStatusInformation()->getNumHolds(),
+				'numOnOrder' => $relatedManifestation->getStatusInformation()->getOnOrderCopies(),
+				'isShowStatus' => $relatedManifestation->getStatusInformation()->isShowStatus(),
+				'showGroupedHoldCopiesCount' => (int) $library->showGroupedHoldCopiesCount,
+				'showItsHere' => (int) $library->showItsHere
+			],
 			'variation' => $relatedManifestation->getVariationInformation(),
+			'actions' => $relatedManifestation->getActions(),
 		];
 	}
 
@@ -1001,15 +1020,15 @@ class ItemAPI extends Action {
 			}
 		}
 		foreach ($relatedVariation->getRecords() as $relatedRecord) {
-			$records['id'] = $relatedRecord->id;
-			$records['dbId'] = $relatedRecord->databaseId;
-			$records['format'] = $relatedRecord->format;
-			$records['edition'] = $relatedRecord->edition;
-			$records['publisher'] = $relatedRecord->publisher;
-			$records['publicationDate'] = $relatedRecord->publicationDate;
-			$records['physical'] = $relatedRecord->physical;
-			$records['closedCaptioned'] = $relatedRecord->closedCaptioned;
-			$records['isAvailable'] = $relatedRecord->isAvailable();
+			$records[$relatedRecord->id]['id'] = $relatedRecord->id;
+			$records[$relatedRecord->id]['format'] = $relatedRecord->format;
+			$records[$relatedRecord->id]['edition'] = $relatedRecord->edition;
+			$records[$relatedRecord->id]['publisher'] = $relatedRecord->publisher;
+			$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
+			$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
+			$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
+			$records[$relatedRecord->id]['isAvailable'] = $relatedRecord->isAvailable();
+			$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 		}
 
 		return [
