@@ -335,6 +335,29 @@ class User extends DataObject {
 		return $this->_roles;
 	}
 
+	/**
+	 * @return Role[]
+	 */
+	public function getRolesAssignedByPType() : array {
+		$rolesAssignedByPType = [];
+		if ($this->id) {
+			//Get role based on patron type
+			$patronType = new PType();
+			$patronType->pType = $this->patronType;
+			if ($patronType->find(true)) {
+				if ($patronType->assignedRoleId != -1) {
+					$role = new Role();
+					$role->roleId = $patronType->assignedRoleId;
+					if ($role->find(true)) {
+						$role->setAssignedFromPType(true);
+						$rolesAssignedByPType[$role->roleId] = clone $role;
+					}
+				}
+			}
+		}
+		return $rolesAssignedByPType;
+	}
+
 	private $materialsRequestReplyToAddress;
 	private $materialsRequestEmailSignature;
 
@@ -400,12 +423,14 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 			$userRoles = new UserRoles();
 			$userRoles->userId = $this->id;
+
 			$userRoles->delete(true);
 
+			$message = ''
+;
 			//Now add the new values.
 			if (count($this->_roles) > 0) {
-				$values = [];
-				foreach ($this->_roles as $roleId => $roleObj) {
+				foreach ($this->_roles as $roleObj) {
 					if (!$roleObj->isAssignedFromPType()) {
 						$userRoles = new UserRoles();
 						$userRoles->userId = $this->id;
@@ -413,6 +438,16 @@ class User extends DataObject {
 						$userRoles->insert();
 					}
 				}
+			}
+
+			//Check to see if we have any roles set by PType and warn the user
+			$rolesAssignedByPType = $this->getRolesAssignedByPType();
+			if (count($rolesAssignedByPType) > 0) {
+				foreach ($rolesAssignedByPType as $role) {
+					$message .= "Role {$role->name} is defined by PType <br/>";
+				}
+				UserAccount::getActiveUserObj()->updateMessage .= $message;
+				UserAccount::getActiveUserObj()->update();
 			}
 		}
 	}

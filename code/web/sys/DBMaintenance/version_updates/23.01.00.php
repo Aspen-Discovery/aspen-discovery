@@ -48,6 +48,15 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//record_parents_index
+		'object_history_action_type' => [
+			'title' => 'Object History Action Type',
+			'description' => 'Add an action type to object history',
+			'sql' => [
+				"alter table object_history add COLUMN actionType TINYINT DEFAULT 2",
+				"alter table object_history add INDEX actionType(actionType)",
+			],
+		],
+		//object_history_action_type
 
 		//kirstien
 		'add_account_alerts_notification' => [
