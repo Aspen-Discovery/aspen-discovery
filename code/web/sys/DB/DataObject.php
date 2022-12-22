@@ -476,7 +476,12 @@ abstract class DataObject {
 			/** @noinspection SqlWithoutWhere */
 			$deleteQuery = 'DELETE from ' . $this->__table . $this->getWhereClause($aspen_db);
 		} else {
-			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+			if (empty($this->$primaryKey)) {
+				AspenError::raiseError("Called Object Delete, but the primary key was not supplied.");
+				return  false;
+			} else {
+				$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+			}
 		}
 		$this->__lastQuery = $deleteQuery;
 
@@ -487,6 +492,17 @@ abstract class DataObject {
 			$logger->log($deleteQuery, Logger::LOG_ERROR);
 		}
 		$timer->logTime($deleteQuery);
+		if ($result) {
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$history = new DataObjectHistory();
+			$history->objectType = get_class($this);
+			$history->objectId = $this->{$this->__primaryKey};
+			$history->propertyName = '';
+			$history->actionType = 3;
+			$history->changedBy = UserAccount::getActiveUserId();
+			$history->changeDate = time();
+			$history->insert();
+		}
 		return $result;
 	}
 

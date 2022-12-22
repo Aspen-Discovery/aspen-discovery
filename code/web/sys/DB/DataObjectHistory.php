@@ -6,7 +6,7 @@ class DataObjectHistory extends DataObject {
 	public $id;
 	public $objectType;
 	public $objectId;
-	public $actionType; //1 = create, 2 == update, 2 = delete
+	public $actionType; //1 = create, 2 == update, 3 = delete
 	public $propertyName;
 	public $oldValue;
 	public $newValue;

@@ -423,31 +423,53 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 			$userRoles = new UserRoles();
 			$userRoles->userId = $this->id;
+			$existingRoles = [];
+			$userRoles->find();
+			while ($userRoles->fetch()) {
+				$existingRoles[$userRoles->roleId] = $userRoles->roleId;
+			}
 
-			$userRoles->delete(true);
+			//$userRoles->delete(true);
 
-			$message = ''
-;
+			$changesMade = false;
+			$message = '';
 			//Now add the new values.
 			if (count($this->_roles) > 0) {
 				foreach ($this->_roles as $roleObj) {
 					if (!$roleObj->isAssignedFromPType()) {
-						$userRoles = new UserRoles();
-						$userRoles->userId = $this->id;
-						$userRoles->roleId = $roleObj->roleId;
-						$userRoles->insert();
+						if (!array_key_exists($roleObj->roleId, $existingRoles)) {
+							$userRoles = new UserRoles();
+							$userRoles->userId = $this->id;
+							$userRoles->roleId = $roleObj->roleId;
+							$userRoles->insert();
+							$changesMade = true;
+						} else {
+							unset($existingRoles[$roleObj->roleId]);
+						}
 					}
 				}
 			}
 
-			//Check to see if we have any roles set by PType and warn the user
-			$rolesAssignedByPType = $this->getRolesAssignedByPType();
-			if (count($rolesAssignedByPType) > 0) {
-				foreach ($rolesAssignedByPType as $role) {
-					$message .= "Role {$role->name} is defined by PType <br/>";
+			//delete any roles that no longer exist.
+			foreach ($existingRoles as $existingRole) {
+				$userRoles = new UserRoles();
+				$userRoles->userId = $this->id;
+				$userRoles->roleId = $existingRole;
+				$userRoles->delete(true);
+				$changesMade = true;
+			}
+
+			if ($changesMade) {
+				//Check to see if we have any roles set by PType and warn the user
+				$rolesAssignedByPType = $this->getRolesAssignedByPType();
+				if (count($rolesAssignedByPType) > 0) {
+					foreach ($rolesAssignedByPType as $role) {
+						$message .= "Role {$role->name} is defined by PType <br/>";
+					}
+					UserAccount::getActiveUserObj()->updateMessage .= $message;
+					UserAccount::getActiveUserObj()->update();
 				}
-				UserAccount::getActiveUserObj()->updateMessage .= $message;
-				UserAccount::getActiveUserObj()->update();
+				unset ($this->_roles);
 			}
 		}
 	}
