@@ -41,6 +41,7 @@ class MyAccount_ResetPinPage extends MyAccount {
 					$interface->assign('profileUpdateMessage', $user->updateMessage);
 				}
 				$user->updateMessage = '';
+				$user->updateMessageIsError = 0;
 				$user->update();
 			}
 

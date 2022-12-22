@@ -7,9 +7,9 @@
 	</div>
 </div>
 
-{if $lastError}
-	<div class="alert alert-danger">
-		{$lastError}
+{if $updateMessage}
+	<div class="alert {if $updateMessageIsError}alert-danger{else}alert-info{/if}">
+		{$updateMessage}
 	</div>
 {/if}
 

@@ -336,6 +336,10 @@ abstract class DataObject {
 		try {
 			$response = $aspen_db->exec($insertQuery);
 		} catch (PDOException $e) {
+			if (IPAddress::showDebuggingInformation()) {
+				$errorToLog = new AspenError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
+				$errorToLog->insert();
+			}
 			$this->setLastError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
 			$response = false;
 		}
@@ -346,6 +350,20 @@ abstract class DataObject {
 		}
 		$timer->logTime($insertQuery);
 		$this->{$this->__primaryKey} = $aspen_db->lastInsertId();
+
+		//Log the insert into object history
+		if (!empty($this->{$this->__primaryKey}) && !($this instanceof DataObjectHistory || $this instanceof AspenError)) {
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$history = new DataObjectHistory();
+			$history->objectType = get_class($this);
+			$history->objectId = $this->{$this->__primaryKey};
+			$history->propertyName = '';
+			$history->actionType = 1;
+			$history->changedBy = UserAccount::getActiveUserId();
+			$history->changeDate = time();
+			$history->insert();
+		}
+
 		return $response;
 	}
 
@@ -879,6 +897,7 @@ abstract class DataObject {
 					if (strlen($newValue) >= 65535) {
 						$newValue = 'Too long to track history';
 					}
+					$history->actionType = 2;
 					$history->objectId = $this->$primaryKey;
 					$history->oldValue = $oldValue;
 					$history->propertyName = $propertyName;
