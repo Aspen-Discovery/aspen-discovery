@@ -13,6 +13,7 @@ class PType extends DataObject {
 	public $isStaff;
 	public $twoFactorAuthSettingId;
 	public $vdxClientCategory;
+	public $accountLinkingSetting;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -20,6 +21,7 @@ class PType extends DataObject {
 			'maxHolds',
 			'restrictMasquerade',
 			'twoFactorAuthSettingId',
+			'accountLinkingSetting',
 		];
 	}
 
@@ -108,6 +110,20 @@ class PType extends DataObject {
 				'default' => '',
 				'hideInLists' => true,
 			],
+			'accountLinkingSetting' => [
+				'property' => 'accountLinkingSetting',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Allow to be linked to and link to others',
+					1 => 'Allow only to be linked to',
+					2 => 'Allow only to link to others',
+					3 => 'Block all linking',
+				],
+				'default' => 0,
+				'label' => 'Account linking setting',
+				'description' => 'The account linking setting tied to this patron type',
+				'onchange' => "return AspenDiscovery.Admin.linkingSettingOptionChange();",
+			],
 		];
 		if (!UserAccount::userHasPermission('Administer Permissions')) {
 			unset($structure['assignedRoleId']);
@@ -128,5 +144,51 @@ class PType extends DataObject {
 			$patronTypeList[$patronType->id] = $patronTypeLabel;
 		}
 		return $patronTypeList;
+	}
+
+	static function getAccountLinkingSetting($pType): string {
+		$pTypeSetting = new pType();
+		$pTypeSetting->pType = $pType;
+		$pTypeSetting->find();
+		$pTypeSetting->fetch();
+		$setting = $pTypeSetting->accountLinkingSetting;
+		return $setting;
+	}
+
+	public function update($context = '') {
+		if ($this->accountLinkingSetting == 0) {
+			return parent::update();
+		}else{
+			$user = new User();
+			$user->patronType = $this->pType;
+			$user->find();
+			$usersToUpdate = $user->fetchAll();
+
+			foreach ($usersToUpdate as $user){
+				if ($this->accountLinkingSetting == 1){
+					$userLink = new UserLink();
+					$userLink->primaryAccountId = $user->id;
+					$userLink->delete(true);
+				}else if ($this->accountLinkingSetting == 2){
+					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+					$userLink = new UserLink();
+					$userLink->linkedAccountId = $user->id;
+					$userLink->find();
+					while ($userLink->fetch()) {
+						$userLink->delete();
+
+						$userMessage = new UserMessage();
+						$userMessage->messageType = 'linked_acct_notify_disabled_' . $this->id;
+						$userMessage->userId = $userLink->primaryAccountId;
+						$userMessage->isDismissed = "0";
+						$userMessage->message = "An account you were previously linked to, $user->displayName, is no longer able to be linked to. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
+						$userMessage->update();
+					}
+				}else if ($this->accountLinkingSetting == 3){
+					$user->accountLinkingToggle();
+				}
+			}
+			return parent::update();
+		}
 	}
 }

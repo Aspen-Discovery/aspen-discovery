@@ -804,14 +804,10 @@ class User extends DataObject {
 				$userMessage->isDismissed = 1;
 				$userMessage->update();
 			}
-			//$userLink->delete(true);
 			//Remove Linked Users
 			$userLink = new UserLink();
 			$userLink->primaryAccountId = $this->id;
 			$userLink->delete(true);
-
-			//Also mark any user messages as dismissed
-
 		} else {
 			$this->disableAccountLinking = 0;
 		}
@@ -2288,6 +2284,13 @@ class User extends DataObject {
 			}
 		}
 		return false;
+	}
+
+	public function getPType() {
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$patronType = new PType();
+		$patronType->pType = $this->patronType;
+		return $patronType;
 	}
 
 	public function updatePatronInfo($canUpdateContactInfo, $fromMasquerade = false) {
