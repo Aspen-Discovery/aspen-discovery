@@ -69,7 +69,7 @@ class DataObjectHistory extends DataObject {
 				'type' => 'label',
 				'label' => 'Change By',
 				'description' => 'Who made the change',
-				'hideInLists' => true
+				'hideInLists' => false
 			],
 			'changeDate' => [
 				'property' => 'changeDate',
