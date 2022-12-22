@@ -85,6 +85,14 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//user_browse_add_home
+		'account_linking_setting_by_ptype' => [
+			'title' => 'Set account linking setting by PType',
+			'description' => 'Set account linking setting by PType',
+			'sql' => [
+				"ALTER TABLE ptype ADD COLUMN accountLinkingSetting TINYINT(1) DEFAULT 0",
+			],
+		],
+		//account_linking_setting_by_ptype
 		//other
 	];
 }

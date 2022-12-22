@@ -75,6 +75,8 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$accountToLink = UserAccount::validateAccount($username, $password);
 			$user = UserAccount::getLoggedInUser();
+			$linkingSettingUser = $user->getPType()->accountLinkingSetting;
+			$linkingSettingLinkee = $accountToLink->getPType()->accountLinkingSetting;
 
 			if (!UserAccount::isLoggedIn()) {
 				$result = [
@@ -90,7 +92,7 @@ class MyAccount_AJAX extends JSON_Action {
 				];
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
-					if ($accountToLink->disableAccountLinking == 0) {
+					if (($accountToLink->disableAccountLinking == 0) && ($linkingSettingUser != '1' || $linkingSettingUser != '3') && ($linkingSettingLinkee != '2' || $linkingSettingLinkee != '3')) {
 						$addResult = $user->addLinkedUser($accountToLink);
 						if ($addResult === true) {
 							$result = [
