@@ -952,6 +952,7 @@ class ItemAPI extends Action {
 
 	function getVariation() {
 		global $library;
+		global $interface;
 		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
 			return [
 				'success' => false,
@@ -1016,7 +1017,8 @@ class ItemAPI extends Action {
 				'numOnOrder' => $relatedManifestation->getStatusInformation()->getOnOrderCopies(),
 				'isShowStatus' => $relatedManifestation->getStatusInformation()->isShowStatus(),
 				'showGroupedHoldCopiesCount' => (int) $library->showGroupedHoldCopiesCount,
-				'showItsHere' => (int) $library->showItsHere
+				'showItsHere' => (int) $library->showItsHere,
+				'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 			],
 			'variation' => $relatedManifestation->getVariationInformation(),
 			'actions' => $relatedManifestation->getActions(),
@@ -1142,6 +1144,7 @@ class ItemAPI extends Action {
 					$numItemsWithVolumes++;
 				}
 			}
+			$records[$relatedRecord->id]['action'] = $relatedRecord->getActions();
 			$records[$relatedRecord->id]['numItemsWithVolumes'] = $numItemsWithVolumes;
 			$records[$relatedRecord->id]['numItemsWithoutVolumes'] = $numItemsWithoutVolumes;
 			$records[$relatedRecord->id]['hasItemsWithoutVolumes'] = $numItemsWithoutVolumes > 0;
