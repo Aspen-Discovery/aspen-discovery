@@ -1003,6 +1003,7 @@ class ItemAPI extends Action {
 			'success' => true,
 			'id' => $groupedWorkId,
 			'format' => $format,
+			'source' => $relatedRecord->source,
 			'statusIndicator' => [
 				'isAvailable' => $relatedManifestation->getStatusInformation()->isAvailable(),
 				'isEContent' => $relatedManifestation->getStatusInformation()->isEContent(),
