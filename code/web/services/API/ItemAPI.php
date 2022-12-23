@@ -1071,6 +1071,7 @@ class ItemAPI extends Action {
 			$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
 			$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
 			$records[$relatedRecord->id]['status'] = $relatedRecord->getStatusInformation()->getGroupedStatus();
+			$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
 			//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 
 			if($source == 'hoopla') {
