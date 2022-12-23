@@ -893,9 +893,9 @@ public class EvergreenExportMain {
 
 		//After the files have been processed, delete them
 		for (File incrementalIdFile : incrementalIdFiles) {
-			//if (!incrementalIdFile.delete()) {
+			if (!incrementalIdFile.delete()) {
 			//Temporarily rename to processed so we can replay deletes as needed
-			if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
+			//if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
 				logEntry.incErrors("Could not delete incremental ids file " + incrementalIdFile + " after processing.");
 			}
 		}
