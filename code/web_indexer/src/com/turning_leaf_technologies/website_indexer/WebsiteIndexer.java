@@ -92,7 +92,7 @@ class WebsiteIndexer {
 		if (pathsToExclude != null && pathsToExclude.length() > 0){
 			String[] paths = pathsToExclude.split("\r\n|\r|\n");
 			for (String path : paths){
-				if (path.contains(initialUrl)){
+				if (path.contains(initialUrl) || initialUrl.matches(".*\\.xml.*")){
 					pathsToExcludePatterns.add(Pattern.compile(path));
 				}else if (path.startsWith("/")){
 					pathsToExcludePatterns.add(Pattern.compile(initialUrl + path));
@@ -145,31 +145,75 @@ class WebsiteIndexer {
 		if (initialUrl.endsWith("/")) {
 			initialUrl = initialUrl.substring(0, initialUrl.length() - 1);
 		}
-		allLinks.put(initialUrl, false);
-		logEntry.incNumPages();
-		boolean moreToProcess = true;
-		while (moreToProcess) {
-			String urlToProcess = null;
-			for (String link : allLinks.keySet()) {
-				if (!allLinks.get(link)) {
-					urlToProcess = link;
-					break;
+		//***** Check for sitemap *****//
+		if (initialUrl.matches(".*\\.xml.*")){
+			try {
+				Document doc = Jsoup.connect(initialUrl).get();
+				Elements url = doc.select("loc");
+				for (Element urlToProcess : url) {
+					String pageToProcess = String.valueOf(urlToProcess);
+					pageToProcess = pageToProcess.replaceAll("<loc>", "");
+					pageToProcess = pageToProcess.replaceAll("</loc>", "");
+
+					//check if path is to be excluded
+					boolean includePath = true;
+					for (Pattern curPattern : pathsToExcludePatterns){
+						if (curPattern.matcher(pageToProcess).matches()){
+							includePath = false;
+						}
+					}
+					if (!includePath){
+						continue; //skip to next url if this one is in paths to exclude
+					}
+
+					if (pageToProcess.matches(".*\\.xml.*") && includePath) { //if sitemap is xml index, walk through each xml file
+						Document doc2 = Jsoup.connect(pageToProcess).get();
+						Elements url2 = doc2.select("loc");
+						for (Element urlToProcess2 : url2) {
+							String pageToProcess2 = String.valueOf(urlToProcess2);
+							pageToProcess2 = pageToProcess2.replaceAll("<loc>", "");
+							pageToProcess2 = pageToProcess2.replaceAll("</loc>", "");
+							processPage(pageToProcess2);
+							allLinks.put(pageToProcess2, true);
+						}
+					}else { //otherwise, add each url to urlToProcess
+						processPage(pageToProcess);
+						allLinks.put(pageToProcess, true);
+					}
+					if (allLinks.size() > this.maxPagesToIndex) {
+						logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
+					}
 				}
+			} catch (IOException e) {
+				logEntry.incErrors("IO Exception loading " + e);
 			}
-			if (urlToProcess != null) {
-				processPage(urlToProcess);
-				allLinks.put(urlToProcess, true);
-			} else {
-				moreToProcess = false;
-			}
-			if (allLinks.size() > this.maxPagesToIndex){
-				logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
-			}
-			if (crawlDelay > 0){
-				try {
-					Thread.sleep(crawlDelay * 1000);
-				} catch (InterruptedException e) {
-					logEntry.incErrors("Thread was interrupted while processing crawlDelay", e);
+		}else {
+			allLinks.put(initialUrl, false);
+			logEntry.incNumPages();
+			boolean moreToProcess = true;
+			while (moreToProcess) {
+				String urlToProcess = null;
+				for (String link : allLinks.keySet()) {
+					if (!allLinks.get(link)) {
+						urlToProcess = link;
+						break;
+					}
+				}
+				if (urlToProcess != null) {
+					processPage(urlToProcess);
+					allLinks.put(urlToProcess, true);
+				} else {
+					moreToProcess = false;
+				}
+				if (allLinks.size() > this.maxPagesToIndex) {
+					logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
+				}
+				if (crawlDelay > 0) {
+					try {
+						Thread.sleep(crawlDelay * 1000);
+					} catch (InterruptedException e) {
+						logEntry.incErrors("Thread was interrupted while processing crawlDelay", e);
+					}
 				}
 			}
 		}
