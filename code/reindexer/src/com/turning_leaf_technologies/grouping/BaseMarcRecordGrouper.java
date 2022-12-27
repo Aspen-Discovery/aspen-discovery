@@ -48,6 +48,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
+		if (marcRecord == null) {
+			return null;
+		}
 		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTagInt);
 		//Make sure we only get one ils identifier
 		if (recordNumberField != null) {

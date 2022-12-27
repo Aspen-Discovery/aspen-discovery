@@ -800,6 +800,11 @@ public class EvergreenExportMain {
 		if (incrementalIdFiles != null && incrementalIdFiles.length > 0){
 			//Just process all files since we just get a list of IDs that have changed.
 			//If something has been reported in multiple files we only need to process it once.
+			if (incrementalIdFiles.length > 12){
+				//Only process 12 files at a time for performance (12 is about an hours worth with exports every 5 minutes)
+				Arrays.sort(incrementalIdFiles, Comparator.comparingLong(File::lastModified));
+				incrementalIdFiles = Arrays.copyOf(incrementalIdFiles, 12);
+			}
 			totalChanges += updateChangedBibsBasedOnIds(incrementalIdFiles);
 		}
 
@@ -882,20 +887,24 @@ public class EvergreenExportMain {
 		int numWorksReindexed = 0;
 		for (String idToProcess : idsToProcess) {
 			Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), idToProcess, logEntry);
-			String groupedWorkId = groupEvergreenRecord(marcRecord);
-			if (groupedWorkId != null) {
-				//Reindex the record
-				getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-				logEntry.incUpdated();
-				numWorksReindexed++;
+			if (marcRecord != null) {
+				String groupedWorkId = groupEvergreenRecord(marcRecord);
+				if (groupedWorkId != null) {
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					logEntry.incUpdated();
+					numWorksReindexed++;
+				}
+			} else {
+				logEntry.incRecordsWithInvalidMarc("Record " + idToProcess + " was not found in the database, skipping");
 			}
 		}
 
 		//After the files have been processed, delete them
 		for (File incrementalIdFile : incrementalIdFiles) {
-			//if (!incrementalIdFile.delete()) {
+			if (!incrementalIdFile.delete()) {
 			//Temporarily rename to processed so we can replay deletes as needed
-			if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
+			//if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
 				logEntry.incErrors("Could not delete incremental ids file " + incrementalIdFile + " after processing.");
 			}
 		}
