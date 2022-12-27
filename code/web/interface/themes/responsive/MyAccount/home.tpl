@@ -18,13 +18,13 @@
 					<p>{translate text='Your account is linked to by' isPublicFacing=true}&nbsp;
 						{foreach from=$user->getViewers() item=tmpUser name=viewer}
 							{if $user->getViewers()|@count == 1}
-								{$tmpUser->getNameAndLibraryLabel()}.
+								{$tmpUser->getNameAndLibraryLabel()}.&nbsp;
 							{/if}
 							{if $user->getViewers()|@count == 2}
-								{if $smarty.foreach.viewer.last}&nbsp;{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}{/if}
+								{if $smarty.foreach.viewer.last}&nbsp;{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}.&nbsp;{else}{$tmpUser->getNameAndLibraryLabel()}{/if}
 							{/if}
 							{if $user->getViewers()|@count > 2}
-								{if $smarty.foreach.viewer.last}{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}, {/if}
+								{if $smarty.foreach.viewer.last}{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}.&nbsp;{else}{$tmpUser->getNameAndLibraryLabel()},&nbsp;{/if}
 							{/if}
 						{/foreach}
 						<a href="/MyAccount/LinkedAccounts">{translate text='Learn more about Linked Accounts' isPublicFacing=true}</a>.
