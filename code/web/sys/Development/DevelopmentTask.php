@@ -18,7 +18,7 @@ class DevelopmentTask extends DataObject {
 	public $releaseNoteText;
 	public $newSettingsAdded;
 
-	public $suggestedForCommunityDev; //True/False
+	public $suggestedForCommunityDev;
 
 	public $_epicId;
 	public $_relatedTickets;
@@ -28,6 +28,10 @@ class DevelopmentTask extends DataObject {
 
 	public $_requestingPartners; //Can be multiple
 	public $_relatedComponents; //Can be multiple
+
+	public function getNumericColumnNames(): array {
+		return ['taskType', 'dueDate', 'releaseId', 'status', 'storyPoints', 'suggestedForCommunityDev'];
+	}
 
 	public static function getObjectStructure($context = ''): array {
 		$taskTypes = [
@@ -87,16 +91,16 @@ class DevelopmentTask extends DataObject {
 			10 => "Won't Do",
 		];
 		$storyPoints = [
-			0 => 0,
-			0.25 => 0.25,
-			0.5 => 0.5,
-			1 => 1,
-			2 => 2,
-			3 => 3,
-			5 => 5,
-			8 => 8,
-			13 => 13,
-			21 => 21,
+			'0' => '0',
+			'0.25' => '0.25',
+			'0.5' => '0.5',
+			'1' => '1',
+			'2' => '2',
+			'3' => '3',
+			'5' => '5',
+			'8' => '8',
+			'13' => '13',
+			'21' => '21',
 		];
 
 		require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
