@@ -20,6 +20,9 @@ class Greenhouse_TicketsByComponent extends Admin_Admin{
 				'Support' => 0,
 				'Bugs' => 0,
 				'Development' => 0,
+				'Priority1' => 0,
+				'Priority2' => 0,
+				'Priority3' => 0,
 				'PriorityTickets' => 0,
 				'PriorityScore' => 0,
 				'Total' => 0,
@@ -53,6 +56,13 @@ class Greenhouse_TicketsByComponent extends Admin_Admin{
 			while ($ticket->fetch()) {
 				$priority = $ticket->partnerPriority;
 				$ticketsByComponent[$components->id]['PriorityTickets']++;
+				if ($priority == 1) {
+					$ticketsByComponent[$components->id]['Priority1']++;
+				}elseif ($priority == 2) {
+					$ticketsByComponent[$components->id]['Priority2']++;
+				}elseif ($priority == 3) {
+					$ticketsByComponent[$components->id]['Priority3']++;
+				}
 				$ticketsByComponent[$components->id]['PriorityScore'] += (4 - $priority);
 			}
 		}
