@@ -5,7 +5,7 @@
 		<div id='loginUsernameRow' class='form-group'>
 			<label for="username" class='control-label col-xs-12 col-sm-4'>{translate text=$usernameLabel isPublicFacing=true}</label>
 			<div class='col-xs-12 col-sm-8'>
-				<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control"/>
+				<input type="text" name="username" id="username" value="" size="28" class="form-control"/>
 			</div>
 		</div>
 		<div id='loginPasswordRow' class='form-group'>
