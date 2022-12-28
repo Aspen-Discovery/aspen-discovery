@@ -688,7 +688,7 @@ abstract class DataObject {
 		}
 
 		if (count($this->__additionalSelects) > 0) {
-			$selectClause = implode($this->__additionalSelects, ',');
+			$selectClause = implode(',', $this->__additionalSelects);
 			if ($this->__selectAllColumns) {
 				$selectClause = '*, ' . $selectClause;
 			}
@@ -1057,7 +1057,7 @@ abstract class DataObject {
 	 * Load embedded links from json (objects where we directly store the id of the object in this object)
 	 * @param $jsonData
 	 * @param $mappings
-	 * @param $overrideExisting keepExisting / updateExisting
+	 * @param $overrideExisting - keepExisting / updateExisting
 	 * @return void
 	 */
 	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {}

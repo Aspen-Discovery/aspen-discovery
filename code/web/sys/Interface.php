@@ -839,6 +839,12 @@ class UInterface extends Smarty {
 			return $_tmp;
 		}
 	}
+
+	public function template_exists($templateName) {
+		if (file_exists($this->template_dir . $templateName)) {
+			return true;
+		}
+	}
 }
 
 function translate($params) {

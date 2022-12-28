@@ -101,11 +101,12 @@ class ExternalRequestLogEntry extends DataObject {
 				$externalRequest->requestType = $requestType;
 				$externalRequest->requestMethod = $method;
 
-				$externalRequest->requestUrl = ExternalRequestLogEntry::sanitize($url, $dataToSanitize);
+				require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+				$externalRequest->requestUrl = StringUtils::truncate(ExternalRequestLogEntry::sanitize($url, $dataToSanitize), 400);
 				if (is_null($headers)) {
 					$headers = '';
 				} elseif (is_array($headers)) {
-					$headers = implode($headers, "\n");
+					$headers = implode("\n", $headers);
 				}
 				$externalRequest->requestHeaders = ExternalRequestLogEntry::sanitize($headers, $dataToSanitize);
 				$externalRequest->requestBody = ExternalRequestLogEntry::sanitize($body, $dataToSanitize);
@@ -113,7 +114,7 @@ class ExternalRequestLogEntry extends DataObject {
 				if (is_null($response)) {
 					$response = '';
 				}
-				$externalRequest->response = ExternalRequestLogEntry::sanitize($response, $dataToSanitize);;
+				$externalRequest->response = ExternalRequestLogEntry::sanitize($response, $dataToSanitize);
 				$externalRequest->requestTime = time();
 				$externalRequest->insert();
 			}

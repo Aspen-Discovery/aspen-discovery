@@ -38,7 +38,7 @@
 					<th>{translate text="Timezone" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
 					{foreach from=$allChecks item=checkName key=checkType}
-						{if !$showErrorsOnly || array_key_exists($checkType,$checksWithErrors)}
+						{if empty($showErrorsOnly) || array_key_exists($checkType,$checksWithErrors)}
 							<th>{translate text=$checkName isAdminFacing=true}</th>
 						{/if}
 					{/foreach}
@@ -46,7 +46,7 @@
 			</thead>
 			<tbody>
 				{foreach from=$siteStatuses item="siteStatus"}
-					{if !$showErrorsOnly || array_key_exists($siteStatus.name,$sitesWithErrors)}
+					{if empty($showErrorsOnly) || array_key_exists($siteStatus.name,$sitesWithErrors)}
 					<tr>
 						<td {if $siteStatus.aspen_health_status == 'okay'}style="background-color: lightgreen"{elseif $siteStatus.aspen_health_status == 'warning'}style="background-color: lightgoldenrodyellow"{else}style="background-color: #D50000;color:white;font-weight: bold"{/if}>
 							<a href="{$siteStatus.baseUrl}" target="_blank">{$siteStatus.name}</a>
@@ -64,7 +64,7 @@
 							{$siteStatus.version}
 						</td>
 						{foreach from=$allChecks item=checkName key=checkType}
-							{if !$showErrorsOnly || array_key_exists($checkType,$checksWithErrors)}
+							{if empty($showErrorsOnly) || array_key_exists($checkType,$checksWithErrors)}
 								{if array_key_exists($checkType,$siteStatus.checks)}
 									{assign var="checks" value=$siteStatus.checks}
 									{assign var="check" value=$checks.$checkType}

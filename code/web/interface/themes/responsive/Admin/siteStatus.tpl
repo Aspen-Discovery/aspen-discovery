@@ -33,11 +33,11 @@
 			</tr>
 			<tr>
 				<th>{translate text="Last Modified" isAdminFacing=true}</th>
-				<td>{$searchIndex.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
+				<td>{if !empty($searchIndex.index) && !empty($searchIndex.index.lastModified)}{$searchIndex.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}{else}{translate text="N/A" isAdminFacing=true}{/if}</td>
 			</tr>
 			<tr>
 				<th>{translate text="Uptime" isAdminFacing=true}</th>
-				<td>{$searchIndexuptime|printms}</td>
+				<td>{if !empty($searchIndex.uptime)}{$searchIndex.uptime|printms}{else}{translate text="N/A" isAdminFacing=true}{/if}</td>
 			</tr>
 			<tr>
 				<th>{translate text="Full Status" isAdminFacing=true}</th>
