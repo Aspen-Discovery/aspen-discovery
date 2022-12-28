@@ -58,7 +58,8 @@
 							<div class="adminMenuLink "><a href="/Development/TicketsClosedByMonth">{translate text="Tickets Closed By Month" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByPartner">{translate text="Active Tickets By Partner" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/PartnerTicketDashboard">{translate text="Partner Ticket Dashboard" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Partner" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Component" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/BugsBySeverityAndComponent">{translate text="Bugs by Severity" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>
