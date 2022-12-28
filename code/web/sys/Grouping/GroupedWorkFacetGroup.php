@@ -42,6 +42,7 @@ class GroupedWorkFacetGroup extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => false,
+				'canAddNew' => true,
 			],
 		];
 	}

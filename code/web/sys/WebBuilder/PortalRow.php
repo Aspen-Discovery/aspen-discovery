@@ -100,6 +100,7 @@ class PortalRow extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
+				'canAddNew' => true,
 			],
 		];
 	}

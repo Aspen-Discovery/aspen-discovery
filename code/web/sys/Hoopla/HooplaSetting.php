@@ -103,6 +103,7 @@ class HooplaSetting extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'canAddNew' => true,
 				'additionalOneToManyActions' => [],
 			],
 		];

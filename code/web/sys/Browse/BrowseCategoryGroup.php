@@ -73,6 +73,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'canAddNew' => true,
 			],
 
 			'libraries' => [

@@ -150,17 +150,16 @@
 			{if in_array($subProperty.type, array('text', 'regularExpression','multilineRegularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
 			newRow += "<td>";
 			{assign var=subPropName value=$subProperty.property}
-			{assign var=subPropValue value=$subObject->$subPropName}
 			{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='multilineRegularExpression' || $subProperty.type=='integer' || $subProperty.type=='textarea'|| $subProperty.type=='html'}
 			newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}'>";
 			{elseif $subProperty.type=='date'}
 			newRow += "<input type='date' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if !empty($subProperty.default)}{$subProperty.default}{/if}' class='form-control{if !empty($subProperty.required)} required{/if}'>";
 			{elseif $subProperty.type=='checkbox'}
-			newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' {if $subProperty.default == 1}checked='checked'{/if}>";
+			newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' {if !empty($subProperty.default) && $subProperty.default == 1}checked='checked'{/if}>";
 			{else}
 			newRow += "<select name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' id='{$propName}{$subPropName}_" + numAdditional{$propName} + "' class='form-control{if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange=\"{$subProperty.onchange}\"{/if}>";
 			{foreach from=$subProperty.values item=propertyName key=propertyValue}
-			newRow += "<option value='{$propertyValue}' {if $subProperty.default == $propertyValue}selected='selected'{/if}>{$propertyName|escape:javascript}</option>";
+			newRow += "<option value='{$propertyValue}' {if !empty($subProperty.default) && $subProperty.default == $propertyValue}selected='selected'{/if}>{$propertyName|escape:javascript}</option>";
 			{/foreach}
 			newRow += "</select>";
 			{/if}
@@ -171,7 +170,6 @@
 			newRow += '<div class="checkbox">';
 			{*this assumes a simple array, eg list *}
 			{assign var=subPropName value=$subProperty.property}
-			{assign var=subPropValue value=$subObject->$subPropName}
 			{foreach from=$subProperty.values item=propertyName}
 			newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyName}"> {$propertyName}<br>';
 			{/foreach}

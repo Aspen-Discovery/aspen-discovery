@@ -180,6 +180,7 @@ class OverDriveSetting extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
+				'canAddNew' => true,
 			],
 		];
 		if (!(UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin')) {

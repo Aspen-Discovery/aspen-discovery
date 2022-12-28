@@ -100,6 +100,7 @@ class DonationsSetting extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 
 			'donationEarmarks' => [
@@ -116,6 +117,7 @@ class DonationsSetting extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 
 			'donationDedicationTypes' => [
@@ -132,6 +134,7 @@ class DonationsSetting extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 
 			'libraries' => [

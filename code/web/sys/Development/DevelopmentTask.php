@@ -195,6 +195,7 @@ class DevelopmentTask extends DataObject {
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 			'assignedDeveloper' => [
 				'property' => 'assignedDeveloper',
@@ -211,6 +212,7 @@ class DevelopmentTask extends DataObject {
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 			'assignedQA' => [
 				'property' => 'assignedQA',
@@ -227,6 +229,7 @@ class DevelopmentTask extends DataObject {
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 			'sprintId' => [
 				'property' => 'sprintId',
@@ -324,6 +327,7 @@ class DevelopmentTask extends DataObject {
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 			'requestingPartners' => [
 				'property' => 'requestingPartners',
@@ -340,6 +344,7 @@ class DevelopmentTask extends DataObject {
 				'canEdit' => false,
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 		];
 	}

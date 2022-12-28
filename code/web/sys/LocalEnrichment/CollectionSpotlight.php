@@ -252,6 +252,7 @@ class CollectionSpotlight extends DataObject {
 				'hideInLists' => false,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'canAddNew' => true,
 			],
 		];
 	}

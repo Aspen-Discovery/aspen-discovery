@@ -451,6 +451,7 @@ class SSOSetting extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 
 			'libraries' => [
