@@ -101,7 +101,8 @@ class ExternalRequestLogEntry extends DataObject {
 				$externalRequest->requestType = $requestType;
 				$externalRequest->requestMethod = $method;
 
-				$externalRequest->requestUrl = ExternalRequestLogEntry::sanitize($url, $dataToSanitize);
+				require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+				$externalRequest->requestUrl = StringUtils::truncate(ExternalRequestLogEntry::sanitize($url, $dataToSanitize), 400);
 				if (is_null($headers)) {
 					$headers = '';
 				} elseif (is_array($headers)) {
