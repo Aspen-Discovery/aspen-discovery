@@ -16,7 +16,7 @@
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					{if !empty($deletedEntryTitle)}
-						<span class="result-title">{$deletedEntryTitle|ucwords}</span>
+						<span class="result-title">{$deletedEntryTitle}</span>
 						<div>{translate text="This entry no longer exists in the catalog" isPublicFacing=true}</div>
 					{else}
 						<span class="result-title">{translate text="This entry no longer exists in the catalog" isPublicFacing=true}</span>
