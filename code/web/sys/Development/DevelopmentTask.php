@@ -75,6 +75,7 @@ class DevelopmentTask extends DataObject {
 		$statuses = [
 			0 => 'To do',
 			1 => 'Working on it',
+			11 => 'On Hold',
 			2 => 'Needs Info',
 			3 => 'QA/Documentation',
 			4 => 'Blocked',
