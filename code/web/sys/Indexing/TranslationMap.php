@@ -68,6 +68,7 @@ class TranslationMap extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'forcesReindex' => true,
+				'canAddNew' => true,
 			],
 		];
 	}

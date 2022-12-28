@@ -918,6 +918,7 @@ class IndexingProfile extends DataObject {
 						'storeDb' => true,
 						'allowEdit' => false,
 						'canEdit' => false,
+						'canAddNew' => true,
 						'forcesReindex' => true,
 					],
 				],
@@ -942,6 +943,7 @@ class IndexingProfile extends DataObject {
 						'storeDb' => true,
 						'allowEdit' => false,
 						'canEdit' => false,
+						'canAddNew' => true,
 						'forcesReindex' => true,
 					],
 				],
@@ -1081,6 +1083,7 @@ class IndexingProfile extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'canAddNew' => true,
 				'forcesReindex' => true,
 			],
 
@@ -1097,6 +1100,7 @@ class IndexingProfile extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => false,
+				'canAddNew' => true,
 				'forcesReindex' => true,
 			],
 
@@ -1113,6 +1117,7 @@ class IndexingProfile extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => false,
+				'canAddNew' => true,
 				'forcesReindex' => true,
 			],
 		];

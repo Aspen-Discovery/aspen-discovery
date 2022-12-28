@@ -309,6 +309,7 @@ class BrowseCategory extends BaseBrowsable {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'canAddNew' => true,
 			],
 			'source' => [
 				'property' => 'source',

@@ -58,6 +58,7 @@ class EBSCOhostSetting extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'canAddNew' => true,
 			],
 		];
 

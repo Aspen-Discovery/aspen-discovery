@@ -524,6 +524,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'storeDb' => true,
 						'allowEdit' => true,
 						'canEdit' => false,
+						'canAddNew' => true,
 						'additionalOneToManyActions' => [
 							0 => [
 								'text' => 'Reset More Details To Default',

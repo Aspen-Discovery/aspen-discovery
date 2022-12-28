@@ -90,6 +90,7 @@ class CloudLibraryScope extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
+				'canAddNew' => true,
 				'additionalOneToManyActions' => [
 					[
 						'text' => 'Apply To All Libraries',
@@ -116,6 +117,7 @@ class CloudLibraryScope extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
+				'canAddNew' => true,
 				'additionalOneToManyActions' => [
 					[
 						'text' => 'Apply To All Locations',

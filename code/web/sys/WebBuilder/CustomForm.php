@@ -77,6 +77,7 @@ class CustomForm extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
+				'canAddNew' => true,
 			],
 			'emailResultsTo' => [
 				'property' => 'emailResultsTo',

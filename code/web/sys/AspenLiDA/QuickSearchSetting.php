@@ -44,6 +44,7 @@ class QuickSearchSetting extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'hideInLists' => true,
+				'canAddNew' => true,
 			],
 			'libraries' => [
 				'property' => 'libraries',

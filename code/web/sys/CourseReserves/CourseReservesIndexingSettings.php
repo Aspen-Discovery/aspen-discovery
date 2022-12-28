@@ -54,6 +54,7 @@ class CourseReservesIndexingSettings extends DataObject {
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
+				'canAddNew' => true,
 			],
 		];
 	}
