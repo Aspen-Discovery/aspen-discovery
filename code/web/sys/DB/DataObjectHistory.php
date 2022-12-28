@@ -15,6 +15,10 @@ class DataObjectHistory extends DataObject {
 
 	private static $_userNames = [];
 
+	public function getNumericColumnNames(): array {
+		return ['id', 'objectId', 'actionType', 'changedBy', 'changeDate'];
+	}
+
 	public function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
@@ -85,7 +89,7 @@ class DataObjectHistory extends DataObject {
 		if ($name == "changedByName") {
 			return $this->getChangedByName();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

@@ -1,5 +1,5 @@
 <div id="main-content">
-    {if $message}
+    {if !empty($message)}
 	    <h1>{translate text='Sign in to your account' isPublicFacing=true}</h1>
     {/if}
 		<form id="twoFactorAuthForm">

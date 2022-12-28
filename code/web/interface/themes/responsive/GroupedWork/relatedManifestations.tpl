@@ -21,7 +21,7 @@
 				</div>
 			</div>
 		{/foreach}
-		{if $hasHiddenFormats}
+		{if !empty($hasHiddenFormats)}
 			<div class="row related-manifestation" id="formatToggle_{$workId}">
 				<div class="col-sm-12">
 					<a href="#" onclick="$('.hiddenManifestation_{$workId}').show();$('#formatToggle_{$workId}').hide();return false;" class="showHidden">{translate text="View all Formats" isPublicFacing=true}</a>

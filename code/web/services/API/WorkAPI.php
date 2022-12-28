@@ -130,7 +130,7 @@ class WorkAPI extends Action {
 		$ratingData = [
 			'average' => 0,
 			'count' => 0,
-			'user' => 0,
+			'user' => false,
 			'num1star' => 0,
 			'num2star' => 0,
 			'num3star' => 0,

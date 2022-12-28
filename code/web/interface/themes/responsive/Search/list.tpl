@@ -1,7 +1,7 @@
 <h2 aria-label="Catalog Search Results" style="font-size:0;margin:0;line-height:0;"><span class="hidden">{translate text='Catalog Search Results' isPublicFacing=true}</h2>
 <div id="searchInfo">
 	{* Recommendations *}
-	{if $topRecommendations}
+	{if !empty($topRecommendations)}
 		{foreach from=$topRecommendations item="recommendations"}
 			{include file=$recommendations}
 		{/foreach}
@@ -52,7 +52,7 @@
 		{/if}
 
 		{* User's viewing mode toggle switch *}
-		{if $showSearchToolsAtTop}
+		{if !empty($showSearchToolsAtTop)}
 			{include file="Search/search-toolbar.tpl"}
 		{else}
 			{include file="Search/results-displayMode-toggle.tpl"}
@@ -62,11 +62,11 @@
 	</div>
 	{* End Listing Options *}
 
-	{if $placard}
+	{if !empty($placard)}
 		{include file="Search/placard.tpl"}
 	{/if}
 
-	{if $subpage}
+	{if !empty($subpage)}
 		{include file=$subpage}
 	{else}
 		{$pageContent}
@@ -81,14 +81,14 @@
 			</a>
 		{/if}
 	{else}
-		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+		{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
 	{include file="Search/searchSuggestions.tpl"}
 
 	{include file="Search/spellingSuggestions.tpl"}
 
-	{if $showProspectorLink}
+	{if !empty($showProspectorLink)}
 		{* Prospector Results *}
 		<div id='prospectorSearchResultsPlaceholder'></div>
 		{* javascript call for content at bottom of page*}
@@ -96,7 +96,7 @@
 		{include file="Search/interLibraryLoanSearch.tpl"}
 	{/if}
 
-	{if $showDplaLink}
+	{if !empty($showDplaLink)}
 		{* DPLA Results *}
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
@@ -127,11 +127,11 @@
 	{if ($showSearchTools || ($loggedIn && count($userPermissions) > 0)) && !$showSearchToolsAtTop}
 		<div class="search_tools well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
-			{if $showSearchTools}
+			{if !empty($showSearchTools)}
 				<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 				<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
-				{if $enableSavedSearches}
-					{if $savedSearch}
+				{if !empty($enableSavedSearches)}
+					{if !empty($savedSearch)}
 						<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 					{else}
 						<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
@@ -139,10 +139,10 @@
 				{/if}
 				<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
 			{/if}
-			{if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
+			{if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 				<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
 			{/if}
-			{if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+			{if !empty($loggedIn) && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
 				<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse' isPublicFacing=true}</a>
 			{/if}
 		</div>
@@ -156,15 +156,15 @@
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}
 		{rdelim}
 
-		{if $showProspectorLink}
+		{if !empty($showProspectorLink)}
 		AspenDiscovery.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
 		{/if}
 
-		{if $showDplaLink}
-		AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escape:css}");
+		{if !empty($showDplaLink)}
+		AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escapeCSS}");
 		{/if}
 
-		{if !$onInternalIP}
+		{if empty($onInternalIP)}
 			{* Because content is served on the page, have to set the mode that was used, even if the user didn't choose the mode. *}
 			AspenDiscovery.Searches.displayMode = '{$displayMode}';
 		{else}

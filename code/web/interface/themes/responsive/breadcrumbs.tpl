@@ -1,6 +1,6 @@
 {strip}
 	{* Added Breadcrumbs to appear above the format filter icons - JE 6/26/15 *}
-	{if $showBreadcrumbs}
+	{if !empty($showBreadcrumbs)}
 	<div class="row breadcrumbs">
 		<div class="col-xs-12">
 			<ul class="breadcrumb small">

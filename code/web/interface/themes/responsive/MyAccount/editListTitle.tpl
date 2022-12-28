@@ -46,7 +46,7 @@
 				</div>
 			</div>
 
-			{if $enableListDescriptions}
+			{if !empty($enableListDescriptions)}
 				<div class="form-group">
 					<label for="listNotes" class="col-sm-3">{translate text='Notes' isPublicFacing=true} </label>
 					<div class="col-sm-9">

@@ -1,4 +1,4 @@
-{if $recordDriver}
+{if !empty($recordDriver)}
 	<div class="row">
 		<div class="result-label col-xs-2">{translate text="Grouped Work ID" isPublicFacing=true}</div>
 		<div class="col-xs-10 result-value">
@@ -10,43 +10,43 @@
 		<div class="col-xs-12">
 			{assign var="permanentId" value=$recordDriver->getPermanentId()}
             {assign var="groupedWorkValid" value=$recordDriver->hasValidGroupedWorkDriver()}
-			{if $groupedWorkValid}
+			{if !empty($groupedWorkValid)}
 				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">{translate text="Go To Grouped Work" isPublicFacing=true}</a>
 				<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover" isAdminFacing=true}</button>
-				{if $loggedIn && in_array('Upload Covers', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover from Computer" isAdminFacing=true}</button>
 					<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
 					<button onclick="return AspenDiscovery.GroupedWork.clearUploadedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Clear Uploaded Cover" isAdminFacing=true}</button>
 				{/if}
-				{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Upload PDFs', $userPermissions)}
 					<button onclick="return AspenDiscovery.Record.getUploadPDFForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload PDF Version" isAdminFacing=true}</button>
 				{/if}
-				{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Upload Supplemental Files', $userPermissions)}
 					<button onclick="return AspenDiscovery.Record.getUploadSupplementalFileForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload Supplemental File" isAdminFacing=true}</button>
 				{/if}
 				<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment" isAdminFacing=true}</button>
 			{/if}
-			{if $staffClientUrl}
+			{if !empty($staffClientUrl)}
 				<a href="{$staffClientUrl}" class="btn btn-sm btn-info" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="View in Staff Client" isAdminFacing=true}</a>
 			{/if}
-			{if $classicUrl && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}
+			{if !empty($classicUrl) && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}
 				<a href="{$classicUrl}" class="btn btn-sm btn-info" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="View in Native OPAC" isAdminFacing=true}</a>
 			{/if}
 			{if !empty($permanentId)}
-				{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
 				{/if}
 			{/if}
-			{if $groupedWorkValid}
-				{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
+			{if !empty($groupedWorkValid)}
+				{if !empty($loggedIn) && in_array('Set Grouped Work Display Information', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info" isAdminFacing=true}</button>
 				{/if}
-				{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work" isAdminFacing=true}</button>
 					<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup" isAdminFacing=true}</button>
 				{/if}
 			{/if}
-			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
+			{if !empty($loggedIn) && in_array('Download MARC Records', $userPermissions)}
 				<a href="/{$recordDriver->getModule()}/{$recordDriver->getId()|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc" isAdminFacing=true}</a>
 			{/if}
 		</div>
@@ -62,7 +62,7 @@
 			<tr>
 				<th>{translate text='Title' isAdminFacing=true}</th>
 				<th>{translate text='Path isAdminFacing=true'}</th>
-				{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Upload PDFs', $userPermissions)}
 					<th>{translate text='Actions' isAdminFacing=true}</th>
 				{/if}
 			</tr>
@@ -72,7 +72,7 @@
 			<tr>
 				<td>{$uploadedPDF->title|truncate:30}</td>
 				<td>{$uploadedPDF->getFileName()}</td>
-				{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Upload PDFs', $userPermissions)}
 					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedPDF->id}')">{translate text="Delete" isAdminFacing=true}</button></td>
 				{/if}
 			</tr>
@@ -88,7 +88,7 @@
 		<tr>
 			<th>{translate text='Title' isAdminFacing=true}</th>
 			<th>{translate text='Path' isAdminFacing=true}</th>
-			{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
+			{if !empty($loggedIn) && in_array('Upload Supplemental Files', $userPermissions)}
 				<th>{translate text='Actions' isAdminFacing=true}</th>
 			{/if}
 		</tr>
@@ -98,7 +98,7 @@
 			<tr>
 				<td>{$uploadedFile->title}</td>
 				<td>{$uploadedFile->getFileName()}</td>
-				{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
+				{if !empty($loggedIn) && in_array('Upload Supplemental Files', $userPermissions)}
 					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedFile->id}')">{translate text="Delete" isAdminFacing=true}</button></td>
 				{/if}
 			</tr>
@@ -107,7 +107,7 @@
 	</table>
 {/if}
 
-{if $marcRecord}
+{if !empty($marcRecord)}
 	<h4>{translate text="Marc Record" isAdminFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		{if !empty($ilsRecord)}

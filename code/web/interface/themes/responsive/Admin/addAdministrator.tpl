@@ -6,8 +6,8 @@
 			<div class="alert alert-danger">{$barcode}: {$error}</div>
 		{/foreach}
 	{/if}
-	{if $updateMessage}
-		<div class="alert {if $updateMessageIsError}alert-danger{else}alert-info{/if}">
+	{if !empty($updateMessage)}
+		<div class="alert {if !empty($updateMessageIsError)}alert-danger{else}alert-info{/if}">
 			{$updateMessage}
 		</div>
 	{/if}

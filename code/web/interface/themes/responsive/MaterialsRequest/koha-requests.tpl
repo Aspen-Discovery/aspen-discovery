@@ -24,7 +24,7 @@
 				<table id="requestedMaterials" class="table table-striped table-condensed tablesorter">
 					<thead>
 						<tr>
-							{if $allowDeletingILSRequests}
+							{if !empty($allowDeletingILSRequests)}
 							<th>&nbsp;</th>
 							{/if}
 							<th>{translate text="Summary" isPublicFacing=true}</th>
@@ -36,7 +36,7 @@
 					<tbody>
 						{foreach from=$allRequests item=request}
 							<tr>
-								{if $allowDeletingILSRequests}
+								{if !empty($allowDeletingILSRequests)}
 								<td>
 									<input type="checkbox" name="delete_field" value="{$request.id}" title="{translate text="Select Request" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Select Request" inAttribute=true isPublicFacing=true}"/>
 								</td>
@@ -49,7 +49,7 @@
 						{/foreach}
 					</tbody>
 				</table>
-				{if $allowDeletingILSRequests}
+				{if !empty($allowDeletingILSRequests)}
 				<button type="submit" class="btn btn-sm btn-danger" name="submit">{translate text="Delete Selected" isPublicFacing=true}</button>
 				{/if}
 			</form>

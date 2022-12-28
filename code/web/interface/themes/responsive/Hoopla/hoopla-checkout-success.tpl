@@ -4,7 +4,7 @@
 			{translate text="Using card for %1%" 1=$hooplaUser->getNameAndLibraryLabel() isPublicFacing=true}
 		</p>
 	{/if}
-	{if $hooplaPatronStatus}
+	{if !empty($hooplaPatronStatus)}
 		<div class="alert alert-info">
 			{if $hooplaPatronStatus->numCheckedOut == 1}
 				{translate text="You have 1 Hoopla title currently checked out." isPublicFacing=true}

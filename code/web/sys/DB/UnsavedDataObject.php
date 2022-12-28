@@ -3,7 +3,7 @@
 
 class UnsavedDataObject extends DataObject {
 	function __get($name) {
-		return $this->_data[$name];
+		return $this->_data[$name] ?? null;
 	}
 
 	public function setProperty($propertyName, $newValue, $propertyStructure): bool {

@@ -14,7 +14,7 @@
 	<h1>
 		{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
 	</h1>
-	{if $userIsAdmin}
+	{if !empty($userIsAdmin)}
 		<div class="btn-toolbar">
 			<div class="btn-group">
 				<a href='/Admin/People?objectAction=edit&amp;id={$id}' title='Edit this person' class='btn btn-xs btn-default'>
@@ -49,10 +49,10 @@
 			{if $person->otherName}
 				<div class='personDetail'><span class='result-label'>{translate text="Other Names" isPublicFacing=true} </span><span class='personDetailValue'>{$person->otherName|escape}</span></div>
 			{/if}
-			{if $birthDate}
+			{if !empty($birthDate)}
 				<div class='personDetail'><span class='result-label'>{translate text="Birth Date" isPublicFacing=true} </span><span class='personDetailValue'>{$birthDate}</span></div>
 			{/if}
-			{if $deathDate}
+			{if !empty($deathDate)}
 				<div class='personDetail'><span class='result-label'>{translate text="Death Date" isPublicFacing=true} </span><span class='personDetailValue'>{$deathDate}</span></div>
 			{/if}
 			{if $person->ageAtDeath}
@@ -77,8 +77,8 @@
 		<h2 class="blockhead">{translate text="Marriages" isPublicFacing=true}</h2>
 		{foreach from=$marriages item=marriage}
 			<div class="marriageTitle">
-				{$marriage.spouseName}{if $marriage.formattedMarriageDate} - {$marriage.formattedMarriageDate}{/if}
-				{if $userIsAdmin}
+				{$marriage.spouseName}{if !empty($marriage.formattedMarriageDate)} - {$marriage.formattedMarriageDate}{/if}
+				{if !empty($userIsAdmin)}
 					<div class="btn-toolbar">
 						<a href='/Admin/Marriages?objectAction=edit&amp;id={$marriage.marriageId}' title='Edit this Marriage' class='btn btn-xs btn-default'>
 		                    {translate text="Edit" isAdminFacing=true}
@@ -89,7 +89,7 @@
 					</div>
 				{/if}
 			</div>
-			{if $marriage.comments}
+			{if !empty($marriage.comments)}
 				<div class="marriageComments">{$marriage.comments|escape}</div>
 			{/if}
 		{/foreach}
@@ -126,8 +126,8 @@
 		<h2 class="blockhead">{translate text="Obituaries" isPublicFacing=true}</h2>
 		{foreach from=$obituaries item=obituary}
 			<div class="obituaryTitle">
-			{$obituary.source}{if $obituary.sourcePage} page {$obituary.sourcePage}{/if}{if $obituary.formattedObitDate} - {$obituary.formattedObitDate}{/if}
-			{if $userIsAdmin}
+			{$obituary.source}{if !empty($obituary.sourcePage)} page {$obituary.sourcePage}{/if}{if !empty($obituary.formattedObitDate)} - {$obituary.formattedObitDate}{/if}
+			{if !empty($userIsAdmin)}
 				<div class="btn-toolbar">
 					<a href='/Admin/Obituaries?objectAction=edit&amp;id={$obituary.obituaryId}' title='Edit this Obituary' class='btn btn-xs btn-default'>
 						{translate text="Edit" isAdminFacing=true}
@@ -138,7 +138,7 @@
 				</div>
 			{/if}
 			</div>
-			{if $obituary.contents && $obituary.picture}
+			{if !empty($obituary.contents) && $obituary.picture}
 				<div class="obituaryText">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}{$obituary.contents|escape}</div>
 				<div class="clearer"></div>
 			{elseif $obituary.contents}

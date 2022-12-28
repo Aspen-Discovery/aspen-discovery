@@ -47,6 +47,7 @@ class MyAccount_ResetPinPage extends MyAccount {
 
 			$interface->assign('profile', $user);
 			$interface->assign('barcodePin', $user->getAccountProfile()->loginConfiguration == 'barcode_pin');
+			$interface->assign('passwordLabel', $patronHomeLibrary->loginFormPasswordLabel ? $patronHomeLibrary->loginFormPasswordLabel : 'PIN/Password');
 		}
 
 		$this->display('resetPinPage.tpl', 'Reset PIN/Password');

@@ -19,7 +19,7 @@
 				<label for="categoryName" class="control-label">{translate text="New Category Name" isAdminFacing=true}</label>
 				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required">
 			</div>
-			{if $property} {* If data for Select tag is present, use the object editor template to build the <select> *}
+			{if !empty($property)} {* If data for Select tag is present, use the object editor template to build the <select> *}
 			<div class="form-group">
 				<label for="make-as-a-sub-category-ofSelect" class="control-label">{translate text="Add as a Sub-Category to (optional)" isAdminFacing=true} </label>
 				{include file="DataObjectUtil/enum.tpl"} {* create select list *}

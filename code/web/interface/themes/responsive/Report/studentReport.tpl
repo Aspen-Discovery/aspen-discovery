@@ -23,7 +23,7 @@
 				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info"/>
 				&nbsp;
 			</form>
-			{if $reportData}
+			{if !empty($reportData)}
 				<br/>
 				<p>
 					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{else}items out{/if}.
@@ -172,7 +172,7 @@
 			<tbody>
 {assign var=previousPatron value=0}
 {foreach from=$reportData item=dataRow name=overdueData}
-	{if !$smarty.foreach.overdueData.first}
+	{if empty($smarty.foreach.overdueData.first)}
 	{if $dataRow.P_BARCODE != $previousPatron}
 		{if $smarty.foreach.overdueData.index > 0}</div></div></td></tr>{/if}
 				<tr class="overdueSlipContainer">
@@ -191,8 +191,8 @@
 							<div class="overdueRecordTable">
 								<div class="overdueRecordTableMessage">
 									The items below are
-									{if $showOverdueOnly}&nbsp;overdue{/if}
-									{if !$showOverdueOnly}&nbsp;checked out{/if}
+									{if !empty($showOverdueOnly)}&nbsp;overdue{/if}
+									{if empty($showOverdueOnly)}&nbsp;checked out{/if}
 									. &nbsp; 
 									Please return them to your library. This notice was created {$reportDateTime}<br>
 									Check your account online at https://school.library.nashville.org/

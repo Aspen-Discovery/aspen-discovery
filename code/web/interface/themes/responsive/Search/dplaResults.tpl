@@ -1,11 +1,11 @@
 	<div id="dplaSearchResults">
-		{if $showDplaDescription}
+		{if !empty($showDplaDescription)}
 		<h2>{translate text="More from Digital Public Library of America" isPublicFacing=true}</h2>
 		<p>{translate text="The Digital Public Library of America brings together the riches of America’s libraries, archives, and museums, and makes them freely available to the world. It strives to contain the full breadth of human expression, from the written word, to works of art and culture, to records of America’s heritage, to the efforts and data of science. DPLA aims to expand this crucial realm of openly available materials, and make those riches more easily discovered and more widely usable and used." isPublicFacing=true}</p>
 		{/if}
 		{foreach from=$searchResults item=result}
 			<div class="dplaResult row result">
-				{if $showCovers}
+				{if !empty($showCovers)}
 					<div class="col-xs-2">
 						{if !empty($result.object)}
 							<a href="{$result.link}" aria-hidden="true">
@@ -14,7 +14,7 @@
 						{/if}
 					</div>
 				{/if}
-				<div class="{if $showCovers}col-xs-10{else}col-xs-12{/if}">
+				<div class="{if !empty($showCovers)}col-xs-10{else}col-xs-12{/if}">
 					<div class="result-title"><a href="{$result.link}">{$result.title}</a></div>
 					{if !empty($result.publisher) || !empty($result.dataProvider)}
 						<div class="row">

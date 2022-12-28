@@ -707,7 +707,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 		} elseif ($name == 'moreDetailsOptions') {
 			return $this->getMoreDetailsOptions();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

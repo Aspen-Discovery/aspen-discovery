@@ -18,7 +18,7 @@
 		{if $statusInformation->isAllLibraryUseOnly()}
 			<div class="related-manifestation-shelf-status status-its-here-library-use-only label label-success label-wrap">{translate text="It's Here (library use only)" isPublicFacing=true}</div>
 		{else}
-			{if $showItsHere}
+			{if !empty($showItsHere)}
 				<div class="related-manifestation-shelf-status status-its-here label label-success label-wrap">{translate text="It's Here" isPublicFacing=true}</div>
 			{else}
 				<div class="related-manifestation-shelf-status status-on-shelf label label-success label-wrap">{translate text='On Shelf' isPublicFacing=true}</div>
@@ -31,7 +31,7 @@
 			<div class="related-manifestation-shelf-status status-on-shelf label label-success label-wrap">{translate text='On Shelf' isPublicFacing=true}</div>
 		{/if}
 	{elseif $statusInformation->isAllLibraryUseOnly()}
-		{if $isGlobalScope}
+		{if !empty($isGlobalScope)}
 			<div class="related-manifestation-shelf-status status-on-shelf label label-success label-wrap">{translate text='On Shelf' isPublicFacing=true} ({translate text="library use only" isPublicFacing=true})</div>
 		{else}
 			{if !$statusInformation->isAvailable() && $statusInformation->hasLocalItem()}
@@ -49,7 +49,7 @@
 	{elseif $statusInformation->isAvailable() && !$statusInformation->isAvailableLocally() && $statusInformation->hasLocalItem()}
 		<div class="related-manifestation-shelf-status label status-checked-out-available-elsewhere label-warning label-wrap">{translate text='Checked Out/Available Elsewhere' isPublicFacing=true}</div>
 	{elseif $statusInformation->isAvailable()}
-		{if $isGlobalScope}
+		{if !empty($isGlobalScope)}
 			<div class="related-manifestation-shelf-status status-on-shelf label label-success label-wrap">{translate text='On Shelf' isPublicFacing=true}</div>
 		{else}
 			{if $statusInformation->hasLocalItem()}

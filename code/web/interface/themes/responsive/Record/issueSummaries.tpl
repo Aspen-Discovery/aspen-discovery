@@ -2,23 +2,23 @@
 	{* Display Issue Summaries *}
 	{foreach from=$issueSummaries item=issueSummary name=summaryLoop}
 		<div class='issue-summary-row'>
-			{if $issueSummary.location}
+			{if !empty($issueSummary.location)}
 				<div class='issue-summary-location'>{$issueSummary.location}</div>
 			{/if}
 			<div class='issue-summary-details'>
-				{if $issueSummary.identity}
+				{if !empty($issueSummary.identity)}
 					<div class="row">
 						<div class="col-xs-4">{translate text="Identity" isPublicFacing=true}</div>
 						<div class="col-xs-8">{$issueSummary.identity}</div>
 					</div>
 				{/if}
-				{if $issueSummary.callNumber}
+				{if !empty($issueSummary.callNumber)}
 					<div class="row">
 						<div class="col-xs-4">{translate text="Call Number" isPublicFacing=true}</div>
 						<div class="col-xs-12">{$issueSummary.callNumber}</div>
 					</div>
 				{/if}
-				{if $issueSummary.latestReceived}
+				{if !empty($issueSummary.latestReceived)}
 					<div class="row">
 						<div class="col-xs-4">{translate text="Latest Issue Received" isPublicFacing=true}</div>
 						<div class="col-xs-8">{$issueSummary.latestReceived}</div>
@@ -30,7 +30,7 @@
 						<div class="col-xs-8">{$issueSummary.holdingStatement}</div>
 					</div>
 				{/if}
-				{if $issueSummary.libHas}
+				{if !empty($issueSummary.libHas)}
 						<div class="row">
 							<div class="col-xs-4">{translate text="Library Has" isPublicFacing=true}</div>
 							<div class="col-xs-8">{$issueSummary.libHas}</div>
@@ -53,7 +53,7 @@
 							{literal} }); {/literal}
 					</script>
 				{/if}
-				{if $showCheckInGrid && $issueSummary.checkInGridId}
+				{if !empty($showCheckInGrid) && $issueSummary.checkInGridId}
 					&nbsp;
 					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Check-in Grid" isPublicFacing=true}</span>
 					<script	type="text/javascript">

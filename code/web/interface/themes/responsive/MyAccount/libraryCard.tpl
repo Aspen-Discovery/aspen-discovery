@@ -1,4 +1,4 @@
-{if $loggedIn}
+{if !empty($loggedIn)}
     {strip}
 	{if !empty($profile->_web_note)}
 		<div class="row">
@@ -25,13 +25,13 @@
 			{if count($linkedCards) > 0}
 				<div>{$profile->displayName}</div>
 			{/if}
-			{if $showCardExpirationDate && !empty($expirationDate)}
+			{if !empty($showCardExpirationDate) && !empty($expirationDate)}
 				{translate text="Expires %1%" 1=$expirationDate|date_format:"%b %d, %Y" isPublicFacing=true}
 			{/if}
 		</div>
 	</div>
 
-	{if $showAlternateLibraryCard}
+	{if !empty($showAlternateLibraryCard)}
 		<h1>{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}</h1>
 		{if $alternateLibraryCardStyle != 'none'}
 			<div class="row">
@@ -48,7 +48,7 @@
 					<input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$user->alternateLibraryCard}" maxlength="60" class="form-control" onchange="updateAlternateLibraryCardBarcode()">
 				</div>
 			</div>
-			{if $showAlternateLibraryCardPassword}
+			{if !empty($showAlternateLibraryCardPassword)}
 				<div class="form-group">
 					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true} </label>
 					<div class="col-md-6 col-md-offset-3">
@@ -77,7 +77,7 @@
 						{$linkedCard.barcode}
 					</div>
 					<div>{$linkedCard.fullName}</div>
-					{if $showCardExpirationDate && !empty($linkedCard.expirationDate)}
+					{if !empty($showCardExpirationDate) && !empty($linkedCard.expirationDate)}
 						{translate text="Expires %1%" 1=$linkedCard.expirationDate|date_format:"%D" isPublicFacing=true}
 					{/if}
 				</div>
@@ -91,7 +91,7 @@
 		$(document).ready(
 			function () {ldelim}
 				$("#library-barcode-svg").JsBarcode('{$profile->getBarcode()}', {ldelim}format:'{$libraryCardBarcodeStyle}',displayValue:false{rdelim});
-				{if $showAlternateLibraryCard}
+				{if !empty($showAlternateLibraryCard)}
 				updateAlternateLibraryCardBarcode();
 				{/if}
 				{foreach from=$linkedCards item=linkedCard}
@@ -99,7 +99,7 @@
 				{/foreach}
 			{rdelim}
 		);
-        {if $showAlternateLibraryCard}
+        {if !empty($showAlternateLibraryCard)}
 		function updateAlternateLibraryCardBarcode(){ldelim}
 			var alternateLibraryCardVal = $("#alternateLibraryCard").val();
 			var alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");

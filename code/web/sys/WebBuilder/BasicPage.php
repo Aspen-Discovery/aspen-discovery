@@ -184,7 +184,7 @@ class BasicPage extends DB_LibraryLinkedObject {
 		} elseif ($name == "allowableHomeLocations") {
 			return $this->getAllowableHomeLocations();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

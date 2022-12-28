@@ -3,7 +3,7 @@
 	<h1>{translate text="Translations" isAdminFacing=true}</h1>
 	<form class="form" id="translationSettings">
 		<div class="form-group">
-			{if $translationModeActive}
+			{if !empty($translationModeActive)}
 				<button class="btn btn-primary" type="submit" name="stopTranslationMode">{translate text="Exit Translation Mode" isAdminFacing=true}</button>
 			{else}
 				<button class="btn btn-primary" type="submit" name="startTranslationMode">{translate text="Start Translation Mode" isAdminFacing=true}</button>
@@ -19,7 +19,7 @@
 			{/if}
 		</div>
 		<div class="form-group">
-			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if $showAllTranslations}checked{/if}>
+			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if !empty($showAllTranslations)}checked{/if}>
 			<label for="showAllTranslations">{translate text="Show All Translations" isAdminFacing=true}</label>
 		</div>
 		<div class="form-group">
@@ -68,6 +68,6 @@
 		</div>
 	</form>
 
-	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+	{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 </div>
 {/strip}

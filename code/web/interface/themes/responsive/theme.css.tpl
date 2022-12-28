@@ -24,13 +24,13 @@
 {rdelim}
 {/if}
 
-{if $headingFont}
+{if !empty($headingFont)}
 h1, h2, h3, h4, h5, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
 .btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,#narrow-search-label,#library-name-header{ldelim}
     font-family: "{$headingFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
 {/if}
-{if $bodyFont}
+{if !empty($bodyFont)}
 body{ldelim}
     font-family: "{$bodyFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
@@ -41,7 +41,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
 
 #header-wrapper{ldelim}
     background-color: {$headerBackgroundColor};
-    {if $headerBackgroundImage}
+    {if !empty($headerBackgroundImage)}
         background-image: url('{$baseUrl}/files/original/{$headerBackgroundImage}');
         background-size: {$headerBackgroundImageSize};
         background-repeat: {$headerBackgroundImageRepeat};
@@ -155,7 +155,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 
-{if $primaryForegroundColor}
+{if !empty($primaryForegroundColor)}
 #home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar, #horizontal-menu-bar-container {ldelim}
     color: {$primaryForegroundColor}
 {rdelim}
@@ -263,7 +263,7 @@ body .container, #home-page-browse-content{ldelim}
     flex-wrap:wrap;
     justify-content: center;
     align-items: flex-end;
-    {if $browseCategoryImageSize}
+    {if !empty($browseCategoryImageSize)}
     max-height: 350px;
     {else}
     max-height: 250px;

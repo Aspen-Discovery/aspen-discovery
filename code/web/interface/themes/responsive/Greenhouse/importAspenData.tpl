@@ -7,7 +7,7 @@
 	{if isset($importResults)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert {if $importResults.success}alert-success{else}alert-danger{/if}">
+				<div class="alert {if !empty($importResults.success)}alert-success{else}alert-danger{/if}">
 					{$importResults.message}
 				</div>
 			</div>
@@ -46,8 +46,8 @@
 							{/if}
 							<div class="checkbox">
 								{foreach from=$validEnrichmentToImport item=propertyName key=propertyValue}
-									<label for="enrichmentElement_{$propertyValue|escape:css}">
-										<input class="enrichmentElement" id="enrichmentElement_{$propertyValue|escape:css}" name='enrichmentElement[]' type="checkbox" value='{$propertyValue}' checked="checked'"> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+									<label for="enrichmentElement_{$propertyValue|escapeCSS}">
+										<input class="enrichmentElement" id="enrichmentElement_{$propertyValue|escapeCSS}" name='enrichmentElement[]' type="checkbox" value='{$propertyValue}' checked="checked'"> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 									</label>
 								{/foreach}
 							</div>

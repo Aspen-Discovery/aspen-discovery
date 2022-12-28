@@ -3,7 +3,7 @@
 <div class="page">
 	{if (isset($selfRegResult) && $selfRegResult.success)}
 		<div id="selfRegSuccess" class="alert alert-success">
-			{if $selfRegistrationSuccessMessage}
+			{if !empty($selfRegistrationSuccessMessage)}
 				{$selfRegistrationSuccessMessage}
 			{else}
 				{translate text='Congratulations, you have successfully registered for a new library card. You will have limited privileges initially.<br>	Please bring a valid ID to the library to receive a physical library card with full privileges.' isPublicFacing=true}
@@ -36,7 +36,7 @@
 				{/if}
 			</div>
 		{/if}
-		{if $captchaMessage}
+		{if !empty($captchaMessage)}
 			<div id="selfRegFail" class="alert alert-warning">
 				{$captchaMessage}
 			</div>
@@ -44,12 +44,12 @@
 
 	{else}
 		{img_assign filename='self_reg_banner.png' var=selfRegBanner}
-		{if $selfRegBanner}
+		{if !empty($selfRegBanner)}
 			<img src="{$selfRegBanner}" alt="Self Register for a new library card" class="img-responsive">
 		{/if}
 
 		<div id="selfRegDescription" class="alert alert-info">
-			{if $selfRegistrationFormMessage}
+			{if !empty($selfRegistrationFormMessage)}
 				{translate text=$selfRegistrationFormMessage isPublicFacing=true isAdminEnteredData=true}
 			{else}
 				{translate text='This page allows you to register as a patron of our library online. You will have limited privileges initially.' isPublicFacing=true}
@@ -61,7 +61,7 @@
 	{/if}
 </div>
 {/strip}
-{if $promptForBirthDateInSelfReg}
+{if !empty($promptForBirthDateInSelfReg)}
 <script type="text/javascript">
 	{* Pin Validation for CarlX, Sirsi *}
 	{literal}

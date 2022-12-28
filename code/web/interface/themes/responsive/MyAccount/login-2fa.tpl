@@ -21,11 +21,11 @@
 	            </div>
 	            <div id="loginActions" class="form-group">
 		            <div class="col-xs-12 col-sm-offset-4 col-sm-8">
-                        {if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
-                        {if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
-                        {if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
-                        {if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
-                        {if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+                        {if !empty($followupModule)}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
+                        {if !empty($followupAction)}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
+                        {if !empty($recordId)}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+                        {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
+                        {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
 			            <input type="hidden" id="myAccountAuth" value="true">
 			            <input type="submit" name="submit" value="{translate text="Verify" isPublicFacing=true}" id="loginFormVerify" class="btn btn-primary" onclick="return AspenDiscovery.Account.verify2FALogin();">
 			            <a class="btn btn-xs btn-link" style="display: block; margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</a>

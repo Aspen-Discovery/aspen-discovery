@@ -15,7 +15,7 @@ global $memoryWatcher;
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
-spl_autoload_register('aspen_autoloader');
+spl_autoload_register('aspen_autoloader', true, false);
 initializeSession();
 $timer->logTime("Initialized session");
 
@@ -478,6 +478,10 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$interface->assign('pType', 'logged out');
 	$interface->assign('homeLibrary', 'n/a');
 	$masqueradeMode = false;
+	$interface->assign('masqueradeMode', $masqueradeMode);
+	$interface->assign('userHasCatalogConnection', false);
+	$interface->assign('hasInterlibraryLoanConnection', false);
+	$interface->assign('disableCoverArt', false);
 }
 
 //Find a reasonable default location to go to
@@ -922,7 +926,10 @@ function aspen_autoloader($class) {
 	}
 	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
 	try {
-		if (file_exists('sys/' . $class . '.php')) {
+		if (strpos($class, 'Smarty_') === 0) {
+			Smarty_Autoloader::autoload($class);
+			return;
+		} elseif (file_exists('sys/' . $class . '.php')) {
 			$className = ROOT_DIR . '/sys/' . $class . '.php';
 			require_once $className;
 		} elseif (file_exists('Drivers/' . $class . '.php')) {

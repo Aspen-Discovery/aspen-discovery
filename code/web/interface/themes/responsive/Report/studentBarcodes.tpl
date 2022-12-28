@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 	<div id="main-content" class="col-md-12">
 	<div id="reportFrontMatter">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			<h1>School Barcodes Report</h1>
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				<input type="button" name="printSlips" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.avery5160'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
 				&nbsp;
 			</form>
-			{if $reportData}
+			{if !empty($reportData)}
 				<br/>
 				<p>
 					Homeroom has a total of <strong>{$reportData|@count}</strong> patron barcodes.

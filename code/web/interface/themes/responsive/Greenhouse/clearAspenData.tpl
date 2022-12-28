@@ -7,7 +7,7 @@
     {if isset($submissionResults)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert {if $submissionResults.success}alert-success{else}alert-danger{/if}">
+				<div class="alert {if !empty($submissionResults.success)}alert-success{else}alert-danger{/if}">
                     {$submissionResults.message}
 				</div>
 			</div>

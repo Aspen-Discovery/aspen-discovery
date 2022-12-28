@@ -17,7 +17,7 @@
 			<input type="hidden" name="patronId" id="patronId" value="{$patronId}">
 		{/if}
 
-		{if $promptForEmail}
+		{if !empty($promptForEmail)}
             <div class="form-group">
                 <label for="axis360Email" class="control-label">{translate text="Enter an email to be notified when the title is ready for you." isPublicFacing=true}</label>
                 <input type="text" class="email form-control required" name="axis360Email" id="axis360Email" value="{$axis360Email}" size="40" maxlength="250" required/>

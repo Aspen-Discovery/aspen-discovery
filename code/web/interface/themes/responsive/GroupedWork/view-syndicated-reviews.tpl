@@ -1,9 +1,9 @@
 {strip}
 	{foreach from=$syndicatedReviews item=providerList key=provider}
 		{foreach from=$providerList item=review}
-			{if $review.Content}
+			{if !empty($review.Content)}
 			<div class='review'>
-				{if $review.Source}
+				{if !empty($review.Source)}
 					<h4 class='reviewSource'>{$review.Source}</h4>
 				{/if}
 				<div>

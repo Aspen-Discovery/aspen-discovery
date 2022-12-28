@@ -1,17 +1,17 @@
 {strip}
 <div id="record{$summId|escape}" class="resultsList row">
-	{if $showCovers}
+	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
 				<a href="/MyAccount/MyList/{$summShortId}" class="alignleft listResultImage" tabindex="-1">
-					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$summTitle|removeTrailingPunctuation|highlight|escape:css|truncate:180:"..."}">
+					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$summTitle|removeTrailingPunctuation|highlight|escapeCSS|truncate:180:"..."}">
 				</a>
 			{/if}
 		</div>
 	{/if}
 
 
-	<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
+	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
 
 		<div class="row">
@@ -26,7 +26,7 @@
 			</div>
 		</div>
 
-		{if $summAuthor}
+		{if !empty($summAuthor)}
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text="Created By" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
@@ -41,7 +41,7 @@
 			</div>
 		{/if}
 
-		{if $summNumTitles}
+		{if !empty($summNumTitles)}
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
@@ -79,7 +79,7 @@
 		{/if}
 
 		{* Description Section *}
-		{if $summDescription}
+		{if !empty($summDescription)}
 			<div class="row visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>

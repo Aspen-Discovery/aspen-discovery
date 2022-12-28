@@ -13,7 +13,7 @@
 	{/if}
 
 	{* Include correct all javascript *}
-	{if $ie8}
+	{if !empty($ie8)}
 		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in aspen.min.js *}
 		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 	{/if}
@@ -28,27 +28,27 @@
 		{literal}
 		$(document).ready(function(){{/literal}
 			Globals.url = '{$url}';
-			Globals.loggedIn = {if $loggedIn}true{else}false{/if};
-			Globals.opac = {if $onInternalIP}true{else}false{/if};
+			Globals.loggedIn = {if !empty($loggedIn)}true{else}false{/if};
+			Globals.opac = {if !empty($onInternalIP)}true{else}false{/if};
 			Globals.activeModule = '{$module}';
 			Globals.activeAction = '{$action}';
-			Globals.masqueradeMode = {if $masqueradeMode}true{else}false{/if};
-			{if $repositoryUrl}
+			Globals.masqueradeMode = {if !empty($masqueradeMode)}true{else}false{/if};
+			{if !empty($repositoryUrl)}
 				Globals.repositoryUrl = '{$repositoryUrl}';
 				Globals.encodedRepositoryUrl = '{$encodedRepositoryUrl}';
 			{/if}
 
-			{if $automaticTimeoutLength}
+			{if !empty($automaticTimeoutLength)}
 			Globals.automaticTimeoutLength = {$automaticTimeoutLength};
 			{/if}
-			{if $automaticTimeoutLengthLoggedOut}
+			{if !empty($automaticTimeoutLengthLoggedOut)}
 			Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
 			{/if}
 			{* Set Search Result Display Mode on Searchbox *}
-			{if !$onInternalIP}
+			{if empty($onInternalIP)}
 			AspenDiscovery.Searches.getPreferredDisplayMode();
 			{/if}
-			{if $userHasCatalogConnection}
+			{if !empty($userHasCatalogConnection)}
 				Globals.hasILSConnection = true;
 			{/if}
 			{if array_key_exists('Axis 360', $enabledModules)}
@@ -63,7 +63,7 @@
 			{if array_key_exists('OverDrive', $enabledModules)}
 				Globals.hasOverDriveConnection = true;
 			{/if}
-			{if $hasInterlibraryLoanConnection}
+			{if !empty($hasInterlibraryLoanConnection)}
 				Globals.hasInterlibraryLoanConnection = true;
 			{/if}
 			Globals.loadingTitle = '{translate text="Loading" inAttribute=true isPublicFacing=true}';
@@ -77,7 +77,7 @@
 	</script>{strip}
 
 	{if $includeAutoLogoutCode == true}
-		{if $debugJs}
+		{if !empty($debugJs)}
 			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 		{else}
 			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.min.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>

@@ -1,4 +1,4 @@
-{if $transList}
+{if !empty($transList)}
 	<form id="renewForm_{$source}" action="/MyAccount/CheckedOut">
 		<div id="pager" class="row">
 			<div class="col-xs-6 form-inline">

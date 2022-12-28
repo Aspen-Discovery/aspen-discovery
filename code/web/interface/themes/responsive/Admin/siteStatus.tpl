@@ -41,8 +41,8 @@
 			</tr>
 			<tr>
 				<th>{translate text="Full Status" isAdminFacing=true}</th>
-				<td><a onclick="$('#searcherStatus_{$searchIndex.name|escape:css}').show();">{translate text="Show full status" isAdminFacing=true}</a>
-					<div id="searcherStatus_{$searchIndex.name|escape:css}" style="display:none"><pre>{$searchIndex|print_r}</pre></div>
+				<td><a onclick="$('#searcherStatus_{$searchIndex.name|escapeCSS}').show();">{translate text="Show full status" isAdminFacing=true}</a>
+					<div id="searcherStatus_{$searchIndex.name|escapeCSS}" style="display:none"><pre>{$searchIndex|print_r}</pre></div>
 				</td>
 			</tr>
 		</table>

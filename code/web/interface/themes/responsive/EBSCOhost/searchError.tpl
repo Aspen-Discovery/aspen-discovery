@@ -15,7 +15,7 @@
 		<div>
 			{$searchError->message}
 		</div>
-		{if $debug}
+		{if !empty($debug)}
 			<div id="debug">
 				<h4>{translate text="Debug Information" isAdminFacing=true}</h4>
 				<p>{translate text="Backtrace" isAdminFacing=true}</p>

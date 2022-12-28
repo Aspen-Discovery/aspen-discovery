@@ -1,4 +1,4 @@
-{if $recordDriver}
+{if !empty($recordDriver)}
 <script type="text/javascript">
 	{literal}$(document).ready(function(){{/literal}
 		AspenDiscovery.GroupedWork.loadMoreLikeThis('{$recordDriver->getPermanentId()|escape:"url"}');

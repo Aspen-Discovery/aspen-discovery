@@ -1,4 +1,4 @@
-<textarea name='{$propName}' id='{$propName}' {if !empty($property.rows)}rows='{$property.rows}'{/if} {if !empty($property.cols)}cols='{$property.cols}'{/if} title='{$property.description}' class='form-control {if !empty($property.required && $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>{$propValue|escape}</textarea>
+<textarea name='{$propName}' id='{$propName}' {if !empty($property.rows)}rows='{$property.rows}'{/if} {if !empty($property.cols)}cols='{$property.cols}'{/if} title='{$property.description}' class='form-control {if !empty($property.required) && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>{$propValue|escape}</textarea>
 {if $property.type == 'html' || ($property.type == 'markdown' && $useHtmlEditorRatherThanMarkdown)}
 	<script>
 	{literal}

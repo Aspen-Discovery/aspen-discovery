@@ -1,5 +1,5 @@
 {strip}
-	{if $loggedIn}
+	{if !empty($loggedIn)}
 		{if !empty($profile->_web_note)}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -13,15 +13,15 @@
 		{/if}
 
 		<h1>{translate text='Checked Out Titles' isPublicFacing=true}</h1>
-		{if $libraryHoursMessage}
+		{if !empty($libraryHoursMessage)}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 		{/if}
 
-		{if $offline && !$enableEContentWhileOffline}
+		{if !empty($offline) && !$enableEContentWhileOffline}
 			<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 		{else}
 			<ul class="nav nav-tabs" role="tablist" id="checkoutsTab">
-				{if !$offline}
+				{if empty($offline)}
 					<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All" isPublicFacing=true} <span class="badge"><span class="checkouts-placeholder">&nbsp;</span></span></a></li>
 					<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
@@ -44,7 +44,7 @@
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="checkouts">
-				{if !$offline}
+				{if empty($offline)}
 					<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all" aria-label="All Checkouts List"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources" isPublicFacing=true}</div></div>
 					<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials" isPublicFacing=true}</div></div>
 				{/if}

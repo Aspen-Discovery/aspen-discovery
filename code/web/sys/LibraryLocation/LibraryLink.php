@@ -202,7 +202,7 @@ class LibraryLink extends DataObject {
 			$this->getLanguages();
 			return $this->_languages;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

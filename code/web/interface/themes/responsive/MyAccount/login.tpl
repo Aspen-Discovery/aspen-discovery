@@ -2,7 +2,7 @@
 <div id="page-content" class="col-xs-12">
 	<h1>{translate text='Sign in to your account' isPublicFacing=true}</h1>
 	<div id="loginFormWrapper">
-		{if $message}{* Errors for Full Login Page *}
+		{if !empty($message)}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{translate text=$message isPublicFacing=true isPublicFacing=true}</p>
 		{else}
 			<p class="alert alert-danger" id="loginError" style="display: none"></p>
@@ -11,7 +11,7 @@
 		<p class="alert alert-info" id="loading" style="display: none">
 			{translate text="Logging you in now. Please wait." isPublicFacing=true}
 		</p>
-		{if $offline}
+		{if !empty($offline)}
 			<div class="alert alert-warning">
 				<p>
 					{translate text=$offlineMessage isPublicFacing=true}
@@ -91,7 +91,7 @@
 		                        {translate text="Reveal Password" isPublicFacing=true}
 		                    </label>
 
-		                    {if !$inLibrary && !$isOpac && !$isStandalonePage}
+		                    {if empty($inLibrary) && !$isOpac && !$isStandalonePage}
 		                        <label for="rememberMe" class="checkbox">
 		                            <input type="checkbox" id="rememberMe" name="rememberMe">
 		                            {translate text="Keep Me Signed In" isPublicFacing=true}
@@ -103,12 +103,12 @@
 		            <div id="loginActions" class="form-group">
 		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
 		                    <input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
-		                    {if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
-		                    {if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
-		                    {if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
-		                    {if $pageId}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
-		                    {if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
-		                    {if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+		                    {if !empty($followupModule)}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
+		                    {if !empty($followupAction)}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
+		                    {if !empty($recordId)}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+		                    {if !empty($pageId)}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
+		                    {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
+		                    {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
 		                </div>
 		            </div>
 		        </div>

@@ -12,7 +12,7 @@
 					{else}
 						<div class="clearer"></div>
 						<div id="listTopButtons" class="btn-toolbar">
-							{if $allowEdit}
+							{if !empty($allowEdit)}
 								<div class="btn-group btn-group-sm">
 									<button value="editList" id="FavEdit" class="btn btn-sm btn-info listViewButton" onclick="return AspenDiscovery.CourseReserves.editListAction()">{translate text='Edit' isPublicFacing=true}</button>
 								</div>
@@ -20,7 +20,7 @@
 									<button value="cancelEditList" id="cancelEditList" class="btn btn-sm btn-default listEditButton" style="display:none" onclick='return AspenDiscovery.CourseReserves.cancelEditListAction()'>{translate text='Cancel' isPublicFacing=true}</button>
 								</div>
 							{/if}
-							{if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions) || in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+							{if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions) || in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
 								<div class="btn-group btn-group-sm">
 									{if (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 										&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default listViewButton" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromCourseReserve('{$courseReserve->id}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
@@ -43,7 +43,7 @@
 	</div>
 
 	{if $courseReserve->deleted == 0}
-		{if $resourceList}
+		{if !empty($resourceList)}
 			<div class="row">
 				<div class="col-xs-12">
 					<form class="navbar form-inline">
@@ -79,7 +79,7 @@
 					</div>
 				{/foreach}
 			</div>
-			{if $userSort}
+			{if !empty($userSort)}
 				<script type="text/javascript">
 					{literal}
 					$(function(){

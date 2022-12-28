@@ -3,9 +3,9 @@
 	{if ($ilsSummary->totalFines > 0 && $showFines) || ($showExpirationWarnings && $ilsSummary->isExpirationClose())}
 		<div id="myAccountFines">
 			{if $ilsSummary->totalFines > 0 && $showFines}
-				{if $finePaymentType && $ilsSummary->totalFines > $minimumFineAmount}
+				{if !empty($finePaymentType) && $ilsSummary->totalFines > $minimumFineAmount}
 					<div class="myAccountLink">
-						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:#c62828; font-weight:bold;">
+						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if !empty($showRefreshAccountButton)} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:#c62828; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
 								{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency isPublicFacing=true}
 							{else}
@@ -14,8 +14,8 @@
 						</a>
 					</div>
 					<div class="myAccountLink">
-						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
-							{if $payFinesLinkText}{translate text=$payFinesLinkText isPublicFacing=true isAdminEnteredData=true}{else}{translate text="Pay Fines Online" isPublicFacing=true}{/if}
+						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if !empty($showRefreshAccountButton)} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+							{if !empty($payFinesLinkText)}{translate text=$payFinesLinkText isPublicFacing=true isAdminEnteredData=true}{else}{translate text="Pay Fines Online" isPublicFacing=true}{/if}
 						</a>
 					</div>
 				{else}
@@ -29,16 +29,16 @@
 				{/if}
 			{/if}
 
-			{if $showExpirationWarnings && $ilsSummary->isExpirationClose()}
+			{if !empty($showExpirationWarnings) && $ilsSummary->isExpirationClose()}
 				<div class="myAccountLink">
 					{if $ilsSummary->isExpired()}
-						{if $expiredMessage}
+						{if !empty($expiredMessage)}
 							{$expiredMessage}
 						{else}
 							{translate text="Your library card expired on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}
 						{/if}
 					{else}
-						{if $expirationNearMessage}
+						{if !empty($expirationNearMessage)}
 							{$expirationNearMessage}
 						{else}
 							{translate text="Your library card will expire on %1%." 1=$ilsSummary->expirationDate|date_format:"%D" isPublicFacing=true}

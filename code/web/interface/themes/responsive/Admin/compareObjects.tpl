@@ -1,6 +1,6 @@
 <h1 id="pageTitle">{translate text="Compare Objects" isAdminFacing=true}</h1>
 
-{if $error}
+{if !empty($error)}
 	<div class="alert alert-danger">
 		{$error}
 	</div>
@@ -17,8 +17,8 @@
 		{foreach from=$properties item=property}
 			<tr>
 				<td><strong>{translate text=$property.name isAdminFacing=true}</strong></td>
-				<td class="{if $property.uniqueProperty}unique compareSame{elseif $property.value1 == $property.value2}compareSame{else}compareChanged{/if}">{$property.value1}</td>
-				<td class="{if $property.uniqueProperty}unique compareSame{elseif $property.value1 == $property.value2}compareSame{else}compareChanged{/if}">{$property.value2}</td>
+				<td class="{if !empty($property.uniqueProperty)}unique compareSame{elseif $property.value1 == $property.value2}compareSame{else}compareChanged{/if}">{$property.value1}</td>
+				<td class="{if !empty($property.uniqueProperty)}unique compareSame{elseif $property.value1 == $property.value2}compareSame{else}compareChanged{/if}">{$property.value2}</td>
 			</tr>
 		{/foreach}
 		</tbody>

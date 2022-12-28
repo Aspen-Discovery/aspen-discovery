@@ -5,7 +5,7 @@
 		<a class="btn btn-sm btn-default" href="/Admin/CollectionSpotlights">{translate text="All Collection Spotlights" isAdminFacing=true}</a>
 		<a class="btn btn-sm btn-default" href="/Admin/CollectionSpotlights?objectAction=edit&amp;id={$object->id}">{translate text="Edit" isAdminFacing=true}</a>
 		<a class="btn btn-sm btn-default" href="/API/SearchAPI?method=getCollectionSpotlight&amp;id={$object->id}">{translate text="Preview" isAdminFacing=true}</a>
-		{if $canDelete}
+		{if !empty($canDelete)}
 			<a class="btn btn-sm btn-danger" href="/Admin/CollectionSpotlights?objectAction=delete&amp;id={$object->id}" onclick="return confirm('{translate text="Are you sure you want to delete %1%?" 1=$object->name inAttribute=true isAdminFacing=true}');"><i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}</a>
 		{/if}
 	</div>

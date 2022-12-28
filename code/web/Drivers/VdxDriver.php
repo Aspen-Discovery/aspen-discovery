@@ -341,7 +341,7 @@ class VdxDriver {
 		$body .= "ControlNumbers.icn_loc_well_known=4\r\n";
 
 		if (!empty($_REQUEST['oclcNumber'])) {
-			$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $_REQUEST['oclcNumber'] . "\r\n");
+			$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $_REQUEST['oclcNumber']) . "\r\n";
 			$body .= "ReqClassmark=" . $_REQUEST['oclcNumber'] . "\r\n";
 		}
 		$body .= "ReqPubPlace=\r\n";

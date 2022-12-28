@@ -70,7 +70,7 @@ class XpressPaySetting extends DataObject {
 			}
 			return $this->_libraries;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

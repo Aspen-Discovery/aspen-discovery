@@ -18,7 +18,7 @@
 				{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
 					{assign var="active" value=$smarty.foreach.spotlightList.first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					<li {if $active}class="active"{/if}>
+					<li {if !empty($active)}class="active"{/if}>
 						<a id="spotlightTab{$list->id}" href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}" data-url="{$list->fullListLink()}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true}</a>
 					</li>
 					{/if}
@@ -114,7 +114,7 @@
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 						{if $index == 0}
 							listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
-							listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
+							listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
 						{/if}
 						{assign var=index value=$index+1}
 					{/if}
@@ -159,7 +159,7 @@
 							else if (listIndex === {$index}){ldelim}
 								if (listScroller{$listName} == null){ldelim}
 									listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
-									listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
+									listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
 								{rdelim}else{ldelim}
 									listScroller{$listName}.activateCurrentTitle();
 								{rdelim}

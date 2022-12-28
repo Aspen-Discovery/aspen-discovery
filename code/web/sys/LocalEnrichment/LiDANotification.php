@@ -169,7 +169,7 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == "ptypes") {
 			return $this->getPatronTypes();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

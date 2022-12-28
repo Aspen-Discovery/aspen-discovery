@@ -4,7 +4,7 @@
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
-	{if $loggedIn}
+	{if !empty($loggedIn)}
 		<div id="materialsRequestFilters" class="accordion">
 			<div class="panel panel-default">
 			<div class="panel-heading">
@@ -69,7 +69,7 @@
 							<legend>{translate text="Assigned To" isAdminFacing=true}</legend>
 							<div class="form-group checkbox">
 								<label for="showUnassigned">
-									<input type="checkbox" name="showUnassigned" id="showUnassigned"{if $showUnassigned} checked{/if}>
+									<input type="checkbox" name="showUnassigned" id="showUnassigned"{if !empty($showUnassigned)} checked{/if}>
 									<strong>{translate text="Unassigned" isAdminFacing=true}</strong>
 								</label>
 							</div>
@@ -181,7 +181,7 @@
 							</div>
 							<div class="col-sm-8">
 								<div class="input-group">
-									{if $assignees}
+									{if !empty($assignees)}
 										<select name="newAssignee" id="newAssignee" class="form-control">
 											<option value="unselected">{translate text="Select One" inAttribute=true isAdminFacing=true}</option>
 											<option value="unassign">{translate text="Un-assign (remove assignee)" inAttribute=true isAdminFacing=true}</option>
@@ -251,7 +251,7 @@ $(function () {ldelim}
 		headers: {ldelim}
 			0: {ldelim}sorter: false{rdelim},
 {foreach name=config from=$dateColumns item=columnNumber}
-	{$columnNumber+1}: {ldelim}sorter : 'date'{rdelim}{if !$smarty.foreach.config.last}, {/if}
+	{$columnNumber+1}: {ldelim}sorter : 'date'{rdelim}{if empty($smarty.foreach.config.last)}, {/if}
 {/foreach}
 
 		}

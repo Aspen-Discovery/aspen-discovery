@@ -1,5 +1,5 @@
 {strip}
-{if $offline}
+{if !empty($offline)}
 	<div class="alert alert-warning">{translate text="The circulation system is currently offline.  Holdings information is based on information from before the system went offline." isPublicFacing=true}</div>
 {/if}
 {* ils check & last checkin date *}
@@ -10,7 +10,7 @@
 {/if}
 {assign var=showVolume value=$hasVolume}
 {assign var=lastSection value=''}
-{if $periodicalIssues}
+{if !empty($periodicalIssues)}
 	{include file='Record/issueSummaries.tpl' issueSummaries=$periodicalIssues}
 {elseif isset($sections) && count($sections) > 0}
 	{foreach from=$sections item=section}
@@ -49,7 +49,7 @@
 	{translate text="No Copies Found" isPublicFacing=true}
 {/if}
 
-{if !$show856LinksAsTab && count($links)}
+{if empty($show856LinksAsTab) && count($links)}
 	<div id="title_links">
 		<div class="row">
 			<div class="col-xs-12">

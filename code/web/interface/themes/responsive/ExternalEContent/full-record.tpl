@@ -20,7 +20,7 @@
 						<img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail {$coverStyle}" src="{$recordDriver->getBookcoverUrl('medium')}">
 					</div>
 				{/if}
-				{if $showRatings}
+				{if !empty($showRatings)}
 					{include file="GroupedWork/title-rating-full.tpl" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
 				{/if}
 			</div>
@@ -45,7 +45,7 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
 								{foreach from=$actions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if}>{translate text=$link.title isPublicFacing=true}</a>&nbsp;
+									<a href="{if !empty($link.url)}{$link.url}{else}#{/if}" {if !empty($link.onclick)}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if}>{translate text=$link.title isPublicFacing=true}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>

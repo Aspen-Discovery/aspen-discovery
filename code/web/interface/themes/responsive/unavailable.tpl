@@ -142,10 +142,10 @@ window.onload = start
 		<div id="title">
 			
 			<h1>{translate text="The %1% Catalog is down for scheduled maintenance" 1=$libraryName isPublicFacing=true}</h1>
-			{if $systemMessage}
+			{if !empty($systemMessage)}
 				<h2>{$systemMessage}</h2>
 			{/if}
-			{if $showLinkToClassicInMaintenanceMode}
+			{if !empty($showLinkToClassicInMaintenanceMode)}
 			<a href="{$classicCatalogUrl}" class="btn btn-primary">{translate text="Search Classic Catalog" isPublicFacing=true}</a>
 			{/if}
 		</div>

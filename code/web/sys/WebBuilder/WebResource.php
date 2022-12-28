@@ -203,7 +203,7 @@ class WebResource extends DB_LibraryLinkedObject {
 		} elseif ($name == "categories") {
 			return $this->getCategories();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

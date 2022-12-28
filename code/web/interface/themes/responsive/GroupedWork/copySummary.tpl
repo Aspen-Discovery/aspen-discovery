@@ -1,6 +1,6 @@
 {strip}
 	{if !empty($format) && ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine')}
-		{if $recordViewUrl && ($showQuickCopy != 0)}
+		{if !empty($recordViewUrl) && ($showQuickCopy != 0)}
 			<div class="itemSummary">
 				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">
 					{translate text="Where is it?" isPublicFacing=true}
@@ -12,11 +12,11 @@
 		{assign var=numRowsShown value="0"}
 		{if $showQuickCopy != 3}
 		{foreach from=$summary item="item"}
-			{if $item.displayByDefault && $numRowsShown<3}
+			{if !empty($item.displayByDefault) && $numRowsShown<3}
 				{if $item.isEContent == false}
 					<div class="itemSummary row" style="margin: 0">
 						<div class="col-lg-12">
-							<span class="notranslate">{if !$item.isEContent}<strong>{$item.shelfLocation}</strong>{/if}
+							<span class="notranslate">{if empty($item.isEContent)}<strong>{$item.shelfLocation}</strong>{/if}
 							<br>{$item.callNumber}
 								<br>{if $item.availableCopies < 999}
 									{translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
@@ -36,7 +36,7 @@
 				{if $showQuickCopy == 1 || $showQuickCopy == 2 || $showQuickCopy == 3}
 					<div class="itemSummary">
 						{* showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if !empty($recordViewUrl)}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if}); *}
-						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{$relatedManifestation->format|urlencode}', '{$itemSummaryId}');">
+						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{if !empty($relatedManifestation)}{$relatedManifestation->format|urlencode}{/if}', '{$itemSummaryId}');">
 							{translate text="Where is it?" isPublicFacing=true}
 						</a>
 					</div>

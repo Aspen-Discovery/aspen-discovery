@@ -1,6 +1,6 @@
 <div class="col-xs-12">
 	<h1>{$title}</h1>
-    {if $loggedIn && (array_key_exists('Administer All Web Resources', $userPermissions) || array_key_exists('Administer Library Web Resources', $userPermissions))}
+    {if !empty($loggedIn) && (array_key_exists('Administer All Web Resources', $userPermissions) || array_key_exists('Administer Library Web Resources', $userPermissions))}
 		<div class="row">
 			<div class="col-xs-12">
 				<a href="/WebBuilder/WebResources?id={$id}&objectAction=edit" class="btn btn-default btn-sm">{translate text=Edit isAdminFacing=true}</a>

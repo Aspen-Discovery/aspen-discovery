@@ -1,21 +1,21 @@
-{if $recordDriver}
+{if !empty($recordDriver)}
 	<div class="row">
 		<div class="col-xs-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">{translate text="Go To Grouped Work" isPublicFacing=true}</a>
 			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover" isAdminFacing=true}</button>
-			{if $loggedIn && in_array('Upload Covers', $userPermissions)}
+			{if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by from Computer" isAdminFacing=true}</button>
 				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
 				<button onclick="return AspenDiscovery.GroupedWork.clearUploadedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Clear Uploaded Cover" isAdminFacing=true}</button>
 			{/if}
 			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment" isAdminFacing=true}</button>
-			{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
+			{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
 			{/if}
-			{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
+			{if !empty($loggedIn) && in_array('Set Grouped Work Display Information', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info" isAdminFacing=true}</button>
 			{/if}
-			{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
+			{if !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">{translate text="Group With Work" isAdminFacing=true}</button>
 				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup" isAdminFacing=true}</button>
 			{/if}
@@ -70,7 +70,7 @@
 	</div>
 </div>
 
-{if $overDriveMetaDataRaw}
+{if !empty($overDriveMetaDataRaw)}
 	<div id="formattedSolrRecord">
 		<h3>{translate text="OverDrive MetaData" isPublicFacing=true}</h3>
 		{formatJSON subject=$overDriveMetaDataRaw}

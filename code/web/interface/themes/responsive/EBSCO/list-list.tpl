@@ -6,7 +6,7 @@
 	{if !empty($researchStarters) && ($smarty.foreach.recordLoop.iteration == 2 || count($recordSet) < 2)}
 		{$researchStarters}
 	{/if}
-	{if $showExploreMoreBar && ($smarty.foreach.recordLoop.iteration == 2 || count($recordSet) < 2)}
+	{if !empty($showExploreMoreBar) && ($smarty.foreach.recordLoop.iteration == 2 || count($recordSet) < 2)}
 		<div id="explore-more-bar-placeholder"></div>
 		<script type="text/javascript">
 			$(document).ready(

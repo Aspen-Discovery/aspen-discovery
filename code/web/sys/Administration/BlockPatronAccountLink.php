@@ -14,6 +14,10 @@ class BlockPatronAccountLink extends DataObject {
 	public $_primaryAccountBarCode;      //  The info the Admin user will see & input
 	public $_blockedAccountBarCode;      //  The info the Admin user will see & input
 
+	public function getNumericColumnNames(): array {
+		return ['id', 'primaryAccountId', 'blockedLinkAccountId', 'blockLinking'];
+	}
+
 	/**
 	 * Override the fetch functionality to fetch Account BarCodes
 	 *

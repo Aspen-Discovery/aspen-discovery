@@ -10,7 +10,7 @@
 		{/if}
 	</div>
 
-	{if $loggedIn}
+	{if !empty($loggedIn)}
 		{* Account Menu *}
 		{include file="MyAccount/account-sidebar.tpl"}
 	{/if}

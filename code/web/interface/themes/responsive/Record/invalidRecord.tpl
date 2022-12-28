@@ -3,7 +3,7 @@
 	{if empty($invalidWork)}
 		{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog.	Please try your search again.' 1=$id isPublicFacing=true}
 	{else}
-		{if $invalidWork}
+		{if !empty($invalidWork)}
 			{translate text='Sorry, this title (<b>%1%</b>) no longer exists in our catalog. Please try searching for other titles.' 1=$id isPublicFacing=true}
 		{else}
 			{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog, the record was not grouped properly. Please try your search again.' 1=$id isPublicFacing=true}
@@ -24,7 +24,7 @@
 		{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="{$externalMaterialsRequestUrl}" class="btn btn-sm btn-info">{translate text='Submit Request' isPublicFacing=true}</a>
 	</p>
 {/if}
-{if $showStaffView}
+{if !empty($showStaffView)}
 	<h2>{translate text="Staff View" isPublicFacing=true}</h2>
 	<div id="staffViewPlaceHolder">{translate text='Loading Staff View.' isPublicFacing=true}</div>
 	<script type="text/javascript">

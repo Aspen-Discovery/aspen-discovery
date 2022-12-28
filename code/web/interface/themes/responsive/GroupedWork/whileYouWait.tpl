@@ -13,9 +13,9 @@
 						<div class="formatIcons" style="padding-top: 5px">
 							{foreach from=$whileYouWaitTitle.formatCategories item=formatCategory}
 								{if $formatCategory.formatCategory != 'Other'}
-									<span class="{if $formatCategory.available}available{/if}" style="padding: 2px;"><img src="{$formatCategory.image}" alt="{$formatCategory.formatCategory}"/></span>
+									<span class="{if !empty($formatCategory.available)}available{/if}" style="padding: 2px;"><img src="{$formatCategory.image}" alt="{$formatCategory.formatCategory}"/></span>
 								{else}
-									<span class="{if $formatCategory.available}statusValue available{/if}" style="padding: 2px;"><i class="fas fa-box" aria-label="{$formatCategory.formatCategory}"></i></span>
+									<span class="{if !empty($formatCategory.available)}statusValue available{/if}" style="padding: 2px;"><i class="fas fa-box" aria-label="{$formatCategory.formatCategory}"></i></span>
                                 {/if}
 							{/foreach}
 						</div>

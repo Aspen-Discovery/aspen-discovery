@@ -5,6 +5,6 @@
   </div>
 {/foreach}
 
-{if $userIsAdmin}
+{if !empty($userIsAdmin)}
 <a href='/Admin/People?objectAction=addNew' class='btn btn-sm btn-info'>{translate text="Add someone new" isPublicFacing=true}</a>
 {/if}

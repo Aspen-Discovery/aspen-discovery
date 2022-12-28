@@ -272,7 +272,7 @@ class Ticket extends DataObject {
 		} elseif ($name == 'relatedComponents') {
 			return $this->getRelatedComponents();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

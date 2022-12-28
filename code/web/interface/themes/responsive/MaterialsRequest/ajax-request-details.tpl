@@ -157,7 +157,7 @@
 					{* USER INFORMATION FIELDS  *}
 
 					{elseif $formField->fieldType == 'createdBy'}
-					{if $showUserInformation}
+					{if !empty($showUserInformation)}
 						<div class="request_detail_field row">
 							<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
 							<div class="request_detail_field_value col-sm-9">
@@ -169,7 +169,7 @@
 					{elseif
 					$formField->fieldType == 'phone' ||
 					$formField->fieldType == 'email'}
-						{if $showUserInformation}
+						{if !empty($showUserInformation)}
 							{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 							<div class="request_detail_field row">
 								<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
@@ -183,7 +183,7 @@
 					$formField->fieldType == 'illItem' ||
 					$formField->fieldType == 'placeHoldWhenAvailable'}
 					{* Yes / No  User Information Fields *}
-						{if $showUserInformation}
+						{if !empty($showUserInformation)}
 							{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 							<div class="request_detail_field row">
 								<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
@@ -196,7 +196,7 @@
 						{/if}
 
 					{elseif $formField->fieldType == 'holdPickupLocation'}
-						{if $showUserInformation}
+						{if !empty($showUserInformation)}
 							<div class="request_detail_field row">
 								<label class="request_detail_field_label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
 								<div class=" request_detail_field_value col-sm-9">
@@ -206,8 +206,8 @@
 							</div>
 						{/if}
 						{elseif $formField->fieldType == 'libraryCardNumber'}
-						{if $showUserInformation}
-							{if $barCodeColumn}
+						{if !empty($showUserInformation)}
+							{if !empty($barCodeColumn)}
 								<div class="row form-group">
 									<label class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminFacing=true} </label>
 									<div class="request_detail_field_value col-sm-9">

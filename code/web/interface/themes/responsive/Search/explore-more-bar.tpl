@@ -31,11 +31,11 @@
 							<li class="explore-more-option">
 								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
 									<div class="explore-more-image">
-										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if} {if $exploreMoreCategory.openInNewWindow}target="_blank" {/if}>
-											<img src="{$exploreMoreCategory.image}" alt="{translate text="Explore more on"  inAttribute=true isPublicFacing=true} {$exploreMoreCategory.label|escape:css}">
+										<a href='{$exploreMoreCategory.link}' {if !empty($exploreMoreCategory.onclick)}onclick="{$exploreMoreCategory.onclick}"{/if} {if !empty($exploreMoreCategory.openInNewWindow)}target="_blank" {/if}>
+											<img src="{$exploreMoreCategory.image}" alt="{translate text="Explore more on"  inAttribute=true isPublicFacing=true} {$exploreMoreCategory.label|escapeCSS}">
 										</a>
 										<figcaption class="explore-more-category-title">
-											<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if} {if $exploreMoreCategory.openInNewWindow}target="_blank" {/if}>
+											<a href='{$exploreMoreCategory.link}' {if !empty($exploreMoreCategory.onclick)}onclick="{$exploreMoreCategory.onclick}"{/if} {if !empty($exploreMoreCategory.openInNewWindow)}target="_blank" {/if}>
 												<strong>{$exploreMoreCategory.label|truncate:30}</strong>
 											</a>
 										</figcaption>

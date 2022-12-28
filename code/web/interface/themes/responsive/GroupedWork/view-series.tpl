@@ -13,7 +13,7 @@
 		<h1>{translate text="Error" isPublicFacing=true}</h1>
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
-	{if $seriesAuthors}
+	{if !empty($seriesAuthors)}
 	<div class="row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12 notranslate">
@@ -28,7 +28,7 @@
 
 	<div class="result-head">
 		<div id="searchInfo">
-			{if !$recordCount}
+			{if empty($recordCount)}
 				<p>{translate text="Sorry, we could not find series information for this title." isPublicFacing=true}</p>
 			{/if}
 		</div>
@@ -45,5 +45,5 @@
 		{/foreach}
 	</div>
 
-	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+	{if !empty($pageLinks.all)}<div class="pagination">{$pageLinks.all}</div>{/if}
 </div>

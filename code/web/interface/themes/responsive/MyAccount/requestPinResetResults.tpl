@@ -4,7 +4,7 @@
 		<div class="page">
 			<p>{$result.message}</p>
 
-			{if $result.error}
+			{if !empty($result.error)}
 				<div>
 					<a href="/MyAccount/RequestPinReset">{translate text="Try Again" isPublicFacing=true}</a>
 				</div>

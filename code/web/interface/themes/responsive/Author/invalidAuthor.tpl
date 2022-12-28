@@ -1,6 +1,6 @@
 <h1>{translate text='Invalid Author' isPublicFacing=true}</h1>
 
-{if $authorName}
+{if !empty($authorName)}
 	<p class="alert alert-warning">{translate text='Sorry, we could not find the author <strong>%1%</strong> in our catalog. Please try your search again.' 1=$authorName isPublicFacing=true}</p>
 {else}
 	<p class="alert alert-warning">{translate text='No author was provided, please try your search again.' isPublicFacing=true}</p>

@@ -2,7 +2,7 @@
 	<div class="result row cloudLibraryCheckout_{$record->recordId|escape}">
 
 		{* Cover Column *}
-		{if $showCovers}
+		{if !empty($showCovers)}
 			{*<div class="col-xs-4">*}
 			<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
 				<div class="row">
@@ -35,7 +35,7 @@
 		{/if}
 
 		{* Title Details Column *}
-		<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
+		<div class="{if !empty($showCovers)}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">
@@ -65,7 +65,7 @@
 						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - cloudLibrary</div>
 					</div>
 
-					{if $showRatings && $record->getGroupedWorkId() && $record->getRatingData()}
+					{if !empty($showRatings) && $record->getGroupedWorkId() && $record->getRatingData()}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Rating' isPublicFacing=true}&nbsp;</div>
 							<div class="col-sm-12 col-md-7 result-value">
@@ -74,7 +74,7 @@
 						</div>
 					{/if}
 
-					{if $hasLinkedUsers}
+					{if !empty($hasLinkedUsers)}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out To' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
@@ -101,7 +101,7 @@
 						{/if}
 						<a href="#" onclick="return AspenDiscovery.CloudLibrary.returnCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning btn-wrap">{translate text='Return Now' isPublicFacing=true}</a>
 					</div>
-					{if $showWhileYouWait}
+					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
 								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>

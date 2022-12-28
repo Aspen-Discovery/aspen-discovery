@@ -7,11 +7,11 @@
 	{/if}
 </p>
 
-{if $parseError}
+{if !empty($parseError)}
 	<p class="error">{translate text='nohit_parse_error'}</p>
 {/if}
 
-{if $showExploreMoreBar}
+{if !empty($showExploreMoreBar)}
 	<div id="explore-more-bar-placeholder"></div>
 	<script type="text/javascript">
 		$(document).ready(

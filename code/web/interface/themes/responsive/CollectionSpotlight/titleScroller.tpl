@@ -4,7 +4,7 @@
 		{if (!empty($showCollectionSpotlightTitle))}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 				{if !empty($showCollectionSpotlightTitle)}
-					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
+					<span class="listTitle resultInformationLabel">{if !empty($scrollerTitle)}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 				{/if}
 			</div>
 		{/if}

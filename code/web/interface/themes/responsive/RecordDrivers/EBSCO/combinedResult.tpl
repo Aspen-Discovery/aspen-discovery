@@ -1,6 +1,6 @@
 {strip}
-<div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
-	{if $showCovers}
+<div id="record{if !empty($summShortId)}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
+	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 text-center">
 			{if $disableCoverArt != 1}
 				<a href="{$summUrl}" aria-hidden="true">
@@ -9,7 +9,7 @@
 			{/if}
 		</div>
 	{/if}
-	<div class="{if $showCovers}col-xs-9{else}col-xs-12{/if}">
+	<div class="{if !empty($showCovers)}col-xs-9{else}col-xs-12{/if}">
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
@@ -19,7 +19,7 @@
 			</div>
 		</div>
 
-		{if $summAuthor}
+		{if !empty($summAuthor)}
 			<div class="row">
 				<div class="result-label col-tn-3"> {translate text='Author' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">{$summAuthor|escape}</div>
@@ -37,10 +37,10 @@
 
 		<div class="row">
 			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}Full text available{else}Full text not available{/if}</div>
+			<div class="col-tn-9 result-value">{if !empty($summHasFullText)}Full text available{else}Full text not available{/if}</div>
 		</div>
 
-		{if $summDescription}
+		{if !empty($summDescription)}
 			{* Standard Description *}
 			<div class="row visible-xs">
 				<div class="result-label col-tn-3">{translate text='Description' isPublicFacing=true}</div>

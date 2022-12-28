@@ -4,7 +4,7 @@
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
 
-	{if $successMessage}
+	{if !empty($successMessage)}
 		<div class="alert alert-info">{$successMessage}</div>
 	{/if}
 

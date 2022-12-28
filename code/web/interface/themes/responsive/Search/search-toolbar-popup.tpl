@@ -7,7 +7,7 @@
 		    <div class="col-xs-12">
 		        <select name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;" class="form-control">
 		            {foreach from=$sortList item=sortData key=sortLabel}
-		                <option value="{$sortData.sortUrl|escape}"{if $sortData.selected} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
+		                <option value="{$sortData.sortUrl|escape}"{if !empty($sortData.selected)} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
 		            {/foreach}
 		        </select>
 		    </div>
@@ -37,9 +37,9 @@
 		{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 			<div class="form-group">
 			    <div class="col-xs-12">
-				    {if $showSearchTools}
-				        {if $enableSavedSearches}
-				            {if $savedSearch}
+				    {if !empty($showSearchTools)}
+				        {if !empty($enableSavedSearches)}
+				            {if !empty($savedSearch)}
 				            	<a href="/MyAccount/SaveSearch?delete={$searchId}" class="btn btn-default btn-block">{translate text='Remove Saved Search' isPublicFacing=true}</a>
 				            {else}
 				            	<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')" class="btn btn-default btn-block">{translate text='Save Search' isPublicFacing=true}</a>
@@ -49,10 +49,10 @@
 			            <a href="{$rssLink|escape}" class="btn btn-default btn-block">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 			            <a href="{$excelLink|escape}" class="btn btn-default btn-block">{translate text='Export To Excel' isPublicFacing=true}</a>
 		            {/if}
-		            {if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
+		            {if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 	                    <a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')" class="btn btn-default btn-block">{translate text='Create Spotlight' isAdminFacing=true}</a>
 	                {/if}
-	                {if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+	                {if !empty($loggedIn) && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
 	                    <a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')" class="btn btn-default btn-block">{translate text='Add To Browse' isPublicFacing=true}</a>
 	                {/if}
 			    </div>

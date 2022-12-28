@@ -10,7 +10,7 @@
 	{foreachelse}
 		<p>{translate text="No borrower reviews currently exist." isPublicFacing=true}</p>
 	{/foreach}
-	{if !$atLeastOneReview}{* This is for the case when all the reviews were actually just ratings w/o a review included *}
+	{if empty($atLeastOneReview)}{* This is for the case when all the reviews were actually just ratings w/o a review included *}
 		<p>{translate text="No borrower reviews currently exist." isPublicFacing=true}</p>
 	{/if}
 </div>

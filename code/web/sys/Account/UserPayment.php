@@ -173,7 +173,7 @@ class UserPayment extends DataObject {
 				}
 			}
 		}
-		return $this->_data[$name];
+		return $this->_data[$name] ?? null;
 	}
 
 	public static function completeComprisePayment($queryParams) {

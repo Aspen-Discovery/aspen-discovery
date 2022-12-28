@@ -5595,7 +5595,6 @@ class MyAccount_AJAX extends JSON_Action {
 			'message' => 'Something went wrong.',
 		];
 
-		//$listId = htmlspecialchars($_GET["id"]);
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
@@ -5959,6 +5958,8 @@ class MyAccount_AJAX extends JSON_Action {
 		} else {
 			require_once ROOT_DIR . '/sys/Suggestions.php';
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			global $interface;
+			$interface->assign('listName', 'recommendedForYou');
 			$suggestions = Suggestions::getSuggestions(UserAccount::getActiveUserId());
 			foreach ($suggestions as $index => $suggestionInfo) {
 				$groupedWorkDriver = new GroupedWorkDriver($suggestionInfo['titleInfo']);

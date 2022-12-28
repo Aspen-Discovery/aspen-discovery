@@ -1,5 +1,5 @@
 {strip}
-{if $popupContent}
+{if !empty($popupContent)}
 	{$popupContent}
 {else}
 	{include file="$popupTemplate"}

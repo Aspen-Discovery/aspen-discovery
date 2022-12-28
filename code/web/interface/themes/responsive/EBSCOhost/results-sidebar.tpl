@@ -8,7 +8,7 @@
 		</div>
 	{/if}
 
-	{if $sideFacetSet}
+	{if !empty($sideFacetSet)}
 		<div id="refineSearch">
 			{* Narrow Results *}
 			<div class="row">

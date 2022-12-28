@@ -276,6 +276,9 @@ abstract class DataObject {
 		$propertyValues = '';
 		foreach ($properties as $name => $value) {
 			if (!is_null($value) && !is_array($value) && $name[0] != '_' && $name[0] != 'N') {
+				if ($name == $this->getPrimaryKey() && empty($this->getPrimaryKeyValue())){
+					continue;
+				}
 				if (strlen($propertyNames) != 0) {
 					$propertyNames .= ', ';
 					$propertyValues .= ', ';
@@ -336,7 +339,7 @@ abstract class DataObject {
 		try {
 			$response = $aspen_db->exec($insertQuery);
 		} catch (PDOException $e) {
-			if (IPAddress::showDebuggingInformation()) {
+			if (IPAddress::showDebuggingInformation() && !($this instanceof AspenError)) {
 				$errorToLog = new AspenError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
 				$errorToLog->insert();
 			}
@@ -352,7 +355,7 @@ abstract class DataObject {
 		$this->{$this->__primaryKey} = $aspen_db->lastInsertId();
 
 		//Log the insert into object history
-		if (!empty($this->{$this->__primaryKey}) && !($this instanceof DataObjectHistory || $this instanceof AspenError)) {
+		if (!empty($this->{$this->__primaryKey}) && !($this instanceof DataObjectHistory) && !($this instanceof AspenError)) {
 			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
 			$history = new DataObjectHistory();
 			$history->objectType = get_class($this);
@@ -492,7 +495,7 @@ abstract class DataObject {
 			$logger->log($deleteQuery, Logger::LOG_ERROR);
 		}
 		$timer->logTime($deleteQuery);
-		if ($result) {
+		if ($result && !$useWhere) {
 			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
 			$history = new DataObjectHistory();
 			$history->objectType = get_class($this);

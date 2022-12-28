@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			{if !empty($profile->_web_note)}
 				<div class="row">
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -24,13 +24,13 @@
 					<div class="alert alert-success">{$msg}</div>
 				{/foreach}
 			{/if}
-			{if $offline}
+			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal">
 					<input type="hidden" name="updateScope" value="userPreference">
-					{if $showUsernameField}
+					{if !empty($showUsernameField)}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="username">{translate text="Username" isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
@@ -71,7 +71,7 @@
 						</div>
 					</div>
 
-					{if $showRatings && $showComments}
+					{if !empty($showRatings) && $showComments}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="noPromptForUserReviews" class="control-label" style="text-align:left">{translate text='Do not prompt me for reviews after rating titles' isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
@@ -87,7 +87,7 @@
 						</div>
 					{/if}
 
-					{if $showEdsPreferences}
+					{if !empty($showEdsPreferences)}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="hideResearchStarters" class="control-label" style="text-align:left">{translate text='Hide Research Starters' isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
@@ -100,7 +100,7 @@
 						</div>
 					{/if}
 
-					{if $allowHomeLibraryUpdates}
+					{if !empty($allowHomeLibraryUpdates)}
 						{* Allow editing home library *}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="homeLocation" class="">{translate text='Home Library' isPublicFacing=true}</label></div>
@@ -131,7 +131,7 @@
 						</div>
 					{/if}
 
-					{if $allowRememberPickupLocation && count($pickupLocations) > 1}
+					{if !empty($allowRememberPickupLocation) && count($pickupLocations) > 1}
 						{* Allow editing the pickup location *}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Preferred Pickup Location' isPublicFacing=true}</label></div>
@@ -157,7 +157,7 @@
 						</div>
 					{/if}
 
-					{if $showAlternateLibraryOptions}
+					{if !empty($showAlternateLibraryOptions)}
 						{if count($locationList) > 2} {* First option is none *}
 							<div class="form-group">
 								<div class="col-xs-4"><label for="myLocation1" class="control-label">{translate text='Alternate Pickup Location 1' isPublicFacing=true}</label></div>
@@ -178,7 +178,7 @@
 						{/if}
 					{/if}
 
-					{if $allowRememberPickupLocation}
+					{if !empty($allowRememberPickupLocation)}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="rememberHoldPickupLocation" class="control-label" style="text-align: left">{translate text='Bypass pickup location prompt when placing holds' isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
@@ -191,7 +191,7 @@
 						</div>
 					{/if}
 
-					{if $showAutoRenewSwitch}
+					{if !empty($showAutoRenewSwitch)}
 						<div class="form-group">
 							<div class="col-xs-4"><label for="allowAutoRenewal" class="control-label">{translate text='Allow Auto Renewal' isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
@@ -204,7 +204,7 @@
 						</div>
 					{/if}
 
-					{if !$offline && $edit == true}
+					{if empty($offline) && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-8 col-xs-offset-4">
 								<button type="submit" name="updateMyPreferences" class="btn btn-sm btn-primary">{translate text="Update My Preferences" isPublicFacing=true}</button>

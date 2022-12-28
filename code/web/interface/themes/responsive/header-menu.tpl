@@ -1,6 +1,6 @@
 {strip}
 <div id="header-menu" class="dropdown-menu dropdownMenu" aria-labelledby="header-menu-dropdown">
-	{if $showLoginButton}
+	{if !empty($showLoginButton)}
 		<div id="hamburger-menu-my-account" class="header-menu-option">
 			<a href="/MyAccount/Home"><i class="fas fa-user fa-fw"></i><span>{translate text='Your Account' isPublicFacing=true}</span></a>
 		</div>
@@ -18,7 +18,7 @@
 		</div>
 	{/if}
 
-	{if $showLibraryHoursAndLocationsLink}
+	{if !empty($showLibraryHoursAndLocationsLink)}
 		<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true isAdminFacing=true}" class="modalDialogTrigger">
 			<div id="home-page-hours-locations" class="header-menu-option">
 				<i class="fas fa-map-marker-alt fa-fw"></i>
@@ -41,18 +41,18 @@
 		</a>
 	{/if}
 
-	{if $libraryLinks}
+	{if !empty($libraryLinks)}
 		{foreach from=$libraryLinks item=linkCategory key=categoryName name=linkLoop}
 			{assign var=firstCategory value=$linkCategory|@reset}
 			{if !$firstCategory->alwaysShowIconInTopMenu}
-				{if $categoryName && !preg_match('/none-\\d+/', $categoryName) && count($linkCategory) > 1}
+				{if !empty($categoryName) && !preg_match('/none-\\d+/', $categoryName) && count($linkCategory) > 1}
 					{* Put the links within a collapsible section *}
 					<a onclick="return AspenDiscovery.toggleMenuSection('{$categoryName|escapeCSS}');" {if $firstCategory->showInTopMenu == 1 || $firstCategory->alwaysShowIconInTopMenu == 1}class="hidden-lg"{/if}>
 						<div class="header-menu-section" id="{$categoryName|escapeCSS}MenuSection">
 							<i class="fas {if !array_key_exists($categoryName, $expandedLinkCategories)}fa-caret-right{else}fa-caret-down{/if}"></i>
-							{if $linkCategory->published == 0}<em>{/if}
+							{if $firstCategory->published == 0}<em>{/if}
 							{translate text=$categoryName isPublicFacing=true}
-							{if $linkCategory->published == 0}</em>{/if}
+							{if $firstCategory->published == 0}</em>{/if}
 						</div>
 					</a>
 					<div id="{$categoryName|escapeCSS}MenuSectionBody" class="menuSectionBody {if $firstCategory->showInTopMenu == 1 || $firstCategory->alwaysShowIconInTopMenu == 1}hidden-lg{/if}" {if !array_key_exists($categoryName, $expandedLinkCategories)}style="display: none" {/if}>
@@ -60,7 +60,7 @@
 							{if !empty($link->htmlContents)}
 								{$link->htmlContents}
 							{else}
-								<div class="header-menu-option {if $categoryName && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
+								<div class="header-menu-option {if !empty($categoryName) && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
 									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
 										{if !empty($link->iconName)}
 											<i class="fas fa-{$link->iconName} fa-fw"></i>
@@ -117,11 +117,11 @@
 		{/foreach}
 	{/if}
 
-	{if $masqueradeMode}
+	{if !empty($masqueradeMode)}
 		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade" isAdminFacing=true}</a>
 	{/if}
 
-	<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out" inAttribute=true isPublicFacing=true}" class="btn btn-default btn-sm btn-block" {if !$loggedIn}style="display:none"{/if}>
+	<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out" inAttribute=true isPublicFacing=true}" class="btn btn-default btn-sm btn-block" {if empty($loggedIn)}style="display:none"{/if}>
 		{translate text="Sign Out" isPublicFacing=true}
 	</a>
 </div>

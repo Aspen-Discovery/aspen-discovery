@@ -17,7 +17,7 @@
 			<input type="hidden" name="patronId" id="patronId" value="{$patronId}">
 		{/if}
 
-		{if $promptForEmail}
+		{if !empty($promptForEmail)}
 			<div class="form-group">
 				<label for="overdriveEmail" class="control-label">{translate text="Enter an email to be notified when the title is ready for you." isPublicFacing=true}</label>
 				<input type="text" class="email form-control" name="overdriveEmail" id="overdriveEmail" value="{$overdriveEmail}" size="40" maxlength="250"/>

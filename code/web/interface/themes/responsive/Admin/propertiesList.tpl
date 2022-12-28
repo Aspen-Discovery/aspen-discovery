@@ -3,12 +3,12 @@
 		<h1 id="pageTitle">{$pageTitleShort}</h1>
 	</div>
 	<div class="col-xs-12 col-md-3 help-link">
-        {if $instructions}<a href="{$instructions}"><i class="fas fa-question-circle"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
+        {if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
 	</div>
 </div>
 
-{if $updateMessage}
-	<div class="alert {if $updateMessageIsError}alert-danger{else}alert-info{/if}">
+{if !empty($updateMessage)}
+	<div class="alert {if !empty($updateMessageIsError)}alert-danger{else}alert-info{/if}">
 		{$updateMessage}
 	</div>
 {/if}
@@ -16,7 +16,7 @@
 {if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete}
 <form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
-	{if $canSort && count($sortableFields) > 0}
+	{if !empty($canSort) && count($sortableFields) > 0}
 		<div class="row">
 			<div class="col-xs-12">
 				<label for="sort">{translate text='Sort by' isAdminFacing=true}</label>
@@ -31,7 +31,7 @@
 			</div>
 		</div>
 	{/if}
-	{if $canFilter}
+	{if !empty($canFilter)}
 		<div id="filtersList" class="">
 			<div id="filters-accordion" class="panel-group">
 				<div class="panel {if count($appliedFilters) > 0}active{/if}" id="filtersPanel">
@@ -72,7 +72,7 @@
 					{/if}
 					{foreach from=$structure item=property key=id}
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
-						<th><span title='{$property.description}'>{translate text=$property.label isAdminFacing=true}</span></th>
+						<th><span {if !empty($property.description)}title='{$property.description}'{/if}>{translate text=$property.label isAdminFacing=true}</span></th>
 						{/if}
 					{/foreach}
 					<th>{translate text='Actions' isAdminFacing=true}</th>
@@ -82,7 +82,7 @@
 				{if isset($dataList) && is_array($dataList)}
 					{foreach from=$dataList item=dataItem key=id}
 						{assign var=canEdit value=$dataItem->canActiveUserEdit()}
-					<tr class='{cycle values="odd,even"} {$dataItem->class}'>
+					<tr class='{cycle values="odd,even"} {if !empty($dataItem->class)}{$dataItem->class}{/if}'>
 						{if $canCompare || $canBatchUpdate}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
@@ -93,7 +93,7 @@
 							{if !isset($property.hideInLists) || $property.hideInLists == false}
 								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
-									{if $dataItem->class != 'objectDeleted'}
+									{if empty($dataItem->class) || $dataItem->class != 'objectDeleted'}
 										{if $dataItem->canActiveUserEdit()}
 											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>
 											<i class="fas fa-pencil-alt fa-xs" style="padding-right: .5em"></i>{/if}
@@ -126,7 +126,7 @@
 									{assign var=propDayValue value=$dataItem->$propDayValue}
 									{assign var=propNameYear value=$property.propNameYear}
 									{assign var=propYearValue value=$dataItem->$propNameYear}
-									{if $propMonthValue}$propMonthValue{else}??{/if}/{if $propDayValue}$propDayValue{else}??{/if}/{if $propYearValue}$propYearValue{else}??{/if}
+									{if !empty($propMonthValue)}$propMonthValue{else}??{/if}/{if !empty($propDayValue)}$propDayValue{else}??{/if}/{if !empty($propYearValue)}$propYearValue{else}??{/if}
 								{elseif $property.type == 'currency'}
 									{assign var=propDisplayFormat value=$property.displayFormat}
 									${$propValue|string_format:$propDisplayFormat}
@@ -160,7 +160,7 @@
 								</td>
 							{/if}
 						{/foreach}
-						{if $dataItem->class != 'objectDeleted'}
+						{if empty($dataItem->class) || $dataItem->class != 'objectDeleted'}
 							<td>
 								<div class="btn-group-vertical">
 								{if $dataItem->canActiveUserEdit()}
@@ -173,7 +173,7 @@
 								{/if}
 								{if $dataItem->getAdditionalListJavascriptActions()}
 									{foreach from=$dataItem->getAdditionalListJavascriptActions() item=action}
-                                        <a class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" onclick="{$action.onClick}">{if $action.icon}<i class="fas {$action.icon}"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
+                                        <a class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" onclick="{$action.onClick}">{if !empty($action.icon)}<i class="fas {$action.icon}"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
                                     {/foreach}
 								{/if}
 								{if $dataItem->canActiveUserEdit() && $showHistoryLinks}
@@ -189,21 +189,21 @@
 		</table>
 	</div>
 
-	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+	{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 
 	<input type='hidden' name='objectAction' id='objectAction' value='' />
-	{if $canCompare}
+	{if !empty($canCompare)}
 		<div class="btn-group">
 			<button type='submit' value='compare' class="btn btn-default" onclick="$('#objectAction').val('compare');return AspenDiscovery.Admin.validateCompare();">{translate text='Compare' isAdminFacing=true}</button>
 		</div>
 	{/if}
-	{if $canBatchUpdate}
+	{if !empty($canBatchUpdate)}
 		<div class="btn-group">
 			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'selected')">{translate text='Batch Update Selected' isAdminFacing=true}</button>
 			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All' isAdminFacing=true}</button>
 		</div>
 	{/if}
-	{if $canAddNew}
+	{if !empty($canAddNew)}
 		<div class="btn-group">
 			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')"><i class="fas fa-plus"></i> {translate text='Add New' isAdminFacing=true}</button>
 		</div>
@@ -214,7 +214,7 @@
 		{/foreach}
 	</div>
 
-	{if $canDelete && $canBatchDelete}
+	{if !empty($canDelete) && $canBatchDelete}
 	<div class="row" style="padding-top: 1em">
         <div class="btn-group btn-group-sm col-sm-12">
             <button type='submit' value='batchDelete' class="btn btn-danger" onclick="return AspenDiscovery.Admin.showBatchDeleteForm('{$module}', '{$toolName}', 'selected')"><i class="fas fa-trash"></i> {translate text='Batch Delete Selected' isAdminFacing=true}</button>
@@ -226,7 +226,7 @@
 </form>
 {/if}
 
-{if $showQuickFilterOnPropertiesList && isset($dataList) && is_array($dataList) && count($dataList) > 5}
+{if !empty($showQuickFilterOnPropertiesList) && isset($dataList) && is_array($dataList) && count($dataList) > 5}
 <script type="text/javascript">
 	{literal}
 	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });

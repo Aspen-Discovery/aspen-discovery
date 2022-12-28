@@ -114,7 +114,7 @@ class LMLibraryCalendarSetting extends DataObject {
 		if ($name == "libraries") {
 			return $this->getLibraries();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

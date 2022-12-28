@@ -24,8 +24,8 @@
 			<div class="checkbox">
 				{* Modified Behavior: $propertyValue is used only as a display name to the user *}
 				{foreach from=$property.values item=propertyName key=propertyValue}
-					<label for="{$propName}_{$propertyValue|escape:css}">
-						<input class="{$propName}" id="{$propName}_{$propertyValue|escape:css}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if}> {if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}<br>
+					<label for="{$propName}_{$propertyValue|escapeCSS}">
+						<input class="{$propName}" id="{$propName}_{$propertyValue|escapeCSS}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if}> {if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}<br>
 					</label>
 				{/foreach}
 			</div>

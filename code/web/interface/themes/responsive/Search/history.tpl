@@ -7,8 +7,8 @@
 		{/if}
 
 		<h1>{translate text="Your Searches" isPublicFacing=true}</h1>
-		{if !$noHistory}
-			{if $saved}
+		{if empty($noHistory)}
+			{if !empty($saved)}
 				<div class="resultHead"><h2>{translate text="Saved Searches" isPublicFacing=true}</h2></div>
 				<table class="table table-bordered table-striped" width="100%">
 					<tr>
@@ -25,7 +25,7 @@
 					<tr>
 						<td>{$info.id}</td>
 						<td>{$info.time}</td>
-						<td>{$info.title}{if $info.hasNewResults}<a href="{$info.newTitlesUrl|escape}"><span class="label badge-updated">{translate text="Updated" isPublicFacing=true}</span></a>{/if}</td>
+						<td>{$info.title}{if !empty($info.hasNewResults)}<a href="{$info.newTitlesUrl|escape}"><span class="label badge-updated">{translate text="Updated" isPublicFacing=true}</span></a>{/if}</td>
 						<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="Anything (Empty Search)" isPublicFacing=true}{else}{$info.description|escape}{/if}</a></td>
 						<td>{foreach from=$info.filters item=filters key=field}{foreach from=$filters item=filter}
 							<b>{translate text=$field|escape isPublicFacing=true}</b>: {$filter.display|escape}<br/>
@@ -39,7 +39,7 @@
 				<br/>
 			{/if}
 
-			{if $links}
+			{if !empty($links)}
 				<div class="resultHead"><h2>{translate text="Recent Searches" isPublicFacing=true}</h2></div>
 				<table class="table table-bordered table-striped" width="100%">
 					<tr>

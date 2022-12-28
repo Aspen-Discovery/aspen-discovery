@@ -1,6 +1,6 @@
 {if isset($cluster.showMoreFacetPopup) && $cluster.showMoreFacetPopup}
 	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-		{if $thisFacet.isApplied}
+		{if !empty($thisFacet.isApplied)}
 			<div class="facetValue"><i class="fas fa-check-circle fa-lg text-success" style="vertical-align: middle"></i> {$thisFacet.display} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">(remove)</a></div>
 		{else}
 			<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display}{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}</div>
@@ -26,7 +26,7 @@
 		{* Start div for hidden content*}
 			<div class="narrowGroupHidden" id="narrowGroupHidden_{$title}" style="display:none">
 		{/if}
-		{if $thisFacet.isApplied}
+		{if !empty($thisFacet.isApplied)}
 			<div class="facetValue"><i class="fas fa-check-circle fa-lg text-success" style="vertical-align: middle"></i> {$thisFacet.display} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">({translate text='remove' isPublicFacing=true})</a></div>
 		{else}
 			<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display}{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}</div>

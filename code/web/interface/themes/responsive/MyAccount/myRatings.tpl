@@ -3,7 +3,7 @@
 		{*alert("{$title}");*}
 	{*</script>*}
 {*{/if}*}
-{if $loggedIn}
+{if !empty($loggedIn)}
 
 	{if !empty($profile->_web_note)}
 		<div class="row">
@@ -21,7 +21,7 @@
 		<h1>{translate text='Titles You Rated' isPublicFacing=true}</h1>
 
 		<div class="page">
-			{if $ratings}
+			{if !empty($ratings)}
 				<table class="table table-striped" id="myRatingsTable">
 					<thead>
 						<tr>
@@ -62,7 +62,7 @@
 			{translate text="You have not rated any titles yet." isPublicFacing=true}
 			{/if}
 
-			{if $notInterested}
+			{if !empty($notInterested)}
 				<h1>{translate text="Titles You Don't Want Recommended" isPublicFacing=true}</h1>
 				<table class="myAccountTable table table-striped" id="notInterestedTable">
 					<thead>

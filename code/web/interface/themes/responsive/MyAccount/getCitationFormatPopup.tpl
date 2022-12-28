@@ -1,5 +1,5 @@
 <div align="left">
-	{if $message}<div class="error">{translate text=$message isPublicFacing=true}</div>{/if}
+	{if !empty($message)}<div class="error">{translate text=$message isPublicFacing=true}</div>{/if}
 
 	<form action="/MyAccount/CiteList" method="get" class="form" id="citeListForm">
 		<input type="hidden" name="listId" value="{$listId|escape}">

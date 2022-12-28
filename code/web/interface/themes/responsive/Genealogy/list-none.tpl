@@ -1,6 +1,6 @@
 {strip}
 {* Recommendations *}
-{if $topRecommendations}
+{if !empty($topRecommendations)}
     {foreach from=$topRecommendations item="recommendations"}
         {include file=$recommendations}
     {/foreach}
@@ -40,7 +40,7 @@
 
 {include file="Search/searchSuggestions.tpl"}
 
-{if $userIsAdmin}
+{if !empty($userIsAdmin)}
     <a href='/Admin/People?objectAction=addNew' class='btn btn-sm btn-info'>{translate text="Add someone new" isPublicFacing=true}</a>
 {/if}
 {/strip}

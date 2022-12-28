@@ -25,10 +25,10 @@
 					<div class="form-group">
 						<label class="control-label">{translate text="Show" isPublicFacing=true}</label>
 						<label for="openRequests" class="radio-inline">
-							<input type="radio" id="openRequests" name="requestsToShow" value="openRequests" {if $showOpen}checked="checked"{/if}> {translate text="Open material requests" isPublicFacing=true}
+							<input type="radio" id="openRequests" name="requestsToShow" value="openRequests" {if !empty($showOpen)}checked="checked"{/if}> {translate text="Open material requests" isPublicFacing=true}
 						</label>
 						<label for="allRequests" class="radio-inline">
-							<input type="radio" id="allRequests" name="requestsToShow" value="allRequests" {if !$showOpen}checked="checked"{/if}> {translate text="All material requests" isPublicFacing=true}
+							<input type="radio" id="allRequests" name="requestsToShow" value="allRequests" {if empty($showOpen)}checked="checked"{/if}> {translate text="All material requests" isPublicFacing=true}
 						</label>
 					</div>
 					<div class="form-group">

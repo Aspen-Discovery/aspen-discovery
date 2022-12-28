@@ -373,7 +373,7 @@ class DevelopmentTask extends DataObject {
 		} elseif ($name == 'assignedQA') {
 			return $this->getAssignedQA();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

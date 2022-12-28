@@ -1,5 +1,5 @@
 {strip}
-	{if $recordDriver}
+	{if !empty($recordDriver)}
 	<div class="seriesLoadingNote">{translate text="Checking series information..." isPublicFacing=true}</div>
 	<div id="seriesInfo" style="display:none" class="row">
 		<div class="col-sm-12">

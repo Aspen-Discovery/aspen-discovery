@@ -7,7 +7,7 @@
 	{if isset($mappingResults)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert {if $mappingResults.success}alert-success{else}alert-danger{/if}">
+				<div class="alert {if !empty($mappingResults.success)}alert-success{else}alert-danger{/if}">
 					{$mappingResults.message}
 				</div>
 			</div>

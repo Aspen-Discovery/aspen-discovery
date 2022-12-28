@@ -237,7 +237,7 @@ class User extends DataObject {
 			}
 			return $this->materialsRequestEmailSignature;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

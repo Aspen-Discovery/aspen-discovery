@@ -76,6 +76,6 @@
 			</table>
 		</div>
 
-		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+		{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 	</div>
 {/strip}

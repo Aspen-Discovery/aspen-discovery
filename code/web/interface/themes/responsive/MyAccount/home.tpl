@@ -1,6 +1,6 @@
 {strip}
 	<div data-role="content">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			{if !empty($profile->_web_note)}
 				<div id="web_note" class="text-info text-center alert alert-warning"><strong>{$profile->_web_note}</strong></div>
 			{/if}
@@ -11,7 +11,7 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			{if $showUserCirculationModules}
+			{if !empty($showUserCirculationModules)}
 			<h1>{translate text='Your Account' isPublicFacing=true}</h1>
 			{if $user->getViewers()|@count!=0}
 				<div>
@@ -21,19 +21,19 @@
 								{$tmpUser->getNameAndLibraryLabel()}.
 							{/if}
 							{if $user->getViewers()|@count == 2}
-								{if $smarty.foreach.viewer.last}&nbsp;{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}{/if}
+								{if !empty($smarty.foreach.viewer.last)}&nbsp;{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}{/if}
 							{/if}
 							{if $user->getViewers()|@count > 2}
-								{if $smarty.foreach.viewer.last}{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}, {/if}
+								{if !empty($smarty.foreach.viewer.last)}{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}. {else}{$tmpUser->getNameAndLibraryLabel()}, {/if}
 							{/if}
 						{/foreach}
 						<a href="/MyAccount/LinkedAccounts">{translate text='Learn more about Linked Accounts' isPublicFacing=true}</a>.
 					</p>
 				</div>
 			{/if}
-			{if $userHasCatalogConnection}
+			{if !empty($userHasCatalogConnection)}
 				<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
-				{if $offline}
+				{if !empty($offline)}
 					<div>
 						<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 					</div>
@@ -79,9 +79,9 @@
 				</div>
 			{/if}
 			{/if}
-			{if $showRatings}
+			{if !empty($showRatings)}
 				<h2>{translate text='Recommended for you' isPublicFacing=true}</h2>
-				{if !$hasRatings}
+				{if empty($hasRatings)}
 					<p>
 						{translate text='You have not rated any titles.' isPublicFacing=true}
 					</p>

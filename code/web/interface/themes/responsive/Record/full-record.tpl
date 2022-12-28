@@ -5,7 +5,7 @@
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
-		{if $error && !$recordDriver}
+		{if !empty($error) && !$recordDriver}
 			<div class="row">
 				<div class="alert alert-danger">
 					{$error}
@@ -20,7 +20,7 @@
 				{if $recordDriver->getFormats()}
 					<br>
 					<small>
-						({implode subject=$recordDriver->getFormats() glue=", ", translate=true isPublicFacing=true})
+						({implode subject=$recordDriver->getFormats() glue=", " translate=true isPublicFacing=true})
 						{if $recordDriver->isClosedCaptioned()}
 							&nbsp;<i class="fas fa-closed-captioning"></i>
 						{/if}
@@ -35,7 +35,7 @@
 							<img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail {$coverStyle}" src="{$recordDriver->getBookcoverUrl('medium')}">
 						</div>
 					{/if}
-					{if $showRatings}
+					{if !empty($showRatings)}
 						{include file="GroupedWork/title-rating-full.tpl" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
 					{/if}
 				</div>
@@ -57,7 +57,7 @@
 						</div>
 
 						<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
-							{include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$title recordUrl=$recordUrl}
+							{include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$recordDriver->getTitle()}
 						</div>
 					</div>
 

@@ -2,7 +2,7 @@
 	<div id="main-content">
 		<h1>{translate text='Materials Request' isPublicFacing=true}</h1>
 		<div id="materialsRequest">
-			{if $error}
+			{if !empty($error)}
 				<div class="alert alert-warning"><strong>{$error}</strong></div>
 			{else}
 				<div class="materialsRequestExplanation alert alert-info">

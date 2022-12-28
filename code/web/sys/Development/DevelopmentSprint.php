@@ -90,7 +90,7 @@ class DevelopmentSprint extends DataObject {
 		} elseif ($name == 'relatedTasks') {
 			return $this->getRelatedTasks();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

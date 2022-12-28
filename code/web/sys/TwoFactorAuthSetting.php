@@ -101,7 +101,7 @@ class TwoFactorAuthSetting extends DataObject {
 			}
 			return $this->_ptypes;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

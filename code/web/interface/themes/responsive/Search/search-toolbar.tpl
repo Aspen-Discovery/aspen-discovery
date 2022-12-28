@@ -8,7 +8,7 @@
 				<label for="results-sort" style="margin-right: .5rem">{translate text='Sort by' isPublicFacing=true}</label>
 				<select id="results-sort" name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
 					{foreach from=$sortList item=sortData key=sortLabel}
-						<option value="{$sortData.sortUrl|escape}"{if $sortData.selected} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
+						<option value="{$sortData.sortUrl|escape}"{if !empty($sortData.selected)} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
 					{/foreach}
 				</select>
 			{/if}
@@ -32,9 +32,9 @@
 			            <div class="btn-group btn-group-sm">
 			                <button data-toggle="dropdown" class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownSearchToolsBtn"><i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true} <span class="caret"></span></button>
 			                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownSearchToolsBtn">
-			                    {if $showSearchTools}
-				                    {if $enableSavedSearches}
-					                    {if $savedSearch}
+			                    {if !empty($showSearchTools)}
+				                    {if !empty($enableSavedSearches)}
+					                    {if !empty($savedSearch)}
 					                        <li><a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text='Remove Saved Search' isPublicFacing=true}</a></li>
 					                    {else}
 					                        <li><a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a></li>
@@ -44,10 +44,10 @@
 			                    <li><a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a></li>
 			                    <li><a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a></li>
 			                    {/if}
-			                    {if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
+			                    {if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 	                                 <li><a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a></li>
 	                            {/if}
-	                            {if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+	                            {if !empty($loggedIn) && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
 	                                 <li><a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse' isPublicFacing=true}</a></li>
 	                            {/if}
 			                </ul>

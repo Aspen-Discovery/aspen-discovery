@@ -136,7 +136,7 @@ class CustomForm extends DataObject {
 		} elseif ($name == "formFields") {
 			return $this->getFormFields();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

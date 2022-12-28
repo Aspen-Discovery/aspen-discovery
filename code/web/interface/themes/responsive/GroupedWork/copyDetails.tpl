@@ -11,9 +11,9 @@
 		<tbody>
 		{assign var=numRowsShown value=0}
 		{foreach from=$summary item="item"}
-			<tr {if $item.availableCopies}class="available" {/if}>
+			<tr {if !empty($item.availableCopies)}class="available" {/if}>
 				{if $item.onOrderCopies > 0}
-					{if $showOnOrderCounts}
+					{if !empty($showOnOrderCounts)}
 						<td>{translate text="%1% on order" 1=$item.onOrderCopies isPublicFacing=true}</td>
 					{else}
 						<td>{translate text="Copies on order" isPublicFacing=true}</td>
@@ -23,7 +23,7 @@
 				{/if}
 				<td class="notranslate">{$item.shelfLocation}</td>
 				<td class="notranslate">
-					{if !$item.isEContent}
+					{if empty($item.isEContent)}
 						{$item.callNumber}
 					{/if}
 				</td>

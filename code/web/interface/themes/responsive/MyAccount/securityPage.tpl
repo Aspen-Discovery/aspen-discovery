@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			{if !empty($profile->_web_note)}
 				<div class="row">
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -14,17 +14,17 @@
 			{/if}
 
 			<h1>{translate text='Security Settings' isPublicFacing=true}</h1>
-            {if $allowPinReset}
+            {if !empty($allowPinReset)}
 			<div class="row" style="margin-bottom: 3em">
 				<div class="col-xs-6">
 					<label for="password" style="font-size: 18px">{translate text='PIN/Password' isPublicFacing=true}</label>
 				</div>
 				<div class="col-xs-6 text-right">
-					<a href="/MyAccount/ResetPinPage" id="resetPinPassword" class="btn btn-default {if $offline}disabled{/if}">{translate text='Reset PIN/Password' isPublicFacing=true}</a>{if $offline}<small class="muted help-block">Catalog is currently offline, please try again later.</small>{/if}
+					<a href="/MyAccount/ResetPinPage" id="resetPinPassword" class="btn btn-default {if !empty($offline)}disabled{/if}">{translate text='Reset PIN/Password' isPublicFacing=true}</a>{if !empty($offline)}<small class="muted help-block">Catalog is currently offline, please try again later.</small>{/if}
 				</div>
 			</div>
             {/if}
-			{if $twoFactorEnabled}
+			{if !empty($twoFactorEnabled)}
 			<div class="row">
 				<div class="col-xs-6">
 					<label for="2faStatus" style="font-size: 18px">{translate text='2-Factor Authentication' isPublicFacing=true}</label>
@@ -35,8 +35,8 @@
 					{if $twoFactorStatus == '0'}
 						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.show2FAEnrollment(false);">{translate text="Set up" isPublicFacing=true}</button>
                     {else}
-						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.showCancel2FA();" {if !$enableDeactivation}disabled{/if}>{translate text="Turn off" isPublicFacing=true}</button>
-                        {if !$enableDeactivation}<small class="help-block">{translate text="Your account is required to have 2FA enabled" isPublicFacing=true}</small>{/if}
+						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.showCancel2FA();" {if empty($enableDeactivation)}disabled{/if}>{translate text="Turn off" isPublicFacing=true}</button>
+                        {if empty($enableDeactivation)}<small class="help-block">{translate text="Your account is required to have 2FA enabled" isPublicFacing=true}</small>{/if}
                     {/if}
 				</div>
 			</div>

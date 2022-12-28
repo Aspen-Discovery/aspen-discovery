@@ -19,7 +19,7 @@
 			</select>
 		</div>
 		<div class="col-xs-5">
-			<input type="text" name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterValue" aria-label="Filtering for {$filterField.label|escape:css}" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue}"{/if}/>
+			<input type="text" name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterValue" aria-label="Filtering for {$filterField.label|escapeCSS}" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue}"{/if}/>
 		</div>
 	{elseif $filterField.type == 'timestamp'}
 		<div class="col-xs-3">

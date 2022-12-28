@@ -47,7 +47,7 @@
 									<div class="calendar-event-time">
 										{$event.formattedTime}
 									</div>
-									{if $event.isCancelled}
+									{if !empty($event.isCancelled)}
 										<div class="label label-danger calendar-event-state">
 											{translate text="Cancelled" isPublicFacing=true}
 										</div>

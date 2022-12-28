@@ -18,7 +18,7 @@
 								<a class="btn btn-sm btn-default" href="/Admin/CollectionSpotlights?objectAction=view&id={$collectionSpotlight->id}" role="button">{translate text='View' isAdminFacing=true}</a>
 								<a class="btn btn-sm btn-default" href="/Admin/CollectionSpotlights?objectAction=edit&id={$collectionSpotlight->id}" role="button">{translate text='Edit' isAdminFacing=true}</a>
 								<a class="btn btn-sm btn-default" href="/API/SearchAPI?method=getCollectionSpotlight&id={$collectionSpotlight->id}" role="button">{translate text='Preview' isAdminFacing=true}</a>
-								{if $canDelete}
+								{if !empty($canDelete)}
 									<a class="btn btn-sm btn-danger" href="/Admin/CollectionSpotlights?objectAction=delete&id={$collectionSpotlight->id}" role="button" onclick="return confirm('{translate text='Are you sure you want to delete %1%?' 1=$collectionSpotlight->name inAttribute=true isAdminFacing=true}');">{translate text='Delete' isAdminFacing=true}</a>
 								{/if}
 							</div>
@@ -26,7 +26,7 @@
 					{/foreach}
 				</tbody>
 			</table>
-			{if $canAddNew}
+			{if !empty($canAddNew)}
 				<input type="button" class="btn btn-primary" name="addCollectionSpotlight" value="{translate text='Add Collection Spotlight' inAttribute=true isAdminFacing=true}" onclick="window.location = '/Admin/CollectionSpotlights?objectAction=add';">
 			{/if}
 		</div>

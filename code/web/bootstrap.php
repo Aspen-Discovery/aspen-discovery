@@ -1,6 +1,14 @@
 <?php
 define('ROOT_DIR', __DIR__);
 
+/**
+ * Load and register Smarty Autoloader
+ */
+if (!class_exists('Smarty_Autoloader')) {
+	include ROOT_DIR . '/sys/Smarty/Autoloader.php';
+}
+Smarty_Autoloader::register(true);
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Interface.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
