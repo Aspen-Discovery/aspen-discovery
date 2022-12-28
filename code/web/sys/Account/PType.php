@@ -164,12 +164,12 @@ class PType extends DataObject {
 			$user->find();
 			$usersToUpdate = $user->fetchAll();
 
-			foreach ($usersToUpdate as $user){
-				if ($this->accountLinkingSetting == 1){
+			foreach ($usersToUpdate as $user) {
+				if ($this->accountLinkingSetting == 1) {
 					$userLink = new UserLink();
 					$userLink->primaryAccountId = $user->id;
 					$userLink->delete(true);
-				}else if ($this->accountLinkingSetting == 2){
+				} else if ($this->accountLinkingSetting == 2) {
 					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 					$userLink = new UserLink();
 					$userLink->linkedAccountId = $user->id;
@@ -184,8 +184,26 @@ class PType extends DataObject {
 						$userMessage->message = "An account you were previously linked to, $user->displayName, is no longer able to be linked to. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 						$userMessage->update();
 					}
-				}else if ($this->accountLinkingSetting == 3){
-					$user->accountLinkingToggle();
+				} else if ($this->accountLinkingSetting == 3) {
+					//remove managing accounts
+					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+					$userLink = new UserLink();
+					$userLink->linkedAccountId = $user->id;
+					$userLink->find();
+					while ($userLink->fetch()) {
+						$userLink->delete();
+
+						$userMessage = new UserMessage();
+						$userMessage->messageType = 'linked_acct_notify_disabled_' . $this->id;
+						$userMessage->userId = $userLink->primaryAccountId;
+						$userMessage->isDismissed = "0";
+						$userMessage->message = "An account you were previously linked to, $user->displayName, is no longer able to be linked to. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
+						$userMessage->update();
+					}
+					//remove accounts linked to
+					$userLink = new UserLink();
+					$userLink->primaryAccountId = $user->id;
+					$userLink->delete(true);
 				}
 			}
 			return parent::update();
