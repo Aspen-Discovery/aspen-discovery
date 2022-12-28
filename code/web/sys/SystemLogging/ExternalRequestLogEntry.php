@@ -105,7 +105,7 @@ class ExternalRequestLogEntry extends DataObject {
 				if (is_null($headers)) {
 					$headers = '';
 				} elseif (is_array($headers)) {
-					$headers = implode($headers, "\n");
+					$headers = implode("\n", $headers);
 				}
 				$externalRequest->requestHeaders = ExternalRequestLogEntry::sanitize($headers, $dataToSanitize);
 				$externalRequest->requestBody = ExternalRequestLogEntry::sanitize($body, $dataToSanitize);
@@ -113,7 +113,7 @@ class ExternalRequestLogEntry extends DataObject {
 				if (is_null($response)) {
 					$response = '';
 				}
-				$externalRequest->response = ExternalRequestLogEntry::sanitize($response, $dataToSanitize);;
+				$externalRequest->response = ExternalRequestLogEntry::sanitize($response, $dataToSanitize);
 				$externalRequest->requestTime = time();
 				$externalRequest->insert();
 			}
