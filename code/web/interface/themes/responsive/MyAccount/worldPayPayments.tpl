@@ -18,13 +18,13 @@
 	<input type="hidden" name="UserPart2" value="{$profile->firstname}" />
 	<input type="hidden" name="UserPart3" value="{$profile->lastname}" />
 	<input type="hidden" name="UserPart4" value="{$profile->cat_username}" />
-	{if $useLineItems}
+	{if !empty($useLineItems)}
 		<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>
 	{/if}
 	<div class="row">
 		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
 			<div id="msb-button-container{$userId}">
-				<button type="submit" id="{$userId}PayFines" class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text = 'Go to payment form' isPublicFacing=true}{/if}</button>
+				<button type="submit" id="{$userId}PayFines" class="btn btn-sm btn-primary">{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Go to payment form' isPublicFacing=true}{/if}</button>
 			</div>
 		</div>
 	</div>
@@ -65,7 +65,7 @@
                         {rdelim}
 				);
 				document.getElementById("{$userId}FineAmount").value = totalFineAmt;
-                {if $useLineItems}
+                {if !empty($useLineItems)}
 				document.getElementById("{$userId}LineItems").value = lineItems;
 				{/if}
 
@@ -108,7 +108,7 @@
 			);
 			document.getElementById("{$userId}FineAmount").value = totalFineAmt;
 
-            {if $useLineItems}
+            {if !empty($useLineItems)}
 			document.getElementById("{$userId}LineItems").value = lineItems;
             {/if}
 

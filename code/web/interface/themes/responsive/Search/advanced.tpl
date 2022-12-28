@@ -79,7 +79,7 @@
 
 					<h1>{translate text='Advanced Search' isPublicFacing=true}</h1>
 
-					{if $editErr}
+					{if !empty($editErr)}
 						{assign var=error value="advSearchError_$editErr"}
 						<div class="alert alert-warning">{translate text=$error isPublicFacing=true}</div>
 					{/if}
@@ -89,7 +89,7 @@
 							<label for="join">{translate text="Match" isPublicFacing=true}</label>
 							<select id="join" name="join"{* class="form-control"*}>
 								<option value="AND">{translate text="ALL Groups" isPublicFacing=true}</option>
-								<option value="OR"{if $searchDetails && $searchDetails.0.join == 'OR'} selected="selected"{/if}>{translate text="ANY Groups" isPublicFacing=true}</option>
+								<option value="OR"{if !empty($searchDetails) && $searchDetails.0.join == 'OR'} selected="selected"{/if}>{translate text="ANY Groups" isPublicFacing=true}</option>
 							</select>
 						</div>
 						<strong>{translate text="Search Groups" isPublicFacing=true}</strong>
@@ -107,20 +107,20 @@
 						<div class="accordion">
 							<div {*id="facet-accordion"*} class="panel panel-default">
 								<div class="panel-heading">
-									<div class="panel-title {if !$hasSelectedFacet}collapsed{else}expanded{/if}">
+									<div class="panel-title {if empty($hasSelectedFacet)}collapsed{else}expanded{/if}">
 										<a href="#facetPanel" data-toggle="collapse" role="button">
 										{translate text='Optional Filters' isPublicFacing=true}
 										</a>
 									</div>
 								</div>
-								<div id="facetPanel" class="panel-collapse {if !$hasSelectedFacet}collapse{/if}">
+								<div id="facetPanel" class="panel-collapse {if empty($hasSelectedFacet)}collapse{/if}">
 									<div class="panel-body">
 
 										<div class="alert alert-info">
 											{translate text="The filters below are optional. Only set the filters needed to narrow your search." isPublicFacing=true}
 										</div>
 
-										{if $facetList}
+										{if !empty($facetList)}
 											{foreach from=$facetList item="facetInfo"}
 												<div class="row form-group">
 													<div class="col-sm-3">
@@ -184,7 +184,7 @@
 															<select name="filter[]" class="form-control" aria-label="{translate text=$facetInfo.facetLabel inAttribute=true isPublicFacing=true}">
 																{foreach from=$facetInfo.values item="value" key="display"}
 																	{if strlen($display) > 0}
-																		<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$value.display|escape|truncate:80}</option>
+																		<option value="{$value.filter|escape}"{if !empty($value.selected)} selected="selected"{/if}>{$value.display|escape|truncate:80}</option>
 																	{/if}
 																{/foreach}
 															</select>
@@ -206,7 +206,7 @@
 	</div>
 </div>
 {/strip}
-{if $debugJs}
+{if !empty($debugJs)}
 <script type="text/javascript" src="/services/Search/advanced.js"></script>
 {else}
 <script type="text/javascript" src="/services/Search/advanced.min.js"></script>
@@ -231,7 +231,7 @@
 	var searchFormId    = 'advSearchForm';
 	{*  Build the form *}
 	$(function(){ldelim}
-		{if $searchDetails}
+		{if !empty($searchDetails)}
 			{foreach from=$searchDetails item=searchGroup}
 				{foreach from=$searchGroup.group item=search name=groupLoop}
 					{if $smarty.foreach.groupLoop.iteration == 1}

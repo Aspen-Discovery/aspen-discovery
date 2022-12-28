@@ -6,7 +6,7 @@
 				<div>
 					<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
 					<h1 id="listTitle">{$userList->title|escape:"html"}</h1>
-					{if $notes}
+					{if !empty($notes)}
 						<div id="listNotes">
 						{foreach from=$notes item="note"}
 							<div class="listNote">{$note}</div>
@@ -37,7 +37,7 @@
 								</p>
 							</div>
 						{/if}
-						{if $allowEdit}
+						{if !empty($allowEdit)}
 							<div id="listEditControls" style="display:none" class="collapse">
 								<div class="form-group">
 									<label for="listTitleEdit" class="control-label">{translate text="Title" isPublicFacing=true}</label>
@@ -51,7 +51,7 @@
 										</select>
 									{/if}
 								</div>
-								{if $enableListDescriptions}
+								{if !empty($enableListDescriptions)}
 									<div class="form-group">
 										<label for="listDescriptionEdit" class="control-label">{translate text="Description" isPublicFacing=true}</label>&nbsp;
 										<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$userList->getCleanDescription()|escape:"html"}</textarea>
@@ -96,7 +96,7 @@
 						{/if}
 						<div id="listTopButtons" class="btn-toolbar row">
 							<div class="col-sm-12">
-								{if $allowEdit}
+								{if !empty($allowEdit)}
 									<div class="btn-group btn-group-sm">
 										<button value="editList" id="FavEdit" class="btn btn-sm btn-info listViewButton" onclick="return AspenDiscovery.Lists.editListAction()">{translate text='Edit' isPublicFacing=true}</button>
 									</div>
@@ -120,7 +120,7 @@
 								{/if}
 
 								<div class="btn-group btn-group-sm">
-									{if $showEmailThis}
+									{if !empty($showEmailThis)}
 									<button value="emailList" id="FavEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List' isPublicFacing=true}</button>
 									{/if}
 									<button value="printList" id="FavPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List' isPublicFacing=true}</button>
@@ -132,9 +132,9 @@
 										<ul class="dropdown-menu dropdown-menu-right" role="menu">
 											{foreach from=$sortList item=sortData}
 												<li>
-													<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{/if}> {* only add link on un-selected options *}
+													<a{if empty($sortData.selected)} href="{$sortData.sortUrl|escape}"{/if}> {* only add link on un-selected options *}
 														{translate text=$sortData.desc isPublicFacing=true}
-														{if $sortData.selected} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
+														{if !empty($sortData.selected)} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
 													</a>
 												</li>
 											{/foreach}
@@ -142,7 +142,7 @@
 									</div>
 
 								</div>
-								{if $allowEdit}
+								{if !empty($allowEdit)}
 									<div class="btn-group btn-group-sm">
 										<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger listViewButton" onclick='return AspenDiscovery.Lists.deleteListAction();'>{translate text='Delete List' isPublicFacing=true}</button>
 									</div>
@@ -156,7 +156,7 @@
 	</div>
 
 	{if $userList->deleted == 0}
-		{if $resourceList}
+		{if !empty($resourceList)}
 			<div class="row">
 				<div class="col-xs-12">
 					<form class="navbar form-inline">
@@ -193,12 +193,12 @@
 				{/foreach}
 			</div>
 			<div class="btn-group">
-				{if $listEditAllowed}
+				{if !empty($listEditAllowed)}
 					<button onclick="return AspenDiscovery.Account.deleteSelected({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Items" isPublicFacing=true}</button>
 					<button onclick="return AspenDiscovery.Account.deleteAll({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete All Items" isPublicFacing=true}</button>
 				{/if}
 			</div>
-			{if $userSort}
+			{if !empty($userSort)}
 				<script type="text/javascript">
 					{literal}
 					$(function(){

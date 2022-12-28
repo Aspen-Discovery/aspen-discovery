@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			{if !empty($profile->_web_note)}
 				<div class="row">
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -14,7 +14,7 @@
 			{/if}
 
 			<h1>{translate text='Contact Information' isPublicFacing=true}</h1>
-			{if $offline}
+			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 {* MDN 7/26/2019 Do not allow access to contact information for linked users *}
@@ -37,8 +37,8 @@
 							<div class="col-xs-4"><strong>{translate text='Full Name' isPublicFacing=true}</strong></div>
 							<div class="col-xs-8">{$profile->_fullname|escape}</div>
 						</div>
-						{if !$offline}
-							{if $barcodePin}
+						{if empty($offline)}
+							{if !empty($barcodePin)}
 							{* Only Display Barcode when the barcode is used as a username and not a password *}
 							<div class="form-group">
 								<div class="col-xs-4"><strong>{translate text='Library Card Number' isPublicFacing=true}</strong></div>
@@ -49,21 +49,21 @@
 								<div class="col-xs-4"><strong>{translate text='Expiration Date' isPublicFacing=true}</strong></div>
 								<div class="col-xs-8">{$profile->_expires|escape}</div>
 							</div>
-							{if $showPreferredNameInProfile}
+							{if !empty($showPreferredNameInProfile)}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="preferredName">{translate text='Preferred Name' isPublicFacing=true}</label></div>
-									<div class="col-xs-8">{if $edit && $canUpdateContactInfo}<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">{else}{$profile->_preferredName|escape}{/if}</div>
+									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo}<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">{else}{$profile->_preferredName|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}
-						{if !$offline}
+						{if empty($offline)}
 							{* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
 							<div class="form-group">
 								<div class="col-xs-4">
 									<label for="address1">{translate text='Address' isPublicFacing=true}</label>
 								</div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
 										<input name="address1" id="address1" value='{$profile->_address1|escape}' size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="address1" id="address1" value='{$profile->_address1|escape}' type="hidden">
@@ -76,7 +76,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="city">{translate text='City' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->_city|escape}" size="50" maxlength="75" class="form-control required">
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->_city|escape}" size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="city" id="city" value="{$profile->_city|escape}" type="hidden">
 										{$profile->_city|escape}
@@ -86,7 +86,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="state">{translate text='State' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->_state|escape}" size="50" maxlength="75" class="form-control required">
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->_state|escape}" size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="state" id="state" value="{$profile->_state|escape}" type="hidden">
 										{$profile->_state|escape}
@@ -96,7 +96,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="zip">{translate text='Zip' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
 										<input name="zip" id="zip" value="{$profile->_zip|escape}" size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="zip" id="zip" value="{$profile->_zip|escape}" type="hidden">
@@ -107,17 +107,17 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
 										<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 									{else}
 										{$profile->phone|escape}
 									{/if}
 								</div>
 							</div>
-							{if $showWorkPhoneInProfile}
+							{if !empty($showWorkPhoneInProfile)}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number' isPublicFacing=true}</label></div>
-									<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}
@@ -128,7 +128,7 @@
 								{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
 							</div>
 						</div>
-						{if $allowHomeLibraryUpdates}
+						{if !empty($allowHomeLibraryUpdates)}
 							<div class="form-group">
 								<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Home Library' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
@@ -149,7 +149,7 @@
 							</div>
 						 {/if}
 
-						{if $showNoticeTypeInProfile}
+						{if !empty($showNoticeTypeInProfile)}
 							<p class="alert alert-info">
 								{translate text='The following settings determine how you would like to receive notifications when physical materials are ready for pickup at your library.  Notifications for online content are always delivered via email.' isPublicFacing=true}
 							</p>
@@ -243,7 +243,7 @@
 							{/if}
 						{/if}
 
-						{if $showSMSNoticesInProfile}
+						{if !empty($showSMSNoticesInProfile)}
 							<div class="form-group">
 								<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
@@ -271,7 +271,7 @@
 							</div>
 						{/if}
 
-						{if !$offline && $edit == true && $canUpdateContactInfo}
+						{if empty($offline) && $edit == true && $canUpdateContactInfo}
 							<div class="form-group">
 								<div class="col-xs-8 col-xs-offset-4">
 									<button type="submit" name="updateContactInfo" class="btn btn-sm btn-primary">{translate text="Update Contact Information" isPublicFacing=true}</button>

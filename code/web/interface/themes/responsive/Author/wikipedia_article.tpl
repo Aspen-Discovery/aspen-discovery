@@ -1,5 +1,5 @@
 {strip}
-{if $info}
+{if !empty($info)}
 	<div class="wikipedia_article">
 		{if !empty($info.image)}
 			<img src="{$info.image}" alt="{$info.altimage|escape}" style="width:150px" class="wikipedia_image" />

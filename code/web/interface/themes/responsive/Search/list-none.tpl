@@ -1,15 +1,15 @@
 {strip}
 	{* Recommendations *}
-	{if $topRecommendations}
+	{if !empty($topRecommendations)}
 		{foreach from=$topRecommendations item="recommendations"}
 			{include file=$recommendations}
 		{/foreach}
 	{/if}
 
-	{if $hasGlobalResults}
+	{if !empty($hasGlobalResults)}
 		<h1>{translate text="No \"%1%\" Results Found" 1=$originalScopeLabel isPublicFacing=true}</h1>
 	{else}
-		{if $hasKeywordResults}
+		{if !empty($hasKeywordResults)}
 			<h1>{translate text="No \"%1%\" Results Found" 1=$originalSearchIndexLabel isPublicFacing=true}</h1>
 		{else}
 			<h1>{translate text="No Results Found" isPublicFacing=true}</h1>
@@ -17,7 +17,7 @@
 	{/if}
 
 	<p class="alert alert-info">
-		{if $hasGlobalResults}
+		{if !empty($hasGlobalResults)}
 			{if (empty($lookfor))}
 				{translate text="Your %1% search did not match any resources." isPublicFacing=true 1=$originalScope}
 			{else}
@@ -29,7 +29,7 @@
 				&nbsp;<a class='btn btn-sm btn-primary' href="{$globalResultsLink}">{translate text="Search all libraries" isPublicFacing=true}</a>
 			{/if}
 		{else}
-			{if $hasKeywordResults}
+			{if !empty($hasKeywordResults)}
 				{if (empty($lookfor))}
 					{translate text="Your %1% search did not match any resources." isPublicFacing=true 1=$originalSearchIndexLabel}
 				{else}
@@ -78,7 +78,7 @@
 			</div>
 		{/if}
 
-		{if $placard}
+		{if !empty($placard)}
 			{include file="Search/placard.tpl"}
 		{/if}
 
@@ -86,7 +86,7 @@
 
 		{include file="Search/spellingSuggestions.tpl"}
 
-		{if $showExploreMoreBar}
+		{if !empty($showExploreMoreBar)}
 			<div id="explore-more-bar-placeholder"></div>
 			<script type="text/javascript">
 				$(document).ready(
@@ -97,7 +97,7 @@
 			</script>
 		{/if}
 
-		{if $showProspectorLink}
+		{if !empty($showProspectorLink)}
 			{* Prospector Results *}
 			<div id='prospectorSearchResultsPlaceholder'></div>
 			{* javascript call for content at bottom of page*}
@@ -105,7 +105,7 @@
 			{include file="Search/interLibraryLoanSearch.tpl"}
 		{/if}
 
-		{if $showDplaLink}
+		{if !empty($showDplaLink)}
 			{* DPLA Results *}
 			<div id='dplaSearchResultsPlaceholder'></div>
 		{/if}
@@ -131,11 +131,11 @@
 			<br/>
 			<div class="search_tools well small">
 				<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
-				{if $showSearchTools}
+				{if !empty($showSearchTools)}
 					<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 					<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
-					{if $enableSavedSearches}
-						{if $savedSearch}
+					{if !empty($enableSavedSearches)}
+						{if !empty($savedSearch)}
 							<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 						{else}
 							<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
@@ -150,11 +150,11 @@
 
 	<script type="text/javascript">
 		$(function(){ldelim}
-			{if $showProspectorLink}
+			{if !empty($showProspectorLink)}
 			AspenDiscovery.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
 			{/if}
-			{if $showDplaLink}
-			AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escape:css}");
+			{if !empty($showDplaLink)}
+			AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escapeCSS}");
 			{/if}
 		{rdelim});
 	</script>

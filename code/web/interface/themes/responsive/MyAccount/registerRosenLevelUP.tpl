@@ -11,7 +11,7 @@
 		</div>
 	{else}
 		<div id="regDescription">
-			{if $registerRosenLevelUPFormMessage}
+			{if !empty($registerRosenLevelUPFormMessage)}
 				{$registerRosenLevelUPFormMessage}
 			{else}
 				{translate text='This page allows students to register with their parents for Rosen LevelUP'}
@@ -26,7 +26,7 @@
 				{/if}
 			</div>
 		{/if}
-		{if $captchaMessage}
+		{if !empty($captchaMessage)}
 			<div id="registerRosenLevelUPFail" class="alert alert-warning">
 			{$captchaMessage}
 			</div>

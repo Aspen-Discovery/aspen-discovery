@@ -1,6 +1,6 @@
 <div class="result-tools-horizontal btn-toolbar" role="toolbar">
 	<div class="btn-group btn-group-sm">
-		{if $showMoreInfo !== false}
+		{if !empty($showMoreInfo)}
 			<a href="/MyAccount/MyList/{$summShortId}" class="btn btn-sm">{translate text="More Info" isPublicFacing=true}</a>
 		{/if}
 	</div>

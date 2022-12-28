@@ -172,7 +172,7 @@ class DonationsSetting extends DataObject {
 		} elseif ($name == 'donationDedicationTypes') {
 			return $this->getDonationDedicationTypes();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

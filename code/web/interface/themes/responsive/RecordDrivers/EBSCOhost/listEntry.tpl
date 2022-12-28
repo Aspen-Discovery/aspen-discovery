@@ -1,12 +1,12 @@
 {strip}
 <div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 	<div class="row">
-		{if $listEditAllowed}
+		{if !empty($listEditAllowed)}
 			<div class="selectTitle col-xs-12 col-sm-1">
 				<input type="checkbox" name="selected[{$listEntryId}]" class="titleSelect" id="selected{$listEntryId}">
 			</div>
 		{/if}
-		{if $showCovers}
+		{if !empty($showCovers)}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
 					<a href="{$summUrl}" target="_blank" aria-hidden="true">
@@ -16,7 +16,7 @@
 			</div>
 		{/if}
 
-		<div class="{if !$showCovers}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed}col-xs-6 col-sm-6 col-md-6 col-lg-7{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
+		<div class="{if empty($showCovers)}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed}col-xs-6 col-sm-6 col-md-6 col-lg-7{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
@@ -26,7 +26,7 @@
 				</div>
 			</div>
 
-			{if $summAuthor}
+			{if !empty($summAuthor)}
 				<div class="row">
 					<div class="result-label col-sm-3"> {translate text='Author' isPublicFacing=true}</div>
 					<div class="col-sm-9 result-value">{$summAuthor|escape}</div>
@@ -59,14 +59,14 @@
 				</div>
 			{/if}
 
-			{if $summPhysical}
+			{if !empty($summPhysical)}
 				<div class="row hidden-phone">
 					<div class="result-label col-sm-3">{translate text='Physical Desc' isPublicFacing=true}</div>
 					<div class="col-sm-9 result-value">{$summPhysical.0|escape}</div>
 				</div>
 			{/if}
 
-			{if $listEntryNotes}
+			{if !empty($listEntryNotes)}
 				<div class="row">
 					<div class="result-label col-sm-3">{translate text="Notes" isPublicFacing=true} </div>
 					<div class="user-list-entry-note result-value col-sm-9">
@@ -75,7 +75,7 @@
 				</div>
 			{/if}
 
-			{if $summDescription}
+			{if !empty($summDescription)}
 				{* Standard Description *}
 				<div class="row visible-xs">
 					<div class="result-label col-tn-3">{translate text='Description' isPublicFacing=true}</div>
@@ -98,14 +98,14 @@
 			</div>
 		</div> {* End of main section *}
 
-		{if $listEditAllowed}
+		{if !empty($listEditAllowed)}
 			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 				<div class="btn-group-vertical" role="group">
-					{if $userSort && ($resultIndex != '1')}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up" isPublicFacing=true}">&#x25B2;</span>{/if}
+					{if !empty($userSort) && ($resultIndex != '1')}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up" isPublicFacing=true}">&#x25B2;</span>{/if}
 					<a href="#" onclick="return AspenDiscovery.Account.getEditListForm({$listEntryId},{$listSelected})" class="btn btn-default">{translate text="Edit" isPublicFacing=true}</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
 					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('{translate text="Are you sure you want to delete this?" isPublicFacing=true inAttribute=true}');" class="btn btn-danger">{translate text='Delete' isPublicFacing=true}</a>
-					{if $userSort && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
+					{if !empty($userSort) && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
 				</div>
 			</div>
 		{/if}

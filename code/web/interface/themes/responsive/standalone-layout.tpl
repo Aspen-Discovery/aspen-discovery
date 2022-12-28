@@ -2,7 +2,7 @@
 <html lang="{$userLang->code}">
 <head prefix="og: http://ogp.me/ns#">
 	{strip}
-		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if !$isMobile} | {$librarySystemName}{/if}</title>
+		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if empty($isMobile)} | {$librarySystemName}{/if}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -32,39 +32,39 @@
 		{$themeCss}
 	{/strip}
 </head>
-<body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">
-{if $masqueradeMode}
+<body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">
+{if !empty($masqueradeMode)}
 	{include file="masquerade-top-navbar.tpl"}
 {/if}
 {strip}
-	<div {if !$fullWidthTheme}class="container"{/if} id="page-container">
+	<div {if empty($fullWidthTheme)}class="container"{/if} id="page-container">
 {*
 		{if !empty($systemMessage)}
 			<div id="system-message-header" class="row">{$systemMessage}</div>
 		{/if}
 *}
 
-		{if $enableLanguageSelector}
+		{if !empty($enableLanguageSelector)}
 			{include file="language-selection-navbar.tpl"}
 		{/if}
-		{if $showLanguagePreferencesBar}
+		{if !empty($showLanguagePreferencesBar)}
 			{include file="languagePreferences.tpl"}
 		{/if}
 
-		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-header">
-			<div id="header-wrapper" class="row {if $fullWidthTheme}row-no-gutters fullWidth{/if}">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-header">
+			<div id="header-wrapper" class="row {if !empty($fullWidthTheme)}row-no-gutters fullWidth{/if}">
 				<div id="header-container" role="banner">
 					{include file='standalone-header_responsive.tpl'}
 				</div>
 			</div>
 		</div>
 
-		{if $fullWidthTheme}<div class="container">{/if}
+		{if !empty($fullWidthTheme)}<div class="container">{/if}
 		<div id="content-container">
 			<div class="row">
 				<div class="col-xs-12" id="main-content">
 					<div role="main">
-						{if $module}
+						{if !empty($module)}
 							{include file="$module/$pageTemplate"}
 						{else}
 							{include file="$pageTemplate"}
@@ -73,10 +73,10 @@
 				</div>
 			</div>
 		</div>
-		{if $fullWidthTheme}</div>{/if}
+		{if !empty($fullWidthTheme)}</div>{/if}
 
-		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-footer">
-			<div id="footer-container" class="row {if $fullWidthTheme}row-no-gutters{/if}" role="contentinfo">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-footer">
+			<div id="footer-container" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}" role="contentinfo">
 				{include file="footer_responsive.tpl"}
 			</div>
 		</div>

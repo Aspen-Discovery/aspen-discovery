@@ -268,7 +268,7 @@ class GroupedWorkFacetGroup extends DataObject {
 		if ($name == 'facets') {
 			return $this->getFacets();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

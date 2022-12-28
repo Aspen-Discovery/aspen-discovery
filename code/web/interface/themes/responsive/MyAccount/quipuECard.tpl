@@ -2,7 +2,7 @@
 <h1>{translate text='Register for a Library Card' isPublicFacing=true}</h1>
 <div class="page">
 	{if !empty($eCardSettings)}
-		{if $selfRegistrationFormMessage}
+		{if !empty($selfRegistrationFormMessage)}
 			<div id="selfRegistrationMessage">
 				{translate text=$selfRegistrationFormMessage isPublicFacing=true isAdminEnteredData=true}
 			</div>

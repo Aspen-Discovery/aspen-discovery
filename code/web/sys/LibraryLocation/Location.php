@@ -1706,7 +1706,7 @@ class Location extends DataObject {
 				return $this->_cloudLibraryScopes;
 			}
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 		return null;
 	}

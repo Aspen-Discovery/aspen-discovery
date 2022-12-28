@@ -1,6 +1,6 @@
 {strip}
 
-<div class="materialsRequestLoggedInFields" {if !$loggedIn}style="display:none"{/if}>
+<div class="materialsRequestLoggedInFields" {if empty($loggedIn)}style="display:none"{/if}>
 {foreach from=$requestFormFields key=category item=formFields}
 	<fieldset>
 		<legend>{translate text=$category isPublicFacing=true}</legend>
@@ -107,7 +107,7 @@
 
 				{* Readonly Fields *}
 			{elseif $formField->fieldType == 'id'}
-				{if $isAdminUser && !$new}
+				{if !empty($isAdminUser) && !$new}
 					{assign var="hasId" value=1}
 					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 					<div class="request_detail_field row">
@@ -187,7 +187,7 @@
 				<div class="request_detail_field row">
 					<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
 					<div class=" request_detail_field_value col-sm-9">
-						{if $isAdminUser}
+						{if !empty($isAdminUser)}
 							<select name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" class="form-control">
 								{foreach from=$availableStatuses item=statusLabel key=status}
 									<option value="{$status}"{if $materialsRequest->status == $status} selected="selected"{/if}>{translate text=$statusLabel isPublicFacing=true isAdminEnteredData=true}</option>
@@ -233,7 +233,7 @@
 				{* USER INFORMATION FIELDS  *}
 
 			{elseif $formField->fieldType == 'createdBy'}
-				{if $showUserInformation}
+				{if !empty($showUserInformation)}
 					<div class="request_detail_field row">
 						<label class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
 						<div class="request_detail_field_value col-sm-9">
@@ -286,7 +286,7 @@
 						<div class=" request_detail_field_value col-sm-9">
 							<select name="holdPickupLocation" id="pickupLocation" onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions();" class="form-control">
 								{foreach from=$pickupLocations item=location}
-									<option value="{$location.id}" {if $location.selected}selected="selected"{/if}>{$location.displayName}</option>
+									<option value="{$location.id}" {if !empty($location.selected)}selected="selected"{/if}>{$location.displayName}</option>
 								{/foreach}
 							</select>
 						</div>
@@ -305,8 +305,8 @@
 				{/if}
 
 			{elseif $formField->fieldType == 'libraryCardNumber'}
-				{if $showUserInformation}
-					{if $barCodeColumn}
+				{if !empty($showUserInformation)}
+					{if !empty($barCodeColumn)}
 						<div class="row form-group">
 							<label class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
 							<div class="request_detail_field_value col-sm-9">
@@ -338,7 +338,7 @@
 	</fieldset>
 {/foreach}
 		{* Make Sure Id is always included when set, even if it isn't displayed *}
-		{if !$hasId && !empty($materialsRequest->id)}
+		{if empty($hasId) && !empty($materialsRequest->id)}
 			<input type="hidden" name="id" id="id" value="{$materialsRequest->id}">
 		{/if}
 </div>

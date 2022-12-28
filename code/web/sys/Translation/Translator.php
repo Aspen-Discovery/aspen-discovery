@@ -353,7 +353,9 @@ class Translator {
 		$translation = '';
 		$words = explode(' ', $phrase);
 		foreach ($words as $word) {
-			if (preg_match('/%\d+%/', $word)) {
+			if (strlen($word) == 0) {
+				$translation .= ' ';
+			}else if (preg_match('/%\d+%/', $word)) {
 				$translation .= $word . ' ';
 			} elseif (in_array($word[0], Translator::$vowels)) {
 				$translation .= $word . 'way ';

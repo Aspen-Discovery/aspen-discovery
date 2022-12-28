@@ -41,11 +41,13 @@ class MyAccount_ResetPinPage extends MyAccount {
 					$interface->assign('profileUpdateMessage', $user->updateMessage);
 				}
 				$user->updateMessage = '';
+				$user->updateMessageIsError = 0;
 				$user->update();
 			}
 
 			$interface->assign('profile', $user);
 			$interface->assign('barcodePin', $user->getAccountProfile()->loginConfiguration == 'barcode_pin');
+			$interface->assign('passwordLabel', $patronHomeLibrary->loginFormPasswordLabel ? $patronHomeLibrary->loginFormPasswordLabel : 'PIN/Password');
 		}
 
 		$this->display('resetPinPage.tpl', 'Reset PIN/Password');

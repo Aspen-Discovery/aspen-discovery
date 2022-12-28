@@ -1,6 +1,6 @@
 {strip}
 {* Recommendations *}
-{if $topRecommendations}
+{if !empty($topRecommendations)}
 	{foreach from=$topRecommendations item="recommendations"}
 		{include file=$recommendations}
 	{/foreach}
@@ -41,7 +41,7 @@
 
 	{include file="Search/searchSuggestions.tpl"}
 
-	{if $showExploreMoreBar}
+	{if !empty($showExploreMoreBar)}
 		<div id="explore-more-bar-placeholder"></div>
 		<script type="text/javascript">
 			$(document).ready(
@@ -52,7 +52,7 @@
 		</script>
 	{/if}
 
-	{if $showDplaLink}
+	{if !empty($showDplaLink)}
 		{* DPLA Results *}
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
@@ -60,17 +60,19 @@
 	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 		<div class="search_tools well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
-			{if $showSearchTools}
+			{if !empty($showSearchTools)}
 				<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 				<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
-				{if $enableSavedSearches}
-					{if $savedSearch}
+				{if !empty($enableSavedSearches)}
+					{if !empty($savedSearch)}
 						<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 					{else}
 						<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 					{/if}
 				{/if}
-				<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
+				{if !empty($excelLink)}
+					<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
+				{/if}
 			{/if}
 		</div>
 	{/if}

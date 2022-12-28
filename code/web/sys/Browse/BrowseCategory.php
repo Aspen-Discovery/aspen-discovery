@@ -114,7 +114,7 @@ class BrowseCategory extends BaseBrowsable {
 			$this->getSubCategories();
 			return $this->_subBrowseCategories;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

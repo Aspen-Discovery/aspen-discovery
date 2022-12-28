@@ -7,20 +7,20 @@
 			<div class="alert alert-warning">{$error}</div>
 		{else}
 			<div class="alert alert-info">
-				{if $pinValidationRules.onlyDigitsAllowed}
+				{if !empty($pinValidationRules.onlyDigitsAllowed)}
 					{translate text="PINs must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 				{else}
 					{translate text="PINs must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 				{/if}
 			</div>
 			<form id="passwordRecovery" method="POST" action="/MyAccount/PasswordRecovery" class="form-horizontal">
-				{if $uniqueKey}
+				{if !empty($uniqueKey)}
 					<input type="hidden" name="uniqueKey" value="{$uniqueKey}">
 				{/if}
 				<div class="form-group">
 					<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New Password' isPublicFacing=true}</label></div>
 					<div class="col-xs-8">
-						<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
+						<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 					</div>
 					{if !empty($passwordNote)}
 						<div class='propertyDescription'><em>{$passwordNote}</em></div>
@@ -29,7 +29,7 @@
 				<div class="form-group">
 					<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New Password' isPublicFacing=true}</label></div>
 					<div class="col-xs-8">
-						<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
+						<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 					</div>
 				</div>
 				<div class="form-group">

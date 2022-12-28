@@ -37,7 +37,7 @@
 					{if !empty($contributor.roles)}
 						&nbsp;{implode subject=$contributor.roles glue=", " translate=true isPublicFacing=true}
 					{/if}
-					{if $contributor.title}
+					{if !empty($contributor.title)}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 				<br/>
@@ -52,11 +52,11 @@
 		</div>
 	{/if}
 
-	{if $showSeries}
+	{if !empty($showSeries)}
 		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
-	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
+	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -65,16 +65,16 @@
 		</div>
 	{/if}
 
-	{if $showFormats}
+	{if !empty($showFormats)}
 	<div class="row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12">
-			{implode subject=$recordFormat glue=", ", translate=true isPublicFacing=true}
+			{implode subject=$recordFormat glue=", " translate=true isPublicFacing=true}
 		</div>
 	</div>
 	{/if}
 
-	{if $showEditions && $recordDriver->getEditions()}
+	{if !empty($showEditions) && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -83,7 +83,7 @@
 		</div>
 	{/if}
 
-	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
+	{if !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -92,7 +92,7 @@
 		</div>
 	{/if}
 
-	{if $showISBNs && count($recordDriver->getISSNs()) > 0}
+	{if !empty($showISBNs) && count($recordDriver->getISSNs()) > 0}
 		{if $recordDriver->getISSNs()}
 			<div class="row">
 				<div class="result-label col-sm-4 col-xs-12">{translate text='ISSN' isPublicFacing=true}</div>
@@ -101,7 +101,7 @@
 		{/if}
 	{/if}
 
-	{if $showPhysicalDescriptions && $physicalDescriptions}
+	{if !empty($showPhysicalDescriptions) && $physicalDescriptions}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -140,7 +140,7 @@
 		</div>
 	{/if}
 
-	{if $mpaaRating}
+	{if !empty($mpaaRating)}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Rating' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">{$mpaaRating|escape}</div>
@@ -155,10 +155,10 @@
 	<div class="row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>
 		<div class="result-value col-sm-8 col-xs-12">
-			{if $statusSummary}
+			{if !empty($statusSummary)}
 				{assign var=workId value=$recordDriver->getPermanentId()}
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
-				{if (!$statusSummaryh->isEContent)}
+				{if (!$statusSummary->isEContent())}
 					{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id format=$recordDriver->getPrimaryFormat()}
 				{/if}
 			{else}

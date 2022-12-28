@@ -3,9 +3,9 @@
 		<div id="main-content">
 			<div class="resultHead"><h1>{translate text='PIN Reset' isPublicFacing=true}</h1></div>
 			<div class="page">
-				{if $resetPinResult.error}
+				{if !empty($resetPinResult.error)}
 					<p class="alert alert-danger">{$resetPinResult.error}</p>
-					{if $resetToken && $userID}
+					{if !empty($resetToken) && $userID}
 						<div>
 							<a class="btn btn-primary" role="button" href="/MyAccount/ResetPin?resetToken={$resetToken}&uid={$userID}">{translate text="Try Again" isPublicFacing=true}</a>
 						</div>

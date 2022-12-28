@@ -1,5 +1,5 @@
 {strip}
-	{if $recordDriver}
+	{if !empty($recordDriver)}
 	<div id="moreLikeThisInfo" style="" class="row">
 		<div class="col-sm-12">
 			<div class="jcarousel-wrapper moreLikeThisWrapper">

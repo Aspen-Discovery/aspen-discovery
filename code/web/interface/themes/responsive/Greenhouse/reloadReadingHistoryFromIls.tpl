@@ -11,7 +11,7 @@
 			</div>
 			<div class="col-xs-12">
 				{foreach from=$reloadResults item=reloadResult}
-					{if $reloadResult.success}
+					{if !empty($reloadResult.success)}
 						<div class="alert alert-success">{$reloadResult.barcode}</div>
 					{else}
 						<div class="alert alert-danger">{$reloadResult.barcode}</div>

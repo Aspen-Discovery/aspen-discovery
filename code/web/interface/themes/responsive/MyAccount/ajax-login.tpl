@@ -9,7 +9,7 @@
 		<p class="alert alert-info" id="loading" style="display: none">
 			{translate text="Logging you in now. Please wait." isPublicFacing=true}
 		</p>
-		{if $offline}
+		{if !empty($offline)}
 			<div class="alert alert-warning">
 				{translate text="$offlineMessage" isPublicFacing=true}
 			</div>
@@ -85,7 +85,7 @@
 						{translate text="Reveal Password" isPublicFacing=true}
 					</label>
 
-					{if !$isOpac}
+					{if empty($isOpac)}
 						<label for="rememberMe" class="checkbox">
 							<input type="checkbox" id="rememberMe" name="rememberMe">
 							{translate text="Keep Me Signed In" isPublicFacing=true}

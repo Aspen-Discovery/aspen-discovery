@@ -7,8 +7,8 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<div class="btn-toolbar">
-					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
-					{if $showConvertListsFromClassic}
+					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm()">{translate text="Create a New List" isPublicFacing=true}</button>
+					{if !empty($showConvertListsFromClassic)}
 						<a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
 					{/if}
 				</div>
@@ -34,11 +34,11 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<div class="btn-toolbar">
-					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
+					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm()">{translate text="Create a New List" isPublicFacing=true}</button>
 					{if count($lists) > 0}
-						<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists" isPublicFacing=true}</button>
+						<button onclick="return AspenDiscovery.Account.deleteSelectedLists()" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists" isPublicFacing=true}</button>
 					{/if}
-					{if $showConvertListsFromClassic}
+					{if !empty($showConvertListsFromClassic)}
 						<a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog" isPublicFacing=true}</a>
 					{/if}
 				</div>
@@ -60,7 +60,7 @@
 				</div>
 				{/if}
 
-				<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8 col-md-8 col-lg-9{/if}">{* May turn out to be more than one situation to consider here *}
+				<div class="{if empty($showCovers)}col-xs-11{else}col-xs-8 col-sm-8 col-md-8 col-lg-9{/if}">{* May turn out to be more than one situation to consider here *}
 					{* Title Row *}
 
 					<div class="row">
@@ -109,6 +109,6 @@
 			</div>
 		{/foreach}
 
-		{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+		{if !empty($pageLinks.all)}<div class="pagination">{$pageLinks.all}</div>{/if}
 	{/if}
 {/strip}

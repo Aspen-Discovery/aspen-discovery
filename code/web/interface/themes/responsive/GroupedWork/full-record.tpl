@@ -22,7 +22,7 @@
 						<a href="#" onclick="return AspenDiscovery.GroupedWork.getLargeCover('{$recordDriver->getPermanentId()}')"><img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail {$coverStyle}" src="{$recordDriver->getBookcoverUrl('medium')}"></a>
 					</div>
 				{/if}
-				{if $showRatings}
+				{if !empty($showRatings)}
 					{include file="GroupedWork/title-rating-full.tpl" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
 				{/if}
 			</div>
@@ -45,16 +45,16 @@
 					</div>
 				{/if}
 
-				{if $showSeries}
+				{if !empty($showSeries)}
 					<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 				{/if}
 
 
-				{if $showPublicationDetails}
+				{if !empty($showPublicationDetails)}
 					<div class="row">
 						<div class="result-label col-sm-4 col-xs-12">{translate text=Publisher isPublicFacing=true} </div>
 						<div class="result-value col-sm-8 col-xs-12">
-							{if $summPublisher}
+							{if !empty($summPublisher)}
 								{$summPublisher}
 							{else}
 								{translate text="Varies, see individual formats and editions" isPublicFacing=true}
@@ -65,7 +65,7 @@
 					<div class="row">
 						<div class="result-label col-sm-4 col-xs-12">{translate text="Publication Date" isPublicFacing=true} </div>
 						<div class="result-value col-sm-8 col-xs-12">
-							{if $summPubDate}
+							{if !empty($summPubDate)}
 								{$summPubDate|escape}
 							{else}
 								{translate text="Varies, see individual formats and editions" isPublicFacing=true}
@@ -74,7 +74,7 @@
 					</div>
 				{/if}
 
-				{if $showEditions && $summEdition}
+				{if !empty($showEditions) && $summEdition}
 					<div class="row">
 						<div class="result-label col-sm-4 col-xs-12">{translate text="Edition" isPublicFacing=true} </div>
 						<div class="result-value col-sm-8 col-xs-12">
@@ -83,7 +83,7 @@
 					</div>
 				{/if}
 
-				{if $summLanguage}
+				{if !empty($summLanguage)}
 					<div class="row">
 						<div class="result-label col-sm-4 col-xs-12">{translate text="Language" isPublicFacing=true} </div>
 						<div class="result-value col-sm-8 col-xs-12">

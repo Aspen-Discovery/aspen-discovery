@@ -18,7 +18,7 @@
 		{if isset($results)}
 			<div class="row">
 				<div class="col-xs-12">
-					<div class="alert {if $results.success}alert-success{else}alert-danger{/if}">
+					<div class="alert {if !empty($results.success)}alert-success{else}alert-danger{/if}">
 						{$results.message}
 						{foreach from=$results.errors item=error}
 							<div>{$error}</div>

@@ -10,21 +10,25 @@
 						<th>{translate text="Name" isAdminFacing=true}</th>
 						<th>{translate text="Description" isAdminFacing=true}</th>
 						<th>{translate text="Already Run?" isAdminFacing=true}</th>
-						{if $showStatus}
+						{if !empty($showStatus)}
 						<th>{translate text="Status" isAdminFacing=true}</th>
 						{/if}
 					</tr>
 				</thead>
 				<tbody>
 					{foreach from=$sqlUpdates item=update key=updateKey}
-					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
-					{if array_key_exists('status',$update)}{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}{/if}"
-					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
-						<td><input type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate" id="{$updateKey}"></td>
+					<tr class="{if !empty($update.alreadyRun)}updateRun{else}updateNotRun{/if}
+					{if empty($update.status)}
+					{elseif $update.status == 'Update succeeded'} success
+					{elseif strpos($update.status, 'Warning') !== false} warning
+					{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger
+					{/if}"
+					{if !empty($update.alreadyRun) && empty($update.status)} style="display:none"{/if}>
+						<td><input type="checkbox" name="selected[{$updateKey}]"{if empty($update.alreadyRun)} checked="checked"{/if} class="selectedUpdate" id="{$updateKey}"></td>
 						<td><label for="{$updateKey}">{$update.title}</label></td>
 						<td>{$update.description}</td>
-						<td>{if $update.alreadyRun}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</td>
-						{if $showStatus}
+						<td>{if !empty($update.alreadyRun)}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</td>
+						{if !empty($showStatus)}
 						<td>{if !empty($update.status)}{$update.status}{/if}</td>
 						{/if}
 					</tr>

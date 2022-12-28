@@ -1,6 +1,6 @@
 {strip}
 <div class="contents">
-	{if $renewResults.success}
+	{if !empty($renewResults.success)}
 		<div class="alert alert-success">{$renewResults.message}</div>
 	{else}
 		<div class='alert alert-danger'>{$renewResults.message}</div>

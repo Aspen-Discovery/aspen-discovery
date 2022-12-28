@@ -71,7 +71,7 @@ class QuickSearchSetting extends DataObject {
 		} elseif ($name == 'quickSearches') {
 			return $this->getQuickSearches();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

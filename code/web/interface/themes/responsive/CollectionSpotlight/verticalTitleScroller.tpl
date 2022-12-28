@@ -3,10 +3,10 @@
 	<div id="{$wrapperId}" class="titleScrollerWrapper">
 		{if $showCollectionSpotlightTitle || $showViewMoreLink}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
-				{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
-					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
+				{if !empty($showCollectionSpotlightTitle) && !empty($scrollerTitle)}
+					<span class="listTitle resultInformationLabel">{if !empty($scrollerTitle)}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 				{/if}
-				{if $showViewMoreLink}
+				{if !empty($showViewMoreLink)}
 					<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 				{/if}
 			</div>

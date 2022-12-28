@@ -2,7 +2,7 @@
 <html lang="{$userLang->code}">
 <head prefix="og: http://ogp.me/ns#">
 	{strip}
-		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if !$isMobile} | {$librarySystemName}{/if}</title>
+		<title>{$pageTitleShortAttribute|truncate:64:"..."}{if empty($isMobile)} | {$librarySystemName}{/if}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -42,67 +42,69 @@
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
 		{$themeCss}
-		{if $loadRecaptcha}
+		{if !empty($loadRecaptcha)}
 		    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 		{/if}
 	{/strip}
 </head>
-<body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
+<body class="module_{$module} action_{$action}{if !empty($masqueradeMode)} masqueradeMode{/if}{if !empty($loggedIn)} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage"}-{$id}{/if}" dir="{if $userLang->isRTL()}rtl{else}auto{/if}">
 {strip}
-	{if $showTopOfPageButton}
+	{if !empty($showTopOfPageButton)}
 	<a class="top-link hide" href="" id="js-top">
 		<i class="fas fa-arrow-up fa-2x fa-fw"></i>
 		<span class="screen-reader-text">{translate text="Back to top" isPublicFacing=true}</span>
 	</a>
 	{/if}
-	{if $shouldShowAdminAlert}
+	{if !empty($shouldShowAdminAlert)}
 		{include file="adminMessages.tpl"}
 	{/if}
-	<div {if !$fullWidthTheme}class="container"{/if} id="page-container">
-		<div {if $fullWidthTheme}class="container-fluid"{/if} id="system-messages">
+	<div {if empty($fullWidthTheme)}class="container"{/if} id="page-container">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="system-messages">
 			{if !empty($systemMessages)}
 				<div id="system-message-header" class="row">
 					{include file="systemMessages.tpl" messages=$systemMessages}
 				</div>
 			{/if}
 
-			{foreach from=$messages item="message"}
-			<div class="col-xs-12">
-				<div class="alert alert-{$message->messageLevel} alert-dismissable">
-						<button type="button" class="close" data-dismiss="alert" aria-label="close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
-						{translate text=$message->message isPublicFacing=true}
-						{if !empty($message->action1Title) && !empty($message->action1)}
-							&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{translate text=$message->action1Title isPublicFacing=true}</a>
-						{/if}
-						{if !empty($message->action2Title) && !empty($message->action2)}
-							<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{translate text=$message->action2Title isPublicFacing=true}</a>
-						{/if}
-						{if !empty($message->addendum)}
-							<a href="/MyAccount/LinkedAccounts" data-dismiss="alert" id="addendum"><br>{translate text=$message->addendum isPublicFacing=true}</a>
-						{/if}
+			{if !empty($messages)}
+				{foreach from=$messages item="message"}
+				<div class="col-xs-12">
+					<div class="alert alert-{$message->messageLevel} alert-dismissable">
+							<button type="button" class="close" data-dismiss="alert" aria-label="close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
+							{translate text=$message->message isPublicFacing=true}
+							{if !empty($message->action1Title) && !empty($message->action1)}
+								&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{translate text=$message->action1Title isPublicFacing=true}</a>
+							{/if}
+							{if !empty($message->action2Title) && !empty($message->action2)}
+								<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{translate text=$message->action2Title isPublicFacing=true}</a>
+							{/if}
+							{if !empty($message->addendum)}
+								<a href="/MyAccount/LinkedAccounts" data-dismiss="alert" id="addendum"><br>{translate text=$message->addendum isPublicFacing=true}</a>
+							{/if}
+					</div>
 				</div>
-			</div>
-			{/foreach}
+				{/foreach}
+			{/if}
 		</div>
 
-		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-header">
-			<div id="header-wrapper" role="banner" class="row {if $fullWidthTheme}row-no-gutters fullWidth{/if}">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-header">
+			<div id="header-wrapper" role="banner" class="row {if !empty($fullWidthTheme)}row-no-gutters fullWidth{/if}">
 				{include file='header_responsive.tpl'}
 			</div>
 		</div>
 
-		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-menu-bar">
-			<div id="{if $fullWidthTheme}horizontal-menu-bar-wrapper-fullWidth{else}horizontal-menu-bar-wrapper{/if}" class="row {if $fullWidthTheme}row-no-gutters{/if}">
-				<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar {if $fullWidthTheme}fullWidth{/if}" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-menu-bar">
+			<div id="{if !empty($fullWidthTheme)}horizontal-menu-bar-wrapper-fullWidth{else}horizontal-menu-bar-wrapper{/if}" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
+				<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar {if !empty($fullWidthTheme)}fullWidth{/if}" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
 					{include file='horizontal-menu-bar.tpl'}
 				</div>
-				<div id="horizontal-search-container" class="col-tn-12 {if $fullWidthTheme}fullWidth{/if}" role="search">
+				<div id="horizontal-search-container" class="col-tn-12 {if !empty($fullWidthTheme)}fullWidth{/if}" role="search">
 					{include file="Search/horizontal-searchbox.tpl"}
 				</div>
 			</div>
 		</div>
 
-	{if $fullWidthTheme}<div class="container">{/if}
+	{if !empty($fullWidthTheme)}<div class="container">{/if}
 		<div id="content-container">
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}
@@ -111,13 +113,13 @@
 						{include file="sidebar.tpl"}
 					</div>
 					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
-						{if $showBreadcrumbs}
+						{if !empty($showBreadcrumbs)}
 							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
 						<div role="main">
-							{if $module}
+							{if !empty($module)}
 								{include file="$module/$pageTemplate"}
 							{else}
 								{include file="$pageTemplate"}
@@ -126,13 +128,13 @@
 					</div>
 				{else} {* Main Content Only, no sidebar *}
 					<div class="col-xs-12" id="main-content">
-						{if $showBreadcrumbs}
+						{if !empty($showBreadcrumbs)}
 							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
 						<div role="main">
-							{if $module}
+							{if !empty($module)}
 								{include file="$module/$pageTemplate"}
 							{else}
 								{include file="$pageTemplate"}
@@ -142,10 +144,10 @@
 				{/if}
 			</div>
 		</div>
-	{if $fullWidthTheme}</div>{/if}
+	{if !empty($fullWidthTheme)}</div>{/if}
 
-		<div {if $fullWidthTheme}class="container-fluid"{/if} id="page-footer">
-			<div id="footer-container" role="contentinfo" class="row {if $fullWidthTheme}row-no-gutters{/if}">
+		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="page-footer">
+			<div id="footer-container" role="contentinfo" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
 				{include file="footer_responsive.tpl"}
 			</div>
 		</div>

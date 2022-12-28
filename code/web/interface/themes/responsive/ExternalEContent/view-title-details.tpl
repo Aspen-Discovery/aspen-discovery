@@ -9,11 +9,11 @@
 		</div>
 	{/if}
 
-	{if $showSeries}
+	{if !empty($showSeries)}
 		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
-	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
+	{if !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -22,7 +22,7 @@
 		</div>
 	{/if}
 
-	{if $showFormats}
+	{if !empty($showFormats)}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -31,7 +31,7 @@
 		</div>
 	{/if}
 
-	{if $showEditions && $recordDriver->getEditions()}
+	{if !empty($showEditions) && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="col-sm-9 result-value">
@@ -40,7 +40,7 @@
 		</div>
 	{/if}
 
-	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
+	{if !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">

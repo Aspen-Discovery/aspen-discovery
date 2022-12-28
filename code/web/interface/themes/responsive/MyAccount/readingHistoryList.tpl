@@ -19,7 +19,7 @@
 			{if $historyActive == true}
 				<div class="col-xs-6">
 					<div class="btn-group btn-group-sm pull-right">
-						{if $transList}
+						{if !empty($transList)}
 							<button class="btn btn-sm btn-danger " onclick="return AspenDiscovery.Account.ReadingHistory.deleteAllAction()">{translate text="Delete All" isPublicFacing=true}</button>
 						{/if}
 						<button class="btn btn-sm btn-danger" onclick="return AspenDiscovery.Account.ReadingHistory.optOutAction()">{translate text="Stop Recording My Reading History" isPublicFacing=true}</button>
@@ -62,14 +62,14 @@
 				</div>
 
 				<a id="topOfList"></a>
-				{if $transList}
+				{if !empty($transList)}
 					{* Reading History Entries *}
 					<div class="striped">
 						{foreach from=$transList item=record name="recordLoop" key=recordKey}
 							{include file="MyAccount/readingHistoryEntry.tpl" record=$record}
 						{/foreach}
 					</div>
-					{if $pageLinks.all}
+					{if !empty($pageLinks.all)}
 						<div class="text-center">{$pageLinks.all}</div>
 					{/if}
 				{else}

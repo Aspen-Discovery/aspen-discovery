@@ -61,7 +61,7 @@ class AuthorAuthority extends DataObject {
 		if ($name == 'alternatives') {
 			return $this->getAlternatives();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

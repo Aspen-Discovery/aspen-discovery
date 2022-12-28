@@ -113,7 +113,7 @@ class PortalRow extends DataObject {
 		if ($name == 'cells') {
 			return $this->getCells();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

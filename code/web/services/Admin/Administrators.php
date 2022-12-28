@@ -152,7 +152,19 @@ class Admin_Administrators extends ObjectEditor {
 			}
 		}
 
-		if (count($errors) == 0) {
+		$user = UserAccount::getActiveUserObj();
+		if (!empty($user->updateMessage)) {
+			$updateMessage = $user->updateMessage;
+			$interface->assign('updateMessage', $user->updateMessage);
+			$interface->assign('updateMessageIsError', $user->updateMessageIsError);
+			$user->updateMessage = '';
+			$user->updateMessageIsError = 0;
+			$user->update();
+		} else {
+			$updateMessage = '';
+		}
+
+		if (count($errors) == 0 && empty($updateMessage)) {
 			header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			die();
 		} else {

@@ -74,7 +74,7 @@ class GroupedWorkAlternateTitle extends DataObject {
 				}
 			}
 		}
-		return $this->_data[$name];
+		return $this->_data[$name] ?? null;
 	}
 
 	function insert($context = '') {

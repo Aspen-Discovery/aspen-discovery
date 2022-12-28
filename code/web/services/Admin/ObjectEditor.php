@@ -11,8 +11,10 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		$user = UserAccount::getActiveUserObj();
 		if (!empty($user->updateMessage)) {
-			$interface->assign('lastError', $user->updateMessage);
+			$interface->assign('updateMessage', $user->updateMessage);
+			$interface->assign('updateMessageIsError', $user->updateMessageIsError);
 			$user->updateMessage = '';
+			$user->updateMessageIsError = 0;
 			$user->update();
 		}
 

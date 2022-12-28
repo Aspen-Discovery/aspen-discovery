@@ -149,7 +149,7 @@
             </fieldset>
         {/foreach}
         {* Make Sure Id is always included when set, even if it isn't displayed *}
-        {if !$hasId && !empty($newDonation->id)}
+        {if empty($hasId) && !empty($newDonation->id)}
             <input type="hidden" name="id" id="id" value="{$newDonation->id}">
         {/if}
         {if $newDonation->donationSettingId}

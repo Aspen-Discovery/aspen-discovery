@@ -4,7 +4,7 @@
 		<span class="share-tools-label hidden-inline-xs">{translate text="SHARE" isPublicFacing=true}</span>
 		{if $showEmailThis == 1}
 		{/if}
-		{if $showShareOnExternalSites}
+		{if !empty($showShareOnExternalSites)}
 			<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$recordDriver->getLinkUrl()|escape:'url'}" target="_blank" title="{translate text="Share on Facebook" inAttribute=true isPublicFacing=true}">
 				<i class="fab fa-facebook-square fa-2x fa-fw"></i>
 			</a>

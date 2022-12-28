@@ -3,7 +3,7 @@
 		<div id="main-content">
 			<div class="resultHead"><h1>{translate text='Reset My PIN' isPublicFacing=true}</h1></div>
 			<div class="page">
-				{if !$result.success && $result.error}
+				{if empty($result.success) && $result.error}
 					<div class="alert alert-danger">{$result.error}</div>{* Translation should be done prior to display *}
 					<div>
 						<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">{translate text='Try Again' isPublicFacing=true}</a>

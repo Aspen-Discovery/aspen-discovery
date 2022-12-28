@@ -7,7 +7,7 @@
  *}
 <thead>
 	<tr>
-		{if $showVolume}
+		{if !empty($showVolume)}
 			<th>
 				<strong><u>{translate text="Volume" isPublicFacing=true}</u></strong>
 			</th>
@@ -18,7 +18,7 @@
 		<th>
 			<strong><u>{translate text="Call Number" isPublicFacing=true}</u></strong>
 		</th>
-		{if $hasNote}
+		{if !empty($hasNote)}
 			<th>
 				<strong><u>{translate text="Note" isPublicFacing=true}</u></strong>
 			</th>
@@ -26,12 +26,12 @@
 		<th>
 			<strong><u>{translate text="Status" isPublicFacing=true}</u></strong>
 		</th>
-		{if $hasDueDate && $showItemDueDates}
+		{if !empty($hasDueDate) && $showItemDueDates}
 			<th>
 				<strong><u>{translate text="Due Date" isPublicFacing=true}</u></strong>
 			</th>
 		{/if}
-		{if $showLastCheckIn}
+		{if !empty($showLastCheckIn)}
 			<th>
 				<strong><u>{translate text="Last Check-In" isPublicFacing=true}</u></strong>
 			</th>

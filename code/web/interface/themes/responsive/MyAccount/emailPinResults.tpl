@@ -3,7 +3,7 @@
 		<div id="main-content">
 			<div class="resultHead"><h1>{translate text='PIN Reminder' isPublicFacing=true}</h1></div>
 			<div class="page">
-				{if $emailResult.error}
+				{if !empty($emailResult.error)}
 					<p class="alert alert-danger">{$emailResult.error}</p>
 					<div>
 						<a class="btn btn-primary" role="button" href="/MyAccount/EmailPin">{translate text="Try Again" isPublicFacing=true}</a>

@@ -12,7 +12,7 @@
 			<fieldset>
 				<div class="holdsSummary">
 					<input type="hidden" name="holdCount" id="holdCount" value="1">
-					<div class="alert alert-warning" id="overHoldCountWarning" {if !$showOverHoldLimit}style="display:none"{/if}>
+					<div class="alert alert-warning" id="overHoldCountWarning" {if empty($showOverHoldLimit)}style="display:none"{/if}>
 						{translate text="Warning: You have reached the maximum of <span class=\"maxHolds\">%1%</span> holds for your account.  You must cancel a hold before you can place a hold on this title." 1=$maxHolds isPublicFacing=true}
 					</div>
 					<div id="holdError" class="pageWarning" style="display: none"></div>
@@ -59,7 +59,7 @@
 									{/if}
 								</select>
 
-								{if !$multipleUsers && $allowRememberPickupLocation}
+								{if empty($multipleUsers) && $allowRememberPickupLocation}
 									<div class="form-group">
 										<label for="rememberHoldPickupLocation" class="checkbox"><input type="checkbox" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation"> {translate text="Always use this pickup location" isPublicFacing=true}</label>
 									</div>
@@ -69,7 +69,7 @@
 							</div>
 						</div>
 
-						<div id="userOption" class="form-group"{if !$multipleUsers} style="display: none"{/if}>{* display if there are multiple accounts *}
+						<div id="userOption" class="form-group"{if empty($multipleUsers)} style="display: none"{/if}>{* display if there are multiple accounts *}
 							<label for="user" class="control-label">{translate text="Place hold for the chosen location using account" isPublicFacing=true} </label>
 							<div class="controls">
 								<select name="user" id="user" class="form-control">
@@ -102,25 +102,25 @@
 					{/if}
 
 					<label class="control-label">{translate text="Place hold on" isPublicFacing=true}</label>
-					{if $hasItemsWithoutVolumes}
+					{if !empty($hasItemsWithoutVolumes)}
 						<div id="holdTypeSelection" class="form-group">
 							<div class="col-tn-6">
-								<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" {if !$majorityOfItemsHaveVolumes}checked{/if} onchange="$('#volumeSelection').hide()"> {translate text="First Available Item" isPublicFacing=true}</label>
+								<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" {if empty($majorityOfItemsHaveVolumes)}checked{/if} onchange="$('#volumeSelection').hide()"> {translate text="First Available Item" isPublicFacing=true}</label>
 							</div>
 							<div class="col-tn-6">
-								<label for="holdTypeItem"><input type="radio" name="holdType" value="volume" id="holdTypeItem" {if $majorityOfItemsHaveVolumes}checked{/if} onchange="$('#volumeSelection').show()"> {translate text="Specific Volume" isPublicFacing=true}</label>
+								<label for="holdTypeItem"><input type="radio" name="holdType" value="volume" id="holdTypeItem" {if !empty($majorityOfItemsHaveVolumes)}checked{/if} onchange="$('#volumeSelection').show()"> {translate text="Specific Volume" isPublicFacing=true}</label>
 							</div>
 						</div>
 					{else}
 						<input type="hidden" name="holdType" id="holdType" value="volume"/>
 					{/if}
-					<div id="volumeSelection" class="form-group" {if !$majorityOfItemsHaveVolumes}style="display: none" {/if}>
+					<div id="volumeSelection" class="form-group" {if empty($majorityOfItemsHaveVolumes)}style="display: none" {/if}>
 						<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume" isPublicFacing=true}">
 							{foreach from=$volumes item=volume}
-								<option value="{$volume->volumeId}">{$volume->displayLabel} {if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()}*{/if}</option>
+								<option value="{$volume->volumeId}">{$volume->displayLabel} {if !empty($alwaysPlaceVolumeHoldWhenVolumesArePresent) && $volume->hasLocalItems()}*{/if}</option>
 							{/foreach}
 						</select>
-						{if $alwaysPlaceVolumeHoldWhenVolumesArePresent}
+						{if !empty($alwaysPlaceVolumeHoldWhenVolumesArePresent)}
 							<span id="subdomainHelpBlock" class="help-block" style="margin-top:0">
 								<small class="text-warning"><i class="fas fa-exclamation-triangle"></i>{translate text="Volumes marked with a * have titles owned by this library." isPublicFacing=true}</small>
 							</span>
@@ -136,7 +136,7 @@
 							</div>
 						</div>
 					{/if}
-					{if $promptForHoldNotifications}
+					{if !empty($promptForHoldNotifications)}
 						<div id="holdNotification" class="form-group">
 							{include file=$holdNotificationTemplate}
 						</div>

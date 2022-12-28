@@ -69,16 +69,16 @@
 		{/foreach}
 	</div>
 	<div class="menu-section menu-section-right">
-		{if $loggedIn}{* Logged In *}
+		{if !empty($loggedIn)}{* Logged In *}
 			<div class="dropdown menuToggleButton accountMenu" style="display:inline-block;">
 			<a tabindex="0" class="dropdown-toggle menu-icon menu-bar-option" role="button" title="{translate text="Account" inAttribute=true isPublicFacing=true}" aria-haspopup="true" aria-expanded="false" id="account-menu-dropdown">
-				{if $masqueradeMode}
+				{if !empty($masqueradeMode)}
 					<i class="fas fa-theater-masks fa-lg"></i>
 				{else}
 					<i class="fas fa-user fa-lg"></i>
 				{/if}
 				<span class="menu-bar-label hidden-inline-block-xs">
-					{if $masqueradeMode}
+					{if !empty($masqueradeMode)}
 						{translate text="Acting As %1%" 1=$userDisplayName isPublicFacing=true}
 					{else}
 						{$userDisplayName}
@@ -88,8 +88,8 @@
 			{include file="account-menu.tpl"}
 			</div>
 		{else} {* Not Logged In *}
-			{if $showLoginButton}
-			<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" onkeypress="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login' inAttribute=true isPublicFacing=true}">
+			{if !empty($showLoginButton)}
+			<a href="/MyAccount/Home" id="loginLink" onclick="{if !empty($isLoginPage)}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" onkeypress="{if !empty($isLoginPage)}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login' inAttribute=true isPublicFacing=true}">
 				<i class="fas fa-sign-in-alt fa-lg {if $userLang->isRTL()}fa-flip-horizontal{/if}"></i>
 				<span class="menu-bar-label hidden-inline-block-xs" id="login-button-label">{translate text="Sign in" isPublicFacing=true}</span>
 			</a>

@@ -6,6 +6,11 @@
 			<div class="alert alert-danger">{$barcode}: {$error}</div>
 		{/foreach}
 	{/if}
+	{if !empty($updateMessage)}
+		<div class="alert {if !empty($updateMessageIsError)}alert-danger{else}alert-info{/if}">
+			{$updateMessage}
+		</div>
+	{/if}
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">
 		<fieldset>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">

@@ -75,6 +75,12 @@ class MyAccount_AJAX extends JSON_Action {
 
 			$accountToLink = UserAccount::validateAccount($username, $password);
 			$user = UserAccount::getLoggedInUser();
+			$userPtype = $user->getPType();
+			$linkeePtype = $accountToLink->getPType();
+
+			require_once ROOT_DIR . '/sys/Account/PType.php';
+			$linkingSettingUser = PType::getAccountLinkingSetting($userPtype);
+			$linkingSettingLinkee = PType::getAccountLinkingSetting($linkeePtype);
 
 			if (!UserAccount::isLoggedIn()) {
 				$result = [
@@ -90,7 +96,7 @@ class MyAccount_AJAX extends JSON_Action {
 				];
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
-					if ($accountToLink->disableAccountLinking == 0) {
+					if (($accountToLink->disableAccountLinking == 0) && ($linkingSettingUser != '1' && $linkingSettingUser != '3') && ($linkingSettingLinkee != '2' && $linkingSettingLinkee != '3')) {
 						$addResult = $user->addLinkedUser($accountToLink);
 						if ($addResult === true) {
 							$result = [
@@ -119,17 +125,31 @@ class MyAccount_AJAX extends JSON_Action {
 							];
 						}
 					} else {
-						$result = [
-							'success' => false,
-							'title' => translate([
-								'text' => 'Unable to link accounts',
-								'isPublicFacing' => true,
-							]),
-							'message' => translate([
-								'text' => 'Sorry, this user does not allow account linking',
-								'isPublicFacing' => true,
-							]),
-						];
+						if ($linkingSettingUser != '1' || $linkingSettingUser != '3'){
+							$result = [
+								'success' => false,
+								'title' => translate([
+									'text' => 'Unable to link accounts',
+									'isPublicFacing' => true,
+								]),
+								'message' => translate([
+									'text' => 'Sorry, you are not permitted to link to others',
+									'isPublicFacing' => true,
+								]),
+							];
+						}else {
+							$result = [
+								'success' => false,
+								'title' => translate([
+									'text' => 'Unable to link accounts',
+									'isPublicFacing' => true,
+								]),
+								'message' => translate([
+									'text' => 'Sorry, this user does not allow account linking',
+									'isPublicFacing' => true,
+								]),
+							];
+						}
 					}
 				} else {
 					$result = [
@@ -5593,7 +5613,6 @@ class MyAccount_AJAX extends JSON_Action {
 			'message' => 'Something went wrong.',
 		];
 
-		//$listId = htmlspecialchars($_GET["id"]);
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
@@ -5957,6 +5976,8 @@ class MyAccount_AJAX extends JSON_Action {
 		} else {
 			require_once ROOT_DIR . '/sys/Suggestions.php';
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			global $interface;
+			$interface->assign('listName', 'recommendedForYou');
 			$suggestions = Suggestions::getSuggestions(UserAccount::getActiveUserId());
 			foreach ($suggestions as $index => $suggestionInfo) {
 				$groupedWorkDriver = new GroupedWorkDriver($suggestionInfo['titleInfo']);

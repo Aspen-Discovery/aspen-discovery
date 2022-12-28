@@ -9,11 +9,11 @@
 		</div>
 	{/if}
 
-	{if $showSeries}
+	{if !empty($showSeries)}
 		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
-	{if $showFormats}
+	{if !empty($showFormats)}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
@@ -22,7 +22,7 @@
 		</div>
 	{/if}
 
-	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
+	{if !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">

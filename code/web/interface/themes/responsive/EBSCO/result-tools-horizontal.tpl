@@ -2,10 +2,10 @@
 	{if $showEmailThis || $showShareOnExternalSites}
 		<div class="result-tools-horizontal btn-toolbar" role="toolbar">
 			{* More Info Link, only if we are showing other data *}
-			{if $showMoreInfo}
+			{if !empty($showMoreInfo)}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm btn-tools" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$recordDriver->getPermanentId()}')" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
+						<a href="{if !empty($summUrl)}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm btn-tools" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$recordDriver->getPermanentId()}')" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
 					</div>
 				{/if}
 				{if $showFavorites == 1}

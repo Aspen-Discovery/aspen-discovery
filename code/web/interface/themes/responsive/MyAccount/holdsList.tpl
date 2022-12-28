@@ -32,7 +32,7 @@
 				{/foreach}
 			</select>
 
-			{if !$hideCoversFormDisplayed}
+			{if empty($hideCoversFormDisplayed)}
 				{* Display the Hide Covers switch above the first section that has holds; and only display it once *}
 				<label for="hideCovers_{$source}" class="control-label checkbox pull-right"> {translate text="Hide Covers" isPublicFacing=true} <input id="hideCovers_{$source}" type="checkbox" onclick="AspenDiscovery.Account.loadHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort option:selected').val(), !$('#hideCovers_{$source}').is(':checked'));" {if $showCovers == false}checked="checked"{/if}></label>
 				{assign var="hideCoversFormDisplayed" value=true}
@@ -70,13 +70,13 @@
 	{/if}
 {/foreach}
 <br>
-{if !$offline}
+{if empty($offline)}
 <div class="holdsWithSelected{$sectionKey}">
 	<form id="withSelectedHoldsFormBottom{$sectionKey}" action="{$fullPath}">
 		<div class="btn-group">
 			<a href="#" onclick="AspenDiscovery.Account.cancelHoldSelectedTitles()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel Selected" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.cancelHoldAll()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel All" isPublicFacing=true}</a>
-			{if $allowFreezeAllHolds}
+			{if !empty($allowFreezeAllHolds)}
 			<a href="#" onclick="AspenDiscovery.Account.freezeHoldSelected()" class="btn btn-sm btn-default">{translate text="Freeze Selected" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.freezeHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Freeze All" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.thawHoldSelected()" class="btn btn-sm btn-default">{translate text="Thaw Selected" isPublicFacing=true}</a>

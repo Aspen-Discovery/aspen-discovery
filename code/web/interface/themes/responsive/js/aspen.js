@@ -9065,6 +9065,22 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				$('#propertyRowoAuthPrivateKeys').hide();
 			}
+		},
+		linkingSettingOptionChange: function () {
+			var url = Globals.path + "/Admin/AJAX";
+			var pType = $("#pType").val();
+			var selected = $('#accountLinkingSettingSelect option:selected').val();
+			var params = {
+				method: "getFormPTypeSetting",
+				data: {pType: pType, selected: selected}
+			};
+			$.getJSON(url, params, function (data) {
+				if (data.success === true) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+				} else {
+					return false;
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));

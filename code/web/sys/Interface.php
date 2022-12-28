@@ -100,11 +100,6 @@ class UInterface extends Smarty {
 
 		unset($local);
 
-		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
-		$this->register_block('display_if_field_inconsistent', 'display_if_field_inconsistent');
-		$this->register_function('translate', 'translate');
-		$this->register_function('char', 'char');
-
 		$this->assign('site', $configArray['Site']);
 		if (isset($_SERVER['SERVER_NAME'])) {
 			$url = $_SERVER['SERVER_NAME'];
@@ -317,13 +312,13 @@ class UInterface extends Smarty {
 	 * @param string $resource_name
 	 * @param string $cache_id
 	 * @param string $compile_id
-	 * @param boolean $display
+	 * @param object $parent
 	 *
 	 * @return string
 	 */
-	function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false) {
+	function fetch($resource_name = null, $cache_id = null, $compile_id = null, $parent = null) {
 		global $timer;
-		$resource = parent::fetch($resource_name, $cache_id, $compile_id, $display);
+		$resource = parent::fetch($resource_name, $cache_id, $compile_id, $parent);
 		$timer->logTime("Finished fetching $resource_name");
 		return $resource;
 	}
@@ -777,7 +772,12 @@ class UInterface extends Smarty {
 	 * @return string|array|null
 	 */
 	public function getVariable($variableName) {
-		return $this->get_template_vars($variableName);
+		$variable = $this->get_template_vars($variableName);
+		if ($variable instanceof Smarty_Variable) {
+			return $variable->value;
+		} else {
+			return $variable;
+		}
 	}
 
 	public function assignAppendToExisting($variableName, $newValue) {
@@ -820,11 +820,29 @@ class UInterface extends Smarty {
 			$this->assign($variableName, $valueToAssign);
 		}
 	}
+
+
+	/**
+	 * Returns an array containing template variables
+	 *
+	 * @param string $name
+	 * @return string|array
+	 */
+	function &get_template_vars($name = null) {
+		if (!isset($name)) {
+			return $this->tpl_vars;
+		} elseif (isset($this->tpl_vars[$name])) {
+			return $this->tpl_vars[$name];
+		} else {
+			// var non-existent, return valid reference
+			$_tmp = null;
+			return $_tmp;
+		}
+	}
 }
 
 function translate($params) {
 	global $translator;
-
 	// If no translator exists yet, create one -- this may be necessary if we
 	// encounter a failure before we are able to load the global translator
 	// object.
@@ -855,85 +873,4 @@ function translate($params) {
 	} else {
 		return $translator->translate($params, null, [], false);
 	}
-}
-
-
-/** @noinspection PhpUnused */
-function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat) {
-	//This function is called twice, once for the opening tag and once for the
-	//closing tag.  Content is only set if
-	if (isset($content)) {
-		$array = $params['array'];
-		$key = $params['key'];
-
-		if (count($array) === 1) {
-			// If we have only one row of items, display that row
-			return empty($array[0][$key]) ? '' : $content;
-		}
-		$consistent = true;
-		$firstValue = null;
-		$iterationNumber = 0;
-		foreach ($array as $arrayValue) {
-			if ($iterationNumber == 0) {
-				$firstValue = $arrayValue[$key];
-			} else {
-				if ($firstValue != $arrayValue[$key]) {
-					$consistent = false;
-					break;
-				}
-			}
-			$iterationNumber++;
-		}
-		if ($consistent == false) {
-			return $content;
-		} else {
-			return "";
-		}
-	}
-	return null;
-}
-
-/** @noinspection PhpUnused */
-function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat) {
-	if (isset($content)) {
-		global $interface;
-		$array = $params['array'];
-		$key = $params['key'];
-		$var = $params['var'];
-
-		if (count($array) === 1) {
-			// If we have only one row of items, display that row
-			if (empty($array[0]->$key)) {
-				$interface->assign($var, false);
-				$returnValue = '';
-			} else {
-				$interface->assign($var, true);
-				$returnValue = $content;
-			}
-
-			return $returnValue;
-		}
-		$consistent = true;
-		$firstValue = null;
-		$iterationNumber = 0;
-		foreach ($array as $arrayValue) {
-			if ($iterationNumber == 0) {
-				$firstValue = $arrayValue->$key;
-			} else {
-				if ($firstValue != $arrayValue->$key) {
-					$consistent = false;
-					break;
-				}
-			}
-			$iterationNumber++;
-		}
-		if ($consistent == false) {
-			$interface->assign($var, true);
-			return $content;
-		} else {
-			$interface->assign($var, false);
-			return "";
-		}
-	}
-	return null;
 }

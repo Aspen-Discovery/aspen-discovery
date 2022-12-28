@@ -149,7 +149,7 @@ class Greenhouse_PartnerTicketDashboard extends Admin_Admin{
 		}
 		$interface->assign('openImplementationTickets', $openImplementation);
 
-		$this->display('partnerTicketDashboard.tpl', 'Partner Ticket Dashboard', '');
+		$this->display('partnerTicketDashboard.tpl', 'Partner Ticket Dashboard', 'Development/development-sidebar.tpl');
 	}
 
 	function getBreadcrumbs(): array {

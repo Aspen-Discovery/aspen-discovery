@@ -1,7 +1,7 @@
 {strip}
 	<div id="main-content" class="col-md-12">
 		<div class="doNotPrint">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			<h1>{translate text="Holds Report" isAdminFacing=true}</h1>
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
@@ -17,7 +17,7 @@
 				<input type="submit" name="download" value="{translate text="Download CSV" inAttribute=true isAdminFacing=true}" class="btn btn-sm btn-info"/>
 				&nbsp;
 			</form>
-			{if $reportData}
+			{if !empty($reportData)}
 				<br/>
 				<p>
 					There are a total of <strong>{$reportData|@count}</strong> Fill List items.

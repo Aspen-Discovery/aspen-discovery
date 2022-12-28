@@ -480,7 +480,7 @@ class SSOSetting extends DataObject {
 		} elseif ($name == "dataMapping") {
 			return $this->getFieldMappings();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

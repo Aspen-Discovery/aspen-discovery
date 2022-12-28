@@ -1,6 +1,6 @@
 {strip}
 	{* Details not shown in the Top/Main Section of the Record view should be shown here *}
-	{if !$showPublicationDetails && $recordDriver->getPublicationDetails()}
+	{if empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Published' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
@@ -10,7 +10,7 @@
 	{/if}
 
 
-	{if !$showPhysicalDespriptions && $recordDriver->getPhysicalDescriptions()}
+	{if empty($showPhysicalDespriptions) && $recordDriver->getPhysicalDescriptions()}
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Physical Description' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
@@ -19,7 +19,7 @@
 		</div>
 	{/if}
 
-	{if !$showFormats}
+	{if empty($showFormats)}
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Format' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
@@ -28,7 +28,7 @@
 		</div>
 	{/if}
 
-	{if !$showEditions && $recordDriver->getEditions()}
+	{if empty($showEditions) && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
@@ -46,7 +46,7 @@
 		</div>
 	{/if}
 
-	{if !$showISBNs && count($recordDriver->getISBNs()) > 0}
+	{if empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -102,7 +102,7 @@
 		</div>
 	{/if}
 
-	{if $notes}
+	{if !empty($notes)}
 		<h4>{translate text='Notes' isPublicFacing=true}</h4>
 		{foreach from=$notes item=note name=loop}
 			<div class="row">

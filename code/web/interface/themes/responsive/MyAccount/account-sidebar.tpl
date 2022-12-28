@@ -1,11 +1,11 @@
 {strip}
-	{if $loggedIn}
+	{if !empty($loggedIn)}
 
 		{* Setup the accordion *}
 		<!--suppress HtmlUnknownTarget -->
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
-				{if $showMyAccount}
+				{if !empty($showMyAccount)}
 				<div class="panel active">
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
@@ -21,21 +21,21 @@
 					{*  This content is duplicated in MyAccount/mobilePageHeader.tpl; Update any changes there as well *}
 					<div id="myAccountPanel" class="panel-collapse collapse in">
 						<div class="panel-body">
-							{if !$offline}
+							{if empty($offline)}
 								<span class="expirationFinesNotice-placeholder"></span>
 							{/if}
-							{if $userHasCatalogConnection && (!$offline || $enableEContentWhileOffline) && $showUserCirculationModules}
+							{if !empty($userHasCatalogConnection) && (!$offline || $enableEContentWhileOffline) && $showUserCirculationModules}
 								<div class="myAccountLink">
 									<a href="/MyAccount/CheckedOut" id="checkedOut">
 										{translate text="Checked Out Titles" isPublicFacing=true}
 									</a>
 								</div>
 								<ul class="account-submenu">
-									{if !$offline}
+									{if empty($offline)}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=ils" id="checkedOutIls" title="View checkouts of physical materials">
-												{translate text="Physical Materials" isPublicFacing=true} {if !$offline}<span class="badge"><span class="ils-checkouts-placeholder">??</span></span> <span class="ils-overdue" style="display: none"> <span class="label label-danger"><span class="ils-overdue-placeholder"></span> {translate text="Overdue" isPublicFacing=true}</span></span>{/if}
+												{translate text="Physical Materials" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="ils-checkouts-placeholder">??</span></span> <span class="ils-overdue" style="display: none"> <span class="label label-danger"><span class="ils-overdue-placeholder"></span> {translate text="Overdue" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -43,7 +43,7 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=overdrive" id="checkedOutOverDrive" title="View checkouts from OverDrive">
-												{translate text="OverDrive" isPublicFacing=true} {if !$offline}<span class="badge"><span class="overdrive-checkouts-placeholder">??</span></span>{/if}
+												{translate text="OverDrive" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="overdrive-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -51,7 +51,7 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=hoopla" id="checkedOutHoopla" title="View checkouts from Hoopla">
-												{translate text="Hoopla" isPublicFacing=true} {if !$offline}<span class="badge"><span class="hoopla-checkouts-placeholder">??</span></span>{/if}
+												{translate text="Hoopla" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="hoopla-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -59,7 +59,7 @@
 										<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=cloud_library" id="checkedOutCloudLibrary" title="View checkouts from CloudLibrary">
-												{translate text="cloudLibrary" isPublicFacing=true} {if !$offline}<span class="badge"><span class="cloud_library-checkouts-placeholder">??</span></span>{/if}
+												{translate text="cloudLibrary" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="cloud_library-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -67,7 +67,7 @@
 										<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/CheckedOut?tab=axis360" id="checkedOutAxis360" title="View checkouts from Axis 360">
-												{translate text="Axis 360" isPublicFacing=true} {if !$offline}<span class="badge"><span class="axis360-checkouts-placeholder">??</span></span>{/if}
+												{translate text="Axis 360" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -79,11 +79,11 @@
 									</a>
 								</div>
 								<ul class="account-submenu">
-									{if !$offline}
+									{if empty($offline)}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=ils" id="holdsIls" title="View holds on physical materials">
-												{translate text="Physical Materials" isPublicFacing=true} {if !$offline}<span class="badge"><span class="ils-holds-placeholder">??</span></span> <span class="ils-available-holds" style="display: none"> <span class="label label-success"><span class="ils-available-holds-placeholder"></span> {translate text="Ready for Pickup" isPublicFacing=true}</span></span>{/if}
+												{translate text="Physical Materials" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="ils-holds-placeholder">??</span></span> <span class="ils-available-holds" style="display: none"> <span class="label label-success"><span class="ils-available-holds-placeholder"></span> {translate text="Ready for Pickup" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -91,7 +91,7 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=interlibrary_loan" id="holdsInterlibraryLoan" title="View Interlibrary Loan Requests">
-												{translate text="Interlibrary Loan Requests" isPublicFacing=true} {if !$offline}<span class="badge"><span class="interlibrary-loan-requests-placeholder">??</span></span>{/if}
+												{translate text="Interlibrary Loan Requests" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="interlibrary-loan-requests-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -99,7 +99,7 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive" title="View holds from OverDrive">
-												{translate text="OverDrive" isPublicFacing=true} {if !$offline}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+												{translate text="OverDrive" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -107,7 +107,7 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=cloud_library" id="holdsCloudLibrary" title="View holds from CloudLibrary">
-												{translate text="cloudLibrary" isPublicFacing=true} {if !$offline}<span class="badge"><span class="cloud_library-holds-placeholder">??</span></span> <span class="cloud_library-available-holds" style="display: none"> <span class="label label-success"><span class="cloud_library-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+												{translate text="cloudLibrary" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="cloud_library-holds-placeholder">??</span></span> <span class="cloud_library-available-holds" style="display: none"> <span class="label label-success"><span class="cloud_library-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -115,26 +115,26 @@
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=axis360" id="holdsAxis360" title="View holds from Axis 360">
-												{translate text="Axis 360" isPublicFacing=true} {if !$offline}<span class="badge"><span class="axis360-holds-placeholder">??</span></span> <span class="axis360-available-holds" style="display: none"> <span class="label label-success"><span class="axis360-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+												{translate text="Axis 360" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-holds-placeholder">??</span></span> <span class="axis360-available-holds" style="display: none"> <span class="label label-success"><span class="axis360-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
 								</ul>
 
-								{if !$offline}
-									{if $showCurbsidePickups}
+								{if empty($offline)}
+									{if !empty($showCurbsidePickups)}
 										<div class="myAccountLink" title="Curbside Pickups">
 											<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
 										</div>
 									{/if}
-									{if $showFines}
+									{if !empty($showFines)}
 										<div class="myAccountLink" title="Fines">
 											<a href="/MyAccount/Fines">{translate text='Fines' isPublicFacing=true}</a>
 										</div>
 									{/if}
 								{/if}
 							{/if}
-							{if !$offline && $userHasCatalogConnection && $showUserCirculationModules}
+							{if empty($offline) && $userHasCatalogConnection && $showUserCirculationModules}
 								{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
 									<div class="myAccountLink materialsRequestLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
 										<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
@@ -146,17 +146,17 @@
 								{/if}
 							{/if}
 
-							{if $userHasCatalogConnection && $showUserCirculationModules}
+							{if !empty($userHasCatalogConnection) && $showUserCirculationModules}
 								<div class="myAccountLink libraryCardLink" title="{translate text='Your Library Card(s)' inAttribute=true isPublicFacing=true}">
-									<a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a>
+									<a href="/MyAccount/LibraryCard">{if !empty($showAlternateLibraryCard)}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a>
 								</div>
 							{/if}
 
-							{if !$offline}
-								{if $showRatings || $enableSavedSearches || ($enableReadingHistory && $userHasCatalogConnection) | $showFavorites}
+							{if empty($offline)}
+								{if $showRatings || $enableSavedSearches || ($enableReadingHistory && $userHasCatalogConnection) || $showFavorites}
 									<hr class="menu">
 								{/if}
-								{if $showRatings}
+								{if !empty($showRatings)}
 									<div class="myAccountLink"><a href="/MyAccount/SuggestedTitles">{translate text='Recommended For You' isPublicFacing=true}</span></a></div>
 									<ul class="account-submenu">
 									{if $user->disableRecommendations == 0}
@@ -167,14 +167,14 @@
 								{if $showFavorites == 1}
 									<div class="myAccountLink"><a href="/MyAccount/Lists">{translate text='Your Lists' isPublicFacing=true}</a></div>
 								{/if}
-								{if $enableSavedSearches}
+								{if !empty($enableSavedSearches)}
 									{* Only highlight saved searches as active if user is logged in: *}
 									<div class="myAccountLink"><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a> <span class="label badge-updated newSavedSearchBadge" style="display: none"><span class="saved-searches-placeholder">??</span></span></div>
 								{/if}
-								{if $enableReadingHistory && $userHasCatalogConnection}
+								{if !empty($enableReadingHistory) && $userHasCatalogConnection}
 									<div class="myAccountLink">
 										<a href="/MyAccount/ReadingHistory">
-											{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
+											{translate text="Reading History" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
 										</a>
 									</div>
 								{/if}
@@ -189,7 +189,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				{/if}
-				{if $showAccountSettings}
+				{if !empty($showAccountSettings)}
 				<div class="panel {if ($curSection || !$showMyAccount)}active{/if}">
 					{* Clickable header for account settings section *}
 					<a data-toggle="collapse" href="#mySettingsPanel" aria-label="{translate text="Account Settings Menu" inAttribute="true" isPublicFacing=true}">
@@ -201,25 +201,25 @@
 					</a>
 					<div id="mySettingsPanel" class="panel-collapse collapse {if ($curSection || !$showMyAccount)}in{/if}">
 						<div class="panel-body">
-							{if !$offline}
-								{if $showUserPreferences}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
-								{if $showUserContactInformation}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
+							{if empty($offline)}
+								{if !empty($showUserPreferences)}<div class="myAccountLink"><a href="/MyAccount/MyPreferences">{translate text='Your Preferences' isPublicFacing=true}</a></div>{/if}
+								{if !empty($showUserContactInformation)}<div class="myAccountLink"><a href="/MyAccount/ContactInformation">{translate text='Contact Information' isPublicFacing=true}</a></div>{/if}
 								{if $user->showHoldNotificationPreferences()}
 									<div class="myAccountLink"><a href="/MyAccount/HoldNotificationPreferences">{translate text='Hold Notification Preferences' isPublicFacing=true}</a></div>
 								{/if}
 								{if $user->showMessagingSettings()}
 									<div class="myAccountLink"><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings' isPublicFacing=true}</a></div>
 								{/if}
-								{if $allowAccountLinking}
+								{if !empty($allowAccountLinking)}
 									<div class="myAccountLink"><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></div>
 								{/if}
-								{if $twoFactorEnabled}
+								{if !empty($twoFactorEnabled)}
 									<div class="myAccountLink"><a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></div>
 								{/if}
-								{if $showResetUsernameLink}
+								{if !empty($showResetUsernameLink)}
 									<div class="myAccountLink" ><a href="/MyAccount/ResetUsername">{translate text='Reset Username' isPublicFacing=true}</a></div>
 								{/if}
-								{if $allowPinReset}
+								{if !empty($allowPinReset)}
 									<div class="myAccountLink" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
 								{/if}
 								{if $user->isValidForEContentSource('overdrive') && $showUserCirculationModules}
@@ -231,7 +231,7 @@
 								{if $user->isValidForEContentSource('axis360') && $showUserCirculationModules}
 									<div class="myAccountLink"><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
 								{/if}
-								{if $userIsStaff}
+								{if !empty($userIsStaff)}
 									<div class="myAccountLink"><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
 								{/if}
 							{/if}
@@ -241,21 +241,21 @@
 				{/if}
 			</div>
 
-			{if $allowMasqueradeMode && !$masqueradeMode}
-				{if $canMasquerade}
+			{if !empty($allowMasqueradeMode) && !$masqueradeMode}
+				{if !empty($canMasquerade)}
 					<div>
 						<div class="myAccountLink btn btn-default btn-sm btn-block"><a onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">{translate text="Masquerade" isPublicFacing=true}</a></div>
 					</div>
 				{/if}
 			{/if}
-		{if !$showMyAccount}</div>{/if}
+		{if empty($showMyAccount)}</div>{/if}
 		</div>
 	{/if}
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function() {
 			{/literal}
-			{if $userHasCatalogConnection}
+			{if !empty($userHasCatalogConnection)}
 				AspenDiscovery.Account.loadMenuData();
 			{/if}
 			{literal}

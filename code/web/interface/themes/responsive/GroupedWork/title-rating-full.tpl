@@ -1,12 +1,12 @@
 {if $showRatings || $showComments}
 {strip}
 	<div class="full-rating">
-		{if $showRatings}
-			{if $ratingData.user}
+		{if !empty($showRatings)}
+			{if !empty($ratingData.user)}
 				<div class="your-rating row rater"
 								{* AJAX rater data fields *}
              data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
-             data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
+             data-show_review="{if !empty($showComments) && !$user->noPromptForUserReviews}1{else}0{/if}"
 								>
 					<div class="rating-label col-xs-12 col-sm-5">{translate text="Your Rating" isPublicFacing=true}</div>
 					<div class="col-xs-12 col-sm-6">
@@ -17,11 +17,11 @@
 				</div>
 			{/if}
 
-			<div class="average-rating row{if !$ratingData.user} rater{/if}"
-							{if !$ratingData.user} {* When user is not logged in or has not rated the work *}
+			<div class="average-rating row{if empty($ratingData.user)} rater{/if}"
+							{if empty($ratingData.user)} {* When user is not logged in or has not rated the work *}
 								{* AJAX rater data fields *}
 								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
-								data-show_review="{if $showComments  && (!$user || !$user->noPromptForUserReviews)}1{else}0{/if}"
+								data-show_review="{if $showComments  && (empty($user) || !$user->noPromptForUserReviews)}1{else}0{/if}"
 								{*  Show Reviews is enabled and the user hasn't opted out or user hasn't logged in yet. *}
 							{/if}
 							>
@@ -64,7 +64,7 @@
 			{/if}
 
 		{/if}
-		{if $showComments && !$hideReviewButton}{* Add hideReviewButton=true to {include} tag to disable below *}
+		{if !empty($showComments) && !$hideReviewButton}{* Add hideReviewButton=true to {include} tag to disable below *}
 			<div class="row">
 				<div class="col-xs-12 text-center">
 					<span id="userreviewlink{$recordDriver->getPermanentId()}" class="userreviewlink btn btn-sm" title="{translate text='Add a Review' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">

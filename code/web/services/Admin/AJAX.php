@@ -555,11 +555,39 @@ class Admin_AJAX extends JSON_Action {
 							$dataObject->update();
 						}
 					}
-					return [
-						'success' => true,
-						'title' => 'Success',
-						'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
-					];
+					if ($selectedField == "accountLinkingSetting") { //ToDo: Link to help center
+						if ($newValue == 1) {
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from linking to other accounts, but they can be linked to. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						} else if ($newValue == 2) {
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from being linked to, but they can link to others. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						} else if ($newValue == 3) {
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows all account linking for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						} else {
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting allows all account linking functionality for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						}
+					}else {
+						return [
+							'success' => true,
+							'title' => 'Success',
+							'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+						];
+					}
 				} else {
 					foreach ($_REQUEST['selectedObject'] as $id => $value) {
 						$dataObject = $tool->getExistingObjectById($id);
@@ -567,12 +595,39 @@ class Admin_AJAX extends JSON_Action {
 							$dataObject->setProperty($selectedField, $newValue, $fieldStructure);
 							$dataObject->update();
 						}
+					}if ($selectedField == "accountLinkingSetting"){ //ToDo: Link to help center
+						if ($newValue == 1){
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from linking to other accounts, but they can be linked to. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						}else if ($newValue == 2){
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from being linked to, but they can link to others. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						}else if ($newValue == 3){
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows all account linking for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						}else {
+							return [
+								'success' => true,
+								'title' => 'Success',
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting allows all account linking functionality for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+							];
+						}
+					}else {
+						return [
+							'success' => true,
+							'title' => 'Success',
+							'message' => "Updated selected {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+						];
 					}
-					return [
-						'success' => true,
-						'title' => 'Success',
-						'message' => "Updated selected {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
-					];
 				}
 			}
 		} else {
@@ -988,6 +1043,139 @@ class Admin_AJAX extends JSON_Action {
 			}
 		}
 
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getFormPTypeSetting() {
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$pType = $_REQUEST["data"]["pType"];
+		$selected = $_REQUEST["data"]["selected"];
+
+		$accountLinkingSetting = PType::getAccountLinkingSetting($pType);
+		if (($accountLinkingSetting != $selected) && ($selected != 0) && ($accountLinkingSetting != 3)){
+			if ($accountLinkingSetting == 0) {
+				if ($selected == 1){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Allow Only to be Linked to',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break linked accounts where users with this patron type can see other accounts.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}else if ($selected == 2){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Allow Only to Link to Others',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break linked accounts for any users that can see accounts with this patron type.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}else if ($selected == 3){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Block All Linking',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break all linked accounts for users with this patron type.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}
+			}else if ($accountLinkingSetting == 1){
+				if ($selected == 2){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Allow Only to be Linked to',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break all linked accounts for users with this patron type.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}if ($selected == 3){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Block All Linking',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break all linked accounts for users with this patron type.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}
+			}else if ($accountLinkingSetting == 2){
+				if ($selected == 1){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Allow Only to be Linked to',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break all linked accounts for users with this patron type.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}else if ($selected == 3){
+					$result = [
+						'success' => true,
+						'title' => translate([
+							'text' => 'Account Linking Setting Change - Block All Linking',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'This change will break all linked accounts for users with this patron type.',
+							'isAdminFacing' => true,
+						]),
+						'modalButtons' => "<span class='tool btn btn-primary' data-dismiss='modal'>" . translate([
+							'text' => 'Ok',
+							'isAdminFacing' => true,
+						])
+					];
+				}
+			}
+		}else {
+			$result['success'] = false;
+		}
 		return $result;
 	}
 

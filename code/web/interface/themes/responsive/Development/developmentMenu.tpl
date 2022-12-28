@@ -1,5 +1,5 @@
 {strip}
-    {if $loggedIn}
+    {if !empty($loggedIn)}
 		<div id="account-menu-label" class="sidebar-label row">
 			<div class="col-xs-12">{translate text='Aspen Developments' isAdminFacing=true}</div>
 		</div>
@@ -56,9 +56,10 @@
 							<div class="adminMenuLink "><a href="/Development/TicketsCreatedByMonth">{translate text="Tickets Created By Month" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Development/TicketsClosedByDay">{translate text="Tickets Closed By Day" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Development/TicketsClosedByMonth">{translate text="Tickets Closed By Month" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/BugsBySeverityAndComponent">{translate text="Active Bugs by Severity" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByPartner">{translate text="Active Tickets By Partner" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Component" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/PartnerTicketDashboard">{translate text="Partner Ticket Dashboard" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Partner" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>

@@ -5,7 +5,7 @@
 		<div id="loginUsernameRow" class="form-group">
 			<label for="cardNumber" class="control-label col-xs-12 col-sm-4">{translate text="Library Card Number" isPublicFacing=true}</label>
 			<div class="col-xs-12 col-sm-8">
-				<input type="text" name="cardNumber" id="cardNumber" value="{$cardNumber|escape}" size="28" class="form-control required">
+				<input type="text" name="cardNumber" id="cardNumber" value="" size="28" class="form-control required">
 			</div>
 		</div>
 	</form>

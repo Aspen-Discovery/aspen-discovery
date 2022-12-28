@@ -14,7 +14,7 @@
 	{/if}
 	{foreach from=$libraryLocations item=curLocation name=locationLoop}
 		<div class="locationInfo" id="locationAddress{$curLocation.id}"
-			 {if !$smarty.foreach.locationLoop.first}style="display:none"{/if}>
+			 {if empty($smarty.foreach.locationLoop.first)}style="display:none"{/if}>
 			<div class="row">
 				<div class="col-xs-12">
 					<h2>{$curLocation.name}</h2>
@@ -54,7 +54,7 @@
 					</div>
 				</div>
 			{/if}
-			{if $curLocation.hasValidHours}
+			{if !empty($curLocation.hasValidHours)}
 				<h3>{translate text="Hours" isPublicFacing=true}</h3>
 				{assign var='lastDay' value="-1"}
 				{foreach from=$curLocation.hours item=curHours}

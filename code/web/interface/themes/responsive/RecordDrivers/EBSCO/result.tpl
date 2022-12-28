@@ -1,7 +1,7 @@
 {strip}
-<div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
-	{if $showCovers}
-		<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center" aria-hidden="true" role="presentation">
+<div id="record{if !empty($summShortId)}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
+	{if !empty($showCovers)}
+		<div class="coversColumn col-xs-3 col-sm-3{if empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
 				<a href="{$summUrl}" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank" aria-hidden="true">
 					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
@@ -10,7 +10,7 @@
 		</div>
 	{/if}
 
-	<div class="{if !$showCovers}col-xs-12{else}col-tn-9 col-sm-9{if empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">
+	<div class="{if empty($showCovers)}col-xs-12{else}col-tn-9 col-sm-9{if empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
@@ -20,7 +20,7 @@
 			</div>
 		</div>
 
-		{if $summAuthor}
+		{if !empty($summAuthor)}
 			<div class="row">
 				<div class="result-label col-tn-3"> {translate text='Author' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">{$summAuthor|escape}</div>
@@ -62,7 +62,7 @@
 
 		<div class="row hidden-phone">
 			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}{translate text="Yes" isPublicFacing=true}{else}{translate text="No" isPublicFacing=true}{/if}</div>
+			<div class="col-tn-9 result-value">{if !empty($summHasFullText)}{translate text="Yes" isPublicFacing=true}{else}{translate text="No" isPublicFacing=true}{/if}</div>
 		</div>
 
 		{if count($appearsOnLists) > 0}
@@ -93,7 +93,7 @@
 			</div>
 		{/if}
 
-		{if $summDescription}
+		{if !empty($summDescription)}
 			{* Standard Description *}
 			<div class="row visible-xs">
 				<div class="result-label col-tn-3">{translate text='Description' isPublicFacing=true}</div>

@@ -7,7 +7,7 @@
 	{if isset($submissionResults)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert {if $submissionResults.success}alert-success{else}alert-danger{/if}">
+				<div class="alert {if !empty($submissionResults.success)}alert-success{else}alert-danger{/if}">
 					{$submissionResults.message}
 				</div>
 			</div>
@@ -33,8 +33,8 @@
 						</div>
 						<div class="checkbox">
 							{foreach from=$dataElements item=propertyName key=propertyValue}
-								<label for="dataElement_{$propertyValue|escape:css}">
-									<input class="dataElement" id="dataElement_{$propertyValue|escape:css}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName.name isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<label for="dataElement_{$propertyValue|escapeCSS}">
+									<input class="dataElement" id="dataElement_{$propertyValue|escapeCSS}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName.name isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 								</label>
 							{/foreach}
 						</div>
@@ -54,8 +54,8 @@
 						</div>
 						<div class="checkbox">
 	                        {foreach from=$libraries item=propertyName key=propertyValue}
-								<label for="libraries_{$propertyValue|escape:css}">
-									<input class="libraries" id="libraries_{$propertyValue|escape:css}" name='libraries[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<label for="libraries_{$propertyValue|escapeCSS}">
+									<input class="libraries" id="libraries_{$propertyValue|escapeCSS}" name='libraries[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 								</label>
 	                        {/foreach}
 						</div>
@@ -76,8 +76,8 @@
 						</div>
 						<div class="checkbox">
 	                        {foreach from=$locations item=propertyName key=propertyValue}
-								<label for="locations_{$propertyValue|escape:css}">
-									<input class="locations" id="locations_{$propertyValue|escape:css}" name='locations[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
+								<label for="locations_{$propertyValue|escapeCSS}">
+									<input class="locations" id="locations_{$propertyValue|escapeCSS}" name='locations[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
 								</label>
 	                        {/foreach}
 						</div>
@@ -97,8 +97,8 @@
 						</div>
 						<div class="checkbox">
                             {foreach from=$instances item=propertyName key=propertyValue}
-								<label for="instances_{$propertyValue|escape:css}">
-									<input class="instances" id="instances_{$propertyValue|escape:css}" name='instances[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
+								<label for="instances_{$propertyValue|escapeCSS}">
+									<input class="instances" id="instances_{$propertyValue|escapeCSS}" name='instances[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
 								</label>
                             {/foreach}
 						</div>

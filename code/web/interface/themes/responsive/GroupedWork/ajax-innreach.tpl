@@ -19,13 +19,13 @@
 			  </td>
 
 		    <td>
-				  {if $prospectorTitle.author}<small>{$prospectorTitle.author|escape}</small>{/if}
+				  {if !empty($prospectorTitle.author)}<small>{$prospectorTitle.author|escape}</small>{/if}
 		    </td>
 			  <td>
-				  {if $prospectorTitle.pubDate}<small>{$prospectorTitle.pubDate|escape}</small>{/if}
+				  {if !empty($prospectorTitle.pubDate)}<small>{$prospectorTitle.pubDate|escape}</small>{/if}
 			  </td>
 			  <td>
-				  {if $prospectorTitle.format}<small>{$prospectorTitle.format|escape}</small>{/if}
+				  {if !empty($prospectorTitle.format)}<small>{$prospectorTitle.format|escape}</small>{/if}
 			  </td>
 		  </tr>
 	  {/if}

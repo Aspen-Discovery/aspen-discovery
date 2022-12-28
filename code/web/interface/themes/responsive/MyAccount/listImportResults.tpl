@@ -1,6 +1,6 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
-	{if $importResults}
+	{if !empty($importResults)}
 		<h1>
 			{if $importResults.totalTitles == 1 && $importResults.totalLists == 1}
 				{translate text="Congratulations, we imported 1 title from 1 list." isPublicFacing=true}

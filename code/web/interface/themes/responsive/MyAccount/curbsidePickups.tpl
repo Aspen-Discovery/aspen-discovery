@@ -1,14 +1,14 @@
 <h1>{translate text="Curbside Pickups" isPublicFacing=true}</h1>
-{if $showCurbsidePickups}
-    {if $loggedIn}
+{if !empty($showCurbsidePickups)}
+    {if !empty($loggedIn)}
         <div class="row">
             <div class="col-xs-12" id="curbside-pickups">
-                {if $instructionSchedule}
+                {if !empty($instructionSchedule)}
                     <div id="instructionSchedule" style="margin-bottom: 3em;">
                         {translate text=$instructionSchedule isPublicFacing=true isAdminEnteredData=true}
                     </div>
                 {/if}
-                {if $hasPickups}
+                {if !empty($hasPickups)}
                     <p class="alert alert-info"><a href="/MyAccount/Holds"><strong><span class="ils-available-holds-placeholder"></span></strong></a> {translate text="hold(s) ready for pickup" isPublicFacing=true}</p>
 
                     <h2>{translate text="Scheduled pickups" isPublicFacing=true}</h2>
@@ -18,7 +18,7 @@
                     <p class="alert alert-info"><a href="/MyAccount/Holds"><strong><span class="ils-available-holds-placeholder"></span></strong></a> {translate text="hold(s) ready for pickup" isPublicFacing=true}</p>
                 {/if}
             </div>
-            {if $hasHolds}
+            {if !empty($hasHolds)}
                 <div class="col-xs-12">
                     <h2>{translate text="Ready for Pickup" isPublicFacing=true}</h2>
                     <div id="holds-ready-table" style="margin-bottom: 2em">
@@ -30,7 +30,7 @@
                                             <h4 class="margin: 0">{$location.name} {*<span class="badge">{$location.holds|@count}</span>*}</h4>
                                         </th>
                                         <th class="text-right">
-                                            {if $location.pickupScheduled}
+                                            {if !empty($location.pickupScheduled)}
                                                 <button class="btn btn-primary" disabled>{translate text="Pickup already scheduled at %1%" 1=$location.name isPublicFacing=true inAttribute=true}</button>
                                             {else}
                                                 <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$location.id}')">{translate text="Schedule a pickup at %1%" 1=$location.name isPublicFacing=true inAttribute=true}</button>
@@ -53,7 +53,7 @@
                     </div>
                 </div>
             {else}
-                {if $showScheduleButton}
+                {if !empty($showScheduleButton)}
                     <button class="btn btn-primary" onclick="return AspenDiscovery.Account.getCurbsidePickupScheduler('{$location.id}')">{translate text="Schedule a pickup at %1%" 1=$location.name isPublicFacing=true inAttribute=true}</button>
                 {/if}
             {/if}

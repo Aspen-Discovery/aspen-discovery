@@ -157,7 +157,7 @@ class UserNotification extends DataObject {
 				}
 			}
 		}
-		return $this->_data[$name];
+		return $this->_data[$name] ?? null;
 	}
 
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {

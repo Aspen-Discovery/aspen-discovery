@@ -1,5 +1,5 @@
 {strip}
-	{if $subjects}
+	{if !empty($subjects)}
 		<div class="row">
 			<div class="col-md-9 result-value">
 				{foreach from=$subjects item=subject name=loop}

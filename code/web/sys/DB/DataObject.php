@@ -276,6 +276,9 @@ abstract class DataObject {
 		$propertyValues = '';
 		foreach ($properties as $name => $value) {
 			if (!is_null($value) && !is_array($value) && $name[0] != '_' && $name[0] != 'N') {
+				if ($name == $this->getPrimaryKey() && empty($this->getPrimaryKeyValue())){
+					continue;
+				}
 				if (strlen($propertyNames) != 0) {
 					$propertyNames .= ', ';
 					$propertyValues .= ', ';
@@ -336,6 +339,10 @@ abstract class DataObject {
 		try {
 			$response = $aspen_db->exec($insertQuery);
 		} catch (PDOException $e) {
+			if (IPAddress::showDebuggingInformation() && !($this instanceof AspenError)) {
+				$errorToLog = new AspenError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
+				$errorToLog->insert();
+			}
 			$this->setLastError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
 			$response = false;
 		}
@@ -346,6 +353,20 @@ abstract class DataObject {
 		}
 		$timer->logTime($insertQuery);
 		$this->{$this->__primaryKey} = $aspen_db->lastInsertId();
+
+		//Log the insert into object history
+		if (!empty($this->{$this->__primaryKey}) && !($this instanceof DataObjectHistory) && !($this instanceof AspenError)) {
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$history = new DataObjectHistory();
+			$history->objectType = get_class($this);
+			$history->objectId = $this->{$this->__primaryKey};
+			$history->propertyName = '';
+			$history->actionType = 1;
+			$history->changedBy = UserAccount::getActiveUserId();
+			$history->changeDate = time();
+			$history->insert();
+		}
+
 		return $response;
 	}
 
@@ -458,7 +479,12 @@ abstract class DataObject {
 			/** @noinspection SqlWithoutWhere */
 			$deleteQuery = 'DELETE from ' . $this->__table . $this->getWhereClause($aspen_db);
 		} else {
-			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+			if (empty($this->$primaryKey)) {
+				AspenError::raiseError("Called Object Delete, but the primary key was not supplied.");
+				return  false;
+			} else {
+				$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+			}
 		}
 		$this->__lastQuery = $deleteQuery;
 
@@ -469,6 +495,17 @@ abstract class DataObject {
 			$logger->log($deleteQuery, Logger::LOG_ERROR);
 		}
 		$timer->logTime($deleteQuery);
+		if ($result && !$useWhere) {
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$history = new DataObjectHistory();
+			$history->objectType = get_class($this);
+			$history->objectId = $this->{$this->__primaryKey};
+			$history->propertyName = '';
+			$history->actionType = 3;
+			$history->changedBy = UserAccount::getActiveUserId();
+			$history->changeDate = time();
+			$history->insert();
+		}
 		return $result;
 	}
 
@@ -879,6 +916,7 @@ abstract class DataObject {
 					if (strlen($newValue) >= 65535) {
 						$newValue = 'Too long to track history';
 					}
+					$history->actionType = 2;
 					$history->objectId = $this->$primaryKey;
 					$history->oldValue = $oldValue;
 					$history->propertyName = $propertyName;

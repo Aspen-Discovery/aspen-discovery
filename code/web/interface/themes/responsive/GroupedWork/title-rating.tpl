@@ -7,7 +7,7 @@
          data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
 		>
 			<span class="ui-rater-starsOff" style="width:90px">
-				{if $ratingData.user}
+				{if !empty($ratingData.user)}
 					<span class="ui-rater-starsOn userRated" style="width:{math equation="90*rating/5" rating=$ratingData.user}px"></span>
 				{else}
 					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>

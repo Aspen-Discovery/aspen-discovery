@@ -8,13 +8,13 @@
 		</div>
 	{else}
 		{foreach from=$providerList item=review}
-			{if $review.Content}
+			{if !empty($review.Content)}
 			<div class='review'>
-				{if $review.Source}
+				{if !empty($review.Source)}
 					<div class='reviewSource'>{$review.Source}</div>
 				{/if}
 				<div id = 'review{php}$index ++;{/php}{$index}'>
-				{if $review.Teaser}
+				{if !empty($review.Teaser)}
 					 <div class="reviewTeaser" id="reviewTeaser{php}echo $index;{/php}">
 					 {$review.Teaser} <span onclick="$('#reviewTeaser{php}echo $index;{/php}').hide();$('#reviewContent{php}echo $index;{/php}').show();" class='reviewMoreLink'>(more)</span>
 					 </div>

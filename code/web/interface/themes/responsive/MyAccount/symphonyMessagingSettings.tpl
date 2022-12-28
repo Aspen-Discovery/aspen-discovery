@@ -47,11 +47,11 @@
 						<td>
 							<input type="hidden" name="phoneNumberDeleted[{$phoneIndex}]" id="phoneNumberDeleted{$phoneIndex}">
 							<input type="hidden" name="phoneNumberKey[{$phoneIndex}]" id="phoneNumberKey{$phoneIndex}" value="{$phone.key}">
-                            {if $canSave}<input type="text" class="form-control form-control-sm" name="phoneLabel[{$phoneIndex}]" value="{$phone.label}" aria-label="Phone Label {$phoneIndex}"/>{else}{$phone.label}{/if}
+                            {if !empty($canSave)}<input type="text" class="form-control form-control-sm" name="phoneLabel[{$phoneIndex}]" value="{$phone.label}" aria-label="Phone Label {$phoneIndex}"/>{else}{$phone.label}{/if}
 						</td>
-						<td>{if $canSave}<input type="text" class="form-control form-control-sm" name="phoneNumber[{$phoneIndex}]" value="{$phone.number}" aria-label="Phone Number {$phoneIndex}"/>{else}{$phone.number}{/if}</td>
+						<td>{if !empty($canSave)}<input type="text" class="form-control form-control-sm" name="phoneNumber[{$phoneIndex}]" value="{$phone.number}" aria-label="Phone Number {$phoneIndex}"/>{else}{$phone.number}{/if}</td>
 						<td>
-							{if $canSave}
+							{if !empty($canSave)}
 								<select class="form-control form-control-sm" name="countryCode[{$phoneIndex}]">
 									{foreach from=$countryCodes key=countryCode item=displayName}
 										<option value="{$countryCode}" {if $countryCode == $phone.countryCode}selected{/if}>{$displayName}</option>
@@ -62,11 +62,11 @@
 							{/if}
 						</td>
 						<td>
-							<div><label for="billNotices_{$phoneIndex}"><input type="checkbox" name="billNotices[{$phoneIndex}]" id="billNotices_{$phoneIndex}" {if $phone.billNotices}checked{/if}>{translate text="Bill Notices" isPublicFacing=true}</label></div>
-							<div><label for="overdueNotices_{$phoneIndex}"><input type="checkbox" name="overdueNotices[{$phoneIndex}]" id="overdueNotices_{$phoneIndex}" {if $phone.overdueNotices}checked{/if}>{translate text="Overdue Notices" isPublicFacing=true}</label></div>
-							<div><label for="holdPickupNotices_{$phoneIndex}"><input type="checkbox" name="holdPickupNotices[{$phoneIndex}]" id="overdueNotices_{$phoneIndex}" {if $phone.holdPickupNotices}checked{/if}>{translate text="Hold Pickup Notices" isPublicFacing=true}</label></div>
-							<div><label for="manualMessages_{$phoneIndex}"><input type="checkbox" name="manualMessages[{$phoneIndex}]" id="manualMessages_{$phoneIndex}" {if $phone.manualMessages}checked{/if}>{translate text="Manual Messages" isPublicFacing=true}</label></div>
-							<div><label for="generalAnnouncements_{$phoneIndex}"><input type="checkbox" name="generalAnnouncements[{$phoneIndex}]" id="generalAnnouncements_{$phoneIndex}" {if $phone.generalAnnouncements}checked{/if}>{translate text="General Announcements" isPublicFacing=true}</label></div>
+							<div><label for="billNotices_{$phoneIndex}"><input type="checkbox" name="billNotices[{$phoneIndex}]" id="billNotices_{$phoneIndex}" {if !empty($phone.billNotices)}checked{/if}>{translate text="Bill Notices" isPublicFacing=true}</label></div>
+							<div><label for="overdueNotices_{$phoneIndex}"><input type="checkbox" name="overdueNotices[{$phoneIndex}]" id="overdueNotices_{$phoneIndex}" {if !empty($phone.overdueNotices)}checked{/if}>{translate text="Overdue Notices" isPublicFacing=true}</label></div>
+							<div><label for="holdPickupNotices_{$phoneIndex}"><input type="checkbox" name="holdPickupNotices[{$phoneIndex}]" id="overdueNotices_{$phoneIndex}" {if !empty($phone.holdPickupNotices)}checked{/if}>{translate text="Hold Pickup Notices" isPublicFacing=true}</label></div>
+							<div><label for="manualMessages_{$phoneIndex}"><input type="checkbox" name="manualMessages[{$phoneIndex}]" id="manualMessages_{$phoneIndex}" {if !empty($phone.manualMessages)}checked{/if}>{translate text="Manual Messages" isPublicFacing=true}</label></div>
+							<div><label for="generalAnnouncements_{$phoneIndex}"><input type="checkbox" name="generalAnnouncements[{$phoneIndex}]" id="generalAnnouncements_{$phoneIndex}" {if !empty($phone.generalAnnouncements)}checked{/if}>{translate text="General Announcements" isPublicFacing=true}</label></div>
 						</td>
 						<td><button class="btn btn-sm btn-danger" onclick="$('#phoneRow{$phoneIndex}').hide();$('#phoneNumberDeleted{$phoneIndex}').val('true');return false;">{translate text="Delete" isPublicFacing=true}</button> </td>
 					</tr>
@@ -74,7 +74,7 @@
 
 				</tbody>
 			</table>
-			{if $canSave}
+			{if !empty($canSave)}
 				<button class="btn btn-sm btn-primary" name="addPhone" id="addPhoneBtn" onclick="return addPhoneRow();">{translate text="Add Phone Number" isPublicFacing=true}</button>
 				<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings" isPublicFacing=true}</button>
 			{/if}

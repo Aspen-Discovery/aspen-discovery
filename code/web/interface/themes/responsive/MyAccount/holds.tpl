@@ -1,5 +1,5 @@
 {strip}
-	{if $loggedIn}
+	{if !empty($loggedIn)}
 		{if !empty($profile->_web_note)}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -15,14 +15,14 @@
 		<h1>{translate text='Titles On Hold' isPublicFacing=true}</h1>
 
 		{* Check to see if there is data for the section *}
-		{if $libraryHoursMessage}
+		{if !empty($libraryHoursMessage)}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 		{/if}
-		{if $offline && !$enableEContentWhileOffline}
+		{if !empty($offline) && !$enableEContentWhileOffline}
 			<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 		{else}
 			<ul class="nav nav-tabs" role="tablist" id="holdsTab">
-				{if !$offline}
+				{if empty($offline)}
 					<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All" isPublicFacing=true} <span class="badge"><span class="holds-placeholder">&nbsp;</span></span></a></li>
 					<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
@@ -45,7 +45,7 @@
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="holds">
-				{if !$offline}
+				{if empty($offline)}
 					<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allHoldsPlaceholder" aria-label="All Holds List">{translate text="Loading holds from all sources" isPublicFacing=true}</div></div>
 					<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder" aria-label="List of Holds on Physical Materials">{translate text="Loading holds of physical materials" isPublicFacing=true}</div></div>
 				{/if}

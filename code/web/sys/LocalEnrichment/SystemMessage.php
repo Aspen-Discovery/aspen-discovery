@@ -127,7 +127,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

@@ -147,7 +147,7 @@ class Axis360Setting extends DataObject {
 			}
 			return $this->_scopes;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

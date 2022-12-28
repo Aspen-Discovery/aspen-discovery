@@ -2,7 +2,7 @@
 	<div id="record{$record->source}_{$record->sourceId|escape}" class="result row{if $record->isOverdue()} bg-overdue{/if}">
 
 		{* Cover Column *}
-		{if $showCovers}
+		{if !empty($showCovers)}
 			{*<div class="col-xs-4">*}
 			<div class="col-xs-3 col-sm-4 col-md-3">
 				<div class="row">
@@ -35,7 +35,7 @@
 		{/if}
 
 		{* Title Details Column *}
-		<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
+		<div class="{if !empty($showCovers)}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">
@@ -90,7 +90,7 @@
 						</div>
                     {/if}
 
-					{if $showOut}
+					{if !empty($showOut)}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">{$record->checkoutDate|date_format}</div>
@@ -113,7 +113,7 @@
 						{/if}
 					{/if}
 
-					{if $showRatings && $record->getGroupedWorkId() && $record->getRatingData()}
+					{if !empty($showRatings) && $record->getGroupedWorkId() && $record->getRatingData()}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Rating' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
@@ -122,7 +122,7 @@
 						</div>
 					{/if}
 
-					{if $hasLinkedUsers}
+					{if !empty($hasLinkedUsers)}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out To' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
@@ -192,7 +192,7 @@
 						</div>
 					{/if}
 
-					{if $showWaitList}
+					{if !empty($showWaitList)}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Wait List' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
@@ -204,7 +204,7 @@
 				</div>
 
 				{* Actions for Title *}
-				{*<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-4 col-lg-3{else}col-xs-11{/if}">*}
+				{*<div class="{if !empty($showCovers)}col-xs-9 col-sm-8 col-md-4 col-lg-3{else}col-xs-11{/if}">*}
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if empty($record->returnClaim)}
@@ -225,7 +225,7 @@
 							{/if}
 						{/if}
 					</div>
-					{if $showWhileYouWait}
+					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
 								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>

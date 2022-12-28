@@ -1,6 +1,6 @@
 {strip}
 	<form class="form-horizontal" role="form">
-		{if $showRatings}
+		{if !empty($showRatings)}
 		<div class="rateTitle form-group">
 			<label for="rating" class="col-sm-3">{translate text="Rate the Title" isPublicFacing=true}</label>
 			<div class="col-sm-9">
@@ -15,7 +15,7 @@
 			</div>
 		</div>
 		{/if}
-		{if $showComments}
+		{if !empty($showComments)}
 		<div class="form-group">
 			<label for="comment{$id}" class="col-sm-3">{translate text="Write a Review" isPublicFacing=true}</label>
 			<div class="col-sm-9">

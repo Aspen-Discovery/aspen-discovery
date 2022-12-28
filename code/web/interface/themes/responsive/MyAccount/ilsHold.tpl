@@ -7,7 +7,7 @@
 		</div>
 		{/if}
 		{* Cover column *}
-		{if $showCovers}
+		{if !empty($showCovers)}
 			<div class="{if $section == 'available'}col-xs-4 col-sm-3{else}col-xs-3 col-sm-2{/if}">
 				<div class="{*col-xs-10 *}text-center">
 					{if !empty($record->getCoverUrl())}
@@ -25,7 +25,7 @@
 		{/if}
 
 		{* Details Column*}
-		<div class="{if $showCovers}col-xs-8 col-sm-9{else}{if $section != 'available'}col-xs-11{else}col-xs-12{/if}{/if}">
+		<div class="{if !empty($showCovers)}col-xs-8 col-sm-9{else}{if $section != 'available'}col-xs-11{else}col-xs-12{/if}{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">
@@ -93,7 +93,7 @@
 						</div>
 					{/if}
 
-					{if $hasLinkedUsers}
+					{if !empty($hasLinkedUsers)}
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
@@ -109,7 +109,7 @@
 						</div>
 					</div>
 
-					{if $showPlacedColumn && $record->createDate}
+					{if !empty($showPlacedColumn) && $record->createDate}
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Date Placed' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
@@ -156,7 +156,7 @@
 							</div>
 						</div>
 
-						{if $showPosition && $record->position}
+						{if !empty($showPosition) && $record->position}
 							<div class="row">
 								<div class="result-label col-tn-4">{translate text='Position' isPublicFacing=true}</div>
 								<div class="col-tn-8 result-value">
@@ -200,7 +200,7 @@
 								{if $record->frozen}
 									<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold" isPublicFacing=true}</button>
 								{else}
-									<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
+									<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if !empty($suspendRequiresReactivationDate)}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
 								{/if}
 							{/if}
 							{if $record->locationUpdateable && $numPickupBranches > 1}
@@ -208,7 +208,7 @@
 							{/if}
 						{/if}
 					</div>
-					{if $showWhileYouWait}
+					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
 								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>

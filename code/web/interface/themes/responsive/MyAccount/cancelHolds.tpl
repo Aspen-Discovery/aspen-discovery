@@ -1,10 +1,10 @@
 {strip}
-    {if $cancelResults.title && !is_array($cancelResults.title)}
+    {if !empty($cancelResults.title) && !is_array($cancelResults.title)}
         {* for single item results *}
         <p><strong>{$cancelResults.title|removeTrailingPunctuation}</strong></p>
     {/if}
     <div class="contents">
-        {if $cancelResults.success}
+        {if !empty($cancelResults.success)}
             <div class="alert alert-success">{$cancelResults.message}</div>
         {else}
             {if is_array($cancelResults.message)}

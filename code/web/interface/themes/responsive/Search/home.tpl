@@ -1,5 +1,5 @@
 {strip}
-	{if $showBrowseContent}
+	{if !empty($showBrowseContent)}
 	<h1 class="hiddenTitle">{translate text='Browse the Catalog' isPublicFacing=true}</h1>
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
@@ -26,7 +26,7 @@
 			</div>
 			<div id="browse-sub-category-menu" class="row text-center">
 				{* Initial load of content done by AJAX call on page load, unless sub-category is specified via URL *}
-				{if $subCategoryTextId}
+				{if !empty($subCategoryTextId)}
 					{include file="Search/browse-sub-category-menu.tpl"}
 				{/if}
 			</div>
@@ -36,7 +36,7 @@
 	<div id="home-page-browse-content" class="row">
 		<div class="col-sm-12">
 
-			{if $showBrowseContent}
+			{if !empty($showBrowseContent)}
 			<div class="row" id="selected-browse-label">
 					<div class="btn-toolbar pull-right" style="padding: 0 8px; margin-right: 20px">
 						<div class="btn-group btn-group-sm" data-toggle="buttons">
@@ -47,7 +47,7 @@
 								<i class="fas fa-th-list"></i> {translate text='Grid' isPublicFacing=true}</span>
 							</label>
 						</div>
-						{if $isLoggedIn}
+						{if !empty($isLoggedIn)}
 						<div class="btn-group" data-toggle="buttons" style="margin-top: -.15em; margin-left: 1em;">
 							<button class="btn btn-default selected-browse-dismiss" onclick="">
 							<i class="fas fa-times"></i> {translate text='Hide' isPublicFacing=true}</button>
@@ -66,7 +66,7 @@
 				</div>
 			</div>
 
-			<div id="home-page-browse-results" {if !$browseCategoryRatingsMode}class="HideBorder"{/if}>
+			<div id="home-page-browse-results" {if empty($browseCategoryRatingsMode)}class="HideBorder"{/if}>
 				<div class="grid">
 					<!-- columns -->
 					<div class="grid-col grid-col--1"></div>
@@ -93,11 +93,11 @@
 			{/if}
 
 			{* add link to restore hidden browse categories if user has any hidden *}
-			{if $isLoggedIn && $numHiddenCategory > 0}
-			<div class="row text-center" {if $showBrowseContent}style="margin-top: 2em"{/if}>
+			{if !empty($isLoggedIn) && $numHiddenCategory > 0}
+			<div class="row text-center" {if !empty($showBrowseContent)}style="margin-top: 2em"{/if}>
 				<div class="col-xs-12">
 					<a role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" tabindex="1">
-						<span class="btn {if $showBrowseContent}btn-default{else}btn-primary{/if}" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}</span>
+						<span class="btn {if !empty($showBrowseContent)}btn-default{else}btn-primary{/if}" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}</span>
 					</a>
 				</div>
 			</div>
@@ -107,11 +107,11 @@
 {/strip}
 <script type="text/javascript">
 	$(function(){ldelim}
-		{if $selectedBrowseCategory}
+		{if !empty($selectedBrowseCategory)}
 			AspenDiscovery.Browse.curCategory = '{$selectedBrowseCategory->textId}';
-			{if $subCategoryTextId}AspenDiscovery.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
+			{if !empty($subCategoryTextId)}AspenDiscovery.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
 		{/if}
-		{if !$onInternalIP}
+		{if empty($onInternalIP)}
 		if (!Globals.opac && AspenDiscovery.hasLocalStorage()){ldelim}
 			var temp = window.localStorage.getItem('browseMode');
 			if (AspenDiscovery.Browse.browseModeClasses.hasOwnProperty(temp)) AspenDiscovery.Browse.browseMode = temp; {* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}

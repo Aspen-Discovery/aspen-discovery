@@ -16,11 +16,11 @@
 			<tbody>
 				{foreach from=$ticketsByPartner item=partnerTicketInfo}
 					<tr>
-						<td>{$partnerTicketInfo.siteName}</td>
-						<td>{$partnerTicketInfo.Implementation}</td>
-						<td>{$partnerTicketInfo.Support}</td>
-						<td>{$partnerTicketInfo.Bugs}</td>
-						<td>{$partnerTicketInfo.Development}</td>
+						<td><a href="/Greenhouse/Tickets?sort=ticketId+desc&filterType[showClosedTickets]=matches&filterValue[showClosedTickets]=0&filterType[requestingPartner]=matches&filterValue[requestingPartner]={$partnerTicketInfo.siteId}&page=&pageSize=25&objectAction=list">{$partnerTicketInfo.siteName}</a></td>
+						<td>{if $partnerTicketInfo.Implementation > 0}<a href="/Greenhouse/Tickets?sort=ticketId+desc&filterType[showClosedTickets]=matches&filterValue[showClosedTickets]=0&filterType[requestingPartner]=matches&filterValue[requestingPartner]={$partnerTicketInfo.siteId}&filterType[queue]=matches&filterValue[queue]=Implementation&page=&pageSize=25&objectAction=list">{/if}{$partnerTicketInfo.Implementation}{if $partnerTicketInfo.Implementation > 0}</a>{/if}</td>
+						<td>{if $partnerTicketInfo.Support > 0}<a href="/Greenhouse/Tickets?sort=ticketId+desc&filterType[showClosedTickets]=matches&filterValue[showClosedTickets]=0&filterType[requestingPartner]=matches&filterValue[requestingPartner]={$partnerTicketInfo.siteId}&filterType[queue]=matches&filterValue[queue]=Support&page=&pageSize=25&objectAction=list">{/if}{$partnerTicketInfo.Support}{if $partnerTicketInfo.Support > 0}</a>{/if}</td>
+						<td>{if $partnerTicketInfo.Bugs > 0}<a href="/Greenhouse/Tickets?sort=ticketId+desc&filterType[showClosedTickets]=matches&filterValue[showClosedTickets]=0&filterType[requestingPartner]=matches&filterValue[requestingPartner]={$partnerTicketInfo.siteId}&filterType[queue]=matches&filterValue[queue]=Bugs&page=&pageSize=25&objectAction=list">{/if}{$partnerTicketInfo.Bugs}{if $partnerTicketInfo.Bugs > 0}</a>{/if}</td>
+						<td>{if $partnerTicketInfo.Development > 0}<a href="/Greenhouse/Tickets?sort=ticketId+desc&filterType[showClosedTickets]=matches&filterValue[showClosedTickets]=0&filterType[requestingPartner]=matches&filterValue[requestingPartner]={$partnerTicketInfo.siteId}&filterType[queue]=matches&filterValue[queue]=Development&page=&pageSize=25&objectAction=list">{/if}{$partnerTicketInfo.Development}{if $partnerTicketInfo.Development > 0}</a>{/if}</td>
 						<td>{$partnerTicketInfo.Total}</td>
 					</tr>
 				{/foreach}

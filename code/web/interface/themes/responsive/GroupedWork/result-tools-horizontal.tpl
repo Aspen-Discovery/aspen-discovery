@@ -2,7 +2,7 @@
 	{if $showComments || $showFavorites || $showEmailThis || $showShareOnExternalSites}
 		<div class="result-tools-horizontal btn-toolbar" role="toolbar">
 			{if $showNotInterested == true}
-			{if !$showCovers}
+			{if empty($showCovers)}
 			<div class="btn-group" role="group">
 				<button id="notInterested{$summId}" style="word-break: keep-all; white-space: inherit"
 				        class="btn btn-warning btn-sm notInterested"
@@ -15,7 +15,7 @@
 			{* More Info Link, only if we are showing other data *}
 			{if $showMoreInfo || $showComments || $showFavorites}
 				{if $showMoreInfo !== false}
-					<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="{translate text="More Info for %1% record %2%" 1=$summTitle|escape:css 2=$recordDriver->getPermanentId() isPublicFacing=true inAttribute=true}">{translate text="More Info" isPublicFacing=true}</a>
+					<a href="{if !empty($summUrl)}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="{translate text="More Info for %1% record %2%" 1=$summTitle|escapeCSS 2=$recordDriver->getPermanentId() isPublicFacing=true inAttribute=true}">{translate text="More Info" isPublicFacing=true}</a>
 				{/if}
 				{if $showComments == 1}
 					{* Hide Review Button for xs views in Search Results & User Lists *}
@@ -26,7 +26,7 @@
 				{if $showFavorites == 1}
 					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" onkeypress="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to list" isPublicFacing=true}</button>
 				{/if}
-				{if $loggedIn && $module == 'Search' && in_array('Manually Group and Ungroup Works', $userPermissions)}
+				{if !empty($loggedIn) && $module == 'Search' && in_array('Manually Group and Ungroup Works', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" onkeypress="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" class="btn btn-sm btn-tools">{translate text='Group With' isAdminFacing=true}</button>
 				{/if}
 			{/if}

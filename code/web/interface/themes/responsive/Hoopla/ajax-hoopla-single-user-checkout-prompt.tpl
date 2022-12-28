@@ -1,10 +1,10 @@
 {strip}
-		{if $hooplaUser}{* Linked User that is not the main user *}
+		{if !empty($hooplaUser)}{* Linked User that is not the main user *}
 			<p>
 				{translate text="Using card for %1%" 1=$hooplaUser->getNameAndLibraryLabel() isPublicFacing=true}
 			</p>
 		{/if}
-	{if $hooplaPatronStatus}
+	{if !empty($hooplaPatronStatus)}
 		<div class="alert alert-info">
 			{translate text="You have <span class='badge'>%1%</span> Hoopla check outs remaining this month. Proceed with checkout?" 1=$hooplaPatronStatus->numCheckoutsRemaining isPublicFacing=true}
 		</div>

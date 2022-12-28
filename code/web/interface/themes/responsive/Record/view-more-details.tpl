@@ -1,6 +1,6 @@
 {strip}
 	{* Details not shown in the Top/Main Section of the Record view should be shown here *}
-	{if $recordDriver && !$showPublicationDetails && $recordDriver->getPublicationDetails()}
+	{if !empty($recordDriver) && !$showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Published' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -9,7 +9,7 @@
 		</div>
 	{/if}
 
-	{if !$showFormats}
+	{if empty($showFormats)}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Format' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -18,7 +18,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && !$showEditions && $recordDriver->getEditions()}
+	{if !empty($recordDriver) && !$showEditions && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -27,7 +27,7 @@
 		</div>
 	{/if}
 
-	{if !$showPhysicalDescriptions && $physicalDescriptions}
+	{if empty($showPhysicalDescriptions) && $physicalDescriptions}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Physical Desc' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -36,7 +36,7 @@
 		</div>
 	{/if}
 
-	{if $streetDate}
+	{if !empty($streetDate)}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Street Date' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -52,7 +52,7 @@
 		</div>
 	</div>
 
-	{if $recordDriver && !$showISBNs && count($recordDriver->getISBNs()) > 0}
+	{if !empty($recordDriver) && !$showISBNs && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -61,7 +61,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && count($recordDriver->getISSNs()) > 0}
+	{if !empty($recordDriver) && count($recordDriver->getISSNs()) > 0}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='ISSN' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -70,7 +70,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && count($recordDriver->getUPCs()) > 0}
+	{if !empty($recordDriver) && count($recordDriver->getUPCs()) > 0}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='UPC' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -79,7 +79,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && $recordDriver->getAcceleratedReaderData() != null}
+	{if !empty($recordDriver) && $recordDriver->getAcceleratedReaderData() != null}
 		{assign var="arData" value=$recordDriver->getAcceleratedReaderData()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Accelerated Reader' isPublicFacing=true}</div>
@@ -90,7 +90,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && $recordDriver->getLexileCode()}
+	{if !empty($recordDriver) && $recordDriver->getLexileCode()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Lexile code' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -99,7 +99,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && $recordDriver->getLexileScore()}
+	{if !empty($recordDriver) && $recordDriver->getLexileScore()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Lexile measure' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -108,7 +108,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && $recordDriver->getFountasPinnellLevel()}
+	{if !empty($recordDriver) && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="col-md-9 result-value">
@@ -117,7 +117,7 @@
 		</div>
 	{/if}
 
-	{if $notes}
+	{if !empty($notes)}
 		<h4>{translate text='Notes' isPublicFacing=true}</h4>
 		{foreach from=$notes item=note name=loop}
 			<div class="row">

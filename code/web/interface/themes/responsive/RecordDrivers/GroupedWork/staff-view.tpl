@@ -1,18 +1,18 @@
 {strip}
 <button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover" isAdminFacing=true}</button>
-{if $loggedIn && in_array('Upload Covers', $userPermissions)}
+{if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
 	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover from Computer" isAdminFacing=true}</button>
 	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
 	<button onclick="return AspenDiscovery.GroupedWork.clearUploadedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Clear Uploaded Cover" isAdminFacing=true}</button>
 {/if}
 <button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Enrichment" isAdminFacing=true}</button>
-{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
+{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
 	<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
 {/if}
-{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
+{if !empty($loggedIn) && in_array('Set Grouped Work Display Information', $userPermissions)}
 	<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info" isAdminFacing=true}</button>
 {/if}
-{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
+{if !empty($loggedIn) && in_array('Manually Group and Ungroup Works', $userPermissions)}
 	<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work" isAdminFacing=true}</button>
 {/if}
 
@@ -196,7 +196,7 @@
 				<th>{$row.format}</th>
 				<th>{$row.formatCategory}</th>
 				<th>{$row.language}</th>
-				<th>{if $row.isClosedCaptioned}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
+				<th>{if !empty($row.isClosedCaptioned)}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
 			</tr>
         {/foreach}
 		</tbody>

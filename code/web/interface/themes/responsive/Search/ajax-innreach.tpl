@@ -18,7 +18,7 @@
 									{$prospectorResult.title}
 								</a>
 							</div>
-							<div class="resultItemLine2">{if $prospectorResult.author}by {$prospectorResult.author} {/if}Published {$prospectorResult.pubDate}</div>
+							<div class="resultItemLine2">{if !empty($prospectorResult.author)}by {$prospectorResult.author} {/if}Published {$prospectorResult.pubDate}</div>
 						</div>
 					{/foreach}
 				</div>

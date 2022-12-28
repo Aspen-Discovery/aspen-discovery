@@ -247,6 +247,7 @@ class SearchSources {
 					'name' => 'Library Website',
 					'description' => 'Library Website',
 					'catalogType' => 'websites',
+					'hasAdvancedSearch' => false,
 				];
 			}
 		}

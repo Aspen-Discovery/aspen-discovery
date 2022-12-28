@@ -8,7 +8,7 @@
 	<p>
 		{translate text="Your active location is <strong>%1%</strong>." 1=$physicalLocation isPublicFacing=true}
 	</p>
-	{if $isOpac}
+	{if !empty($isOpac)}
 		<p>
 			{translate text="You are currently at an OPAC station." isPublicFacing=true}
 		</p>

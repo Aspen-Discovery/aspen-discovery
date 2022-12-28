@@ -3,7 +3,7 @@
 
 	{foreach from=$staffMembers item=staffMember}
 		<div class="staff-member">
-			{if $hasPhotos}
+			{if !empty($hasPhotos)}
 				<div class="row">
 					<div class="coversColumn col-xs-4 col-sm-3 col-md-2 text-center">
 						{if !empty($staffMember->photo)}
@@ -45,7 +45,7 @@
 					</div>
 				</div>
 			{/if}
-			{if $hasPhotos}
+			{if !empty($hasPhotos)}
 					</div>
 				</div>
 			{/if}

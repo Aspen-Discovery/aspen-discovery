@@ -9,13 +9,13 @@
 			<input type="hidden" name="id" id="id" value="{$id}">
 			<input type="hidden" name="recordSource" id="recordSource" value="{$recordSource}">
 			<input type="hidden" name="module" id="module" value="{$activeRecordProfileModule}">
-			{if $volume}
+			{if !empty($volume)}
 				<input type="hidden" name="volume" id="volume" value="{$volume}">
 			{/if}
 			<fieldset>
 				<div class="holdsSummary">
 					<input type="hidden" name="holdCount" id="holdCount" value="1">
-					<div class="alert alert-warning" id="overHoldCountWarning" {if !$showOverHoldLimit}style="display:none"{/if}>
+					<div class="alert alert-warning" id="overHoldCountWarning" {if empty($showOverHoldLimit)}style="display:none"{/if}>
 						{translate text="Warning: You have reached the maximum of <span class=\"maxHolds\">%1%</span> holds for your account.  You must cancel a hold before you can place a hold on this title." 1=$maxHolds isPublicFacing=true}
 					</div>
 					<div id="holdError" class="pageWarning" style="display: none"></div>
@@ -70,7 +70,7 @@
 									{/if}
 								</select>
 
-								{if !$multipleUsers && $allowRememberPickupLocation}
+								{if empty($multipleUsers) && $allowRememberPickupLocation}
 									<div class="form-group">
 										<label for="rememberHoldPickupLocation" class="checkbox"><input type="checkbox" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation"> {translate text="Always use this pickup location" isPublicFacing=true}</label>
 									</div>
@@ -80,7 +80,7 @@
 							</div>
 						</div>
 
-						<div id="userOption" class="form-group"{if !$multipleUsers} style="display: none"{/if}>{* display if there are multiple accounts *}
+						<div id="userOption" class="form-group"{if empty($multipleUsers)} style="display: none"{/if}>{* display if there are multiple accounts *}
 							<label for="user" class="control-label">{translate text="Place hold for the chosen location using account" isPublicFacing=true}</label>
 							<div class="controls">
 								<select name="user" id="user" class="form-control">
@@ -129,7 +129,7 @@
 						<div id="itemSelection" class="form-group" {if $holdType=='either'}style="display: none"{/if}>
 							<select name="selectedItem" id="selectedItem" class="form-control" aria-label="{translate text="Selected Item" isPublicFacing=true}">
 								{foreach from=$items item=item}
-									{if $item.holdable}
+									{if !empty($item.holdable)}
 										<option value="{$item.itemId}">{$item.description}</option>
 									{/if}
 								{/foreach}
@@ -148,7 +148,7 @@
 							</div>
 						</div>
 					{/if}
-					{if $promptForHoldNotifications}
+					{if !empty($promptForHoldNotifications)}
 						<div id="holdNotification" class="form-group">
 							{include file=$holdNotificationTemplate}
 						</div>

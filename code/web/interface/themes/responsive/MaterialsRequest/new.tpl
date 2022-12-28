@@ -2,7 +2,7 @@
 	<div id="main-content">
 		<h1>{translate text='Materials Request' isPublicFacing=true}</h1>
 		<div id="materialsRequest">
-			{if $offline}
+			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{elseif !$displayMaterialsRequest}
 				<div class="alert alert-warning">{translate text="The materials request system is not currently available.  Please check back later." isPublicFacing=true}</div>
@@ -17,7 +17,7 @@
 				<form id="materialsRequestForm" action="/MaterialsRequest/Submit" method="post" class="form form-horizontal" role="form">
 					{include file="MaterialsRequest/request-form-fields.tpl"}
 
-					<div class="materialsRequestLoggedInFields" {if !$loggedIn}style="display:none"{/if}>
+					<div class="materialsRequestLoggedInFields" {if empty($loggedIn)}style="display:none"{/if}>
 						<div id="copyright" style="display: none">
 							<p class="alert alert-warning">
 							{translate text='WARNING CONCERNING COPYRIGHT RESTRICTIONS The copyright law of the United States (Title 17, United States Code) governs the making of photocopies or other reproductions of copyrighted material. Under certain conditions specified in the law, libraries and archives are authorized to furnish a photocopy or other reproduction. One of these specified conditions is that the photocopy or reproduction is not to be used for any purpose other than private study, scholarship, or research. If a user makes a request for, or later uses, a photocopy or reproduction for purposes in excess of fair use, that user may be liable for copyright infringement. This institution reserves the right to refuse to accept a copying order if, in its judgment, fulfillment of the order would involve violation of copyright law.' isPublicFacing=true}

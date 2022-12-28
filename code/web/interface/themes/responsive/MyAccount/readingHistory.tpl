@@ -1,5 +1,5 @@
 <div class="col-xs-12">
-	{if $loggedIn}
+	{if !empty($loggedIn)}
 
 		{if !empty($profile->_web_note)}
 			<div class="row">
@@ -18,11 +18,11 @@
 			{/if}
 		</h1>
 
-		{if $offline}
+		{if !empty($offline)}
 			<div class="alert alert-warning">{translate text="<strong>The library system is currently offline.</strong> We are unable to retrieve information about any titles currently checked out." isPublicFacing=true}</div>
 		{/if}
 		{strip}
-			{if $masqueradeMode && !$allowReadingHistoryDisplayInMasqueradeMode}
+			{if !empty($masqueradeMode) && !$allowReadingHistoryDisplayInMasqueradeMode}
 				<div class="row">
 					<div class="alert alert-warning">
 						{translate text="Display of the patron's reading history is disabled in Masquerade Mode." isPublicFacing=true}

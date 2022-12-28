@@ -35,7 +35,7 @@
 
         {include file="Search/spellingSuggestions.tpl"}
 
-		{if $showExploreMoreBar}
+		{if !empty($showExploreMoreBar)}
 			<div id="explore-more-bar-placeholder"></div>
 			<script type="text/javascript">
 				$(document).ready(
@@ -49,11 +49,11 @@
 		{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 			<div class="search_tools well small">
 				<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
-				{if $showSearchTools}
+				{if !empty($showSearchTools)}
 					<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 					<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
-					{if $enableSavedSearches}
-						{if $savedSearch}
+					{if !empty($enableSavedSearches)}
+						{if !empty($savedSearch)}
 							<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 						{else}
 							<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>

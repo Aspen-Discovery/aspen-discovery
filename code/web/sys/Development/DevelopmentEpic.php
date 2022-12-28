@@ -190,7 +190,7 @@ class DevelopmentEpic extends DataObject {
 		} elseif ($name == 'requestingPartners') {
 			return $this->getRequestingPartners();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

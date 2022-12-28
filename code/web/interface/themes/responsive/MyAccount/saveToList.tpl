@@ -18,13 +18,13 @@
 			{assign var="showLists" value="true"}
 		{/if}
 
-		{if $showLists}
+		{if !empty($showLists)}
 			<div class="form-group">
 				<label for="addToList-list" class="col-sm-3">{translate text='Choose a List' isPublicFacing=true}</label>
 				<div class="col-sm-9">
 					<select name="list" id="addToList-list" class="form-control form-control-sm">
 						{foreach from=$nonContainingLists item="list"}
-							<option value="{$list.id}" {if $list.selected}selected{/if}>{$list.title|escape:"html"}</option>
+							<option value="{$list.id}" {if !empty($list.selected)}selected{/if}>{$list.title|escape:"html"}</option>
 						{foreachelse}
 							<option value="">{translate text='My Favorites' isPublicFacing=true}</option>
 						{/foreach}
@@ -37,7 +37,7 @@
 			<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
 		{/if}
 
-		{if $showLists && $enableListDescriptions}
+		{if !empty($showLists) && $enableListDescriptions}
 			<div class="form-group">
 				<label for="addToList-notes" class="col-sm-3">{translate text='Add a Note' isPublicFacing=true}</label>
 				<div class="col-sm-9">

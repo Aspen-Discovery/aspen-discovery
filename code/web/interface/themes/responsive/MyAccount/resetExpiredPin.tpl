@@ -1,7 +1,7 @@
 <div>
 	<div class="alert alert-warning">{translate text="Your PIN has expired, enter a new PIN below." isPublicFacing=true}</div>
 	<div class="alert alert-info">
-		{if $pinValidationRules.onlyDigitsAllowed}
+		{if !empty($pinValidationRules.onlyDigitsAllowed)}
 			{translate text="PINs must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 		{else}
 			{translate text="PINs must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
@@ -9,10 +9,10 @@
 	</div>
 
 	<form id="resetPin" method="POST" action="/MyAccount/ResetPin" class="form-horizontal">
-		{if $resetToken}
+		{if !empty($resetToken)}
 			<input type="hidden" name="resetToken" value="{$resetToken}">
 		{/if}
-		{if $userID}
+		{if !empty($userID)}
 			<input type="hidden" name="uid" value="{$userID}">
 		{/if}
 		<div class="form-group">
@@ -22,7 +22,7 @@
 			<div class="col-xs-8">
 				<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}"
 					   maxlength="{$pinValidationRules.maxLength}"
-					   class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
+					   class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 			</div>
 		</div>
 		<div class="form-group">
@@ -32,7 +32,7 @@
 			<div class="col-xs-8">
 				<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}"
 					   maxlength="{$pinValidationRules.maxLength}"
-					   class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
+					   class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 			</div>
 		</div>
 		{if !isset($showSubmitButton) || $showSubmitButton == true}

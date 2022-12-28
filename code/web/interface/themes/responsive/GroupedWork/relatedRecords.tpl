@@ -2,7 +2,7 @@
     {foreach from=$relatedRecords item=relatedRecord key=index}
 		<div class="row striped-{cycle values="odd,even"} {if !empty($promptAlternateEdition) && $index===0} danger{/if}" style="padding:8px">
 			<div class="col-tn-12 col-md-4 col-lg-6">
-                {if $showRelatedRecordLabels}
+                {if !empty($showRelatedRecordLabels)}
                     {if !empty($relatedRecord->publicationDate) || !empty($relatedRecord->publisher)}
 						<div class="row"><div class="result-label col-lg-5 col-tn-12">{translate text="Published" isPublicFacing=true}</div><div class="result-value col-lg-7 col-tn-12"><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publicationDate} {$relatedRecord->publisher}</a></div></div>
                     {/if}
@@ -46,7 +46,7 @@
 				<div class="btn-group btn-group-vertical btn-group-sm text-right">
 					<a href="{$relatedRecord->getUrl()}" class="btn btn-sm btn-info">{translate text="More Info" isPublicFacing=true}</a>
                     {foreach from=$relatedRecord->getActions() item=curAction}
-						<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" {if !empty($curAction.target)}target="{$curAction.target}"{/if} {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+						<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if !empty($curAction.onclick)}onclick="{$curAction.onclick}"{/if} class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" {if !empty($curAction.target)}target="{$curAction.target}"{/if} {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
                     {/foreach}
 				</div>
 			</div>

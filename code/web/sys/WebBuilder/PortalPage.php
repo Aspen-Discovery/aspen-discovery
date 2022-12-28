@@ -151,7 +151,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 		} elseif ($name == 'allowAccess') {
 			return $this->getAccess();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

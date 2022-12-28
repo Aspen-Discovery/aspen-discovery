@@ -9,7 +9,7 @@
 	</div>
 </div>
 <div class="alert alert-info">{translate text="Citations in %1% format." 1=$citationFormat isPublicFacing=true translateParameters=true}</div>
-{if $citations}
+{if !empty($citations)}
 	<div id="searchInfo">
 		{foreach from=$citations item=citation}
 			<div class="citation">

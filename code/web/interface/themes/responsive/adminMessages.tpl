@@ -1,4 +1,4 @@
-{if $hasSqlUpdates}
+{if !empty($hasSqlUpdates)}
 	<div id="admin-message-header" style="margin: 1em">
 		<div class="alert alert-danger" id="admin-message" role="alert" aria-live="polite">
 			<div class="admin-message-text">

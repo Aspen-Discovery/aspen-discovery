@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			{if !empty($profile->_web_note)}
 				<div class="row">
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -11,7 +11,7 @@
 			{/if}
 
 			<h1>{translate text='OverDrive Options' isPublicFacing=true}</h1>
-			{if $offline}
+			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 				{* MDN 7/26/2019 Do not allow access for linked users *}
@@ -51,7 +51,7 @@
 							</div>
 						</div>
 					{/foreach}
-					{if !$offline && $edit == true}
+					{if empty($offline) && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-8 col-xs-offset-4">
 								<button type="submit" name="updateOverDrive" class="btn btn-primary">{translate text="Update Options" isPublicFacing=true}</button>

@@ -82,7 +82,7 @@ class VdxHoldGroup extends DataObject {
 		if ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

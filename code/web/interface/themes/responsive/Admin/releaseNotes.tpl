@@ -12,33 +12,33 @@
 				</select>
 			</div>
 		</form>
-		{if $actionItemsFormatted}
+		{if !empty($actionItemsFormatted)}
 			<div id="actionItemsSection">
-				<h2>Post Release To Do</h2>
+				<h2>{translate text="Post Release To Do" isAdminFacing=true}</h2>
+				<div>{translate text="After deployment, we suggest Aspen administrators check the following settings" isAdminFacing=true}</div>
 				<div id="actionItems" class="alert alert-info">
-					<div>After deployment, we suggest Aspen administrators check the following settings</div>
 					{$actionItemsFormatted}
 				</div>
 				<hr/>
 			</div>
 		{else}
 			<div id="actionItemsSection" style="display: none;">
-				<h2>Post Release To Do</h2>
+				<h2>{translate text="Post Release To Do" isAdminFacing=true}</h2>
+				<div>{translate text="After deployment, we suggest Aspen administrators check the following settings" isAdminFacing=true}</div>
 				<div id="actionItems" class="alert alert-info">
-					<div>After deployment, we suggest Aspen administrators check the following settings</div>
-                    {$actionItemsFormatted}
+
 				</div>
 				<hr/>
 			</div>
 		{/if}
 		<div id="releaseNotes">
-			<h2>Changes This Release {$firstData = $releaseVersion|reset}</h2>
+			<h2>{translate text="Changes This Release" isAdminFacing=true}</h2>
 			{$releaseNotesFormatted}
 		</div>
-		{if $testingSuggestionsFormatted}
+		{if !empty($testingSuggestionsFormatted)}
 			<div id="testingSection">
 				<hr/>
-				<h2>Testing Suggestions</h2>
+				<h2>{translate text="Testing Suggestions" isAdminFacing=true}</h2>
 				<div id="testingSuggestions">
 					{$testingSuggestionsFormatted}
 				</div>
@@ -46,9 +46,8 @@
 		{else}
 			<div id="testingSection" style="display: none;">
 				<hr/>
-				<h2>Testing Suggestions</h2>
+				<h2>{translate text="Testing Suggestions" isAdminFacing=true}</h2>
 				<div id="testingSuggestions">
-                    {$testingSuggestionsFormatted}
 				</div>
 			</div>
 		{/if}

@@ -1,5 +1,5 @@
 {* This is a text-only email template; do not include HTML! *}
-{if $from}
+{if !empty($from)}
 {translate text="This email was sent from %1%" 1=$from isPublicFacing=true}
 {/if}
 ------------------------------------------------------------

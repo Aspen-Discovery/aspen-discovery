@@ -110,7 +110,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == 'browseCategories') {
 			return $this->getBrowseCategories();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

@@ -18,15 +18,15 @@
 
 		<h2>{translate text="Resources by Category" isPublicFacing=true}</h2>
 		{foreach from=$resourcesByCategory key=category item=resources}
-			<div class="panel resourceCategory" id="{$category|regex_replace:'/\W/':''|escape:css}Panel">
-				<a data-toggle="collapse" href="#{$category|regex_replace:'/\W/':''|escape:css}PanelBody">
+			<div class="panel resourceCategory" id="{$category|regex_replace:'/\W/':''|escapeCSS}Panel">
+				<a data-toggle="collapse" href="#{$category|regex_replace:'/\W/':''|escapeCSS}PanelBody">
 					<div class="panel-heading">
 						<div class="panel-title">
 							{translate text=$category isPublicFacing=true}
 						</div>
 					</div>
 				</a>
-				<div id="{$category|regex_replace:'/\W/':''|escape:css}PanelBody" class="panel-collapse collapse">
+				<div id="{$category|regex_replace:'/\W/':''|escapeCSS}PanelBody" class="panel-collapse collapse">
 					<div class="panel-body">
 						{foreach from=$resources item=resource}
 							<div class="row webResourceRow">

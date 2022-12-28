@@ -23,7 +23,7 @@
 			<div class="form-group">
 				<label for="showErrorsOnly">{translate text='Show Errors Only' isAdminFacing=true}</label>
 				<div class="input-group-sm input-group">
-					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="{translate text='Errors Only' inAttribute=true isAdminFacing=true}" data-off-text="{translate text='All Records' inAttribute=true isAdminFacing=true}" data-switch="" {if $showErrorsOnly}checked{/if}/>
+					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="{translate text='Errors Only' inAttribute=true isAdminFacing=true}" data-off-text="{translate text='All Records' inAttribute=true isAdminFacing=true}" data-switch="" {if !empty($showErrorsOnly)}checked{/if}/>
 				</div>
 			</div>
 		</div>

@@ -54,7 +54,7 @@ class CustomFormSubmission extends DataObject {
 
 	public function __get($name) {
 		if (isset($this->_data[$name])) {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		} elseif ($name == 'libraryName') {
 			$library = new Library();
 			$library->id = $this->libraryId;
@@ -62,7 +62,7 @@ class CustomFormSubmission extends DataObject {
 				$this->_data[$name] = $library->displayName;
 			}
 			$library->__destruct();
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		} elseif ($name == 'userName') {
 			$user = new User();
 			$user->id = $this->userId;
@@ -70,7 +70,7 @@ class CustomFormSubmission extends DataObject {
 				$this->_data[$name] = empty($user->displayName) ? ($user->firstname . ' ' . $user->lastname) : $user->displayName;
 			}
 			$user->__destruct();
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 		return false;
 	}

@@ -41,7 +41,7 @@ class Greenhouse_TicketsByPartner extends Admin_Admin{
 
 		$interface->assign('ticketsByPartner', $ticketsByPartner);
 
-		$this->display('ticketsByPartner.tpl', 'Active Tickets By Partner', '');
+		$this->display('ticketsByPartner.tpl', 'Active Tickets By Partner', 'Development/development-sidebar.tpl');
 	}
 
 	function getBreadcrumbs(): array {

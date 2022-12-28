@@ -2,7 +2,7 @@
     <input type="hidden" name="patronId" value="{$userId}"/>
     <div class="row">
         <div class="col-md-6 col-md-offset-3 col-sm-12">
-            <script src="https://www.paypal.com/sdk/js?client-id={$payPalClientId}&currency={$currencyCode}{if !$showPayLater}&disable-funding=credit{/if}"></script>
+            <script src="https://www.paypal.com/sdk/js?client-id={$payPalClientId}&currency={$currencyCode}{if empty($showPayLater)}&disable-funding=credit{/if}"></script>
 
             <div id="paypal-button-container{$userId}"></div>
 

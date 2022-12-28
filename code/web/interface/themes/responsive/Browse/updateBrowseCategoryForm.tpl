@@ -2,7 +2,7 @@
 <div>
 	<form method="post" name="updateBrowseCategory" id="updateBrowseCategory" action="/Browse/AJAX" class="form">
 		<div>
-			{if $searchId}
+			{if !empty($searchId)}
 				<input type="hidden" name="searchId" value="{$searchId}" id="searchId">
 			{else}
 				<input type="hidden" name="listId" value="{$listId}" id="listId">

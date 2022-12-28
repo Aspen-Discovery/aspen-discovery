@@ -647,7 +647,7 @@ class Person extends SolrDataObject {
 		} elseif ($name == 'obituaries') {
 			return $this->getObituaries();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

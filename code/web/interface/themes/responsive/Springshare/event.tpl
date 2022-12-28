@@ -53,7 +53,7 @@
 		<div class="col-sm-8">
 				{$recordDriver->getDescription()}
 		</div>
-		{if $loggedIn && (in_array('Administer Springshare LibCal Settings', $userPermissions))}
+		{if !empty($loggedIn) && (in_array('Administer Springshare LibCal Settings', $userPermissions))}
 			<div id="more-details-accordion" class="panel-group">
 				<div class="panel" id="staffPanel">
 					<a data-toggle="collapse" href="#staffPanelBody">

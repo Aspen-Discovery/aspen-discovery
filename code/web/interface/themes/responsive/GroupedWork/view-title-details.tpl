@@ -15,7 +15,7 @@
 					{if !empty($contributor.roles)}
 						&nbsp;{implode subject=$contributor.roles glue=", " translate=true isPublicFacing=true}
 					{/if}
-					{if $contributor.title}
+					{if !empty($contributor.title)}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 					<br/>
@@ -71,7 +71,7 @@
 		<div class="row">
 			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true}</div>
 			<div class="result-value col-sm-8 col-xs-12">
-				{if $arData.interestLevel}
+				{if !empty($arData.interestLevel)}
 					{$arData.interestLevel|escape}<br/>
 				{/if}
 				{translate text="Level %1%, %2% Points" 1=$arData.readingLevel|escape 2=$arData.pointValue|escape isPublicFacing=true}

@@ -4,7 +4,7 @@
 			<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]" class="titleSelect" id="selected{$record->cancelId}">
 		</div>
 		{* Cover column *}
-		{if $showCovers}
+		{if !empty($showCovers)}
 		<div class="col-xs-3 col-sm-2">
 			{*<div class="row">*}
 				<div class="{*col-xs-10 *}text-center">
@@ -23,7 +23,7 @@
 
 		{/if}
 		{* Details Column*}
-		<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-11{/if}">
+		<div class="{if !empty($showCovers)}col-xs-8 col-sm-9{else}col-xs-11{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">
@@ -78,7 +78,7 @@
 						</div>
 					{/if}
 
-					{if $hasLinkedUsers}
+					{if !empty($hasLinkedUsers)}
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
@@ -140,15 +140,15 @@
 					{if !empty($record->getPreviewActions())}
 						<div class="btn-group btn-group-vertical btn-block">
 							{foreach from=$record->getPreviewActions() item=curAction}
-								{if $curAction.url && strlen($curAction.url) > 0}
-									<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
+								{if !empty($curAction.url) && strlen($curAction.url) > 0}
+									<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if !empty($curAction.requireLogin)}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if !empty($curAction.alt)}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
 								{else}
-									<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
+									<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if !empty($curAction.alt)}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
 								{/if}
 							{/foreach}
 						</div>
 					{/if}
-					{if $showWhileYouWait}
+					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
 								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>

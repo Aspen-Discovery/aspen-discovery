@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content">
-		{if $loggedIn}
+		{if !empty($loggedIn)}
 			{if !empty($profile->_web_note)}
 				<div class="row">
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
@@ -11,7 +11,7 @@
 			{/if}
 
 			<h1>{translate text="Hoopla Options" isPublicFacing=true}</h1>
-			{if $offline}
+			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
@@ -27,7 +27,7 @@
 							{/if}
 						</div>
 					</div>
-					{if !$offline && $edit == true}
+					{if empty($offline) && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-6 col-xs-offset-6">
 								<button type="submit" name="updateHoopla" class="btn btn-sm btn-primary">{translate text="Update Hoopla Options" isPublicFacing=true}</button>

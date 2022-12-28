@@ -4,12 +4,12 @@
 	{* Logo Div *}
 	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
 		<a href="{$logoLink}/">
-			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+			<img src="{if !empty($responsiveLogo)}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if !empty($showDisplayNameInHeader) && $librarySystemName}class="pull-left"{/if}>
 		</a>
 	</div>
 	{* Heading Info Div *}
 	<div id="headingInfo" class="hidden-xs hidden-sm col-md-5 col-lg-5">
-		{if $showDisplayNameInHeader && $librarySystemName}
+		{if !empty($showDisplayNameInHeader) && $librarySystemName}
 			<span id="library-name-header" class="hidden-xs visible-sm">
 				{if strlen($librarySystemName) < 30}<br/>{/if} {* Move the library system name down a little if it won't wrap *}
 				{$librarySystemName}

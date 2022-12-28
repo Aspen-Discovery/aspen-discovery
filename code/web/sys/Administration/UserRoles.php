@@ -65,4 +65,14 @@ class UserRoles extends DataObject {
 			}
 		}
 	}
+
+	public function getRoleName() : string {
+		$role = new Role();
+		$role->roleId = $this->roleId;
+		if ($role->find(true)) {
+			return $role->name;
+		} else {
+			return "Unknown";
+		}
+	}
 }

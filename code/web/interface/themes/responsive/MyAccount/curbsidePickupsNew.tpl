@@ -1,8 +1,8 @@
-{if $showCurbsidePickups}
-    {if $loggedIn}
+{if !empty($showCurbsidePickups)}
+    {if !empty($loggedIn)}
         <div class="row">
             <div class="col-xs-12" id="curbside-pickups">
-                {if $instructionNewPickup}
+                {if !empty($instructionNewPickup)}
                     <div id="instructionNewPickup" style="margin-bottom: 3em;">
                         {translate text=$instructionNewPickup isPublicFacing=true isAdminEnteredData=true}
                     </div>
@@ -57,7 +57,7 @@
                         </div>
                     </div>
                 </div>
-                {if $useNote}
+                {if !empty($useNote)}
                     <div class="form-group">
                         <label for="pickupNote">{translate text=$noteLabel isPublicFacing=true isAdminEnteredData=true}</label>
                         <textarea id="pickupNote" name="pickupNote" class="form-control input-lg" rows="3"></textarea>

@@ -5,7 +5,7 @@
 		</div>
 	</div>
 {/strip}
-{if $mapsKey}
+{if !empty($mapsKey)}
 	<div class="row">
 		<div class="col-xs-12 col-md-9">
 			<h2>{translate text="Geolocated Sites" isAdminFacing=true} {$siteMarkers|@count}</h2>

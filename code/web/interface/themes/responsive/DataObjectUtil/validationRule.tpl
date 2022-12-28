@@ -3,7 +3,7 @@
 	{if !empty($property.validationPattern)}
 		$("#{$propName}").rules("add", {ldelim}
 			regex: "{$property.validationPattern}"
-			{if $property.validationMessage}, messages: {ldelim}regex: "{$property.validationMessage}"{rdelim}{/if}
+			{if !empty($property.validationMessage)}, messages: {ldelim}regex: "{$property.validationMessage}"{rdelim}{/if}
 		{rdelim});
 {*		$('#{$propName}').rules("add", {ldelim} regex: '/{$property.validationPattern}/' {rdelim});*}
 {*		$.validator.addMethod("{$propName}", function(value, element) {ldelim}*}

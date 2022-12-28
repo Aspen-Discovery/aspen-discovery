@@ -14,7 +14,7 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-12">
-					{if !$noRememberThis}
+					{if empty($noRememberThis)}
 						<div class="selectLibraryOption">
 							<label for="rememberThis"><input type="checkbox" name="rememberThis" id="rememberThis"> <b>{translate text="Remember This" isPublicFacing=true}</b></label>
 						</div>

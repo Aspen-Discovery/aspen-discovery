@@ -4,7 +4,7 @@
 			<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]" class="titleSelect" id="selected{$record->cancelId}">
 		</div>
 		{* Cover column *}
-		{if $showCovers}
+		{if !empty($showCovers)}
 		<div class="col-xs-3 col-sm-2">
 			{*<div class="row">*}
 				<div class="{*col-xs-10 *}text-center">
@@ -23,7 +23,7 @@
 
 		{/if}
 		{* Details Column*}
-		<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-11{/if}">
+		<div class="{if !empty($showCovers)}col-xs-8 col-sm-9{else}col-xs-11{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">
@@ -67,7 +67,7 @@
 						</div>
 					{/if}
 
-					{if $hasLinkedUsers}
+					{if !empty($hasLinkedUsers)}
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
@@ -94,7 +94,7 @@
 						{/if}
 						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 					</div>
-					{if $showWhileYouWait}
+					{if !empty($showWhileYouWait)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
 								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>

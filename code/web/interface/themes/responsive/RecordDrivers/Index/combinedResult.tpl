@@ -6,7 +6,7 @@
 		{/if}
 
 		<div class="row">
-			{if $showCovers}
+			{if !empty($showCovers)}
 				<div class="coversColumn col-xs-3 text-center">
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}" aria-hidden="true">
@@ -15,7 +15,7 @@
 					{/if}
 				</div>
 			{/if}
-			<div class="{if $showCovers}col-xs-9{else}col-xs-12{/if}">{* May turn out to be more than one situation to consider here *}
+			<div class="{if !empty($showCovers)}col-xs-9{else}col-xs-12{/if}">{* May turn out to be more than one situation to consider here *}
 				{* Title Row *}
 				<div class="row">
 					<div class="col-xs-12">
@@ -30,7 +30,7 @@
 					</div>
 				</div>
 
-				{if $summAuthor}
+				{if !empty($summAuthor)}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true}</div>
 						<div class="result-value col-tn-8 notranslate">
@@ -46,7 +46,7 @@
 				{/if}
 
 				{* Description Section *}
-				{if $summDescription}
+				{if !empty($summDescription)}
 					<div class="row">
 						{* Hide in mobile view *}
 						<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">

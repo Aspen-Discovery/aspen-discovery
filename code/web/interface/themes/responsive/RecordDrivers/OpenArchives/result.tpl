@@ -1,6 +1,6 @@
 {strip}
 <div id="openArchivesResult{$resultIndex|escape}" class="resultsList row">
-	{if $showCovers}
+	{if !empty($showCovers)}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
 				<a href="{$openArchiveUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')" target="_blank" tabindex="-1">
@@ -11,7 +11,7 @@
 	{/if}
 
 
-	<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
+	<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{* Title Row *}
 
 		<div class="row">
@@ -91,7 +91,7 @@
 		{/if}
 
 		{* Description Section *}
-		{if $description}
+		{if !empty($description)}
 			<div class="row visible-xs">
 				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>

@@ -6,7 +6,7 @@
 		</div>
 	</div>
 
-	{if $topRecommendations}
+	{if !empty($topRecommendations)}
 		{foreach from=$topRecommendations item="recommendations"}
 			{include file=$recommendations}
 		{/foreach}
@@ -15,7 +15,7 @@
 	{* Information about the search *}
 	<div class="result-head">
 		{* User's viewing mode toggle switch *}
-		{if $showSearchToolsAtTop}
+		{if !empty($showSearchToolsAtTop)}
 			{include file="Search/search-toolbar.tpl"}
 		{else}
 			{include file="Search/results-displayMode-toggle.tpl"}
@@ -36,10 +36,10 @@
 			</a>
 		{/if}
 	{else}
-		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+		{if !empty($pageLinks.all)}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-	{if $showSearchTools && !$showSearchToolsAtTop}
+	{if !empty($showSearchTools) && !$showSearchToolsAtTop}
 		<div class="well small">
 			<strong>{translate text='Search Tools' isPublicFacing=true} </strong> &nbsp;
 			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a> &nbsp;
@@ -52,12 +52,12 @@
 {* Embedded Javascript For this Page *}
 <script type="text/javascript">
 	$(document).ready(function (){ldelim}
-		{if $showWikipedia}
+		{if !empty($showWikipedia)}
 			AspenDiscovery.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
 		{/if}
         AspenDiscovery.Authors.loadEnrichmentInfo('{$firstWorkId}');
 
-		{if !$onInternalIP}
+		{if empty($onInternalIP)}
 			{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
 			AspenDiscovery.Searches.displayMode = '{$displayMode}';
 		{else}

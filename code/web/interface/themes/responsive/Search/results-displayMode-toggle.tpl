@@ -8,7 +8,7 @@
 				<label for="results-sort">{translate text='Sort by' isPublicFacing=true}</label>
 				<select id="results-sort" name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
 					{foreach from=$sortList item=sortData key=sortLabel}
-						<option value="{$sortData.sortUrl|escape}"{if $sortData.selected} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
+						<option value="{$sortData.sortUrl|escape}"{if !empty($sortData.selected)} selected="selected"{/if}>{translate text=$sortData.desc isPublicFacing=true inAttribute=true}</option>
 					{/foreach}
 				</select>
 			{/if}

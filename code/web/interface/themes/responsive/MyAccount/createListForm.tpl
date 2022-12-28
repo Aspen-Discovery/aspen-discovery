@@ -1,11 +1,11 @@
 {strip}
-	{if $listError}<p class="error">{translate text=$listError isPublicFacing=true}</p>{/if}
+	{if !empty($listError)}<p class="error">{translate text=$listError isPublicFacing=true}</p>{/if}
 	<form method="post" action="" name="listForm" class="form form-horizontal" id="addListForm">
 		<div class="form-group">
 			<label for="listTitle" class="col-sm-3 control-label">{translate text="List" isPublicFacing=true}</label>
 			<div class="col-sm-9">
 				{if empty($validListNames)}
-					<input type="text" id="listTitle" name="title" value="{$list->title|escape:"html"}" size="50" class="form-control">
+					<input type="text" id="listTitle" name="title" value="" size="50" class="form-control">
 				{else}
 					<select id="listTitle" name="titleSelect" class="form-control">
 						{foreach from=$validListNames item=listName key=listNameIndex}
@@ -15,11 +15,11 @@
 				{/if}
 			</div>
 		</div>
-		{if $enableListDescriptions}
+		{if !empty($enableListDescriptions)}
 			<div class="form-group">
 			  <label for="listDesc" class="col-sm-3 control-label">{translate text="Description" isPublicFacing=true}</label>
 				<div class="col-sm-9">
-			    <textarea name="desc" id="listDesc" rows="3" cols="50" class="form-control">{$list->desc|escape:"html"}</textarea>
+			    <textarea name="desc" id="listDesc" rows="3" cols="50" class="form-control"></textarea>
 				</div>
 			</div>
 		{/if}
@@ -43,8 +43,8 @@
 				</div>
 			</div>
 		{/if}
-		<input type="hidden" name="source" value="{$source}">
-		<input type="hidden" name="sourceId" value="{$sourceId}">
+		<input type="hidden" name="source" value="{if !empty($source)}{$source}{/if}">
+		<input type="hidden" name="sourceId" value="{if !empty($sourceId)}{$sourceId}{/if}">
 	</form>
 	<br/>
 {/strip}

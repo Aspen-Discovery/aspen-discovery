@@ -10,7 +10,7 @@
 			<div class="col-xs-12">
 				<label for="showErrorsOnly">{translate text='Show Errors Only' isAdminFacing=true}</label>
 				<div class="input-group-sm input-group">
-					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="{translate text='Errors Only' inAttribute=true isAdminFacing=true}" data-off-text="{translate text='All Records' inAttribute=true isAdminFacing=true}" data-switch="" {if $showErrorsOnly}checked{/if}/>
+					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="{translate text='Errors Only' inAttribute=true isAdminFacing=true}" data-off-text="{translate text='All Records' inAttribute=true isAdminFacing=true}" data-switch="" {if !empty($showErrorsOnly)}checked{/if}/>
 				</div>
 			</div>
 		</div>
@@ -68,7 +68,7 @@
 								{if array_key_exists($checkType,$siteStatus.checks)}
 									{assign var="checks" value=$siteStatus.checks}
 									{assign var="check" value=$checks.$checkType}
-									<td {if $check.status == 'okay'}style="background-color: lightgreen;text-align: center"{elseif $check.status == 'warning'}style="background-color: lightpink;text-align: center"{else}style="background-color: #D50000;color:white;font-weight: bold;text-align: center"{/if} {if !empty($check.note)}title="{$check.note|escape:css}" {/if}>
+									<td {if $check.status == 'okay'}style="background-color: lightgreen;text-align: center"{elseif $check.status == 'warning'}style="background-color: lightpink;text-align: center"{else}style="background-color: #D50000;color:white;font-weight: bold;text-align: center"{/if} {if !empty($check.note)}title="{$check.note|escapeCSS}" {/if}>
 										{if !empty($check.url)}<a href="{$check.url}" target="_blank">{/if}{translate text=$check.status isAdminFacing=true}{if !empty($check.url)}</a>{/if}
 									</td>
 								{else}

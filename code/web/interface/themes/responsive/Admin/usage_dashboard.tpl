@@ -300,7 +300,7 @@
 				</div>
 			{/if}
 
-			{if $enableGenealogy}
+			{if !empty($enableGenealogy)}
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">

@@ -7,7 +7,7 @@
 				var _gaq = _gaq || [];
 				_gaq.push(['_setAccount', '{/literal}{$googleAnalyticsId}{literal}']);
 				_gaq.push(['_setCustomVar', 1, 'theme', {/literal}'{$primaryTheme}'{literal}, '2']);
-				_gaq.push(['_setCustomVar', 2, 'mobile', {/literal}'{if $isMobile}true{else}false{/if}'{literal}, '2']);
+				_gaq.push(['_setCustomVar', 2, 'mobile', {/literal}'{if !empty($isMobile)}true{else}false{/if}'{literal}, '2']);
 				_gaq.push(['_setCustomVar', 3, 'physicalLocation', {/literal}'{$physicalLocation}'{literal}, '2']);
 				_gaq.push(['_setCustomVar', 4, 'pType', {/literal}'{$pType}'{literal}, '2']);
 				_gaq.push(['_setCustomVar', 5, 'homeLibrary', {/literal}'{$homeLibrary}'{literal}, '2']);

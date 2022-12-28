@@ -9,7 +9,7 @@
 		{include file="cssAndJsIncludes.tpl" includeAutoLogoutCode=false}
 		{$themeCss}
 
-		{if $resizeIframe}
+		{if !empty($resizeIframe)}
 		<script type="text/javascript" src="/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>
 		{/if}
 

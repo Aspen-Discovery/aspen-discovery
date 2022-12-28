@@ -1,7 +1,7 @@
 {strip}
 	<h2>{translate text='In %1%' 1=$interLibraryLoanName isPublicFacing=true}</h2>
 	<p id='illSearchResultsNote'>
-		{if $consortiumName}
+		{if !empty($consortiumName)}
 			{assign var='illLibrary' value=$consortiumName}
 			{translate text="Didn't find what you need? Items not owned by %1% can be requested from other %2% libraries to be delivered to your local library for pickup." 1=$illLibrary 2=$interLibraryLoanName isPublicFacing=true}
 		{elseif $homeLibrary}

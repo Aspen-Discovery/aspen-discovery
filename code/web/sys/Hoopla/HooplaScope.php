@@ -316,7 +316,7 @@ class HooplaScope extends DataObject {
 			}
 			return $this->_locations;
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

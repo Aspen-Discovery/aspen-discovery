@@ -1,7 +1,7 @@
 <div align="left">
-    {if $message}<div class="error">{translate text=$message isPublicFacing=true}</div>{/if}
+    {if !empty($message)}<div class="error">{translate text=$message isPublicFacing=true}</div>{/if}
 
-    {if !$message}<p>{translate text="You currently have these categories hidden" isPublicFacing=true}</p>
+    {if empty($message)}<p>{translate text="You currently have these categories hidden" isPublicFacing=true}</p>
         <form id="updateBrowseCategories" class="form">
             {foreach from=$hiddenBrowseCategories key=k item=category}
             <div class="checkbox">

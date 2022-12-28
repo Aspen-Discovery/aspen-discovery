@@ -18,7 +18,7 @@ class DevelopmentTask extends DataObject {
 	public $releaseNoteText;
 	public $newSettingsAdded;
 
-	public $suggestedForCommunityDev; //True/False
+	public $suggestedForCommunityDev;
 
 	public $_epicId;
 	public $_relatedTickets;
@@ -28,6 +28,10 @@ class DevelopmentTask extends DataObject {
 
 	public $_requestingPartners; //Can be multiple
 	public $_relatedComponents; //Can be multiple
+
+	public function getNumericColumnNames(): array {
+		return ['taskType', 'dueDate', 'releaseId', 'status', 'storyPoints', 'suggestedForCommunityDev'];
+	}
 
 	public static function getObjectStructure($context = ''): array {
 		$taskTypes = [
@@ -75,6 +79,7 @@ class DevelopmentTask extends DataObject {
 		$statuses = [
 			0 => 'To do',
 			1 => 'Working on it',
+			11 => 'On Hold',
 			2 => 'Needs Info',
 			3 => 'QA/Documentation',
 			4 => 'Blocked',
@@ -86,16 +91,16 @@ class DevelopmentTask extends DataObject {
 			10 => "Won't Do",
 		];
 		$storyPoints = [
-			0 => 0,
-			0.25 => 0.25,
-			0.5 => 0.5,
-			1 => 1,
-			2 => 2,
-			3 => 3,
-			5 => 5,
-			8 => 8,
-			13 => 13,
-			21 => 21,
+			'0' => '0',
+			'0.25' => '0.25',
+			'0.5' => '0.5',
+			'1' => '1',
+			'2' => '2',
+			'3' => '3',
+			'5' => '5',
+			'8' => '8',
+			'13' => '13',
+			'21' => '21',
 		];
 
 		require_once ROOT_DIR . '/sys/Development/TaskTicketLink.php';
@@ -292,7 +297,13 @@ class DevelopmentTask extends DataObject {
 			],
 			'suggestedForCommunityDev' => [
 				'property' => 'suggestedForCommunityDev',
-				'type' => 'checkbox',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Un-evaluated',
+					1 => 'For consideration',
+					2 => 'No',
+					3 => 'Yes',
+				],
 				'label' => 'Suggested for Community Development',
 				'description' => 'If this is a good development for anyone in the community',
 				'hideInLists' => true,
@@ -373,7 +384,7 @@ class DevelopmentTask extends DataObject {
 		} elseif ($name == 'assignedQA') {
 			return $this->getAssignedQA();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

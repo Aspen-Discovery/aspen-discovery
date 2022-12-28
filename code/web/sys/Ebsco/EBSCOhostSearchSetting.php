@@ -95,7 +95,7 @@ class EBSCOhostSearchSetting extends DataObject {
 		} elseif ($name == "databases") {
 			return $this->getDatabases();
 		} else {
-			return $this->_data[$name];
+			return $this->_data[$name] ?? null;
 		}
 	}
 

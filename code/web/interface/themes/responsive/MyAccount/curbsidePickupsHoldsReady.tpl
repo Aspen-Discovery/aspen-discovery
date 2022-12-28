@@ -2,7 +2,7 @@
     {* Overall hold *}
     <div class="row ilsHold_{$record->sourceId|escapeCSS}_{$record->cancelId|escapeCSS} row-no-gutters" style="padding:0; padding-bottom: 2em">
         {* Cover column *}
-        {if $showCovers}
+        {if !empty($showCovers)}
             <div class="hidden-xs hidden-sm col-md-3">
                 <div class="{*col-xs-10 *}text-center">
                     {if !empty($record->getCoverUrl())}
@@ -82,7 +82,7 @@
                         </div>
                     </div>
 
-                    {if $showPlacedColumn && $record->createDate}
+                    {if !empty($showPlacedColumn) && $record->createDate}
                         <div class="row" style="padding:0">
                             <div class="result-label col-sm-12 col-md-5">{translate text='Date Placed' isPublicFacing=true}</div>
                             <div class="col-sm-12 col-md-7 result-value">
