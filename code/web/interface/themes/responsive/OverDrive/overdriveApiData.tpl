@@ -16,7 +16,7 @@
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-12">
 				<label for="overDriveId" class="control-label">{translate text="OverDrive ID" isAdminFacing=true}</label>
-				<input id ="overDriveId" type="text" name="id" class="form-control" value="{$overDriveId}">
+				<input id ="overDriveId" type="text" name="id" class="form-control" value="{if !empty($overDriveId)}{$overDriveId}{/if}">
 				<input type="hidden" name="settingId" value="{$selectedSettingId}">
 				<button class="btn btn-primary" type="submit">{translate text=Go isAdminFacing=true}</button>
 			</div>
