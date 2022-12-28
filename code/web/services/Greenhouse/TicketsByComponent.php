@@ -20,6 +20,8 @@ class Greenhouse_TicketsByComponent extends Admin_Admin{
 				'Support' => 0,
 				'Bugs' => 0,
 				'Development' => 0,
+				'PriorityTickets' => 0,
+				'PriorityScore' => 0,
 				'Total' => 0,
 			];
 
@@ -41,11 +43,23 @@ class Greenhouse_TicketsByComponent extends Admin_Admin{
 				/** @noinspection PhpUndefinedFieldInspection */
 				$ticketsByComponent[$components->id]['Total'] += $ticket->numTickets;
 			}
+
+			//Also get the number of priority tickets
+			$ticket = new Ticket();
+			$ticket->whereAdd("status <> 'Closed'");
+			$ticket->whereAdd('partnerPriority > 0');
+			$ticket->joinAdd($ticketComponentLink, 'INNER', 'component', 'id', 'ticketId');
+			$ticket->find();
+			while ($ticket->fetch()) {
+				$priority = $ticket->partnerPriority;
+				$ticketsByComponent[$components->id]['PriorityTickets']++;
+				$ticketsByComponent[$components->id]['PriorityScore'] += (4 - $priority);
+			}
 		}
 
 		$interface->assign('ticketsByComponent', $ticketsByComponent);
 
-		$this->display('ticketsByComponent.tpl', 'Active Tickets By Component', '');
+		$this->display('ticketsByComponent.tpl', 'Active Tickets By Component', 'Development/development-sidebar.tpl');
 	}
 
 	function getBreadcrumbs(): array {

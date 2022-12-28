@@ -46,7 +46,7 @@ class Greenhouse_BugsBySeverityAndComponent extends Admin_Admin{
 
 		$interface->assign('ticketsByComponent', $bugsBySeverityAndComponent);
 
-		$this->display('bugsBySeverityAndComponent.tpl', 'Active Bugs By Severity', '');
+		$this->display('bugsBySeverityAndComponent.tpl', 'Active Bugs By Severity', 'Development/development-sidebar.tpl');
 	}
 
 	function getBreadcrumbs(): array {

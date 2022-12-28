@@ -10,6 +10,8 @@
 				<th>{translate text="Support" isAdminFacing=true}</th>
 				<th>{translate text="Bugs" isAdminFacing=true}</th>
 				<th>{translate text="Development" isAdminFacing=true}</th>
+				<th>{translate text="Prioirty Tickets" isAdminFacing=true}</th>
+				<th>{translate text="Priority Score" isAdminFacing=true}</th>
 				<th>{translate text="Total" isAdminFacing=true}</th>
 			</tr>
 			</thead>
@@ -21,6 +23,8 @@
 						<td>{$componentTicketInfo.Support}</td>
 						<td>{$componentTicketInfo.Bugs}</td>
 						<td>{$componentTicketInfo.Development}</td>
+						<td>{$componentTicketInfo.PriorityTickets}</td>
+						<td>{$componentTicketInfo.PriorityScore}</td>
 						<td>{$componentTicketInfo.Total}</td>
 					</tr>
 				{/foreach}
