@@ -40,7 +40,7 @@ class Greenhouse_PartnerTicketDashboard extends Admin_Admin{
 		}
 		$interface->assign('closedTickets', $closedTickets);
 
-		//Closd Priority Tickets
+		//Closed Priority Tickets
 		$ticket = new Ticket();
 		$ticket->status = 'Closed';
 		$ticket->requestingPartner = $selectedSite;
