@@ -2312,7 +2312,7 @@ class User extends DataObject {
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		$patronType = new PType();
 		$patronType->pType = $this->patronType;
-		return $patronType;
+		return $patronType->pType;
 	}
 
 	public function updatePatronInfo($canUpdateContactInfo, $fromMasquerade = false) {

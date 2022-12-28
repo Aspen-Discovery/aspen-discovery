@@ -21,10 +21,10 @@
 								{$tmpUser->getNameAndLibraryLabel()}.&nbsp;
 							{/if}
 							{if $user->getViewers()|@count == 2}
-								{if !empty($smarty.foreach.viewer.last)}&nbsp;{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}.&nbsp;{else}{$tmpUser->getNameAndLibraryLabel()}{/if}
+								{if !empty($smarty.foreach.viewer.last)}&nbsp;{translate text='and' isPublicFacing=true}&nbsp;{$tmpUser->getNameAndLibraryLabel()}.&nbsp;{else}{$tmpUser->getNameAndLibraryLabel()}{/if}
 							{/if}
 							{if $user->getViewers()|@count > 2}
-								{if !empty($smarty.foreach.viewer.last)}{translate text='and' isPublicFacing=true}{$tmpUser->getNameAndLibraryLabel()}.&nbsp;{else}{$tmpUser->getNameAndLibraryLabel()},&nbsp;{/if}
+								{if !empty($smarty.foreach.viewer.last)}{translate text='and' isPublicFacing=true}&nbsp;{$tmpUser->getNameAndLibraryLabel()}.&nbsp;{else}{$tmpUser->getNameAndLibraryLabel()},&nbsp;{/if}
 							{/if}
 						{/foreach}
 						<a href="/MyAccount/LinkedAccounts">{translate text='Learn more about Linked Accounts' isPublicFacing=true}</a>.
