@@ -10,11 +10,11 @@
 			{/if}
 
 			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations" isAdminFacing=true}</button>
-			{if $activeLanguage->id != 1}
+			{if !empty($activeLanguage) && $activeLanguage->id != 1}
 				<button class="btn btn-primary" type="submit" name="exportForBulkTranslation">{translate text="Export For Bulk Translation" isAdminFacing=true}</button>
 			{/if}
 			<a class="btn btn-primary" id="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations" isAdminFacing=true}</a>
-			{if $activeLanguage->id != 1}
+			{if !empty($activeLanguage) && $activeLanguage->id != 1}
 				<a class="btn btn-primary" id="importBulkTranslations" href="/Translation/ImportBulkTranslations">{translate text="Import Bulk Translations" isAdminFacing=true}</a>
 			{/if}
 		</div>
