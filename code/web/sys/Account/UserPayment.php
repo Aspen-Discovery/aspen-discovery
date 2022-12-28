@@ -167,7 +167,11 @@ class UserPayment extends DataObject {
 		} elseif ($name == 'library') {
 			if (empty($this->_data['library'])) {
 				if (array_key_exists($this->userId, UserPayment::$usersById)) {
-					$this->_data['library'] = UserPayment::$usersById[$this->userId]->getHomeLibrary()->displayName;
+					if (UserPayment::$usersById[$this->userId]->getHomeLibrary() != null) {
+						$this->_data['library'] = UserPayment::$usersById[$this->userId]->getHomeLibrary()->displayName;
+					}else{
+						$this->_data['library'] = 'None';
+					}
 				} else {
 					$this->_data['library'] = 'Unknown';
 				}
