@@ -2312,6 +2312,7 @@ class User extends DataObject {
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		$patronType = new PType();
 		$patronType->pType = $this->patronType;
+		$patronType->find(true);
 		return $patronType->pType;
 	}
 
