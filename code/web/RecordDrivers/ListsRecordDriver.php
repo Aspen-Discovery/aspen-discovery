@@ -77,6 +77,7 @@ class ListsRecordDriver extends IndexRecordDriver {
 			$interface->assign('summNumTitles', 0);
 		}
 		$interface->assign('summDateUpdated', $this->getListObject()->dateUpdated);
+		$interface->assign('summUrl', $this->getAbsoluteUrl());
 
 		if ($showListsAppearingOn) {
 			//Check to see if there are lists the record is on

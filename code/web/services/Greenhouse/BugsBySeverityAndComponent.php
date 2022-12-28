@@ -5,26 +5,21 @@ require_once ROOT_DIR . '/sys/Support/Ticket.php';
 require_once ROOT_DIR . '/sys/Support/TicketComponentFeed.php';
 require_once ROOT_DIR . '/sys/Development/ComponentTicketLink.php';
 
-class Greenhouse_TicketsByComponent extends Admin_Admin{
+class Greenhouse_BugsBySeverityAndComponent extends Admin_Admin{
 	function launch() {
 		global $interface;
-		$ticketsByComponent = [];
+		$bugsBySeverityAndComponent = [];
 		$components = new TicketComponentFeed();
 		$components->orderBy('name');
 		$components->find();
 		while ($components->fetch()) {
-			$ticketsByComponent[$components->id] = [
+			$bugsBySeverityAndComponent[$components->id] = [
 				'componentId' => $components->id,
 				'component' => $components->name,
-				'Implementation' => 0,
-				'Support' => 0,
-				'Bugs' => 0,
-				'Development' => 0,
-				'Priority1' => 0,
-				'Priority2' => 0,
-				'Priority3' => 0,
-				'PriorityTickets' => 0,
-				'PriorityScore' => 0,
+				'low' => 0,
+				'medium' => 0,
+				'high' => 0,
+				'critical' => 0,
 				'Total' => 0,
 			];
 
@@ -34,42 +29,24 @@ class Greenhouse_TicketsByComponent extends Admin_Admin{
 			$ticket = new Ticket();
 			$ticket->whereAdd("status <> 'Closed'");
 			$ticket->joinAdd($ticketComponentLink, 'INNER', 'component', 'id', 'ticketId');
-			$ticket->groupBy('queue');
+			$ticket->queue = 'Bugs';
+			$ticket->groupBy('lower(severity)');
 			$ticket->selectAdd('');
-			$ticket->selectAdd('queue');
+			$ticket->selectAdd('lower(severity) as severity');
 			$ticket->selectAdd('count(*) as numTickets');
 
 			$ticket->find();
 			while ($ticket->fetch()) {
 				/** @noinspection PhpUndefinedFieldInspection */
-				$ticketsByComponent[$components->id][$ticket->queue] = $ticket->numTickets;
+				$bugsBySeverityAndComponent[$components->id][$ticket->severity] = $ticket->numTickets;
 				/** @noinspection PhpUndefinedFieldInspection */
-				$ticketsByComponent[$components->id]['Total'] += $ticket->numTickets;
-			}
-
-			//Also get the number of priority tickets
-			$ticket = new Ticket();
-			$ticket->whereAdd("status <> 'Closed'");
-			$ticket->whereAdd('partnerPriority > 0');
-			$ticket->joinAdd($ticketComponentLink, 'INNER', 'component', 'id', 'ticketId');
-			$ticket->find();
-			while ($ticket->fetch()) {
-				$priority = $ticket->partnerPriority;
-				$ticketsByComponent[$components->id]['PriorityTickets']++;
-				if ($priority == 1) {
-					$ticketsByComponent[$components->id]['Priority1']++;
-				}elseif ($priority == 2) {
-					$ticketsByComponent[$components->id]['Priority2']++;
-				}elseif ($priority == 3) {
-					$ticketsByComponent[$components->id]['Priority3']++;
-				}
-				$ticketsByComponent[$components->id]['PriorityScore'] += (4 - $priority);
+				$bugsBySeverityAndComponent[$components->id]['Total'] += $ticket->numTickets;
 			}
 		}
 
-		$interface->assign('ticketsByComponent', $ticketsByComponent);
+		$interface->assign('ticketsByComponent', $bugsBySeverityAndComponent);
 
-		$this->display('ticketsByComponent.tpl', 'Active Tickets By Component', 'Development/development-sidebar.tpl');
+		$this->display('bugsBySeverityAndComponent.tpl', 'Active Bugs By Severity', 'Development/development-sidebar.tpl');
 	}
 
 	function getBreadcrumbs(): array {
