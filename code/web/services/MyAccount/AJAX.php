@@ -125,7 +125,7 @@ class MyAccount_AJAX extends JSON_Action {
 							];
 						}
 					} else {
-						if ($linkingSettingUser != '1' || $linkingSettingUser != '3'){
+						if ($linkingSettingUser == '1' || $linkingSettingUser == '3'){
 							$result = [
 								'success' => false,
 								'title' => translate([
@@ -133,7 +133,19 @@ class MyAccount_AJAX extends JSON_Action {
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
-									'text' => 'Sorry, you are not permitted to link to others',
+									'text' => 'Sorry, you are not permitted to link to others.',
+									'isPublicFacing' => true,
+								]),
+							];
+						}else if ($linkingSettingLinkee == '2' || $linkingSettingLinkee == '3') {
+							$result = [
+								'success' => false,
+								'title' => translate([
+									'text' => 'Unable to link accounts',
+									'isPublicFacing' => true,
+								]),
+								'message' => translate([
+									'text' => 'Sorry, that account cannot be linked to.',
 									'isPublicFacing' => true,
 								]),
 							];
@@ -145,7 +157,7 @@ class MyAccount_AJAX extends JSON_Action {
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
-									'text' => 'Sorry, this user does not allow account linking',
+									'text' => 'Sorry, this user does not allow account linking.',
 									'isPublicFacing' => true,
 								]),
 							];
