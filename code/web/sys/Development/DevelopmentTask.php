@@ -292,7 +292,13 @@ class DevelopmentTask extends DataObject {
 			],
 			'suggestedForCommunityDev' => [
 				'property' => 'suggestedForCommunityDev',
-				'type' => 'checkbox',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Un-evaluated',
+					1 => 'For consideration',
+					2 => 'No',
+					3 => 'Yes',
+				],
 				'label' => 'Suggested for Community Development',
 				'description' => 'If this is a good development for anyone in the community',
 				'hideInLists' => true,
