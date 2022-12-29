@@ -41,7 +41,8 @@ class ItemAPI extends Action {
 					'getItemAvailability',
 					'getManifestation',
 					'getVariation',
-					'getRecords'
+					'getRecords',
+					'getVolumes'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -1158,6 +1159,82 @@ class ItemAPI extends Action {
 			'id' => $groupedWorkId,
 			'format' => $format,
 			'records' => $records,
+		];
+	}
+
+	function getVolumes() {
+		if (!isset($_REQUEST['id'])) {
+			return [
+				'success' => false,
+				'message' => 'Record id not provided'
+			];
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($_REQUEST['id']);
+		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+
+		//Get a list of volumes for the record
+		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+		$volumeData = [];
+		$volumeDataDB = new IlsVolumeInfo();
+		$volumeDataDB->recordId = $marcRecord->getIdWithSource();
+		$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
+		if ($volumeDataDB->find()) {
+			while ($volumeDataDB->fetch()) {
+				$volumeData[$volumeDataDB->volumeId] = clone($volumeDataDB);
+				$volumeData[$volumeDataDB->volumeId]->setHasLocalItems(false);
+			}
+		}
+
+		$blankVolume = new IlsVolumeInfo();
+		$blankVolume->displayLabel = translate([
+			'text' => 'Untitled Volume',
+			'isPublicFacing' => true,
+		]);
+		$blankVolume->volumeId = '';
+		$blankVolume->recordId = $marcRecord->getIdWithSource();
+		$blankVolume->relatedItems = '';
+		$blankVolume->setHasLocalItems(false);
+		foreach ($relatedRecord->getItems() as $item) {
+			if (empty($item->volumeId)) {
+				if ($item->libraryOwned || $item->locallyOwned) {
+					$blankVolume->setHasLocalItems(true);
+				}
+				$blankVolume->relatedItems .= $item->itemId . '|';
+			}
+		}
+		$volumeData[] = $blankVolume;
+
+		$volumeDataDB = null;
+		unset($volumeDataDB);
+
+		//Sort the volumes so locally owned volumes are shown first
+		$volumeSorter = function (IlsVolumeInfo $a, IlsVolumeInfo $b) {
+			if ($a->hasLocalItems() && !$b->hasLocalItems()) {
+				return -1;
+			} elseif ($b->hasLocalItems() && !$a->hasLocalItems()) {
+				return 1;
+			} else {
+				if ($a->displayOrder > $b->displayOrder) {
+					return 1;
+				} elseif ($b->displayOrder > $a->displayOrder) {
+					return -1;
+				} else {
+					return 0;
+				}
+			}
+		};
+
+		global $library;
+		if ($library->showVolumesWithLocalCopiesFirst) {
+			uasort($volumeData, $volumeSorter);
+		}
+
+		return [
+			'success' => true,
+			'id' => $_REQUEST['id'],
+			'volumes' => $volumeData,
 		];
 	}
 }
