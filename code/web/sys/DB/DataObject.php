@@ -910,6 +910,12 @@ abstract class DataObject {
 				$history->objectType = get_class($this);
 				$primaryKey = $this->__primaryKey;
 				if (!empty($this->$primaryKey)) {
+					if (is_array($oldValue)) {
+						$oldValue = implode(',', $oldValue);
+					}
+					if (is_array($newValue)) {
+						$newValue = implode(',', $newValue);
+					}
 					if (strlen($oldValue) >= 65535) {
 						$oldValue = 'Too long to track history';
 					}
