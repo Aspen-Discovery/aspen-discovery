@@ -1447,9 +1447,10 @@ class Record_AJAX extends Action {
 				}
 			}
 		}
+		$interface->assign('linkedUsers', $linkedUsers);
 
 		//Check to see if the record must be picked up at the holding branch
-		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getId());
+		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 		$pickupAt = $relatedRecord->getHoldPickupSetting();
 		if ($pickupAt > 0) {
 			$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);

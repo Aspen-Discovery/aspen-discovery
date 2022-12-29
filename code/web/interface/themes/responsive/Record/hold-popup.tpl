@@ -93,8 +93,7 @@
 							$(function(){ldelim}
 								var userNames = {ldelim}
 								{$activeUserId}: "{$userDisplayName|escape:javascript} - {$user->getHomeLibrarySystemName()}",
-								{assign var="linkedUsers" value=$user->getLinkedUsers()}
-								{foreach from="$linkedUsers" item="linkedUser"}
+								{foreach from=$linkedUsers item=linkedUser}
 								{$linkedUser->id}: "{$linkedUser->displayName|escape:javascript} - {$linkedUser->getHomeLibrarySystemName()}",
 								{/foreach}
 								{rdelim};

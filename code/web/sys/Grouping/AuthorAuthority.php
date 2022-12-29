@@ -54,6 +54,7 @@ class AuthorAuthority extends DataObject {
 				'canEdit' => false,
 				'forcesReindex' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

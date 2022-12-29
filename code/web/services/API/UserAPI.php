@@ -61,7 +61,7 @@ class UserAPI extends Action {
 					'setNotificationPreference',
 					'getNotificationPreferences',
 					'updateBrowseCategoryStatus',
-					'removeViewerAccount',
+					'removeViewerLink',
 					'getPatronReadingHistory',
 					'updatePatronReadingHistory',
 					'optIntoReadingHistory',
@@ -3241,15 +3241,22 @@ class UserAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function deleteSelectedFromReadingHistory(): array {
-		$selectedTitles = $_REQUEST['selected'];
-		$user = $this->getUserForApiCall();
-		if ($user && !($user instanceof AspenError)) {
-			$user->doReadingHistoryAction('deleteMarked', $selectedTitles);
-			return ['success' => true];
+		if(isset($_REQUEST['selected'])) {
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				$selectedTitles = [$_REQUEST['selected'] => $_REQUEST['selected']];
+				$user->doReadingHistoryAction('deleteMarked', $selectedTitles);
+				return ['success' => true];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Login unsuccessful',
+				];
+			}
 		} else {
 			return [
 				'success' => false,
-				'message' => 'Login unsuccessful',
+				'message' => 'No item provided to delete',
 			];
 		}
 	}

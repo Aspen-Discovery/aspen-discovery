@@ -94,6 +94,7 @@ class Axis360Setting extends DataObject {
 				'canEdit' => true,
 				'additionalOneToManyActions' => [],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

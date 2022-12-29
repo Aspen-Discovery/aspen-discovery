@@ -25,6 +25,9 @@ class Greenhouse_PartnerPriorities extends Admin_Admin{
 				'lastPriority2Closed' => 0,
 				'lastPriority3Closed' => 0,
 				'closedPriorityTickets' => 0,
+				'previouslyRankedClosed' => 0,
+				'closedBugs' => 0,
+				'closedDevelopments' => 0,
 			];
 			//Closed Priority Tickets
 			$ticket = new Ticket();
@@ -32,7 +35,6 @@ class Greenhouse_PartnerPriorities extends Admin_Admin{
 			$ticket->requestingPartner = $aspenSite->id;
 			$ticket->whereAdd('partnerPriority > 0');
 			$ticket->orderBy('dateClosed DESC');
-			$interface->assign('totalPriorityTicketsClosed', $ticket->count());
 			$ticket->find();
 			$lastPriorityClosed = '';
 			$lastPriority1Closed = '';
@@ -82,6 +84,30 @@ class Greenhouse_PartnerPriorities extends Admin_Admin{
 			$partnerPriorities[$aspenSite->id]['priority1Ticket'] = $priority1Ticket;
 			$partnerPriorities[$aspenSite->id]['priority2Ticket'] = $priority2Ticket;
 			$partnerPriorities[$aspenSite->id]['priority3Ticket'] = $priority3Ticket;
+
+//			//Closed Previously Ranked Tickets
+//			$ticket = new Ticket();
+//			$ticket->status = 'Closed';
+//			$ticket->requestingPartner = $aspenSite->id;
+//			$ticket->partnerPriority = -1;
+//			$ticket->whereAdd('partnerPriorityChangeDate-dateCreated > 480000');
+//			$ticket->orderBy('dateClosed DESC');
+//			$partnerPriorities[$aspenSite->id]['previouslyRankedClosed'] = $ticket->count();
+
+			//Total closed tickets
+			$ticket = new Ticket();
+			$ticket->status = 'Closed';
+			$ticket->queue = 'Bugs';
+			$ticket->requestingPartner = $aspenSite->id;
+			$ticket->orderBy('dateClosed DESC');
+			$partnerPriorities[$aspenSite->id]['closedBugs'] = $ticket->count();
+
+			$ticket = new Ticket();
+			$ticket->status = 'Closed';
+			$ticket->queue = 'Development';
+			$ticket->requestingPartner = $aspenSite->id;
+			$ticket->orderBy('dateClosed DESC');
+			$partnerPriorities[$aspenSite->id]['closedDevelopments'] = $ticket->count();
 		}
 
 		$interface->assign('partnerPriorities', $partnerPriorities);

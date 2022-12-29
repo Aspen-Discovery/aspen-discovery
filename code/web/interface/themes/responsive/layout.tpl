@@ -104,7 +104,7 @@
 			</div>
 		</div>
 
-	{if !empty($fullWidthTheme)}<div class="container">{/if}
+	{if !empty($fullWidthTheme)}<div class="container {if !empty($showContentAsFullWidth)}full-width-container{/if}">{/if}
 		<div id="content-container">
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}

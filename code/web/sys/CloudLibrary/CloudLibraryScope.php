@@ -91,6 +91,7 @@ class CloudLibraryScope extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 				'additionalOneToManyActions' => [
 					[
 						'text' => 'Apply To All Libraries',
@@ -118,6 +119,7 @@ class CloudLibraryScope extends DataObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 				'additionalOneToManyActions' => [
 					[
 						'text' => 'Apply To All Locations',

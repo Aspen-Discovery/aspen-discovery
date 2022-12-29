@@ -1,5 +1,5 @@
 {strip}
-	{if !empty($loggedIn)}
+	{if !empty($loggedIn) && !empty($adminActions)}
 		<div id="account-menu-label" class="sidebar-label row">
 			<div class="col-xs-12">{translate text='Administration Options' isAdminFacing=true}</div>
 		</div>

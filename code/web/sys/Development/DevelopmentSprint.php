@@ -74,6 +74,7 @@ class DevelopmentSprint extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

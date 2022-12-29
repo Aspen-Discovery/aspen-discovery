@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text="Aspen Site Stats Dashboard" isAdminFacing=true}</h1>
+		<h1>{translate text="Partner Ticket Dashboard" isAdminFacing=true}</h1>
 		{include file="Greenhouse/selectSiteForm.tpl"}
 
 		<h2>{translate text="Summary" isAdminFacing=true}</h2>
