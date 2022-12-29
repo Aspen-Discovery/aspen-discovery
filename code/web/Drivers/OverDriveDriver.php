@@ -1343,7 +1343,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		if (!isset(OverDriveDriver::$validUsersOverDrive[$userBarcode])) {
 			$tokenData = $this->getPatronTokenData($user, false);
 			$timer->logTime("Checked to see if the user $userBarcode is valid for OverDrive");
-			$isValid = ($tokenData !== false) && ($tokenData !== null) && !array_key_exists('error', $tokenData);
+			$isValid = ($tokenData !== false) && ($tokenData !== null) && !isset($tokenData['error']);
 			OverDriveDriver::$validUsersOverDrive[$userBarcode] = $isValid;
 		}
 		return OverDriveDriver::$validUsersOverDrive[$userBarcode];
