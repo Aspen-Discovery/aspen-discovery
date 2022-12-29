@@ -62,7 +62,7 @@
 											{if is_string($location)}
 												<option value="undefined">{$location}</option>
 											{else}
-												<option value="{$location->code}" data-users="[{$location->pickupUsers|@implode:','}]" {if $location->code == $user->getPickupLocationCode()}selected{/if}>{$location->displayName}</option>
+												<option value="{$location->code}" data-users="[{implode subject=$location->pickupUsers glue=','}]" {if $location->code == $user->getPickupLocationCode()}selected{/if}>{$location->displayName}</option>
 											{/if}
 										{/foreach}
 									{else}
