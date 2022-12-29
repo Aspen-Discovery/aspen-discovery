@@ -551,41 +551,41 @@
 			        <div class="dashboardCategory col-sm-6">
 			            <h3 class="dashboardCategoryLabel">{$resource.name}</h3>
 				        <div class="table-responsive">
-									<table class="table table-striped table-condensed">
-										<thead>
-											<tr>
-												<th></th>
-												<th>{translate text="This Month" isAdminFacing=true}</th>
-												<th>{translate text="Last Month" isAdminFacing=true}</th>
-												<th>{translate text="This Year" isAdminFacing=true}</th>
-												<th>{translate text="All Time" isAdminFacing=true}</th>
-											</tr>
-										</thead>
-										<tbody>
-											<tr>
-												<th scope="row">{translate text="Views" isAdminFacing=true}</th>
-												<td>{$resource.thisMonth.totalViews|number_format}</td>
-												<td>{$resource.lastMonth.totalViews|number_format}</td>
-												<td>{$resource.thisYear.totalViews|number_format}</td>
-												<td>{$resource.allTime.totalViews|number_format}</td>
-											</tr>
-											<tr>
-												<th scope="row">{translate text="Views by Authenticated Users" isAdminFacing=true}</th>
-												<td>{$resource.thisMonth.totalPageViewsbyAuthenticatedUsers|number_format}</td>
-												<td>{$resource.lastMonth.totalPageViewsbyAuthenticatedUsers|number_format}</td>
-												<td>{$resource.thisYear.totalPageViewsbyAuthenticatedUsers|number_format}</td>
-												<td>{$resource.allTime.totalPageViewsbyAuthenticatedUsers|number_format}</td>
-											</tr>
-											<tr>
-												<th scope="row">{translate text="Views in Library" isAdminFacing=true}</th>
-												<td>{$resource.thisMonth.totalPageViewsInLibrary|number_format}</td>
-												<td>{$resource.lastMonth.totalPageViewsInLibrary|number_format}</td>
-												<td>{$resource.thisYear.totalPageViewsInLibrary|number_format}</td>
-												<td>{$resource.allTime.totalPageViewsInLibrary|number_format}</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
+							<table class="table table-striped table-condensed">
+								<thead>
+									<tr>
+										<th></th>
+										<th>{translate text="This Month" isAdminFacing=true}</th>
+										<th>{translate text="Last Month" isAdminFacing=true}</th>
+										<th>{translate text="This Year" isAdminFacing=true}</th>
+										<th>{translate text="All Time" isAdminFacing=true}</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">{translate text="Views" isAdminFacing=true}</th>
+										<td>{$resource.thisMonth.totalViews|number_format}</td>
+										<td>{$resource.lastMonth.totalViews|number_format}</td>
+										<td>{$resource.thisYear.totalViews|number_format}</td>
+										<td>{$resource.allTime.totalViews|number_format}</td>
+									</tr>
+									<tr>
+										<th scope="row">{translate text="Views by Authenticated Users" isAdminFacing=true}</th>
+										<td>{$resource.thisMonth.totalPageViewsByAuthenticatedUsers|number_format}</td>
+										<td>{$resource.lastMonth.totalPageViewsByAuthenticatedUsers|number_format}</td>
+										<td>{$resource.thisYear.totalPageViewsByAuthenticatedUsers|number_format}</td>
+										<td>{$resource.allTime.totalPageViewsByAuthenticatedUsers|number_format}</td>
+									</tr>
+									<tr>
+										<th scope="row">{translate text="Views in Library" isAdminFacing=true}</th>
+										<td>{$resource.thisMonth.totalPageViewsInLibrary|number_format}</td>
+										<td>{$resource.lastMonth.totalPageViewsInLibrary|number_format}</td>
+										<td>{$resource.thisYear.totalPageViewsInLibrary|number_format}</td>
+										<td>{$resource.allTime.totalPageViewsInLibrary|number_format}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</div>
 		        {/foreach}
 			</div>

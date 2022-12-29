@@ -10,6 +10,7 @@ class NotificationSetting extends DataObject {
 	public $sendTo;
 	public $notifySavedSearch;
 	public $notifyCustom;
+	public $notifyAccount;
 
 	private $_libraries;
 
