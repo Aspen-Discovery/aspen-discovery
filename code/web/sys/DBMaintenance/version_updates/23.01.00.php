@@ -84,6 +84,14 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//add_invoiceCloud
+		'add_account_alerts_notification_settings' => [
+			'title' => 'Add account alert notification type to settings',
+			'description' => 'Adds account alert notifications option to notification settings',
+			'sql' => [
+				'ALTER TABLE aspen_lida_notification_setting ADD COLUMN notifyAccount TINYINT(1) DEFAULT 0',
+			],
+		],
+		//add_account_alerts_notification_settings
 
 		//kodi
 		'user_browse_add_home' => [
