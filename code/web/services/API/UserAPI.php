@@ -61,7 +61,7 @@ class UserAPI extends Action {
 					'setNotificationPreference',
 					'getNotificationPreferences',
 					'updateBrowseCategoryStatus',
-					'removeViewerAccount',
+					'removeViewerLink',
 					'getPatronReadingHistory',
 					'updatePatronReadingHistory',
 					'optIntoReadingHistory',
