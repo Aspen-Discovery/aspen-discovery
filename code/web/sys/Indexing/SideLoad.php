@@ -449,6 +449,7 @@ class SideLoad extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 				'additionalOneToManyActions' => [],
 				'forcesReindex' => true,
 			],

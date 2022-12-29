@@ -43,6 +43,7 @@ class GroupedWorkFacetGroup extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

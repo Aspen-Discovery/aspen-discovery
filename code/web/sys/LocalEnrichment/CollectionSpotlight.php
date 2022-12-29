@@ -253,6 +253,7 @@ class CollectionSpotlight extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

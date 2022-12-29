@@ -63,6 +63,7 @@ class AspenRelease extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

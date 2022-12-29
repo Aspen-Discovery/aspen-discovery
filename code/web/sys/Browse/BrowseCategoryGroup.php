@@ -74,6 +74,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'libraries' => [

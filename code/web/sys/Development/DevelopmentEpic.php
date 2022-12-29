@@ -132,6 +132,7 @@ class DevelopmentEpic extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'requestingPartners' => [
 				'property' => 'requestingPartners',
@@ -149,6 +150,7 @@ class DevelopmentEpic extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'relatedTasks' => [
 				'property' => 'relatedTasks',
@@ -166,6 +168,7 @@ class DevelopmentEpic extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'totalStoryPoints' => [
 				'property' => 'totalStoryPoints',

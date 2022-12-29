@@ -310,6 +310,7 @@ class BrowseCategory extends BaseBrowsable {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'source' => [
 				'property' => 'source',

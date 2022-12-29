@@ -2473,6 +2473,7 @@ class Library extends DataObject {
 						'allowEdit' => true,
 						'canEdit' => false,
 						'canAddNew' => true,
+						'canDelete' => true,
 						'additionalOneToManyActions' => [],
 					],
 				],
@@ -2700,6 +2701,7 @@ class Library extends DataObject {
 						'allowEdit' => false,
 						'canAddNew' => true,
 						'canEdit' => false,
+						'canDelete' => true,
 					],
 
 					'materialsRequestFormats' => [
@@ -2716,6 +2718,7 @@ class Library extends DataObject {
 						'allowEdit' => false,
 						'canEdit' => false,
 						'canAddNew' => true,
+						'canDelete' => true,
 						'additionalOneToManyActions' => [
 							0 => [
 								'text' => 'Set Materials Request Formats To Default',
@@ -2739,6 +2742,7 @@ class Library extends DataObject {
 						'allowEdit' => false,
 						'canEdit' => false,
 						'canAddNew' => true,
+						'canDelete' => true,
 						'additionalOneToManyActions' => [
 							0 => [
 								'text' => 'Set Materials Request Form Structure To Default',
@@ -2926,6 +2930,7 @@ class Library extends DataObject {
 						'canEdit' => true,
 						'forcesReindex' => true,
 						'canAddNew' => true,
+						'canDelete' => true,
 					],
 				],
 			],
@@ -3129,6 +3134,7 @@ class Library extends DataObject {
 				'storeDb' => true,
 				'permissions' => ['Library Holidays'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'libraryLinks' => [
@@ -3147,6 +3153,7 @@ class Library extends DataObject {
 				'canEdit' => true,
 				'permissions' => ['Library Menu'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'recordsOwned' => [
@@ -3166,6 +3173,7 @@ class Library extends DataObject {
 				'forcesReindex' => true,
 				'permissions' => ['Library Records included in Catalog'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'recordsToInclude' => [
@@ -3185,6 +3193,7 @@ class Library extends DataObject {
 				'forcesReindex' => true,
 				'permissions' => ['Library Records included in Catalog'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'sideLoadScopes' => [
@@ -3204,6 +3213,7 @@ class Library extends DataObject {
 				'forcesReindex' => true,
 				'permissions' => ['Library Records included in Catalog'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'aspenLiDASection' => [

@@ -869,6 +869,7 @@ class Location extends DataObject {
 								'canEdit' => false,
 								'additionalOneToManyActions' => [],
 								'canAddNew' => true,
+								'canDelete' => true,
 							],
 						],
 					],
@@ -913,6 +914,7 @@ class Location extends DataObject {
 						'allowEdit' => true,
 						'canEdit' => true,
 						'canAddNew' => true,
+						'canDelete' => true,
 					],
 				],
 			],
@@ -994,6 +996,7 @@ class Location extends DataObject {
 						'sortable' => false,
 						'storeDb' => true,
 						'canAddNew' => true,
+						'canDelete' => true,
 					],
 				],
 			],
@@ -1074,6 +1077,7 @@ class Location extends DataObject {
 				'storeDb' => true,
 				'permissions' => ['Location Address and Hours Settings'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'recordsOwned' => [
@@ -1093,6 +1097,7 @@ class Location extends DataObject {
 				'forcesReindex' => true,
 				'permissions' => ['Location Records included in Catalog'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'recordsToInclude' => [
@@ -1112,6 +1117,7 @@ class Location extends DataObject {
 				'forcesReindex' => true,
 				'permissions' => ['Location Records included in Catalog'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'includeLibraryRecordsToInclude' => [
 				'property' => 'includeLibraryRecordsToInclude',
@@ -1141,6 +1147,7 @@ class Location extends DataObject {
 				'forcesReindex' => true,
 				'permissions' => ['Location Records included in Catalog'],
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 
 			'aspenLiDASection' => [

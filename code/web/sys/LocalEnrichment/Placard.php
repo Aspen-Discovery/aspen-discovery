@@ -125,6 +125,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 				'allowEdit' => false,
 				'canEdit' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'languages' => [
 				'property' => 'languages',

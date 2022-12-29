@@ -165,6 +165,7 @@ class Ticket extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 			'requestingPartner' => [
 				'property' => 'requestingPartner',
@@ -215,6 +216,7 @@ class Ticket extends DataObject {
 				'additionalOneToManyActions' => [],
 				'hideInLists' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 			],
 		];
 	}

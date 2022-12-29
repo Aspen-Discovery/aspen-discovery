@@ -919,6 +919,7 @@ class IndexingProfile extends DataObject {
 						'allowEdit' => false,
 						'canEdit' => false,
 						'canAddNew' => true,
+						'canDelete' => true,
 						'forcesReindex' => true,
 					],
 				],
@@ -944,6 +945,7 @@ class IndexingProfile extends DataObject {
 						'allowEdit' => false,
 						'canEdit' => false,
 						'canAddNew' => true,
+						'canDelete' => true,
 						'forcesReindex' => true,
 					],
 				],
@@ -1084,6 +1086,7 @@ class IndexingProfile extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => true,
 				'canAddNew' => true,
+				'canDelete' => true,
 				'forcesReindex' => true,
 			],
 
@@ -1101,6 +1104,7 @@ class IndexingProfile extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 				'forcesReindex' => true,
 			],
 
@@ -1118,6 +1122,7 @@ class IndexingProfile extends DataObject {
 				'allowEdit' => true,
 				'canEdit' => false,
 				'canAddNew' => true,
+				'canDelete' => true,
 				'forcesReindex' => true,
 			],
 		];
