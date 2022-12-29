@@ -8,13 +8,6 @@
 				{/foreach}
 			</div>
 		{elseif $property.listStyle == 'checkboxSimple'}
-			{* Below used to follow template behaviour
-
-			{assign var=temp2 value=$propValue|@array_keys}
-			{assign var=temp value=$propValue|@array_values}
-					keys :{','|implode:$temp2}<br>
-					values:{','|implode:$temp}<br>
-			*}
 			<div class="form-group checkbox">
 				<label for="selectAll{$propName}">
 					<input type="checkbox" name="selectAll{$propName}" id="selectAll{$propName}" onchange="AspenDiscovery.toggleCheckboxes('.{$propName}', '#selectAll{$propName}');">
