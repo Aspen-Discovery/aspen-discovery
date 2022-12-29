@@ -448,7 +448,7 @@ class Record_AJAX extends Action {
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">No, place a hold on this edition</a>',
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $marcRecord->getId() . '\');">No, place a hold on this edition</a>',
 			];
 		} else {
 			$results = [
