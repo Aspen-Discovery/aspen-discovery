@@ -146,18 +146,18 @@ class Admin_UsageDashboard extends Admin_Dashboard {
 		}
 
 		$usage->selectAdd();
-		$usage->selectAdd('SUM(pageViews) as totalViews');
-		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as totalPageViewsByAuthenticatedUsers');
-		$usage->selectAdd('SUM(pageViewsInLibrary) as totalPageViewsInLibrary');
+		$usage->selectAdd('SUM(pageViews) as pageViews');
+		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as pageViewsByAuthenticatedUsers');
+		$usage->selectAdd('SUM(pageViewsInLibrary) as pageViewsInLibrary');
 
 		$usage->find(true);
 
 		/** @noinspection PhpUndefinedFieldInspection */
 		return [
 			'name' => $usage->resourceName,
-			'totalViews' => $usage->totalViews,
-			'totalPageViewsByAuthenticatedUsers' => $usage->totalPageViewsByAuthenticatedUsers,
-			'totalPageViewsInLibrary' => $usage->totalPageViewsInLibrary,
+			'totalViews' => $usage->pageViews ?? 0,
+			'totalPageViewsByAuthenticatedUsers' => $usage->pageViewsByAuthenticatedUsers ?? 0,
+			'totalPageViewsInLibrary' => $usage->pageViewsInLibrary ?? 0,
 		];
 	}
 
