@@ -19,7 +19,7 @@
 			<tbody>
 				{foreach from=$partnerPriorities item=partnerTicketInfo}
 					<tr>
-						<td><a href="/Greenhouse/Tickets?sort=ticketId+desc&filterType[showClosedTickets]=matches&filterValue[showClosedTickets]=0&filterType[requestingPartner]=matches&filterValue[requestingPartner]={$partnerTicketInfo.siteId}&page=&pageSize=25&objectAction=list">{$partnerTicketInfo.siteName}</a></td>
+						<td><a href="/Greenhouse/PartnerTicketDashboard?site={$partnerTicketInfo.siteId}">{$partnerTicketInfo.siteName}</a></td>
 						<td>
 							{if !empty($partnerTicketInfo.priority1Ticket)}
 								<a href="/Greenhouse/Tickets?objectAction=edit&id={$partnerTicketInfo.priority1Ticket->id}">{$partnerTicketInfo.priority1Ticket->ticketId} {$partnerTicketInfo.priority1Ticket->title}</a>
