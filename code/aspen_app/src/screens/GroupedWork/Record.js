@@ -624,7 +624,7 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
                     return getPromptForOverdriveEmail;
                }
           } else {
-               return await placeHold(url, itemId, source, patronId, pickupBranch, null, holdType, id);
+               return await placeHold(url, itemId, source, patronId, pickupBranch);
           }
      } else if (actionType.includes('sample')) {
           return await overDriveSample(url, formatId, itemId, sampleNumber);
