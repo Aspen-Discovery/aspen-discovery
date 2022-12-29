@@ -35,6 +35,7 @@ abstract class Admin_Admin extends Action {
 		$interface->assign('adminActions', $adminActions);
 		$interface->assign('activeAdminSection', $this->getActiveAdminSection());
 		$interface->assign('activeMenuOption', 'admin');
+		$interface->assign('showContentAsFullWidth', true);
 	}
 
 	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true) {

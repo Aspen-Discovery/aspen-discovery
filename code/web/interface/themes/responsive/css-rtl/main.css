@@ -7235,6 +7235,9 @@ body {
 body > .container {
   background-color: #fff;
 }
+.full-width-container {
+  width: 98%;
+}
 .noBreak {
   white-space: nowrap;
 }
