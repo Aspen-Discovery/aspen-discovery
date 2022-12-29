@@ -9,7 +9,7 @@
 			</div>
 		{/if}
 		{if $recordDriver->hasCachedSeries()}
-			<div class="series{$summISBN} row">
+			<div class="series row">
 				<div class="result-label col-md-3">{translate text="Series" isPublicFacing=true} </div>
 				<div class="col-md-9 result-value">
 					{assign var=summSeries value=$recordDriver->getSeries(false)}
