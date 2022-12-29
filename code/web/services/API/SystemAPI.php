@@ -206,6 +206,8 @@ class SystemAPI extends Action {
 				if ($notificationSettings->find(true)) {
 					$settings['sendTo'] = $notificationSettings->sendTo;
 					$settings['notifySavedSearch'] = $notificationSettings->notifySavedSearch;
+					$settings['notifyCustom'] = $notificationSettings->notifyCustom;
+					$settings['notifyAccount'] = $notificationSettings->notifyAccount;
 					return [
 						'success' => true,
 						'settings' => $settings,
