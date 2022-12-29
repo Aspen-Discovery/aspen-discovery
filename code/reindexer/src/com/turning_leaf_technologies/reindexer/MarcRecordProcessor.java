@@ -731,6 +731,9 @@ abstract class MarcRecordProcessor {
 					if (position30 == 'F' || position31 == 'F'){
 						addToMapWithCount(literaryFormsWithCount, "Fiction", 2);
 						addToMapWithCount(literaryFormsFull, "Fiction", 2);
+					}else if ((position30 == '|' || position30 == ' ') && (position31 == '|' || position31 == ' ')){
+						addToMapWithCount(literaryFormsWithCount, "Not Coded", 1);
+						addToMapWithCount(literaryFormsFull, "Not Coded", 1);
 					}else{
 						addToMapWithCount(literaryFormsWithCount, "Non Fiction", 2);
 						addToMapWithCount(literaryFormsFull, "Non Fiction", 2);

@@ -49,7 +49,7 @@ class EDSSettings extends DataObject {
 			],
 			'edsApiPassword' => [
 				'property' => 'edsApiPassword',
-				'type' => 'text',
+				'type' => 'storedPassword',
 				'label' => 'EDS API Password',
 				'description' => 'The password to use when connecting to the EBSCO API',
 				'hideInLists' => true,
