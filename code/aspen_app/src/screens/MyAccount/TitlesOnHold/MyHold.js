@@ -44,7 +44,9 @@ export const MyHold = (props) => {
 
      if (!hold.available && hold.source !== 'ils') {
           canCancel = hold.cancelable;
-     } else canCancel = !hold.available && hold.source === 'ils';
+     } else {
+          canCancel = !hold.available && hold.source === 'ils';
+     }
 
      let allowLinkedAccountAction = true;
      const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion);
@@ -61,6 +63,7 @@ export const MyHold = (props) => {
                url: library.baseUrl,
                userContext: user,
                libraryContext: library,
+               prevRoute: 'MyHolds',
           });
      };
 

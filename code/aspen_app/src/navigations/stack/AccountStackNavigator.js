@@ -1,7 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
-import GroupedWork from '../../screens/GroupedWork/GroupedWork';
+import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import Profile from '../../screens/MyAccount/Profile';
 import LoadSavedSearch from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSearch';
@@ -17,6 +18,9 @@ import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckout
 import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
 import { MyLists } from '../../screens/MyAccount/Lists/MyLists';
 import { MyList } from '../../screens/MyAccount/Lists/MyList';
+import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
+import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
+import { EditionsModal } from './BrowseStackNavigator';
 
 const AccountStackNavigator = () => {
      const Stack = createNativeStackNavigator();
@@ -31,6 +35,7 @@ const AccountStackNavigator = () => {
                     <Stack.Screen name="MyPreferences" component={Preferences} options={{ title: translate('user_profile.preferences') }} />
                     <Stack.Screen name="SettingsHomeScreen" component={Settings_HomeScreen} options={{ title: translate('user_profile.home_screen_settings') }} />
                     <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: translate('user_profile.home_screen_settings') }} />
+                    <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: translate('user_profile.notification_settings') }} />
                     <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: translate('user_profile.notification_settings') }} />
                </Stack.Group>
                <Stack.Group>
@@ -49,10 +54,11 @@ const AccountStackNavigator = () => {
                     />
                     <Stack.Screen
                          name="MyHold"
-                         component={GroupedWork}
+                         component={GroupedWorkScreen}
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
+                         initialParams={{ prevScreen: 'MyHolds' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -65,10 +71,11 @@ const AccountStackNavigator = () => {
                     />
                     <Stack.Screen
                          name="MyCheckout"
-                         component={GroupedWork}
+                         component={GroupedWorkScreen}
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
+                         initialParams={{ prevScreen: 'MyCheckouts' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -82,10 +89,11 @@ const AccountStackNavigator = () => {
                     <Stack.Screen name="MyList" component={MyList} options={({ route }) => ({ title: route.params.title })} />
                     <Stack.Screen
                          name="ListItem"
-                         component={GroupedWork}
+                         component={GroupedWorkScreen}
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
+                         initialParams={{ prevScreen: 'MyList' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -99,10 +107,11 @@ const AccountStackNavigator = () => {
                     <Stack.Screen name="MySavedSearch" component={SavedSearchScreen} options={({ route }) => ({ title: route.params.title })} />
                     <Stack.Screen
                          name="SavedSearchItem"
-                         component={GroupedWork}
+                         component={GroupedWorkScreen}
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
+                         initialParams={{ prevScreen: 'MySavedSearch' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -115,13 +124,39 @@ const AccountStackNavigator = () => {
                     />
                     <Stack.Screen
                          name="ItemDetails"
-                         component={GroupedWork}
+                         component={GroupedWorkScreen}
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
+                         initialParams={{ prevScreen: 'MyReadingHistory' }}
                     />
                </Stack.Group>
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />
+               <Stack.Screen
+                    name="CopyDetails"
+                    component={WhereIsIt}
+                    options={({ navigation }) => ({
+                         title: translate('copy_details.where_is_it'),
+                         headerShown: true,
+                         presentation: 'modal',
+                         headerLeft: () => {
+                              return null;
+                         },
+                         headerRight: () => (
+                              <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                   <CloseIcon color="primary.baseContrast" />
+                              </Pressable>
+                         ),
+                    })}
+               />
+               <Stack.Screen
+                    name="EditionsModal"
+                    component={EditionsModal}
+                    options={{
+                         headerShown: false,
+                         presentation: 'modal',
+                    }}
+               />
           </Stack.Navigator>
      );
 };

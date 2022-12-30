@@ -8,7 +8,7 @@ import { ListItem } from '@rneui/themed';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { translate } from '../../../translations/translations';
-import { deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile } from '../../../util/api/user';
+import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { SafeAreaView } from 'react-native';
 import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
 import { loadError } from '../../../components/loadError';
@@ -16,6 +16,8 @@ import { navigateStack } from '../../../helpers/RootNavigator';
 import AddToList from '../../Search/AddToList';
 
 export const MyReadingHistory = () => {
+     const queryClient = useQueryClient();
+     const [isLoading, setLoading] = React.useState(false);
      const [page, setPage] = React.useState(1);
      const [sort, setSort] = React.useState('checkedOut');
      const { library } = React.useContext(LibrarySystemContext);
@@ -23,41 +25,58 @@ export const MyReadingHistory = () => {
      const url = library.baseUrl;
      const pageSize = 25;
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['readingHistory', url, page, pageSize, sort], () => fetchReadingHistory(page, pageSize, sort, url), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['readingHistory', library.baseUrl, page, pageSize, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
           keepPreviousData: true,
           staleTime: 1000,
      });
 
-     const optIn = async () => {
-          await optIntoReadingHistory(library.baseUrl).then(() => {
-               refreshProfile(library.baseUrl).then((result) => {
-                    updateUser(result);
-               });
-          });
-     };
-
-     const optOut = async () => {
-          await optOutOfReadingHistory(library.baseUrl).then(() => {
-               refreshProfile(library.baseUrl).then((result) => {
-                    updateUser(result);
-               });
-          });
-     };
-
-     const deleteAll = async () => {
-          return true;
-     };
-
      const [isOpen, setIsOpen] = React.useState(false);
      const onClose = () => setIsOpen(false);
      const cancelRef = React.useRef(null);
+     const [optingOut, setOptingOut] = React.useState(false);
 
      const [deleteAllIsOpen, setDeleteAllIsOpen] = React.useState(false);
      const onCloseDeleteAll = () => setDeleteAllIsOpen(false);
      const deleteAllCancelRef = React.useRef(null);
+     const [deleting, setDeleting] = React.useState(false);
 
+     const [optingIn, setOptingIn] = React.useState();
+
+     const optIn = async () => {
+          setOptingIn(true);
+          await optIntoReadingHistory(library.baseUrl);
+          await reloadProfile(library.baseUrl).then((result) => {
+               updateUser(result);
+          });
+          queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+          setOptingIn(false);
+     };
+
+     const optOut = async () => {
+          setOptingOut(true);
+          await optOutOfReadingHistory(library.baseUrl);
+          await deleteAllReadingHistory(library.baseUrl);
+          await reloadProfile(library.baseUrl).then((result) => {
+               updateUser(result);
+          });
+          queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+          setIsOpen(false);
+          setOptingOut(false);
+     };
+
+     const deleteAll = async () => {
+          setDeleting(true);
+          await deleteAllReadingHistory(library.baseUrl);
+          await reloadProfile(library.baseUrl).then((result) => {
+               updateUser(result);
+          });
+          queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+          setDeleteAllIsOpen(false);
+          setDeleting(false);
+     };
+
+     const [expanded, setExpanded] = React.useState(false);
      const getDisclaimer = () => {
-          const [expanded, setExpanded] = React.useState(false);
           return (
                <ListItem.Accordion
                     containerStyle={{
@@ -150,7 +169,7 @@ export const MyReadingHistory = () => {
                                              <Button colorScheme="muted" variant="outline" onPress={onClose}>
                                                   {translate('general.close_window')}
                                              </Button>
-                                             <Button colorScheme="danger" onPress={optOut} ref={cancelRef}>
+                                             <Button isLoading={optingOut} isLoadingText="Updating..." colorScheme="danger" onPress={optOut} ref={cancelRef}>
                                                   {translate('general.button_ok')}
                                              </Button>
                                         </Button.Group>
@@ -169,7 +188,7 @@ export const MyReadingHistory = () => {
                                              <Button colorScheme="muted" variant="outline" onPress={onCloseDeleteAll}>
                                                   {translate('general.close_window')}
                                              </Button>
-                                             <Button colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
+                                             <Button isLoading={deleting} isLoadingText="Deleting..." colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
                                                   {translate('general.button_ok')}
                                              </Button>
                                         </Button.Group>
@@ -182,57 +201,68 @@ export const MyReadingHistory = () => {
      };
 
      const Empty = () => {
-          return null;
+          return (
+               <Center mt={5} mb={5}>
+                    <Text bold fontSize="lg">
+                         {translate('reading_history.empty')}
+                    </Text>
+               </Center>
+          );
      };
 
      const Paging = () => {
-          return (
-               <Box
-                    safeArea={2}
-                    bgColor="coolGray.100"
-                    borderTopWidth="1"
-                    _dark={{
-                         borderColor: 'gray.600',
-                         bg: 'coolGray.700',
-                    }}
-                    borderColor="coolGray.200"
-                    flexWrap="nowrap"
-                    alignItems="center">
-                    <ScrollView horizontal>
-                         <Button.Group size="sm">
-                              <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                                   {translate('general.previous')}
-                              </Button>
-                              <Button
-                                   onPress={() => {
-                                        if (!isPreviousData && data?.hasMore) {
-                                             console.log('Adding to page');
-                                             setPage(page + 1);
-                                        }
-                                   }}
-                                   isDisabled={isPreviousData || !data?.hasMore}>
-                                   {translate('general.next')}
-                              </Button>
-                         </Button.Group>
-                    </ScrollView>
-                    <Text mt={2} fontSize="sm">
-                         Page {page} of {data?.totalPages}
-                    </Text>
-               </Box>
-          );
+          if (data?.totalResults > 0) {
+               return (
+                    <Box
+                         safeArea={2}
+                         bgColor="coolGray.100"
+                         borderTopWidth="1"
+                         _dark={{
+                              borderColor: 'gray.600',
+                              bg: 'coolGray.700',
+                         }}
+                         borderColor="coolGray.200"
+                         flexWrap="nowrap"
+                         alignItems="center">
+                         <ScrollView horizontal>
+                              <Button.Group size="sm">
+                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
+                                        {translate('general.previous')}
+                                   </Button>
+                                   <Button
+                                        onPress={() => {
+                                             if (!isPreviousData && data?.hasMore) {
+                                                  console.log('Adding to page');
+                                                  setPage(page + 1);
+                                             }
+                                        }}
+                                        isDisabled={isPreviousData || !data?.hasMore}>
+                                        {translate('general.next')}
+                                   </Button>
+                              </Button.Group>
+                         </ScrollView>
+                         <Text mt={2} fontSize="sm">
+                              Page {page} of {data?.totalPages}
+                         </Text>
+                    </Box>
+               );
+          }
+          return null;
      };
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
-                         <Box mb={3}>{getDisclaimer()}</Box>
-                         <Button onPress={optIn}>{translate('reading_history.opt_in')}</Button>
+                         <Button onPress={optIn} isLoading={optingIn} isLoadingText="Updating...">
+                              {translate('reading_history.opt_in')}
+                         </Button>
+                         {getDisclaimer()}
                     </Box>
                ) : (
                     <>
                          {getActionButtons()}
-                         {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
+                         {isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
                     </>
                )}
           </SafeAreaView>
@@ -264,10 +294,10 @@ const Item = (data) => {
      const deleteFromHistory = async (item) => {
           await deleteSelectedReadingHistory(item, library.baseUrl).then(async (result) => {
                if (result) {
-                    queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
                     await refreshProfile(library.baseUrl).then((result) => {
                          updateUser(result);
                     });
+                    queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
                }
           });
      };
@@ -279,6 +309,13 @@ const Item = (data) => {
                          <Image
                               source={{ uri: library.baseUrl + item.coverUrl }}
                               borderRadius="md"
+                              fallbackSource={{
+                                   bgColor: 'warmGray.50',
+                              }}
+                              bg="warmGray.50"
+                              _dark={{
+                                   bgColor: 'coolGray.800',
+                              }}
                               size={{
                                    base: '90px',
                                    lg: '120px',
@@ -305,14 +342,16 @@ const Item = (data) => {
                                    {getTitle(item.title)}
                               </Text>
                          </Box>
-                         <Actionsheet.Item
-                              onPress={() => {
-                                   openGroupedWork(item.permanentId, item.title);
-                                   toggle();
-                              }}
-                              startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
-                              {translate('grouped_work.view_item_details')}
-                         </Actionsheet.Item>
+                         {item.existsInCatalog ? (
+                              <Actionsheet.Item
+                                   onPress={() => {
+                                        openGroupedWork(item.permanentId, item.title);
+                                        toggle();
+                                   }}
+                                   startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
+                                   {translate('grouped_work.view_item_details')}
+                              </Actionsheet.Item>
+                         ) : null}
                          <Actionsheet.Item
                               isLoading={deleting}
                               isLoadingText={translate('general.removing')}

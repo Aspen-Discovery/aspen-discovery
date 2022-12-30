@@ -7,11 +7,9 @@ import { SafeAreaView } from 'react-native';
 import { DisplayMessage } from '../../../../components/Notifications';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
 import { translate } from '../../../../translations/translations';
-import { removeLinkedAccount, removeLinkedViewerAccount } from '../../../../util/accountActions';
-import { getLinkedAccounts, getViewers } from '../../../../util/loadPatron';
 import AddLinkedAccount from './AddLinkedAccount';
 import { LibrarySystemContext, UserContext } from '../../../../context/initialContext';
-import { refreshProfile } from '../../../../util/api/user';
+import { refreshProfile, getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount, reloadProfile } from '../../../../util/api/user';
 
 export const MyLinkedAccounts = () => {
      const [isLoading, setLoading] = React.useState(true);
@@ -26,7 +24,7 @@ export const MyLinkedAccounts = () => {
                               updateLinkedAccounts(result);
                          }
                     });
-                    await getViewers(library.baseUrl).then((result) => {
+                    await getViewerAccounts(library.baseUrl).then((result) => {
                          if (viewers !== result) {
                               updateLinkedViewerAccounts(result);
                          }
@@ -74,7 +72,7 @@ export const MyLinkedAccounts = () => {
 
 const Account = (data) => {
      const account = data.account;
-     const type = data.account;
+     const type = data.type;
      const [isRemoving, setIsRemoving] = React.useState(false);
      const { user, accounts, viewers, updateUser, updateLinkedAccounts, updateLinkedViewerAccounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -85,20 +83,21 @@ const Account = (data) => {
                     updateLinkedAccounts(result);
                }
           });
-          await getViewers(library.baseUrl).then((result) => {
+          await getViewerAccounts(library.baseUrl).then((result) => {
                if (viewers !== result) {
                     updateLinkedViewerAccounts(result);
                }
           });
-          refreshProfile(library.baseUrl).then((result) => {
+          reloadProfile(library.baseUrl).then((result) => {
                updateUser(result);
           });
      };
 
      const removeAccount = async () => {
+          console.log(type);
           if (type === 'viewer') {
                setIsRemoving(true);
-               removeLinkedViewerAccount(account.id, library.baseUrl).then((res) => {
+               removeViewerAccount(account.id, library.baseUrl).then((res) => {
                     refreshLinkedAccounts();
                     setIsRemoving(false);
                });

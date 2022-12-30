@@ -2,15 +2,13 @@ import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
-import BrowseCategoryHome, { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
+import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import CreateVDXRequest from '../../screens/GroupedWork/CreateVDXRequest';
-import GroupedWork from '../../screens/GroupedWork/GroupedWork';
-import Results from '../../screens/Search/Results';
-import SearchByCategory from '../../screens/Search/SearchByCategory';
-import SearchByList from '../../screens/Search/SearchByList';
-import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
+import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { translate } from '../../translations/translations';
 import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { Editions } from '../../screens/GroupedWork/Editions';
+import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 
 const BrowseStackNavigator = () => {
      const Stack = createStackNavigator();
@@ -33,72 +31,113 @@ const BrowseStackNavigator = () => {
                          }
                     },
                })}>
+               <Stack.Group>
+                    <Stack.Screen
+                         name="HomeScreen"
+                         component={DiscoverHomeScreen}
+                         options={{
+                              title: translate('navigation.home'),
+                         }}
+                         initialParams={{
+                              libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
+                              locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
+                              userContext: JSON.stringify(React.useContext(UserContext)),
+                              browseCategoriesContext: JSON.stringify(React.useContext(BrowseCategoryContext)),
+                         }}
+                    />
+                    <Stack.Screen
+                         name="GroupedWorkScreen"
+                         component={GroupedWorkScreen}
+                         options={({ route }) => ({
+                              title: route.params.title ?? translate('grouped_work.title'),
+                         })}
+                         initialParams={{ prevScreen: 'Discovery' }}
+                    />
+                    <Stack.Screen
+                         name="CopyDetails"
+                         component={WhereIsIt}
+                         options={({ navigation }) => ({
+                              title: translate('copy_details.where_is_it'),
+                              headerShown: true,
+                              presentation: 'modal',
+                              headerLeft: () => {
+                                   return <></>;
+                              },
+                              headerRight: () => (
+                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                        <CloseIcon color="primary.baseContrast" />
+                                   </Pressable>
+                              ),
+                         })}
+                    />
+               </Stack.Group>
                <Stack.Screen
-                    name="HomeScreen"
-                    component={DiscoverHomeScreen}
+                    name="EditionsModal"
+                    component={EditionsModal}
                     options={{
-                         title: translate('navigation.home'),
-                    }}
-                    initialParams={{
-                         libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
-                         locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
-                         userContext: JSON.stringify(React.useContext(UserContext)),
-                         browseCategoriesContext: JSON.stringify(React.useContext(BrowseCategoryContext)),
-                    }}
-               />
-               <Stack.Screen
-                    name="GroupedWorkScreen"
-                    component={GroupedWork}
-                    options={({ route }) => ({
-                         title: route.params.title ?? translate('grouped_work.title'),
-                    })}
-               />
-               <Stack.Screen
-                    name="SearchByCategory"
-                    component={SearchByCategory}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                    })}
-               />
-               <Stack.Screen
-                    name="SearchByList"
-                    component={SearchByList}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
-               <Stack.Screen
-                    name="ListResults"
-                    component={SearchByList}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
-               <Stack.Screen
-                    name="SearchBySavedSearch"
-                    component={SearchBySavedSearch}
-                    options={({ route }) => ({
-                         title: translate('search.search_results_title') + route.params.title,
-                         libraryContext: React.useContext(LibrarySystemContext),
-                         locationContext: React.useContext(LibraryBranchContext),
-                         userContext: React.useContext(UserContext),
-                    })}
-               />
-               <Stack.Screen
-                    name="CreateVDXRequest"
-                    component={CreateVDXRequest}
-                    options={{
-                         title: 'Request Title',
+                         headerShown: false,
                          presentation: 'modal',
                     }}
                />
+               <Stack.Group>
+                    <Stack.Screen
+                         name="CreateVDXRequest"
+                         component={CreateVDXRequest}
+                         options={{
+                              title: translate('ill.request_title'),
+                              presentation: 'modal',
+                         }}
+                    />
+               </Stack.Group>
           </Stack.Navigator>
+     );
+};
+
+const EditionsStack = createStackNavigator();
+export const EditionsModal = () => {
+     return (
+          <EditionsStack.Navigator
+               id="EditionsStack"
+               screenOptions={({ navigation, route }) => ({
+                    headerShown: false,
+                    animationTypeForReplace: 'push',
+                    gestureEnabled: false,
+                    headerLeft: () => {
+                         if (route.name !== 'Editions') {
+                              return (
+                                   <Pressable onPress={() => navigation.goBack()} ml={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                        <ChevronLeftIcon color="primary.baseContrast" />
+                                   </Pressable>
+                              );
+                         } else {
+                              return null;
+                         }
+                    },
+                    headerRight: () => (
+                         <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                              <CloseIcon color="primary.baseContrast" />
+                         </Pressable>
+                    ),
+               })}>
+               <EditionsStack.Screen
+                    name="Editions"
+                    component={Editions}
+                    options={{
+                         title: translate('grouped_work.editions'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
+               />
+               <EditionsStack.Screen
+                    name="WhereIsIt"
+                    component={WhereIsIt}
+                    options={{
+                         title: translate('copy_details.where_is_it'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
+               />
+          </EditionsStack.Navigator>
      );
 };
 

@@ -1,30 +1,33 @@
 import { Box, HStack, Switch, Text, FlatList } from 'native-base';
 import React from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { getBrowseCategoryListForUser, updateBrowseCategoryStatus } from '../../../util/loadPatron';
 import { BrowseCategoryContext, LibrarySystemContext } from '../../../context/initialContext';
 import { reloadBrowseCategories } from '../../../util/loadLibrary';
+import { loadingSpinner } from '../../../components/loadingSpinner';
 
 export const Settings_BrowseCategories = () => {
+     const navigation = useNavigation();
+     const [loading, setLoading] = React.useState(true);
      const { library } = React.useContext(LibrarySystemContext);
      const { list, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    await getBrowseCategoryListForUser(library.baseUrl).then((result) => {
-                         console.log(result);
-                         if (list !== result) {
-                              updateBrowseCategoryList(result);
-                         }
-                    });
-               };
-               update().then(() => {
-                    return () => update();
+     React.useEffect(() => {
+          const update = navigation.addListener('focus', async () => {
+               await getBrowseCategoryListForUser(library.baseUrl).then((result) => {
+                    if (list !== result) {
+                         updateBrowseCategoryList(result);
+                    }
                });
-          }, [])
-     );
+               setLoading(false);
+          });
+          return update;
+     }, [navigation]);
+
+     if (loading) {
+          return loadingSpinner();
+     }
 
      return <FlatList keyExtractor={(item) => item.key} data={list} renderItem={({ item }) => <DisplayCategory data={item} />} />;
 };
@@ -114,12 +117,13 @@ export const Settings_BrowseCategories = () => {
 
 const DisplayCategory = (data) => {
      const category = data.data;
-     //console.log(category);
+     console.log(category.isHidden);
      const [toggled, setToggle] = React.useState(!category.isHidden);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { library } = React.useContext(LibrarySystemContext);
      const { updateBrowseCategoryList, updateBrowseCategories, maxNum } = React.useContext(BrowseCategoryContext);
 
+     console.log(toggled);
      const updateToggle = async (category) => {
           const key = category['key'] ?? category['sourceId'];
 

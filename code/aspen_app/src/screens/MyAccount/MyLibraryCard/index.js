@@ -1,36 +1,28 @@
 import _ from 'lodash';
 import moment from 'moment';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
-import {Center, Flex, Image, Text, Box, useColorModeValue, useContrastText, useToken, Pressable, Button} from 'native-base';
-import React, {Component} from 'react';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Center, Flex, Image, Text, Box, Button } from 'native-base';
+import React from 'react';
 import Barcode from 'react-native-barcode-expo';
 import Carousel from 'react-native-reanimated-carousel';
-import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue} from 'react-native-reanimated';
-import {Dimensions} from 'react-native';
+import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { Dimensions } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as Brightness from 'expo-brightness';
 
 // custom components and helper files
-import {loadError} from '../../../components/loadError';
-import {loadingSpinner} from '../../../components/loadingSpinner';
-import {userContext} from '../../../context/user';
-import {translate} from '../../../translations/translations';
-import {LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import {getLinkedAccounts} from '../../../util/api/user';
+import { loadingSpinner } from '../../../components/loadingSpinner';
+import { translate } from '../../../translations/translations';
+import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { getLinkedAccounts } from '../../../util/api/user';
 
 export const MyLibraryCard = () => {
      const navigation = useNavigation();
      const [isLoading, setLoading] = React.useState(true);
      const [previousBrightness, setPreviousBrightness] = React.useState();
      const [isLandscape, setIsLandscape] = React.useState();
-     const {
-          user,
-          accounts,
-          updateLinkedAccounts,
-          cards,
-          updateLibraryCards
-     } = React.useContext(UserContext);
-     const {library} = React.useContext(LibrarySystemContext);
+     const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
 
      const primaryCard = {
           key: 0,
@@ -42,81 +34,69 @@ export const MyLibraryCard = () => {
      };
 
      useFocusEffect(
-         React.useCallback(() => {
-              const update = async () => {
-                   await getLinkedAccounts(library.baseUrl).then(async (result) => {
-                        if (_.includes(cards, user.cat_username) === false) {
-                             updateLibraryCards([primaryCard]);
-                        }
-                        if (accounts !== result) {
-                             const temp = Object.values(result);
-                             console.log(temp);
-                             updateLinkedAccounts(Object.values(result));
-                             if (_.size(temp) >= 1) {
-                                  let count = 1;
-                                  let cardStack = [primaryCard];
-                                  temp.forEach((account) => {
-                                       if (_.includes(cards, account.cat_username) === false) {
-                                            console.log(account);
-                                            count = count + 1;
-                                            const card = {
-                                                 key: count,
-                                                 displayName: account.displayName,
-                                                 cat_username: account.cat_username ?? account.barcode,
-                                                 expired: account.expired,
-                                                 expires: account.expires,
-                                                 barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
-                                            };
-                                            cardStack.push(card);
-                                            updateLibraryCards(cardStack);
-                                       }
-                                  });
-                             }
-                        }
-                        setLoading(false);
-                   });
-              };
-              update().then(() => {
-                   return () => update();
-              });
-         }, [])
+          React.useCallback(() => {
+               const update = async () => {
+                    await getLinkedAccounts(library.baseUrl).then(async (result) => {
+                         if (_.includes(cards, user.cat_username) === false) {
+                              updateLibraryCards([primaryCard]);
+                         }
+                         if (accounts !== result) {
+                              const temp = Object.values(result);
+                              console.log(temp);
+                              updateLinkedAccounts(Object.values(result));
+                              if (_.size(temp) >= 1) {
+                                   let count = 1;
+                                   let cardStack = [primaryCard];
+                                   temp.forEach((account) => {
+                                        if (_.includes(cards, account.cat_username) === false) {
+                                             console.log(account);
+                                             count = count + 1;
+                                             const card = {
+                                                  key: count,
+                                                  displayName: account.displayName,
+                                                  cat_username: account.cat_username ?? account.barcode,
+                                                  expired: account.expired,
+                                                  expires: account.expires,
+                                                  barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
+                                             };
+                                             cardStack.push(card);
+                                             updateLibraryCards(cardStack);
+                                        }
+                                   });
+                              }
+                         }
+                         setLoading(false);
+                    });
+               };
+               update().then(() => {
+                    return () => update();
+               });
+          }, [])
      );
 
      React.useEffect(() => {
-          (async () => {
-               const {status} = await Brightness.requestPermissionsAsync();
+          const brightenScreen = navigation.addListener('focus', async () => {
+               const { status } = await Brightness.requestPermissionsAsync();
                if (status === 'granted') {
-                    const level = await Brightness.getBrightnessAsync();
-                    if (level) {
+                    await Brightness.getBrightnessAsync().then((level) => {
                          console.log('Storing previous screen brightness');
                          setPreviousBrightness(level);
-                    }
+                    });
                     console.log('Updating screen brightness');
                     Brightness.setSystemBrightnessAsync(1);
                } else {
                     console.log('Unable to update screen brightness');
                }
-          })();
-          (async () => {
+          });
+          const updateOrientation = navigation.addListener('focus', async () => {
                const result = await ScreenOrientation.getOrientationAsync();
                if (result === 3 || result === 4) {
                     setIsLandscape(true);
                } else {
                     setIsLandscape(false);
                }
-          })();
-          (async () => {
-               const result = await ScreenOrientation.getOrientationAsync();
-               if (result === 3 || result === 4) {
-                    setIsLandscape(true);
-               } else {
-                    setIsLandscape(false);
-               }
-          })();
-          let response = ScreenOrientation.addOrientationChangeListener(({
-               orientationInfo,
-               orientationLock
-          }) => {
+          });
+          const changeOrientation = ScreenOrientation.addOrientationChangeListener(({ orientationInfo, orientationLock }) => {
                switch (orientationInfo.orientation) {
                     case ScreenOrientation.Orientation.LANDSCAPE_LEFT:
                     case ScreenOrientation.Orientation.LANDSCAPE_RIGHT:
@@ -129,30 +109,27 @@ export const MyLibraryCard = () => {
                          break;
                }
           });
-          return () => {
-          };
-     }, []);
+          return { brightenScreen, updateOrientation, changeOrientation };
+     }, [navigation]);
 
      React.useEffect(() => {
           navigation.addListener('blur', () => {
                (async () => {
-                    const {status} = await Brightness.getPermissionsAsync();
+                    const { status } = await Brightness.getPermissionsAsync();
                     if (status === 'granted' && previousBrightness) {
                          console.log('Restoring previous screen brightness');
                          Brightness.setSystemBrightnessAsync(previousBrightness);
                     }
                })();
           });
-          return () => {
-          };
-     }, [navigation,
-          previousBrightness]);
+          return () => {};
+     }, [navigation, previousBrightness]);
 
      if (isLoading) {
           return loadingSpinner();
      }
 
-     return <CardCarousel cards={cards} orientation={isLandscape}/>;
+     return <CardCarousel cards={cards} orientation={isLandscape} />;
 };
 
 const CreateLibraryCard = (data) => {
@@ -160,7 +137,7 @@ const CreateLibraryCard = (data) => {
 
      console.log(card);
 
-     const {library} = React.useContext(LibrarySystemContext);
+     const { library } = React.useContext(LibrarySystemContext);
 
      let barcodeStyle = null;
      if (!_.isUndefined(library.barcodeStyle)) {
@@ -198,56 +175,56 @@ const CreateLibraryCard = (data) => {
 
      if (barcodeValue === 'UNKNOWN' || _.isNull(barcodeValue) || card.barcodeStyle === 'none' || _.isNull(card.barcodeStyle)) {
           return (
-              <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
-                   <Center>
-                        <Flex direction="row">
-                             {icon ? <Image source={{uri: icon}} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')}/> : null}
-                             <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-                                  {library.displayName}
-                             </Text>
-                        </Flex>
-                   </Center>
-                   <Center pt={8}>
-                        <Text pb={2} color="darkText">
-                             {card.displayName}
-                        </Text>
-                        <Text color="darkText" bold fontSize="xl">
-                             {barcodeValue}
-                        </Text>
-                        {expirationDate && !neverExpires ? (
-                            <Text color="darkText" fontSize={10}>
-                                 Expires on {card.expires}
-                            </Text>
-                        ) : null}
-                   </Center>
-              </Flex>
+               <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
+                    <Center>
+                         <Flex direction="row">
+                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                              <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
+                                   {library.displayName}
+                              </Text>
+                         </Flex>
+                    </Center>
+                    <Center pt={8}>
+                         <Text pb={2} color="darkText">
+                              {card.displayName}
+                         </Text>
+                         <Text color="darkText" bold fontSize="xl">
+                              {barcodeValue}
+                         </Text>
+                         {expirationDate && !neverExpires ? (
+                              <Text color="darkText" fontSize={10}>
+                                   Expires on {card.expires}
+                              </Text>
+                         ) : null}
+                    </Center>
+               </Flex>
           );
      }
 
      return (
-         <Flex direction="column" bg="white" px={8} py={5} borderRadius={20} shadow={1}>
-              <Center>
-                   <Flex direction="row">
-                        {icon ? <Image source={{uri: icon}} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')}/> : null}
-                        <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-                             {library.displayName}
-                        </Text>
-                   </Flex>
-              </Center>
-              <Center pt={2}>
-                   <Text fontSize="md" color="darkText">
-                        {card.displayName}
-                   </Text>
-              </Center>
-              <Center pt={8}>
-                   <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100"/>
-                   {expirationDate && !neverExpires ? (
-                       <Text color="darkText" fontSize={10} pt={2}>
-                            Expires on {card.expires}
-                       </Text>
-                   ) : null}
-              </Center>
-         </Flex>
+          <Flex direction="column" bg="white" px={8} py={5} borderRadius={20} shadow={1}>
+               <Center>
+                    <Flex direction="row">
+                         {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                         <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
+                              {library.displayName}
+                         </Text>
+                    </Flex>
+               </Center>
+               <Center pt={2}>
+                    <Text fontSize="md" color="darkText">
+                         {card.displayName}
+                    </Text>
+               </Center>
+               <Center pt={8}>
+                    <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" />
+                    {expirationDate && !neverExpires ? (
+                         <Text color="darkText" fontSize={10} pt={2}>
+                              Expires on {card.expires}
+                         </Text>
+                    ) : null}
+               </Center>
+          </Flex>
      );
 };
 
@@ -274,30 +251,16 @@ const CardCarousel = (data) => {
      }
 
      const PaginationItem = (props) => {
-          const {
-               animValue,
-               index,
-               length,
-               card,
-               isRotate
-          } = props;
+          const { animValue, index, length, card, isRotate } = props;
           const width = 100;
 
           const animStyle = useAnimatedStyle(() => {
-               let inputRange = [index - 1,
-                    index,
-                    index + 1];
-               let outputRange = [-width,
-                    0,
-                    width];
+               let inputRange = [index - 1, index, index + 1];
+               let outputRange = [-width, 0, width];
 
                if (index === 0 && animValue?.value > length - 1) {
-                    inputRange = [length - 1,
-                         length,
-                         length + 1];
-                    outputRange = [-width,
-                         0,
-                         width];
+                    inputRange = [length - 1, length, length + 1];
+                    outputRange = [-width, 0, width];
                }
 
                return {
@@ -307,72 +270,67 @@ const CardCarousel = (data) => {
                          },
                     ],
                };
-          }, [animValue,
-               index,
-               length]);
+          }, [animValue, index, length]);
 
           return (
-              <Button
-                  size="xs"
-                  mr={1}
-                  mb={1}
-                  colorScheme="tertiary"
-                  variant={index === currentIndex ? 'solid' : 'outline'}
-                  onPress={() => {
-                       ref.current.scrollTo({
-                            index: index,
-                            animated: true,
-                       });
-                  }}>
-                   {card.displayName}
-              </Button>
+               <Button
+                    size="sm"
+                    mr={1}
+                    mb={1}
+                    colorScheme="tertiary"
+                    variant={index === currentIndex ? 'solid' : 'outline'}
+                    onPress={() => {
+                         ref.current.scrollTo({
+                              index: index,
+                              animated: true,
+                         });
+                    }}>
+                    {card.displayName}
+               </Button>
           );
      };
 
      if (_.size(cards) === 1) {
           const card = cards[0];
           return (
-              <Box
-                  p={5}
-                  flex={1}
-                  alignItems="center"
-                  style={{
-                       transform: [{scale: 0.8}],
-                  }}>
-                   <CreateLibraryCard key={0} card={card}/>
-              </Box>
+               <Box
+                    p={5}
+                    flex={1}
+                    alignItems="center"
+                    style={{
+                         transform: [{ scale: 0.9 }],
+                    }}>
+                    <CreateLibraryCard key={0} card={card} />
+               </Box>
           );
      }
 
      return (
-         <Box alignItems="center" px={3}>
-              <Carousel
-                  {...baseOptions}
-                  ref={ref}
-                  pagingEnabled={true}
-                  snapEnabled={true}
-                  autoPlay={false}
-                  mode="parallax"
-                  onProgressChange={(_, absoluteProgress) => (progressValue.value = absoluteProgress)}
-                  onSnapToItem={(index) => setCurrentIndex(index)}
-                  modeConfig={{
-                       parallaxScrollingScale: 0.9,
-                       parallaxScrollingOffset: 50,
-                  }}
-                  data={cards}
-                  renderItem={({
-                       item,
-                       index
-                  }) => <CreateLibraryCard key={index} card={item}/>}
-              />
-              {!!progressValue && (
-                  <Box flexDirection="row" flexWrap="wrap" alignContent="center" alignSelf="center" maxWidth="100%" justifyContent="center">
-                       {cards.map((card, index) => {
-                            return <PaginationItem card={card} animValue={progressValue} index={index} key={index} isRotate={isVertical} length={cards.length}/>;
-                       })}
-                  </Box>
-              )}
-         </Box>
+          <Box alignItems="center" px={3}>
+               <Carousel
+                    {...baseOptions}
+                    ref={ref}
+                    pagingEnabled={true}
+                    snapEnabled={true}
+                    autoPlay={false}
+                    mode="parallax"
+                    onProgressChange={(_, absoluteProgress) => (progressValue.value = absoluteProgress)}
+                    onSnapToItem={(index) => setCurrentIndex(index)}
+                    modeConfig={{
+                         parallaxScrollingScale: 0.9,
+                         parallaxScrollingOffset: 50,
+                    }}
+                    data={cards}
+                    renderItem={({ item, index }) => <CreateLibraryCard key={index} card={item} />}
+               />
+               {!!progressValue && (
+                    <Box flexDirection="row" flexWrap="wrap" alignContent="center" alignSelf="center" maxWidth="100%" justifyContent="center">
+                         {cards.map((card, index) => {
+                              return <PaginationItem card={card} animValue={progressValue} index={index} key={index} isRotate={isVertical} length={cards.length} />;
+                         })}
+                    </Box>
+               )}
+          </Box>
      );
 };
 
