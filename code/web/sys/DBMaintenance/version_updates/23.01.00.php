@@ -58,6 +58,14 @@ function getUpdates23_01_00(): array
 		],
 		//object_history_action_type
 
+		//Updates to records owned & records to include (for both library_records_to_include & location_records_to_include)
+		//KODI TODO
+		//Add new fields to Record To Include
+
+		//Migrate existing Records Owned to just Records to Include (from library_records_owned to library_records_to_include & location_records_owned to location_records_to_include)
+		//Delete old Records Owned
+		//Updates to records owned & records to include
+
 		//kirstien
 		'add_account_alerts_notification' => [
 			'title' => 'Add account alert notification type',

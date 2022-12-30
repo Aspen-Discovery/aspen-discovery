@@ -106,10 +106,11 @@ class InclusionRule {
 	private String lastIdentifier = null;
 	private boolean lastIdentifierResult = false;
 
-	//private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
 	HashMap<String, Boolean> inclusionCache = new HashMap<>();
 
+	//TODO: Kodi - We can potentially just pass in the ItemInfo object instead of all or most of these parameters
 	boolean isItemIncluded(String itemIdentifier, String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+		//TODO: Kodi - This will also need Shelf Location and Collection Code included
 		if (lastIdentifier != null && lastIdentifier.equals(itemIdentifier)){
 			return lastIdentifierResult;
 		}
@@ -140,42 +141,18 @@ class InclusionRule {
 				return false;
 			}
 		}
-//		HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> subLocationCodeIncludeCache = locationCodeCache.get(locationCode);
-//		if (subLocationCodeIncludeCache == null) {
-//			hasCachedValue = false;
-//			subLocationCodeIncludeCache = new HashMap<>();
-//			locationCodeCache.put(locationCode, subLocationCodeIncludeCache);
-//		}
-
-//		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = subLocationCodeIncludeCache.get(subLocationCode);
-//		if (iTypeCache == null){
-//			hasCachedValue = false;
-//			iTypeCache = new HashMap<>();
-//			subLocationCodeIncludeCache.put(subLocationCode, iTypeCache);
-//		}
 
 		if (matchAlliTypes){
 			iType = "any";
 		}
-//		HashMap<String, HashMap<String, Boolean>> audiencesCache = iTypeCache.get(iType);
-//		if (audiencesCache == null){
-//			hasCachedValue = false;
-//			audiencesCache = new HashMap<>();
-//			iTypeCache.put(iType, audiencesCache);
-//		}
 		String audienceKey = audiencesAsString;
 		if (matchAllAudiences){
 			audienceKey = "all";
 		}
-//		HashMap<String, Boolean> formatCache = audiencesCache.get(audienceKey);
-//		if (formatCache == null){
-//			hasCachedValue = false;
-//			formatCache = new HashMap<>();
-//			audiencesCache.put(audienceKey, formatCache);
-//		}
 		if (matchAllFormats){
 			format = "any";
 		}
+		//TODO: Kodi - We will want to add shelf location and collection code to the key here
 		String inclusionCacheKey = locationCode + subLocationCode + iType + audienceKey + format;
 		Boolean cachedInclusion = inclusionCache.get(inclusionCacheKey);
 		if (cachedInclusion == null){
@@ -219,11 +196,15 @@ class InclusionRule {
 					isIncluded = false;
 				}
 			}
+			//TODO: Kodi - Check Formats to Exclude
 			if (isIncluded && !matchAlliTypes && iType != null){
 				if (!iTypePattern.matcher(iType).matches()){
 					isIncluded = false;
 				}
 			}
+			//TODO: Kodi - Check iTypes to Exclude
+			//TODO: Kodi - Check Shelf Location to include & exclude
+			//TODO: Kodi - Check Collection Code to include & exclude
 			if (isIncluded && !matchAllAudiences){
 				boolean audienceMatched = false;
 				for (String audience : audiences) {
@@ -236,12 +217,15 @@ class InclusionRule {
 					isIncluded = false;
 				}
 			}
+			//TODO: Kodi - Audiences to Exclude
+
 			//Make sure not to cache marc tag determination
 			inclusionCache.put(inclusionCacheKey, isIncluded);
 		}else{
 			isIncluded = cachedInclusion;
 		}
 		//Make sure not to cache marc tag determination
+		//TODO: *Someday* if the marc tag to match is the item tag, only get the marc tag for the item we are on.
 		if (isIncluded && marcTagToMatch.length() > 0) {
 			boolean hasMatch = false;
 			Set<String> marcValuesToCheck = MarcUtil.getFieldList(marcRecord, marcTagToMatch);

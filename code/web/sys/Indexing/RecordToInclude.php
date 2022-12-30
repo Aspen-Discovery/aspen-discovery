@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class RecordToInclude extends DataObject {
 	public $id;
 	public $indexingProfileId;
+	//TODO: Kodi public $markRecordsAsOwned;
 	public $location;
 	public /** @noinspection PhpUnused */
 		$locationsToExclude;
@@ -13,9 +14,24 @@ class RecordToInclude extends DataObject {
 		$subLocationsToExclude;
 	public /** @noinspection PhpUnused */
 		$iType;
+	//TODO: Kodi public /** @noinspection PhpUnused */
+	//	$iTypesToExclude;
 	public /** @noinspection PhpUnused */
 		$audience;
+	//TODO: Kodi public /** @noinspection PhpUnused */
+	//	$audiencesToExclude;
 	public $format;
+	//TODO: Kodi
+	//public /** @noinspection PhpUnused */
+	//	$formatsToExclude;
+	//public /** @noinspection PhpUnused */
+	//	$shelfLocations;
+	//public /** @noinspection PhpUnused */
+	//	$shelfLocationsToExclude;
+	//public /** @noinspection PhpUnused */
+	//	$collectionCodes;
+	//public /** @noinspection PhpUnused */
+	//	$collectionCodesToExclude;
 	public /** @noinspection PhpUnused */
 		$includeHoldableOnly;
 	public /** @noinspection PhpUnused */
@@ -46,6 +62,7 @@ class RecordToInclude extends DataObject {
 		while ($indexingProfile->fetch()) {
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
 		}
+		//KODI to do - add new fields here
 		return [
 			'id' => [
 				'property' => 'id',

@@ -28,7 +28,7 @@ public class Scope implements Comparable<Scope>{
 	//Called restrictOwningBranchesAndSystems in PHP admin interface
 	private boolean restrictOwningLibraryAndLocationFacets;
 	private boolean isConsortialCatalog;
-	//Ownership rules indicate direct ownership of a record
+	//TODO: KODI this will change to HashSet<InclusionRule> ownershipRules = new HashSet<>()
 	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
 	private final HashSet<InclusionRule> inclusionRules = new HashSet<>();
@@ -86,6 +86,7 @@ public class Scope implements Comparable<Scope>{
 	 * @return                  Whether or not the item is included within the scope
 	 */
 	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String fullKey, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+		//TODO: Kodi - We will need to also pass in shelf location and collection code
 		if (isItemOwnedByScope(itemIdentifier, fullKey, recordType, locationCode, subLocationCode)){
 			if (econtentUrl == null){
 				return includedOwnedResult;
@@ -126,7 +127,9 @@ public class Scope implements Comparable<Scope>{
 	public boolean isItemOwnedByScope(String itemIdentifier, String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
 		Boolean isOwned = ownershipResults.get(fullKey);
 		if (isOwned == null) {
+			//TODO: Kodi - These will be Inclusion Rules now rather than Ownership Rules, but the same main HashSet
 			for(OwnershipRule curRule: ownershipRules){
+				//TODO: Kodi - This will switch to isItemIncluded
 				if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
 					ownershipResults.put(fullKey, Boolean.TRUE);
 					return true;
