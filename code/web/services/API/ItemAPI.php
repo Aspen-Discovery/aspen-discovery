@@ -40,7 +40,7 @@ class ItemAPI extends Action {
 					'getItemDetails',
 					'getItemAvailability',
 					'getManifestation',
-					'getVariation',
+					'getVariations',
 					'getRecords',
 					'getVolumes'
 				])) {
@@ -951,7 +951,7 @@ class ItemAPI extends Action {
 		];
 	}
 
-	function getVariation() {
+	function getVariations() {
 		global $library;
 		global $interface;
 		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
@@ -1000,30 +1000,38 @@ class ItemAPI extends Action {
 			}
 		}
 
+		$relatedVariation = null;
+		$variations = [];
+		foreach($relatedManifestation->getVariations() as $relatedVariation) {
+			$relatedRecord = $relatedVariation->getFirstRecord();
+			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
+			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
+			$variations[$relatedVariation->label]['closedCaptioned'] = (int) $relatedRecord->closedCaptioned;
+			$variations[$relatedVariation->label]['actions'] = $relatedVariation->getActions();
+			$variations[$relatedVariation->label]['statusIndicator'] = [
+				'isAvailable' => $relatedVariation->getStatusInformation()->isAvailable(),
+				'isEContent' => $relatedVariation->getStatusInformation()->isEContent(),
+				'isAvailableOnline' => $relatedVariation->getStatusInformation()->isAvailableOnline(),
+				'groupedStatus' => $relatedVariation->getStatusInformation()->getGroupedStatus(),
+				'isAvailableHere' => $relatedVariation->getStatusInformation()->isAvailableHere(),
+				'isAvailableLocally' => $relatedVariation->getStatusInformation()->isAvailableLocally(),
+				'isAllLibraryUseOnly' => $relatedVariation->getStatusInformation()->isAllLibraryUseOnly(),
+				'hasLocalItem' => $relatedVariation->getStatusInformation()->hasLocalItem(),
+				'numCopiesMessage' => $relatedVariation->getStatusInformation()->getNumberOfCopiesMessage(),
+				'numHolds' => $relatedVariation->getStatusInformation()->getNumHolds(),
+				'numOnOrder' => $relatedVariation->getStatusInformation()->getOnOrderCopies(),
+				'isShowStatus' => $relatedVariation->getStatusInformation()->isShowStatus(),
+				'showGroupedHoldCopiesCount' => (int) $library->showGroupedHoldCopiesCount,
+				'showItsHere' => (int) $library->showItsHere,
+				'isGlobalScope' => $interface->getVariable('isGlobalScope'),
+			];
+		}
+
 		return [
 			'success' => true,
 			'id' => $groupedWorkId,
 			'format' => $format,
-			'source' => $relatedRecord->source,
-			'statusIndicator' => [
-				'isAvailable' => $relatedManifestation->getStatusInformation()->isAvailable(),
-				'isEContent' => $relatedManifestation->getStatusInformation()->isEContent(),
-				'isAvailableOnline' => $relatedManifestation->getStatusInformation()->isAvailableOnline(),
-				'groupedStatus' => $relatedManifestation->getStatusInformation()->getGroupedStatus(),
-				'isAvailableHere' => $relatedManifestation->getStatusInformation()->isAvailableHere(),
-				'isAvailableLocally' => $relatedManifestation->getStatusInformation()->isAvailableLocally(),
-				'isAllLibraryUseOnly' => $relatedManifestation->getStatusInformation()->isAllLibraryUseOnly(),
-				'hasLocalItem' => $relatedManifestation->getStatusInformation()->hasLocalItem(),
-				'numCopiesMessage' => $relatedManifestation->getStatusInformation()->getNumberOfCopiesMessage(),
-				'numHolds' => $relatedManifestation->getStatusInformation()->getNumHolds(),
-				'numOnOrder' => $relatedManifestation->getStatusInformation()->getOnOrderCopies(),
-				'isShowStatus' => $relatedManifestation->getStatusInformation()->isShowStatus(),
-				'showGroupedHoldCopiesCount' => (int) $library->showGroupedHoldCopiesCount,
-				'showItsHere' => (int) $library->showItsHere,
-				'isGlobalScope' => $interface->getVariable('isGlobalScope'),
-			],
-			'variation' => $relatedManifestation->getVariationInformation(),
-			'actions' => $relatedManifestation->getActions(),
+			'variations' => $variations,
 			'numItemsWithVolumes' => $numItemsWithVolumes,
 			'numItemsWithoutVolumes' => $numItemsWithoutVolumes,
 			'hasItemsWithoutVolumes' => $numItemsWithoutVolumes > 0,
@@ -1032,126 +1040,117 @@ class ItemAPI extends Action {
 	}
 
 	function getRecords() {
-		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format'])) {
+		if (!isset($_REQUEST['id']) || !isset($_REQUEST['format']) || !isset($_REQUEST['source'])) {
 			return [
 				'success' => false,
-				'message' => 'Grouped work id or format not provided'
+				'message' => 'Grouped work id, source or format not provided'
 			];
 		}
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkId = $_REQUEST['id'];
 		$format = $_REQUEST['format'];
+		$source = $_REQUEST['source'];
 		$recordDriver = new GroupedWorkDriver($groupedWorkId);
 		$relatedManifestation = null;
 		$relatedVariation = null;
 		$relatedRecord = null;
 		$records = [];
-		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
-			if ($relatedManifestation->format == $format) {
-				break;
-			}
-		}
-		foreach ($relatedManifestation->getVariationInformation() as $relatedVariation) {
-			if ($relatedVariation->manifestation->format == $format) {
-				break;
-			}
-		}
-		foreach ($relatedVariation->getRecords() as $relatedRecord) {
-			$recordInfo = explode(':', $relatedRecord->id);
-			$recordType = $recordInfo[0];
-			$recordId = $recordInfo[1];
-			$source = $relatedRecord->source;
+		foreach ($recordDriver->getRelatedRecords() as $relatedRecord) {
+			if ($relatedRecord->format == $format && $relatedRecord->source == $source) {
+				$recordInfo = explode(':', $relatedRecord->id);
+				$recordType = $recordInfo[0];
+				$recordId = $recordInfo[1];
+				$source = $relatedRecord->source;
+				$records[$relatedRecord->id]['id'] = $relatedRecord->id;
+				$records[$relatedRecord->id]['source'] = $relatedRecord->source;
+				$records[$relatedRecord->id]['recordId'] = $recordId;
+				$records[$relatedRecord->id]['format'] = $relatedRecord->format;
+				$records[$relatedRecord->id]['edition'] = $relatedRecord->edition;
+				$records[$relatedRecord->id]['publisher'] = $relatedRecord->publisher;
+				$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
+				$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
+				$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
+				$records[$relatedRecord->id]['status'] = $relatedRecord->getStatusInformation()->getGroupedStatus();
+				$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
+				//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 
-			$records[$relatedRecord->id]['id'] = $relatedRecord->id;
-			$records[$relatedRecord->id]['source'] = $relatedRecord->source;
-			$records[$relatedRecord->id]['recordId'] = $recordId;
-			$records[$relatedRecord->id]['format'] = $relatedRecord->format;
-			$records[$relatedRecord->id]['edition'] = $relatedRecord->edition;
-			$records[$relatedRecord->id]['publisher'] = $relatedRecord->publisher;
-			$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
-			$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
-			$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
-			$records[$relatedRecord->id]['status'] = $relatedRecord->getStatusInformation()->getGroupedStatus();
-			$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
-			//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
-
-			if($source == 'hoopla') {
-				require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
-				$hooplaDriver = new HooplaRecordDriver($recordId);
-				$publicationDate = $hooplaDriver->getPublicationDates();
-				if (is_array($publicationDate) && $publicationDate != null) {
-					$publicationDate = $publicationDate[0];
-				} elseif (count($publicationDate) == 0) {
-					$publicationDate = $relatedRecord->publicationDate;
-				}
-				$records[$relatedRecord->id]['publicationDate'] = $publicationDate;
-				$publisher = $hooplaDriver->getPublishers();
-				if (is_array($publisher) && $publisher != null) {
-					$publisher = $publisher[0];
-				} elseif (count($publisher) == 0) {
-					$publisher = $relatedRecord->publisher;
-				}
-				$records[$relatedRecord->id]['publisher'] = $publisher;
-				$edition = $hooplaDriver->getEditions();
-				if (is_array($edition) && $edition != null) {
-					$edition = $edition[0];
-				} elseif (count($edition) == 0) {
-					$edition = $relatedRecord->edition;
-				}
-				$records[$relatedRecord->id]['edition'] = $edition;
-				$physical = $hooplaDriver->getPhysicalDescriptions();
-				if (is_array($physical) && $physical != null) {
-					$physical = $physical[0];
-				} elseif (count($physical) == 0) {
-					$physical = $relatedRecord->physical;
-				}
-				$records[$relatedRecord->id]['physical'] = $physical;
-			} elseif ($source == 'cloudlibrary') {
-				require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-				$cloudLibraryDriver = new CloudLibraryRecordDriver($recordId);
-				$records[$relatedRecord->id]['publicationDate'] = $cloudLibraryDriver->getPublicationDates();
-				$records[$relatedRecord->id]['publisher'] = $cloudLibraryDriver->getPublishers();
-				$records[$relatedRecord->id]['edition'] = $cloudLibraryDriver->getEditions();
-			} elseif ($source == 'axis360') {
-				require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-				$axis360Driver = new Axis360RecordDriver($recordId);
-				$records[$relatedRecord->id]['publicationDate'] = $axis360Driver->getPublicationDates();
-				$records[$relatedRecord->id]['publisher'] = $axis360Driver->getPublishers();
-				$records[$relatedRecord->id]['edition'] = $axis360Driver->getEditions();
-			}
-
-			//Get a list of volumes for the record
-			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-			$volumeData = [];
-			$volumeDataDB = new IlsVolumeInfo();
-			$volumeDataDB->recordId = $relatedRecord->id;
-			$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
-			if ($volumeDataDB->find()) {
-				while ($volumeDataDB->fetch()) {
-					$volumeData[$volumeDataDB->volumeId] = clone($volumeDataDB);
-					$volumeData[$volumeDataDB->volumeId]->setHasLocalItems(false);
-				}
-			}
-
-			$numItemsWithVolumes = 0;
-			$numItemsWithoutVolumes = 0;
-			foreach ($relatedRecord->getItems() as $item) {
-				if (empty($item->volume)) {
-					$numItemsWithoutVolumes++;
-				} else {
-					if ($item->libraryOwned || $item->locallyOwned) {
-						if (array_key_exists($item->volumeId, $volumeData)) {
-							$volumeData[$item->volumeId]->setHasLocalItems(true);
-						}
+				if($source == 'hoopla') {
+					require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+					$hooplaDriver = new HooplaRecordDriver($recordId);
+					$publicationDate = $hooplaDriver->getPublicationDates();
+					if (is_array($publicationDate) && $publicationDate != null) {
+						$publicationDate = $publicationDate[0];
+					} elseif (count($publicationDate) == 0) {
+						$publicationDate = $relatedRecord->publicationDate;
 					}
-					$numItemsWithVolumes++;
+					$records[$relatedRecord->id]['publicationDate'] = $publicationDate;
+					$publisher = $hooplaDriver->getPublishers();
+					if (is_array($publisher) && $publisher != null) {
+						$publisher = $publisher[0];
+					} elseif (count($publisher) == 0) {
+						$publisher = $relatedRecord->publisher;
+					}
+					$records[$relatedRecord->id]['publisher'] = $publisher;
+					$edition = $hooplaDriver->getEditions();
+					if (is_array($edition) && $edition != null) {
+						$edition = $edition[0];
+					} elseif (count($edition) == 0) {
+						$edition = $relatedRecord->edition;
+					}
+					$records[$relatedRecord->id]['edition'] = $edition;
+					$physical = $hooplaDriver->getPhysicalDescriptions();
+					if (is_array($physical) && $physical != null) {
+						$physical = $physical[0];
+					} elseif (count($physical) == 0) {
+						$physical = $relatedRecord->physical;
+					}
+					$records[$relatedRecord->id]['physical'] = $physical;
+				} elseif ($source == 'cloudlibrary') {
+					require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+					$cloudLibraryDriver = new CloudLibraryRecordDriver($recordId);
+					$records[$relatedRecord->id]['publicationDate'] = $cloudLibraryDriver->getPublicationDates();
+					$records[$relatedRecord->id]['publisher'] = $cloudLibraryDriver->getPublishers();
+					$records[$relatedRecord->id]['edition'] = $cloudLibraryDriver->getEditions();
+				} elseif ($source == 'axis360') {
+					require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+					$axis360Driver = new Axis360RecordDriver($recordId);
+					$records[$relatedRecord->id]['publicationDate'] = $axis360Driver->getPublicationDates();
+					$records[$relatedRecord->id]['publisher'] = $axis360Driver->getPublishers();
+					$records[$relatedRecord->id]['edition'] = $axis360Driver->getEditions();
 				}
+
+				//Get a list of volumes for the record
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+				$volumeData = [];
+				$volumeDataDB = new IlsVolumeInfo();
+				$volumeDataDB->recordId = $relatedRecord->id;
+				$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
+				if ($volumeDataDB->find()) {
+					while ($volumeDataDB->fetch()) {
+						$volumeData[$volumeDataDB->volumeId] = clone($volumeDataDB);
+						$volumeData[$volumeDataDB->volumeId]->setHasLocalItems(false);
+					}
+				}
+
+				$numItemsWithVolumes = 0;
+				$numItemsWithoutVolumes = 0;
+				foreach ($relatedRecord->getItems() as $item) {
+					if (empty($item->volume)) {
+						$numItemsWithoutVolumes++;
+					} else {
+						if ($item->libraryOwned || $item->locallyOwned) {
+							if (array_key_exists($item->volumeId, $volumeData)) {
+								$volumeData[$item->volumeId]->setHasLocalItems(true);
+							}
+						}
+						$numItemsWithVolumes++;
+					}
+				}
+				$records[$relatedRecord->id]['numItemsWithVolumes'] = $numItemsWithVolumes;
+				$records[$relatedRecord->id]['numItemsWithoutVolumes'] = $numItemsWithoutVolumes;
+				$records[$relatedRecord->id]['hasItemsWithoutVolumes'] = $numItemsWithoutVolumes > 0;
+				$records[$relatedRecord->id]['majorityOfItemsHaveVolumes'] = $numItemsWithVolumes > $numItemsWithoutVolumes;
 			}
-			$records[$relatedRecord->id]['action'] = $relatedRecord->getActions();
-			$records[$relatedRecord->id]['numItemsWithVolumes'] = $numItemsWithVolumes;
-			$records[$relatedRecord->id]['numItemsWithoutVolumes'] = $numItemsWithoutVolumes;
-			$records[$relatedRecord->id]['hasItemsWithoutVolumes'] = $numItemsWithoutVolumes > 0;
-			$records[$relatedRecord->id]['majorityOfItemsHaveVolumes'] = $numItemsWithVolumes > $numItemsWithoutVolumes;
 		}
 
 		return [
