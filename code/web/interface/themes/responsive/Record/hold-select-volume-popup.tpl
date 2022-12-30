@@ -51,7 +51,7 @@
 											{if is_string($location)}
 												<option value="undefined">{$location}</option>
 											{else}
-												<option value="{$location->code}" data-users="[{$location->pickupUsers|@implode:','}]">{$location->displayName}</option>
+												<option value="{$location->code}" data-users="[{$location->pickupUsers|@implode:','}]" {if $location->code == $user->getPickupLocationCode()}selected{/if}>{$location->displayName}</option>
 											{/if}
 										{/foreach}
 									{else}
@@ -117,14 +117,14 @@
 					<div id="volumeSelection" class="form-group" {if !$majorityOfItemsHaveVolumes}style="display: none" {/if}>
 						<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume" isPublicFacing=true}">
 							{foreach from=$volumes item=volume}
-								<option value="{$volume->volumeId}">{$volume->displayLabel} {if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()}*{/if}</option>
+								<option value="{$volume->volumeId}">{$volume->displayLabel} {if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()}({translate text="Owned by %1%" 1=$localSystemName isPublicFacing=true}){/if}</option>
 							{/foreach}
 						</select>
-						{if $alwaysPlaceVolumeHoldWhenVolumesArePresent}
-							<span id="subdomainHelpBlock" class="help-block" style="margin-top:0">
-								<small class="text-warning"><i class="fas fa-exclamation-triangle"></i>{translate text="Volumes marked with a * have titles owned by this library." isPublicFacing=true}</small>
-							</span>
-						{/if}
+{*						{if $alwaysPlaceVolumeHoldWhenVolumesArePresent}*}
+{*							<span id="subdomainHelpBlock" class="help-block" style="margin-top:0">*}
+{*								<small class="text-warning"><i class="fas fa-exclamation-triangle"></i>{translate text="Volumes marked with a * have titles owned by this library." isPublicFacing=true}</small>*}
+{*							</span>*}
+{*						{/if}*}
 					</div>
 
 					{if $showHoldCancelDate == 1}
