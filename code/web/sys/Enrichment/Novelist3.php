@@ -109,6 +109,67 @@ class Novelist3 {
 		return $novelistData;
 	}
 
+	function getRawNovelistDataISBN($isbn, $infoSetting) {
+		global $timer;
+		$novelistSettings = $this->getNovelistSettings();
+
+		$requestUrl = "https://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier=test&ISBN={$isbn}&version=2.6&tmpstmp=" . time();
+
+		//echo($requestUrl);
+		try {
+			//Get the JSON from the service
+			disableErrorHandler();
+			$req = new CurlWrapper();
+			$req->setConnectTimeout(5);
+			$req->setTimeout(20);
+
+			$response = $req->curlGetPage($requestUrl);
+			ExternalRequestLogEntry::logRequest('novelist.contentByQuery', 'GET', $requestUrl, [], '', $req->getResponseCode(), $response, ['password' => $novelistSettings->pwd]);
+			$timer->logTime("Made call to Novelist for enrichment information $isbn");
+
+
+			//Parse the JSON
+			$decodedData = json_decode($response);
+			//Get the ISBN
+			if (!empty($decodedData->TitleInfo) && !empty($decodedData->TitleInfo->primary_isbn)) {
+				if ($infoSetting == "off") {
+					$isbn = $decodedData->TitleInfo->primary_isbn;
+					if (!empty($decodedData->FeatureContent->SeriesInfo->series_titles)) {
+						foreach ($decodedData->FeatureContent->SeriesInfo->series_titles as $seriesTitle) {
+							if ($seriesTitle->primary_isbn == $isbn) {
+								$series_title = $seriesTitle;
+								break;
+							} else {
+								$series_title = null;
+							}
+						}
+					}
+					$decodedData->FeatureContent->SeriesInfo->series_titles = null;
+					$decodedData->TitleInfo->manifestations = null;
+					$isbnNovelistData = array(
+						"Title Info" => $decodedData->TitleInfo,
+						"Series Info" => $series_title,
+						"Feature Content" =>$decodedData->FeatureContent,
+					);
+				}else {
+					$isbnNovelistData = $decodedData;
+				}
+			}
+			else{
+				return "No data available";
+			}
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
+			if (isset($response)) {
+				$logger->log($response, Logger::LOG_DEBUG);
+			}
+			$isbnNovelistData = null;
+		}
+
+		return $isbnNovelistData;
+
+	}
 	/**
 	 * @param string $groupedRecordId
 	 * @param string[] $isbns
