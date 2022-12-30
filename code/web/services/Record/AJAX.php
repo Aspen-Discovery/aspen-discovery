@@ -516,6 +516,8 @@ class Record_AJAX extends Action {
 				}
 			}
 
+			global $library;
+			$interface->assign('localSystemName', $library->displayName);
 			$interface->assign('hasItemsWithoutVolumes', $numItemsWithoutVolumes > 0);
 			$interface->assign('majorityOfItemsHaveVolumes', $numItemsWithVolumes > $numItemsWithoutVolumes);
 
