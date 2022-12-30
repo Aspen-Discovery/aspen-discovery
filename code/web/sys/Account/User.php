@@ -721,6 +721,7 @@ class User extends DataObject {
 				$this->linkedUsers[] = clone($user);
 
 				if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+					require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 					$notificationToken = new UserNotificationToken();
 					$notificationToken->userId = $this->id;
 					$notificationToken->find();
