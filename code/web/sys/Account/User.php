@@ -720,22 +720,23 @@ class User extends DataObject {
 			if (true == $result) {
 				$this->linkedUsers[] = clone($user);
 
-				if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+				if ($user->canReceiveNotifications($user, 'notifyAccount')) {
+					require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 					require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 					$notificationToken = new UserNotificationToken();
-					$notificationToken->userId = $this->id;
+					$notificationToken->userId = $user->id;
 					$notificationToken->find();
 					while ($notificationToken->fetch()) {
 						$body = [
 							'to' => $notificationToken->pushToken,
 							'title' => 'New account link',
-							'body' => 'Your account at ' . $this->getHomeLocation()->displayName . ' was just linked to by ' . $user->displayName . ' - ' . $user->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
+							'body' => 'Your account at ' . $user->getHomeLocation()->displayName . ' was just linked to by ' . $this->displayName . ' - ' . $this->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
 							'categoryId' => 'accountAlert',
 							'channelId' => 'accountAlert',
 							'data' => ['url' => urlencode('aspen-lida://user/linked_accounts')],
 						];
 						$expoNotification = new ExpoNotification();
-						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $user->id, 'linked_account');
 					}
 				}
 
