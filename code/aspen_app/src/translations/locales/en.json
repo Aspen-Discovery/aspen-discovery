@@ -80,7 +80,13 @@
     "select_volume": "Select a volume",
     "first_available": "First Available Item",
     "specific_volume": "Specific Volume",
-    "place_hold_on": "Place hold on"
+    "place_hold_on": "Place hold on",
+    "place_hold": "Place Hold",
+    "show_editions": "Show Editions",
+    "editions": "Editions"
+  },
+  "ill": {
+    "request_title": "Request Title"
   },
   "copy_details": {
     "where_is_it": "Where is it?",

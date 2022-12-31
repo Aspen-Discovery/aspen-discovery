@@ -391,7 +391,7 @@ export async function getHiddenBrowseCategories(libraryUrl, patronId) {
      }
 }
 
-export async function getLinkedAccounts(url = null) {
+export async function getLinkedAccountsB(url = null) {
      let baseUrl = url ?? LIBRARY.url;
      const postBody = await postData();
      const api = create({
@@ -414,7 +414,7 @@ export async function getLinkedAccounts(url = null) {
      }
 }
 
-export async function getViewers() {
+export async function getViewersB() {
      const postBody = await postData();
      const api = create({
           baseURL: LIBRARY.url + '/API',

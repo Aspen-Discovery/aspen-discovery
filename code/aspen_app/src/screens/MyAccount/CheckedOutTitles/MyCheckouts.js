@@ -168,6 +168,7 @@ const Checkout = (props) => {
                url: library.baseUrl,
                userContext: user,
                libraryContext: library,
+               prevRoute: 'MyCheckouts',
           });
      };
 
