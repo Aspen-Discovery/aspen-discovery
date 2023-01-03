@@ -2,9 +2,11 @@
 	<div id="main-content" class="col-md-12">
 		<div class="doNotPrint">
 			<h1>School Overdue Report</h1>
-			{foreach from=$errors item=error}
-				<div class="error">{$error}</div>
-			{/foreach}
+			{if isset($errors)}
+				{foreach from=$errors item=error}
+					<div class="error">{$error}</div>
+				{/foreach}
+			{/if}
 			<form class="form form-inline">
 
 				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm"}
