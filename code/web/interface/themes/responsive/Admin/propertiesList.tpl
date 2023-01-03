@@ -71,7 +71,7 @@
 						<th>{translate text='Select' isAdminFacing=true}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
-						{if !isset($property.hideInLists) || $property.hideInLists == false}
+						{if (!isset($property.hideInLists) || $property.hideInLists == false) && $property.type != 'section'}
 						<th><span {if !empty($property.description)}title='{$property.description}'{/if}>{translate text=$property.label isAdminFacing=true}</span></th>
 						{/if}
 					{/foreach}
@@ -87,10 +87,9 @@
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
 						{foreach from=$structure item=property}
-							{assign var=propName value=$property.property}
-							{assign var=propValue value=$dataItem->$propName}
-
-							{if !isset($property.hideInLists) || $property.hideInLists == false}
+							{if (!isset($property.hideInLists) || $property.hideInLists == false) && $property.type != 'section'}
+								{assign var=propName value=$property.property}
+								{assign var=propValue value=$dataItem->$propName}
 								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if empty($dataItem->class) || $dataItem->class != 'objectDeleted'}
