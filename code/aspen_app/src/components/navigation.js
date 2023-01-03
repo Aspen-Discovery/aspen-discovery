@@ -25,7 +25,7 @@ import { PATRON } from '../util/loadPatron';
 import { checkCachedUrl } from '../util/login';
 import { popAlert, popToast } from './loadError';
 import LaunchStackNavigator from '../navigations/LaunchStackNavigator';
-import { BrowseCategoryProvider, CheckoutsProvider, HoldsProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider } from '../context/initialContext';
+import { BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider } from '../context/initialContext';
 import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
@@ -75,7 +75,6 @@ Sentry.init({
 });
 
 export function App() {
-
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -170,7 +169,7 @@ export function App() {
                     dispatch({ type: 'SIGN_OUT' });
                }
 
-               if(!userKey) {
+               if (!userKey) {
                     dispatch({ type: 'SIGN_OUT' });
                }
 
@@ -335,50 +334,52 @@ export function App() {
                               <CheckoutsProvider>
                                    <HoldsProvider>
                                         <BrowseCategoryProvider>
-                                             <NavigationContainer
-                                                  theme={navigationTheme}
-                                                  ref={navigationRef}
-                                                  fallback={<Spinner />}
-                                                  linking={{
-                                                       prefixes: prefix,
-                                                       config: {
-                                                            screens: {
-                                                                 Login: 'user/login',
-                                                                 Drawer: {
-                                                                      screens: {
-                                                                           Tabs: {
-                                                                                screens: {
-                                                                                     AccountScreenTab: {
-                                                                                          screens: {
-                                                                                               MySavedSearches: 'user/saved_searches',
-                                                                                               LoadSavedSearch: 'user/saved_search',
-                                                                                               MyLists: 'user/lists',
-                                                                                               MyList: 'user/list',
-                                                                                               LinkedAccounts: 'user/linked_accounts',
-                                                                                               MyHolds: 'user/holds',
-                                                                                               MyCheckouts: 'user/checkouts',
-                                                                                               MyPreferences: 'user/preferences',
-                                                                                               MyProfile: 'user',
-                                                                                               MyReadingHistory: 'user/reading_history',
+                                             <GroupedWorkProvider>
+                                                  <NavigationContainer
+                                                       theme={navigationTheme}
+                                                       ref={navigationRef}
+                                                       fallback={<Spinner />}
+                                                       linking={{
+                                                            prefixes: prefix,
+                                                            config: {
+                                                                 screens: {
+                                                                      Login: 'user/login',
+                                                                      Drawer: {
+                                                                           screens: {
+                                                                                Tabs: {
+                                                                                     screens: {
+                                                                                          AccountScreenTab: {
+                                                                                               screens: {
+                                                                                                    MySavedSearches: 'user/saved_searches',
+                                                                                                    LoadSavedSearch: 'user/saved_search',
+                                                                                                    MyLists: 'user/lists',
+                                                                                                    MyList: 'user/list',
+                                                                                                    MyLinkedAccounts: 'user/linked_accounts',
+                                                                                                    MyHolds: 'user/holds',
+                                                                                                    MyCheckouts: 'user/checkouts',
+                                                                                                    MyPreferences: 'user/preferences',
+                                                                                                    MyProfile: 'user',
+                                                                                                    MyReadingHistory: 'user/reading_history',
+                                                                                               },
                                                                                           },
-                                                                                     },
-                                                                                     LibraryCardTab: {
-                                                                                          screens: {
-                                                                                               LibraryCard: 'user/library_card',
+                                                                                          LibraryCardTab: {
+                                                                                               screens: {
+                                                                                                    LibraryCard: 'user/library_card',
+                                                                                               },
                                                                                           },
-                                                                                     },
-                                                                                     SearchTab: {
-                                                                                          screens: {
-                                                                                               SearchResults: 'search',
-                                                                                               SearchByCategory: 'search/browse_category',
-                                                                                               SearchByAuthor: 'search/author',
-                                                                                               SearchByList: 'search/list',
+                                                                                          SearchTab: {
+                                                                                               screens: {
+                                                                                                    SearchResults: 'search',
+                                                                                                    SearchByCategory: 'search/browse_category',
+                                                                                                    SearchByAuthor: 'search/author',
+                                                                                                    SearchByList: 'search/list',
+                                                                                               },
                                                                                           },
-                                                                                     },
-                                                                                     HomeTab: {
-                                                                                          screens: {
-                                                                                               HomeScreen: 'home',
-                                                                                               GroupedWorkScreen: 'search/grouped_work',
+                                                                                          HomeTab: {
+                                                                                               screens: {
+                                                                                                    HomeScreen: 'home',
+                                                                                                    GroupedWorkScreen: 'search/grouped_work',
+                                                                                               },
                                                                                           },
                                                                                      },
                                                                                 },
@@ -386,64 +387,64 @@ export function App() {
                                                                       },
                                                                  },
                                                             },
-                                                       },
-                                                       async getInitialURL() {
-                                                            let url = await Linking.getInitialURL();
+                                                            async getInitialURL() {
+                                                                 let url = await Linking.getInitialURL();
 
-                                                            if (url != null) {
-                                                                 url = decodeURIComponent(url).replace(/\+/g, ' ');
+                                                                 if (url != null) {
+                                                                      url = decodeURIComponent(url).replace(/\+/g, ' ');
+                                                                      url = url.replace('aspen-lida://', prefix);
+                                                                      return url;
+                                                                 }
+
+                                                                 const response = await Notifications.getLastNotificationResponseAsync();
+                                                                 url = decodeURIComponent(response?.notification.request.content.data.url).replace(/\+/g, ' ');
                                                                  url = url.replace('aspen-lida://', prefix);
                                                                  return url;
-                                                            }
+                                                            },
+                                                            subscribe(listener) {
+                                                                 const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+                                                                      listener(url);
+                                                                 });
+                                                                 const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+                                                                      const url = response.notification.request.content.data.url;
+                                                                      listener(url);
+                                                                 });
 
-                                                            const response = await Notifications.getLastNotificationResponseAsync();
-                                                            url = decodeURIComponent(response?.notification.request.content.data.url).replace(/\+/g, ' ');
-                                                            url = url.replace('aspen-lida://', prefix);
-                                                            return url;
-                                                       },
-                                                       subscribe(listener) {
-                                                            const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
-                                                                 listener(url);
-                                                            });
-                                                            const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-                                                                 const url = response.notification.request.content.data.url;
-                                                                 listener(url);
-                                                            });
-
-                                                            return () => {
-                                                                 subscription.remove();
-                                                                 linkingSubscription.remove();
-                                                            };
-                                                       },
-                                                  }}>
-                                                  <Stack.Navigator
-                                                       screenOptions={{
-                                                            headerShown: false,
-                                                       }}
-                                                       name="Root">
-                                                       {state.userToken === null ? (
-                                                            // No token found, user isn't signed in
-                                                            <Stack.Screen
-                                                                 name="Login"
-                                                                 component={Login}
-                                                                 options={{
-                                                                      headerShown: false,
-                                                                      animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-                                                                 }}
-                                                            />
-                                                       ) : (
-                                                            // User is signed in
-                                                            <Stack.Screen
-                                                                 name="Launch"
-                                                                 component={LaunchStackNavigator}
-                                                                 options={{
-                                                                      animationEnabled: false,
-                                                                      header: () => null,
-                                                                 }}
-                                                            />
-                                                       )}
-                                                  </Stack.Navigator>
-                                             </NavigationContainer>
+                                                                 return () => {
+                                                                      subscription.remove();
+                                                                      linkingSubscription.remove();
+                                                                 };
+                                                            },
+                                                       }}>
+                                                       <Stack.Navigator
+                                                            screenOptions={{
+                                                                 headerShown: false,
+                                                            }}
+                                                            name="Root">
+                                                            {state.userToken === null ? (
+                                                                 // No token found, user isn't signed in
+                                                                 <Stack.Screen
+                                                                      name="Login"
+                                                                      component={Login}
+                                                                      options={{
+                                                                           headerShown: false,
+                                                                           animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                                                                      }}
+                                                                 />
+                                                            ) : (
+                                                                 // User is signed in
+                                                                 <Stack.Screen
+                                                                      name="Launch"
+                                                                      component={LaunchStackNavigator}
+                                                                      options={{
+                                                                           animationEnabled: false,
+                                                                           header: () => null,
+                                                                      }}
+                                                                 />
+                                                            )}
+                                                       </Stack.Navigator>
+                                                  </NavigationContainer>
+                                             </GroupedWorkProvider>
                                         </BrowseCategoryProvider>
                                    </HoldsProvider>
                               </CheckoutsProvider>

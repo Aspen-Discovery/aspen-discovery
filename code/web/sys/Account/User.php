@@ -720,21 +720,23 @@ class User extends DataObject {
 			if (true == $result) {
 				$this->linkedUsers[] = clone($user);
 
-				if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+				if ($user->canReceiveNotifications($user, 'notifyAccount')) {
+					require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+					require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 					$notificationToken = new UserNotificationToken();
-					$notificationToken->userId = $this->id;
+					$notificationToken->userId = $user->id;
 					$notificationToken->find();
 					while ($notificationToken->fetch()) {
 						$body = [
 							'to' => $notificationToken->pushToken,
 							'title' => 'New account link',
-							'body' => 'Your account at ' . $this->getHomeLocation()->displayName . ' was just linked to by ' . $user->displayName . ' - ' . $user->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
+							'body' => 'Your account at ' . $user->getHomeLocation()->displayName . ' was just linked to by ' . $this->displayName . ' - ' . $this->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
 							'categoryId' => 'accountAlert',
 							'channelId' => 'accountAlert',
 							'data' => ['url' => urlencode('aspen-lida://user/linked_accounts')],
 						];
 						$expoNotification = new ExpoNotification();
-						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $user->id, 'linked_account');
 					}
 				}
 
@@ -2982,6 +2984,7 @@ class User extends DataObject {
 			$sections['third_party_enrichment']->addAction($nytListsAction, 'View New York Times Lists');
 		}
 		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist API Information', 'View API information for Novelist.', '/Enrichment/NovelistAPIData'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu eCARD Settings', 'Define settings for integrating Quipu eCARD within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');

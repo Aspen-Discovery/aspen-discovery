@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 public class IndexingUtils {
+	//KODI TODO: Remove allOwnershipRules and replace with InclusionRule, we won't need to load separately since they will all be in the same table
 	private static HashMap<String, OwnershipRule> allOwnershipRules = new HashMap<>();
 	private static HashMap<String, InclusionRule> allInclusionRules = new HashMap<>();
 
@@ -392,6 +393,7 @@ public class IndexingUtils {
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
 			ResultSet locationRecordInclusionRulesRS = locationRecordInclusionRulesStmt.executeQuery();
 			while (locationRecordInclusionRulesRS.next()) {
+				//TODO: Kodi - This will need to account for the new fields can probably be optimized some? Just need to watch out for the side effect of compiling patterns.
 				String inclusionRuleKey = locationRecordInclusionRulesRS.getString("name") + "~" +
 						locationRecordInclusionRulesRS.getString("location") + "~" +
 						locationRecordInclusionRulesRS.getString("subLocation") + "~" +

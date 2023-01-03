@@ -14,7 +14,7 @@ export const GLOBALS = {
      appVersion: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version,
      appBuild: Platform.OS === 'android' ? androidDist : iOSDist,
      appSessionId: Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId,
-     appPatch: 0,
+     appPatch: 0.3,
      showSelectLibrary: true,
      runGreenhouse: true,
      slug: Constants.manifest2?.extra?.expoClient?.slug ?? Constants.manifest.slug,

@@ -123,6 +123,36 @@ export default class Preferences extends Component {
                          </Pressable>
                     );
                }
+               if (item.path === 'SettingsNotifications') {
+                    let screenPath = item.path;
+                    if (library.version >= '23.01.00') {
+                         screenPath = 'SettingsNotificationOptions';
+                    }
+                    return (
+                         <Pressable
+                              borderBottomWidth="1"
+                              _dark={{ borderColor: 'gray.600' }}
+                              borderColor="coolGray.200"
+                              py="3"
+                              onPress={() => {
+                                   this.onPressMenuItem(screenPath, patronId, library.url);
+                              }}>
+                              <HStack space="1" alignItems="center">
+                                   <Icon as={MaterialIcons} name={item.icon} size="7" />
+                                   <Text
+                                        _dark={{ color: 'warmGray.50' }}
+                                        color="coolGray.800"
+                                        bold
+                                        fontSize={{
+                                             base: 'md',
+                                             lg: 'lg',
+                                        }}>
+                                        {item.title}
+                                   </Text>
+                              </HStack>
+                         </Pressable>
+                    );
+               }
                return (
                     <Pressable
                          borderBottomWidth="1"

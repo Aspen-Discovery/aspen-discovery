@@ -424,6 +424,8 @@ const LinkedAccounts = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
+     console.log(user);
+
      if (library.allowLinkedAccounts === '1') {
           return (
                <Pressable
@@ -437,7 +439,9 @@ const LinkedAccounts = () => {
                     }>
                     <HStack space="1" alignItems="center">
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                         <Text fontWeight="500">{translate('user_profile.linked_accounts')}</Text>
+                         <Text fontWeight="500">
+                              {translate('user_profile.linked_accounts')} <Text bold>({user.numLinkedAccounts ?? 0})</Text>
+                         </Text>
                     </HStack>
                </Pressable>
           );

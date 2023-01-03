@@ -126,7 +126,7 @@ export default class Login extends Component {
                     this.setState({
                          error: true,
                     });
-                    console.log(response);
+                    //console.log(response);
                }
                console.log('Full greenhouse request completed.');
                return false;
@@ -257,7 +257,7 @@ export default class Login extends Component {
                          </Center>
                          <Center>
                               <Text mt={5} fontSize="xs" color="coolGray.600">
-                                   {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel ?? "Development"}]
+                                   {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel ?? 'Development'}]
                               </Text>
                          </Center>
                     </KeyboardAvoidingView>

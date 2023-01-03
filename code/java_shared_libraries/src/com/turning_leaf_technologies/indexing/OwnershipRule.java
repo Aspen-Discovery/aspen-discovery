@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+//TODO: Kodi we want to delete this and just use Inclusion Rules
 class OwnershipRule {
 	private final String recordType;
 

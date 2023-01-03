@@ -301,7 +301,11 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @return  string              Unique identifier.
 	 */
 	public function getUniqueID() {
-		return (string)$this->recordData->Header->DbId . ':' . (string)$this->recordData->Header->An;
+		if (isset($this->recordData)) {
+			return (string)$this->recordData->Header->DbId . ':' . (string)$this->recordData->Header->An;
+		}else{
+			return null;
+		}
 	}
 
 	public function getId() {

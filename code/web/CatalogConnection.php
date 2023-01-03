@@ -93,6 +93,7 @@ class CatalogConnection {
 	 */
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
 		global $offlineMode;
+		global $loginAllowedWhileOffline;
 
 		$barcodesToTest = [];
 		$barcodesToTest[$username] = $username;
@@ -117,7 +118,7 @@ class CatalogConnection {
 			}
 		}
 
-		if ($offlineMode) {
+		if ($offlineMode && !$loginAllowedWhileOffline) {
 			if ($user == null) {
 				return null;
 			}
