@@ -1833,13 +1833,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		if ($this->numHolds != -1) {
 			return $this->numHolds;
 		}
-		global $configArray;
 		global $timer;
-		$accountProfile = $this->indexingProfile->getAccountProfile();
-		if ($accountProfile != null) {
-			$ilsName = $accountProfile->ils;
-		}else {
-			$ilsName = 'Unknown';
+		if (!($this->getIndexingProfile() instanceof SideLoad)) {
+			$accountProfile = $this->getIndexingProfile()->getAccountProfile();
+			if ($accountProfile != null) {
+				$ilsName = $accountProfile->ils;
+			} else {
+				$ilsName = 'Unknown';
+			}
+		} else {
+			$ilsName = 'Sideload';
 		}
 		if ($ilsName == 'horizon') {
 			require_once ROOT_DIR . '/CatalogFactory.php';

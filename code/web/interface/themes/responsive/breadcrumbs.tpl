@@ -20,24 +20,26 @@
 					</a>
 				</li>
 				{* <li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb"><i class="fas fa-home fa"></i> {translate text=$homeLinkText}</a></li> *}
-				{foreach from=$breadcrumbs item=breadcrumb}
-					{if !empty($breadcrumb->label)}
-						<li>
-							<span class="divider">&raquo; </span>
-							{if $breadcrumb->link}
-								<a href="{$breadcrumb->link}">
-							{/if}
-							{if $breadcrumb->translate}
-								{translate text=$breadcrumb->label isPublicFacing=true isAdminFacing=true}
-							{else}
-								{$breadcrumb->label}
-							{/if}
-							{if $breadcrumb->link}
-								</a>
-							{/if}
-						</li>
-					{/if}
-				{/foreach}
+				{if !empty($breadcrumbs)}
+					{foreach from=$breadcrumbs item=breadcrumb}
+						{if !empty($breadcrumb->label)}
+							<li>
+								<span class="divider">&raquo; </span>
+								{if $breadcrumb->link}
+									<a href="{$breadcrumb->link}">
+								{/if}
+								{if $breadcrumb->translate}
+									{translate text=$breadcrumb->label isPublicFacing=true isAdminFacing=true}
+								{else}
+									{$breadcrumb->label}
+								{/if}
+								{if $breadcrumb->link}
+									</a>
+								{/if}
+							</li>
+						{/if}
+					{/foreach}
+				{/if}
 			</ul>
 		</div>
 	</div>
