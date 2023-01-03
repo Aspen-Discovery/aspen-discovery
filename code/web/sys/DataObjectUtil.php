@@ -23,14 +23,14 @@ class DataObjectUtil {
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
-	function getFormContentType($structure, $contentType = null) {
+	static function getFormContentType($structure, $contentType = null) {
 		if ($contentType != null) {
 			return $contentType;
 		}
 		//Check to see if the request should be multipart/form-data
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
-				$contentType = $this->getFormContentType($property['properties'], $contentType);
+				$contentType = DataObjectUtil::getFormContentType($property['properties'], $contentType);
 			} elseif ($property['type'] == 'image' || $property['type'] == 'file') {
 				$contentType = 'multipart/form-data';
 			}
