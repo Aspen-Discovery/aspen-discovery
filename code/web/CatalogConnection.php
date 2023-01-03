@@ -1350,6 +1350,42 @@ class CatalogConnection {
 		return $this->driver->showHoldPosition();
 	}
 
+	public function suspendRequiresReactivationDate(): bool {
+		return $this->driver->suspendRequiresReactivationDate();
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return $this->driver->showDateWhenSuspending();
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		return $this->driver->reactivateDateNotRequired();
+	}
+
+	public function showHoldPlacedDate(): bool {
+		return $this->driver->showHoldPlacedDate();
+	}
+
+	public function showHoldExpirationTime(): bool {
+		return $this->driver->showHoldExpirationTime();
+	}
+
+	public function showOutDateInCheckouts(): bool {
+		return $this->driver->showOutDateInCheckouts();
+	}
+
+	public function showTimesRenewed(): bool {
+		return $this->driver->showTimesRenewed();
+	}
+
+	public function showRenewalsRemaining(): bool {
+		return $this->driver->showRenewalsRemaining();
+	}
+
+	public function showWaitListInCheckouts(): bool {
+		return $this->driver->showWaitListInCheckouts();
+	}
+
 	/**
 	 * Returns true if reset username is a separate page independent of the patron information page
 	 *
@@ -1365,5 +1401,9 @@ class CatalogConnection {
 
 	public function showPreferredNameInProfile(): bool {
 		return $this->driver->showPreferredNameInProfile();
+	}
+
+	public function showDateInFines(): bool {
+		return $this->driver->showDateInFines();
 	}
 }

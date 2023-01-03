@@ -54,6 +54,7 @@ class CollectionSpotlightList extends BaseBrowsable {
 				'label' => 'Display For',
 				'description' => 'Who this list should be displayed for.',
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'source' => [
@@ -65,6 +66,7 @@ class CollectionSpotlightList extends BaseBrowsable {
 				'required' => true,
 				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();",
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'searchTerm' => [
@@ -91,7 +93,8 @@ class CollectionSpotlightList extends BaseBrowsable {
 				'values' => $sourceLists,
 				'label' => 'Source List',
 				'description' => 'A public list to display titles from',
-				'translateValues' => true,
+				'translateValues' => false,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'sourceCourseReserveId' => [
@@ -117,6 +120,7 @@ class CollectionSpotlightList extends BaseBrowsable {
 				'default' => 'relevance',
 				'hideInLists' => true,
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 		];

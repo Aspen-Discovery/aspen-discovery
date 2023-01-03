@@ -129,16 +129,6 @@ class UInterface extends Smarty {
 		}
 		$this->assign('libraryName', $configArray['Site']['title']);
 
-		if (array_key_exists('Catalog', $configArray)) {
-			$this->assign('ils', $configArray['Catalog']['ils']);
-			if (isset($configArray['Catalog']['url'])) {
-				$this->assign('classicCatalogUrl', $configArray['Catalog']['url']);
-			} elseif (isset($configArray['Catalog']['hipUrl'])) {
-				$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
-			}
-			$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
-		}
-
 		$this->assign('primaryTheme', reset($themeArray));
 		$this->assign('device', get_device_name());
 
@@ -470,6 +460,8 @@ class UInterface extends Smarty {
 				$this->assign('logoLink', $library->homeLink);
 			}
 		}
+		$this->assign('useHomeLink', $useHomeLink);
+		$this->assign('showBookIcon', $library->getLayoutSettings()->showBookIcon);
 
 		// set minimum theme contrast ratio
 		$this->assign('contrastRatio', $library->getLayoutSettings()->contrastRatio);

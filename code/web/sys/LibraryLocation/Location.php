@@ -1174,9 +1174,16 @@ class Location extends DataObject {
 		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			unset($structure['isMainBranch']);
 		}
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
-		if ($ils != 'Millennium' && $ils != 'Sierra') {
+		$hasScoping = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'sierra' || $accountProfile->ils == 'millennium') {
+				$hasCourseReserves = true;
+				$hasScoping = true;
+			}
+		}
+		if (!$hasScoping) {
 			unset($structure['ilsSection']['properties']['scope']);
 			unset($structure['ilsSection']['properties']['useScope']);
 		}

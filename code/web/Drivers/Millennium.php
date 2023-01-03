@@ -1652,4 +1652,8 @@ class Millennium extends AbstractIlsDriver {
 			}
 		}
 	}
+
+	public function showTimesRenewed(): bool {
+		return true;
+	}
 }

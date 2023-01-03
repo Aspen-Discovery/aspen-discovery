@@ -8,10 +8,6 @@ class LinkedAccounts extends MyAccount {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
-		$ils = $configArray['Catalog']['ils'];
-		$smsEnabled = $configArray['Catalog']['smsEnabled'];
-		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
-
 		if ($user) {
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();

@@ -3,11 +3,6 @@
 	<div class="alert alert-warning">{translate text="The circulation system is currently offline.  Holdings information is based on information from before the system went offline." isPublicFacing=true}</div>
 {/if}
 {* ils check & last checkin date *}
-{if ($ils == 'Sierra' || $ils == 'Millennium')}
-	{assign var=showLastCheckIn value=$hasLastCheckinData}
-{else}
-	{assign var=showLastCheckIn value=false}
-{/if}
 {assign var=showVolume value=$hasVolume}
 {assign var=lastSection value=''}
 {if !empty($periodicalIssues)}

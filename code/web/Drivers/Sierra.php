@@ -1654,4 +1654,8 @@ class Sierra extends Millennium {
 	public function showHoldPosition(): bool {
 		return true;
 	}
+
+	public function showTimesRenewed(): bool {
+		return true;
+	}
 }

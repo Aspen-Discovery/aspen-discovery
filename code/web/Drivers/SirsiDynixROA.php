@@ -3156,6 +3156,10 @@ class SirsiDynixROA extends HorizonAPI {
 		return true;
 	}
 
+	public function showHoldExpirationTime(): bool {
+		return true;
+	}
+
 	/**
 	 * Determine if volume level holds are always done when volumes are present.
 	 * When this is on, items without volumes will present a blank volume for the user to choose from.
@@ -3168,5 +3172,29 @@ class SirsiDynixROA extends HorizonAPI {
 
 	public function showPreferredNameInProfile(): bool {
 		return true;
+	}
+
+	public function suspendRequiresReactivationDate(): bool {
+		return true;
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return true;
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		return false;
+	}
+
+	public function showTimesRenewed(): bool {
+		return true;
+	}
+
+	public function showHoldPlacedDate(): bool {
+		return true;
+	}
+
+	public function showDateInFines(): bool {
+		return false;
 	}
 }

@@ -6,9 +6,6 @@ minTimeToLog    = 0.05
 [Site]
 ;email =
 
-[Catalog]
-
-
 [Database]
 ;Since we have multiple databases, need to specify each
 database_dsn          = "mysql:dbname={aspenDBName};host=127.0.0.1"

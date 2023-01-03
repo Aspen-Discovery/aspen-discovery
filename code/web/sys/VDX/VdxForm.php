@@ -238,11 +238,15 @@ class VdxForm extends DataObject {
 			'required' => false,
 			'default' => ($marcRecordDriver != null ? $marcRecordDriver->getCleanISBN() : ''),
 		];
-		/** @var File_MARC_Control_Field $oclcNumber */
-		$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
-		if ($oclcNumber != null) {
-			$oclcNumberString = StringUtils::truncate($oclcNumber->getData(), 50);
-		}else{
+		if ($marcRecordDriver != null) {
+			/** @var File_MARC_Control_Field $oclcNumber */
+			$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
+			if ($oclcNumber != null) {
+				$oclcNumberString = StringUtils::truncate($oclcNumber->getData(), 50);
+			} else {
+				$oclcNumberString = '';
+			}
+		} else {
 			$oclcNumberString = '';
 		}
 		$fields['oclcNumber'] = [

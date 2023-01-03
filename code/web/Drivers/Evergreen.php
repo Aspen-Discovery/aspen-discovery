@@ -1623,4 +1623,8 @@ class Evergreen extends AbstractIlsDriver {
 	public function showHoldPosition(): bool {
 		return true;
 	}
+
+	public function showRenewalsRemaining(): bool {
+		return true;
+	}
 }
