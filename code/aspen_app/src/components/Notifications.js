@@ -11,8 +11,8 @@ import { createAuthTokens, getHeaders, postData, problemCodeMap, stripHTML } fro
 import { GLOBALS } from '../util/globals';
 import { popAlert, popToast } from './loadError';
 
-export async function registerForPushNotificationsAsync(libraryUrl) {
-     let token;
+export async function registerForPushNotificationsAsync(url) {
+     let token = false;
      if (Constants.isDevice) {
           const { status: existingStatus } = await Notifications.getPermissionsAsync();
           let finalStatus = existingStatus;
@@ -25,9 +25,10 @@ export async function registerForPushNotificationsAsync(libraryUrl) {
                return;
           }
           token = (await Notifications.getExpoPushTokenAsync()).data;
-          await savePushToken(libraryUrl, token);
-          await createChannelsAndCategories();
-          console.log(token);
+          if (token) {
+               await savePushToken(url, token);
+               await createChannelsAndCategories();
+          }
      } else {
           alert('Push notifications require a physical device');
      }
@@ -35,19 +36,18 @@ export async function registerForPushNotificationsAsync(libraryUrl) {
      return token;
 }
 
-export async function savePushToken(libraryUrl, pushToken) {
+export async function savePushToken(url, pushToken) {
      let postBody = await postData();
      postBody.append('pushToken', pushToken);
      postBody.append('deviceModel', Device.modelName);
      const api = create({
-          baseURL: libraryUrl + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
      const response = await api.post('/UserAPI?method=saveNotificationPushToken', postBody);
      if (response.ok) {
-          console.log(response);
           if (response.data.result.success) {
                popAlert(response.data.result.title, response.data.result.message, 'success');
           } else {
@@ -194,12 +194,12 @@ export async function getNotificationPreferences(libraryUrl, pushToken) {
      }
 }
 
-export async function getNotificationPreference(libraryUrl, pushToken, type) {
+export async function getNotificationPreference(url, pushToken, type) {
      let postBody = await postData();
      postBody.append('pushToken', pushToken);
      postBody.append('type', type);
      const api = create({
-          baseURL: libraryUrl + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -218,18 +218,18 @@ export async function getNotificationPreference(libraryUrl, pushToken, type) {
      } else {
           const problem = problemCodeMap(response.problem);
           popToast(problem.title, problem.message, 'warning');
-          console.log(response);
+          //console.log(response);
           return false;
      }
 }
 
-export async function setNotificationPreference(libraryUrl, pushToken, type, value) {
+export async function setNotificationPreference(url, pushToken, type, value) {
      let postBody = await postData();
      postBody.append('pushToken', pushToken);
      postBody.append('type', type);
      postBody.append('value', value);
      const api = create({
-          baseURL: libraryUrl + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -240,7 +240,6 @@ export async function setNotificationPreference(libraryUrl, pushToken, type, val
      });
      const response = await api.post('/UserAPI?method=setNotificationPreference', postBody);
      if (response.ok) {
-          console.log(response);
           if (response.data.result.success === true) {
                popAlert(response.data.result.title, response.data.result.message, 'success');
                return response.data.result;
@@ -251,7 +250,6 @@ export async function setNotificationPreference(libraryUrl, pushToken, type, val
      } else {
           const problem = problemCodeMap(response.problem);
           popToast(problem.title, problem.message, 'warning');
-          //console.log(response);
           return false;
      }
 }
@@ -295,22 +293,19 @@ async function createChannelsAndCategories() {
 
 /** status/colorScheme options: success, error, info, warning **/
 export function showILSMessage(type, message, index = 0) {
-	const formattedMessage = stripHTML(message);
-	return (
-		<Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2} key={index}>
-			<HStack
-				flexShrink={1}
-				space={2}
-				alignItems="center"
-				justifyContent="space-between"
-			>
-				<HStack flexShrink={1} space={2} alignItems="center">
-					<Alert.Icon/>
-					<Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">{formattedMessage}</Text>
-				</HStack>
-			</HStack>
-		</Alert>
-	);
+     const formattedMessage = stripHTML(message);
+     return (
+          <Alert maxW="95%" status={type} colorScheme={type} mb={1} ml={2} key={index}>
+               <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
+                    <HStack flexShrink={1} space={2} alignItems="center">
+                         <Alert.Icon />
+                         <Text fontSize="xs" fontWeight="medium" color="coolGray.800" maxW="90%">
+                              {formattedMessage}
+                         </Text>
+                    </HStack>
+               </HStack>
+          </Alert>
+     );
 }
 
 /** status/colorScheme options: success, error, info, warning **/

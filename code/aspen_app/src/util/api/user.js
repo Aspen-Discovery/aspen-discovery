@@ -177,20 +177,19 @@ export async function hideBrowseCategory(categoryId, patronId, url) {
 export async function getLinkedAccounts(url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}getLinkedAccounts`, postBody);
+     const response = await discovery.post('/UserAPI?method=getLinkedAccounts', postBody);
      if (response.ok) {
           let accounts = [];
           if (!_.isUndefined(response.data.result.linkedAccounts)) {
                accounts = response.data.result.linkedAccounts;
                PATRON.linkedAccounts = accounts;
-               return accounts;
           }
-          return accounts;
+          return _.values(accounts);
      } else {
           console.log(response);
           return false;
@@ -204,19 +203,20 @@ export async function getLinkedAccounts(url) {
 export async function getViewerAccounts(url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}getViewers`, postBody);
+     const response = await discovery.post('/UserAPI?method=getViewers', postBody);
      if (response.ok) {
+          console.log(_.values(response.data.result.viewers));
           let viewers = [];
-          if (!_.isUndefined(response.data.result.linkedAccounts)) {
-               viewers = response.data.result.linkedAccounts;
+          if (!_.isUndefined(response.data.result.viewers)) {
+               viewers = response.data.result.viewers;
                PATRON.viewerAcccounts = viewers;
           }
-          return viewers;
+          return _.values(viewers);
      } else {
           console.log(response);
           return false;
@@ -243,7 +243,7 @@ export async function addLinkedAccount(patronToAdd, url) {
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}removeAccountLink`, postBody);
+     const response = await discovery.post(`${endpoint.url}addAccountLink`, postBody);
      if (response.ok) {
           let status = false;
           if (!_.isUndefined(response.data.result.success)) {
@@ -269,15 +269,50 @@ export async function addLinkedAccount(patronToAdd, url) {
 export async function removeLinkedAccount(patronToRemove, url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                idToRemove: patronToRemove,
           },
      });
-     const response = await discovery.post(`${endpoint.url}removeAccountLink`, postBody);
+     const response = await discovery.post('/UserAPI?method=removeAccountLink', postBody);
+     if (response.ok) {
+          let status = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               status = response.data.result.success;
+               if (status !== true) {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'error');
+               }
+          }
+          return status;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
+
+/**
+ * Remove an account that another user has created a link to
+ * @param {string} patronToRemove
+ * @param {string} url
+ **/
+export async function removeViewerAccount(patronToRemove, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               idToRemove: patronToRemove,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=removeViewerLink', postBody);
+     console.log(response);
      if (response.ok) {
           let status = false;
           if (!_.isUndefined(response.data.result.success)) {
@@ -440,7 +475,7 @@ export async function deleteSelectedReadingHistory(item, url) {
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
           params: {
-               selected: [item],
+               selected: item,
           },
      });
      const response = await discovery.post(`${endpoint.url}deleteSelectedFromReadingHistory`, postBody);

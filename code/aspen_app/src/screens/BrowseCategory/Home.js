@@ -163,10 +163,8 @@ export const DiscoverHomeScreen = () => {
                } else {
                     navigateStack('HomeTab', 'GroupedWorkScreen', {
                          id: key,
-                         url: library.baseUrl,
                          title: title,
-                         userContext: user,
-                         libraryContext: library,
+                         prevRoute: 'DiscoveryScreen',
                     });
                }
           } else {
@@ -176,6 +174,7 @@ export const DiscoverHomeScreen = () => {
                     title: title,
                     userContext: user,
                     libraryContext: library,
+                    prevRoute: 'DiscoveryScreen',
                });
           }
      };

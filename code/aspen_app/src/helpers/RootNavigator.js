@@ -19,6 +19,18 @@ export const navigateStack = (stack, screen, params) => {
      }
 };
 
+export const startSearch = (term, type, url) => {
+     if (navigationRef.current) {
+          navigationRef.current.navigate('SearchTab', {
+               screen: type,
+               params: {
+                    term: term,
+                    libraryUrl: url,
+               },
+          });
+     }
+};
+
 export const navigateAndSimpleReset = (name, index = 0) => {
      if (navigationRef.isReady()) {
           navigationRef.dispatch(
