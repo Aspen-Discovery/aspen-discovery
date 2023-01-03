@@ -120,8 +120,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			{/foreach}
 		{/if}
 			<form class="form form-inline">
-				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm" onchange="this.form.submit()"}
-				{html_options name=homeroom options=$homeroomLookupList selected=$selectedHomeroom class="form-control input-sm" onchange="this.form.submit()"}
+				{if !empty($selectedLocation)}
+					{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm" onchange="this.form.submit()"}
+				{else}
+					{html_options name=location options=$locationLookupList class="form-control input-sm" onchange="this.form.submit()"}
+				{/if}
+				{if !empty($selectedHomeroom)}
+					{html_options name=homeroom options=$homeroomLookupList selected=$selectedHomeroom class="form-control input-sm" onchange="this.form.submit()"}
+				{else}
+					{html_options name=homeroom options=$homeroomLookupList class="form-control input-sm" onchange="this.form.submit()"}
+				{/if}
 				<input type="button" name="printSlips" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.avery5160'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
 				&nbsp;
 			</form>
