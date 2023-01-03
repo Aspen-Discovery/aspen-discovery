@@ -143,7 +143,7 @@ class Development_Tasks extends ObjectEditor {
 			$interface->assign('object', $newTask);
 
 			//Check to see if the request should be multipart/form-data
-			$contentType = $this->getFormContentType($structure);
+			$contentType = DataObjectUtil::getFormContentType($structure);
 			$interface->assign('contentType', $contentType);
 
 			$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newTask));
