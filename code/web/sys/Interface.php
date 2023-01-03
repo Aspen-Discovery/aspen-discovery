@@ -131,12 +131,6 @@ class UInterface extends Smarty {
 
 		if (array_key_exists('Catalog', $configArray)) {
 			$this->assign('ils', $configArray['Catalog']['ils']);
-			if (isset($configArray['Catalog']['url'])) {
-				$this->assign('classicCatalogUrl', $configArray['Catalog']['url']);
-			} elseif (isset($configArray['Catalog']['hipUrl'])) {
-				$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
-			}
-			$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
 		}
 
 		$this->assign('primaryTheme', reset($themeArray));

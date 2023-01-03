@@ -1127,14 +1127,26 @@ class IndexingProfile extends DataObject {
 			],
 		];
 
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
-		if ($ils != 'Millennium' && $ils != 'Sierra') {
+		$showSierraFieldMappings = false;
+		$showTimeToReshelve = true;
+		$showLastUpdateOfAuthorities = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'sierra') {
+				$showSierraFieldMappings = true;
+			}elseif ($accountProfile->ils == 'koha') {
+				$showTimeToReshelve = false;
+				$showLastUpdateOfAuthorities = true;
+			}
+		}
+		if (!$showSierraFieldMappings) {
 			unset($structure['sierraFieldMappings']);
 		}
-		if ($ils == 'Koha') {
+		if (!$showTimeToReshelve) {
 			unset($structure['timeToReshelve']);
-		} else {
+		}
+		if (!$showLastUpdateOfAuthorities) {
 			unset($structure['lastUpdateOfAuthorities']);
 		}
 		return $structure;
@@ -1451,5 +1463,18 @@ class IndexingProfile extends DataObject {
 		}
 		$formatValue->update();
 		$this->_formatMap[$formatValue->id] = $formatValue;
+	}
+
+	private $_accountProfile = false;
+	public function getAccountProfile() : ?AccountProfile {
+		if ($this->_accountProfile == false) {
+			foreach (UserAccount::getAccountProfiles() as $name => $accountProfile) {
+				if ($accountProfile['accountProfile']->recordSource == $this->name) {
+					$this->_accountProfile = $accountProfile['accountProfile'];
+				}
+			}
+			$this->_accountProfile = null;
+		}
+		return $this->_accountProfile;
 	}
 }

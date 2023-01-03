@@ -458,6 +458,42 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function suspendRequiresReactivationDate(): bool {
+		return false;
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return false;
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		return false;
+	}
+
+	public function showHoldPlacedDate(): bool {
+		return false;
+	}
+
+	public function showHoldExpirationTime(): bool {
+		return false;
+	}
+
+	public function showOutDateInCheckouts(): bool {
+		return false;
+	}
+
+	public function showTimesRenewed(): bool {
+		return false;
+	}
+
+	public function showRenewalsRemaining(): bool {
+		return false;
+	}
+
+	public function showWaitListInCheckouts(): bool {
+		return false;
+	}
+
 	/**
 	 * Determine if volume level holds are always done when volumes are present.
 	 * When this is on, items without volumes will present a blank volume for the user to choose from.
@@ -491,6 +527,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	}
 
 	public function showPreferredNameInProfile(): bool {
+		return false;
+	}
+
+	public function showDateInFines(): bool {
 		return false;
 	}
 }

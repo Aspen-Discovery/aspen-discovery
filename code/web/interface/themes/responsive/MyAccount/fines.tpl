@@ -39,9 +39,7 @@
 								{if !empty($showDate)}
 									<th>{translate text="Date" isPublicFacing=true}</th>
 								{/if}
-								{if !empty($showReason)}
-									<th>{translate text="Reason" isPublicFacing=true}</th>
-								{/if}
+								<th>{translate text="Reason" isPublicFacing=true}</th>
 								<th>{translate text="Title" isPublicFacing=true}</th>
 								{if !empty($showSystem)}
 									<th>{translate text="System" isPublicFacing=true}</th>
@@ -70,11 +68,9 @@
 										{if !empty($showDate)}
 											<td>{$fine.date}</td>
 										{/if}
-										{if !empty($showReason)}
-											<td>
-												{$fine.reason}
-											</td>
-										{/if}
+										<td>
+											{$fine.reason}
+										</td>
 										<td>
 											{$fine.message|removeTrailingPunctuation}
 											{if !empty($fine.details)}
@@ -116,9 +112,7 @@
 									{if !empty($showDate)}
 										<td></td>
 									{/if}
-									{if !empty($showReason)}
-										<td></td>
-									{/if}
+									<td></td>
 									{if !empty($showSystem)}
 										<td></td>
 									{/if}

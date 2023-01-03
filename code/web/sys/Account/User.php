@@ -3011,8 +3011,16 @@ class User extends DataObject {
 		} else {
 			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
 		}
-		$ils = $configArray['Catalog']['ils'];
-		if ($ils == 'Koha') {
+
+		$hasCurbside = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'koha') {
+				$hasCurbside = true;
+			}
+		}
+		if ($hasCurbside) {
 			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/ILS/CurbsidePickupSettings'), ['Administer Curbside Pickup']);
 		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
@@ -3430,6 +3438,78 @@ class User extends DataObject {
 		}
 	}
 
+	public function suspendRequiresReactivationDate(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->suspendRequiresReactivationDate();
+		} else {
+			return false;
+		}
+	}
+
+	public function showDateWhenSuspending(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showDateWhenSuspending();
+		} else {
+			return false;
+		}
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->reactivateDateNotRequired();
+		} else {
+			return false;
+		}
+	}
+
+	public function showHoldPlacedDate(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showHoldPlacedDate();
+		} else {
+			return false;
+		}
+	}
+
+	public function showHoldExpirationTime(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showHoldExpirationTime();
+		} else {
+			return false;
+		}
+	}
+
+	public function showOutDateInCheckouts(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showOutDateInCheckouts();
+		} else {
+			return false;
+		}
+	}
+
+	public function showTimesRenewed(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showTimesRenewed();
+		} else {
+			return false;
+		}
+	}
+
+	public function showRenewalsRemaining(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showRenewalsRemaining();
+		} else {
+			return false;
+		}
+	}
+
+	public function showWaitListInCheckouts(): bool {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->showWaitListInCheckouts();
+		} else {
+			return false;
+		}
+	}
+
 	public function showPreferredNameInProfile(): bool {
 		if ($this->hasIlsConnection()) {
 			return $this->getCatalogDriver()->showPreferredNameInProfile();
@@ -3817,6 +3897,22 @@ class User extends DataObject {
 			return $this->getCatalogDriver()->showResetUsernameLink();
 		} else {
 			return false;
+		}
+	}
+
+	public function showDateInFines(): bool {
+		if ($this->getCatalogDriver() != null) {
+			return $this->getCatalogDriver()->showDateInFines();
+		} else {
+			return false;
+		}
+	}
+
+	public function getILSName(): string {
+		if (empty($this->getAccountProfile())) {
+			return 'Unknown';
+		} else {
+			return $this->getAccountProfile()->ils;
 		}
 	}
 }

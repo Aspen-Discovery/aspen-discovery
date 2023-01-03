@@ -179,33 +179,36 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getStaffView() {
 		global $interface;
 		global $configArray;
-		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra') {
-			$classicId = substr($this->id, 1, strlen($this->id) - 2);
-			$interface->assign('classicId', $classicId);
-			$millenniumScope = $interface->getVariable('millenniumScope');
-			if (isset($configArray['Catalog']['linking_url'])) {
-				$linkingUrl = $configArray['Catalog']['linking_url'];
-				if (substr($linkingUrl, -1, 1) == '/') {
-					$linkingUrl = substr($linkingUrl, 0, -1);
+		$accountProfile = $this->indexingProfile->getAccountProfile();
+		if ($accountProfile != null) {
+			if ($accountProfile->ils == 'millennium' || $accountProfile->ils == 'sierra') {
+				$classicId = substr($this->id, 1, strlen($this->id) - 2);
+				$interface->assign('classicId', $classicId);
+				$millenniumScope = $interface->getVariable('millenniumScope');
+				if (isset($configArray['Catalog']['linking_url'])) {
+					$linkingUrl = $configArray['Catalog']['linking_url'];
+					if (substr($linkingUrl, -1, 1) == '/') {
+						$linkingUrl = substr($linkingUrl, 0, -1);
+					}
+					$interface->assign('classicUrl', $linkingUrl . "/record=$classicId&amp;searchscope={$millenniumScope}");
 				}
-				$interface->assign('classicUrl', $linkingUrl . "/record=$classicId&amp;searchscope={$millenniumScope}");
-			}
 
-		} elseif ($configArray['Catalog']['ils'] == 'Koha') {
-			$interface->assign('classicId', $this->id);
-			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
-			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
-		} elseif ($configArray['Catalog']['ils'] == 'CarlX') {
-			$shortId = str_replace('CARL', '', $this->id);
-			$shortId = ltrim($shortId, '0');
-			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
-		} elseif ($configArray['Catalog']['ils'] == 'Evergreen') {
-			$baseUrl = $configArray['Catalog']['url'];
-			if (substr($baseUrl, -1, 1) == '/') {
-				$baseUrl = substr($baseUrl, 0, -1);
+			} elseif ($accountProfile->ils == 'koha') {
+				$interface->assign('classicId', $this->id);
+				$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
+				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
+			} elseif ($accountProfile->ils == 'carlx') {
+				$shortId = str_replace('CARL', '', $this->id);
+				$shortId = ltrim($shortId, '0');
+				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+			} elseif ($accountProfile->ils == 'evergreen') {
+				$baseUrl = $configArray['Catalog']['url'];
+				if (substr($baseUrl, -1, 1) == '/') {
+					$baseUrl = substr($baseUrl, 0, -1);
+				}
+				$interface->assign('classicId', $this->id);
+				$interface->assign('classicUrl', $baseUrl . '/eg/opac/record/' . $this->id);
 			}
-			$interface->assign('classicId', $this->id);
-			$interface->assign('classicUrl', $baseUrl . '/eg/opac/record/' . $this->id);
 		}
 
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
@@ -1481,6 +1484,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				'body' => $interface->fetch('Record/view-links.tpl'),
 			];
 		}
+		$showLastCheckIn = false;
+		if ($this->getIndexingProfile()->getAccountProfile() != null) {
+			$ils = $this->getIndexingProfile()->getAccountProfile()->ils;
+			if ($ils == 'Sierra' || $ils == 'Millennium') {
+				$showLastCheckIn = $interface->getVariable('hasLastCheckinData');
+			}
+		}
+		$interface->assign('showLastCheckIn', $showLastCheckIn);
 		$moreDetailsOptions['copies'] = [
 			'label' => 'Copies',
 			'body' => $interface->fetch('Record/view-holdings.tpl'),
@@ -1824,7 +1835,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 		global $configArray;
 		global $timer;
-		if ($configArray['Catalog']['ils'] == 'Horizon') {
+		$accountProfile = $this->indexingProfile->getAccountProfile();
+		if ($accountProfile != null) {
+			$ilsName = $accountProfile->ils;
+		}else {
+			$ilsName = 'Unknown';
+		}
+		if ($ilsName == 'horizon') {
 			require_once ROOT_DIR . '/CatalogFactory.php';
 			global $logger;
 			$logger->log('fetching num of Holds from MarcRecord', Logger::LOG_DEBUG);

@@ -7,16 +7,14 @@ class MyAccount_Fines extends MyAccount {
 		global $interface;
 		global $configArray;
 
-// TODO: get account profile -> ils instead of config.ini
-		$ils = $configArray['Catalog']['ils'];
-		$interface->assign('showDate', $ils == 'Koha' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
-		$interface->assign('showReason', true);
-
-		$interface->setFinesRelatedTemplateVariables();
-
 		$showSystem = false;
 
 		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$interface->assign($user->showDateInFines());
+
+			$interface->setFinesRelatedTemplateVariables();
+
 			global $offlineMode;
 			if (!$offlineMode) {
 				$currencyCode = 'USD';

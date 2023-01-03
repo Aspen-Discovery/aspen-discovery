@@ -478,4 +478,32 @@ abstract class Horizon extends AbstractIlsDriver {
 	public function showHoldPosition(): bool {
 		return true;
 	}
+
+	public function showHoldExpirationTime(): bool {
+		return true;
+	}
+
+	public function suspendRequiresReactivationDate(): bool {
+		return true;
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return true;
+	}
+
+	public function showOutDateInCheckouts(): bool {
+		return true;
+	}
+
+	public function showTimesRenewed(): bool {
+		return true;
+	}
+
+	public function showWaitListInCheckouts(): bool {
+		return true;
+	}
+
+	public function showDateInFines(): bool {
+		return false;
+	}
 }
