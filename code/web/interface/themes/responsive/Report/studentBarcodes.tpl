@@ -114,9 +114,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	<div id="reportFrontMatter">
 		{if !empty($loggedIn)}
 			<h1>School Barcodes Report</h1>
+		{if isset($errors)}
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
 			{/foreach}
+		{/if}
 			<form class="form form-inline">
 				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm" onchange="this.form.submit()"}
 				{html_options name=homeroom options=$homeroomLookupList selected=$selectedHomeroom class="form-control input-sm" onchange="this.form.submit()"}
