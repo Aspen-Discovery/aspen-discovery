@@ -58,7 +58,7 @@ const AccountStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'MyHolds' }}
+                         initialParams={{ prevRoute: 'MyHolds' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -75,7 +75,7 @@ const AccountStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'MyCheckouts' }}
+                         initialParams={{ prevRoute: 'MyCheckouts' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -93,7 +93,7 @@ const AccountStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'MyList' }}
+                         initialParams={{ prevRoute: 'MyList' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -111,7 +111,7 @@ const AccountStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'MySavedSearch' }}
+                         initialParams={{ prevRoute: 'MySavedSearch' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -128,7 +128,7 @@ const AccountStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'MyReadingHistory' }}
+                         initialParams={{ prevRoute: 'MyReadingHistory' }}
                     />
                </Stack.Group>
                <Stack.Screen name="LoadSavedSearch" component={LoadSavedSearch} options={({ route }) => ({ title: route.params.name })} />
