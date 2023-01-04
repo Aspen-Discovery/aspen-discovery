@@ -16,8 +16,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 public class IndexingUtils {
-	//KODI TODO: Remove allOwnershipRules and replace with InclusionRule, we won't need to load separately since they will all be in the same table
-	private static HashMap<String, OwnershipRule> allOwnershipRules = new HashMap<>();
 	private static HashMap<String, InclusionRule> allInclusionRules = new HashMap<>();
 
 	public static TreeSet<Scope> loadScopes(Connection dbConn, Logger logger) {
@@ -376,32 +374,24 @@ public class IndexingUtils {
 				}
 			}
 
-			//Load information about what should be included in the scope
-			locationOwnedRecordRulesStmt.setLong(1, locationId);
-			ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
-			while (locationOwnedRecordRulesRS.next()) {
-				String ownershipRuleKey = locationOwnedRecordRulesRS.getString("name") + "~" + locationOwnedRecordRulesRS.getString("location") + "~" + locationOwnedRecordRulesRS.getString("subLocation") + "~" + locationOwnedRecordRulesRS.getString("locationsToExclude") + "~" + locationOwnedRecordRulesRS.getString("subLocationsToExclude");
-				if (allOwnershipRules.containsKey(ownershipRuleKey)){
-					locationScopeInfo.addOwnershipRule(allOwnershipRules.get(ownershipRuleKey));
-				}else{
-					OwnershipRule ownershipRule = new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation"), locationOwnedRecordRulesRS.getString("locationsToExclude"), locationOwnedRecordRulesRS.getString("subLocationsToExclude"));
-					allOwnershipRules.put(ownershipRuleKey, ownershipRule);
-					locationScopeInfo.addOwnershipRule(ownershipRule);
-				}
-			}
-
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
 			ResultSet locationRecordInclusionRulesRS = locationRecordInclusionRulesStmt.executeQuery();
 			while (locationRecordInclusionRulesRS.next()) {
-				//TODO: Kodi - This will need to account for the new fields can probably be optimized some? Just need to watch out for the side effect of compiling patterns.
 				String inclusionRuleKey = locationRecordInclusionRulesRS.getString("name") + "~" +
 						locationRecordInclusionRulesRS.getString("location") + "~" +
 						locationRecordInclusionRulesRS.getString("subLocation") + "~" +
 						locationRecordInclusionRulesRS.getString("locationsToExclude") + "~" +
 						locationRecordInclusionRulesRS.getString("subLocationsToExclude") + "~" +
 						locationRecordInclusionRulesRS.getString("iType") + "~" +
+						locationRecordInclusionRulesRS.getString("iTypesToExclude") + "~" +
 						locationRecordInclusionRulesRS.getString("audience") + "~" +
+						locationRecordInclusionRulesRS.getString("audiencesToExclude") + "~" +
 						locationRecordInclusionRulesRS.getString("format") + "~" +
+						locationRecordInclusionRulesRS.getString("formatsToExclude") + "~" +
+						locationRecordInclusionRulesRS.getString("shelfLocation") + "~" +
+						locationRecordInclusionRulesRS.getString("shelfLocationsToExclude") + "~" +
+						locationRecordInclusionRulesRS.getString("collectionCode") + "~" +
+						locationRecordInclusionRulesRS.getString("collectionCodesToExclude") + "~" +
 						locationRecordInclusionRulesRS.getString("includeHoldableOnly") + "~" +
 						locationRecordInclusionRulesRS.getString("includeItemsOnOrder") + "~" +
 						locationRecordInclusionRulesRS.getString("includeEContent") + "~" +
@@ -410,8 +400,13 @@ public class IndexingUtils {
 						locationRecordInclusionRulesRS.getString("includeExcludeMatches") + "~" +
 						locationRecordInclusionRulesRS.getString("urlToMatch") + "~" +
 						locationRecordInclusionRulesRS.getString("urlReplacement");
+				boolean isOwned = locationRecordInclusionRulesRS.getBoolean("markRecordsAsOwned");
 				if (allInclusionRules.containsKey(inclusionRuleKey)){
-					locationScopeInfo.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
+					if (isOwned){
+						locationScopeInfo.addOwnershipRule(allInclusionRules.get(inclusionRuleKey));
+					}else {
+						locationScopeInfo.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
+					}
 				}else{
 					InclusionRule inclusionRule = new InclusionRule(locationRecordInclusionRulesRS.getString("name"),
 							locationRecordInclusionRulesRS.getString("location"),
@@ -419,8 +414,15 @@ public class IndexingUtils {
 							locationRecordInclusionRulesRS.getString("locationsToExclude"),
 							locationRecordInclusionRulesRS.getString("subLocationsToExclude"),
 							locationRecordInclusionRulesRS.getString("iType"),
+							locationRecordInclusionRulesRS.getString("iTypesToExclude"),
 							locationRecordInclusionRulesRS.getString("audience"),
+							locationRecordInclusionRulesRS.getString("audiencesToExclude"),
 							locationRecordInclusionRulesRS.getString("format"),
+							locationRecordInclusionRulesRS.getString("formatsToExclude"),
+							locationRecordInclusionRulesRS.getString("shelfLocation"),
+							locationRecordInclusionRulesRS.getString("shelfLocationsToExclude"),
+							locationRecordInclusionRulesRS.getString("collectionCode"),
+							locationRecordInclusionRulesRS.getString("collectionCodesToExclude"),
 							locationRecordInclusionRulesRS.getBoolean("includeHoldableOnly"),
 							locationRecordInclusionRulesRS.getBoolean("includeItemsOnOrder"),
 							locationRecordInclusionRulesRS.getBoolean("includeEContent"),
@@ -430,8 +432,12 @@ public class IndexingUtils {
 							locationRecordInclusionRulesRS.getString("urlToMatch"),
 							locationRecordInclusionRulesRS.getString("urlReplacement")
 					);
+					if (isOwned){
+						locationScopeInfo.addOwnershipRule(inclusionRule);
+					}else {
+						locationScopeInfo.addInclusionRule(inclusionRule);
+					}
 					allInclusionRules.put(inclusionRuleKey, inclusionRule);
-					locationScopeInfo.addInclusionRule(inclusionRule);
 				}
 			}
 
@@ -446,8 +452,15 @@ public class IndexingUtils {
 							libraryRecordInclusionRulesRS.getString("locationsToExclude") + "~" +
 							libraryRecordInclusionRulesRS.getString("subLocationsToExclude") + "~" +
 							libraryRecordInclusionRulesRS.getString("iType") + "~" +
+							libraryRecordInclusionRulesRS.getString("iTypesToExclude") + "~" +
 							libraryRecordInclusionRulesRS.getString("audience") + "~" +
+							libraryRecordInclusionRulesRS.getString("audiencesToExclude") + "~" +
 							libraryRecordInclusionRulesRS.getString("format") + "~" +
+							libraryRecordInclusionRulesRS.getString("formatsToExclude") + "~" +
+							libraryRecordInclusionRulesRS.getString("shelfLocation") + "~" +
+							libraryRecordInclusionRulesRS.getString("shelfLocationsToExclude") + "~" +
+							libraryRecordInclusionRulesRS.getString("collectionCode") + "~" +
+							libraryRecordInclusionRulesRS.getString("collectionCodesToExclude") + "~" +
 							libraryRecordInclusionRulesRS.getString("includeHoldableOnly") + "~" +
 							libraryRecordInclusionRulesRS.getString("includeItemsOnOrder") + "~" +
 							libraryRecordInclusionRulesRS.getString("includeEContent") + "~" +
@@ -456,17 +469,30 @@ public class IndexingUtils {
 							libraryRecordInclusionRulesRS.getString("includeExcludeMatches") + "~" +
 							libraryRecordInclusionRulesRS.getString("urlToMatch") + "~" +
 							libraryRecordInclusionRulesRS.getString("urlReplacement");
+					boolean isOwned = locationRecordInclusionRulesRS.getBoolean("markRecordsAsOwned");
 					if (allInclusionRules.containsKey(inclusionRuleKey)){
-						locationScopeInfo.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
-					}else{
+						if (isOwned){
+							locationScopeInfo.addOwnershipRule(allInclusionRules.get(inclusionRuleKey));
+						}else {
+							locationScopeInfo.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
+						}
+					}
+					else{
 						InclusionRule inclusionRule = new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 								libraryRecordInclusionRulesRS.getString("location"),
 								libraryRecordInclusionRulesRS.getString("subLocation"),
 								libraryRecordInclusionRulesRS.getString("locationsToExclude"),
 								libraryRecordInclusionRulesRS.getString("subLocationsToExclude"),
 								libraryRecordInclusionRulesRS.getString("iType"),
+								libraryRecordInclusionRulesRS.getString("iTypesToExclude"),
 								libraryRecordInclusionRulesRS.getString("audience"),
+								libraryRecordInclusionRulesRS.getString("audiencesToExclude"),
 								libraryRecordInclusionRulesRS.getString("format"),
+								libraryRecordInclusionRulesRS.getString("formatsToExclude"),
+								libraryRecordInclusionRulesRS.getString("shelfLocation"),
+								libraryRecordInclusionRulesRS.getString("shelfLocationsToExclude"),
+								libraryRecordInclusionRulesRS.getString("collectionCode"),
+								libraryRecordInclusionRulesRS.getString("collectionCodesToExclude"),
 								libraryRecordInclusionRulesRS.getBoolean("includeHoldableOnly"),
 								libraryRecordInclusionRulesRS.getBoolean("includeItemsOnOrder"),
 								libraryRecordInclusionRulesRS.getBoolean("includeEContent"),
@@ -476,8 +502,12 @@ public class IndexingUtils {
 								libraryRecordInclusionRulesRS.getString("urlToMatch"),
 								libraryRecordInclusionRulesRS.getString("urlReplacement")
 						);
+						if (isOwned){
+							locationScopeInfo.addOwnershipRule(inclusionRule);
+						}else {
+							locationScopeInfo.addInclusionRule(inclusionRule);
+						}
 						allInclusionRules.put(inclusionRuleKey, inclusionRule);
-						locationScopeInfo.addInclusionRule(inclusionRule);
 					}
 				}
 			}
@@ -593,20 +623,6 @@ public class IndexingUtils {
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 			newScope.setIlsCode(libraryInformationRS.getString("ilsCode"));
 
-			//Load information about what should be included in the scope
-			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
-			ResultSet libraryOwnedRecordRulesRS = libraryOwnedRecordRulesStmt.executeQuery();
-			while (libraryOwnedRecordRulesRS.next()) {
-				String ownershipRuleKey = libraryOwnedRecordRulesRS.getString("name") + "~" + libraryOwnedRecordRulesRS.getString("location") +  "~" + libraryOwnedRecordRulesRS.getString("subLocation") + "~" + libraryOwnedRecordRulesRS.getString("locationsToExclude") + "~" + libraryOwnedRecordRulesRS.getString("subLocationsToExclude");
-				if (allOwnershipRules.containsKey(ownershipRuleKey)){
-					newScope.addOwnershipRule(allOwnershipRules.get(ownershipRuleKey));
-				}else{
-					OwnershipRule ownershipRule = new OwnershipRule(libraryOwnedRecordRulesRS.getString("name"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation"), libraryOwnedRecordRulesRS.getString("locationsToExclude"), libraryOwnedRecordRulesRS.getString("subLocationsToExclude"));
-					allOwnershipRules.put(ownershipRuleKey, ownershipRule);
-					newScope.addOwnershipRule(ownershipRule);
-				}
-			}
-
 			libraryRecordInclusionRulesStmt.setLong(1, libraryId);
 			ResultSet libraryRecordInclusionRulesRS = libraryRecordInclusionRulesStmt.executeQuery();
 			while (libraryRecordInclusionRulesRS.next()) {
@@ -616,8 +632,15 @@ public class IndexingUtils {
 						libraryRecordInclusionRulesRS.getString("locationsToExclude") + "~" +
 						libraryRecordInclusionRulesRS.getString("subLocationsToExclude") + "~" +
 						libraryRecordInclusionRulesRS.getString("iType") + "~" +
+						libraryRecordInclusionRulesRS.getString("iTypesToExclude") + "~" +
 						libraryRecordInclusionRulesRS.getString("audience") + "~" +
+						libraryRecordInclusionRulesRS.getString("audiencesToExclude") + "~" +
 						libraryRecordInclusionRulesRS.getString("format") + "~" +
+						libraryRecordInclusionRulesRS.getString("formatsToExclude") + "~" +
+						libraryRecordInclusionRulesRS.getString("shelfLocation") + "~" +
+						libraryRecordInclusionRulesRS.getString("shelfLocationsToExclude") + "~" +
+						libraryRecordInclusionRulesRS.getString("collectionCode") + "~" +
+						libraryRecordInclusionRulesRS.getString("collectionCodesToExclude") + "~" +
 						libraryRecordInclusionRulesRS.getString("includeHoldableOnly") + "~" +
 						libraryRecordInclusionRulesRS.getString("includeItemsOnOrder") + "~" +
 						libraryRecordInclusionRulesRS.getString("includeEContent") + "~" +
@@ -626,17 +649,30 @@ public class IndexingUtils {
 						libraryRecordInclusionRulesRS.getString("includeExcludeMatches") + "~" +
 						libraryRecordInclusionRulesRS.getString("urlToMatch") + "~" +
 						libraryRecordInclusionRulesRS.getString("urlReplacement");
+				boolean isOwned = libraryRecordInclusionRulesRS.getBoolean("markRecordsAsOwned");
 				if (allInclusionRules.containsKey(inclusionRuleKey)){
-					newScope.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
-				}else{
+					if (isOwned){
+						newScope.addOwnershipRule(allInclusionRules.get(inclusionRuleKey));
+					}else {
+						newScope.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
+					}
+				}
+				else{
 					InclusionRule inclusionRule = new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 							libraryRecordInclusionRulesRS.getString("location"),
 							libraryRecordInclusionRulesRS.getString("subLocation"),
 							libraryRecordInclusionRulesRS.getString("locationsToExclude"),
 							libraryRecordInclusionRulesRS.getString("subLocationsToExclude"),
 							libraryRecordInclusionRulesRS.getString("iType"),
+							libraryRecordInclusionRulesRS.getString("iTypesToExclude"),
 							libraryRecordInclusionRulesRS.getString("audience"),
+							libraryRecordInclusionRulesRS.getString("audiencesToExclude"),
 							libraryRecordInclusionRulesRS.getString("format"),
+							libraryRecordInclusionRulesRS.getString("formatsToExclude"),
+							libraryRecordInclusionRulesRS.getString("shelfLocation"),
+							libraryRecordInclusionRulesRS.getString("shelfLocationsToExclude"),
+							libraryRecordInclusionRulesRS.getString("collectionCode"),
+							libraryRecordInclusionRulesRS.getString("collectionCodesToExclude"),
 							libraryRecordInclusionRulesRS.getBoolean("includeHoldableOnly"),
 							libraryRecordInclusionRulesRS.getBoolean("includeItemsOnOrder"),
 							libraryRecordInclusionRulesRS.getBoolean("includeEContent"),
@@ -646,8 +682,12 @@ public class IndexingUtils {
 							libraryRecordInclusionRulesRS.getString("urlToMatch"),
 							libraryRecordInclusionRulesRS.getString("urlReplacement")
 					);
+					if (isOwned){
+						newScope.addOwnershipRule(inclusionRule);
+					}else {
+						newScope.addInclusionRule(inclusionRule);
+					}
 					allInclusionRules.put(inclusionRuleKey, inclusionRule);
-					newScope.addInclusionRule(inclusionRule);
 				}
 			}
 
