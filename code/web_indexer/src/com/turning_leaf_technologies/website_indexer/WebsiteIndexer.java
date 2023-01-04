@@ -185,7 +185,7 @@ class WebsiteIndexer {
 					}
 				}
 			} catch (IOException e) {
-				logEntry.incErrors("IO Exception loading " + e);
+				logEntry.incErrors("IO Exception loading Sitemap " + e);
 			}
 		}else {
 			allLinks.put(initialUrl, false);
@@ -298,7 +298,7 @@ class WebsiteIndexer {
 								}
 							}
 						} catch (PatternSyntaxException ex) {
-							logEntry.incErrors("Error in pattern ", ex);
+							logEntry.incErrors("Error in title pattern ", ex);
 						}
 
 						//Extract the related links
@@ -390,7 +390,7 @@ class WebsiteIndexer {
 								description = document.body().text();
 							}
 						} catch (PatternSyntaxException ex) {
-							logEntry.incErrors("Error in pattern ", ex);
+							logEntry.incErrors("Error in description pattern ", ex);
 						}
 
 						checksumCalculator.reset();
@@ -448,14 +448,14 @@ class WebsiteIndexer {
 				}
 
 			}catch (ClientProtocolException e2){
-				logEntry.incErrors("Client ProtocolException loading " + pageToProcess, e2);
+				logEntry.incInvalidPages("Client ProtocolException loading " + pageToProcess);
 			}catch (IOException e1){
-				logEntry.incErrors("IO Exception loading " + pageToProcess, e1);
+				logEntry.incInvalidPages("IO Exception loading " + pageToProcess);
 			}
 		} catch (IllegalArgumentException e) {
 			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e);
 		} catch (Exception e) {
-			logEntry.incErrors("Error parsing page " + pageToProcess, e);
+			logEntry.incInvalidPages("Error parsing page " + pageToProcess);
 		}
 	}
 

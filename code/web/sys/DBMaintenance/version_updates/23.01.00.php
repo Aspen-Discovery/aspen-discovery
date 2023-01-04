@@ -65,6 +65,14 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//add_index_to_ils_volume_info
+		'website_index_log_num_invalid_pages' => [
+			'title' => 'Add num invalid pages to website index log',
+			'description' => 'Add num invalid pages to website index log',
+			'sql' => [
+				"alter table website_index_log add COLUMN numInvalidPages INT(11)",
+			],
+		],
+		//website_index_log_num_invalid_pages
 
 		//Updates to records owned & records to include (for both library_records_to_include & location_records_to_include)
 		//KODI TODO

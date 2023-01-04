@@ -18,6 +18,7 @@
 						<th>{translate text="Elapsed" isAdminFacing=true}</th>
 						<th>{translate text="Total Pages" isAdminFacing=true}</th>
 						<th>{translate text="Num Errors" isAdminFacing=true}</th>
+						<th>{translate text="Invalid Pages" isAdminFacing=true}</th>
 						<th>{translate text="Pages Added" isAdminFacing=true}</th>
 						<th>{translate text="Pages Deleted" isAdminFacing=true}</th>
 						<th>{translate text="Pages Updated" isAdminFacing=true}</th>
@@ -35,6 +36,7 @@
 							<td>{$logEntry->getElapsedTime()}</td>
 							<td>{$logEntry->numPages}</td>
 							<td>{$logEntry->numErrors}</td>
+							<td>{$logEntry->numInvalidPages}</td>
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numDeleted}</td>
 							<td>{$logEntry->numUpdated}</td>
