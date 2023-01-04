@@ -66,14 +66,6 @@ function getUpdates23_01_00(): array
 		],
 		//add_index_to_ils_volume_info
 
-		//Updates to records owned & records to include (for both library_records_to_include & location_records_to_include)
-		//KODI TODO
-		//Add new fields to Record To Include
-
-		//Migrate existing Records Owned to just Records to Include (from library_records_owned to library_records_to_include & location_records_owned to location_records_to_include)
-		//Delete old Records Owned
-		//Updates to records owned & records to include
-
 		//kirstien
 		'add_account_alerts_notification' => [
 			'title' => 'Add account alert notification type',
@@ -126,6 +118,46 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//account_linking_setting_by_ptype
+		'records_to_include_updates' => [
+			'title' => 'Updates to records to include',
+			'description' => 'Migrates functionality of records owned into records to include and adds some new fields for exclusion rules',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE library_records_to_include ADD COLUMN markRecordsAsOwned TINYINT default 0",
+				"ALTER TABLE library_records_to_include ADD COLUMN iTypesToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN audiencesToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN formatsToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN shelfLocation VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN shelfLocationsToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN collectionCode VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN collectionCodesToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+
+				"ALTER TABLE location_records_to_include ADD COLUMN markRecordsAsOwned TINYINT default 0",
+				"ALTER TABLE location_records_to_include ADD COLUMN iTypesToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN audiencesToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN formatsToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN shelfLocation VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN shelfLocationsToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN collectionCode VARCHAR(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN collectionCodesToExclude VARCHAR(100) NOT NULL DEFAULT ''",
+			]
+		],
+		//records_to_include_updates
+		'migrate_records_owned' => [
+			'title' => 'Migrate Records Owned to Records to Include',
+			'description' => 'Migrates values in Records Owned table to Records to Include table',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO library_records_to_include(libraryId, indexingProfileId, markRecordsAsOwned, location, locationsToExclude, sublocation, sublocationsToExclude, weight) 
+					SELECT libraryId, indexingProfileId, 1, location, locationsToExclude, sublocation, sublocationsToExclude, 0 from library_records_owned",
+				"INSERT INTO location_records_to_include(locationId, indexingProfileId, markRecordsAsOwned, location, locationsToExclude, sublocation, sublocationsToExclude, weight) 
+					SELECT locationId, indexingProfileId, 1, location, locationsToExclude, sublocation, sublocationsToExclude, 0 from location_records_owned",
+				"DROP TABLE library_records_owned",
+				"DROP TABLE location_records_owned",
+
+			]
+		],
+		//migrate_records_owned
 		//other
 	];
 }

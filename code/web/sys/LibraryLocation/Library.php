@@ -3156,26 +3156,6 @@ class Library extends DataObject {
 				'canDelete' => true,
 			],
 
-			'recordsOwned' => [
-				'property' => 'recordsOwned',
-				'type' => 'oneToMany',
-				'label' => 'Records Owned',
-				'renderAsHeading' => true,
-				'description' => 'Information about what records are owned by the library',
-				'keyThis' => 'libraryId',
-				'keyOther' => 'libraryId',
-				'subObjectType' => 'LibraryRecordOwned',
-				'structure' => $libraryRecordOwnedStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
-				'forcesReindex' => true,
-				'permissions' => ['Library Records included in Catalog'],
-				'canAddNew' => true,
-				'canDelete' => true,
-			],
-
 			'recordsToInclude' => [
 				'property' => 'recordsToInclude',
 				'type' => 'oneToMany',

@@ -1,3 +1,4 @@
+/*
 package com.turning_leaf_technologies.indexing;
 
 import com.sun.istack.internal.NotNull;
@@ -74,3 +75,4 @@ class OwnershipRule {
 		return isOwned;
 	}
 }
+*/

@@ -1080,26 +1080,6 @@ class Location extends DataObject {
 				'canDelete' => true,
 			],
 
-			'recordsOwned' => [
-				'property' => 'recordsOwned',
-				'type' => 'oneToMany',
-				'label' => 'Records Owned',
-				'renderAsHeading' => true,
-				'description' => 'Information about what records are owned by the location',
-				'keyThis' => 'locationId',
-				'keyOther' => 'locationId',
-				'subObjectType' => 'LocationRecordOwned',
-				'structure' => $locationRecordOwnedStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
-				'forcesReindex' => true,
-				'permissions' => ['Location Records included in Catalog'],
-				'canAddNew' => true,
-				'canDelete' => true,
-			],
-
 			'recordsToInclude' => [
 				'property' => 'recordsToInclude',
 				'type' => 'oneToMany',
