@@ -1650,7 +1650,7 @@ abstract class MarcRecordProcessor {
 						result.add("MP3Disc");
 					} else if (kitPattern.matcher(physicalDescriptionData).matches()) {
 						result.add("Kit");
-					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches() && !physicalDescriptionData.contains("cd player")) {
+					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches() && !(physicalDescriptionData.contains("cd player") || physicalDescriptionData.contains("cd boombox") || physicalDescriptionData.contains("cd boom box") || physicalDescriptionData.contains("cd/mp3 player"))) {
 						//Check to see if there is a subfield e.  If so, this could be a combined format
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book")){
