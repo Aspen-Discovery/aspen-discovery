@@ -19,6 +19,7 @@ class UserPayment extends DataObject {
 	public $transactionDate;
 	public $transactionType;
 	public $aciToken;
+	public $requestingUrl;
 
 	public static function getObjectStructure() {
 		return [
@@ -127,6 +128,13 @@ class UserPayment extends DataObject {
 				'description' => 'A message returned by the payment system',
 				'readOnly' => true,
 			],
+			'requestingUrl' => [
+				'property' => 'requestingUrl',
+				'type' => 'url',
+				'label' => 'Requesting Url',
+				'description' => 'Where the payment was requested from',
+				'readOnly' => true,
+			]
 		];
 	}
 
