@@ -1184,7 +1184,10 @@ class SirsiDynixROA extends HorizonAPI {
 							'isPublicFacing' => true,
 						]);
 					$hold_result['error_code'] = $createHoldResponse->messageList[0]->code;
-
+					$hold_result['api']['message'] .= ' ' . translate([
+							'text' => (string)$createHoldResponse->messageList[0]->message,
+							'isPublicFacing' => true,
+						]) . ' (' . $createHoldResponse->messageList[0]->code . ') ';
 					global $logger;
 					$errorMessage = 'Sirsi ROA Place Hold Error: ';
 					foreach ($createHoldResponse->messageList as $error) {
