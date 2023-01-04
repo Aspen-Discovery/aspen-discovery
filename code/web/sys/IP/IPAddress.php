@@ -272,6 +272,8 @@ class IPAddress extends DataObject {
 			} else {
 				enableErrorHandler();
 				IPAddress::$ipAddressesForIP[$ipVal] = false;
+				$subnet->__destruct();
+				$subnet = null;
 				return false;
 			}
 		} else {
