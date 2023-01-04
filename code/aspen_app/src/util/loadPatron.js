@@ -492,6 +492,9 @@ export async function getBrowseCategoryListForUser(url = null) {
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               checkIfValid: false,
+          },
      });
      const response = await discovery.post('/API/SearchAPI?method=getBrowseCategoryListForUser', postBody);
 

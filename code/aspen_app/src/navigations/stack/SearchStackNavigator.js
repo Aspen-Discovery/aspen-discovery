@@ -58,7 +58,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -75,7 +75,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
 
@@ -106,7 +106,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -126,7 +126,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
                <Stack.Screen

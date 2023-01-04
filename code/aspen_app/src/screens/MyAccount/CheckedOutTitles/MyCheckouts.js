@@ -15,6 +15,7 @@ import { CheckoutsContext, LibrarySystemContext, UserContext } from '../../../co
 import { refreshProfile } from '../../../util/api/user';
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const MyCheckouts = () => {
      const { user, updateUser } = React.useContext(UserContext);
@@ -149,7 +150,7 @@ const Checkout = (props) => {
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
-
+     const version = formatDiscoveryVersion(library.discoveryVersion);
      const refreshCheckouts = async () => {
           await getCheckedOutItems(library.baseUrl).then((result) => {
                if (checkouts !== result) {
@@ -181,7 +182,12 @@ const Checkout = (props) => {
      };
 
      let canRenew = !checkout.canRenew;
-     let allowLinkedAccountAction = false;
+     let allowLinkedAccountAction = true;
+     if (version < '22.05.00') {
+          if (checkout.userId !== user.id) {
+               allowLinkedAccountAction = false;
+          }
+     }
 
      let formatId;
      let label = translate('checkouts.access_online', {
@@ -216,6 +222,13 @@ const Checkout = (props) => {
                });
           }
      }
+
+     let returnEarly = false;
+     if (checkout.canReturnEarly === 1 || checkout.canReturnEarly === '1' || checkout.canReturnEarly === true || checkout.canReturnEarly === 'true') {
+          returnEarly = true;
+     }
+
+     console.log(returnEarly);
 
      let renewMessage = translate('checkouts.renew');
      if (!checkout.canRenew) {
@@ -331,7 +344,7 @@ const Checkout = (props) => {
                                    </Actionsheet.Item>
                               </>
                          ) : null}
-                         {checkout.canReturnEarly && allowLinkedAccountAction ? (
+                         {returnEarly && allowLinkedAccountAction ? (
                               <>
                                    <Actionsheet.Item
                                         isLoading={returning}

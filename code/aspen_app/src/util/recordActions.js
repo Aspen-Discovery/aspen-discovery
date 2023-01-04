@@ -6,7 +6,7 @@ import { popAlert, popToast } from '../components/loadError';
 import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
-import { getCheckedOutItems, getHolds } from './loadPatron';
+import { getHolds } from './loadPatron';
 import { LIBRARY } from './loadLibrary';
 
 /**
@@ -45,15 +45,15 @@ export async function getGroupedWork(url, itemId) {
  *     <li>source - the source of the item, i.e. ils, hoopla, overdrive. If left empty, Aspen assumes ils.</li>
  *     <li>patronId - the id for the patron</li>
  * </ul>
- * @param {string} libraryUrl
+ * @param {string} url
  * @param {number} itemId
  * @param {string} source
  * @param {number} patronId
  **/
-export async function checkoutItem(libraryUrl, itemId, source, patronId) {
+export async function checkoutItem(url, itemId, source, patronId) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -66,12 +66,10 @@ export async function checkoutItem(libraryUrl, itemId, source, patronId) {
      const response = await api.post('/UserAPI?method=checkoutItem', postBody);
      if (response.ok) {
           const responseData = response.data;
-          const results = responseData.result;
-
           // reload patron data in the background
-          await getCheckedOutItems(libraryUrl);
+          //await getCheckedOutItems(url);
 
-          return results;
+          return responseData.result;
      } else {
           popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
           console.log(response);
@@ -121,10 +119,10 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
      }
 }
 
-export async function overDriveSample(libraryUrl, formatId, itemId, sampleNumber) {
+export async function overDriveSample(url, formatId, itemId, sampleNumber) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -203,14 +201,10 @@ export async function openSideLoad(redirectUrl) {
      }
 }
 
-export function openCheckouts() {
-     navigation.navigate('CheckedOut');
-}
-
-export async function getItemDetails(libraryUrl, id, format) {
+export async function getItemDetails(url, id, format) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -229,10 +223,10 @@ export async function getItemDetails(libraryUrl, id, format) {
      }
 }
 
-export async function submitVdxRequest(libraryUrl, request) {
+export async function submitVdxRequest(url, request) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),

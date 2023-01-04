@@ -23,6 +23,7 @@ import SelectPickupLocation from './SelectPickupLocation';
 export const Variations = (props) => {
      const route = useRoute();
      const id = route.params.id;
+     const prevRoute = route.params.prevRoute;
      const format = props.format;
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
@@ -43,16 +44,16 @@ export const Variations = (props) => {
           enabled: !!recordId,
      });
 
-     return <>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={Object.keys(data.variations)} renderItem={({ item }) => <Variation records={data.variations[item]} format={format} volumeInfo={data.volumeInfo} />} />}</>;
+     return <>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={Object.keys(data.variations)} renderItem={({ item }) => <Variation records={data.variations[item]} format={format} volumeInfo={data.volumeInfo} id={id} prevRoute={prevRoute} />} />}</>;
 };
 
 const Variation = (payload) => {
      const { library } = React.useContext(LibrarySystemContext);
      const route = useRoute();
-     const id = route.params.id;
-     const prevRoute = route.params.prevRoute;
+     const id = payload.id;
+     const prevRoute = payload.prevRoute;
      const variation = payload.records;
-     const actions = variation.actions[0];
+     const actions = variation.actions;
      const format = payload.format;
      const volumeInfo = payload.volumeInfo;
      const source = variation.source;
@@ -63,7 +64,8 @@ const Variation = (payload) => {
      const recordId = _.toString(fullRecordId[1]);
 
      console.log('*******************************');
-     console.log(variation);
+     console.log(variation.actions);
+     console.log(_.size(variation.actions));
      console.log('*******************************');
 
      const handleOnPress = () => {
@@ -109,8 +111,8 @@ const Variation = (payload) => {
                               </Button>
                          ) : null}
                     </VStack>
-                    <Button.Group width="50%" justifyContent="center" alignItems="stretch">
-                         <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} actions={actions} volumeInfo={volumeInfo} prevRoute={prevRoute} />
+                    <Button.Group width="50%" justifyContent="center" alignItems="stretch" direction={_.size(variation.actions) > 1 ? 'column' : 'row'}>
+                         <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />
                     </Button.Group>
                </HStack>
                <Center mt={2}>
@@ -127,7 +129,7 @@ const ActionButton = (data) => {
      const { volumeInfo, groupedWorkId, fullRecordId, recordSource, prevRoute } = data;
      if (_.isObject(action)) {
           if (action.type === 'overdrive_sample') {
-               return <OverDriveSample title={action.title} prevRoute={prevRoute} />;
+               return <OverDriveSample title={action.title} prevRoute={prevRoute} id={fullRecordId} type={action.type} sampleNumber={action.sampleNumber} formatId={action.formatId} />;
           } else if (action.url === '/MyAccount/CheckedOut') {
                return <CheckedOutToYou title={action.title} prevRoute={prevRoute} />;
           } else if (action.url === '/MyAccount/Holds') {
@@ -156,6 +158,21 @@ const PlaceHold = (props) => {
      const onClose = () => setIsOpen(false);
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
+     const handleNavigation = (action) => {
+          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+               if (action.includes('Checkouts')) {
+                    navigateStack('AAccountScreenTab', 'MyCheckouts', {});
+               } else {
+                    navigateStack('AccountScreenTab', 'MyHolds', {});
+               }
+          } else {
+               if (action.includes('Checkouts')) {
+                    navigate('MyCheckouts', {});
+               } else {
+                    navigate('MyHolds', {});
+               }
+          }
+     };
      if (volumeInfo.majorityOfItemsHaveVolumes || volumeInfo.numItemsWithVolumes >= 1) {
           return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} />;
      } else if (_.size(accounts) > 1) {
@@ -197,10 +214,11 @@ const PlaceHold = (props) => {
                     <Center>
                          <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                               <AlertDialog.Content>
-                                   <AlertDialog.Header>{response?.success ? 'Success' : 'Error'}</AlertDialog.Header>
+                                   <AlertDialog.Header>{response?.title}</AlertDialog.Header>
                                    <AlertDialog.Body>{response?.message}</AlertDialog.Body>
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
+                                             {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
                                              <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
                                                   {translate('general.button_ok')}
                                              </Button>
@@ -215,9 +233,10 @@ const PlaceHold = (props) => {
 };
 
 const CheckedOutToYou = (props) => {
+     console.log(props);
      const handleNavigation = () => {
           if (props.prevRoute === 'Discovery' || props.prevRoute === 'SearchResults') {
-               navigateStack('AccountTab', 'MyCheckouts', {});
+               navigateStack('AccountScreenTab', 'MyCheckouts', {});
           } else {
                navigate('MyCheckouts', {});
           }
@@ -245,9 +264,9 @@ const CheckedOutToYou = (props) => {
 const OnHoldForYou = (props) => {
      const handleNavigation = () => {
           if (props.prevRoute === 'Discovery' || props.prevRoute === 'SearchResults') {
-               navigateStack('AccountTab', 'MyCheckouts', {});
+               navigateStack('AccountScreenTab', 'MyHolds', {});
           } else {
-               navigate('MyCheckouts', {});
+               navigate('MyHolds', {});
           }
      };
 
@@ -305,6 +324,8 @@ const VDXRequest = (props) => {
 };
 
 const OverDriveSample = (props) => {
+     const { user } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
      const [loading, setLoading] = React.useState(false);
 
      return (
@@ -325,7 +346,7 @@ const OverDriveSample = (props) => {
                isLoadingText="Opening..."
                onPress={() => {
                     setLoading(true);
-                    completeAction(props.id, props.actionType, props.patronId, props.formatId, props.sampleNumber, null, props.libraryUrl, props.user, null).then((r) => {
+                    completeAction(props.id, props.type, user.id, props.formatId, props.sampleNumber, null, library.baseUrl, null, null).then((r) => {
                          setLoading(false);
                     });
                }}>
@@ -371,6 +392,21 @@ const CheckOut = (props) => {
      const onClose = () => setIsOpen(false);
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
+     const handleNavigation = (action) => {
+          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+               if (action.includes('Checkouts')) {
+                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
+               } else {
+                    navigateStack('AccountScreenTab', 'MyHolds', {});
+               }
+          } else {
+               if (action.includes('Checkouts')) {
+                    navigate('MyCheckouts', {});
+               } else {
+                    navigate('MyHolds', {});
+               }
+          }
+     };
      return (
           <>
                <Button
@@ -405,10 +441,11 @@ const CheckOut = (props) => {
                <Center>
                     <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                          <AlertDialog.Content>
-                              <AlertDialog.Header>{response.success ? 'Success' : 'Error'}</AlertDialog.Header>
-                              <AlertDialog.Body>{response.message}</AlertDialog.Body>
+                              <AlertDialog.Header>{response?.title}</AlertDialog.Header>
+                              <AlertDialog.Body>{response?.message}</AlertDialog.Body>
                               <AlertDialog.Footer>
                                    <Button.Group space={3}>
+                                        {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
                                         <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
                                              {translate('general.button_ok')}
                                         </Button>
