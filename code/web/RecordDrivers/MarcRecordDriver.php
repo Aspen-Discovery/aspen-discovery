@@ -2496,6 +2496,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getViewable856Links(): array {
 		if ($this->validUrls == null) {
 			$validUrls = [];
+			$unloadMarc = $this->marcRecord == null;
 			$marcRecord = $this->getMarcRecord();
 			$marc856Fields = $marcRecord->getFields('856');
 			/** @var File_MARC_Data_Field $marc856Field */
@@ -2527,6 +2528,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 			}
+			//Since this is called from search results, unload the MARC to preserve memory
+			if ($unloadMarc) {
+				$this->marcRecord = null;
+			}
+
 			$this->validUrls = $validUrls;
 		}
 		return $this->validUrls;

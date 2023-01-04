@@ -57,6 +57,14 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//object_history_action_type
+		'add_index_to_ils_volume_info' => [
+			'title' => 'Add Index to ILS Volume Info',
+			'description' => 'Add an index to ils_volume_info to improve search result performance',
+			'sql' => [
+				"alter table ils_volume_info add index recordId(recordId)",
+			],
+		],
+		//add_index_to_ils_volume_info
 
 		//Updates to records owned & records to include (for both library_records_to_include & location_records_to_include)
 		//KODI TODO
