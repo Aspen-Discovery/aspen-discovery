@@ -37,6 +37,7 @@ class ItemAPI extends Action {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [
 					'getAppGroupedWork',
+					'getBasicItemInfo',
 					'getItemDetails',
 					'getItemAvailability',
 					'getManifestation',
@@ -363,13 +364,19 @@ class ItemAPI extends Action {
 		}
 
 		//Generate basic information from the marc file to make display easier.
-		$itemData['title'] = $record['title'];
-		$itemData['author'] = isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'][0] : '');
+		$itemData['title'] = $record['title_display'];
+		$itemData['author'] = isset($record['author_display']) ? $record['author_display'] : (isset($record['author2']) ? $record['author2'][0] : '');
 		$itemData['publisher'] = $record['publisher'];
-		$itemData['allIsbn'] = $record['isbn'];
-		$itemData['allUpc'] = $record['upc'];
-		$itemData['allIssn'] = $record['issn'];
-		$itemData['issn'] = $record['issn'];
+		if(isset($record['isbn'])) {
+			$itemData['allIsbn'] = $record['isbn'];
+		}
+		if(isset($record['upc'])) {
+			$itemData['allUpc'] = $record['upc'];
+		}
+		if(isset($record['issn'])) {
+			$itemData['allIssn'] = $record['issn'];
+			$itemData['issn'] = $record['issn'];
+		}
 		$itemData['format'] = isset($record['format']) ? $record['format'][0] : '';
 		$itemData['formatCategory'] = $record['format_category'][0];
 		$itemData['language'] = $record['language'];
