@@ -1259,14 +1259,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		if ($this->catalogDriver == null) {
 			try {
 				$indexingProfile = $this->getIndexingProfile();
-				$accountProfileForSource = new AccountProfile();
-				$accountProfileForSource->recordSource = $indexingProfile->name;
-				require_once ROOT_DIR . '/CatalogFactory.php';
-				if ($accountProfileForSource->find(true)) {
+				$accountProfileForSource = UserAccount::getAccountProfile($indexingProfile->name);
+				if ($accountProfileForSource != null) {
 					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
-				} else {
+				}else{
 					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance();
 				}
+//				$accountProfileForSource = new AccountProfile();
+//				$accountProfileForSource->recordSource = $indexingProfile->name;
+//				require_once ROOT_DIR . '/CatalogFactory.php';
+//				if ($accountProfileForSource->find(true)) {
+//					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
+//				} else {
+//					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+//				}
 			} catch (PDOException $e) {
 				// What should we do with this error?
 				if (IPAddress::showDebuggingInformation()) {

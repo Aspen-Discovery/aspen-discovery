@@ -765,6 +765,15 @@ class UserAccount {
 		return UserAccount::$_accountProfiles;
 	}
 
+	public static function getAccountProfile($name) : ?AccountProfile {
+		$accountProfiles = UserAccount::getAccountProfiles();
+		if (array_key_exists($name, $accountProfiles)) {
+			return $accountProfiles[$name]['accountProfile'];
+		}else{
+			return null;
+		}
+	}
+
 	static function has2FAEnabledForPType() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
