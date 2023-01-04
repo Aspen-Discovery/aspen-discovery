@@ -58,7 +58,7 @@ class Admin_WorldPaySettings extends ObjectEditor {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'primary_configuration';
+		return 'ecommerce';
 	}
 
 	function canView(): bool {
