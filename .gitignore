@@ -101,8 +101,7 @@ org.eclipse.*.prefs
 *.css.map
 .settings/
 out/
-code/cron/.idea/workspace.xml
-code/web/.idea/workspace.xml
+workspace.xml
 
 # OS generated files #
 ######################
