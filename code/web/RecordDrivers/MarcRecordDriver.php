@@ -1866,6 +1866,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			} else {
 				$this->numHolds = 0;
 			}
+			$holdSummary->__destruct();
+			$holdSummary = null;
 		}
 
 		$timer->logTime("Loaded number of holds");
