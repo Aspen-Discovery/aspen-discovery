@@ -95,6 +95,8 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		if (status == null || status.length() == 0){
 			status = "On Shelf";
+		} else if (status.startsWith("Due on")) {
+			status = "Checked Out";
 		}
 		return status;
 	}

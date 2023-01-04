@@ -149,16 +149,20 @@ class UInterface extends Smarty {
 
 		// Determine Offline Mode
 		global $offlineMode;
+		global $loginAllowedWhileOffline;
 		$offlineMode = false;
+		$loginAllowedWhileOffline = false;
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if (!empty($systemVariables)) {
 			if ($systemVariables->catalogStatus == 2) {
 				$offlineMode = true;
+				$loginAllowedWhileOffline = true;
 				$this->assign('enableEContentWhileOffline', true);
 				$this->assign('offlineMessage', $systemVariables->offlineMessage);
 			} elseif ($systemVariables->catalogStatus == 1) {
 				$offlineMode = true;
+				$loginAllowedWhileOffline = false;
 				$this->assign('enableEContentWhileOffline', false);
 				$this->assign('offlineMessage', $systemVariables->offlineMessage);
 			}

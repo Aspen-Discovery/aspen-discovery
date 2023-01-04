@@ -307,7 +307,15 @@ class VdxDriver {
 		$vdxLocation = empty($userHomeLocation->vdxLocation) ? $userHomeLocation->code : $userHomeLocation->vdxLocation;
 
 		$body = "USERID=$patron->cat_username\r\n";
-		$body .= "ClientCategory=$patron->patronType\r\n";
+		$clientCategory = $patron->patronType;
+		$pType = new PType();
+		$pType->pType = $patron->patronType;
+		if ($pType->find(true)) {
+			if (!empty($pType->vdxClientCategory)) {
+				$clientCategory = $pType->vdxClientCategory;
+			}
+		}
+		$body .= "ClientCategory=$clientCategory\r\n";
 		$body .= "PatronKey=$settings->patronKey\r\n";
 		$body .= "ClientLocation=$vdxLocation\r\n";
 		$body .= "ExternalLocation=$vdxLocation\r\n";
@@ -331,8 +339,11 @@ class VdxDriver {
 		$body .= "ControlNumbers._new=1\r\n";
 		$body .= "ControlNumbers.icn_rota_pos=-1\r\n";
 		$body .= "ControlNumbers.icn_loc_well_known=4\r\n";
-		$body .= "ControlNumbers.icn_control_number=" . $newRequest->catalogKey . "\r\n";
-		$body .= "ReqClassmark=\r\n";
+
+		if (!empty($_REQUEST['oclcNumber'])) {
+			$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $_REQUEST['oclcNumber'] . "\r\n");
+			$body .= "ReqClassmark=" . $_REQUEST['oclcNumber'] . "\r\n";
+		}
 		$body .= "ReqPubPlace=\r\n";
 		$body .= "PickupLocation=" . $vdxLocation . "\r\n";
 		$body .= "ReqVerifySource=$settings->reqVerifySource\r\n";
@@ -341,7 +352,7 @@ class VdxDriver {
 			$newRequest->note .= ' - Submitted from Aspen Materials Request';
 		}
 		if (!empty($newRequest->note)) {
-			$body .= "NOTE=" . $newRequest->note . "\r\n";
+			$body .= "Notes=" . $newRequest->note . "\r\n";
 			$body .= "AuthorisationStatus=MAUTH\r\n";
 		} else {
 			$body .= "AuthorisationStatus=TAUTH\r\n";

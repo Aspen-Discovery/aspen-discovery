@@ -163,6 +163,7 @@ class Library extends DataObject {
 	public $holdDisclaimer;
 	public $availableHoldDelay;
 	public $holdPlacedAt;
+	public $holdRange;
 	public $systemHoldNote;
 	public $systemHoldNoteMasquerade;
 	public $enableMaterialsRequest;
@@ -1785,6 +1786,17 @@ class Library extends DataObject {
 								'description' => 'Determines how the hold placed at value should be set when placing holds',
 								'hideInLists' => true,
 								'default' => 0,
+							],
+							'holdRange' => [
+								'property' => 'holdRange',
+								'type' => 'enum',
+								'values' => [
+									'SYSTEM' => 'System',
+									'GROUP' => 'Group'
+								],
+								'label' => 'Hold Range (Symphony Only)',
+								'description' => 'The hold range to use when placing holds in Symphony',
+								'default' => 'SYSTEM',
 							],
 							'systemHoldNote' => [
 								'property' => 'systemHoldNote',

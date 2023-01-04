@@ -58,11 +58,11 @@ public class Axis360ExportMain {
 
 			final int[] numChanges = {0};
 			//Process each setting in order.
-			ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
-			int numSettingsAdded = 0;
+//			ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
+//			int numSettingsAdded = 0;
 			for(Axis360Setting setting : settings) {
-				try {
-					es.execute(() -> {
+//				try {
+//					es.execute(() -> {
 						Axis360ExtractLogEntry logEntry = createDbLogEntry(startTime, setting.getId(), aspenConn);
 						if (!logEntry.saveResults()) {
 							logger.error("Could not save log entry to database, quitting");
@@ -82,23 +82,23 @@ public class Axis360ExportMain {
 						logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
 						logEntry.setFinished();
-					});
-					numSettingsAdded++;
-				}catch (Exception e){
-					logger.error("Error adding setting for processing " + setting.getId() + " - " + numSettingsAdded + " added so far");
-				}
+//					});
+//					numSettingsAdded++;
+//				}catch (Exception e){
+//					logger.error("Error adding setting for processing " + setting.getId() + " - " + numSettingsAdded + " added so far");
+//				}
 			}
-			es.shutdown();
-			while (true) {
-				try {
-					boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
-					if (terminated){
-						break;
-					}
-				} catch (InterruptedException e) {
-					logger.error("Error waiting for all extracts to finish");
-				}
-			}
+//			es.shutdown();
+//			while (true) {
+//				try {
+//					boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
+//					if (terminated){
+//						break;
+//					}
+//				} catch (InterruptedException e) {
+//					logger.error("Error waiting for all extracts to finish");
+//				}
+//			}
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
