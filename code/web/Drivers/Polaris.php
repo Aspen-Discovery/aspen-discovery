@@ -1727,11 +1727,18 @@ class Polaris extends AbstractIlsDriver {
 						'text' => 'Your hold could not be placed. ' . $jsonResult->Message,
 						'isPublicFacing' => true,
 					]);
-					$hold_result['api']['message'] = $jsonResult->Message;
+					$hold_result['api']['message'] = translate([
+						'text' => 'Your hold could not be placed. ' . $jsonResult->Message,
+						'isPublicFacing' => true,
+					]);
 				} elseif ($jsonResult->StatusType == 2) {
 					$hold_result['success'] = true;
 					$hold_result['message'] = translate([
 						'text' => "Your hold was placed successfully.",
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = translate([
+						'text' => 'Your hold was placed successfully.',
 						'isPublicFacing' => true,
 					]);
 					if (isset($jsonResult->QueuePosition)) {
@@ -1740,15 +1747,15 @@ class Polaris extends AbstractIlsDriver {
 								'1' => $jsonResult->QueuePosition,
 								'isPublicFacing' => true,
 							]);
+						$hold_result['api']['message'] .= ' ' . translate([
+								'text' => 'You are number <b>%1%</b> in the queue.',
+								'1' => $jsonResult->QueuePosition,
+								'isPublicFacing' => true,
+							]);
 					}
 					// Result for API or app use
 					$hold_result['api']['title'] = translate([
 						'text' => 'Hold placed successfully',
-						'isPublicFacing' => true,
-					]);
-					$hold_result['api']['message'] = translate([
-						'text' => "You are number %1% in the queue.",
-						'1' => $jsonResult->QueuePosition,
 						'isPublicFacing' => true,
 					]);
 					$hold_result['api']['action'] = translate([
@@ -1789,9 +1796,6 @@ class Polaris extends AbstractIlsDriver {
 				'text' => 'Your hold could not be placed. ',
 				'isPublicFacing' => true,
 			]);
-			if (IPAddress::showDebuggingInformation()) {
-				$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
-			}
 			$hold_result['api']['title'] = translate([
 				'text' => 'Unable to place hold',
 				'isPublicFacing' => true,
@@ -1800,6 +1804,10 @@ class Polaris extends AbstractIlsDriver {
 				'text' => 'Your hold could not be placed.',
 				'isPublicFacing' => true,
 			]);
+			if (IPAddress::showDebuggingInformation()) {
+				$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
+				$hold_result['api']['message'] .= " (HTTP Code: {$this->lastResponseCode})";
+			}
 		}
 		return $hold_result;
 	}

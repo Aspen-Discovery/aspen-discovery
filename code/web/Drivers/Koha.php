@@ -1395,9 +1395,17 @@ class Koha extends AbstractIlsDriver {
 									'text' => $response->error,
 									'isPublicFacing' => true,
 								]);
+							$hold_result['api']['message'] .= ' ' . translate([
+									'text' => $response->error,
+									'isPublicFacing' => true,
+								]);
 						} elseif (isset($response->errors)) {
 							foreach ($response->errors as $error) {
 								$hold_result['message'] .= '<br/>' . translate([
+										'text' => $error->message,
+										'isPublicFacing' => true,
+									]);
+								$hold_result['api']['message'] .= ' ' . translate([
 										'text' => $error->message,
 										'isPublicFacing' => true,
 									]);
@@ -1684,10 +1692,25 @@ class Koha extends AbstractIlsDriver {
 						]),
 					];
 
+					// Result for API or app use
+					$hold_result['api']['title'] = translate([
+						'text' => 'Unable to place hold',
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = translate([
+						'text' => 'Error (%1%) placing a hold on this item.',
+						1 => $responseCode,
+						'isPublicFacing' => true,
+					]);
+
 					if ($response) {
 						$response = json_decode($response);
 						if (isset($response->error)) {
 							$hold_result['message'] .= '<br/>' . translate([
+									'text' => $response->error,
+									'isPublicFacing' => true,
+								]);
+							$hold_result['api']['message'] .= ' ' . translate([
 									'text' => $response->error,
 									'isPublicFacing' => true,
 								]);
@@ -1697,20 +1720,14 @@ class Koha extends AbstractIlsDriver {
 										'text' => $error->message,
 										'isPublicFacing' => true,
 									]);
+								$hold_result['api']['message'] .= ' ' . translate([
+										'text' => $error->message,
+										'isPublicFacing' => true,
+									]);
 							}
 						}
 					}
 
-					// Result for API or app use
-					$hold_result['api']['title'] = translate([
-						'text' => 'Unable to place hold',
-						'isPublicFacing' => true,
-					]);
-					$hold_result['api']['message'] = translate([
-						'text' => "Error (%1%) placing a hold on this item.",
-						1 => $responseCode,
-						'isPublicFacing' => true,
-					]);
 				}
 			}
 		}
