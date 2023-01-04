@@ -85,7 +85,7 @@ class InclusionRule {
 		}
 
 		//iType Inclusion/Exclusion Check
-		if (iType == null || iType.length() == 0){
+		if (iType == null || iType.length() == 0 || iType.equals(".*")){
 			iType = ".*";
 			matchAlliTypes = true;
 		}
@@ -95,8 +95,10 @@ class InclusionRule {
 		}
 
 		//Audience Inclusion/Exclusion Check
-		if (audience == null || audience.length() == 0){
+		if (audience == null || audience.length() == 0) {
 			audience = ".*";
+		}
+		if (audience.equals(".*") && audiencesToExclude.length() == 0){
 			matchAllAudiences = true;
 		}
 		this.audiencePattern = Pattern.compile(audience, Pattern.CASE_INSENSITIVE);
@@ -107,6 +109,8 @@ class InclusionRule {
 		//Format Inclusion/Exclusion Check
 		if (format == null || format.length() == 0){
 			format = ".*";
+		}
+		if (format.equals(".*") && formatsToExclude.length() == 0){
 			matchAllFormats = true;
 		}
 		this.formatPattern = Pattern.compile(format, Pattern.CASE_INSENSITIVE);
@@ -117,6 +121,8 @@ class InclusionRule {
 		//Shelf Location Inclusion/Exclusion Check
 		if (shelfLocation == null || shelfLocation.length() == 0) {
 			shelfLocation = ".*";
+		}
+		if (shelfLocation.equals(".*") && shelfLocationsToExclude.length() == 0){
 			matchAllShelfLocations = true;
 		}
 		this.shelfLocationPattern = Pattern.compile(shelfLocation, Pattern.CASE_INSENSITIVE);
@@ -125,8 +131,10 @@ class InclusionRule {
 		}
 
 		//Collection Code Inclusion/Exclusion Check
-		if (collectionCode == null || collectionCode.length() == 0) {
+		if (collectionCode == null || collectionCode.length() == 0 || collectionCode.equals(".*")) {
 			collectionCode = ".*";
+		}
+		if (collectionCode.equals(".*") && collectionCode.length() == 0){
 			matchAllCollectionCodes = true;
 		}
 		this.collectionCodePattern = Pattern.compile(collectionCode, Pattern.CASE_INSENSITIVE);
@@ -224,21 +232,22 @@ class InclusionRule {
 						isIncluded = false;
 					}
 				}
-			}
-			if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
-				if (locationsToExcludePattern.matcher(locationCode).matches()) {
-					isIncluded = false;
+				if (isIncluded && locationCode != null && locationCode.length() > 0 && locationsToExcludePattern != null) {
+					if (locationsToExcludePattern.matcher(locationCode).matches()) {
+						isIncluded = false;
+					}
 				}
 			}
+
 			if (isIncluded && subLocationCode.length() > 0){
 				if (!matchAllSubLocations) {
 					if (!subLocationCodePattern.matcher(subLocationCode).matches()) {
 						isIncluded = false;
 					}
-				}
-				if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
-					if (!subLocationsToExcludePattern.matcher(subLocationCode).matches()){
-						isIncluded = false;
+					if (isIncluded && subLocationCode != null && subLocationCode.length() > 0 && subLocationsToExcludePattern != null) {
+						if (subLocationsToExcludePattern.matcher(subLocationCode).matches()){
+							isIncluded = false;
+						}
 					}
 				}
 			}
@@ -249,10 +258,10 @@ class InclusionRule {
 					if (!formatPattern.matcher(format).matches()) {
 						isIncluded = false;
 					}
-				}
-				if (isIncluded && format != null && formatsToExcludePattern != null) {
-					if(formatsToExcludePattern.matcher(format).matches()){
-						isIncluded = false;
+					if (isIncluded && format != null && formatsToExcludePattern != null) {
+						if(formatsToExcludePattern.matcher(format).matches()){
+							isIncluded = false;
+						}
 					}
 				}
 			}
@@ -263,10 +272,10 @@ class InclusionRule {
 					if (!iTypePattern.matcher(iType).matches()) {
 						isIncluded = false;
 					}
-				}
-				if (isIncluded && iType != null && iTypesToExcludePattern != null) {
-					if(iTypesToExcludePattern.matcher(iType).matches()) {
-						isIncluded = false;
+					if (isIncluded && iType != null && iTypesToExcludePattern != null) {
+						if(iTypesToExcludePattern.matcher(iType).matches()) {
+							isIncluded = false;
+						}
 					}
 				}
 			}
@@ -276,12 +285,13 @@ class InclusionRule {
 					if (!shelfLocationPattern.matcher(shelfLocation).matches()) {
 						isIncluded = false;
 					}
-				}
-				if (isIncluded && shelfLocation != null && shelfLocationsToExcludePattern != null) {
-					if(shelfLocationsToExcludePattern.matcher(shelfLocation).matches()) {
-						isIncluded = false;
+					if (isIncluded && shelfLocation != null && shelfLocationsToExcludePattern != null) {
+						if(shelfLocationsToExcludePattern.matcher(shelfLocation).matches()) {
+							isIncluded = false;
+						}
 					}
 				}
+
 			}
 			//Check Collection Code to include & exclude
 			if (isIncluded && collectionCode.length() > 0){
@@ -289,10 +299,10 @@ class InclusionRule {
 					if (!collectionCodePattern.matcher(collectionCode).matches()) {
 						isIncluded = false;
 					}
-				}
-				if (isIncluded && collectionCode != null && collectionCodesToExcludePattern != null) {
-					if(collectionCodesToExcludePattern.matcher(collectionCode).matches()) {
-						isIncluded = false;
+					if (isIncluded && collectionCode != null && collectionCodesToExcludePattern != null) {
+						if(collectionCodesToExcludePattern.matcher(collectionCode).matches()) {
+							isIncluded = false;
+						}
 					}
 				}
 			}
@@ -300,6 +310,7 @@ class InclusionRule {
 			if (isIncluded && !matchAllAudiences){
 				boolean audienceMatched = false;
 				for (String audience : audiences) {
+					//As soon as something is either matched or excluded we can stop checking.
 					if (audiencePattern.matcher(audience).matches()) {
 						audienceMatched = true;
 						break;

@@ -4,9 +4,6 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryCombinedResultSection.php';
-if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php')) {
-	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php';
-}
 if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
 }
@@ -414,9 +411,6 @@ class Library extends DataObject {
 		$libraryLinksStructure = LibraryLink::getObjectStructure($context);
 		unset($libraryLinksStructure['weight']);
 		unset($libraryLinksStructure['libraryId']);
-
-		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure($context);
-		unset($libraryRecordOwnedStructure['libraryId']);
 
 		$libraryRecordToIncludeStructure = LibraryRecordToInclude::getObjectStructure($context);
 		unset($libraryRecordToIncludeStructure['libraryId']);
@@ -3460,17 +3454,6 @@ class Library extends DataObject {
 				}
 			}
 			return $this->_libraryLinks;
-		} elseif ($name == 'recordsOwned') {
-			if (!isset($this->recordsOwned) && $this->libraryId) {
-				$this->recordsOwned = [];
-				$object = new LibraryRecordOwned();
-				$object->libraryId = $this->libraryId;
-				$object->find();
-				while ($object->fetch()) {
-					$this->recordsOwned[$object->id] = clone($object);
-				}
-			}
-			return $this->recordsOwned;
 		} elseif ($name == 'recordsToInclude') {
 			if (!isset($this->recordsToInclude) && $this->libraryId) {
 				$this->recordsToInclude = [];
@@ -3540,9 +3523,6 @@ class Library extends DataObject {
 			$this->holidays = $value;
 		} elseif ($name == 'libraryLinks') {
 			$this->_libraryLinks = $value;
-		} elseif ($name == 'recordsOwned') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->recordsOwned = $value;
 		} elseif ($name == 'recordsToInclude') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsToInclude = $value;
@@ -3599,7 +3579,6 @@ class Library extends DataObject {
 		}
 		if ($ret !== FALSE) {
 			$this->saveHolidays();
-			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
 			$this->saveMaterialsRequestFieldsToDisplay();
@@ -3654,7 +3633,6 @@ class Library extends DataObject {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveHolidays();
-			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
 			$this->saveMaterialsRequestFieldsToDisplay();
@@ -3673,13 +3651,6 @@ class Library extends DataObject {
 		if (isset ($this->_libraryLinks) && is_array($this->_libraryLinks)) {
 			$this->saveOneToManyOptions($this->_libraryLinks, 'libraryId');
 			unset($this->_libraryLinks);
-		}
-	}
-
-	public function saveRecordsOwned() {
-		if (isset ($this->recordsOwned) && is_array($this->recordsOwned)) {
-			$this->saveOneToManyOptions($this->recordsOwned, 'libraryId');
-			unset($this->recordsOwned);
 		}
 	}
 
