@@ -8,9 +8,6 @@ require_once ROOT_DIR . '/sys/LibraryLocation/LocationCombinedResultSection.php'
 if (file_exists(ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php')) {
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 }
-if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php')) {
-	require_once ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php';
-}
 if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php';
 }
@@ -106,7 +103,6 @@ class Location extends DataObject {
 
 	private $_hours;
 	private $_moreDetailsOptions;
-	private $_recordsOwned;
 	private $_recordsToInclude;
 	private $_sideLoadScopes;
 	private $_combinedResultSections;
@@ -193,9 +189,6 @@ class Location extends DataObject {
 		$locationMoreDetailsStructure = LocationMoreDetails::getObjectStructure($context);
 		unset($locationMoreDetailsStructure['weight']);
 		unset($locationMoreDetailsStructure['locationId']);
-
-		$locationRecordOwnedStructure = LocationRecordOwned::getObjectStructure($context);
-		unset($locationRecordOwnedStructure['locationId']);
 
 		$locationRecordToIncludeStructure = LocationRecordToInclude::getObjectStructure($context);
 		unset($locationRecordToIncludeStructure['locationId']);
@@ -1647,17 +1640,6 @@ class Location extends DataObject {
 				}
 			}
 			return $this->_moreDetailsOptions;
-		} elseif ($name == 'recordsOwned') {
-			if (!isset($this->_recordsOwned) && $this->locationId) {
-				$this->_recordsOwned = [];
-				$object = new LocationRecordOwned();
-				$object->locationId = $this->locationId;
-				$object->find();
-				while ($object->fetch()) {
-					$this->_recordsOwned[$object->id] = clone($object);
-				}
-			}
-			return $this->_recordsOwned;
 		} elseif ($name == 'recordsToInclude') {
 			if (!isset($this->_recordsToInclude) && $this->locationId) {
 				$this->_recordsToInclude = [];
@@ -1717,8 +1699,6 @@ class Location extends DataObject {
 			$this->_hours = $value;
 		} elseif ($name == "moreDetailsOptions") {
 			$this->_moreDetailsOptions = $value;
-		} elseif ($name == 'recordsOwned') {
-			$this->_recordsOwned = $value;
 		} elseif ($name == 'recordsToInclude') {
 			$this->_recordsToInclude = $value;
 		} elseif ($name == 'sideLoadScopes') {
@@ -1742,7 +1722,6 @@ class Location extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveHours();
 			$this->saveMoreDetailsOptions();
-			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
@@ -1762,7 +1741,6 @@ class Location extends DataObject {
 		if ($ret !== FALSE) {
 			$this->saveHours();
 			$this->saveMoreDetailsOptions();
-			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
@@ -1993,25 +1971,6 @@ class Location extends DataObject {
 			]);
 		}
 		return $formattedMessage;
-	}
-
-	public function saveRecordsOwned() {
-		if (isset ($this->_recordsOwned) && is_array($this->_recordsOwned)) {
-			/** @var LocationRecordOwned $object */
-			foreach ($this->_recordsOwned as $object) {
-				if ($object->_deleteOnSave == true) {
-					$object->delete();
-				} else {
-					if (isset($object->id) && is_numeric($object->id)) {
-						$object->update();
-					} else {
-						$object->locationId = $this->locationId;
-						$object->insert();
-					}
-				}
-			}
-			unset($this->_recordsOwned);
-		}
 	}
 
 	public function saveRecordsToInclude() {
