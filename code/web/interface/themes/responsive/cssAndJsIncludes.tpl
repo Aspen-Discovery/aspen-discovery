@@ -76,7 +76,7 @@
 		{/literal}
 	</script>{strip}
 
-	{if $includeAutoLogoutCode == true}
+	{if !empty($includeAutoLogoutCode)}
 		{if !empty($debugJs)}
 			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 		{else}

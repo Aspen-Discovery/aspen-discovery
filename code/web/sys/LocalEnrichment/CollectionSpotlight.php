@@ -161,6 +161,7 @@ class CollectionSpotlight extends DataObject {
 				'default' => 'horizontal',
 				'hideInLists' => true,
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'autoRotate' => [
@@ -182,6 +183,7 @@ class CollectionSpotlight extends DataObject {
 				'default' => 'medium',
 				'hideInLists' => true,
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'customCss' => [
@@ -204,6 +206,7 @@ class CollectionSpotlight extends DataObject {
 				'storeDb' => true,
 				'hideInLists' => true,
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'showSpotlightTitle' => [
@@ -235,6 +238,7 @@ class CollectionSpotlight extends DataObject {
 				'storeDb' => true,
 				'hideInLists' => true,
 				'translateValues' => true,
+				'isPublicFacing' => false,
 				'isAdminFacing' => true,
 			],
 			'lists' => [

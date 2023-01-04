@@ -145,9 +145,6 @@ window.onload = start
 			{if !empty($systemMessage)}
 				<h2>{$systemMessage}</h2>
 			{/if}
-			{if !empty($showLinkToClassicInMaintenanceMode)}
-			<a href="{$classicCatalogUrl}" class="btn btn-primary">{translate text="Search Classic Catalog" isPublicFacing=true}</a>
-			{/if}
 		</div>
 		<!-- server ip {$activeIp} -->
 	</div>

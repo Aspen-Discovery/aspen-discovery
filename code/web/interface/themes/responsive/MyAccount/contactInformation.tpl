@@ -63,7 +63,7 @@
 									<label for="address1">{translate text='Address' isPublicFacing=true}</label>
 								</div>
 								<div class="col-xs-8">
-									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && !$isHorizon}
 										<input name="address1" id="address1" value='{$profile->_address1|escape}' size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="address1" id="address1" value='{$profile->_address1|escape}' type="hidden">
@@ -76,7 +76,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="city">{translate text='City' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->_city|escape}" size="50" maxlength="75" class="form-control required">
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && !$isHorizon}<input name="city" id="city" value="{$profile->_city|escape}" size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="city" id="city" value="{$profile->_city|escape}" type="hidden">
 										{$profile->_city|escape}
@@ -86,7 +86,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="state">{translate text='State' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->_state|escape}" size="50" maxlength="75" class="form-control required">
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && !$isHorizon}<input name='state' id="state" value="{$profile->_state|escape}" size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="state" id="state" value="{$profile->_state|escape}" type="hidden">
 										{$profile->_state|escape}
@@ -96,7 +96,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="zip">{translate text='Zip' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdateAddress && !$isHorizon}
 										<input name="zip" id="zip" value="{$profile->_zip|escape}" size="50" maxlength="75" class="form-control required">
 									{elseif $edit && $millenniumNoAddress}
 										<input name="zip" id="zip" value="{$profile->_zip|escape}" type="hidden">
@@ -107,7 +107,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number' isPublicFacing=true}</label></div>
 								<div class="col-xs-8">
-									{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
+									{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && !$isHorizon}
 										<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 									{else}
 										{$profile->phone|escape}
@@ -117,7 +117,7 @@
 							{if !empty($showWorkPhoneInProfile)}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number' isPublicFacing=true}</label></div>
-									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $canUpdatePhoneNumber && !$isHorizon}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}
@@ -154,7 +154,7 @@
 								{translate text='The following settings determine how you would like to receive notifications when physical materials are ready for pickup at your library.  Notifications for online content are always delivered via email.' isPublicFacing=true}
 							</p>
 
-						{if $ils != 'CarlX'}
+						{if !$isCarlX}
 							<div class="form-group">
 								<div class="col-xs-4"><strong>{translate text='Receive notices by' isPublicFacing=true}</strong></div>
 								<div class="col-xs-8">
@@ -171,7 +171,7 @@
 							</div>
 						{/if}
 
-						{if $ils == 'CarlX'} {* CarlX Notification Options *}
+						{if $isCarlX} {* CarlX Notification Options *}
 							<div class="form-group">
 								<div class="col-xs-4"><strong>{translate text='Email notices' isPublicFacing=true}</strong></div>
 								<div class="col-xs-8">
@@ -241,34 +241,6 @@
 							</div>
 
 							{/if}
-						{/if}
-
-						{if !empty($showSMSNoticesInProfile)}
-							<div class="form-group">
-								<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages' isPublicFacing=true}</label></div>
-								<div class="col-xs-8">
-									{if $edit == true && $canUpdateContactInfo == true}
-										<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->_mobileNumber}checked='checked'{/if} data-switch="">
-										<p class="help-block alert alert-warning">
-											SMS/Text Messages are sent <strong>in addition</strong> to postal mail/email/phone alerts. <strong>Message and data rates may apply.</strong>
-											<br><br>
-											To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
-										</p>
-									{else}
-
-									{/if}
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number' isPublicFacing=true}</label></div>
-								<div class="col-xs-8">
-									{if $edit == true && $canUpdateContactInfo == true}
-										<input type="tel" name="mobileNumber" id="mobileNumber" value="{$profile->_mobileNumber}" class="form-control">
-									{else}
-										{$profile->_mobileNumber}
-									{/if}
-								</div>
-							</div>
 						{/if}
 
 						{if empty($offline) && $edit == true && $canUpdateContactInfo}

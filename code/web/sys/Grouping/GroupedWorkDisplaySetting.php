@@ -556,9 +556,15 @@ class GroupedWorkDisplaySetting extends DataObject {
 			],
 		];
 
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
-		if ($ils != 'Millennium' && $ils != 'Sierra') {
+		$hasCheckInGrid = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'millennium' || $accountProfile->ils == 'sierra') {
+				$hasCheckInGrid = true;
+			}
+		}
+		if (!$hasCheckInGrid) {
 			unset($structure['fullRecordSection']['properties']['showCheckInGrid']);
 		}
 

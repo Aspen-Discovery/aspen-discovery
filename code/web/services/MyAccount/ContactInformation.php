@@ -9,10 +9,6 @@ class MyAccount_ContactInformation extends MyAccount {
 		global $offlineMode;
 		$user = UserAccount::getLoggedInUser();
 
-		$ils = $configArray['Catalog']['ils'];
-		$smsEnabled = $configArray['Catalog']['smsEnabled'];
-		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
-
 		if ($user) {
 
 			$patronUpdateForm = $user->getPatronUpdateForm();
@@ -104,15 +100,16 @@ class MyAccount_ContactInformation extends MyAccount {
 		}
 
 		// switch for hack for Millennium driver profile updating when updating is allowed but address updating is not allowed.
+		$ils = $user->getILSName();
 		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && in_array($ils, [
-				'Millennium',
-				'Sierra',
+				'millennium',
+				'mierra',
 			]);
 		$interface->assign('millenniumNoAddress', $millenniumNoAddress);
 
 
 		// CarlX Specific Options
-		if ($ils == 'CarlX' && !$offlineMode) {
+		if ($ils == 'carlx' && !$offlineMode) {
 			// Get Phone Types
 			$phoneTypes = [];
 			/** @var CarlX $driver */
@@ -125,6 +122,9 @@ class MyAccount_ContactInformation extends MyAccount {
 			}
 			$interface->assign('phoneTypes', $phoneTypes);
 		}
+
+		$interface->assign('isHorizon', $ils == 'horizon');
+		$interface->assign('isCarlX', $ils == 'carlx');
 
 		$this->display('contactInformation.tpl', 'Contact Information');
 	}

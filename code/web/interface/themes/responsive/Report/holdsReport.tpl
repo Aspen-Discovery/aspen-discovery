@@ -3,9 +3,11 @@
 		<div class="doNotPrint">
 		{if !empty($loggedIn)}
 			<h1>{translate text="Holds Report" isAdminFacing=true}</h1>
-			{foreach from=$errors item=error}
-				<div class="error">{$error}</div>
-			{/foreach}
+			{if isset($errors)}
+				{foreach from=$errors item=error}
+					<div class="error">{$error}</div>
+				{/foreach}
+			{/if}
 			<form class="form form-inline">
 
 				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm"}

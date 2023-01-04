@@ -1585,8 +1585,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$interface->assign('patronId', $patronId);
 			$interface->assign('recordId', $_REQUEST['recordId']);
 
-			$ils = $configArray['Catalog']['ils'];
-			$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+			$reactivateDateNotRequired = $user->reactivateDateNotRequired();
 			$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 			$title = translate([
@@ -2317,7 +2316,6 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	public function exportCheckouts() {
-		global $configArray;
 		$source = $_REQUEST['source'];
 		$user = UserAccount::getActiveUserObj();
 		$allCheckedOut = $user->getCheckouts(true, $source);
@@ -2329,11 +2327,10 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$hasLinkedUsers = count($user->getLinkedUsers()) > 0;
 
-		$ils = $configArray['Catalog']['ils'];
-		$showOut = ($ils == 'Horizon');
-		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
-		$showRenewalsRemaining = ($ils == 'Evergreen');
-		$showWaitList = $ils == 'Horizon';
+		$showOut = $user->showOutDateInCheckouts();
+		$showRenewed = $user->showTimesRenewed();
+		$showRenewalsRemaining = $user->showRenewalsRemaining();
+		$showWaitList = $user->showWaitListInCheckouts();
 
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
@@ -2454,9 +2451,8 @@ class MyAccount_AJAX extends JSON_Action {
 		$source = $_REQUEST['source'];
 		$user = UserAccount::getActiveUserObj();
 
-		$ils = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Sierra' || $ils == 'Evergreen');
-		$showExpireTime = ($ils == 'Horizon' || $ils == 'Symphony');
+		$showPosition = $user->showHoldPosition();
+		$showExpireTime = $user->showHoldExpirationTime();
 		$selectedAvailableSortOption = $this->setSort('availableHoldSort', 'availableHold');
 		$selectedUnavailableSortOption = $this->setSort('unavailableHoldSort', 'unavailableHold');
 		if ($selectedAvailableSortOption == null) {
@@ -2468,7 +2464,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
 
-		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+		$showDateWhenSuspending = $user->showDateWhenSuspending();
 
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
@@ -2832,11 +2828,11 @@ class MyAccount_AJAX extends JSON_Action {
 			$this->setShowCovers();
 
 			//Determine which columns to show
-			$ils = $configArray['Catalog']['ils'];
-			$showOut = ($ils == 'Horizon');
-			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
-			$showRenewalsRemaining = ($ils == 'Evergreen');
-			$showWaitList = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon');
+			$user = UserAccount::getActiveUserObj();
+			$showOut = $user->showOutDateInCheckouts();
+			$showRenewed = $user->showTimesRenewed();
+			$showRenewalsRemaining = $user->showRenewalsRemaining();
+			$showWaitList = $user->showWaitListInCheckouts();
 
 			$interface->assign('showOut', $showOut);
 			$interface->assign('showRenewed', $showRenewed);
@@ -2953,11 +2949,10 @@ class MyAccount_AJAX extends JSON_Action {
 					$interface->assign('allowFreezeHolds', false);
 				}
 
-				$ils = $configArray['Catalog']['ils'];
 				$showPosition = $user->showHoldPosition();
-				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+				$suspendRequiresReactivationDate = $user->suspendRequiresReactivationDate();
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-				$showPlacedColumn = ($ils == 'Symphony' || $ils == 'Koha');
+				$showPlacedColumn = $user->showHoldPlacedDate();
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
 
 				$location = new Location();
@@ -3013,9 +3008,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'unavailable' => $selectedUnavailableSortOption,
 				]);
 
-				$allowChangeLocation = ($ils == 'Millennium' || $ils == 'Sierra');
-				$interface->assign('allowChangeLocation', $allowChangeLocation);
-				$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+				$showDateWhenSuspending = $user->showDateWhenSuspending();
 				$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
 
 				$interface->assign('showPosition', $showPosition);

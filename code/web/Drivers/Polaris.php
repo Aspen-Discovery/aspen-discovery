@@ -2705,4 +2705,20 @@ class Polaris extends AbstractIlsDriver {
 
 		return $result;
 	}
+
+	public function suspendRequiresReactivationDate(): bool {
+		return true;
+	}
+
+	public function showDateWhenSuspending(): bool {
+		return true;
+	}
+
+	public function reactivateDateNotRequired(): bool {
+		return false;
+	}
+
+	public function showTimesRenewed(): bool {
+		return true;
+	}
 }

@@ -3247,14 +3247,27 @@ class Library extends DataObject {
 		];
 
 		//Update settings based on what we have access to
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
-		if ($ils != 'Millennium' && $ils != 'Sierra') {
-			unset($structure['displaySection']['properties']['enableCourseReserves']);
+		$hasCourseReserves = false;
+		$hasScoping = false;
+		$isKoha = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'sierra' || $accountProfile->ils == 'millennium') {
+				$hasCourseReserves = true;
+				$hasScoping = true;
+			}elseif ($accountProfile->ils == 'koha') {
+				$isKoha = true;
+			}
+		}
+		if (!$hasScoping) {
 			unset($structure['ilsSection']['properties']['scope']);
 			unset($structure['ilsSection']['properties']['useScope']);
 		}
-		if ($ils == 'Koha') {
+		if (!$hasCourseReserves) {
+			unset($structure['displaySection']['properties']['enableCourseReserves']);
+		}
+		if ($isKoha) {
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showWorkPhoneInProfile']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showNoticeTypeInProfile']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['addSMSIndicatorToPhone']);
@@ -3264,7 +3277,8 @@ class Library extends DataObject {
 		} else {
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
 		}
-		if (!$configArray['CAS']['enabled']) {
+		//TODO: This will eventually need to be enabled/disabled by the library, it is currently off for everyone
+		if (true) {
 			unset($structure['casSection']);
 		}
 		global $enabledModules;
@@ -3581,9 +3595,15 @@ class Library extends DataObject {
 	 */
 	public function update($context = '') {
 		//Updates to properly update settings based on the ILS
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
-		if ($ils == 'Koha') {
+		$isKoha = false;
+		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
+			/** @var AccountProfile $accountProfile */
+			$accountProfile = $accountProfileInfo['accountProfile'];
+			if ($accountProfile->ils == 'koha') {
+				$isKoha = true;
+			}
+		}
+		if ($isKoha) {
 			$this->showWorkPhoneInProfile = 0;
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
