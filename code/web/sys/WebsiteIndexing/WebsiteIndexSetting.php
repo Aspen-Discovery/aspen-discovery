@@ -65,8 +65,8 @@ class WebsiteIndexSetting extends DataObject {
 			'siteUrl' => [
 				'property' => 'siteUrl',
 				'type' => 'url',
-				'label' => 'Site URL',
-				'description' => 'The URL to the Website',
+				'label' => 'Site URL / Sitemap URL',
+				'description' => 'The URL to the page in the Website to start indexing from or a sitemap to index based on. Sitemap must have a .xml extension.',
 				'maxLength' => 255,
 				'required' => true,
 			],
@@ -125,6 +125,7 @@ class WebsiteIndexSetting extends DataObject {
 				],
 				'label' => 'Frequency to Fetch',
 				'description' => 'How often the records should be fetched',
+				'default' => 'weekly'
 			],
 			'lastIndexed' => [
 				'property' => 'lastIndexed',
