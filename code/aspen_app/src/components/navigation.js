@@ -15,6 +15,7 @@ import React from 'react';
 import { enableScreens } from 'react-native-screens';
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
+import checkVersion from 'react-native-store-version';
 
 import Login from '../screens/Auth/Login';
 import { translate } from '../translations/translations';
@@ -482,6 +483,31 @@ async function getPermissions() {
           PATRON.coords.long = 0;
      }
      return location;
+}
+
+async function checkStoreVersion() {
+     let message = '';
+     try {
+          const check = await checkVersion({
+               version: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version, // app local version
+               iosStoreURL: 'ios app store url',
+               androidStoreURL: 'android app store url',
+               country: 'us',
+          });
+
+          if (check.result) {
+               return check;
+          }
+     } catch (e) {
+          console.log(e);
+          message = e;
+     }
+     return {
+          local: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version,
+          remote: 'unknown',
+          result: 'unknown',
+          detail: 'Error checking versions. ' + message,
+     };
 }
 
 export default Sentry.Native.wrap(App);

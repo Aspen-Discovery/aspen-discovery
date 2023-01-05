@@ -114,14 +114,16 @@ export const getBadge = (status, frozen, available, source) => {
                </Text>
           );
      } else {
-          return (
-               <Text>
-                    <Badge colorScheme="orange" rounded="4px" mt={-0.5}>
-                         {status}
-                    </Badge>
-               </Text>
-          );
-     }
+          if(status) {
+              return (
+                  <Text>
+                      <Badge colorScheme="orange" rounded="4px" mt={-0.5}>
+                          {status}
+                      </Badge>
+                  </Text>
+              );
+          }
+     } return null;
 };
 
 export const getStatus = (status, source) => {

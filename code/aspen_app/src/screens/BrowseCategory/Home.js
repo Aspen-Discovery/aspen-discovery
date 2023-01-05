@@ -136,7 +136,9 @@ export const DiscoverHomeScreen = () => {
                          style={{
                               width: '100%',
                               height: '100%',
+                              borderRadius: 4
                          }}
+
                     />
                </Pressable>
           );

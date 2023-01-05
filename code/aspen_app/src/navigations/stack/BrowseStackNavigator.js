@@ -3,7 +3,7 @@ import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
-import CreateVDXRequest from '../../screens/GroupedWork/CreateVDXRequest';
+import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import { translate } from '../../translations/translations';
 import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';

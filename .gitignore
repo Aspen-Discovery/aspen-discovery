@@ -209,3 +209,7 @@ sites/kodidev.localhost/httpd-kodidev.localhost.conf
 sites/kodidev.localhost/kodidev.localhost.bat
 sites/roundrock.localhost/conf/config.ini
 sites/roundrock.localhost/httpd-roundrock.localhost.conf
+code/aspen_app/.run/Update EAS.run.xml
+code/aspen_app/.run/Update Aspen LiDA Instance.run.xml
+code/aspen_app/.run/Start Aspen LiDA Instance.run.xml
+*.default

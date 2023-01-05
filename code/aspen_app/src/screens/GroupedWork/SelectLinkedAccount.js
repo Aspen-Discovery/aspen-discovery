@@ -3,15 +3,18 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { translate } from '../../translations/translations';
 import { completeAction } from './Record';
-import { LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { reloadProfile } from '../../util/api/user';
+import {HoldsContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {refreshProfile} from '../../util/api/user';
 import _ from 'lodash';
 import { getVolumes } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
+import {reloadHolds} from '../../util/loadPatron';
+import {navigate, navigateStack} from '../../helpers/RootNavigator';
 
 const SelectLinkedAccount = (props) => {
-     const { id, action, title, volumeInfo } = props;
+     console.log(props);
+     const { id, action, title, volumeInfo, prevRoute, isEContent } = props;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);
 
@@ -22,18 +25,21 @@ const SelectLinkedAccount = (props) => {
 
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { updateHolds } = React.useContext(HoldsContext);
 
-     let typeOfHold = 'item';
-     if (volumeInfo.majorityOfItemsHaveVolumes) {
-          typeOfHold = 'volume';
-     }
-     const [holdType, setHoldType] = React.useState(typeOfHold);
-     const [volume, setVolume] = React.useState(null);
-
+     let typeOfHold = 'default';
      let shouldAskHoldType = false;
      if (!volumeInfo.majorityOfItemsHaveVolumes && volumeInfo.numItemsWithVolumes >= 1) {
           shouldAskHoldType = true;
+          if (volumeInfo.majorityOfItemsHaveVolumes) {
+               typeOfHold = 'volume';
+          } else {
+               typeOfHold = 'item';
+          }
      }
+
+     const [holdType, setHoldType] = React.useState(typeOfHold);
+     const [volume, setVolume] = React.useState(null);
 
      let pickupLocation = _.findIndex(locations, function (o) {
           return o.locationId === user.pickupLocationId;
@@ -49,6 +55,22 @@ const SelectLinkedAccount = (props) => {
           queryKey: ['volumes', id, library.baseUrl],
           queryFn: () => getVolumes(id, library.baseUrl),
      });
+
+     const handleNavigation = (action) => {
+          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+               if (action.includes('Checkouts')) {
+                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
+               } else {
+                    navigateStack('AccountScreenTab', 'MyHolds', {});
+               }
+          } else {
+               if (action.includes('Checkouts')) {
+                    navigate('MyCheckouts', {});
+               } else {
+                    navigate('MyHolds', {});
+               }
+          }
+     };
 
      return (
           <Center>
@@ -70,9 +92,9 @@ const SelectLinkedAccount = (props) => {
                               <Heading size="md">{translate('grouped_work.checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
-                              {loading || status === 'loading' || isFetching ? (
+                              {!isEContent && (loading || status === 'loading' || isFetching) ? (
                                    loadingSpinner()
-                              ) : status === 'error' ? (
+                              ) : !isEContent && (status === 'error') ? (
                                    loadError('Error', '')
                               ) : (
                                    <>
@@ -114,7 +136,7 @@ const SelectLinkedAccount = (props) => {
                                                   </Select>
                                              </FormControl>
                                         ) : null}
-                                        {_.size(locations) > 0 ? (
+                                        {_.size(locations) > 1 && !isEContent ? (
                                              <FormControl>
                                                   <FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
                                                   <Select
@@ -170,13 +192,19 @@ const SelectLinkedAccount = (props) => {
                                    </Button>
                                    <Button
                                         isLoading={loading}
+                                        isLoadingText="Placing hold..."
                                         onPress={async () => {
                                              setLoading(true);
-                                             await completeAction(id, action, activeAccount, null, null, null, library.baseUrl).then(async (response) => {
+                                             await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (response) => {
                                                   setResponse(response);
-                                                  await reloadProfile(library.baseUrl).then((result) => {
-                                                       updateUser(result);
-                                                  });
+                                                  if(response.success) {
+                                                       await reloadHolds(library.baseUrl).then((result) => {
+                                                            updateHolds(result);
+                                                       })
+                                                       await refreshProfile(library.baseUrl).then((result) => {
+                                                            updateUser(result);
+                                                       });
+                                                  }
                                                   setLoading(false);
                                              });
                                              setShowModal(false);
@@ -188,12 +216,13 @@ const SelectLinkedAccount = (props) => {
                               <Center>
                                    <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                                         <AlertDialog.Content>
-                                             <AlertDialog.Header>{response?.success ? 'Success' : 'Error'}</AlertDialog.Header>
+                                             <AlertDialog.Header>{response?.title}</AlertDialog.Header>
                                              <AlertDialog.Body>{response?.message}</AlertDialog.Body>
                                              <AlertDialog.Footer>
                                                   <Button.Group space={3}>
-                                                       <Button colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
-                                                            OK
+                                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
+                                                       <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
+                                                            {translate('general.button_ok')}
                                                        </Button>
                                                   </Button.Group>
                                              </AlertDialog.Footer>

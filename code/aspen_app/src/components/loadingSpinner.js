@@ -1,5 +1,5 @@
 import React from "react";
-import {Center, Heading, HStack, Spinner} from "native-base";
+import {Center, Heading, HStack, VStack, Spinner} from "native-base";
 
 /*
 TODO: Translate the accessibility labels
@@ -9,12 +9,12 @@ export function loadingSpinner(message = "") {
 	if (message !== "") {
 		return (
 			<Center flex={1} px="3">
-				<HStack space={2} alignItems="center">
+				<VStack space={2} alignItems="center">
 					<Spinner size="lg" accessibilityLabel="Loading..."/>
 					<Heading fontSize="md">
 						{message}
 					</Heading>
-				</HStack>
+				</VStack>
 			</Center>
 		);
 	}

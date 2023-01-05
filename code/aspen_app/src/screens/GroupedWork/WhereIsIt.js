@@ -1,17 +1,18 @@
-import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LibrarySystemContext } from '../../context/initialContext';
 import React from 'react';
 import _ from 'lodash';
-import { Center, Text, HStack, VStack, Badge, FlatList, Button, Box } from 'native-base';
+import { Center, Text, HStack, FlatList, Box } from 'native-base';
 import { useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { getFirstRecord, getItemAvailability, getManifestation, getRecords } from '../../util/api/item';
+import { getManifestation } from '../../util/api/item';
 import { loadError } from '../../components/loadError';
 import { translate } from '../../translations/translations';
 
 export const WhereIsIt = () => {
      const route = useRoute();
-     const { id, format, prevRoute } = route.params.id;
+     const { id, format, prevRoute } = route.params;
+     console.log(route.params);
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
 
